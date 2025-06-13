@@ -53,37 +53,37 @@ const VentaEmpresasFAQ = () => {
   };
 
   return (
-    <section className="carta-section">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="font-semibold text-foreground mb-6">
+          <h2 className="text-4xl font-bold text-black mb-6">
             Preguntas Frecuentes
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-gray-600">
             Resolvemos las dudas más comunes sobre el proceso de venta de empresas
           </p>
         </div>
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div key={index} className="carta-card">
+            <div key={index} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <button
-                className="w-full px-0 py-0 text-left flex justify-between items-center hover:opacity-80 transition-opacity"
+                className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
                 onClick={() => toggleFAQ(index)}
               >
-                <h3 className="text-lg font-semibold text-foreground pr-4">
+                <h3 className="text-lg font-semibold text-black pr-4">
                   {faq.question}
                 </h3>
                 {openIndex === index ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <ChevronUp className="h-5 w-5 text-gray-500 flex-shrink-0" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <ChevronDown className="h-5 w-5 text-gray-500 flex-shrink-0" />
                 )}
               </button>
               
               {openIndex === index && (
-                <div className="pt-4">
-                  <p className="text-muted-foreground leading-relaxed">
+                <div className="px-6 pb-4">
+                  <p className="text-gray-600 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
@@ -93,10 +93,10 @@ const VentaEmpresasFAQ = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-muted-foreground mb-4">
+          <p className="text-gray-600 mb-4">
             ¿No encuentras la respuesta que buscas?
           </p>
-          <button className="carta-button">
+          <button className="capittal-button">
             Contacta con Nuestros Expertos
           </button>
         </div>

@@ -3,39 +3,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Carta-inspired design system with clean, modern aesthetics */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 220 13% 18%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 220 13% 18%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 98%;
-    --secondary-foreground: 220 13% 18%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 46%;
 
-    --muted: 210 40% 98%;
+    --muted: 220 14% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 98%;
-    --accent-foreground: 220 13% 18%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 13% 18%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 0 0% 0%;
 
-    --radius: 8px;
+    --radius: 10px;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5% 26%;
@@ -54,58 +54,27 @@
   }
 
   body {
-    @apply bg-white text-foreground font-sans antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    @apply bg-white text-black font-sans;
   }
 
   html {
     scroll-behavior: smooth;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
-  }
-
-  h1 {
-    @apply text-4xl lg:text-5xl xl:text-6xl;
-  }
-
-  h2 {
-    @apply text-3xl lg:text-4xl;
-  }
-
-  h3 {
-    @apply text-2xl lg:text-3xl;
-  }
 }
 
 @layer components {
-  .carta-button {
-    @apply bg-primary text-primary-foreground rounded-lg px-6 py-3 font-medium text-sm
-           transition-all duration-200 ease-out hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20;
+  .capittal-button {
+    @apply bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 font-medium 
+           transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1;
   }
   
-  .carta-button-outline {
-    @apply bg-transparent text-primary border border-border rounded-lg px-6 py-3 font-medium text-sm
-           transition-all duration-200 ease-out hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20;
-  }
-  
-  .carta-card {
-    @apply bg-card border border-border rounded-xl p-6 shadow-sm 
-           transition-all duration-200 ease-out hover:shadow-md;
+  .capittal-card {
+    @apply bg-white border-0.5 border-black rounded-lg p-6 shadow-sm 
+           transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1;
   }
 
-  .carta-input {
-    @apply bg-background border border-input rounded-lg px-4 py-3 text-sm
-           focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring
-           transition-colors duration-200;
-  }
-
-  .carta-section {
-    @apply py-16 lg:py-24;
-  }
-
-  .carta-container {
-    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  .capittal-input {
+    @apply bg-white border-0.5 border-black rounded-lg px-4 py-3 
+           focus:outline-none focus:ring-2 focus:ring-black/20;
   }
 }
