@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronDown } from 'lucide-react';
@@ -13,6 +14,13 @@ import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const porQueElegirnosItems = [
+    { label: 'Visión General', href: '/por-que-elegirnos' },
+    { label: 'Nuestra Experiencia', href: '/por-que-elegirnos/experiencia' },
+    { label: 'Metodología', href: '/por-que-elegirnos/metodologia' },
+    { label: 'Resultados', href: '/por-que-elegirnos/resultados' },
+  ];
 
   const serviciosItems = [
     { label: 'Fusiones y Adquisiciones', href: '/servicios/fusiones-adquisiciones' },
@@ -61,6 +69,26 @@ const Header = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <NavigationMenu>
               <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-black font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                    Por Qué Elegirnos
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[400px] gap-3 p-4 bg-white">
+                      {porQueElegirnosItems.map((item) => (
+                        <NavigationMenuLink key={item.label} asChild>
+                          <Link
+                            to={item.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900"
+                          >
+                            <div className="text-sm font-medium leading-none">{item.label}</div>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-black font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
                     Servicios
@@ -158,6 +186,23 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b-0.5 border-black animate-slide-in">
             <nav className="px-4 py-6 space-y-4">
+              {/* Mobile Por Qué Elegirnos */}
+              <div>
+                <div className="text-black font-medium mb-2">Por Qué Elegirnos</div>
+                <div className="pl-4 space-y-2">
+                  {porQueElegirnosItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      className="block text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
               {/* Mobile Servicios */}
               <div>
                 <div className="text-black font-medium mb-2">Servicios</div>

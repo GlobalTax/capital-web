@@ -14,6 +14,12 @@ import Equipo from "./pages/Equipo";
 import Contacto from "./pages/Contacto";
 import VentaEmpresas from "./pages/VentaEmpresas";
 
+// Por Qué Elegirnos
+import PorQueElegirnos from "./pages/por-que-elegirnos";
+import Experiencia from "./pages/por-que-elegirnos/experiencia";
+import Metodologia from "./pages/por-que-elegirnos/metodologia";
+import Resultados from "./pages/por-que-elegirnos/resultados";
+
 // Servicios
 import FusionesAdquisiciones from "./pages/servicios/FusionesAdquisiciones";
 import DueDiligence from "./pages/servicios/DueDiligence";
@@ -52,6 +58,12 @@ const App = () => (
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
+          
+          {/* Por Qué Elegirnos */}
+          <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
+          <Route path="/por-que-elegirnos/experiencia" element={<Experiencia />} />
+          <Route path="/por-que-elegirnos/metodologia" element={<Metodologia />} />
+          <Route path="/por-que-elegirnos/resultados" element={<Resultados />} />
           
           {/* Servicios */}
           <Route path="/servicios/fusiones-adquisiciones" element={<FusionesAdquisiciones />} />
