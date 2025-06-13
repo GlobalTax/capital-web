@@ -7,6 +7,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
+// Páginas principales
+import Nosotros from "./pages/Nosotros";
+import CasosExito from "./pages/CasosExito";
+import Equipo from "./pages/Equipo";
+import Contacto from "./pages/Contacto";
+
 // Servicios
 import FusionesAdquisiciones from "./pages/servicios/FusionesAdquisiciones";
 import DueDiligence from "./pages/servicios/DueDiligence";
@@ -38,6 +44,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          
+          {/* Páginas principales */}
+          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/casos-exito" element={<CasosExito />} />
+          <Route path="/equipo" element={<Equipo />} />
+          <Route path="/contacto" element={<Contacto />} />
           
           {/* Servicios */}
           <Route path="/servicios/fusiones-adquisiciones" element={<FusionesAdquisiciones />} />

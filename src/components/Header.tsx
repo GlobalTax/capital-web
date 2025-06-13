@@ -40,10 +40,10 @@ const Header = () => {
   ];
 
   const navItems = [
-    { label: 'Nosotros', href: '#nosotros' },
-    { label: 'Casos de Éxito', href: '#casos' },
-    { label: 'Equipo', href: '#equipo' },
-    { label: 'Contacto', href: '#contacto' },
+    { label: 'Nosotros', href: '/nosotros' },
+    { label: 'Casos de Éxito', href: '/casos-exito' },
+    { label: 'Equipo', href: '/equipo' },
+    { label: 'Contacto', href: '/contacto' },
   ];
 
   return (
@@ -124,13 +124,13 @@ const Header = () => {
             </NavigationMenu>
 
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.href}
+                to={item.href}
                 className="text-black font-medium hover:text-gray-600 transition-colors duration-200"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -210,14 +210,14 @@ const Header = () => {
               </div>
 
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.label}
-                  href={item.href}
+                  to={item.href}
                   className="block text-black font-medium hover:text-gray-600 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
               <Button className="capittal-button w-full mt-4">
                 Consulta Gratuita
