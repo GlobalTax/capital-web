@@ -12,16 +12,16 @@ const VentaEmpresasHero = () => {
   ];
 
   return (
-    <section className="bg-gradient-to-br from-gray-50 to-white py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <section className="carta-section bg-gradient-to-b from-muted/50 to-background">
+      <div className="carta-container">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h1 className="text-4xl lg:text-5xl font-bold text-black mb-6 leading-tight">
-              Vende tu Empresa al
-              <span className="block text-gray-600">Mejor Precio</span>
+            <h1 className="font-semibold text-foreground mb-6 leading-tight tracking-tight">
+              Vende tu empresa al
+              <span className="block text-muted-foreground">mejor precio</span>
             </h1>
             
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
               Especialistas en la venta de empresas con más de 15 años de experiencia. 
               Te acompañamos en todo el proceso para maximizar el valor de tu negocio 
               y encontrar el comprador ideal.
@@ -30,53 +30,53 @@ const VentaEmpresasHero = () => {
             <div className="space-y-4 mb-8">
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
-                  <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700 font-medium">{benefit}</span>
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <span className="text-foreground font-medium">{benefit}</span>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="capittal-button text-lg px-8 py-4">
+              <Button className="carta-button text-base px-8 py-4">
                 Solicitar Valoración Gratuita
               </Button>
-              <Button variant="outline" className="text-lg px-8 py-4 border-black hover:bg-gray-50">
+              <Button className="carta-button-outline text-base px-8 py-4">
                 Descargar Guía
               </Button>
             </div>
           </div>
 
           <div className="relative">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-              <h3 className="text-2xl font-bold text-black mb-6">
+            <div className="carta-card">
+              <h3 className="text-2xl font-semibold text-foreground mb-6">
                 Valoración Gratuita
               </h3>
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Nombre de la empresa
                   </label>
                   <input
                     type="text"
-                    className="capittal-input w-full"
+                    className="carta-input w-full"
                     placeholder="Introduce el nombre"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Sector de actividad
                   </label>
                   <input
                     type="text"
-                    className="capittal-input w-full"
+                    className="carta-input w-full"
                     placeholder="Ej: Tecnología, Retail..."
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Facturación anual aproximada
                   </label>
-                  <select className="capittal-input w-full">
+                  <select className="carta-input w-full">
                     <option>Menos de 1M€</option>
                     <option>1M€ - 5M€</option>
                     <option>5M€ - 10M€</option>
@@ -85,16 +85,16 @@ const VentaEmpresasHero = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Email de contacto
                   </label>
                   <input
                     type="email"
-                    className="capittal-input w-full"
+                    className="carta-input w-full"
                     placeholder="tu@email.com"
                   />
                 </div>
-                <Button className="capittal-button w-full">
+                <Button className="carta-button w-full">
                   Obtener Valoración
                 </Button>
               </div>
