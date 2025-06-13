@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,27 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+
+// Servicios
+import FusionesAdquisiciones from "./pages/servicios/FusionesAdquisiciones";
+import DueDiligence from "./pages/servicios/DueDiligence";
+import Valoraciones from "./pages/servicios/Valoraciones";
+import CorporateFinance from "./pages/servicios/CorporateFinance";
+import Reestructuraciones from "./pages/servicios/Reestructuraciones";
+
+// Sectores
+import Tecnologia from "./pages/sectores/Tecnologia";
+import Healthcare from "./pages/sectores/Healthcare";
+import Industrial from "./pages/sectores/Industrial";
+import RetailConsumer from "./pages/sectores/RetailConsumer";
+import FinancialServices from "./pages/sectores/FinancialServices";
+
+// Recursos
+import MarketReports from "./pages/recursos/MarketReports";
+import Webinars from "./pages/recursos/Webinars";
+import CaseStudies from "./pages/recursos/CaseStudies";
+import Newsletter from "./pages/recursos/Newsletter";
+import Blog from "./pages/recursos/Blog";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +38,28 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          
+          {/* Servicios */}
+          <Route path="/servicios/fusiones-adquisiciones" element={<FusionesAdquisiciones />} />
+          <Route path="/servicios/due-diligence" element={<DueDiligence />} />
+          <Route path="/servicios/valoraciones" element={<Valoraciones />} />
+          <Route path="/servicios/corporate-finance" element={<CorporateFinance />} />
+          <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
+          
+          {/* Sectores */}
+          <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+          <Route path="/sectores/healthcare" element={<Healthcare />} />
+          <Route path="/sectores/industrial" element={<Industrial />} />
+          <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
+          <Route path="/sectores/financial-services" element={<FinancialServices />} />
+          
+          {/* Recursos */}
+          <Route path="/recursos/market-reports" element={<MarketReports />} />
+          <Route path="/recursos/webinars" element={<Webinars />} />
+          <Route path="/recursos/case-studies" element={<CaseStudies />} />
+          <Route path="/recursos/newsletter" element={<Newsletter />} />
+          <Route path="/recursos/blog" element={<Blog />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
