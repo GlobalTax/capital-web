@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronDown } from 'lucide-react';
@@ -41,6 +40,7 @@ const Header = () => {
 
   const navItems = [
     { label: 'Nosotros', href: '/nosotros' },
+    { label: 'Venta Empresas', href: '/venta-empresas' },
     { label: 'Casos de Éxito', href: '/casos-exito' },
     { label: 'Equipo', href: '/equipo' },
     { label: 'Contacto', href: '/contacto' },
