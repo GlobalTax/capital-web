@@ -2,6 +2,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import MarketInsights from '@/components/MarketInsights';
 import Services from '@/components/Services';
 import About from '@/components/About';
 import CaseStudies from '@/components/CaseStudies';
@@ -14,6 +15,7 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <Hero />
+      <MarketInsights />
       <Services />
       <About />
       <CaseStudies />

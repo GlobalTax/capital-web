@@ -1,0 +1,123 @@
+
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { TrendingUp, BarChart, Users, ExternalLink } from 'lucide-react';
+
+const MarketInsights = () => {
+  const insights = [
+    {
+      icon: <TrendingUp size={24} />,
+      value: "€1.2B",
+      label: "Volumen Transaccional Q4",
+      change: "+15%",
+      positive: true
+    },
+    {
+      icon: <BarChart size={24} />,
+      value: "47",
+      label: "Transacciones Activas",
+      change: "+8%",
+      positive: true
+    },
+    {
+      icon: <Users size={24} />,
+      value: "156",
+      label: "Empresas Valoradas",
+      change: "+23%",
+      positive: true
+    }
+  ];
+
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+            Market Insights
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Acceda a análisis de mercado en tiempo real y datos exclusivos del sector M&A 
+            en nuestra plataforma especializada Capittal Market.
+          </p>
+        </div>
+
+        {/* Market Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {insights.map((insight, index) => (
+            <Card key={index} className="capittal-card text-center">
+              <CardContent className="p-6">
+                <div className="text-black mb-3 flex justify-center">
+                  {insight.icon}
+                </div>
+                <div className="text-2xl font-bold text-black mb-1">
+                  {insight.value}
+                </div>
+                <div className="text-gray-600 text-sm mb-2">
+                  {insight.label}
+                </div>
+                <div className={`text-sm font-medium ${
+                  insight.positive ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {insight.change} vs Q3
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Market Platform CTA */}
+        <div className="capittal-card text-center p-8">
+          <h3 className="text-2xl font-bold text-black mb-4">
+            Capittal Market Platform
+          </h3>
+          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            Nuestra plataforma propietaria ofrece acceso exclusivo a valoraciones de mercado, 
+            análisis de transacciones comparables y herramientas de due diligence automatizadas.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              className="capittal-button text-lg px-8 py-4"
+              onClick={() => window.open('https://capittalmarket.com', '_blank')}
+            >
+              Explorar Capittal Market
+              <ExternalLink className="ml-2" size={20} />
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="bg-transparent border-0.5 border-black rounded-lg px-8 py-4 text-lg font-medium hover:bg-black hover:text-white transition-all duration-300"
+            >
+              Solicitar Demo
+            </Button>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 text-left">
+            <div>
+              <h4 className="font-semibold text-black mb-2">Valoraciones en Tiempo Real</h4>
+              <p className="text-gray-600 text-sm">
+                Metodologías DCF, múltiplos y transacciones comparables actualizadas diariamente.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-black mb-2">Base de Datos M&A</h4>
+              <p className="text-gray-600 text-sm">
+                Acceso a más de 10,000 transacciones históricas con detalles financieros.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-black mb-2">Analytics Avanzados</h4>
+              <p className="text-gray-600 text-sm">
+                Dashboards interactivos y reportes personalizados para decisiones informadas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default MarketInsights;
