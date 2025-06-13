@@ -23,35 +23,35 @@ const Header = () => {
   ];
 
   const serviciosItems = [
-    { label: 'Fusiones y Adquisiciones', href: '/servicios/fusiones-adquisiciones' },
-    { label: 'Due Diligence', href: '/servicios/due-diligence' },
-    { label: 'Valoraciones', href: '/servicios/valoraciones' },
     { label: 'Corporate Finance', href: '/servicios/corporate-finance' },
+    { label: 'Due Diligence', href: '/servicios/due-diligence' },
+    { label: 'Fusiones y Adquisiciones', href: '/servicios/fusiones-adquisiciones' },
     { label: 'Reestructuraciones', href: '/servicios/reestructuraciones' },
+    { label: 'Valoraciones', href: '/servicios/valoraciones' },
   ];
 
   const sectoresItems = [
-    { label: 'Tecnología', href: '/sectores/tecnologia' },
+    { label: 'Financial Services', href: '/sectores/financial-services' },
     { label: 'Healthcare', href: '/sectores/healthcare' },
     { label: 'Industrial', href: '/sectores/industrial' },
     { label: 'Retail & Consumer', href: '/sectores/retail-consumer' },
-    { label: 'Financial Services', href: '/sectores/financial-services' },
+    { label: 'Tecnología', href: '/sectores/tecnologia' },
   ];
 
   const recursosItems = [
-    { label: 'Market Reports', href: '/recursos/market-reports' },
-    { label: 'Webinars', href: '/recursos/webinars' },
-    { label: 'Case Studies', href: '/recursos/case-studies' },
-    { label: 'Newsletter', href: '/recursos/newsletter' },
     { label: 'Blog', href: '/recursos/blog' },
+    { label: 'Case Studies', href: '/recursos/case-studies' },
+    { label: 'Market Reports', href: '/recursos/market-reports' },
+    { label: 'Newsletter', href: '/recursos/newsletter' },
+    { label: 'Webinars', href: '/recursos/webinars' },
   ];
 
   const navItems = [
+    { label: 'Casos de Éxito', href: '/casos-exito' },
+    { label: 'Contacto', href: '/contacto' },
+    { label: 'Equipo', href: '/equipo' },
     { label: 'Nosotros', href: '/nosotros' },
     { label: 'Venta Empresas', href: '/venta-empresas' },
-    { label: 'Casos de Éxito', href: '/casos-exito' },
-    { label: 'Equipo', href: '/equipo' },
-    { label: 'Contacto', href: '/contacto' },
   ];
 
   return (
@@ -70,7 +70,7 @@ const Header = () => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-black font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                  <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
                     Por Qué Elegirnos
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -90,7 +90,7 @@ const Header = () => {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-black font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                  <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
                     Servicios
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -110,7 +110,7 @@ const Header = () => {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-black font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                  <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
                     Sectores
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -130,7 +130,7 @@ const Header = () => {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-black font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                  <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
                     Recursos
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -155,7 +155,7 @@ const Header = () => {
               <Link
                 key={item.label}
                 to={item.href}
-                className="text-black font-medium hover:text-gray-600 transition-colors duration-200"
+                className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
               >
                 {item.label}
               </Link>
@@ -188,13 +188,13 @@ const Header = () => {
             <nav className="px-4 py-6 space-y-4">
               {/* Mobile Por Qué Elegirnos */}
               <div>
-                <div className="text-black font-medium mb-2">Por Qué Elegirnos</div>
+                <div className="text-black text-sm font-medium mb-2">Por Qué Elegirnos</div>
                 <div className="pl-4 space-y-2">
                   {porQueElegirnosItems.map((item) => (
                     <Link
                       key={item.label}
                       to={item.href}
-                      className="block text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                      className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
@@ -205,13 +205,13 @@ const Header = () => {
 
               {/* Mobile Servicios */}
               <div>
-                <div className="text-black font-medium mb-2">Servicios</div>
+                <div className="text-black text-sm font-medium mb-2">Servicios</div>
                 <div className="pl-4 space-y-2">
                   {serviciosItems.map((item) => (
                     <Link
                       key={item.label}
                       to={item.href}
-                      className="block text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                      className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
@@ -222,13 +222,13 @@ const Header = () => {
 
               {/* Mobile Sectores */}
               <div>
-                <div className="text-black font-medium mb-2">Sectores</div>
+                <div className="text-black text-sm font-medium mb-2">Sectores</div>
                 <div className="pl-4 space-y-2">
                   {sectoresItems.map((item) => (
                     <Link
                       key={item.label}
                       to={item.href}
-                      className="block text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                      className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
@@ -239,13 +239,13 @@ const Header = () => {
 
               {/* Mobile Recursos */}
               <div>
-                <div className="text-black font-medium mb-2">Recursos</div>
+                <div className="text-black text-sm font-medium mb-2">Recursos</div>
                 <div className="pl-4 space-y-2">
                   {recursosItems.map((item) => (
                     <Link
                       key={item.label}
                       to={item.href}
-                      className="block text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                      className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
@@ -258,7 +258,7 @@ const Header = () => {
                 <Link
                   key={item.label}
                   to={item.href}
-                  className="block text-black font-medium hover:text-gray-600 transition-colors duration-200"
+                  className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
