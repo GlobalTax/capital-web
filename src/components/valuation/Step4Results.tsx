@@ -4,6 +4,7 @@ import { TrendingUp, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateValuationPDF } from '@/utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
+import ToolRating from './ToolRating';
 
 interface Step4Props {
   result: any;
@@ -268,6 +269,9 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           {isGeneratingPDF ? 'Generando PDF...' : 'Descargar Informe PDF'}
         </Button>
       </div>
+
+      {/* Sistema de valoración de la herramienta */}
+      <ToolRating companyData={companyData} />
 
       {/* Aviso legal */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

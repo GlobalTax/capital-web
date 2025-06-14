@@ -138,6 +138,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_ratings: {
+        Row: {
+          company_sector: string | null
+          company_size: string | null
+          created_at: string
+          ease_of_use: number
+          feedback_comment: string | null
+          id: string
+          ip_address: unknown | null
+          recommendation: number
+          result_accuracy: number
+          user_agent: string | null
+          user_email: string | null
+        }
+        Insert: {
+          company_sector?: string | null
+          company_size?: string | null
+          created_at?: string
+          ease_of_use: number
+          feedback_comment?: string | null
+          id?: string
+          ip_address?: unknown | null
+          recommendation: number
+          result_accuracy: number
+          user_agent?: string | null
+          user_email?: string | null
+        }
+        Update: {
+          company_sector?: string | null
+          company_size?: string | null
+          created_at?: string
+          ease_of_use?: number
+          feedback_comment?: string | null
+          id?: string
+          ip_address?: unknown | null
+          recommendation?: number
+          result_accuracy?: number
+          user_agent?: string | null
+          user_email?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
