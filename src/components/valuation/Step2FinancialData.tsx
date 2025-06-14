@@ -12,6 +12,18 @@ interface Step2Props {
 
 const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, showValidation = false }) => {
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
+  const [displayValues, setDisplayValues] = React.useState({
+    revenue: '',
+    ebitda: ''
+  });
+
+  // Inicializar valores de display cuando cambian los datos de la empresa
+  React.useEffect(() => {
+    setDisplayValues({
+      revenue: companyData.revenue ? formatNumber(companyData.revenue) : '',
+      ebitda: companyData.ebitda ? formatNumber(companyData.ebitda) : ''
+    });
+  }, [companyData.revenue, companyData.ebitda]);
 
   const handleBlur = (fieldName: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
@@ -25,13 +37,33 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
 
   // Función para parsear números desde el input (remover puntos)
   const parseNumber = (value: string): number => {
-    const cleanValue = value.replace(/\./g, '');
-    return Number(cleanValue) || 0;
+    const cleanValue = value.replace(/\./g, '').replace(/,/g, '');
+    const parsed = Number(cleanValue);
+    return isNaN(parsed) ? 0 : parsed;
   };
 
   const handleNumberChange = (field: string, value: string) => {
+    // Actualizar el valor de display
+    setDisplayValues(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Parsear y actualizar el valor real
     const numericValue = parseNumber(value);
     updateField(field, numericValue);
+  };
+
+  const handleNumberBlur = (field: string) => {
+    handleBlur(field);
+    // Formatear el valor cuando pierde el foco
+    const currentValue = field === 'revenue' ? companyData.revenue : companyData.ebitda;
+    if (currentValue > 0) {
+      setDisplayValues(prev => ({
+        ...prev,
+        [field]: formatNumber(currentValue)
+      }));
+    }
   };
 
   const isRevenueValid = Boolean(companyData.revenue > 0);
@@ -76,9 +108,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           <Input
             id="revenue"
             type="text"
-            value={formatNumber(companyData.revenue)}
+            value={displayValues.revenue}
             onChange={(e) => handleNumberChange('revenue', e.target.value)}
-            onBlur={() => handleBlur('revenue')}
+            onBlur={() => handleNumberBlur('revenue')}
             placeholder="Ej. 500.000"
             className={getFieldClassName(isRevenueValid, Boolean(companyData.revenue), 'revenue')}
           />
@@ -99,9 +131,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           <Input
             id="ebitda"
             type="text"
-            value={formatNumber(companyData.ebitda)}
+            value={displayValues.ebitda}
             onChange={(e) => handleNumberChange('ebitda', e.target.value)}
-            onBlur={() => handleBlur('ebitda')}
+            onBlur={() => handleNumberBlur('ebitda')}
             placeholder="Ej. 100.000"
             className={getFieldClassName(isEbitdaValid, Boolean(companyData.ebitda), 'ebitda')}
           />
