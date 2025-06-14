@@ -53,7 +53,7 @@ const ValuationCalculator = () => {
           validateStep={validateStep}
         />
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-200">
+        <div className="bg-white rounded-lg p-8 mb-8 border border-gray-200">
           <StepContent
             currentStep={currentStep}
             companyData={companyData}
