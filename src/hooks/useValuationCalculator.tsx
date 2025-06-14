@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone } from '@/utils/validationUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -147,16 +148,7 @@ export const useValuationCalculator = () => {
 
   const nextStep = useCallback(() => {
     console.log('nextStep called, currentStep:', currentStep);
-    const isValid = validateStep(currentStep);
-    console.log('Validation result for step', currentStep, ':', isValid);
-    
-    if (!isValid) {
-      console.log('Validation failed, showing validation errors');
-      setShowValidation(true);
-      return;
-    }
-    
-    console.log('Validation passed, moving to next step');
+    // Siempre permitir avanzar sin validación
     setShowValidation(false);
     setCurrentStep(prev => {
       const newStep = Math.min(prev + 1, 4);
@@ -178,63 +170,9 @@ export const useValuationCalculator = () => {
   }, []);
 
   const validateStep = useCallback((step: number): boolean => {
-    console.log('Validating step', step);
-    console.log('Company data:', companyData);
-    
-    switch (step) {
-      case 1:
-        const contactNameValidation = validateContactName(companyData.contactName);
-        const companyNameValidation = validateCompanyName(companyData.companyName);
-        const emailValidation = validateEmail(companyData.email);
-        const phoneValidation = validateSpanishPhone(companyData.phone);
-        const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
-        const industryValid = Boolean(companyData.industry);
-        const yearsValid = Boolean(companyData.yearsOfOperation > 0);
-        const employeeRangeValid = Boolean(companyData.employeeRange);
-        
-        console.log('Step 1 validation breakdown:');
-        console.log('- contactName:', companyData.contactName, '-> valid:', contactNameValidation.isValid);
-        console.log('- companyName:', companyData.companyName, '-> valid:', companyNameValidation.isValid);
-        console.log('- cif:', companyData.cif, '-> valid:', cifValid);
-        console.log('- email:', companyData.email, '-> valid:', emailValidation.isValid);
-        console.log('- phone:', companyData.phone, '-> valid:', phoneValidation.isValid);
-        console.log('- industry:', companyData.industry, '-> valid:', industryValid);
-        console.log('- yearsOfOperation:', companyData.yearsOfOperation, '-> valid:', yearsValid);
-        console.log('- employeeRange:', companyData.employeeRange, '-> valid:', employeeRangeValid);
-        
-        return contactNameValidation.isValid && companyNameValidation.isValid && cifValid && emailValidation.isValid && phoneValidation.isValid && industryValid && yearsValid && employeeRangeValid;
-      
-      case 2:
-        const revenueValid = Boolean(companyData.revenue > 0);
-        const ebitdaValid = Boolean(companyData.ebitda > 0);
-        const netProfitMarginValid = Boolean(companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
-        
-        console.log('Step 2 validation breakdown:');
-        console.log('- revenue:', companyData.revenue, '-> valid:', revenueValid);
-        console.log('- ebitda:', companyData.ebitda, '-> valid:', ebitdaValid);
-        console.log('- netProfitMargin:', companyData.netProfitMargin, '-> valid:', netProfitMarginValid);
-        
-        return revenueValid && ebitdaValid && netProfitMarginValid;
-      
-      case 3:
-        const locationValid = Boolean(companyData.location && companyData.location.trim().length > 0);
-        const ownershipValid = Boolean(companyData.ownershipParticipation && companyData.ownershipParticipation.trim().length > 0);
-        const competitiveAdvantageValid = Boolean(companyData.competitiveAdvantage && companyData.competitiveAdvantage.trim().length > 0);
-        
-        console.log('Step 3 validation breakdown:');
-        console.log('- location:', companyData.location, '-> valid:', locationValid);
-        console.log('- ownershipParticipation:', companyData.ownershipParticipation, '-> valid:', ownershipValid);
-        console.log('- competitiveAdvantage:', companyData.competitiveAdvantage, '-> valid:', competitiveAdvantageValid);
-        
-        const step3Valid = locationValid && ownershipValid && competitiveAdvantageValid;
-        console.log('Step 3 overall valid:', step3Valid);
-        
-        return step3Valid;
-      
-      default:
-        return true;
-    }
-  }, [companyData]);
+    // Siempre devolver true para permitir navegación libre
+    return true;
+  }, []);
 
   const calculateValuation = useCallback(async () => {
     console.log('calculateValuation called');
@@ -243,20 +181,31 @@ export const useValuationCalculator = () => {
     // Simular tiempo de cálculo
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // Usar valores por defecto si no hay datos suficientes
+    const industryToUse = companyData.industry || 'servicios';
+    const employeeRangeToUse = companyData.employeeRange || '2-5';
+    const ebitdaToUse = companyData.ebitda || 100000; // EBITDA por defecto de 100k
+
     // Buscar múltiplos del sector y rango de empleados seleccionados
-    const sectorData = sectorMultiples.find(s => 
-      s.sector_name === companyData.industry && 
-      s.employee_range === companyData.employeeRange
+    let sectorData = sectorMultiples.find(s => 
+      s.sector_name === industryToUse && 
+      s.employee_range === employeeRangeToUse
     );
     
+    // Si no se encuentra, usar un múltiplo por defecto
     if (!sectorData) {
-      console.error('No se encontraron múltiplos para el sector:', companyData.industry, 'y rango:', companyData.employeeRange);
-      setIsCalculating(false);
-      return;
+      console.log('No se encontraron múltiplos específicos, usando valores por defecto');
+      sectorData = {
+        sector_name: industryToUse,
+        employee_range: employeeRangeToUse,
+        ebitda_multiple: 3.5, // Múltiplo por defecto
+        revenue_multiple: 1.0,
+        description: 'Valores estimados'
+      };
     }
 
     // Calcular valoración usando solo múltiplo EBITDA
-    const ebitdaValuation = companyData.ebitda * sectorData.ebitda_multiple;
+    const ebitdaValuation = ebitdaToUse * sectorData.ebitda_multiple;
 
     // Valoración final basada únicamente en EBITDA
     const finalValuation = Math.round(ebitdaValuation);
