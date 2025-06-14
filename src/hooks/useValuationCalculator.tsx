@@ -1,4 +1,5 @@
 
+
 import { useState, useCallback } from 'react';
 
 interface CompanyData {
@@ -7,6 +8,7 @@ interface CompanyData {
   companyName: string;
   cif: string;
   email: string;
+  phone: string;
   industry: string;
   yearsOfOperation: number;
   employeeRange: string;
@@ -105,6 +107,7 @@ export const useValuationCalculator = () => {
     companyName: '',
     cif: '',
     email: '',
+    phone: '',
     industry: '',
     yearsOfOperation: 0,
     employeeRange: '',
@@ -162,6 +165,7 @@ export const useValuationCalculator = () => {
         const companyNameValid = Boolean(companyData.companyName);
         const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
         const emailValid = Boolean(companyData.email);
+        const phoneValid = Boolean(companyData.phone);
         const industryValid = Boolean(companyData.industry);
         const yearsValid = Boolean(companyData.yearsOfOperation > 0);
         const employeeRangeValid = Boolean(companyData.employeeRange);
@@ -171,11 +175,12 @@ export const useValuationCalculator = () => {
         console.log('- companyName:', companyData.companyName, '-> valid:', companyNameValid);
         console.log('- cif:', companyData.cif, '-> valid:', cifValid);
         console.log('- email:', companyData.email, '-> valid:', emailValid);
+        console.log('- phone:', companyData.phone, '-> valid:', phoneValid);
         console.log('- industry:', companyData.industry, '-> valid:', industryValid);
         console.log('- yearsOfOperation:', companyData.yearsOfOperation, '-> valid:', yearsValid);
         console.log('- employeeRange:', companyData.employeeRange, '-> valid:', employeeRangeValid);
         
-        return contactNameValid && companyNameValid && cifValid && emailValid && industryValid && yearsValid && employeeRangeValid;
+        return contactNameValid && companyNameValid && cifValid && emailValid && phoneValid && industryValid && yearsValid && employeeRangeValid;
       case 2:
         return Boolean(companyData.revenue > 0 && companyData.ebitda > 0 && companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
       case 3:
@@ -267,6 +272,7 @@ export const useValuationCalculator = () => {
       companyName: '',
       cif: '',
       email: '',
+      phone: '',
       industry: '',
       yearsOfOperation: 0,
       employeeRange: '',

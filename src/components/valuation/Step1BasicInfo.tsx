@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check } from 'lucide-react';
+import { Check, Phone } from 'lucide-react';
 
 interface Step1Props {
   companyData: any;
@@ -60,6 +61,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
   const isCompanyNameValid = Boolean(companyData.companyName);
   const isCifValid = Boolean(companyData.cif && validateCIF(companyData.cif));
   const isEmailValid = Boolean(companyData.email);
+  const isPhoneValid = Boolean(companyData.phone);
   const isIndustryValid = Boolean(companyData.industry);
   const isYearsValid = Boolean(companyData.yearsOfOperation > 0);
   const isEmployeeRangeValid = Boolean(companyData.employeeRange);
@@ -180,6 +182,31 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
           {showValidation && !isEmailValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
+        </div>
+
+        {/* Teléfono */}
+        <div className="relative">
+          <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+            Teléfono *
+          </Label>
+          <div className="relative">
+            <Input
+              id="phone"
+              type="tel"
+              value={companyData.phone}
+              onChange={(e) => updateField('phone', e.target.value)}
+              onBlur={() => handleBlur('phone')}
+              placeholder="Ej. 600 123 456"
+              className={getFieldClassName(isPhoneValid, Boolean(companyData.phone), 'phone')}
+            />
+            <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            {shouldShowCheckIcon(isPhoneValid, Boolean(companyData.phone), 'phone') && (
+              <Check className="absolute right-8 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          {showValidation && !isPhoneValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
