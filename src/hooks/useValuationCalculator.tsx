@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 interface CompanyData {
@@ -11,12 +10,12 @@ interface CompanyData {
   yearsOfOperation: number;
   employeeRange: string;
   
-  // Paso 2: Datos financieros (mantenemos los existentes)
+  // Paso 2: Datos financieros
   revenue: number;
   ebitda: number;
   growthRate: number;
   
-  // Paso 3: Características (mantenemos algunos existentes)
+  // Paso 3: Características
   location: string;
   marketShare: number;
   competitiveAdvantage: string;
@@ -101,20 +100,22 @@ export const useValuationCalculator = () => {
     setCurrentStep(step);
   }, []);
 
-  const validateStep = useCallback((step: number) => {
+  const validateStep = useCallback((step: number): boolean => {
     switch (step) {
       case 1:
-        return companyData.contactName && 
-               companyData.companyName && 
-               companyData.cif && 
-               companyData.email && 
-               companyData.industry && 
-               companyData.yearsOfOperation > 0 && 
-               companyData.employeeRange;
+        return Boolean(
+          companyData.contactName && 
+          companyData.companyName && 
+          companyData.cif && 
+          companyData.email && 
+          companyData.industry && 
+          companyData.yearsOfOperation > 0 && 
+          companyData.employeeRange
+        );
       case 2:
-        return companyData.revenue > 0 && companyData.ebitda > 0;
+        return Boolean(companyData.revenue > 0 && companyData.ebitda > 0);
       case 3:
-        return companyData.location && companyData.competitiveAdvantage;
+        return Boolean(companyData.location && companyData.competitiveAdvantage);
       default:
         return true;
     }
