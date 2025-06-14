@@ -9,6 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      company_valuations: {
+        Row: {
+          cif: string | null
+          company_name: string
+          competitive_advantage: string | null
+          contact_name: string
+          created_at: string
+          ebitda: number | null
+          ebitda_multiple_used: number | null
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          employee_range: string
+          final_valuation: number | null
+          growth_rate: number | null
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          industry: string
+          ip_address: unknown | null
+          location: string | null
+          net_profit_margin: number | null
+          ownership_participation: string | null
+          phone: string | null
+          revenue: number | null
+          user_agent: string | null
+          valuation_range_max: number | null
+          valuation_range_min: number | null
+          whatsapp_sent: boolean | null
+          whatsapp_sent_at: string | null
+          years_of_operation: number | null
+        }
+        Insert: {
+          cif?: string | null
+          company_name: string
+          competitive_advantage?: string | null
+          contact_name: string
+          created_at?: string
+          ebitda?: number | null
+          ebitda_multiple_used?: number | null
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          employee_range: string
+          final_valuation?: number | null
+          growth_rate?: number | null
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          industry: string
+          ip_address?: unknown | null
+          location?: string | null
+          net_profit_margin?: number | null
+          ownership_participation?: string | null
+          phone?: string | null
+          revenue?: number | null
+          user_agent?: string | null
+          valuation_range_max?: number | null
+          valuation_range_min?: number | null
+          whatsapp_sent?: boolean | null
+          whatsapp_sent_at?: string | null
+          years_of_operation?: number | null
+        }
+        Update: {
+          cif?: string | null
+          company_name?: string
+          competitive_advantage?: string | null
+          contact_name?: string
+          created_at?: string
+          ebitda?: number | null
+          ebitda_multiple_used?: number | null
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          employee_range?: string
+          final_valuation?: number | null
+          growth_rate?: number | null
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          industry?: string
+          ip_address?: unknown | null
+          location?: string | null
+          net_profit_margin?: number | null
+          ownership_participation?: string | null
+          phone?: string | null
+          revenue?: number | null
+          user_agent?: string | null
+          valuation_range_max?: number | null
+          valuation_range_min?: number | null
+          whatsapp_sent?: boolean | null
+          whatsapp_sent_at?: string | null
+          years_of_operation?: number | null
+        }
+        Relationships: []
+      }
       sector_multiples: {
         Row: {
           description: string | null
