@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCountAnimation } from '@/hooks/useCountAnimation';
 
 interface ToolRatingProps {
   companyData: any;
@@ -21,7 +22,32 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [totalRatings, setTotalRatings] = useState(0);
   const { toast } = useToast();
+
+  const { count: animatedCount, ref: countRef } = useCountAnimation(totalRatings, 2000);
+
+  // Fetch total ratings count
+  useEffect(() => {
+    const fetchRatingsCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('tool_ratings')
+          .select('*', { count: 'exact', head: true });
+
+        if (error) {
+          console.error('Error fetching ratings count:', error);
+          return;
+        }
+
+        setTotalRatings(count || 0);
+      } catch (error) {
+        console.error('Error fetching ratings count:', error);
+      }
+    };
+
+    fetchRatingsCount();
+  }, []);
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number; onRatingChange: (rating: number) => void; label: string }) => {
     return (
@@ -81,6 +107,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
       }
 
       setIsSubmitted(true);
+      setTotalRatings(prev => prev + 1); // Actualizar contador localmente
       toast({
         title: "¡Gracias por tu valoración!",
         description: "Tu feedback nos ayuda a mejorar la herramienta",
@@ -121,9 +148,19 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           ¿Qué te ha parecido nuestra calculadora?
         </h3>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-3">
           Tu valoración nos ayuda a mejorar la herramienta para futuros usuarios
         </p>
+        
+        {/* Contador de valoraciones */}
+        <div className="inline-flex items-center bg-white border border-gray-300 rounded-full px-4 py-2">
+          <div className="flex items-center space-x-2">
+            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+            <span className="text-sm text-gray-600">
+              <span ref={countRef} className="font-semibold text-gray-900">{animatedCount}</span> valoraciones realizadas
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-6">
