@@ -4,6 +4,8 @@ import { Star, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
@@ -18,6 +20,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
     resultAccuracy: 0,
     recommendation: 0
   });
+  const [wouldRecommend, setWouldRecommend] = useState<string>('');
   const [feedback, setFeedback] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,10 +83,10 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
   };
 
   const handleSubmit = async () => {
-    if (ratings.easeOfUse === 0 || ratings.resultAccuracy === 0 || ratings.recommendation === 0) {
+    if (ratings.easeOfUse === 0 || ratings.resultAccuracy === 0 || wouldRecommend === '') {
       toast({
         title: "Valoración incompleta",
-        description: "Por favor, completa todas las valoraciones por estrellas",
+        description: "Por favor, completa todas las valoraciones requeridas",
         variant: "destructive",
       });
       return;
@@ -97,7 +100,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
         .insert({
           ease_of_use: ratings.easeOfUse,
           result_accuracy: ratings.resultAccuracy,
-          recommendation: ratings.recommendation,
+          recommendation: wouldRecommend === 'yes' ? 5 : 1, // Convert Yes/No to numeric for database
           feedback_comment: feedback || null,
           user_email: email || null,
           company_sector: companyData.industry,
@@ -169,7 +172,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
 
       <div className="space-y-6">
         {/* Valoraciones por estrellas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StarRating
             rating={ratings.easeOfUse}
             onRatingChange={(rating) => setRatings(prev => ({ ...prev, easeOfUse: rating }))}
@@ -180,12 +183,39 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
             onRatingChange={(rating) => setRatings(prev => ({ ...prev, resultAccuracy: rating }))}
             label="Precisión de resultados"
           />
-          <StarRating
-            rating={ratings.recommendation}
-            onRatingChange={(rating) => setRatings(prev => ({ ...prev, recommendation: rating }))}
-            label="¿La recomendarías?"
-          />
         </div>
+
+        {/* Recomendación Sí/No */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700">
+            ¿Recomendarías esta herramienta?
+          </label>
+          <RadioGroup value={wouldRecommend} onValueChange={setWouldRecommend} className="flex gap-6">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="yes" />
+              <Label htmlFor="yes" className="cursor-pointer">Sí</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="no" />
+              <Label htmlFor="no" className="cursor-pointer">No</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Email - solo si recomendaría */}
+        {wouldRecommend === 'yes' && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Email (para enviarte actualizaciones)
+            </label>
+            <Input
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        )}
 
         {/* Comentario opcional */}
         <div className="space-y-2">
@@ -198,19 +228,6 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
             onChange={(e) => setFeedback(e.target.value)}
             rows={3}
             className="resize-none"
-          />
-        </div>
-
-        {/* Email opcional */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
-            Email (opcional - para enviarte actualizaciones)
-          </label>
-          <Input
-            type="email"
-            placeholder="tu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
