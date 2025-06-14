@@ -70,7 +70,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ubicación */}
         <div className="relative">
-          <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+          <Label htmlFor="location-select" className="block text-sm font-medium text-gray-700 mb-2">
             Ubicación principal *
           </Label>
           <Select
@@ -80,7 +80,10 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
               handleBlur('location');
             }}
           >
-            <SelectTrigger className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}>
+            <SelectTrigger 
+              id="location-select"
+              className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}
+            >
               <SelectValue placeholder="Selecciona una provincia" />
             </SelectTrigger>
             <SelectContent className="bg-white shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
@@ -101,7 +104,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
 
         {/* Participación de la propiedad */}
         <div className="relative">
-          <Label htmlFor="ownershipParticipation" className="block text-sm font-medium text-gray-700 mb-2">
+          <Label htmlFor="ownership-select" className="block text-sm font-medium text-gray-700 mb-2">
             Participación de la propiedad *
           </Label>
           <Select
@@ -111,7 +114,10 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
               handleBlur('ownershipParticipation');
             }}
           >
-            <SelectTrigger className={getFieldClassName(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation')}>
+            <SelectTrigger 
+              id="ownership-select"
+              className={getFieldClassName(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation')}
+            >
               <SelectValue placeholder="Selecciona el nivel de participación" />
             </SelectTrigger>
             <SelectContent className="bg-white shadow-lg border border-gray-200 z-50">
@@ -139,6 +145,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
         </Label>
         <Textarea
           id="competitiveAdvantage"
+          name="competitiveAdvantage"
           value={companyData.competitiveAdvantage}
           onChange={(e) => updateField('competitiveAdvantage', e.target.value)}
           onBlur={() => handleBlur('competitiveAdvantage')}

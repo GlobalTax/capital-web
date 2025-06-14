@@ -107,6 +107,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           </Label>
           <Input
             id="revenue"
+            name="revenue"
             type="text"
             value={displayValues.revenue}
             onChange={(e) => handleNumberChange('revenue', e.target.value)}
@@ -130,6 +131,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           </Label>
           <Input
             id="ebitda"
+            name="ebitda"
             type="text"
             value={displayValues.ebitda}
             onChange={(e) => handleNumberChange('ebitda', e.target.value)}
@@ -154,6 +156,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           <div className="relative">
             <Input
               id="netProfitMargin"
+              name="netProfitMargin"
               type="number"
               min="0"
               max="100"
@@ -182,6 +185,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           </Label>
           <Input
             id="growthRate"
+            name="growthRate"
             type="number"
             min="0"
             max="100"

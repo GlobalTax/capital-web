@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone, formatSpanishPhone } from '@/utils/validationUtils';
 import { Check } from 'lucide-react';
@@ -98,6 +99,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <input
             type="text"
             id="contactName"
+            name="contactName"
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
             onBlur={() => handleBlur('contactName')}
@@ -119,6 +121,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <input
             type="text"
             id="companyName"
+            name="companyName"
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
             onBlur={() => handleBlur('companyName')}
@@ -140,6 +143,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <input
             type="text"
             id="cif"
+            name="cif"
             value={companyData.cif}
             onChange={(e) => updateField('cif', e.target.value.toUpperCase())}
             onBlur={() => handleBlur('cif')}
@@ -162,6 +166,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <input
             type="email"
             id="email"
+            name="email"
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
             onBlur={() => handleBlur('email')}
@@ -183,6 +188,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <input
             type="tel"
             id="phone"
+            name="phone"
             value={companyData.phone}
             onChange={(e) => handlePhoneChange(e.target.value)}
             onBlur={() => handleBlur('phone')}
@@ -204,6 +210,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           </label>
           <select
             id="industry"
+            name="industry"
             value={companyData.industry}
             onChange={(e) => {
               updateField('industry', e.target.value);
@@ -242,6 +249,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <input
             type="number"
             id="yearsOfOperation"
+            name="yearsOfOperation"
             value={companyData.yearsOfOperation || ''}
             onChange={(e) => updateField('yearsOfOperation', parseInt(e.target.value) || 0)}
             onBlur={() => handleBlur('yearsOfOperation')}
@@ -263,6 +271,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           </label>
           <select
             id="employeeRange"
+            name="employeeRange"
             value={companyData.employeeRange}
             onChange={(e) => {
               updateField('employeeRange', e.target.value);
