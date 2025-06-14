@@ -82,6 +82,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
           >
             <SelectTrigger 
               id="location-select"
+              name="location"
               className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}
             >
               <SelectValue placeholder="Selecciona una provincia" />
@@ -116,6 +117,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
           >
             <SelectTrigger 
               id="ownership-select"
+              name="ownershipParticipation"
               className={getFieldClassName(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation')}
             >
               <SelectValue placeholder="Selecciona el nivel de participación" />
@@ -146,6 +148,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
         <Textarea
           id="competitiveAdvantage"
           name="competitiveAdvantage"
+          autoComplete="off"
           value={companyData.competitiveAdvantage}
           onChange={(e) => updateField('competitiveAdvantage', e.target.value)}
           onBlur={() => handleBlur('competitiveAdvantage')}

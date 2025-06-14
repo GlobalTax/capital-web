@@ -100,6 +100,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="text"
             id="contactName"
             name="contactName"
+            autoComplete="given-name"
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
             onBlur={() => handleBlur('contactName')}
@@ -122,6 +123,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="text"
             id="companyName"
             name="companyName"
+            autoComplete="organization"
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
             onBlur={() => handleBlur('companyName')}
@@ -144,6 +146,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="text"
             id="cif"
             name="cif"
+            autoComplete="off"
             value={companyData.cif}
             onChange={(e) => updateField('cif', e.target.value.toUpperCase())}
             onBlur={() => handleBlur('cif')}
@@ -167,6 +170,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="email"
             id="email"
             name="email"
+            autoComplete="email"
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
             onBlur={() => handleBlur('email')}
@@ -189,6 +193,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="tel"
             id="phone"
             name="phone"
+            autoComplete="tel"
             value={companyData.phone}
             onChange={(e) => handlePhoneChange(e.target.value)}
             onBlur={() => handleBlur('phone')}
@@ -211,6 +216,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <select
             id="industry"
             name="industry"
+            autoComplete="off"
             value={companyData.industry}
             onChange={(e) => {
               updateField('industry', e.target.value);
@@ -250,6 +256,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="number"
             id="yearsOfOperation"
             name="yearsOfOperation"
+            autoComplete="off"
             value={companyData.yearsOfOperation || ''}
             onChange={(e) => updateField('yearsOfOperation', parseInt(e.target.value) || 0)}
             onBlur={() => handleBlur('yearsOfOperation')}
@@ -272,6 +279,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
           <select
             id="employeeRange"
             name="employeeRange"
+            autoComplete="off"
             value={companyData.employeeRange}
             onChange={(e) => {
               updateField('employeeRange', e.target.value);

@@ -109,6 +109,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             id="revenue"
             name="revenue"
             type="text"
+            autoComplete="off"
             value={displayValues.revenue}
             onChange={(e) => handleNumberChange('revenue', e.target.value)}
             onBlur={() => handleNumberBlur('revenue')}
@@ -133,6 +134,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             id="ebitda"
             name="ebitda"
             type="text"
+            autoComplete="off"
             value={displayValues.ebitda}
             onChange={(e) => handleNumberChange('ebitda', e.target.value)}
             onBlur={() => handleNumberBlur('ebitda')}
@@ -158,6 +160,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
               id="netProfitMargin"
               name="netProfitMargin"
               type="number"
+              autoComplete="off"
               min="0"
               max="100"
               step="0.1"
@@ -187,6 +190,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             id="growthRate"
             name="growthRate"
             type="number"
+            autoComplete="off"
             min="0"
             max="100"
             value={companyData.growthRate || ''}
