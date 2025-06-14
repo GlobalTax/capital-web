@@ -31,6 +31,7 @@ export const menuData = {
     { label: 'Market Reports', href: '/recursos/market-reports' },
     { label: 'Newsletter', href: '/recursos/newsletter' },
     { label: 'Webinars', href: '/recursos/webinars' },
+    { label: 'Calculadora de Valoración', href: '/calculadora-valoracion' },
   ],
 
   // Nuevo grupo "Empresa" que agrupa elementos relacionados
