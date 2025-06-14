@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
+import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone, formatSpanishPhone } from '@/utils/validationUtils';
 import { Check } from 'lucide-react';
 
 interface Step1Props {
@@ -55,9 +54,15 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
     setTouchedFields(prev => new Set(prev).add(fieldName));
   };
 
+  const handlePhoneChange = (value: string) => {
+    const formattedPhone = formatSpanishPhone(value);
+    updateField('phone', formattedPhone);
+  };
+
   const contactNameValidation = validateContactName(companyData.contactName);
   const companyNameValidation = validateCompanyName(companyData.companyName);
   const emailValidation = validateEmail(companyData.email);
+  const phoneValidation = validateSpanishPhone(companyData.phone);
   const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
 
   const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string) => {
@@ -179,16 +184,17 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             type="tel"
             id="phone"
             value={companyData.phone}
-            onChange={(e) => updateField('phone', e.target.value)}
+            onChange={(e) => handlePhoneChange(e.target.value)}
             onBlur={() => handleBlur('phone')}
-            className={getFieldClassName(Boolean(companyData.phone), Boolean(companyData.phone), 'phone')}
+            className={getFieldClassName(phoneValidation.isValid, Boolean(companyData.phone), 'phone')}
             placeholder="+34 123 456 789"
+            maxLength={15}
           />
-          {shouldShowCheckIcon(Boolean(companyData.phone), Boolean(companyData.phone), 'phone') && (
+          {shouldShowCheckIcon(phoneValidation.isValid, Boolean(companyData.phone), 'phone') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !companyData.phone && (
-            <p className="mt-1 text-sm text-red-600">El teléfono es obligatorio</p>
+          {showValidation && !phoneValidation.isValid && (
+            <p className="mt-1 text-sm text-red-600">{phoneValidation.message}</p>
           )}
         </div>
 

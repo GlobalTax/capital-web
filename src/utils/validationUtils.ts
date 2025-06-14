@@ -1,4 +1,3 @@
-
 // Lista de dominios de email temporales/desechables más comunes
 const DISPOSABLE_EMAIL_DOMAINS = [
   '10minutemail.com',
@@ -184,4 +183,56 @@ export const validateContactName = (contactName: string): { isValid: boolean; me
   }
 
   return { isValid: true };
+};
+
+export const validateSpanishPhone = (phone: string): { isValid: boolean; message?: string } => {
+  if (!phone) {
+    return { isValid: false, message: 'El teléfono es obligatorio' };
+  }
+
+  // Remover espacios, guiones y paréntesis para validación
+  const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+  
+  // Patrones de teléfonos españoles válidos
+  const spanishMobileRegex = /^(\+34|0034|34)?[67]\d{8}$/; // Móviles: 6xx xxx xxx o 7xx xxx xxx
+  const spanishLandlineRegex = /^(\+34|0034|34)?[89]\d{8}$/; // Fijos: 8xx xxx xxx o 9xx xxx xxx
+  
+  if (!spanishMobileRegex.test(cleanPhone) && !spanishLandlineRegex.test(cleanPhone)) {
+    return { 
+      isValid: false, 
+      message: 'Introduce un número de teléfono español válido (ej: +34 123 456 789)' 
+    };
+  }
+
+  return { isValid: true };
+};
+
+export const formatSpanishPhone = (phone: string): string => {
+  // Remover todo excepto números y el signo +
+  const cleaned = phone.replace(/[^\d+]/g, '');
+  
+  // Si empieza con +34, formatear como +34 XXX XXX XXX
+  if (cleaned.startsWith('+34')) {
+    const number = cleaned.substring(3);
+    if (number.length <= 3) return `+34 ${number}`;
+    if (number.length <= 6) return `+34 ${number.substring(0, 3)} ${number.substring(3)}`;
+    return `+34 ${number.substring(0, 3)} ${number.substring(3, 6)} ${number.substring(6, 9)}`;
+  }
+  
+  // Si empieza con 34, agregar + y formatear
+  if (cleaned.startsWith('34') && cleaned.length > 2) {
+    const number = cleaned.substring(2);
+    if (number.length <= 3) return `+34 ${number}`;
+    if (number.length <= 6) return `+34 ${number.substring(0, 3)} ${number.substring(3)}`;
+    return `+34 ${number.substring(0, 3)} ${number.substring(3, 6)} ${number.substring(6, 9)}`;
+  }
+  
+  // Si es un número español sin prefijo (empieza con 6, 7, 8 o 9)
+  if (/^[6789]/.test(cleaned)) {
+    if (cleaned.length <= 3) return `+34 ${cleaned}`;
+    if (cleaned.length <= 6) return `+34 ${cleaned.substring(0, 3)} ${cleaned.substring(3)}`;
+    return `+34 ${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6, 9)}`;
+  }
+  
+  return phone; // Devolver sin cambios si no coincide con los patrones
 };

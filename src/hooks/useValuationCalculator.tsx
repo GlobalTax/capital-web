@@ -1,6 +1,5 @@
-
 import { useState, useCallback, useEffect } from 'react';
-import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
+import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone } from '@/utils/validationUtils';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CompanyData {
@@ -189,8 +188,8 @@ export const useValuationCalculator = () => {
         const contactNameValidation = validateContactName(companyData.contactName);
         const companyNameValidation = validateCompanyName(companyData.companyName);
         const emailValidation = validateEmail(companyData.email);
+        const phoneValidation = validateSpanishPhone(companyData.phone);
         const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
-        const phoneValid = Boolean(companyData.phone);
         const industryValid = Boolean(companyData.industry);
         const yearsValid = Boolean(companyData.yearsOfOperation > 0);
         const employeeRangeValid = Boolean(companyData.employeeRange);
@@ -200,12 +199,13 @@ export const useValuationCalculator = () => {
         console.log('- companyName:', companyData.companyName, '-> valid:', companyNameValidation.isValid);
         console.log('- cif:', companyData.cif, '-> valid:', cifValid);
         console.log('- email:', companyData.email, '-> valid:', emailValidation.isValid);
-        console.log('- phone:', companyData.phone, '-> valid:', phoneValid);
+        console.log('- phone:', companyData.phone, '-> valid:', phoneValidation.isValid);
         console.log('- industry:', companyData.industry, '-> valid:', industryValid);
         console.log('- yearsOfOperation:', companyData.yearsOfOperation, '-> valid:', yearsValid);
         console.log('- employeeRange:', companyData.employeeRange, '-> valid:', employeeRangeValid);
         
-        return contactNameValidation.isValid && companyNameValidation.isValid && cifValid && emailValidation.isValid && phoneValid && industryValid && yearsValid && employeeRangeValid;
+        return contactNameValidation.isValid && companyNameValidation.isValid && cifValid && emailValidation.isValid && phoneValidation.isValid && industryValid && yearsValid && employeeRangeValid;
+      
       case 2:
         const revenueValid = Boolean(companyData.revenue > 0);
         const ebitdaValid = Boolean(companyData.ebitda > 0);
@@ -217,6 +217,7 @@ export const useValuationCalculator = () => {
         console.log('- netProfitMargin:', companyData.netProfitMargin, '-> valid:', netProfitMarginValid);
         
         return revenueValid && ebitdaValid && netProfitMarginValid;
+      
       case 3:
         const locationValid = Boolean(companyData.location && companyData.location.trim().length > 0);
         const ownershipValid = Boolean(companyData.ownershipParticipation && companyData.ownershipParticipation.trim().length > 0);
@@ -231,6 +232,7 @@ export const useValuationCalculator = () => {
         console.log('Step 3 overall valid:', step3Valid);
         
         return step3Valid;
+      
       default:
         return true;
     }

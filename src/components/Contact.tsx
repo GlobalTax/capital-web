@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { formatSpanishPhone } from '@/utils/validationUtils';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -34,10 +34,19 @@ const Contact = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    
+    if (name === 'phone') {
+      setFormData({
+        ...formData,
+        [name]: formatSpanishPhone(value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   return (
@@ -175,6 +184,8 @@ const Contact = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     className="capittal-input"
+                    placeholder="+34 123 456 789"
+                    maxLength={15}
                   />
                 </div>
               </div>
