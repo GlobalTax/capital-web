@@ -10,7 +10,8 @@ const ValuationCalculator = () => {
     currentStep,
     companyData, 
     result, 
-    isCalculating, 
+    isCalculating,
+    showValidation,
     updateField, 
     nextStep,
     prevStep,
@@ -22,13 +23,17 @@ const ValuationCalculator = () => {
 
   const handleNext = () => {
     if (currentStep === 3) {
-      calculateValuation();
+      if (validateStep(3)) {
+        calculateValuation();
+      } else {
+        nextStep(); // Esto mostrará la validación
+      }
     } else {
       nextStep();
     }
   };
 
-  const isNextDisabled = !validateStep(currentStep) || isCalculating;
+  const isNextDisabled = isCalculating;
 
   return (
     <div className="min-h-screen bg-white py-12">
@@ -56,6 +61,7 @@ const ValuationCalculator = () => {
             result={result}
             isCalculating={isCalculating}
             resetCalculator={resetCalculator}
+            showValidation={showValidation}
           />
 
           {currentStep < 4 && (

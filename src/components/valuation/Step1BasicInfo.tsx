@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface Step1Props {
   companyData: any;
   updateField: (field: string, value: string | number) => void;
+  showValidation?: boolean;
 }
 
 // Función para validar CIF español
@@ -48,8 +49,28 @@ const validateCIF = (cif: string): boolean => {
   }
 };
 
-const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
-  const isCifValid = !companyData.cif || validateCIF(companyData.cif);
+const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showValidation = false }) => {
+  const isContactNameValid = Boolean(companyData.contactName);
+  const isCompanyNameValid = Boolean(companyData.companyName);
+  const isCifValid = Boolean(companyData.cif && validateCIF(companyData.cif));
+  const isEmailValid = Boolean(companyData.email);
+  const isIndustryValid = Boolean(companyData.industry);
+  const isYearsValid = Boolean(companyData.yearsOfOperation > 0);
+  const isEmployeeRangeValid = Boolean(companyData.employeeRange);
+
+  const getFieldClassName = (isValid: boolean, hasValue: boolean) => {
+    if (!showValidation) {
+      return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+    }
+    
+    if (isValid && hasValue) {
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
+    } else if (!isValid && showValidation) {
+      return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
+    }
+    
+    return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+  };
 
   return (
     <div className="space-y-6">
@@ -69,8 +90,11 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
             placeholder="Tu nombre completo"
-            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
+            className={getFieldClassName(isContactNameValid, Boolean(companyData.contactName))}
           />
+          {showValidation && !isContactNameValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
 
         {/* Nombre de la empresa */}
@@ -83,8 +107,11 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
             placeholder="Nombre de tu empresa"
-            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
+            className={getFieldClassName(isCompanyNameValid, Boolean(companyData.companyName))}
           />
+          {showValidation && !isCompanyNameValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
 
         {/* CIF */}
@@ -97,17 +124,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.cif}
             onChange={(e) => updateField('cif', e.target.value.toUpperCase())}
             placeholder="A12345678"
-            className={`w-full ${
-              isCifValid 
-                ? 'border-green-500 focus:ring-green-500 focus:border-green-500' 
-                : 'border-red-500 focus:ring-red-500 focus:border-red-500'
-            }`}
+            className={getFieldClassName(isCifValid, Boolean(companyData.cif))}
             maxLength={9}
           />
-          {!isCifValid && companyData.cif && (
+          {showValidation && companyData.cif && !isCifValid && (
             <p className="text-red-500 text-sm mt-1">
               CIF inválido. Formato: Letra + 7 dígitos + dígito/letra de control
             </p>
+          )}
+          {showValidation && !companyData.cif && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
@@ -122,8 +148,11 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
             placeholder="tu@empresa.com"
-            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
+            className={getFieldClassName(isEmailValid, Boolean(companyData.email))}
           />
+          {showValidation && !isEmailValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
 
         {/* Sector */}
@@ -132,7 +161,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             Sector *
           </Label>
           <Select value={companyData.industry} onValueChange={(value) => updateField('industry', value)}>
-            <SelectTrigger className="w-full border-green-500 focus:ring-green-500 focus:border-green-500">
+            <SelectTrigger className={getFieldClassName(isIndustryValid, Boolean(companyData.industry))}>
               <SelectValue placeholder="Selecciona el sector" />
             </SelectTrigger>
             <SelectContent>
@@ -151,6 +180,9 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
               <SelectItem value="otro">Otro</SelectItem>
             </SelectContent>
           </Select>
+          {showValidation && !isIndustryValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
 
         {/* Años de operación */}
@@ -165,8 +197,11 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.yearsOfOperation || ''}
             onChange={(e) => updateField('yearsOfOperation', Number(e.target.value))}
             placeholder="0"
-            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
+            className={getFieldClassName(isYearsValid, Boolean(companyData.yearsOfOperation))}
           />
+          {showValidation && !isYearsValid && (
+            <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
+          )}
         </div>
 
         {/* Número de empleados */}
@@ -175,7 +210,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             Número de empleados *
           </Label>
           <Select value={companyData.employeeRange} onValueChange={(value) => updateField('employeeRange', value)}>
-            <SelectTrigger className="w-full border-green-500 focus:ring-green-500 focus:border-green-500">
+            <SelectTrigger className={getFieldClassName(isEmployeeRangeValid, Boolean(companyData.employeeRange))}>
               <SelectValue placeholder="Selecciona el rango" />
             </SelectTrigger>
             <SelectContent>
@@ -186,6 +221,9 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
               <SelectItem value="500+">Más de 500 empleados</SelectItem>
             </SelectContent>
           </Select>
+          {showValidation && !isEmployeeRangeValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
       </div>
     </div>

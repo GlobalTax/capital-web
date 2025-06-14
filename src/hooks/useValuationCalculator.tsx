@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 
 interface CompanyData {
@@ -96,6 +97,7 @@ const validateCIF = (cif: string): boolean => {
 
 export const useValuationCalculator = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showValidation, setShowValidation] = useState(false);
   const [companyData, setCompanyData] = useState<CompanyData>({
     // Paso 1
     contactName: '',
@@ -128,14 +130,22 @@ export const useValuationCalculator = () => {
   }, []);
 
   const nextStep = useCallback(() => {
+    const isValid = validateStep(currentStep);
+    if (!isValid) {
+      setShowValidation(true);
+      return;
+    }
+    setShowValidation(false);
     setCurrentStep(prev => Math.min(prev + 1, 4));
-  }, []);
+  }, [currentStep]);
 
   const prevStep = useCallback(() => {
+    setShowValidation(false);
     setCurrentStep(prev => Math.max(prev - 1, 1));
   }, []);
 
   const goToStep = useCallback((step: number) => {
+    setShowValidation(false);
     setCurrentStep(step);
   }, []);
 
@@ -255,6 +265,7 @@ export const useValuationCalculator = () => {
     });
     setResult(null);
     setCurrentStep(1);
+    setShowValidation(false);
   }, []);
 
   return {
@@ -262,6 +273,7 @@ export const useValuationCalculator = () => {
     companyData,
     result,
     isCalculating,
+    showValidation,
     updateField,
     nextStep,
     prevStep,

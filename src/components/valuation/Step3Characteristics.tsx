@@ -7,9 +7,28 @@ import { Textarea } from '@/components/ui/textarea';
 interface Step3Props {
   companyData: any;
   updateField: (field: string, value: string | number) => void;
+  showValidation?: boolean;
 }
 
-const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField }) => {
+const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, showValidation = false }) => {
+  const isLocationValid = Boolean(companyData.location);
+  const isCompetitiveAdvantageValid = Boolean(companyData.competitiveAdvantage);
+  const isMarketShareValid = true; // Este campo no es obligatorio
+
+  const getFieldClassName = (isValid: boolean, hasValue: boolean) => {
+    if (!showValidation) {
+      return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+    }
+    
+    if (isValid && hasValue) {
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
+    } else if (!isValid && showValidation) {
+      return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
+    }
+    
+    return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -28,8 +47,11 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField }
             value={companyData.location}
             onChange={(e) => updateField('location', e.target.value)}
             placeholder="Ciudad, Provincia"
-            className="w-full"
+            className={getFieldClassName(isLocationValid, Boolean(companyData.location))}
           />
+          {showValidation && !isLocationValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
 
         {/* Cuota de mercado */}
@@ -45,7 +67,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField }
             value={companyData.marketShare || ''}
             onChange={(e) => updateField('marketShare', Number(e.target.value))}
             placeholder="0"
-            className="w-full"
+            className={getFieldClassName(isMarketShareValid, Boolean(companyData.marketShare))}
           />
           <p className="text-sm text-gray-500 mt-1">Porcentaje aproximado de participación en tu mercado</p>
         </div>
@@ -62,11 +84,14 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField }
           onChange={(e) => updateField('competitiveAdvantage', e.target.value)}
           placeholder="Describe qué hace única a tu empresa en el mercado..."
           rows={4}
-          className="w-full"
+          className={getFieldClassName(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage))}
         />
         <p className="text-sm text-gray-500 mt-1">
           Por ejemplo: tecnología propia, patents, base de clientes fiel, ubicación estratégica, etc.
         </p>
+        {showValidation && !isCompetitiveAdvantageValid && (
+          <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+        )}
       </div>
 
       {/* Información adicional */}

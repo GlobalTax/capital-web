@@ -6,9 +6,28 @@ import { Label } from '@/components/ui/label';
 interface Step2Props {
   companyData: any;
   updateField: (field: string, value: string | number) => void;
+  showValidation?: boolean;
 }
 
-const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField }) => {
+const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, showValidation = false }) => {
+  const isRevenueValid = Boolean(companyData.revenue > 0);
+  const isEbitdaValid = Boolean(companyData.ebitda > 0);
+  const isGrowthRateValid = true; // Este campo no es obligatorio
+
+  const getFieldClassName = (isValid: boolean, hasValue: boolean) => {
+    if (!showValidation) {
+      return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+    }
+    
+    if (isValid && hasValue) {
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
+    } else if (!isValid && showValidation) {
+      return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
+    }
+    
+    return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -29,9 +48,12 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField }) 
             value={companyData.revenue || ''}
             onChange={(e) => updateField('revenue', Number(e.target.value))}
             placeholder="0"
-            className="w-full"
+            className={getFieldClassName(isRevenueValid, Boolean(companyData.revenue))}
           />
           <p className="text-sm text-gray-500 mt-1">Facturación anual total</p>
+          {showValidation && !isRevenueValid && (
+            <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
+          )}
         </div>
 
         {/* EBITDA */}
@@ -46,9 +68,12 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField }) 
             value={companyData.ebitda || ''}
             onChange={(e) => updateField('ebitda', Number(e.target.value))}
             placeholder="0"
-            className="w-full"
+            className={getFieldClassName(isEbitdaValid, Boolean(companyData.ebitda))}
           />
           <p className="text-sm text-gray-500 mt-1">Beneficio antes de intereses, impuestos, depreciaciones y amortizaciones</p>
+          {showValidation && !isEbitdaValid && (
+            <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
+          )}
         </div>
 
         {/* Tasa de crecimiento */}
@@ -64,18 +89,18 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField }) 
             value={companyData.growthRate || ''}
             onChange={(e) => updateField('growthRate', Number(e.target.value))}
             placeholder="0"
-            className="w-full"
+            className={getFieldClassName(isGrowthRateValid, Boolean(companyData.growthRate))}
           />
           <p className="text-sm text-gray-500 mt-1">Crecimiento promedio de ingresos en los últimos años</p>
         </div>
       </div>
 
       {/* Información adicional */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-gray-800 mb-2">
           Información Importante
         </h3>
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-gray-700">
           Estos datos financieros son fundamentales para calcular una valoración precisa. 
           Asegúrate de que corresponden al último ejercicio fiscal completo.
         </p>

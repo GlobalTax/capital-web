@@ -12,6 +12,7 @@ interface StepContentProps {
   result: any;
   isCalculating: boolean;
   resetCalculator: () => void;
+  showValidation?: boolean;
 }
 
 const StepContent: React.FC<StepContentProps> = ({
@@ -20,28 +21,32 @@ const StepContent: React.FC<StepContentProps> = ({
   updateField,
   result,
   isCalculating,
-  resetCalculator
+  resetCalculator,
+  showValidation = false
 }) => {
   switch (currentStep) {
     case 1:
       return (
         <Step1BasicInfo 
           companyData={companyData} 
-          updateField={updateField} 
+          updateField={updateField}
+          showValidation={showValidation}
         />
       );
     case 2:
       return (
         <Step2FinancialData 
           companyData={companyData} 
-          updateField={updateField} 
+          updateField={updateField}
+          showValidation={showValidation}
         />
       );
     case 3:
       return (
         <Step3Characteristics 
           companyData={companyData} 
-          updateField={updateField} 
+          updateField={updateField}
+          showValidation={showValidation}
         />
       );
     case 4:
