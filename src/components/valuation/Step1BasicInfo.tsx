@@ -73,7 +73,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="Ingrese su nombre completo"
           />
           {showValidation && !contactNameValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{contactNameValidation.error}</p>
+            <p className="mt-1 text-sm text-red-600">{contactNameValidation.message}</p>
           )}
         </div>
 
@@ -92,7 +92,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="Ingrese el nombre de su empresa"
           />
           {showValidation && !companyNameValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{companyNameValidation.error}</p>
+            <p className="mt-1 text-sm text-red-600">{companyNameValidation.message}</p>
           )}
         </div>
 
@@ -131,7 +131,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="empresa@ejemplo.com"
           />
           {showValidation && !emailValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{emailValidation.error}</p>
+            <p className="mt-1 text-sm text-red-600">{emailValidation.message}</p>
           )}
         </div>
 
