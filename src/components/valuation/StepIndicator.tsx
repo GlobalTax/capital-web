@@ -31,7 +31,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, va
                 disabled={!isClickable}
                 className={`w-6 h-6 rounded-sm flex items-center justify-center text-xs font-semibold transition-all duration-200 border ${
                   isCompleted
-                    ? 'bg-black text-white border-black'
+                    ? 'bg-green-500 text-white border-green-500'
                     : isCurrent
                     ? 'bg-black text-white border-black'
                     : isClickable
@@ -49,7 +49,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, va
             </div>
             {index < steps.length - 1 && (
               <div className={`w-12 h-px mx-3 ${
-                isCompleted ? 'bg-black' : 'bg-gray-200'
+                isCompleted ? 'bg-green-500' : 'bg-gray-200'
               }`} />
             )}
           </div>
