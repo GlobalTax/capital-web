@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Phone } from 'lucide-react';
+import { Check, Phone, AlertCircle } from 'lucide-react';
+import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
 
 interface Step1Props {
   companyData: any;
@@ -52,15 +52,37 @@ const validateCIF = (cif: string): boolean => {
 
 const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showValidation = false }) => {
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
 
   const handleBlur = (fieldName: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
+    
+    // Validar inmediatamente cuando el usuario sale del campo
+    if (fieldName === 'contactName') {
+      const validation = validateContactName(companyData.contactName);
+      setValidationErrors(prev => ({
+        ...prev,
+        contactName: validation.isValid ? '' : validation.message || ''
+      }));
+    } else if (fieldName === 'companyName') {
+      const validation = validateCompanyName(companyData.companyName);
+      setValidationErrors(prev => ({
+        ...prev,
+        companyName: validation.isValid ? '' : validation.message || ''
+      }));
+    } else if (fieldName === 'email') {
+      const validation = validateEmail(companyData.email);
+      setValidationErrors(prev => ({
+        ...prev,
+        email: validation.isValid ? '' : validation.message || ''
+      }));
+    }
   };
 
-  const isContactNameValid = Boolean(companyData.contactName);
-  const isCompanyNameValid = Boolean(companyData.companyName);
+  const contactNameValidation = validateContactName(companyData.contactName);
+  const companyNameValidation = validateCompanyName(companyData.companyName);
+  const emailValidation = validateEmail(companyData.email);
   const isCifValid = Boolean(companyData.cif && validateCIF(companyData.cif));
-  const isEmailValid = Boolean(companyData.email);
   const isPhoneValid = Boolean(companyData.phone);
   const isIndustryValid = Boolean(companyData.industry);
   const isYearsValid = Boolean(companyData.yearsOfOperation > 0);
@@ -68,15 +90,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
 
   const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string) => {
     const isTouched = touchedFields.has(fieldName);
+    const hasError = Boolean(validationErrors[fieldName]) || (!isValid && (showValidation || isTouched));
     
     if (!showValidation && !isTouched) {
       return "w-full border-black focus:ring-black focus:border-black";
     }
     
-    if (isValid && hasValue && (isTouched || showValidation)) {
-      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500 pr-10";
-    } else if (!isValid && (showValidation || (isTouched && hasValue))) {
+    if (hasError) {
       return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
+    } else if (isValid && hasValue && (isTouched || showValidation)) {
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500 pr-10";
     }
     
     return "w-full border-black focus:ring-black focus:border-black";
@@ -84,7 +107,23 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
 
   const shouldShowCheckIcon = (isValid: boolean, hasValue: boolean, fieldName: string) => {
     const isTouched = touchedFields.has(fieldName);
-    return isValid && hasValue && (isTouched || showValidation);
+    const hasError = Boolean(validationErrors[fieldName]);
+    return isValid && hasValue && (isTouched || showValidation) && !hasError;
+  };
+
+  const shouldShowErrorIcon = (fieldName: string) => {
+    const isTouched = touchedFields.has(fieldName);
+    return Boolean(validationErrors[fieldName]) && (isTouched || showValidation);
+  };
+
+  const getErrorMessage = (fieldName: string, defaultValid: boolean, defaultMessage: string) => {
+    if (validationErrors[fieldName]) {
+      return validationErrors[fieldName];
+    }
+    if (showValidation && !defaultValid) {
+      return defaultMessage;
+    }
+    return '';
   };
 
   return (
@@ -106,13 +145,18 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             onChange={(e) => updateField('contactName', e.target.value)}
             onBlur={() => handleBlur('contactName')}
             placeholder="Tu nombre completo"
-            className={getFieldClassName(isContactNameValid, Boolean(companyData.contactName), 'contactName')}
+            className={getFieldClassName(contactNameValidation.isValid, Boolean(companyData.contactName), 'contactName')}
           />
-          {shouldShowCheckIcon(isContactNameValid, Boolean(companyData.contactName), 'contactName') && (
+          {shouldShowCheckIcon(contactNameValidation.isValid, Boolean(companyData.contactName), 'contactName') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !isContactNameValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          {shouldShowErrorIcon('contactName') && (
+            <AlertCircle className="absolute right-3 top-10 h-4 w-4 text-red-500" />
+          )}
+          {getErrorMessage('contactName', contactNameValidation.isValid, 'Este campo es obligatorio') && (
+            <p className="text-red-500 text-sm mt-1">
+              {getErrorMessage('contactName', contactNameValidation.isValid, 'Este campo es obligatorio')}
+            </p>
           )}
         </div>
 
@@ -126,14 +170,19 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
             onBlur={() => handleBlur('companyName')}
-            placeholder="Nombre de tu empresa"
-            className={getFieldClassName(isCompanyNameValid, Boolean(companyData.companyName), 'companyName')}
+            placeholder="Nombre real de tu empresa"
+            className={getFieldClassName(companyNameValidation.isValid, Boolean(companyData.companyName), 'companyName')}
           />
-          {shouldShowCheckIcon(isCompanyNameValid, Boolean(companyData.companyName), 'companyName') && (
+          {shouldShowCheckIcon(companyNameValidation.isValid, Boolean(companyData.companyName), 'companyName') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !isCompanyNameValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          {shouldShowErrorIcon('companyName') && (
+            <AlertCircle className="absolute right-3 top-10 h-4 w-4 text-red-500" />
+          )}
+          {getErrorMessage('companyName', companyNameValidation.isValid, 'Este campo es obligatorio') && (
+            <p className="text-red-500 text-sm mt-1">
+              {getErrorMessage('companyName', companyNameValidation.isValid, 'Este campo es obligatorio')}
+            </p>
           )}
         </div>
 
@@ -175,14 +224,19 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
             onBlur={() => handleBlur('email')}
-            placeholder="tu@empresa.com"
-            className={getFieldClassName(isEmailValid, Boolean(companyData.email), 'email')}
+            placeholder="tu@empresareal.com"
+            className={getFieldClassName(emailValidation.isValid, Boolean(companyData.email), 'email')}
           />
-          {shouldShowCheckIcon(isEmailValid, Boolean(companyData.email), 'email') && (
+          {shouldShowCheckIcon(emailValidation.isValid, Boolean(companyData.email), 'email') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !isEmailValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          {shouldShowErrorIcon('email') && (
+            <AlertCircle className="absolute right-3 top-10 h-4 w-4 text-red-500" />
+          )}
+          {getErrorMessage('email', emailValidation.isValid, 'Este campo es obligatorio') && (
+            <p className="text-red-500 text-sm mt-1">
+              {getErrorMessage('email', emailValidation.isValid, 'Este campo es obligatorio')}
+            </p>
           )}
         </div>
 
