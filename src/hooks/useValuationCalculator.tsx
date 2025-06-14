@@ -1,6 +1,8 @@
 
-import { useState, useCallback } from 'react';
+
+import { useState, useCallback, useEffect } from 'react';
 import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CompanyData {
   // Paso 1: Información básica
@@ -28,36 +30,23 @@ interface CompanyData {
 interface ValuationResult {
   revenueMultiple: number;
   ebitdaMultiple: number;
-  dcfValue: number;
-  assetValue: number;
   finalValuation: number;
   valuationRange: {
     min: number;
     max: number;
   };
   multiples: {
-    industry: number;
-    size: number;
-    growth: number;
-    profitability: number;
+    ebitdaMultipleUsed: number;
+    revenueMultipleUsed: number;
   };
 }
 
-const industryMultiples: Record<string, number> = {
-  'tecnologia': 5.2,
-  'salud': 3.8,
-  'manufactura': 2.1,
-  'retail': 1.4,
-  'servicios': 2.8,
-  'finanzas': 3.2,
-  'inmobiliario': 2.0,
-  'energia': 2.9,
-  'consultoria': 3.5,
-  'educacion': 2.3,
-  'turismo': 1.8,
-  'agricultura': 1.6,
-  'otro': 2.5
-};
+interface SectorMultiple {
+  sector_name: string;
+  ebitda_multiple: number;
+  revenue_multiple: number;
+  description: string;
+}
 
 // Función para validar CIF español
 const validateCIF = (cif: string): boolean => {
@@ -101,6 +90,7 @@ const validateCIF = (cif: string): boolean => {
 export const useValuationCalculator = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showValidation, setShowValidation] = useState(false);
+  const [sectorMultiples, setSectorMultiples] = useState<SectorMultiple[]>([]);
   const [companyData, setCompanyData] = useState<CompanyData>({
     // Paso 1
     contactName: '',
@@ -126,6 +116,30 @@ export const useValuationCalculator = () => {
 
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+
+  // Cargar múltiplos por sector desde Supabase
+  useEffect(() => {
+    const fetchSectorMultiples = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('sector_multiples')
+          .select('*')
+          .eq('is_active', true)
+          .order('sector_name');
+        
+        if (error) {
+          console.error('Error fetching sector multiples:', error);
+          return;
+        }
+        
+        setSectorMultiples(data || []);
+      } catch (error) {
+        console.error('Error fetching sector multiples:', error);
+      }
+    };
+
+    fetchSectorMultiples();
+  }, []);
 
   const updateField = useCallback((field: keyof CompanyData, value: string | number) => {
     setCompanyData(prev => ({
@@ -217,75 +231,42 @@ export const useValuationCalculator = () => {
     // Simular tiempo de cálculo
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const baseMultiple = industryMultiples[companyData.industry] || 2.5;
+    // Buscar múltiplos del sector seleccionado
+    const sectorData = sectorMultiples.find(s => s.sector_name === companyData.industry);
     
-    // Ajuste por tamaño basado en empleados
-    const getEmployeeSizeAdjustment = (range: string) => {
-      switch (range) {
-        case '1-10': return 0.8;
-        case '11-50': return 1.0;
-        case '51-200': return 1.2;
-        case '201-500': return 1.4;
-        case '500+': return 1.6;
-        default: return 1.0;
-      }
-    };
-    
-    const sizeAdjustment = getEmployeeSizeAdjustment(companyData.employeeRange);
-    
-    // Ajuste por años de operación
-    const experienceAdjustment = companyData.yearsOfOperation > 10 ? 1.2 :
-                                companyData.yearsOfOperation > 5 ? 1.1 :
-                                companyData.yearsOfOperation > 2 ? 1.0 : 0.9;
-    
-    // Ajuste por crecimiento
-    const growthAdjustment = companyData.growthRate > 25 ? 1.3 :
-                            companyData.growthRate > 15 ? 1.2 :
-                            companyData.growthRate > 10 ? 1.15 :
-                            companyData.growthRate > 5 ? 1.1 : 1.0;
-    
-    // Ajuste por rentabilidad
-    const profitMargin = companyData.ebitda / companyData.revenue;
-    const profitabilityAdjustment = profitMargin > 0.25 ? 1.25 :
-                                   profitMargin > 0.15 ? 1.15 :
-                                   profitMargin > 0.10 ? 1.1 : 
-                                   profitMargin > 0.05 ? 1.0 : 0.9;
+    if (!sectorData) {
+      console.error('No se encontraron múltiplos para el sector:', companyData.industry);
+      setIsCalculating(false);
+      return;
+    }
 
-    const adjustedMultiple = baseMultiple * sizeAdjustment * experienceAdjustment * growthAdjustment * profitabilityAdjustment;
+    // Calcular valoraciones usando múltiplos de la base de datos
+    const revenueValuation = companyData.revenue * sectorData.revenue_multiple;
+    const ebitdaValuation = companyData.ebitda * sectorData.ebitda_multiple;
 
-    // Diferentes métodos de valoración
-    const revenueMultiple = companyData.revenue * adjustedMultiple;
-    const ebitdaMultiple = companyData.ebitda * (adjustedMultiple * 3.5);
-    const dcfValue = companyData.ebitda * 7 * (1 + companyData.growthRate / 100);
-    const assetValue = companyData.revenue * 0.5;
-
-    // Valoración final ponderada
+    // Valoración final ponderada (70% EBITDA, 30% Facturación)
     const finalValuation = Math.round(
-      (revenueMultiple * 0.3 + ebitdaMultiple * 0.4 + dcfValue * 0.3)
+      (ebitdaValuation * 0.7 + revenueValuation * 0.3)
     );
     
     const valuationResult: ValuationResult = {
-      revenueMultiple: Math.round(revenueMultiple),
-      ebitdaMultiple: Math.round(ebitdaMultiple),
-      dcfValue: Math.round(dcfValue),
-      assetValue: Math.round(assetValue),
+      revenueMultiple: Math.round(revenueValuation),
+      ebitdaMultiple: Math.round(ebitdaValuation),
       finalValuation,
       valuationRange: {
-        min: Math.round(finalValuation * 0.75),
-        max: Math.round(finalValuation * 1.25)
+        min: Math.round(finalValuation * 0.8),
+        max: Math.round(finalValuation * 1.2)
       },
       multiples: {
-        industry: baseMultiple,
-        size: sizeAdjustment,
-        growth: growthAdjustment,
-        profitability: profitabilityAdjustment
+        ebitdaMultipleUsed: sectorData.ebitda_multiple,
+        revenueMultipleUsed: sectorData.revenue_multiple
       }
     };
 
     setResult(valuationResult);
     setIsCalculating(false);
     setCurrentStep(4); // Ir al paso de resultados
-  }, [companyData]);
+  }, [companyData, sectorMultiples]);
 
   const resetCalculator = useCallback(() => {
     setCompanyData({
@@ -316,6 +297,7 @@ export const useValuationCalculator = () => {
     result,
     isCalculating,
     showValidation,
+    sectorMultiples,
     updateField,
     nextStep,
     prevStep,
@@ -325,3 +307,4 @@ export const useValuationCalculator = () => {
     resetCalculator
   };
 };
+

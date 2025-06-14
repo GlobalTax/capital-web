@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { TrendingUp, DollarSign, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           <TrendingUp className="h-6 w-6 mr-3 text-blue-600" />
           Valoración de {companyData.companyName}
         </h2>
-        <p className="text-gray-600">Resultados basados en metodologías estándar del mercado</p>
+        <p className="text-gray-600">Resultados basados en múltiplos de mercado por sector</p>
       </div>
 
       {/* Valoración principal */}
@@ -67,52 +68,49 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         </div>
 
         <div className="bg-green-50 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Múltiplo de Ingresos</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Múltiplo Final</h3>
           <p className="text-3xl font-bold text-green-600 mb-2">
             {(result.finalValuation / companyData.revenue).toFixed(1)}x
           </p>
           <p className="text-sm text-gray-600">
-            Basado en {formatCurrency(companyData.revenue)} de ingresos
+            Sobre ingresos de {formatCurrency(companyData.revenue)}
           </p>
         </div>
       </div>
 
       {/* Métodos de valoración */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <h4 className="text-sm font-medium text-gray-600 mb-1">Múltiplo de Ingresos</h4>
-          <p className="text-xl font-bold text-gray-900">{formatCurrency(result.revenueMultiple)}</p>
+          <h4 className="text-sm font-medium text-gray-600 mb-1">Valoración por Facturación</h4>
+          <p className="text-xl font-bold text-gray-900 mb-1">{formatCurrency(result.revenueMultiple)}</p>
+          <p className="text-xs text-gray-500">{result.multiples.revenueMultipleUsed}x múltiplo de facturación</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <h4 className="text-sm font-medium text-gray-600 mb-1">Múltiplo EBITDA</h4>
-          <p className="text-xl font-bold text-gray-900">{formatCurrency(result.ebitdaMultiple)}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <h4 className="text-sm font-medium text-gray-600 mb-1">Valoración DCF</h4>
-          <p className="text-xl font-bold text-gray-900">{formatCurrency(result.dcfValue)}</p>
+          <h4 className="text-sm font-medium text-gray-600 mb-1">Valoración por EBITDA</h4>
+          <p className="text-xl font-bold text-gray-900 mb-1">{formatCurrency(result.ebitdaMultiple)}</p>
+          <p className="text-xs text-gray-500">{result.multiples.ebitdaMultipleUsed}x múltiplo de EBITDA</p>
         </div>
       </div>
 
-      {/* Factores de ajuste */}
+      {/* Información de múltiplos aplicados */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Factores de Ajuste Aplicados</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Múltiplos Aplicados por Sector</h3>
+        <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
-            <p className="text-sm text-gray-600">Sector</p>
-            <p className="text-lg font-bold text-blue-600">{result.multiples.industry}x</p>
+            <p className="text-sm text-gray-600">Múltiplo EBITDA</p>
+            <p className="text-lg font-bold text-blue-600">{result.multiples.ebitdaMultipleUsed}x</p>
+            <p className="text-xs text-gray-500">Peso: 70%</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600">Tamaño</p>
-            <p className="text-lg font-bold text-green-600">{result.multiples.size}x</p>
+            <p className="text-sm text-gray-600">Múltiplo Facturación</p>
+            <p className="text-lg font-bold text-green-600">{result.multiples.revenueMultipleUsed}x</p>
+            <p className="text-xs text-gray-500">Peso: 30%</p>
           </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Crecimiento</p>
-            <p className="text-lg font-bold text-purple-600">{result.multiples.growth}x</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Rentabilidad</p>
-            <p className="text-lg font-bold text-orange-600">{result.multiples.profitability}x</p>
-          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600 text-center">
+            Sector: <span className="font-semibold capitalize">{companyData.industry}</span>
+          </p>
         </div>
       </div>
 
@@ -138,7 +136,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           Aviso Importante
         </h3>
         <p className="text-sm text-yellow-700">
-          Esta valoración es una estimación basada en múltiplos de mercado generales y no debe considerarse 
+          Esta valoración es una estimación basada en múltiplos de mercado por sector y no debe considerarse 
           como asesoramiento financiero profesional. Para valoraciones empresariales precisas, consulte con 
           un asesor financiero cualificado o un experto en valoración empresarial.
         </p>
@@ -148,3 +146,4 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
 };
 
 export default Step4Results;
+
