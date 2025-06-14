@@ -31,7 +31,7 @@ const ValuationCalculator = () => {
   const isNextDisabled = !validateStep(currentStep) || isCalculating;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-white py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -48,7 +48,7 @@ const ValuationCalculator = () => {
           validateStep={validateStep}
         />
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-200">
           <StepContent
             currentStep={currentStep}
             companyData={companyData}

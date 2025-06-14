@@ -33,7 +33,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, va
                   isCompleted
                     ? 'bg-green-500 text-white'
                     : isCurrent
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-white text-gray-900 border-2 border-gray-900'
                     : isClickable
                     ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -42,7 +42,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, va
                 {isCompleted ? <Check className="w-5 h-5" /> : step.number}
               </button>
               <span className={`text-sm mt-2 text-center ${
-                isCurrent ? 'text-blue-600 font-medium' : 'text-gray-500'
+                isCurrent ? 'text-gray-900 font-medium' : 'text-gray-500'
               }`}>
                 {step.title}
               </span>

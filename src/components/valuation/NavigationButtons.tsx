@@ -22,7 +22,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         onClick={onPrev}
         variant="outline"
         disabled={currentStep === 1}
-        className="flex items-center"
+        className="flex items-center border-gray-900 text-gray-900 hover:bg-gray-100"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
         Anterior
@@ -35,7 +35,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       <Button
         onClick={onNext}
         disabled={isNextDisabled}
-        className="flex items-center bg-blue-600 hover:bg-blue-700 text-white"
+        className="flex items-center bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >
         {currentStep === 3 ? (
           <>
