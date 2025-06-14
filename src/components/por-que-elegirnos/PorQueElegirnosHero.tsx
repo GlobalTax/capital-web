@@ -27,7 +27,7 @@ const PorQueElegirnosHero = () => {
     <section className="bg-gradient-to-br from-gray-50 to-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h1 className="text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+          <h1 className="text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
             Por Qué Elegir
             <span className="block text-gray-600">Capittal</span>
           </h1>
