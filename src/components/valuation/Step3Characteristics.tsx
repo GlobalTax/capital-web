@@ -11,22 +11,30 @@ interface Step3Props {
 }
 
 const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, showValidation = false }) => {
+  const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
+
+  const handleBlur = (fieldName: string) => {
+    setTouchedFields(prev => new Set(prev).add(fieldName));
+  };
+
   const isLocationValid = Boolean(companyData.location);
   const isCompetitiveAdvantageValid = Boolean(companyData.competitiveAdvantage);
   const isMarketShareValid = true; // Este campo no es obligatorio
 
-  const getFieldClassName = (isValid: boolean, hasValue: boolean) => {
-    if (!showValidation) {
-      return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+  const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string, isRequired: boolean = true) => {
+    const isTouched = touchedFields.has(fieldName);
+    
+    if (!showValidation && !isTouched) {
+      return "w-full border-black focus:ring-black focus:border-black";
     }
     
-    if (isValid && hasValue) {
+    if (isValid && hasValue && (isTouched || showValidation)) {
       return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
-    } else if (!isValid && showValidation) {
+    } else if (!isValid && isRequired && (showValidation || (isTouched && hasValue))) {
       return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
     }
     
-    return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+    return "w-full border-black focus:ring-black focus:border-black";
   };
 
   return (
@@ -46,8 +54,9 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
             id="location"
             value={companyData.location}
             onChange={(e) => updateField('location', e.target.value)}
+            onBlur={() => handleBlur('location')}
             placeholder="Ciudad, Provincia"
-            className={getFieldClassName(isLocationValid, Boolean(companyData.location))}
+            className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}
           />
           {showValidation && !isLocationValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
@@ -66,8 +75,9 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
             max="100"
             value={companyData.marketShare || ''}
             onChange={(e) => updateField('marketShare', Number(e.target.value))}
+            onBlur={() => handleBlur('marketShare')}
             placeholder="0"
-            className={getFieldClassName(isMarketShareValid, Boolean(companyData.marketShare))}
+            className={getFieldClassName(isMarketShareValid, Boolean(companyData.marketShare), 'marketShare', false)}
           />
           <p className="text-sm text-gray-500 mt-1">Porcentaje aproximado de participación en tu mercado</p>
         </div>
@@ -82,9 +92,10 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
           id="competitiveAdvantage"
           value={companyData.competitiveAdvantage}
           onChange={(e) => updateField('competitiveAdvantage', e.target.value)}
+          onBlur={() => handleBlur('competitiveAdvantage')}
           placeholder="Describe qué hace única a tu empresa en el mercado..."
           rows={4}
-          className={getFieldClassName(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage))}
+          className={getFieldClassName(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage), 'competitiveAdvantage')}
         />
         <p className="text-sm text-gray-500 mt-1">
           Por ejemplo: tecnología propia, patents, base de clientes fiel, ubicación estratégica, etc.

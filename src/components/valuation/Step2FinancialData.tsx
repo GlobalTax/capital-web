@@ -10,22 +10,30 @@ interface Step2Props {
 }
 
 const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, showValidation = false }) => {
+  const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
+
+  const handleBlur = (fieldName: string) => {
+    setTouchedFields(prev => new Set(prev).add(fieldName));
+  };
+
   const isRevenueValid = Boolean(companyData.revenue > 0);
   const isEbitdaValid = Boolean(companyData.ebitda > 0);
   const isGrowthRateValid = true; // Este campo no es obligatorio
 
-  const getFieldClassName = (isValid: boolean, hasValue: boolean) => {
-    if (!showValidation) {
-      return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+  const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string, isRequired: boolean = true) => {
+    const isTouched = touchedFields.has(fieldName);
+    
+    if (!showValidation && !isTouched) {
+      return "w-full border-black focus:ring-black focus:border-black";
     }
     
-    if (isValid && hasValue) {
+    if (isValid && hasValue && (isTouched || showValidation)) {
       return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
-    } else if (!isValid && showValidation) {
+    } else if (!isValid && isRequired && (showValidation || (isTouched && hasValue))) {
       return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
     }
     
-    return "w-full border-gray-300 focus:ring-gray-500 focus:border-gray-500";
+    return "w-full border-black focus:ring-black focus:border-black";
   };
 
   return (
@@ -47,8 +55,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             min="0"
             value={companyData.revenue || ''}
             onChange={(e) => updateField('revenue', Number(e.target.value))}
+            onBlur={() => handleBlur('revenue')}
             placeholder="0"
-            className={getFieldClassName(isRevenueValid, Boolean(companyData.revenue))}
+            className={getFieldClassName(isRevenueValid, Boolean(companyData.revenue), 'revenue')}
           />
           <p className="text-sm text-gray-500 mt-1">Facturación anual total</p>
           {showValidation && !isRevenueValid && (
@@ -67,8 +76,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             min="0"
             value={companyData.ebitda || ''}
             onChange={(e) => updateField('ebitda', Number(e.target.value))}
+            onBlur={() => handleBlur('ebitda')}
             placeholder="0"
-            className={getFieldClassName(isEbitdaValid, Boolean(companyData.ebitda))}
+            className={getFieldClassName(isEbitdaValid, Boolean(companyData.ebitda), 'ebitda')}
           />
           <p className="text-sm text-gray-500 mt-1">Beneficio antes de intereses, impuestos, depreciaciones y amortizaciones</p>
           {showValidation && !isEbitdaValid && (
@@ -88,8 +98,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             max="100"
             value={companyData.growthRate || ''}
             onChange={(e) => updateField('growthRate', Number(e.target.value))}
+            onBlur={() => handleBlur('growthRate')}
             placeholder="0"
-            className={getFieldClassName(isGrowthRateValid, Boolean(companyData.growthRate))}
+            className={getFieldClassName(isGrowthRateValid, Boolean(companyData.growthRate), 'growthRate', false)}
           />
           <p className="text-sm text-gray-500 mt-1">Crecimiento promedio de ingresos en los últimos años</p>
         </div>
