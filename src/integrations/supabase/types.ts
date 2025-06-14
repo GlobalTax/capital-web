@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           description: string | null
           ebitda_multiple: number
+          employee_range: string | null
           id: string
           is_active: boolean
           last_updated: string
@@ -22,6 +23,7 @@ export type Database = {
         Insert: {
           description?: string | null
           ebitda_multiple: number
+          employee_range?: string | null
           id?: string
           is_active?: boolean
           last_updated?: string
@@ -31,6 +33,7 @@ export type Database = {
         Update: {
           description?: string | null
           ebitda_multiple?: number
+          employee_range?: string | null
           id?: string
           is_active?: boolean
           last_updated?: string
