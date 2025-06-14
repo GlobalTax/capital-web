@@ -33,10 +33,9 @@ export const menuData = {
     { label: 'Webinars', href: '/recursos/webinars' },
   ],
 
+  // Reducimos los elementos del menú principal
   navItems: [
-    { label: 'Casos de Éxito', href: '/casos-exito' },
-    { label: 'Contacto', href: '/contacto' },
-    { label: 'Equipo', href: '/equipo' },
     { label: 'Nosotros', href: '/nosotros' },
+    { label: 'Contacto', href: '/contacto' },
   ],
 };
