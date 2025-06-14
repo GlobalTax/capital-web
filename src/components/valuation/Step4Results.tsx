@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { generateValuationPDF } from '@/utils/pdfGenerator';
+import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import ToolRating from './ToolRating';
@@ -92,7 +92,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     setIsGeneratingPDF(true);
     
     try {
-      const pdfBlob = await generateValuationPDF(companyData, result);
+      const pdfBlob = await generateValuationPDFWithReactPDF(companyData, result);
       
       // Crear enlace de descarga
       const url = URL.createObjectURL(pdfBlob);
