@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { pdf } from '@react-pdf/renderer';
 import ValuationPDFDocument from '@/components/pdf/ValuationPDFDocument';
 
@@ -37,8 +38,14 @@ export const generateValuationPDFWithReactPDF = async (
   result: ValuationResult
 ): Promise<Blob> => {
   try {
-    // Crear el documento PDF usando React-PDF
-    const blob = await pdf(ValuationPDFDocument({ companyData, result })).toBlob();
+    // Crear el elemento JSX correctamente usando React.createElement
+    const pdfDocument = React.createElement(ValuationPDFDocument, {
+      companyData,
+      result
+    });
+    
+    // Generar el PDF
+    const blob = await pdf(pdfDocument).toBlob();
     
     return blob;
   } catch (error) {
