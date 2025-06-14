@@ -42,12 +42,12 @@ const Hero = () => {
           {/* Right Column - Video */}
           <div className="relative animate-fade-in">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl transform rotate-3"></div>
+            <div className="absolute inset-0 bg-white rounded-2xl transform rotate-3"></div>
             
             {/* Video container */}
             <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
               {/* Video placeholder - replace with your actual video */}
-              <div className="aspect-video bg-gray-100 flex items-center justify-center">
+              <div className="aspect-video bg-white flex items-center justify-center">
                 <video 
                   className="w-full h-full object-cover"
                   autoPlay
@@ -61,7 +61,7 @@ const Hero = () => {
                   <source src="/your-video.webm" type="video/webm" />
                   
                   {/* Fallback content if video doesn't load */}
-                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <div className="w-full h-full bg-white flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-gray-800 mb-2">Valoración Optimizada</div>
                       <div className="text-sm text-gray-600">Maximizamos el valor de tu empresa</div>
