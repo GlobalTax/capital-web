@@ -38,11 +38,8 @@ export const generateValuationPDFWithReactPDF = async (
   result: ValuationResult
 ): Promise<Blob> => {
   try {
-    // Crear el elemento JSX correctamente usando React.createElement
-    const pdfDocument = React.createElement(ValuationPDFDocument, {
-      companyData,
-      result
-    });
+    // Crear el documento PDF llamando directamente a la función del componente
+    const pdfDocument = ValuationPDFDocument({ companyData, result });
     
     // Generar el PDF
     const blob = await pdf(pdfDocument).toBlob();
