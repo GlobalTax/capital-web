@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 
 interface CompanyData {
@@ -13,6 +14,7 @@ interface CompanyData {
   // Paso 2: Datos financieros
   revenue: number;
   ebitda: number;
+  netProfitMargin: number;
   growthRate: number;
   
   // Paso 3: Características
@@ -110,6 +112,7 @@ export const useValuationCalculator = () => {
     // Paso 2
     revenue: 0,
     ebitda: 0,
+    netProfitMargin: 0,
     growthRate: 0,
     
     // Paso 3
@@ -174,7 +177,7 @@ export const useValuationCalculator = () => {
         
         return contactNameValid && companyNameValid && cifValid && emailValid && industryValid && yearsValid && employeeRangeValid;
       case 2:
-        return Boolean(companyData.revenue > 0 && companyData.ebitda > 0);
+        return Boolean(companyData.revenue > 0 && companyData.ebitda > 0 && companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
       case 3:
         return Boolean(companyData.location && companyData.competitiveAdvantage);
       default:
@@ -269,6 +272,7 @@ export const useValuationCalculator = () => {
       employeeRange: '',
       revenue: 0,
       ebitda: 0,
+      netProfitMargin: 0,
       growthRate: 0,
       location: '',
       marketShare: 0,

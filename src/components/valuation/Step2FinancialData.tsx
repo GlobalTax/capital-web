@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Check } from 'lucide-react';
+import { Check, Percent } from 'lucide-react';
 
 interface Step2Props {
   companyData: any;
@@ -37,6 +37,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
   const isRevenueValid = Boolean(companyData.revenue > 0);
   const isEbitdaValid = Boolean(companyData.ebitda > 0);
   const isGrowthRateValid = true; // Este campo no es obligatorio
+  const isNetProfitMarginValid = Boolean(companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
 
   const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string, isRequired: boolean = true) => {
     const isTouched = touchedFields.has(fieldName);
@@ -113,8 +114,37 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           )}
         </div>
 
+        {/* Margen de beneficio neto */}
+        <div className="relative">
+          <Label htmlFor="netProfitMargin" className="block text-sm font-medium text-gray-700 mb-2">
+            Margen de Beneficio Neto (%) *
+          </Label>
+          <div className="relative">
+            <Input
+              id="netProfitMargin"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={companyData.netProfitMargin || ''}
+              onChange={(e) => updateField('netProfitMargin', Number(e.target.value))}
+              onBlur={() => handleBlur('netProfitMargin')}
+              placeholder="Ej. 15.5"
+              className={getFieldClassName(isNetProfitMarginValid, Boolean(companyData.netProfitMargin), 'netProfitMargin')}
+            />
+            <Percent className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            {shouldShowCheckIcon(isNetProfitMarginValid, Boolean(companyData.netProfitMargin), 'netProfitMargin') && (
+              <Check className="absolute right-8 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">Beneficio neto como porcentaje de los ingresos</p>
+          {showValidation && !isNetProfitMarginValid && (
+            <p className="text-red-500 text-sm mt-1">Debe ser entre 0 y 100</p>
+          )}
+        </div>
+
         {/* Tasa de crecimiento */}
-        <div className="md:col-span-2 relative">
+        <div className="relative">
           <Label htmlFor="growthRate" className="block text-sm font-medium text-gray-700 mb-2">
             Tasa de Crecimiento Anual (%)
           </Label>
