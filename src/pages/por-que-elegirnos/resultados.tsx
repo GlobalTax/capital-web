@@ -63,7 +63,7 @@ const Resultados = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <div className="pt-16">
-        <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h1 className="text-5xl font-bold text-black mb-6">
@@ -79,7 +79,7 @@ const Resultados = () => {
               {metrics.map((metric, index) => {
                 const Icon = metric.icon;
                 return (
-                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 text-center">
+                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-100">
                     <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                       <Icon className="h-6 w-6" />
                     </div>
@@ -103,7 +103,7 @@ const Resultados = () => {
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {caseStudies.map((study, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-lg p-6">
+                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium inline-block mb-4">
                       {study.sector}
                     </div>
@@ -132,14 +132,14 @@ const Resultados = () => {
               </div>
             </div>
 
-            <div className="bg-black text-white rounded-2xl p-8 text-center">
+            <div className="bg-white border-2 border-black text-black rounded-2xl p-8 text-center">
               <h2 className="text-3xl font-bold mb-4">
                 ¿Listo para maximizar el valor de tu empresa?
               </h2>
-              <p className="text-xl mb-6 opacity-90">
+              <p className="text-xl mb-6 text-gray-600">
                 Únete a los cientos de empresarios que han confiado en nosotros
               </p>
-              <button className="bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              <button className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
                 Solicitar Consulta Gratuita
               </button>
             </div>
