@@ -13,6 +13,7 @@ import CasosExito from "./pages/CasosExito";
 import Equipo from "./pages/Equipo";
 import Contacto from "./pages/Contacto";
 import VentaEmpresas from "./pages/VentaEmpresas";
+import CalculadoraValoracion from "./pages/CalculadoraValoracion";
 
 // Por Qué Elegirnos
 import PorQueElegirnos from "./pages/por-que-elegirnos";
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
+          <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
           
           {/* Por Qué Elegirnos */}
           <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
