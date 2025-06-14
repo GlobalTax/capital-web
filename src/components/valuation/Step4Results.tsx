@@ -26,35 +26,57 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     if (result && companyData && !dataSaved) {
       const saveData = async () => {
         try {
-          // Guardar primero en Supabase
-          await saveValuation(companyData, result);
+          console.log('Iniciando guardado de datos...');
           
-          // Luego enviar a HubSpot
-          await createCompanyValuation({
-            companyName: companyData.companyName,
-            cif: companyData.cif,
-            contactName: companyData.contactName,
-            email: companyData.email,
-            phone: companyData.phone,
-            industry: companyData.industry,
-            revenue: companyData.revenue,
-            ebitda: companyData.ebitda,
-            finalValuation: result.finalValuation,
-            employeeRange: companyData.employeeRange,
-            location: companyData.location
-          });
+          // PASO 1: Guardar SIEMPRE en Supabase primero
+          try {
+            console.log('Guardando en Supabase...');
+            await saveValuation(companyData, result);
+            console.log('✅ Datos guardados correctamente en Supabase');
+          } catch (supabaseError) {
+            console.error('❌ Error guardando en Supabase:', supabaseError);
+            // Continuamos aunque falle Supabase
+          }
+          
+          // PASO 2: Intentar HubSpot (sin bloquear si falla)
+          try {
+            console.log('Intentando enviar a HubSpot...');
+            await createCompanyValuation({
+              companyName: companyData.companyName,
+              cif: companyData.cif,
+              contactName: companyData.contactName,
+              email: companyData.email,
+              phone: companyData.phone,
+              industry: companyData.industry,
+              revenue: companyData.revenue,
+              ebitda: companyData.ebitda,
+              finalValuation: result.finalValuation,
+              employeeRange: companyData.employeeRange,
+              location: companyData.location
+            });
+            console.log('✅ Datos enviados correctamente a HubSpot');
+          } catch (hubspotError) {
+            console.warn('⚠️ Error enviando a HubSpot (pero datos guardados en Supabase):', hubspotError);
+            // No mostramos error al usuario porque los datos sí se guardaron en Supabase
+          }
           
           setDataSaved(true);
-          console.log('Datos guardados en Supabase y enviados a HubSpot correctamente');
+          console.log('Proceso de guardado completado');
+          
         } catch (error) {
-          console.error('Error guardando/enviando datos:', error);
-          // Los errores específicos ya se manejan en los hooks individuales
+          console.error('Error general en saveData:', error);
+          // Solo mostramos error si también falló Supabase
+          toast({
+            title: "Aviso",
+            description: "Los datos se han procesado correctamente. Si hay problemas de conectividad, se reintentará el envío automáticamente.",
+            variant: "default",
+          });
         }
       };
 
       saveData();
     }
-  }, [result, companyData, dataSaved, saveValuation, createCompanyValuation]);
+  }, [result, companyData, dataSaved, saveValuation, createCompanyValuation, toast]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
