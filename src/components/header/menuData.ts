@@ -13,6 +13,8 @@ export const menuData = {
     { label: 'Fusiones y Adquisiciones', href: '/servicios/fusiones-adquisiciones' },
     { label: 'Reestructuraciones', href: '/servicios/reestructuraciones' },
     { label: 'Valoraciones', href: '/servicios/valoraciones' },
+    { label: 'Venta de Empresas', href: '/venta-empresas' },
+    { label: 'Compra de Empresas', href: '/compra-empresas' },
   ],
 
   sectoresItems: [
@@ -36,6 +38,5 @@ export const menuData = {
     { label: 'Contacto', href: '/contacto' },
     { label: 'Equipo', href: '/equipo' },
     { label: 'Nosotros', href: '/nosotros' },
-    { label: 'Venta Empresas', href: '/venta-empresas' },
   ],
 };
