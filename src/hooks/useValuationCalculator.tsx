@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 interface CompanyData {
@@ -131,6 +130,7 @@ export const useValuationCalculator = () => {
 
   const nextStep = useCallback(() => {
     const isValid = validateStep(currentStep);
+    console.log('Validation result for step', currentStep, ':', isValid);
     if (!isValid) {
       setShowValidation(true);
       return;
@@ -150,18 +150,29 @@ export const useValuationCalculator = () => {
   }, []);
 
   const validateStep = useCallback((step: number): boolean => {
+    console.log('Validating step', step);
+    console.log('Company data:', companyData);
+    
     switch (step) {
       case 1:
-        return Boolean(
-          companyData.contactName && 
-          companyData.companyName && 
-          companyData.cif && 
-          validateCIF(companyData.cif) &&
-          companyData.email && 
-          companyData.industry && 
-          companyData.yearsOfOperation > 0 && 
-          companyData.employeeRange
-        );
+        const contactNameValid = Boolean(companyData.contactName);
+        const companyNameValid = Boolean(companyData.companyName);
+        const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
+        const emailValid = Boolean(companyData.email);
+        const industryValid = Boolean(companyData.industry);
+        const yearsValid = Boolean(companyData.yearsOfOperation > 0);
+        const employeeRangeValid = Boolean(companyData.employeeRange);
+        
+        console.log('Step 1 validation breakdown:');
+        console.log('- contactName:', companyData.contactName, '-> valid:', contactNameValid);
+        console.log('- companyName:', companyData.companyName, '-> valid:', companyNameValid);
+        console.log('- cif:', companyData.cif, '-> valid:', cifValid);
+        console.log('- email:', companyData.email, '-> valid:', emailValid);
+        console.log('- industry:', companyData.industry, '-> valid:', industryValid);
+        console.log('- yearsOfOperation:', companyData.yearsOfOperation, '-> valid:', yearsValid);
+        console.log('- employeeRange:', companyData.employeeRange, '-> valid:', employeeRangeValid);
+        
+        return contactNameValid && companyNameValid && cifValid && emailValid && industryValid && yearsValid && employeeRangeValid;
       case 2:
         return Boolean(companyData.revenue > 0 && companyData.ebitda > 0);
       case 3:
