@@ -42,12 +42,12 @@ const VentaEmpresasValuation = () => {
   ];
 
   const multiples = [
-    { sector: 'Tecnología/SaaS', range: '4x - 8x', median: '6x' },
-    { sector: 'Healthcare', range: '3x - 6x', median: '4.5x' },
-    { sector: 'Manufacturing', range: '2x - 4x', median: '3x' },
-    { sector: 'Retail/Consumer', range: '1.5x - 3x', median: '2.25x' },
-    { sector: 'Financial Services', range: '2x - 5x', median: '3.5x' },
-    { sector: 'Industrial', range: '2.5x - 4.5x', median: '3.5x' }
+    { sector: 'Salud', range: '3.6x - 8.3x', median: '7.2x', description: 'Múltiplos más altos del mercado' },
+    { sector: 'Tecnología', range: '3.4x - 7.8x', median: '6.8x', description: 'Sector de alto crecimiento' },
+    { sector: 'Finanzas', range: '3.2x - 7.5x', median: '6.3x', description: 'Estabilidad y regulación' },
+    { sector: 'Manufactura', range: '3.3x - 7.2x', median: '6.2x', description: 'Capital intensivo' },
+    { sector: 'Servicios', range: '2.9x - 6.7x', median: '5.8x', description: 'Amplio espectro' },
+    { sector: 'Retail', range: '2.6x - 6.4x', median: '5.2x', description: 'Competencia intensa' }
   ];
 
   return (
@@ -100,7 +100,7 @@ const VentaEmpresasValuation = () => {
 
           <div>
             <h3 className="text-2xl font-bold text-black mb-8">
-              Múltiplos por Sector
+              Múltiplos EBITDA por Sector
             </h3>
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="space-y-4">
@@ -108,7 +108,7 @@ const VentaEmpresasValuation = () => {
                   <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
                     <div>
                       <div className="font-semibold text-black">{multiple.sector}</div>
-                      <div className="text-sm text-gray-600">Rango típico</div>
+                      <div className="text-sm text-gray-600">{multiple.description}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-lg text-black">{multiple.median}</div>
@@ -120,8 +120,8 @@ const VentaEmpresasValuation = () => {
               
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>Nota:</strong> Los múltiplos están basados en EBITDA y pueden variar 
-                  significativamente según el tamaño, crecimiento y características específicas de cada empresa.
+                  <strong>Nota:</strong> Los múltiplos varían significativamente según el tamaño de la empresa, 
+                  crecimiento y características específicas. El sector salud presenta los múltiplos más altos del mercado.
                 </p>
               </div>
             </div>

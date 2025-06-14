@@ -1,5 +1,4 @@
 
-
 import { useState, useCallback, useEffect } from 'react';
 import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,6 +42,7 @@ interface ValuationResult {
 
 interface SectorMultiple {
   sector_name: string;
+  employee_range: string;
   ebitda_multiple: number;
   revenue_multiple: number;
   description: string;
@@ -231,16 +231,19 @@ export const useValuationCalculator = () => {
     // Simular tiempo de cálculo
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Buscar múltiplos del sector seleccionado
-    const sectorData = sectorMultiples.find(s => s.sector_name === companyData.industry);
+    // Buscar múltiplos del sector y rango de empleados seleccionados
+    const sectorData = sectorMultiples.find(s => 
+      s.sector_name === companyData.industry && 
+      s.employee_range === companyData.employeeRange
+    );
     
     if (!sectorData) {
-      console.error('No se encontraron múltiplos para el sector:', companyData.industry);
+      console.error('No se encontraron múltiplos para el sector:', companyData.industry, 'y rango:', companyData.employeeRange);
       setIsCalculating(false);
       return;
     }
 
-    // Calcular valoraciones usando múltiplos de la base de datos
+    // Calcular valoraciones usando múltiplos específicos de la base de datos
     const revenueValuation = companyData.revenue * sectorData.revenue_multiple;
     const ebitdaValuation = companyData.ebitda * sectorData.ebitda_multiple;
 
@@ -307,4 +310,3 @@ export const useValuationCalculator = () => {
     resetCalculator
   };
 };
-
