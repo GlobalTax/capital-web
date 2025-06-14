@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 
 const Hero = () => {
   return (
@@ -39,35 +39,24 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Column - Video */}
+          {/* Right Column - Video/Content */}
           <div className="relative animate-fade-in">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-white rounded-2xl transform rotate-3"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl transform rotate-3 opacity-20"></div>
             
-            {/* Video container */}
-            <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-              {/* Video placeholder - replace with your actual video */}
-              <div className="aspect-video bg-white flex items-center justify-center">
-                <video 
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  poster="/placeholder.svg"
-                >
-                  {/* Replace with your actual video file */}
-                  <source src="/your-video.mp4" type="video/mp4" />
-                  <source src="/your-video.webm" type="video/webm" />
-                  
-                  {/* Fallback content if video doesn't load */}
-                  <div className="w-full h-full bg-white flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-800 mb-2">Valoración Optimizada</div>
-                      <div className="text-sm text-gray-600">Maximizamos el valor de tu empresa</div>
-                    </div>
+            {/* Main content container */}
+            <div className="relative bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+              {/* Content area */}
+              <div className="aspect-video bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-8">
+                <div className="text-center">
+                  <div className="bg-black text-white w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto hover:scale-110 transition-transform duration-300 cursor-pointer">
+                    <Play size={24} fill="white" />
                   </div>
-                </video>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Valoración Optimizada</h3>
+                  <p className="text-gray-600 max-w-sm">
+                    Descubre cómo maximizamos el valor de tu empresa a través de nuestro proceso probado
+                  </p>
+                </div>
               </div>
             </div>
           </div>
