@@ -17,6 +17,23 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
     setTouchedFields(prev => new Set(prev).add(fieldName));
   };
 
+  // Función para formatear números con puntos como separadores de miles
+  const formatNumber = (num: number): string => {
+    if (!num || num === 0) return '';
+    return num.toLocaleString('es-ES');
+  };
+
+  // Función para parsear números desde el input (remover puntos)
+  const parseNumber = (value: string): number => {
+    const cleanValue = value.replace(/\./g, '');
+    return Number(cleanValue) || 0;
+  };
+
+  const handleNumberChange = (field: string, value: string) => {
+    const numericValue = parseNumber(value);
+    updateField(field, numericValue);
+  };
+
   const isRevenueValid = Boolean(companyData.revenue > 0);
   const isEbitdaValid = Boolean(companyData.ebitda > 0);
   const isGrowthRateValid = true; // Este campo no es obligatorio
@@ -57,12 +74,11 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           </Label>
           <Input
             id="revenue"
-            type="number"
-            min="0"
-            value={companyData.revenue || ''}
-            onChange={(e) => updateField('revenue', Number(e.target.value))}
+            type="text"
+            value={formatNumber(companyData.revenue)}
+            onChange={(e) => handleNumberChange('revenue', e.target.value)}
             onBlur={() => handleBlur('revenue')}
-            placeholder="0"
+            placeholder="Ej. 500.000"
             className={getFieldClassName(isRevenueValid, Boolean(companyData.revenue), 'revenue')}
           />
           {shouldShowCheckIcon(isRevenueValid, Boolean(companyData.revenue), 'revenue') && (
@@ -81,12 +97,11 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
           </Label>
           <Input
             id="ebitda"
-            type="number"
-            min="0"
-            value={companyData.ebitda || ''}
-            onChange={(e) => updateField('ebitda', Number(e.target.value))}
+            type="text"
+            value={formatNumber(companyData.ebitda)}
+            onChange={(e) => handleNumberChange('ebitda', e.target.value)}
             onBlur={() => handleBlur('ebitda')}
-            placeholder="0"
+            placeholder="Ej. 100.000"
             className={getFieldClassName(isEbitdaValid, Boolean(companyData.ebitda), 'ebitda')}
           />
           {shouldShowCheckIcon(isEbitdaValid, Boolean(companyData.ebitda), 'ebitda') && (
@@ -111,7 +126,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             value={companyData.growthRate || ''}
             onChange={(e) => updateField('growthRate', Number(e.target.value))}
             onBlur={() => handleBlur('growthRate')}
-            placeholder="0"
+            placeholder="Ej. 15"
             className={getFieldClassName(isGrowthRateValid, Boolean(companyData.growthRate), 'growthRate', false)}
           />
           {shouldShowCheckIcon(isGrowthRateValid, Boolean(companyData.growthRate), 'growthRate') && (
