@@ -55,6 +55,45 @@ const industryMultiples: Record<string, number> = {
   'otro': 2.5
 };
 
+// Función para validar CIF español
+const validateCIF = (cif: string): boolean => {
+  if (!cif || cif.length !== 9) return false;
+  
+  const cifRegex = /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/;
+  if (!cifRegex.test(cif.toUpperCase())) return false;
+  
+  const letter = cif.charAt(0).toUpperCase();
+  const numbers = cif.substring(1, 8);
+  const control = cif.charAt(8).toUpperCase();
+  
+  // Calcular dígito de control
+  let sum = 0;
+  for (let i = 0; i < numbers.length; i++) {
+    let digit = parseInt(numbers.charAt(i));
+    if (i % 2 === 1) { // posiciones pares (índice impar)
+      sum += digit;
+    } else { // posiciones impares (índice par)
+      digit *= 2;
+      sum += digit > 9 ? digit - 9 : digit;
+    }
+  }
+  
+  const controlNumber = (10 - (sum % 10)) % 10;
+  const controlLetter = 'JABCDEFGHI'.charAt(controlNumber);
+  
+  // Verificar según el tipo de organización
+  const numberControl = ['A', 'B', 'E', 'H'].includes(letter);
+  const letterControl = ['K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'W'].includes(letter);
+  
+  if (numberControl) {
+    return control === controlNumber.toString();
+  } else if (letterControl) {
+    return control === controlLetter;
+  } else {
+    return control === controlNumber.toString() || control === controlLetter;
+  }
+};
+
 export const useValuationCalculator = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [companyData, setCompanyData] = useState<CompanyData>({
@@ -107,6 +146,7 @@ export const useValuationCalculator = () => {
           companyData.contactName && 
           companyData.companyName && 
           companyData.cif && 
+          validateCIF(companyData.cif) &&
           companyData.email && 
           companyData.industry && 
           companyData.yearsOfOperation > 0 && 

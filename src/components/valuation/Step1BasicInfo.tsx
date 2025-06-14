@@ -9,7 +9,48 @@ interface Step1Props {
   updateField: (field: string, value: string | number) => void;
 }
 
+// Función para validar CIF español
+const validateCIF = (cif: string): boolean => {
+  if (!cif || cif.length !== 9) return false;
+  
+  const cifRegex = /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/;
+  if (!cifRegex.test(cif.toUpperCase())) return false;
+  
+  const letter = cif.charAt(0).toUpperCase();
+  const numbers = cif.substring(1, 8);
+  const control = cif.charAt(8).toUpperCase();
+  
+  // Calcular dígito de control
+  let sum = 0;
+  for (let i = 0; i < numbers.length; i++) {
+    let digit = parseInt(numbers.charAt(i));
+    if (i % 2 === 1) { // posiciones pares (índice impar)
+      sum += digit;
+    } else { // posiciones impares (índice par)
+      digit *= 2;
+      sum += digit > 9 ? digit - 9 : digit;
+    }
+  }
+  
+  const controlNumber = (10 - (sum % 10)) % 10;
+  const controlLetter = 'JABCDEFGHI'.charAt(controlNumber);
+  
+  // Verificar según el tipo de organización
+  const numberControl = ['A', 'B', 'E', 'H'].includes(letter);
+  const letterControl = ['K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'W'].includes(letter);
+  
+  if (numberControl) {
+    return control === controlNumber.toString();
+  } else if (letterControl) {
+    return control === controlLetter;
+  } else {
+    return control === controlNumber.toString() || control === controlLetter;
+  }
+};
+
 const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
+  const isCifValid = !companyData.cif || validateCIF(companyData.cif);
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -28,7 +69,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
             placeholder="Tu nombre completo"
-            className="w-full"
+            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
           />
         </div>
 
@@ -42,7 +83,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
             placeholder="Nombre de tu empresa"
-            className="w-full"
+            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
           />
         </div>
 
@@ -54,10 +95,20 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
           <Input
             id="cif"
             value={companyData.cif}
-            onChange={(e) => updateField('cif', e.target.value)}
+            onChange={(e) => updateField('cif', e.target.value.toUpperCase())}
             placeholder="A12345678"
-            className="w-full"
+            className={`w-full ${
+              isCifValid 
+                ? 'border-green-500 focus:ring-green-500 focus:border-green-500' 
+                : 'border-red-500 focus:ring-red-500 focus:border-red-500'
+            }`}
+            maxLength={9}
           />
+          {!isCifValid && companyData.cif && (
+            <p className="text-red-500 text-sm mt-1">
+              CIF inválido. Formato: Letra + 7 dígitos + dígito/letra de control
+            </p>
+          )}
         </div>
 
         {/* Email */}
@@ -71,7 +122,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
             placeholder="tu@empresa.com"
-            className="w-full"
+            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
           />
         </div>
 
@@ -81,7 +132,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             Sector *
           </Label>
           <Select value={companyData.industry} onValueChange={(value) => updateField('industry', value)}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full border-green-500 focus:ring-green-500 focus:border-green-500">
               <SelectValue placeholder="Selecciona el sector" />
             </SelectTrigger>
             <SelectContent>
@@ -114,7 +165,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             value={companyData.yearsOfOperation || ''}
             onChange={(e) => updateField('yearsOfOperation', Number(e.target.value))}
             placeholder="0"
-            className="w-full"
+            className="w-full border-green-500 focus:ring-green-500 focus:border-green-500"
           />
         </div>
 
@@ -124,7 +175,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField }) => {
             Número de empleados *
           </Label>
           <Select value={companyData.employeeRange} onValueChange={(value) => updateField('employeeRange', value)}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full border-green-500 focus:ring-green-500 focus:border-green-500">
               <SelectValue placeholder="Selecciona el rango" />
             </SelectTrigger>
             <SelectContent>
