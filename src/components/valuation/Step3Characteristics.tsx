@@ -3,6 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check } from 'lucide-react';
 
 interface Step3Props {
@@ -10,6 +11,22 @@ interface Step3Props {
   updateField: (field: string, value: string | number) => void;
   showValidation?: boolean;
 }
+
+const provincesSpain = [
+  'Álava', 'Albacete', 'Alicante', 'Almería', 'Asturias', 'Ávila', 'Badajoz', 'Baleares',
+  'Barcelona', 'Burgos', 'Cáceres', 'Cádiz', 'Cantabria', 'Castellón', 'Ciudad Real',
+  'Córdoba', 'Coruña (A)', 'Cuenca', 'Girona', 'Granada', 'Guadalajara', 'Gipuzkoa',
+  'Huelva', 'Huesca', 'Jaén', 'León', 'Lleida', 'Lugo', 'Madrid', 'Málaga', 'Murcia',
+  'Navarra', 'Ourense', 'Palencia', 'Palmas (Las)', 'Pontevedra', 'Rioja (La)',
+  'Salamanca', 'Santa Cruz de Tenerife', 'Segovia', 'Sevilla', 'Soria', 'Tarragona',
+  'Teruel', 'Toledo', 'Valencia', 'Valladolid', 'Bizkaia', 'Zamora', 'Zaragoza'
+];
+
+const ownershipParticipation = [
+  { value: 'alta', label: 'Alta (>75%)' },
+  { value: 'media', label: 'Media (25-75%)' },
+  { value: 'baja', label: 'Baja (<25%)' }
+];
 
 const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, showValidation = false }) => {
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
@@ -20,7 +37,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
 
   const isLocationValid = Boolean(companyData.location);
   const isCompetitiveAdvantageValid = Boolean(companyData.competitiveAdvantage);
-  const isMarketShareValid = true; // Este campo no es obligatorio
+  const isOwnershipParticipationValid = Boolean(companyData.ownershipParticipation);
 
   const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string, isRequired: boolean = true) => {
     const isTouched = touchedFields.has(fieldName);
@@ -56,42 +73,62 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
           <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
             Ubicación principal *
           </Label>
-          <Input
-            id="location"
+          <Select
             value={companyData.location}
-            onChange={(e) => updateField('location', e.target.value)}
-            onBlur={() => handleBlur('location')}
-            placeholder="Ciudad, Provincia"
-            className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}
-          />
+            onValueChange={(value) => {
+              updateField('location', value);
+              handleBlur('location');
+            }}
+          >
+            <SelectTrigger className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}>
+              <SelectValue placeholder="Selecciona una provincia" />
+            </SelectTrigger>
+            <SelectContent className="bg-white shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
+              {provincesSpain.map((province) => (
+                <SelectItem key={province} value={province} className="hover:bg-gray-100">
+                  {province}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {shouldShowCheckIcon(isLocationValid, Boolean(companyData.location), 'location') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
           )}
           {showValidation && !isLocationValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
-        {/* Cuota de mercado */}
+        {/* Participación de la propiedad */}
         <div className="relative">
-          <Label htmlFor="marketShare" className="block text-sm font-medium text-gray-700 mb-2">
-            Cuota de mercado estimada (%)
+          <Label htmlFor="ownershipParticipation" className="block text-sm font-medium text-gray-700 mb-2">
+            Participación de la propiedad *
           </Label>
-          <Input
-            id="marketShare"
-            type="number"
-            min="0"
-            max="100"
-            value={companyData.marketShare || ''}
-            onChange={(e) => updateField('marketShare', Number(e.target.value))}
-            onBlur={() => handleBlur('marketShare')}
-            placeholder="0"
-            className={getFieldClassName(isMarketShareValid, Boolean(companyData.marketShare), 'marketShare', false)}
-          />
-          {shouldShowCheckIcon(isMarketShareValid, Boolean(companyData.marketShare), 'marketShare') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          <Select
+            value={companyData.ownershipParticipation}
+            onValueChange={(value) => {
+              updateField('ownershipParticipation', value);
+              handleBlur('ownershipParticipation');
+            }}
+          >
+            <SelectTrigger className={getFieldClassName(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation')}>
+              <SelectValue placeholder="Selecciona el nivel de participación" />
+            </SelectTrigger>
+            <SelectContent className="bg-white shadow-lg border border-gray-200 z-50">
+              {ownershipParticipation.map((option) => (
+                <SelectItem key={option.value} value={option.value} className="hover:bg-gray-100">
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {shouldShowCheckIcon(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation') && (
+            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
           )}
-          <p className="text-sm text-gray-500 mt-1">Porcentaje aproximado de participación en tu mercado</p>
+          <p className="text-sm text-gray-500 mt-1">Nivel de participación que posees en la empresa</p>
+          {showValidation && !isOwnershipParticipationValid && (
+            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          )}
         </div>
       </div>
 
@@ -113,7 +150,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
           <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
         )}
         <p className="text-sm text-gray-500 mt-1">
-          Por ejemplo: tecnología propia, patents, base de clientes fiel, ubicación estratégica, etc.
+          Por ejemplo: tecnología propia, patentes, base de clientes fiel, ubicación estratégica, etc.
         </p>
         {showValidation && !isCompetitiveAdvantageValid && (
           <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>

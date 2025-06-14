@@ -20,7 +20,7 @@ interface CompanyData {
   
   // Paso 3: Características
   location: string;
-  marketShare: number;
+  ownershipParticipation: string;
   competitiveAdvantage: string;
 }
 
@@ -119,7 +119,7 @@ export const useValuationCalculator = () => {
     
     // Paso 3
     location: '',
-    marketShare: 0,
+    ownershipParticipation: '',
     competitiveAdvantage: ''
   });
 
@@ -183,7 +183,7 @@ export const useValuationCalculator = () => {
       case 2:
         return Boolean(companyData.revenue > 0 && companyData.ebitda > 0 && companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
       case 3:
-        return Boolean(companyData.location && companyData.competitiveAdvantage);
+        return Boolean(companyData.location && companyData.ownershipParticipation && companyData.competitiveAdvantage);
       default:
         return true;
     }
@@ -280,7 +280,7 @@ export const useValuationCalculator = () => {
       netProfitMargin: 0,
       growthRate: 0,
       location: '',
-      marketShare: 0,
+      ownershipParticipation: '',
       competitiveAdvantage: ''
     });
     setResult(null);
