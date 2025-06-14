@@ -1,8 +1,5 @@
+
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Phone, AlertCircle } from 'lucide-react';
 import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
 
 interface Step1Props {
@@ -51,310 +48,187 @@ const validateCIF = (cif: string): boolean => {
 };
 
 const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showValidation = false }) => {
-  const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
-  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
-
-  const handleBlur = (fieldName: string) => {
-    setTouchedFields(prev => new Set(prev).add(fieldName));
-    
-    // Validar inmediatamente cuando el usuario sale del campo
-    if (fieldName === 'contactName') {
-      const validation = validateContactName(companyData.contactName);
-      setValidationErrors(prev => ({
-        ...prev,
-        contactName: validation.isValid ? '' : validation.message || ''
-      }));
-    } else if (fieldName === 'companyName') {
-      const validation = validateCompanyName(companyData.companyName);
-      setValidationErrors(prev => ({
-        ...prev,
-        companyName: validation.isValid ? '' : validation.message || ''
-      }));
-    } else if (fieldName === 'email') {
-      const validation = validateEmail(companyData.email);
-      setValidationErrors(prev => ({
-        ...prev,
-        email: validation.isValid ? '' : validation.message || ''
-      }));
-    }
-  };
-
   const contactNameValidation = validateContactName(companyData.contactName);
   const companyNameValidation = validateCompanyName(companyData.companyName);
   const emailValidation = validateEmail(companyData.email);
-  const isCifValid = Boolean(companyData.cif && validateCIF(companyData.cif));
-  const isPhoneValid = Boolean(companyData.phone);
-  const isIndustryValid = Boolean(companyData.industry);
-  const isYearsValid = Boolean(companyData.yearsOfOperation > 0);
-  const isEmployeeRangeValid = Boolean(companyData.employeeRange);
-
-  const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string) => {
-    const isTouched = touchedFields.has(fieldName);
-    const hasError = Boolean(validationErrors[fieldName]) || (!isValid && (showValidation || isTouched));
-    
-    if (!showValidation && !isTouched) {
-      return "w-full border-black focus:ring-black focus:border-black";
-    }
-    
-    if (hasError) {
-      return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
-    } else if (isValid && hasValue && (isTouched || showValidation)) {
-      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500 pr-10";
-    }
-    
-    return "w-full border-black focus:ring-black focus:border-black";
-  };
-
-  const shouldShowCheckIcon = (isValid: boolean, hasValue: boolean, fieldName: string) => {
-    const isTouched = touchedFields.has(fieldName);
-    const hasError = Boolean(validationErrors[fieldName]);
-    return isValid && hasValue && (isTouched || showValidation) && !hasError;
-  };
-
-  const shouldShowErrorIcon = (fieldName: string) => {
-    const isTouched = touchedFields.has(fieldName);
-    return Boolean(validationErrors[fieldName]) && (isTouched || showValidation);
-  };
-
-  const getErrorMessage = (fieldName: string, defaultValid: boolean, defaultMessage: string) => {
-    if (validationErrors[fieldName]) {
-      return validationErrors[fieldName];
-    }
-    if (showValidation && !defaultValid) {
-      return defaultMessage;
-    }
-    return '';
-  };
+  const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Información Básica</h2>
-        <p className="text-gray-600">Proporciona los datos fundamentales de tu empresa</p>
-      </div>
-
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Información Básica</h2>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Nombre de contacto */}
-        <div className="relative">
-          <Label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
-            Nombre de la persona de contacto *
-          </Label>
-          <Input
+        <div>
+          <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
+            Nombre de contacto *
+          </label>
+          <input
+            type="text"
             id="contactName"
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
-            onBlur={() => handleBlur('contactName')}
-            placeholder="Tu nombre completo"
-            className={getFieldClassName(contactNameValidation.isValid, Boolean(companyData.contactName), 'contactName')}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !contactNameValidation.isValid ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="Ingrese su nombre completo"
           />
-          {shouldShowCheckIcon(contactNameValidation.isValid, Boolean(companyData.contactName), 'contactName') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {shouldShowErrorIcon('contactName') && (
-            <AlertCircle className="absolute right-3 top-10 h-4 w-4 text-red-500" />
-          )}
-          {getErrorMessage('contactName', contactNameValidation.isValid, 'Este campo es obligatorio') && (
-            <p className="text-red-500 text-sm mt-1">
-              {getErrorMessage('contactName', contactNameValidation.isValid, 'Este campo es obligatorio')}
-            </p>
+          {showValidation && !contactNameValidation.isValid && (
+            <p className="mt-1 text-sm text-red-600">{contactNameValidation.error}</p>
           )}
         </div>
 
-        {/* Nombre de la empresa */}
-        <div className="relative">
-          <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+        <div>
+          <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
             Nombre de la empresa *
-          </Label>
-          <Input
+          </label>
+          <input
+            type="text"
             id="companyName"
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
-            onBlur={() => handleBlur('companyName')}
-            placeholder="Nombre real de tu empresa"
-            className={getFieldClassName(companyNameValidation.isValid, Boolean(companyData.companyName), 'companyName')}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !companyNameValidation.isValid ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="Ingrese el nombre de su empresa"
           />
-          {shouldShowCheckIcon(companyNameValidation.isValid, Boolean(companyData.companyName), 'companyName') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {shouldShowErrorIcon('companyName') && (
-            <AlertCircle className="absolute right-3 top-10 h-4 w-4 text-red-500" />
-          )}
-          {getErrorMessage('companyName', companyNameValidation.isValid, 'Este campo es obligatorio') && (
-            <p className="text-red-500 text-sm mt-1">
-              {getErrorMessage('companyName', companyNameValidation.isValid, 'Este campo es obligatorio')}
-            </p>
+          {showValidation && !companyNameValidation.isValid && (
+            <p className="mt-1 text-sm text-red-600">{companyNameValidation.error}</p>
           )}
         </div>
 
-        {/* CIF */}
-        <div className="relative">
-          <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
+        <div>
+          <label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
             CIF *
-          </Label>
-          <Input
+          </label>
+          <input
+            type="text"
             id="cif"
             value={companyData.cif}
             onChange={(e) => updateField('cif', e.target.value.toUpperCase())}
-            onBlur={() => handleBlur('cif')}
-            placeholder="A12345678"
-            className={getFieldClassName(isCifValid, Boolean(companyData.cif), 'cif')}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !cifValid ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="A12345674"
             maxLength={9}
           />
-          {shouldShowCheckIcon(isCifValid, Boolean(companyData.cif), 'cif') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {showValidation && companyData.cif && !isCifValid && (
-            <p className="text-red-500 text-sm mt-1">
-              CIF inválido. Formato: Letra + 7 dígitos + dígito/letra de control
-            </p>
-          )}
-          {showValidation && !companyData.cif && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          {showValidation && !cifValid && (
+            <p className="mt-1 text-sm text-red-600">Por favor, ingrese un CIF válido</p>
           )}
         </div>
 
-        {/* Email */}
-        <div className="relative">
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Correo electrónico *
-          </Label>
-          <Input
-            id="email"
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            Email *
+          </label>
+          <input
             type="email"
+            id="email"
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
-            onBlur={() => handleBlur('email')}
-            placeholder="tu@empresareal.com"
-            className={getFieldClassName(emailValidation.isValid, Boolean(companyData.email), 'email')}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !emailValidation.isValid ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="empresa@ejemplo.com"
           />
-          {shouldShowCheckIcon(emailValidation.isValid, Boolean(companyData.email), 'email') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {shouldShowErrorIcon('email') && (
-            <AlertCircle className="absolute right-3 top-10 h-4 w-4 text-red-500" />
-          )}
-          {getErrorMessage('email', emailValidation.isValid, 'Este campo es obligatorio') && (
-            <p className="text-red-500 text-sm mt-1">
-              {getErrorMessage('email', emailValidation.isValid, 'Este campo es obligatorio')}
-            </p>
+          {showValidation && !emailValidation.isValid && (
+            <p className="mt-1 text-sm text-red-600">{emailValidation.error}</p>
           )}
         </div>
 
-        {/* Teléfono */}
-        <div className="relative">
-          <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
             Teléfono *
-          </Label>
-          <div className="relative">
-            <Input
-              id="phone"
-              type="tel"
-              value={companyData.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
-              onBlur={() => handleBlur('phone')}
-              placeholder="Ej. 600 123 456"
-              className={getFieldClassName(isPhoneValid, Boolean(companyData.phone), 'phone')}
-            />
-            <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            {shouldShowCheckIcon(isPhoneValid, Boolean(companyData.phone), 'phone') && (
-              <Check className="absolute right-8 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
-            )}
-          </div>
-          {showValidation && !isPhoneValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
-          )}
-        </div>
-
-        {/* Sector */}
-        <div className="relative">
-          <Label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">
-            Sector *
-          </Label>
-          <Select 
-            value={companyData.industry} 
-            onValueChange={(value) => {
-              updateField('industry', value);
-              handleBlur('industry');
-            }}
-          >
-            <SelectTrigger className={getFieldClassName(isIndustryValid, Boolean(companyData.industry), 'industry')}>
-              <SelectValue placeholder="Selecciona el sector" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tecnologia">Tecnología</SelectItem>
-              <SelectItem value="salud">Salud y Farmacéutico</SelectItem>
-              <SelectItem value="manufactura">Manufactura</SelectItem>
-              <SelectItem value="retail">Retail y Comercio</SelectItem>
-              <SelectItem value="servicios">Servicios</SelectItem>
-              <SelectItem value="finanzas">Servicios Financieros</SelectItem>
-              <SelectItem value="inmobiliario">Inmobiliario</SelectItem>
-              <SelectItem value="energia">Energía</SelectItem>
-              <SelectItem value="consultoria">Consultoría</SelectItem>
-              <SelectItem value="educacion">Educación</SelectItem>
-              <SelectItem value="turismo">Turismo y Hostelería</SelectItem>
-              <SelectItem value="agricultura">Agricultura</SelectItem>
-              <SelectItem value="otro">Otro</SelectItem>
-            </SelectContent>
-          </Select>
-          {shouldShowCheckIcon(isIndustryValid, Boolean(companyData.industry), 'industry') && (
-            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500" />
-          )}
-          {showValidation && !isIndustryValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
-          )}
-        </div>
-
-        {/* Años de operación */}
-        <div className="relative">
-          <Label htmlFor="yearsOfOperation" className="block text-sm font-medium text-gray-700 mb-2">
-            Años de operación *
-          </Label>
-          <Input
-            id="yearsOfOperation"
-            type="number"
-            min="0"
-            value={companyData.yearsOfOperation || ''}
-            onChange={(e) => updateField('yearsOfOperation', Number(e.target.value))}
-            onBlur={() => handleBlur('yearsOfOperation')}
-            placeholder="0"
-            className={getFieldClassName(isYearsValid, Boolean(companyData.yearsOfOperation), 'yearsOfOperation')}
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            value={companyData.phone}
+            onChange={(e) => updateField('phone', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !companyData.phone ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="+34 123 456 789"
           />
-          {shouldShowCheckIcon(isYearsValid, Boolean(companyData.yearsOfOperation), 'yearsOfOperation') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {showValidation && !isYearsValid && (
-            <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
+          {showValidation && !companyData.phone && (
+            <p className="mt-1 text-sm text-red-600">El teléfono es obligatorio</p>
           )}
         </div>
 
-        {/* Número de empleados */}
-        <div className="md:col-span-2 relative">
-          <Label htmlFor="employeeRange" className="block text-sm font-medium text-gray-700 mb-2">
-            Número de empleados *
-          </Label>
-          <Select 
-            value={companyData.employeeRange} 
-            onValueChange={(value) => {
-              updateField('employeeRange', value);
-              handleBlur('employeeRange');
-            }}
+        <div>
+          <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">
+            Sector de actividad *
+          </label>
+          <select
+            id="industry"
+            value={companyData.industry}
+            onChange={(e) => updateField('industry', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !companyData.industry ? 'border-red-300' : 'border-gray-300'
+            }`}
           >
-            <SelectTrigger className={getFieldClassName(isEmployeeRangeValid, Boolean(companyData.employeeRange), 'employeeRange')}>
-              <SelectValue placeholder="Selecciona el rango" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-10">1 - 10 empleados</SelectItem>
-              <SelectItem value="11-50">11 - 50 empleados</SelectItem>
-              <SelectItem value="51-200">51 - 200 empleados</SelectItem>
-              <SelectItem value="201-500">201 - 500 empleados</SelectItem>
-              <SelectItem value="500+">Más de 500 empleados</SelectItem>
-            </SelectContent>
-          </Select>
-          {shouldShowCheckIcon(isEmployeeRangeValid, Boolean(companyData.employeeRange), 'employeeRange') && (
-            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500" />
+            <option value="">Seleccione un sector</option>
+            <option value="tecnologia">Tecnología</option>
+            <option value="salud">Salud</option>
+            <option value="manufactura">Manufactura</option>
+            <option value="retail">Retail</option>
+            <option value="servicios">Servicios</option>
+            <option value="finanzas">Finanzas</option>
+            <option value="inmobiliario">Inmobiliario</option>
+            <option value="energia">Energía</option>
+            <option value="consultoria">Consultoría</option>
+            <option value="educacion">Educación</option>
+            <option value="turismo">Turismo</option>
+            <option value="agricultura">Agricultura</option>
+            <option value="construccion">Construcción</option>
+            <option value="otro">Otro</option>
+          </select>
+          {showValidation && !companyData.industry && (
+            <p className="mt-1 text-sm text-red-600">El sector es obligatorio</p>
           )}
-          {showValidation && !isEmployeeRangeValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+        </div>
+
+        <div>
+          <label htmlFor="yearsOfOperation" className="block text-sm font-medium text-gray-700 mb-2">
+            Años de funcionamiento *
+          </label>
+          <input
+            type="number"
+            id="yearsOfOperation"
+            value={companyData.yearsOfOperation || ''}
+            onChange={(e) => updateField('yearsOfOperation', parseInt(e.target.value) || 0)}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !(companyData.yearsOfOperation > 0) ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="5"
+            min="1"
+          />
+          {showValidation && !(companyData.yearsOfOperation > 0) && (
+            <p className="mt-1 text-sm text-red-600">Los años de funcionamiento son obligatorios</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="employeeRange" className="block text-sm font-medium text-gray-700 mb-2">
+            Número de empleados *
+          </label>
+          <select
+            id="employeeRange"
+            value={companyData.employeeRange}
+            onChange={(e) => updateField('employeeRange', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              showValidation && !companyData.employeeRange ? 'border-red-300' : 'border-gray-300'
+            }`}
+          >
+            <option value="">Seleccione un rango</option>
+            <option value="2-5">2-5 empleados</option>
+            <option value="6-25">6-25 empleados</option>
+            <option value="26-99">26-99 empleados</option>
+            <option value="100-249">100-249 empleados</option>
+            <option value="250-499">250-499 empleados</option>
+            <option value="500+">500+ empleados</option>
+          </select>
+          {showValidation && !companyData.employeeRange && (
+            <p className="mt-1 text-sm text-red-600">El rango de empleados es obligatorio</p>
           )}
         </div>
       </div>
