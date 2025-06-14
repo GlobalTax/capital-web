@@ -59,6 +59,7 @@
 
   html {
     scroll-behavior: smooth;
+    @apply bg-white;
   }
 }
 
