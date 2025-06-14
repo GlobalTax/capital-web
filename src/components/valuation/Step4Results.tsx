@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { TrendingUp, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { generateValuationPDF } from '@/utils/pdfGenerator';
+import { useToast } from '@/hooks/use-toast';
 
 interface Step4Props {
   result: any;
@@ -11,6 +13,9 @@ interface Step4Props {
 }
 
 const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating, resetCalculator }) => {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { toast } = useToast();
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
@@ -38,6 +43,51 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       'baja': 'Baja (<25%)'
     };
     return labels[participation] || participation;
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!result || !companyData) {
+      toast({
+        title: "Error",
+        description: "No hay datos suficientes para generar el PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    
+    try {
+      const pdfBlob = await generateValuationPDF(companyData, result);
+      
+      // Crear enlace de descarga
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Valoracion_${companyData.companyName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Ejecutar descarga
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Limpiar URL
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "PDF generado",
+        description: "El informe de valoración se ha descargado correctamente",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error al generar PDF",
+        description: "Ha ocurrido un error al generar el informe. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   if (isCalculating) {
@@ -209,9 +259,13 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           <RefreshCw className="h-4 w-4 mr-2" />
           Nueva Valoración
         </Button>
-        <Button className="flex items-center">
+        <Button 
+          onClick={handleDownloadPDF}
+          disabled={isGeneratingPDF}
+          className="flex items-center"
+        >
           <Download className="h-4 w-4 mr-2" />
-          Descargar Informe
+          {isGeneratingPDF ? 'Generando PDF...' : 'Descargar Informe PDF'}
         </Button>
       </div>
 
