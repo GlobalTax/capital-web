@@ -26,7 +26,6 @@ interface CompanyData {
 }
 
 interface ValuationResult {
-  revenueMultiple: number;
   ebitdaMultiple: number;
   finalValuation: number;
   valuationRange: {
@@ -35,7 +34,6 @@ interface ValuationResult {
   };
   multiples: {
     ebitdaMultipleUsed: number;
-    revenueMultipleUsed: number;
   };
 }
 
@@ -257,17 +255,13 @@ export const useValuationCalculator = () => {
       return;
     }
 
-    // Calcular valoraciones usando múltiplos específicos de la base de datos
-    const revenueValuation = companyData.revenue * sectorData.revenue_multiple;
+    // Calcular valoración usando solo múltiplo EBITDA
     const ebitdaValuation = companyData.ebitda * sectorData.ebitda_multiple;
 
-    // Valoración final ponderada (70% EBITDA, 30% Facturación)
-    const finalValuation = Math.round(
-      (ebitdaValuation * 0.7 + revenueValuation * 0.3)
-    );
+    // Valoración final basada únicamente en EBITDA
+    const finalValuation = Math.round(ebitdaValuation);
     
     const valuationResult: ValuationResult = {
-      revenueMultiple: Math.round(revenueValuation),
       ebitdaMultiple: Math.round(ebitdaValuation),
       finalValuation,
       valuationRange: {
@@ -275,8 +269,7 @@ export const useValuationCalculator = () => {
         max: Math.round(finalValuation * 1.2)
       },
       multiples: {
-        ebitdaMultipleUsed: sectorData.ebitda_multiple,
-        revenueMultipleUsed: sectorData.revenue_multiple
+        ebitdaMultipleUsed: sectorData.ebitda_multiple
       }
     };
 
