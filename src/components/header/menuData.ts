@@ -33,9 +33,16 @@ export const menuData = {
     { label: 'Webinars', href: '/recursos/webinars' },
   ],
 
-  // Reducimos los elementos del menú principal
-  navItems: [
+  // Nuevo grupo "Empresa" que agrupa elementos relacionados
+  empresaItems: [
+    { label: 'Por Qué Elegirnos', href: '/por-que-elegirnos' },
+    { label: 'Casos de Éxito', href: '/casos-exito' },
+    { label: 'Equipo', href: '/equipo' },
     { label: 'Nosotros', href: '/nosotros' },
+  ],
+
+  // Elementos principales del menú simplificados
+  navItems: [
     { label: 'Contacto', href: '/contacto' },
   ],
 };
