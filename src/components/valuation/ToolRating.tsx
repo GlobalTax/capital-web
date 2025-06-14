@@ -95,26 +95,52 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      // Insertar en Supabase
+      const { data: ratingData, error } = await supabase
         .from('tool_ratings')
         .insert({
           ease_of_use: ratings.easeOfUse,
           result_accuracy: ratings.resultAccuracy,
-          recommendation: wouldRecommend === 'yes' ? 5 : 1, // Convert Yes/No to numeric for database
+          recommendation: wouldRecommend === 'yes' ? 5 : 1,
           feedback_comment: feedback || null,
           user_email: email || null,
           company_sector: companyData.industry,
           company_size: companyData.employeeRange,
-          ip_address: null, // Se podría implementar si fuera necesario
+          ip_address: null,
           user_agent: navigator.userAgent
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         throw error;
       }
 
+      // Enviar a HubSpot
+      try {
+        await supabase.functions.invoke('hubspot-integration', {
+          body: {
+            type: 'create_tool_rating',
+            data: {
+              ease_of_use: ratings.easeOfUse,
+              result_accuracy: ratings.resultAccuracy,
+              recommendation: wouldRecommend === 'yes' ? 5 : 1,
+              feedback_comment: feedback || null,
+              user_email: email || null,
+              company_sector: companyData.industry,
+              company_size: companyData.employeeRange
+            }
+          }
+        });
+
+        console.log('Valoración enviada a HubSpot correctamente');
+      } catch (hubspotError) {
+        console.error('Error enviando a HubSpot:', hubspotError);
+        // No bloqueamos la función principal si HubSpot falla
+      }
+
       setIsSubmitted(true);
-      setTotalRatings(prev => prev + 1); // Actualizar contador localmente
+      setTotalRatings(prev => prev + 1);
       toast({
         title: "¡Gracias por tu valoración!",
         description: "Tu feedback nos ayuda a mejorar la herramienta",

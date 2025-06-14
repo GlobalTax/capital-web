@@ -1,9 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateValuationPDF } from '@/utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import ToolRating from './ToolRating';
 
 interface Step4Props {
@@ -15,7 +15,40 @@ interface Step4Props {
 
 const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating, resetCalculator }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [hubspotSent, setHubspotSent] = useState(false);
   const { toast } = useToast();
+  const { createCompanyValuation } = useHubSpotIntegration();
+
+  // Enviar datos a HubSpot cuando se muestran los resultados
+  useEffect(() => {
+    if (result && companyData && !hubspotSent) {
+      const sendToHubSpot = async () => {
+        try {
+          await createCompanyValuation({
+            companyName: companyData.companyName,
+            cif: companyData.cif,
+            contactName: companyData.contactName,
+            email: companyData.email,
+            phone: companyData.phone,
+            industry: companyData.industry,
+            revenue: companyData.revenue,
+            ebitda: companyData.ebitda,
+            finalValuation: result.finalValuation,
+            employeeRange: companyData.employeeRange,
+            location: companyData.location
+          });
+          
+          setHubspotSent(true);
+          console.log('Datos de valoración enviados a HubSpot correctamente');
+        } catch (error) {
+          console.error('Error enviando valoración a HubSpot:', error);
+          // No mostramos error al usuario para no interferir con la experiencia
+        }
+      };
+
+      sendToHubSpot();
+    }
+  }, [result, companyData, hubspotSent, createCompanyValuation]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
