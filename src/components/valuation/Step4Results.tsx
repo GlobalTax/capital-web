@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { TrendingUp, DollarSign, Download, RefreshCw, Building, MapPin, Users } from 'lucide-react';
+import { TrendingUp, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Step4Props {
@@ -42,7 +43,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   if (isCalculating) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4" />
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-600 mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Calculando Valoración</h2>
         <p className="text-gray-600">Analizando los datos de tu empresa...</p>
       </div>
@@ -52,7 +53,6 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   if (!result) {
     return (
       <div className="text-center py-12">
-        <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-600 mb-2">
           Sin resultados aún
         </h3>
@@ -66,8 +66,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center">
-          <TrendingUp className="h-6 w-6 mr-3 text-blue-600" />
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Valoración de {companyData.companyName}
         </h2>
         <p className="text-gray-600">Resultados basados en múltiplos EBITDA por sector</p>
@@ -75,8 +74,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
 
       {/* Resumen de datos de la empresa */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <Building className="h-5 w-5 mr-2 text-blue-600" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Resumen de Datos de la Empresa
         </h3>
         
@@ -105,13 +103,11 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
                 <span className="text-gray-600">Años operando:</span>
                 <span className="ml-2 font-medium">{companyData.yearsOfOperation} años</span>
               </div>
-              <div className="flex items-center">
-                <Users className="h-4 w-4 text-gray-600 mr-1" />
+              <div>
                 <span className="text-gray-600">Empleados:</span>
                 <span className="ml-2 font-medium">{getEmployeeRangeLabel(companyData.employeeRange)}</span>
               </div>
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 text-gray-600 mr-1" />
+              <div>
                 <span className="text-gray-600">Ubicación:</span>
                 <span className="ml-2 font-medium">{companyData.location}</span>
               </div>
@@ -162,11 +158,11 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         </div>
       </div>
 
-      {/* Valoración principal */}
+      {/* Valoración principal - sin colores ni íconos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-blue-50 rounded-lg p-6 text-center">
+        <div className="bg-white border border-gray-300 rounded-lg p-6 text-center">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">Valoración Estimada</h3>
-          <p className="text-3xl font-bold text-blue-600 mb-2">
+          <p className="text-3xl font-bold text-gray-900 mb-2">
             {formatCurrency(result.finalValuation)}
           </p>
           <p className="text-sm text-gray-600">
@@ -174,9 +170,9 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           </p>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-6 text-center">
+        <div className="bg-white border border-gray-300 rounded-lg p-6 text-center">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">Múltiplo EBITDA</h3>
-          <p className="text-3xl font-bold text-green-600 mb-2">
+          <p className="text-3xl font-bold text-gray-900 mb-2">
             {result.multiples.ebitdaMultipleUsed}x
           </p>
           <p className="text-sm text-gray-600">
@@ -190,7 +186,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Múltiplo Aplicado por Sector</h3>
         <div className="text-center">
           <p className="text-sm text-gray-600">Múltiplo EBITDA</p>
-          <p className="text-2xl font-bold text-blue-600">{result.multiples.ebitdaMultipleUsed}x</p>
+          <p className="text-2xl font-bold text-gray-900">{result.multiples.ebitdaMultipleUsed}x</p>
           <p className="text-sm text-gray-500 mt-2">
             Valoración: {formatCurrency(companyData.ebitda)} × {result.multiples.ebitdaMultipleUsed} = {formatCurrency(result.finalValuation)}
           </p>
