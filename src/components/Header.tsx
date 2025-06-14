@@ -23,7 +23,6 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <DesktopNavigation 
-            porQueElegirnosItems={menuData.porQueElegirnosItems}
             serviciosItems={menuData.serviciosItems}
             sectoresItems={menuData.sectoresItems}
             recursosItems={menuData.recursosItems}
@@ -31,12 +30,16 @@ const Header = () => {
             navItems={menuData.navItems}
           />
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Button className="capittal-button">
-              <Phone size={16} className="mr-2" />
-              Contacto
-            </Button>
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Link to="/contacto">
+              <Button className="capittal-button">
+                Contacto
+              </Button>
+            </Link>
+            <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors">
+              <Phone size={20} />
+            </a>
           </div>
 
           {/* Mobile menu button */}
@@ -56,7 +59,6 @@ const Header = () => {
         <MobileNavigation 
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
-          porQueElegirnosItems={menuData.porQueElegirnosItems}
           serviciosItems={menuData.serviciosItems}
           sectoresItems={menuData.sectoresItems}
           recursosItems={menuData.recursosItems}

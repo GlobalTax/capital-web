@@ -12,7 +12,6 @@ interface NavItem {
 interface MobileNavigationProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
-  porQueElegirnosItems: NavItem[];
   serviciosItems: NavItem[];
   sectoresItems: NavItem[];
   recursosItems: NavItem[];
@@ -23,7 +22,6 @@ interface MobileNavigationProps {
 const MobileNavigation = ({ 
   isMenuOpen, 
   setIsMenuOpen, 
-  porQueElegirnosItems, 
   serviciosItems, 
   sectoresItems, 
   recursosItems, 
@@ -114,10 +112,16 @@ const MobileNavigation = ({
           </Link>
         ))}
         
-        <Button className="capittal-button w-full mt-4">
-          <Phone size={16} className="mr-2" />
-          Contacto
-        </Button>
+        <div className="flex space-x-2 mt-4">
+          <Link to="/contacto" className="flex-1" onClick={() => setIsMenuOpen(false)}>
+            <Button className="capittal-button w-full">
+              Contacto
+            </Button>
+          </Link>
+          <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors border border-gray-300 rounded-md">
+            <Phone size={20} />
+          </a>
+        </div>
       </nav>
     </div>
   );
