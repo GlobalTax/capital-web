@@ -1,14 +1,11 @@
-
-import React, { useState, useEffect } from 'react';
-import { Star, Send, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useCountAnimation } from '@/hooks/useCountAnimation';
+import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
+import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
 
 interface ToolRatingProps {
   companyData: any;
@@ -16,77 +13,28 @@ interface ToolRatingProps {
 
 const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
   const [ratings, setRatings] = useState({
-    easeOfUse: 0,
-    resultAccuracy: 0,
+    ease_of_use: 0,
+    result_accuracy: 0,
     recommendation: 0
   });
-  const [wouldRecommend, setWouldRecommend] = useState<string>('');
   const [feedback, setFeedback] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(companyData?.email || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [totalRatings, setTotalRatings] = useState(0);
+
   const { toast } = useToast();
+  const { createToolRating } = useHubSpotIntegration();
+  const { saveToolRating } = useSupabaseValuation();
 
-  const { count: animatedCount, ref: countRef } = useCountAnimation(totalRatings, 2000);
-
-  // Fetch total ratings count
-  useEffect(() => {
-    const fetchRatingsCount = async () => {
-      try {
-        const { count, error } = await supabase
-          .from('tool_ratings')
-          .select('*', { count: 'exact', head: true });
-
-        if (error) {
-          console.error('Error fetching ratings count:', error);
-          return;
-        }
-
-        // Add a base number to make it seem like there are already many ratings
-        const baseCount = 847; // Starting with a high number
-        setTotalRatings((count || 0) + baseCount);
-      } catch (error) {
-        console.error('Error fetching ratings count:', error);
-        // Fallback to base count if there's an error
-        setTotalRatings(847);
-      }
-    };
-
-    fetchRatingsCount();
-  }, []);
-
-  const StarRating = ({ rating, onRatingChange, label }: { rating: number; onRatingChange: (rating: number) => void; label: string }) => {
-    return (
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <div className="flex space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => onRatingChange(star)}
-              className="transition-colors hover:scale-110 transform duration-200"
-            >
-              <Star
-                className={`h-6 w-6 ${
-                  star <= rating
-                    ? 'text-yellow-400 fill-yellow-400'
-                    : 'text-gray-300 hover:text-yellow-300'
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-    );
+  const setRating = (category: keyof typeof ratings, value: number) => {
+    setRatings(prev => ({ ...prev, [category]: value }));
   };
 
   const handleSubmit = async () => {
-    if (ratings.easeOfUse === 0 || ratings.resultAccuracy === 0 || wouldRecommend === '') {
+    if (ratings.ease_of_use === 0 || ratings.result_accuracy === 0 || ratings.recommendation === 0) {
       toast({
         title: "Valoración incompleta",
-        description: "Por favor, completa todas las valoraciones requeridas",
+        description: "Por favor, valora todos los aspectos de la herramienta",
         variant: "destructive",
       });
       return;
@@ -95,61 +43,36 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
     setIsSubmitting(true);
 
     try {
-      // Insertar en Supabase
-      const { data: ratingData, error } = await supabase
-        .from('tool_ratings')
-        .insert({
-          ease_of_use: ratings.easeOfUse,
-          result_accuracy: ratings.resultAccuracy,
-          recommendation: wouldRecommend === 'yes' ? 5 : 1,
-          feedback_comment: feedback || null,
-          user_email: email || null,
-          company_sector: companyData.industry,
-          company_size: companyData.employeeRange,
-          ip_address: null,
-          user_agent: navigator.userAgent
-        })
-        .select()
-        .single();
+      const ratingData = {
+        ease_of_use: ratings.ease_of_use,
+        result_accuracy: ratings.result_accuracy,
+        recommendation: ratings.recommendation,
+        feedback_comment: feedback,
+        user_email: email,
+        company_sector: companyData?.industry || '',
+        company_size: companyData?.employeeRange || ''
+      };
 
-      if (error) {
-        throw error;
-      }
+      // Guardar primero en Supabase
+      await saveToolRating(ratingData);
 
-      // Enviar a HubSpot
+      // Luego enviar a HubSpot
       try {
-        await supabase.functions.invoke('hubspot-integration', {
-          body: {
-            type: 'create_tool_rating',
-            data: {
-              ease_of_use: ratings.easeOfUse,
-              result_accuracy: ratings.resultAccuracy,
-              recommendation: wouldRecommend === 'yes' ? 5 : 1,
-              feedback_comment: feedback || null,
-              user_email: email || null,
-              company_sector: companyData.industry,
-              company_size: companyData.employeeRange
-            }
-          }
-        });
-
-        console.log('Valoración enviada a HubSpot correctamente');
+        await createToolRating(ratingData);
       } catch (hubspotError) {
-        console.error('Error enviando a HubSpot:', hubspotError);
-        // No bloqueamos la función principal si HubSpot falla
+        console.warn('Error enviando a HubSpot, pero datos guardados en Supabase:', hubspotError);
       }
 
       setIsSubmitted(true);
-      setTotalRatings(prev => prev + 1);
       toast({
         title: "¡Gracias por tu valoración!",
         description: "Tu feedback nos ayuda a mejorar la herramienta",
       });
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      console.error('Error enviando valoración:', error);
       toast({
-        title: "Error al enviar valoración",
-        description: "Ha ocurrido un error. Por favor, inténtalo de nuevo.",
+        title: "Error",
+        description: "No se pudo enviar la valoración. Inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -159,116 +82,103 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
 
   if (isSubmitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-        <div className="flex items-center justify-center space-x-3">
-          <CheckCircle className="h-8 w-8 text-green-600" />
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-green-800">
-              ¡Gracias por tu valoración!
-            </h3>
-            <p className="text-green-700">
-              Tu feedback nos ayuda a mejorar continuamente nuestra herramienta
-            </p>
-          </div>
-        </div>
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+        <h3 className="text-lg font-semibold text-green-800 mb-2">
+          ¡Gracias por tu valoración!
+        </h3>
+        <p className="text-green-700">
+          Tu feedback es muy valioso para nosotros y nos ayuda a mejorar continuamente 
+          nuestra herramienta de valoración empresarial.
+        </p>
       </div>
     );
   }
 
+  const StarRating = ({ value, onChange, label }: { value: number; onChange: (rating: number) => void; label: string }) => (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => onChange(star)}
+            className="focus:outline-none"
+          >
+            <Star
+              className={`h-6 w-6 ${
+                star <= value
+                  ? 'text-yellow-400 fill-current'
+                  : 'text-gray-300'
+              } hover:text-yellow-400 transition-colors`}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          ¿Qué te ha parecido nuestra calculadora?
-        </h3>
-        <p className="text-gray-600 mb-3">
-          Tu valoración nos ayuda a mejorar la herramienta para futuros usuarios
-        </p>
-        
-        {/* Contador de valoraciones */}
-        <div className="inline-flex items-center bg-white border border-gray-300 rounded-full px-4 py-2">
-          <div className="flex items-center space-x-2">
-            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-            <span className="text-sm text-gray-600">
-              <span ref={countRef} className="font-semibold text-gray-900">{animatedCount}</span> valoraciones realizadas
-            </span>
-          </div>
-        </div>
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <h3 className="text-lg font-semibold text-blue-900 mb-4">
+        Valora nuestra herramienta
+      </h3>
+      <p className="text-blue-700 mb-6">
+        Tu opinión nos ayuda a mejorar. ¿Qué te ha parecido la calculadora de valoración?
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <StarRating
+          value={ratings.ease_of_use}
+          onChange={(rating) => setRating('ease_of_use', rating)}
+          label="Facilidad de uso"
+        />
+        <StarRating
+          value={ratings.result_accuracy}
+          onChange={(rating) => setRating('result_accuracy', rating)}
+          label="Precisión del resultado"
+        />
+        <StarRating
+          value={ratings.recommendation}
+          onChange={(rating) => setRating('recommendation', rating)}
+          label="¿La recomendarías?"
+        />
       </div>
 
-      <div className="space-y-6">
-        {/* Valoraciones por estrellas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StarRating
-            rating={ratings.easeOfUse}
-            onRatingChange={(rating) => setRatings(prev => ({ ...prev, easeOfUse: rating }))}
-            label="Facilidad de uso"
-          />
-          <StarRating
-            rating={ratings.resultAccuracy}
-            onRatingChange={(rating) => setRatings(prev => ({ ...prev, resultAccuracy: rating }))}
-            label="Precisión de resultados"
-          />
-        </div>
-
-        {/* Recomendación Sí/No */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-700">
-            ¿Recomendarías esta herramienta?
-          </label>
-          <RadioGroup value={wouldRecommend} onValueChange={setWouldRecommend} className="flex gap-6">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="yes" id="yes" />
-              <Label htmlFor="yes" className="cursor-pointer">Sí</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="no" id="no" />
-              <Label htmlFor="no" className="cursor-pointer">No</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        {/* Email - solo si recomendaría */}
-        {wouldRecommend === 'yes' && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Email (para enviarte actualizaciones)
-            </label>
-            <Input
-              type="email"
-              placeholder="tu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-        )}
-
-        {/* Comentario opcional */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
+      <div className="space-y-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Comentarios adicionales (opcional)
           </label>
           <Textarea
-            placeholder="Cuéntanos qué te ha gustado más o qué mejorarías..."
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            rows={3}
-            className="resize-none"
+            placeholder="Cuéntanos qué te ha gustado más o qué podríamos mejorar..."
+            className="min-h-[80px]"
           />
         </div>
 
-        {/* Botón enviar */}
-        <div className="flex justify-center">
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="flex items-center space-x-2"
-          >
-            <Send className="h-4 w-4" />
-            <span>{isSubmitting ? 'Enviando...' : 'Enviar Valoración'}</span>
-          </Button>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email (opcional, para seguimiento)
+          </label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+          />
         </div>
       </div>
+
+      <Button
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+        className="w-full flex items-center justify-center"
+      >
+        <Send className="h-4 w-4 mr-2" />
+        {isSubmitting ? 'Enviando valoración...' : 'Enviar valoración'}
+      </Button>
     </div>
   );
 };

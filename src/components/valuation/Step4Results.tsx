@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
+import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
 import ToolRating from './ToolRating';
 
 interface Step4Props {
@@ -15,15 +16,20 @@ interface Step4Props {
 
 const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating, resetCalculator }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [hubspotSent, setHubspotSent] = useState(false);
+  const [dataSaved, setDataSaved] = useState(false);
   const { toast } = useToast();
   const { createCompanyValuation } = useHubSpotIntegration();
+  const { saveValuation } = useSupabaseValuation();
 
-  // Enviar datos a HubSpot cuando se muestran los resultados
+  // Guardar datos cuando se muestran los resultados
   useEffect(() => {
-    if (result && companyData && !hubspotSent) {
-      const sendToHubSpot = async () => {
+    if (result && companyData && !dataSaved) {
+      const saveData = async () => {
         try {
+          // Guardar primero en Supabase
+          await saveValuation(companyData, result);
+          
+          // Luego enviar a HubSpot
           await createCompanyValuation({
             companyName: companyData.companyName,
             cif: companyData.cif,
@@ -38,17 +44,17 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
             location: companyData.location
           });
           
-          setHubspotSent(true);
-          console.log('Datos de valoración enviados a HubSpot correctamente');
+          setDataSaved(true);
+          console.log('Datos guardados en Supabase y enviados a HubSpot correctamente');
         } catch (error) {
-          console.error('Error enviando valoración a HubSpot:', error);
-          // No mostramos error al usuario para no interferir con la experiencia
+          console.error('Error guardando/enviando datos:', error);
+          // Los errores específicos ya se manejan en los hooks individuales
         }
       };
 
-      sendToHubSpot();
+      saveData();
     }
-  }, [result, companyData, hubspotSent, createCompanyValuation]);
+  }, [result, companyData, dataSaved, saveValuation, createCompanyValuation]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
