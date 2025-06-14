@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DesktopNavigation from './header/DesktopNavigation';
 import MobileNavigation from './header/MobileNavigation';
@@ -34,7 +34,8 @@ const Header = () => {
           {/* CTA Button */}
           <div className="hidden md:block">
             <Button className="capittal-button">
-              Consulta Gratuita
+              <Phone size={16} className="mr-2" />
+              Contacto
             </Button>
           </div>
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Phone } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -114,7 +115,8 @@ const MobileNavigation = ({
         ))}
         
         <Button className="capittal-button w-full mt-4">
-          Consulta Gratuita
+          <Phone size={16} className="mr-2" />
+          Contacto
         </Button>
       </nav>
     </div>
