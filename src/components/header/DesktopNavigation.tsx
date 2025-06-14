@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -16,7 +15,6 @@ interface NavItem {
 }
 
 interface DesktopNavigationProps {
-  porQueElegirnosItems: NavItem[];
   serviciosItems: NavItem[];
   sectoresItems: NavItem[];
   recursosItems: NavItem[];
@@ -25,7 +23,6 @@ interface DesktopNavigationProps {
 }
 
 const DesktopNavigation = ({ 
-  porQueElegirnosItems, 
   serviciosItems, 
   sectoresItems, 
   recursosItems, 
