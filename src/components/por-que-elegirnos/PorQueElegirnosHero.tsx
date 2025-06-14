@@ -2,62 +2,95 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Award, Users, TrendingUp, Shield } from 'lucide-react';
+import { useCountAnimation } from '@/hooks/useCountAnimation';
 
 const PorQueElegirnosHero = () => {
+  const experienceCount = useCountAnimation(25, 2000, '+');
+  const transactionsCount = useCountAnimation(500, 2500, '+');
+  const valueCount = useCountAnimation(5, 2000, 'B+');
+  const successCount = useCountAnimation(95, 1800, '%');
+
   const highlights = [
     {
       icon: Award,
-      text: "25+ años de experiencia"
+      count: experienceCount,
+      label: "años de experiencia",
+      description: "Más de dos décadas en M&A"
     },
     {
       icon: Users,
-      text: "500+ transacciones exitosas"
+      count: transactionsCount,
+      label: "transacciones exitosas",
+      description: "Operaciones completadas"
     },
     {
       icon: TrendingUp,
-      text: "€5B+ en valor gestionado"
+      count: valueCount,
+      label: "en valor gestionado",
+      description: "€5B+ en transacciones"
     },
     {
       icon: Shield,
-      text: "95% tasa de éxito"
+      count: successCount,
+      label: "tasa de éxito",
+      description: "Operaciones completadas exitosamente"
     }
   ];
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h1 className="text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
-            Por Qué Elegir
-            <span className="block text-gray-600">Capittal</span>
-          </h1>
+          <div className="animate-fade-in">
+            <h1 className="text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
+              Por Qué Elegir
+              <span className="block text-transparent bg-gradient-to-r from-gray-600 to-black bg-clip-text">
+                Capittal
+              </span>
+            </h1>
+          </div>
           
-          <p className="text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
-            Más de dos décadas de experiencia nos avalan como líderes en asesoramiento 
-            de fusiones y adquisiciones. Nuestro compromiso es maximizar el valor de tu empresa.
-          </p>
+          <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
+              Más de dos décadas de experiencia nos avalan como líderes en asesoramiento 
+              de fusiones y adquisiciones. Nuestro compromiso es maximizar el valor de tu empresa.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {highlights.map((highlight, index) => {
               const Icon = highlight.icon;
               return (
-                <div key={index} className="flex flex-col items-center">
-                  <div className="bg-black text-white rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                    <Icon className="h-8 w-8" />
+                <div 
+                  key={index} 
+                  className="group animate-fade-in hover:scale-105 transition-all duration-500"
+                  style={{ animationDelay: `${0.4 + index * 0.1}s` }}
+                >
+                  <div className="bg-gradient-to-br from-black to-gray-800 text-white rounded-2xl w-20 h-20 flex items-center justify-center mb-6 mx-auto group-hover:shadow-2xl group-hover:rotate-3 transition-all duration-500">
+                    <Icon className="h-10 w-10 group-hover:scale-110 transition-transform duration-300" />
                   </div>
-                  <span className="text-lg font-semibold text-gray-800 text-center">
-                    {highlight.text}
-                  </span>
+                  <div 
+                    ref={highlight.count.ref}
+                    className="text-4xl font-bold text-black mb-2 group-hover:text-gray-700 transition-colors"
+                  >
+                    {highlight.count.count}
+                  </div>
+                  <div className="text-lg font-semibold text-gray-800 mb-2">
+                    {highlight.label}
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    {highlight.description}
+                  </p>
                 </div>
               );
             })}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="capittal-button text-lg px-8 py-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.8s' }}>
+            <Button className="capittal-button text-lg px-8 py-4 hover:scale-105 hover:shadow-xl transition-all duration-300">
               Conocer Nuestro Equipo
             </Button>
-            <Button variant="outline" className="text-lg px-8 py-4 border-black hover:bg-gray-50">
+            <Button variant="outline" className="text-lg px-8 py-4 border-2 border-black hover:bg-black hover:text-white hover:scale-105 transition-all duration-300">
               Ver Casos de Éxito
             </Button>
           </div>

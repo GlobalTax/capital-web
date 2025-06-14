@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -6,6 +5,7 @@ import PorQueElegirnosHero from '@/components/por-que-elegirnos/PorQueElegirnosH
 import PorQueElegirnosExperience from '@/components/por-que-elegirnos/PorQueElegirnosExperience';
 import PorQueElegirnosApproach from '@/components/por-que-elegirnos/PorQueElegirnosApproach';
 import PorQueElegirnosResults from '@/components/por-que-elegirnos/PorQueElegirnosResults';
+import PorQueElegirnosTestimonials from '@/components/por-que-elegirnos/PorQueElegirnosTestimonials';
 
 const PorQueElegirnos = () => {
   return (
@@ -15,6 +15,7 @@ const PorQueElegirnos = () => {
         <PorQueElegirnosHero />
         <PorQueElegirnosExperience />
         <PorQueElegirnosApproach />
+        <PorQueElegirnosTestimonials />
         <PorQueElegirnosResults />
       </div>
       <Footer />
