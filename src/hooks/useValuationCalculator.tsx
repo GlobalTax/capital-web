@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { validateEmail, validateCompanyName, validateContactName } from '@/utils/validationUtils';
 
@@ -181,9 +182,30 @@ export const useValuationCalculator = () => {
         
         return contactNameValidation.isValid && companyNameValidation.isValid && cifValid && emailValidation.isValid && phoneValid && industryValid && yearsValid && employeeRangeValid;
       case 2:
-        return Boolean(companyData.revenue > 0 && companyData.ebitda > 0 && companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
+        const revenueValid = Boolean(companyData.revenue > 0);
+        const ebitdaValid = Boolean(companyData.ebitda > 0);
+        const netProfitMarginValid = Boolean(companyData.netProfitMargin >= 0 && companyData.netProfitMargin <= 100);
+        
+        console.log('Step 2 validation breakdown:');
+        console.log('- revenue:', companyData.revenue, '-> valid:', revenueValid);
+        console.log('- ebitda:', companyData.ebitda, '-> valid:', ebitdaValid);
+        console.log('- netProfitMargin:', companyData.netProfitMargin, '-> valid:', netProfitMarginValid);
+        
+        return revenueValid && ebitdaValid && netProfitMarginValid;
       case 3:
-        return Boolean(companyData.location && companyData.ownershipParticipation && companyData.competitiveAdvantage);
+        const locationValid = Boolean(companyData.location && companyData.location.trim().length > 0);
+        const ownershipValid = Boolean(companyData.ownershipParticipation && companyData.ownershipParticipation.trim().length > 0);
+        const competitiveAdvantageValid = Boolean(companyData.competitiveAdvantage && companyData.competitiveAdvantage.trim().length > 0);
+        
+        console.log('Step 3 validation breakdown:');
+        console.log('- location:', companyData.location, '-> valid:', locationValid);
+        console.log('- ownershipParticipation:', companyData.ownershipParticipation, '-> valid:', ownershipValid);
+        console.log('- competitiveAdvantage:', companyData.competitiveAdvantage, '-> valid:', competitiveAdvantageValid);
+        
+        const step3Valid = locationValid && ownershipValid && competitiveAdvantageValid;
+        console.log('Step 3 overall valid:', step3Valid);
+        
+        return step3Valid;
       default:
         return true;
     }
