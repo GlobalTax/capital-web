@@ -2,14 +2,22 @@
 import { useState, useCallback } from 'react';
 
 interface CompanyData {
+  // Paso 1: Información básica
+  contactName: string;
   companyName: string;
+  cif: string;
+  email: string;
   industry: string;
+  yearsOfOperation: number;
+  employeeRange: string;
+  
+  // Paso 2: Datos financieros (mantenemos los existentes)
   revenue: number;
   ebitda: number;
-  employees: number;
-  yearFounded: number;
-  location: string;
   growthRate: number;
+  
+  // Paso 3: Características (mantenemos algunos existentes)
+  location: string;
   marketShare: number;
   competitiveAdvantage: string;
 }
@@ -33,27 +41,40 @@ interface ValuationResult {
 }
 
 const industryMultiples: Record<string, number> = {
-  'technology': 5.2,
-  'healthcare': 3.8,
-  'manufacturing': 2.1,
+  'tecnologia': 5.2,
+  'salud': 3.8,
+  'manufactura': 2.1,
   'retail': 1.4,
-  'services': 2.8,
-  'finance': 3.2,
-  'real-estate': 2.0,
-  'energy': 2.9,
-  'other': 2.5
+  'servicios': 2.8,
+  'finanzas': 3.2,
+  'inmobiliario': 2.0,
+  'energia': 2.9,
+  'consultoria': 3.5,
+  'educacion': 2.3,
+  'turismo': 1.8,
+  'agricultura': 1.6,
+  'otro': 2.5
 };
 
 export const useValuationCalculator = () => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [companyData, setCompanyData] = useState<CompanyData>({
+    // Paso 1
+    contactName: '',
     companyName: '',
+    cif: '',
+    email: '',
     industry: '',
+    yearsOfOperation: 0,
+    employeeRange: '',
+    
+    // Paso 2
     revenue: 0,
     ebitda: 0,
-    employees: 0,
-    yearFounded: new Date().getFullYear(),
-    location: '',
     growthRate: 0,
+    
+    // Paso 3
+    location: '',
     marketShare: 0,
     competitiveAdvantage: ''
   });
@@ -68,6 +89,37 @@ export const useValuationCalculator = () => {
     }));
   }, []);
 
+  const nextStep = useCallback(() => {
+    setCurrentStep(prev => Math.min(prev + 1, 4));
+  }, []);
+
+  const prevStep = useCallback(() => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  }, []);
+
+  const goToStep = useCallback((step: number) => {
+    setCurrentStep(step);
+  }, []);
+
+  const validateStep = useCallback((step: number) => {
+    switch (step) {
+      case 1:
+        return companyData.contactName && 
+               companyData.companyName && 
+               companyData.cif && 
+               companyData.email && 
+               companyData.industry && 
+               companyData.yearsOfOperation > 0 && 
+               companyData.employeeRange;
+      case 2:
+        return companyData.revenue > 0 && companyData.ebitda > 0;
+      case 3:
+        return companyData.location && companyData.competitiveAdvantage;
+      default:
+        return true;
+    }
+  }, [companyData]);
+
   const calculateValuation = useCallback(async () => {
     setIsCalculating(true);
     
@@ -76,11 +128,24 @@ export const useValuationCalculator = () => {
 
     const baseMultiple = industryMultiples[companyData.industry] || 2.5;
     
-    // Ajuste por tamaño
-    const sizeAdjustment = companyData.revenue > 50000000 ? 1.4 : 
-                          companyData.revenue > 10000000 ? 1.2 : 
-                          companyData.revenue > 5000000 ? 1.1 : 
-                          companyData.revenue > 1000000 ? 1.0 : 0.8;
+    // Ajuste por tamaño basado en empleados
+    const getEmployeeSizeAdjustment = (range: string) => {
+      switch (range) {
+        case '1-10': return 0.8;
+        case '11-50': return 1.0;
+        case '51-200': return 1.2;
+        case '201-500': return 1.4;
+        case '500+': return 1.6;
+        default: return 1.0;
+      }
+    };
+    
+    const sizeAdjustment = getEmployeeSizeAdjustment(companyData.employeeRange);
+    
+    // Ajuste por años de operación
+    const experienceAdjustment = companyData.yearsOfOperation > 10 ? 1.2 :
+                                companyData.yearsOfOperation > 5 ? 1.1 :
+                                companyData.yearsOfOperation > 2 ? 1.0 : 0.9;
     
     // Ajuste por crecimiento
     const growthAdjustment = companyData.growthRate > 25 ? 1.3 :
@@ -95,7 +160,7 @@ export const useValuationCalculator = () => {
                                    profitMargin > 0.10 ? 1.1 : 
                                    profitMargin > 0.05 ? 1.0 : 0.9;
 
-    const adjustedMultiple = baseMultiple * sizeAdjustment * growthAdjustment * profitabilityAdjustment;
+    const adjustedMultiple = baseMultiple * sizeAdjustment * experienceAdjustment * growthAdjustment * profitabilityAdjustment;
 
     // Diferentes métodos de valoración
     const revenueMultiple = companyData.revenue * adjustedMultiple;
@@ -128,29 +193,39 @@ export const useValuationCalculator = () => {
 
     setResult(valuationResult);
     setIsCalculating(false);
+    setCurrentStep(4); // Ir al paso de resultados
   }, [companyData]);
 
   const resetCalculator = useCallback(() => {
     setCompanyData({
+      contactName: '',
       companyName: '',
+      cif: '',
+      email: '',
       industry: '',
+      yearsOfOperation: 0,
+      employeeRange: '',
       revenue: 0,
       ebitda: 0,
-      employees: 0,
-      yearFounded: new Date().getFullYear(),
-      location: '',
       growthRate: 0,
+      location: '',
       marketShare: 0,
       competitiveAdvantage: ''
     });
     setResult(null);
+    setCurrentStep(1);
   }, []);
 
   return {
+    currentStep,
     companyData,
     result,
     isCalculating,
     updateField,
+    nextStep,
+    prevStep,
+    goToStep,
+    validateStep,
     calculateValuation,
     resetCalculator
   };
