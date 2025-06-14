@@ -33,15 +33,15 @@ interface ValuationResult {
 }
 
 const industryMultiples: Record<string, number> = {
-  'technology': 6.5,
-  'healthcare': 4.2,
-  'manufacturing': 2.8,
-  'retail': 1.8,
-  'services': 3.2,
-  'finance': 3.8,
-  'real-estate': 2.4,
-  'energy': 3.5,
-  'other': 3.0
+  'technology': 5.2,
+  'healthcare': 3.8,
+  'manufacturing': 2.1,
+  'retail': 1.4,
+  'services': 2.8,
+  'finance': 3.2,
+  'real-estate': 2.0,
+  'energy': 2.9,
+  'other': 2.5
 };
 
 export const useValuationCalculator = () => {
@@ -72,30 +72,41 @@ export const useValuationCalculator = () => {
     setIsCalculating(true);
     
     // Simulate calculation delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const baseMultiple = industryMultiples[companyData.industry] || 3.0;
+    const baseMultiple = industryMultiples[companyData.industry] || 2.5;
     
-    // Adjustments based on company characteristics
-    const sizeAdjustment = companyData.revenue > 10000000 ? 1.2 : 
+    // Size adjustment
+    const sizeAdjustment = companyData.revenue > 50000000 ? 1.4 : 
+                          companyData.revenue > 10000000 ? 1.2 : 
                           companyData.revenue > 5000000 ? 1.1 : 
                           companyData.revenue > 1000000 ? 1.0 : 0.8;
     
-    const growthAdjustment = companyData.growthRate > 20 ? 1.3 :
-                            companyData.growthRate > 10 ? 1.2 :
+    // Growth adjustment
+    const growthAdjustment = companyData.growthRate > 25 ? 1.3 :
+                            companyData.growthRate > 15 ? 1.2 :
+                            companyData.growthRate > 10 ? 1.15 :
                             companyData.growthRate > 5 ? 1.1 : 1.0;
     
-    const profitabilityAdjustment = (companyData.ebitda / companyData.revenue) > 0.2 ? 1.2 :
-                                   (companyData.ebitda / companyData.revenue) > 0.1 ? 1.1 : 1.0;
+    // Profitability adjustment
+    const profitMargin = companyData.ebitda / companyData.revenue;
+    const profitabilityAdjustment = profitMargin > 0.25 ? 1.25 :
+                                   profitMargin > 0.15 ? 1.15 :
+                                   profitMargin > 0.10 ? 1.1 : 
+                                   profitMargin > 0.05 ? 1.0 : 0.9;
 
     const adjustedMultiple = baseMultiple * sizeAdjustment * growthAdjustment * profitabilityAdjustment;
 
-    const revenueMultiple = companyData.revenue * (adjustedMultiple * 0.8);
-    const ebitdaMultiple = companyData.ebitda * adjustedMultiple * 4;
-    const dcfValue = companyData.ebitda * 8 * (1 + companyData.growthRate / 100);
-    const assetValue = companyData.revenue * 0.6;
+    // Different valuation methods
+    const revenueMultiple = companyData.revenue * adjustedMultiple;
+    const ebitdaMultiple = companyData.ebitda * (adjustedMultiple * 3.5);
+    const dcfValue = companyData.ebitda * 7 * (1 + companyData.growthRate / 100);
+    const assetValue = companyData.revenue * 0.5;
 
-    const finalValuation = Math.round((revenueMultiple + ebitdaMultiple + dcfValue) / 3);
+    // Weighted average valuation
+    const finalValuation = Math.round(
+      (revenueMultiple * 0.3 + ebitdaMultiple * 0.4 + dcfValue * 0.3)
+    );
     
     const valuationResult: ValuationResult = {
       revenueMultiple: Math.round(revenueMultiple),
@@ -104,8 +115,8 @@ export const useValuationCalculator = () => {
       assetValue: Math.round(assetValue),
       finalValuation,
       valuationRange: {
-        min: Math.round(finalValuation * 0.8),
-        max: Math.round(finalValuation * 1.2)
+        min: Math.round(finalValuation * 0.75),
+        max: Math.round(finalValuation * 1.25)
       },
       multiples: {
         industry: baseMultiple,
