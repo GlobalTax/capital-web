@@ -22,13 +22,23 @@ const ValuationCalculator = () => {
   } = useValuationCalculator();
 
   const handleNext = () => {
+    console.log('handleNext called, currentStep:', currentStep);
+    
     if (currentStep === 3) {
-      if (validateStep(3)) {
+      console.log('In step 3, validating before calculation...');
+      const isValid = validateStep(3);
+      console.log('Step 3 validation result:', isValid);
+      
+      if (isValid) {
+        console.log('Step 3 is valid, calculating valuation...');
         calculateValuation();
       } else {
-        nextStep(); // Esto mostrará la validación
+        console.log('Step 3 is not valid, showing validation errors');
+        // La validación fallida se maneja en nextStep()
+        nextStep();
       }
     } else {
+      console.log('Not in step 3, calling nextStep...');
       nextStep();
     }
   };

@@ -149,22 +149,33 @@ export const useValuationCalculator = () => {
   }, []);
 
   const nextStep = useCallback(() => {
+    console.log('nextStep called, currentStep:', currentStep);
     const isValid = validateStep(currentStep);
     console.log('Validation result for step', currentStep, ':', isValid);
+    
     if (!isValid) {
+      console.log('Validation failed, showing validation errors');
       setShowValidation(true);
       return;
     }
+    
+    console.log('Validation passed, moving to next step');
     setShowValidation(false);
-    setCurrentStep(prev => Math.min(prev + 1, 4));
+    setCurrentStep(prev => {
+      const newStep = Math.min(prev + 1, 4);
+      console.log('Moving from step', prev, 'to step', newStep);
+      return newStep;
+    });
   }, [currentStep]);
 
   const prevStep = useCallback(() => {
+    console.log('prevStep called');
     setShowValidation(false);
     setCurrentStep(prev => Math.max(prev - 1, 1));
   }, []);
 
   const goToStep = useCallback((step: number) => {
+    console.log('goToStep called with step:', step);
     setShowValidation(false);
     setCurrentStep(step);
   }, []);
@@ -226,6 +237,7 @@ export const useValuationCalculator = () => {
   }, [companyData]);
 
   const calculateValuation = useCallback(async () => {
+    console.log('calculateValuation called');
     setIsCalculating(true);
     
     // Simular tiempo de cálculo
@@ -269,6 +281,7 @@ export const useValuationCalculator = () => {
     setResult(valuationResult);
     setIsCalculating(false);
     setCurrentStep(4); // Ir al paso de resultados
+    console.log('Valuation calculated, moved to step 4');
   }, [companyData, sectorMultiples]);
 
   const resetCalculator = useCallback(() => {
