@@ -18,9 +18,9 @@ const ValuationCalculator = () => {
   } = useValuationCalculator();
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -36,10 +36,10 @@ const ValuationCalculator = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Business Valuation Calculator
+            Calculadora de Valoración Empresarial
           </h1>
           <p className="text-lg text-gray-600">
-            Get an estimated valuation of your business using industry-standard methodologies
+            Obtén una valoración estimada de tu empresa utilizando metodologías estándar de la industria
           </p>
         </div>
 
@@ -48,13 +48,13 @@ const ValuationCalculator = () => {
             {/* Company Name */}
             <div>
               <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-                Company Name *
+                Nombre de la Empresa *
               </Label>
               <Input
                 id="companyName"
                 value={companyData.companyName}
                 onChange={(e) => updateField('companyName', e.target.value)}
-                placeholder="Enter company name"
+                placeholder="Ingresa el nombre de la empresa"
                 className="w-full"
               />
             </div>
@@ -62,22 +62,22 @@ const ValuationCalculator = () => {
             {/* Industry */}
             <div>
               <Label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">
-                Industry *
+                Sector *
               </Label>
               <Select value={companyData.industry} onValueChange={(value) => updateField('industry', value)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select industry" />
+                  <SelectValue placeholder="Selecciona el sector" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="technology">Technology</SelectItem>
-                  <SelectItem value="healthcare">Healthcare</SelectItem>
-                  <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                  <SelectItem value="technology">Tecnología</SelectItem>
+                  <SelectItem value="healthcare">Salud</SelectItem>
+                  <SelectItem value="manufacturing">Manufactura</SelectItem>
                   <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
-                  <SelectItem value="finance">Financial Services</SelectItem>
-                  <SelectItem value="real-estate">Real Estate</SelectItem>
-                  <SelectItem value="energy">Energy</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="services">Servicios</SelectItem>
+                  <SelectItem value="finance">Servicios Financieros</SelectItem>
+                  <SelectItem value="real-estate">Inmobiliario</SelectItem>
+                  <SelectItem value="energy">Energía</SelectItem>
+                  <SelectItem value="other">Otro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -85,7 +85,7 @@ const ValuationCalculator = () => {
             {/* Annual Revenue */}
             <div>
               <Label htmlFor="revenue" className="block text-sm font-medium text-gray-700 mb-2">
-                Annual Revenue ($) *
+                Ingresos Anuales (€) *
               </Label>
               <Input
                 id="revenue"
@@ -100,7 +100,7 @@ const ValuationCalculator = () => {
             {/* EBITDA */}
             <div>
               <Label htmlFor="ebitda" className="block text-sm font-medium text-gray-700 mb-2">
-                EBITDA ($) *
+                EBITDA (€) *
               </Label>
               <Input
                 id="ebitda"
@@ -115,7 +115,7 @@ const ValuationCalculator = () => {
             {/* Number of Employees */}
             <div>
               <Label htmlFor="employees" className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Employees
+                Número de Empleados
               </Label>
               <Input
                 id="employees"
@@ -130,7 +130,7 @@ const ValuationCalculator = () => {
             {/* Year Founded */}
             <div>
               <Label htmlFor="yearFounded" className="block text-sm font-medium text-gray-700 mb-2">
-                Year Founded
+                Año de Fundación
               </Label>
               <Input
                 id="yearFounded"
@@ -144,13 +144,13 @@ const ValuationCalculator = () => {
             {/* Location */}
             <div>
               <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                Location
+                Ubicación
               </Label>
               <Input
                 id="location"
                 value={companyData.location}
                 onChange={(e) => updateField('location', e.target.value)}
-                placeholder="City, State/Country"
+                placeholder="Ciudad, País"
                 className="w-full"
               />
             </div>
@@ -158,7 +158,7 @@ const ValuationCalculator = () => {
             {/* Growth Rate */}
             <div>
               <Label htmlFor="growthRate" className="block text-sm font-medium text-gray-700 mb-2">
-                Annual Growth Rate (%)
+                Tasa de Crecimiento Anual (%)
               </Label>
               <Input
                 id="growthRate"
@@ -180,12 +180,12 @@ const ValuationCalculator = () => {
               {isCalculating ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Calculating...
+                  Calculando...
                 </>
               ) : (
                 <>
                   <Calculator className="h-4 w-4 mr-2" />
-                  Calculate Valuation
+                  Calcular Valoración
                 </>
               )}
             </Button>
@@ -195,7 +195,7 @@ const ValuationCalculator = () => {
               variant="outline"
               className="px-8"
             >
-              Reset
+              Reiniciar
             </Button>
           </div>
         </div>
@@ -205,54 +205,54 @@ const ValuationCalculator = () => {
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <TrendingUp className="h-6 w-6 mr-3 text-blue-600" />
-              Valuation Results
+              Resultados de la Valoración
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-blue-50 rounded-lg p-6 text-center">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Estimated Valuation</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Valoración Estimada</h3>
                 <p className="text-3xl font-bold text-blue-600 mb-2">
                   {formatCurrency(result.finalValuation)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  Range: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
+                  Rango: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
                 </p>
               </div>
 
               <div className="bg-green-50 rounded-lg p-6 text-center">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Revenue Multiple</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Múltiplo de Ingresos</h3>
                 <p className="text-3xl font-bold text-green-600 mb-2">
                   {(result.finalValuation / companyData.revenue).toFixed(1)}x
                 </p>
                 <p className="text-sm text-gray-600">
-                  Based on {formatCurrency(companyData.revenue)} revenue
+                  Basado en {formatCurrency(companyData.revenue)} de ingresos
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <h4 className="text-sm font-medium text-gray-600 mb-1">Revenue Multiple</h4>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Múltiplo de Ingresos</h4>
                 <p className="text-xl font-bold text-gray-900">{formatCurrency(result.revenueMultiple)}</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <h4 className="text-sm font-medium text-gray-600 mb-1">EBITDA Multiple</h4>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Múltiplo EBITDA</h4>
                 <p className="text-xl font-bold text-gray-900">{formatCurrency(result.ebitdaMultiple)}</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <h4 className="text-sm font-medium text-gray-600 mb-1">DCF Valuation</h4>
+                <h4 className="text-sm font-medium text-gray-600 mb-1">Valoración DCF</h4>
                 <p className="text-xl font-bold text-gray-900">{formatCurrency(result.dcfValue)}</p>
               </div>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                Important Disclaimer
+                Aviso Importante
               </h3>
               <p className="text-sm text-yellow-700">
-                This valuation is an estimate based on general market multiples and should not be considered 
-                as professional financial advice. For accurate business valuations, please consult with a 
-                qualified financial advisor or business valuation expert.
+                Esta valoración es una estimación basada en múltiplos de mercado generales y no debe considerarse 
+                como asesoramiento financiero profesional. Para valoraciones empresariales precisas, consulte con 
+                un asesor financiero cualificado o un experto en valoración empresarial.
               </p>
             </div>
           </div>
@@ -260,10 +260,10 @@ const ValuationCalculator = () => {
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              Ready to Calculate
+              Listo para Calcular
             </h3>
             <p className="text-gray-500">
-              Fill in the required fields above and click "Calculate Valuation" to get your estimate.
+              Completa los campos requeridos arriba y haz clic en "Calcular Valoración" para obtener tu estimación.
             </p>
           </div>
         )}

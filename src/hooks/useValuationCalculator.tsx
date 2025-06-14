@@ -71,24 +71,24 @@ export const useValuationCalculator = () => {
   const calculateValuation = useCallback(async () => {
     setIsCalculating(true);
     
-    // Simulate calculation delay
+    // Simular tiempo de cálculo
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const baseMultiple = industryMultiples[companyData.industry] || 2.5;
     
-    // Size adjustment
+    // Ajuste por tamaño
     const sizeAdjustment = companyData.revenue > 50000000 ? 1.4 : 
                           companyData.revenue > 10000000 ? 1.2 : 
                           companyData.revenue > 5000000 ? 1.1 : 
                           companyData.revenue > 1000000 ? 1.0 : 0.8;
     
-    // Growth adjustment
+    // Ajuste por crecimiento
     const growthAdjustment = companyData.growthRate > 25 ? 1.3 :
                             companyData.growthRate > 15 ? 1.2 :
                             companyData.growthRate > 10 ? 1.15 :
                             companyData.growthRate > 5 ? 1.1 : 1.0;
     
-    // Profitability adjustment
+    // Ajuste por rentabilidad
     const profitMargin = companyData.ebitda / companyData.revenue;
     const profitabilityAdjustment = profitMargin > 0.25 ? 1.25 :
                                    profitMargin > 0.15 ? 1.15 :
@@ -97,13 +97,13 @@ export const useValuationCalculator = () => {
 
     const adjustedMultiple = baseMultiple * sizeAdjustment * growthAdjustment * profitabilityAdjustment;
 
-    // Different valuation methods
+    // Diferentes métodos de valoración
     const revenueMultiple = companyData.revenue * adjustedMultiple;
     const ebitdaMultiple = companyData.ebitda * (adjustedMultiple * 3.5);
     const dcfValue = companyData.ebitda * 7 * (1 + companyData.growthRate / 100);
     const assetValue = companyData.revenue * 0.5;
 
-    // Weighted average valuation
+    // Valoración final ponderada
     const finalValuation = Math.round(
       (revenueMultiple * 0.3 + ebitdaMultiple * 0.4 + dcfValue * 0.3)
     );
