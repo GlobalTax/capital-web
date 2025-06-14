@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Check } from 'lucide-react';
 
 interface Step1Props {
   companyData: any;
@@ -72,12 +72,17 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
     }
     
     if (isValid && hasValue && (isTouched || showValidation)) {
-      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500 pr-10";
     } else if (!isValid && (showValidation || (isTouched && hasValue))) {
       return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
     }
     
     return "w-full border-black focus:ring-black focus:border-black";
+  };
+
+  const shouldShowCheckIcon = (isValid: boolean, hasValue: boolean, fieldName: string) => {
+    const isTouched = touchedFields.has(fieldName);
+    return isValid && hasValue && (isTouched || showValidation);
   };
 
   return (
@@ -89,7 +94,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nombre de contacto */}
-        <div>
+        <div className="relative">
           <Label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
             Nombre de la persona de contacto *
           </Label>
@@ -101,13 +106,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="Tu nombre completo"
             className={getFieldClassName(isContactNameValid, Boolean(companyData.contactName), 'contactName')}
           />
+          {shouldShowCheckIcon(isContactNameValid, Boolean(companyData.contactName), 'contactName') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isContactNameValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
         {/* Nombre de la empresa */}
-        <div>
+        <div className="relative">
           <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
             Nombre de la empresa *
           </Label>
@@ -119,13 +127,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="Nombre de tu empresa"
             className={getFieldClassName(isCompanyNameValid, Boolean(companyData.companyName), 'companyName')}
           />
+          {shouldShowCheckIcon(isCompanyNameValid, Boolean(companyData.companyName), 'companyName') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isCompanyNameValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
         {/* CIF */}
-        <div>
+        <div className="relative">
           <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
             CIF *
           </Label>
@@ -138,6 +149,9 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             className={getFieldClassName(isCifValid, Boolean(companyData.cif), 'cif')}
             maxLength={9}
           />
+          {shouldShowCheckIcon(isCifValid, Boolean(companyData.cif), 'cif') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && companyData.cif && !isCifValid && (
             <p className="text-red-500 text-sm mt-1">
               CIF inválido. Formato: Letra + 7 dígitos + dígito/letra de control
@@ -149,7 +163,7 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
         </div>
 
         {/* Email */}
-        <div>
+        <div className="relative">
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
             Correo electrónico *
           </Label>
@@ -162,13 +176,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="tu@empresa.com"
             className={getFieldClassName(isEmailValid, Boolean(companyData.email), 'email')}
           />
+          {shouldShowCheckIcon(isEmailValid, Boolean(companyData.email), 'email') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isEmailValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
         {/* Sector */}
-        <div>
+        <div className="relative">
           <Label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">
             Sector *
           </Label>
@@ -198,13 +215,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
               <SelectItem value="otro">Otro</SelectItem>
             </SelectContent>
           </Select>
+          {shouldShowCheckIcon(isIndustryValid, Boolean(companyData.industry), 'industry') && (
+            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isIndustryValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
         {/* Años de operación */}
-        <div>
+        <div className="relative">
           <Label htmlFor="yearsOfOperation" className="block text-sm font-medium text-gray-700 mb-2">
             Años de operación *
           </Label>
@@ -218,13 +238,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             placeholder="0"
             className={getFieldClassName(isYearsValid, Boolean(companyData.yearsOfOperation), 'yearsOfOperation')}
           />
+          {shouldShowCheckIcon(isYearsValid, Boolean(companyData.yearsOfOperation), 'yearsOfOperation') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isYearsValid && (
             <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
           )}
         </div>
 
         {/* Número de empleados */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 relative">
           <Label htmlFor="employeeRange" className="block text-sm font-medium text-gray-700 mb-2">
             Número de empleados *
           </Label>
@@ -246,6 +269,9 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
               <SelectItem value="500+">Más de 500 empleados</SelectItem>
             </SelectContent>
           </Select>
+          {shouldShowCheckIcon(isEmployeeRangeValid, Boolean(companyData.employeeRange), 'employeeRange') && (
+            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isEmployeeRangeValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}

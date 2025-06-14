@@ -3,6 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Check } from 'lucide-react';
 
 interface Step3Props {
   companyData: any;
@@ -29,12 +30,17 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
     }
     
     if (isValid && hasValue && (isTouched || showValidation)) {
-      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500 pr-10";
     } else if (!isValid && isRequired && (showValidation || (isTouched && hasValue))) {
       return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
     }
     
     return "w-full border-black focus:ring-black focus:border-black";
+  };
+
+  const shouldShowCheckIcon = (isValid: boolean, hasValue: boolean, fieldName: string) => {
+    const isTouched = touchedFields.has(fieldName);
+    return isValid && hasValue && (isTouched || showValidation);
   };
 
   return (
@@ -46,7 +52,7 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ubicación */}
-        <div>
+        <div className="relative">
           <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
             Ubicación principal *
           </Label>
@@ -58,13 +64,16 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
             placeholder="Ciudad, Provincia"
             className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}
           />
+          {shouldShowCheckIcon(isLocationValid, Boolean(companyData.location), 'location') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           {showValidation && !isLocationValid && (
             <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
           )}
         </div>
 
         {/* Cuota de mercado */}
-        <div>
+        <div className="relative">
           <Label htmlFor="marketShare" className="block text-sm font-medium text-gray-700 mb-2">
             Cuota de mercado estimada (%)
           </Label>
@@ -79,12 +88,15 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
             placeholder="0"
             className={getFieldClassName(isMarketShareValid, Boolean(companyData.marketShare), 'marketShare', false)}
           />
+          {shouldShowCheckIcon(isMarketShareValid, Boolean(companyData.marketShare), 'marketShare') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           <p className="text-sm text-gray-500 mt-1">Porcentaje aproximado de participación en tu mercado</p>
         </div>
       </div>
 
       {/* Ventaja competitiva */}
-      <div>
+      <div className="relative">
         <Label htmlFor="competitiveAdvantage" className="block text-sm font-medium text-gray-700 mb-2">
           Principal ventaja competitiva *
         </Label>
@@ -97,6 +109,9 @@ const Step3Characteristics: React.FC<Step3Props> = ({ companyData, updateField, 
           rows={4}
           className={getFieldClassName(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage), 'competitiveAdvantage')}
         />
+        {shouldShowCheckIcon(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage), 'competitiveAdvantage') && (
+          <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+        )}
         <p className="text-sm text-gray-500 mt-1">
           Por ejemplo: tecnología propia, patents, base de clientes fiel, ubicación estratégica, etc.
         </p>

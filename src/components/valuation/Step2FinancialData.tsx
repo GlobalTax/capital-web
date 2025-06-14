@@ -2,6 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Check } from 'lucide-react';
 
 interface Step2Props {
   companyData: any;
@@ -28,12 +29,17 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
     }
     
     if (isValid && hasValue && (isTouched || showValidation)) {
-      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500";
+      return "w-full border-green-500 focus:ring-green-500 focus:border-green-500 pr-10";
     } else if (!isValid && isRequired && (showValidation || (isTouched && hasValue))) {
       return "w-full border-red-500 focus:ring-red-500 focus:border-red-500";
     }
     
     return "w-full border-black focus:ring-black focus:border-black";
+  };
+
+  const shouldShowCheckIcon = (isValid: boolean, hasValue: boolean, fieldName: string) => {
+    const isTouched = touchedFields.has(fieldName);
+    return isValid && hasValue && (isTouched || showValidation);
   };
 
   return (
@@ -45,7 +51,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ingresos anuales */}
-        <div>
+        <div className="relative">
           <Label htmlFor="revenue" className="block text-sm font-medium text-gray-700 mb-2">
             Ingresos Anuales (€) *
           </Label>
@@ -59,6 +65,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             placeholder="0"
             className={getFieldClassName(isRevenueValid, Boolean(companyData.revenue), 'revenue')}
           />
+          {shouldShowCheckIcon(isRevenueValid, Boolean(companyData.revenue), 'revenue') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           <p className="text-sm text-gray-500 mt-1">Facturación anual total</p>
           {showValidation && !isRevenueValid && (
             <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
@@ -66,7 +75,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
         </div>
 
         {/* EBITDA */}
-        <div>
+        <div className="relative">
           <Label htmlFor="ebitda" className="block text-sm font-medium text-gray-700 mb-2">
             EBITDA (€) *
           </Label>
@@ -80,6 +89,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             placeholder="0"
             className={getFieldClassName(isEbitdaValid, Boolean(companyData.ebitda), 'ebitda')}
           />
+          {shouldShowCheckIcon(isEbitdaValid, Boolean(companyData.ebitda), 'ebitda') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           <p className="text-sm text-gray-500 mt-1">Beneficio antes de intereses, impuestos, depreciaciones y amortizaciones</p>
           {showValidation && !isEbitdaValid && (
             <p className="text-red-500 text-sm mt-1">Debe ser mayor que 0</p>
@@ -87,7 +99,7 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
         </div>
 
         {/* Tasa de crecimiento */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 relative">
           <Label htmlFor="growthRate" className="block text-sm font-medium text-gray-700 mb-2">
             Tasa de Crecimiento Anual (%)
           </Label>
@@ -102,6 +114,9 @@ const Step2FinancialData: React.FC<Step2Props> = ({ companyData, updateField, sh
             placeholder="0"
             className={getFieldClassName(isGrowthRateValid, Boolean(companyData.growthRate), 'growthRate', false)}
           />
+          {shouldShowCheckIcon(isGrowthRateValid, Boolean(companyData.growthRate), 'growthRate') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
           <p className="text-sm text-gray-500 mt-1">Crecimiento promedio de ingresos en los últimos años</p>
         </div>
       </div>
