@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const Hero = () => {
   return (
@@ -39,7 +39,7 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Column - Video/Content */}
+          {/* Right Column - Simple Image/Stats */}
           <div className="relative animate-fade-in">
             {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl transform rotate-3 opacity-20"></div>
@@ -49,12 +49,10 @@ const Hero = () => {
               {/* Content area */}
               <div className="aspect-video bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-8">
                 <div className="text-center">
-                  <div className="bg-black text-white w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto hover:scale-110 transition-transform duration-300 cursor-pointer">
-                    <Play size={24} fill="white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Valoración Optimizada</h3>
+                  <div className="text-6xl font-bold text-black mb-4">15+</div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Años de Experiencia</h3>
                   <p className="text-gray-600 max-w-sm">
-                    Descubre cómo maximizamos el valor de tu empresa a través de nuestro proceso probado
+                    Maximizando el valor de empresas a través de nuestro proceso probado
                   </p>
                 </div>
               </div>
