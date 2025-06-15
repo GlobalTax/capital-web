@@ -52,14 +52,11 @@ const WhyChooseCapittal = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 to-purple-50/30"></div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-[10px] text-sm font-medium mb-6">
             <Award className="w-4 h-4 mr-2" />
             La Diferencia Capittal
           </div>
@@ -70,7 +67,7 @@ const WhyChooseCapittal = () => {
             <span className="text-black">Capittal</span>
           </h2>
           
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             No somos una consultora generalista. Somos especialistas en M&A que vivimos 
             y respiramos compraventa de empresas todos los días.
           </p>
@@ -81,33 +78,25 @@ const WhyChooseCapittal = () => {
           {reasons.map((reason, index) => (
             <div 
               key={index} 
-              className="group bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 relative overflow-hidden"
+              className="bg-white border-0.5 border-black rounded-[10px] p-6 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out group"
             >
-              {/* Background gradient on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              <div className="relative z-10">
-                {/* Icon and highlight */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="text-black group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                    {reason.icon}
-                  </div>
-                  <div className="bg-black text-white px-3 py-1 rounded-full text-sm font-bold">
-                    {reason.highlight}
-                  </div>
+              {/* Icon and highlight */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-black group-hover:scale-110 transition-all duration-300">
+                  {reason.icon}
                 </div>
-                
-                <h3 className="text-xl font-bold text-black mb-4 group-hover:text-gray-800 transition-colors">
-                  {reason.title}
-                </h3>
-                
-                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors">
-                  {reason.description}
-                </p>
+                <div className="bg-black text-white px-3 py-1 rounded-[10px] text-sm font-bold border-0.5 border-black">
+                  {reason.highlight}
+                </div>
               </div>
-
-              {/* Hover line effect */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-black to-gray-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+              
+              <h3 className="text-xl font-bold text-black mb-4">
+                {reason.title}
+              </h3>
+              
+              <p className="text-gray-600 leading-relaxed">
+                {reason.description}
+              </p>
             </div>
           ))}
         </div>
@@ -126,8 +115,8 @@ const WhyChooseCapittal = () => {
                   key={index} 
                   className="flex items-start space-x-4 group"
                 >
-                  <div className="bg-green-100 rounded-full p-2 group-hover:bg-green-200 transition-colors duration-300">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div className="bg-white border-0.5 border-black rounded-[10px] p-2 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                    <CheckCircle className="w-5 h-5" />
                   </div>
                   <p className="text-gray-700 leading-relaxed group-hover:text-black transition-colors duration-300">
                     {benefit}
@@ -138,28 +127,25 @@ const WhyChooseCapittal = () => {
           </div>
 
           {/* Right side - CTA Card */}
-          <div className="bg-gradient-to-br from-black via-gray-900 to-black text-white rounded-3xl p-8 relative overflow-hidden shadow-2xl">
-            {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
-            
-            <div className="relative z-10">
+          <div className="bg-black text-white rounded-[10px] p-8 border-0.5 border-black shadow-lg">
+            <div>
               <h3 className="text-2xl font-bold mb-4">
                 ¿Quieres Saber Cuánto Vale tu Empresa?
               </h3>
               
-              <p className="text-lg mb-6 opacity-90">
+              <p className="text-lg mb-6 text-gray-300">
                 Obtén una valoración profesional gratuita y sin compromiso
               </p>
               
               <div className="space-y-4">
-                <Button className="bg-white text-black hover:bg-gray-100 w-full py-4 text-lg font-semibold hover:scale-105 transition-all duration-300">
+                <Button className="bg-white text-black border-0.5 border-white rounded-[10px] hover:bg-gray-100 w-full py-4 text-lg font-semibold hover:scale-105 transition-all duration-300">
                   Valoración Gratuita
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 
                 <Button 
                   variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white hover:text-black w-full py-4 text-lg font-semibold hover:scale-105 transition-all duration-300"
+                  className="border-0.5 border-white rounded-[10px] text-white hover:bg-white hover:text-black w-full py-4 text-lg font-semibold hover:scale-105 transition-all duration-300"
                 >
                   Solicitar Reunión
                 </Button>

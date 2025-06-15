@@ -49,7 +49,7 @@ const About = () => {
               con la máxima confidencialidad y eficiencia.
             </p>
 
-            <Button className="capittal-button">
+            <Button className="bg-white text-black border-0.5 border-black rounded-[10px] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
               Conocer Más
             </Button>
           </div>
@@ -57,7 +57,7 @@ const About = () => {
           {/* Features Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {features.map((feature, index) => (
-              <div key={index} className="capittal-card">
+              <div key={index} className="bg-white border-0.5 border-black rounded-[10px] p-6 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out">
                 <div className="text-black mb-3">
                   {feature.icon}
                 </div>

@@ -61,7 +61,7 @@ const Services = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
             Nuestros Servicios
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
           </p>
         </div>
@@ -72,19 +72,15 @@ const Services = () => {
             <h3 className="text-2xl font-bold text-black mb-4">
               Servicios Core Business
             </h3>
-            <div className="w-24 h-1 bg-black mx-auto"></div>
+            <div className="w-24 h-1 bg-black mx-auto rounded-[10px]"></div>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {coreServices.map((service, index) => (
-              <div key={index} className="group relative">
-                {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white rounded-2xl transform group-hover:scale-105 transition-transform duration-300"></div>
-                
-                {/* Main card */}
-                <div className="relative bg-white border border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
+              <div key={index} className="group">
+                <div className="bg-white border-0.5 border-black rounded-[10px] p-8 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out">
                   {/* Icon */}
-                  <div className="text-black mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                  <div className="text-black mb-6 group-hover:scale-110 transition-transform duration-300">
                     {service.icon}
                   </div>
                   
@@ -109,14 +105,11 @@ const Services = () => {
                   </div>
 
                   {/* Button */}
-                  <Button className="capittal-button group w-full">
+                  <Button className="bg-white text-black border-0.5 border-black rounded-[10px] w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">
                     Más información
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
-
-                {/* Accent line */}
-                <div className="absolute top-0 left-8 right-8 h-1 bg-black rounded-b-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
               </div>
             ))}
           </div>
@@ -129,7 +122,7 @@ const Services = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {complementaryServices.map((service, index) => (
-              <Card key={index} className="capittal-card group cursor-pointer hover:shadow-xl transition-all duration-300">
+              <Card key={index} className="bg-white border-0.5 border-black rounded-[10px] shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out group cursor-pointer">
                 <CardContent className="p-6">
                   <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
                     {service.icon}

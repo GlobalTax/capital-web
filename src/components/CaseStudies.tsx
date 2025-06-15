@@ -35,7 +35,7 @@ const CaseStudies = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
             Casos de Éxito
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Nuestro historial habla por sí mismo. Descubra cómo hemos ayudado a empresas 
             a alcanzar sus objetivos estratégicos.
           </p>
@@ -43,10 +43,10 @@ const CaseStudies = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cases.map((case_, index) => (
-            <Card key={index} className="capittal-card group">
+            <Card key={index} className="bg-white border-0.5 border-black rounded-[10px] shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out group">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <Badge className="bg-white border-0.5 border-black text-black rounded-lg">
+                  <Badge className="bg-white border-0.5 border-black text-black rounded-[10px]">
                     {case_.sector}
                   </Badge>
                   <span className="text-2xl font-bold text-black">{case_.value}</span>
@@ -78,7 +78,7 @@ const CaseStudies = () => {
           <p className="text-lg text-gray-600 mb-6">
             ¿Quiere conocer más detalles sobre nuestros casos de éxito?
           </p>
-          <button className="capittal-button">
+          <button className="bg-white text-black border-0.5 border-black rounded-[10px] px-6 py-3 font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             Descargar Case Studies
           </button>
         </div>
