@@ -29,17 +29,17 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, va
               <button
                 onClick={() => isClickable ? goToStep(step.number) : null}
                 disabled={!isClickable}
-                className={`w-6 h-6 rounded-sm flex items-center justify-center text-xs font-semibold transition-all duration-200 border ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-out border-0.5 ${
                   isCompleted
-                    ? 'bg-green-500 text-white border-green-500'
+                    ? 'bg-green-500 text-white border-green-500 shadow-sm'
                     : isCurrent
-                    ? 'bg-black text-white border-black'
+                    ? 'bg-black text-white border-black shadow-sm'
                     : isClickable
-                    ? 'bg-white text-black border-black hover:bg-gray-50'
-                    : 'bg-white text-gray-400 border-gray-300 cursor-not-allowed'
+                    ? 'bg-white text-black border-black hover:shadow-lg hover:-translate-y-1'
+                    : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
                 }`}
               >
-                {isCompleted ? <Check className="w-3 h-3" /> : step.number}
+                {isCompleted ? <Check className="w-4 h-4" /> : step.number}
               </button>
               <span className={`text-xs mt-2 text-center max-w-20 leading-tight ${
                 isCurrent ? 'text-black font-medium' : 'text-gray-500'
@@ -48,7 +48,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, va
               </span>
             </div>
             {index < steps.length - 1 && (
-              <div className={`w-12 h-px mx-3 ${
+              <div className={`w-12 h-0.5 mx-3 ${
                 isCompleted ? 'bg-green-500' : 'bg-gray-200'
               }`} />
             )}

@@ -17,25 +17,24 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onNext
 }) => {
   return (
-    <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+    <div className="flex justify-between items-center mt-8 pt-6 border-t-0.5 border-black">
       <Button
         onClick={onPrev}
-        variant="outline"
         disabled={currentStep === 1}
-        className="flex items-center border-gray-900 text-gray-900 hover:bg-gray-100"
+        className="flex items-center bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
         Anterior
       </Button>
       
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-gray-500 font-medium">
         Paso {currentStep} de 3
       </div>
       
       <Button
         onClick={onNext}
         disabled={isNextDisabled}
-        className="flex items-center bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
+        className="flex items-center bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
       >
         {currentStep === 3 ? (
           <>

@@ -28,7 +28,7 @@ const About = () => {
   ];
 
   return (
-    <section id="nosotros" className="py-20 bg-gray-50">
+    <section id="nosotros" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
@@ -49,7 +49,7 @@ const About = () => {
               con la máxima confidencialidad y eficiencia.
             </p>
 
-            <Button className="bg-white text-black border-0.5 border-black rounded-[10px] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base px-6 py-3">
+            <Button className="bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base px-6 py-3">
               Conocer Más
             </Button>
           </div>
@@ -57,7 +57,7 @@ const About = () => {
           {/* Features Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {features.map((feature, index) => (
-              <div key={index} className="bg-white border-0.5 border-black rounded-[10px] p-6 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out">
+              <div key={index} className="bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
                 <div className="text-black mb-3">
                   {feature.icon}
                 </div>
@@ -74,22 +74,22 @@ const About = () => {
 
         {/* Stats Section */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="text-center">
+          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">98%</div>
             <div className="text-gray-600 font-medium text-base">Tasa de Éxito</div>
           </div>
           
-          <div className="text-center">
+          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">45</div>
             <div className="text-gray-600 font-medium text-base">Días Promedio</div>
           </div>
           
-          <div className="text-center">
+          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">25+</div>
             <div className="text-gray-600 font-medium text-base">Sectores</div>
           </div>
           
-          <div className="text-center">
+          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">12</div>
             <div className="text-gray-600 font-medium text-base">Países</div>
           </div>

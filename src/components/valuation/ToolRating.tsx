@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Star, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -82,11 +83,11 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
 
   if (isSubmitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <h3 className="text-lg font-semibold text-green-800 mb-2">
+      <div className="bg-white border-0.5 border-green-500 rounded-lg p-6 text-center shadow-sm">
+        <h3 className="text-lg font-semibold text-green-700 mb-2">
           ¡Gracias por tu valoración!
         </h3>
-        <p className="text-green-700">
+        <p className="text-green-600">
           Tu feedback es muy valioso para nosotros y nos ayuda a mejorar continuamente 
           nuestra herramienta de valoración empresarial.
         </p>
@@ -96,14 +97,14 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
 
   const StarRating = ({ value, onChange, label }: { value: number; onChange: (rating: number) => void; label: string }) => (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <label className="block text-sm font-medium text-black mb-2">{label}</label>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
             onClick={() => onChange(star)}
-            className="focus:outline-none"
+            className="focus:outline-none transition-all duration-200 hover:scale-110"
           >
             <Star
               className={`h-6 w-6 ${
@@ -119,11 +120,11 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
   );
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-blue-900 mb-4">
+    <div className="bg-white border-0.5 border-black rounded-lg p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-black mb-4">
         Valora nuestra herramienta
       </h3>
-      <p className="text-blue-700 mb-6">
+      <p className="text-gray-600 mb-6">
         Tu opinión nos ayuda a mejorar. ¿Qué te ha parecido la calculadora de valoración?
       </p>
 
@@ -147,19 +148,19 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
 
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-black mb-2">
             Comentarios adicionales (opcional)
           </label>
           <Textarea
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             placeholder="Cuéntanos qué te ha gustado más o qué podríamos mejorar..."
-            className="min-h-[80px]"
+            className="min-h-[80px] border-0.5 border-black rounded-lg focus:ring-2 focus:ring-black/20"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-black mb-2">
             Email (opcional, para seguimiento)
           </label>
           <Input
@@ -167,6 +168,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
+            className="border-0.5 border-black rounded-lg focus:ring-2 focus:ring-black/20"
           />
         </div>
       </div>
@@ -174,7 +176,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
       <Button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        className="w-full flex items-center justify-center"
+        className="w-full flex items-center justify-center bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
       >
         <Send className="h-4 w-4 mr-2" />
         {isSubmitting ? 'Enviando valoración...' : 'Enviar valoración'}
