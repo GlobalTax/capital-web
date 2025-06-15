@@ -59,13 +59,6 @@ const Services = () => {
 
         {/* Core Services - Enhanced Cards */}
         <div className="mb-20">
-          <div className="text-center mb-12">
-            <h3 className="text-xl font-bold text-black mb-4">
-              Servicios Core Business
-            </h3>
-            <div className="w-24 h-1 bg-black mx-auto rounded-lg"></div>
-          </div>
-          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {coreServices.map((service, index) => (
               <div key={index} className="group">
