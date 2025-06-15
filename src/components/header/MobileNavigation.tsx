@@ -15,7 +15,7 @@ interface MobileNavigationProps {
   serviciosItems: NavItem[];
   sectoresItems: NavItem[];
   recursosItems: NavItem[];
-  empresaItems: NavItem[];
+  nosotrosItems: NavItem[];
   navItems: NavItem[];
 }
 
@@ -25,7 +25,7 @@ const MobileNavigation = ({
   serviciosItems, 
   sectoresItems, 
   recursosItems, 
-  empresaItems,
+  nosotrosItems,
   navItems 
 }: MobileNavigationProps) => {
   if (!isMenuOpen) return null;
@@ -33,23 +33,6 @@ const MobileNavigation = ({
   return (
     <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b-0.5 border-black animate-slide-in">
       <nav className="px-4 py-6 space-y-4">
-        {/* Mobile Empresa */}
-        <div>
-          <div className="text-black text-sm font-medium mb-2">Empresa</div>
-          <div className="pl-4 space-y-2">
-            {empresaItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
         {/* Mobile Servicios */}
         <div>
           <div className="text-black text-sm font-medium mb-2">Servicios</div>
@@ -72,6 +55,23 @@ const MobileNavigation = ({
           <div className="text-black text-sm font-medium mb-2">Sectores</div>
           <div className="pl-4 space-y-2">
             {sectoresItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile Nosotros */}
+        <div>
+          <div className="text-black text-sm font-medium mb-2">Nosotros</div>
+          <div className="pl-4 space-y-2">
+            {nosotrosItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.href}

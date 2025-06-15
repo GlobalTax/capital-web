@@ -26,7 +26,7 @@ const Header = () => {
             serviciosItems={menuData.serviciosItems}
             sectoresItems={menuData.sectoresItems}
             recursosItems={menuData.recursosItems}
-            empresaItems={menuData.empresaItems}
+            nosotrosItems={menuData.nosotrosItems}
             navItems={menuData.navItems}
           />
 
@@ -62,7 +62,7 @@ const Header = () => {
           serviciosItems={menuData.serviciosItems}
           sectoresItems={menuData.sectoresItems}
           recursosItems={menuData.recursosItems}
-          empresaItems={menuData.empresaItems}
+          nosotrosItems={menuData.nosotrosItems}
           navItems={menuData.navItems}
         />
       </div>

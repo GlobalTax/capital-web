@@ -34,16 +34,14 @@ export const menuData = {
     { label: 'Calculadora de Valoración', href: '/calculadora-valoracion' },
   ],
 
-  // Nuevo grupo "Empresa" que agrupa elementos relacionados
-  empresaItems: [
+  // Renombrado de "empresaItems" a "nosotrosItems" para mayor claridad
+  nosotrosItems: [
     { label: 'Por Qué Elegirnos', href: '/por-que-elegirnos' },
     { label: 'Casos de Éxito', href: '/casos-exito' },
     { label: 'Equipo', href: '/equipo' },
     { label: 'Nosotros', href: '/nosotros' },
   ],
 
-  // Elementos principales del menú simplificados
-  navItems: [
-    { label: 'Contacto', href: '/contacto' },
-  ],
+  // Contacto eliminado del menú principal
+  navItems: [],
 };
