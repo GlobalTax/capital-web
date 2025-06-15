@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -13,14 +12,11 @@ const Hero = () => {
               Líderes en M&A desde 2008
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-normal text-black mb-8 leading-tight tracking-tight">
-              Maximizamos el
-              <br />
-              <span className="text-black">valor</span>
-              {' '}de tu empresa
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8 leading-tight">
+              Maximizamos el valor de tu empresa
             </h1>
             
-            <p className="text-lg text-gray-600 mb-12 leading-relaxed font-normal max-w-2xl">
+            <p className="text-lg text-gray-600 mb-12 leading-relaxed max-w-2xl">
               Especialistas en compraventa de empresas con más de 15 años de experiencia. 
               Te acompañamos en cada paso para lograr el mejor precio.
             </p>
