@@ -21,9 +21,11 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   const { createCompanyValuation } = useHubSpotIntegration();
   const { saveValuation } = useSupabaseValuation();
 
-  // Guardar datos cuando se muestran los resultados
+  // Guardar datos cuando se muestran los resultados - FIX: Agregar más dependencias específicas
   useEffect(() => {
-    if (result && companyData && !dataSaved) {
+    if (result && companyData && result.finalValuation && companyData.companyName && !dataSaved) {
+      console.log('Ejecutando saveData - solo una vez');
+      
       const saveData = async () => {
         try {
           console.log('🚀 Iniciando proceso de guardado de datos...');
@@ -83,7 +85,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
 
       saveData();
     }
-  }, [result, companyData, dataSaved, saveValuation, createCompanyValuation, toast]);
+  }, [result?.finalValuation, companyData?.companyName, dataSaved]); // FIX: Dependencias más específicas
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
