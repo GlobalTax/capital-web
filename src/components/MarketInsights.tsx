@@ -69,19 +69,12 @@ const MarketInsights = () => {
             análisis de transacciones comparables y datos de inteligencia M&A actualizados en tiempo real.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex justify-center">
             <Button 
               className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
               onClick={() => window.open('https://capittalmarket.com', '_blank')}
             >
               Acceder a Capittal Market
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="bg-transparent border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:bg-black hover:text-white transition-all duration-300"
-            >
-              Solicitar Acceso
             </Button>
           </div>
 
