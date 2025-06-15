@@ -98,10 +98,10 @@ const Cookies = () => {
                   Puede configurar su navegador para rechazar cookies:
                 </p>
                 <ul className="text-gray-600 leading-relaxed space-y-2 ml-4">
-                  <li>• Chrome: Configuración > Privacidad y seguridad > Cookies</li>
-                  <li>• Firefox: Opciones > Privacidad y seguridad</li>
-                  <li>• Safari: Preferencias > Privacidad</li>
-                  <li>• Edge: Configuración > Cookies y permisos del sitio</li>
+                  <li>• Chrome: Configuración {'>'}  Privacidad y seguridad {'>'} Cookies</li>
+                  <li>• Firefox: Opciones {'>'} Privacidad y seguridad</li>
+                  <li>• Safari: Preferencias {'>'} Privacidad</li>
+                  <li>• Edge: Configuración {'>'} Cookies y permisos del sitio</li>
                 </ul>
               </div>
 
