@@ -34,11 +34,11 @@ const MarketInsights = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Market Insights
+            Capittal Market
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Acceda a análisis de mercado en tiempo real y datos exclusivos del sector M&A 
-            en nuestra plataforma especializada Capittal Market.
+            Accede a análisis de mercado en tiempo real y datos exclusivos del sector M&A 
+            con nuestro sistema propietario de inteligencia de mercado.
           </p>
         </div>
 
@@ -66,14 +66,14 @@ const MarketInsights = () => {
           ))}
         </div>
 
-        {/* Market Platform CTA */}
+        {/* Market Intelligence CTA */}
         <div className="capittal-card text-center p-8">
           <h3 className="text-2xl font-bold text-black mb-4">
-            Capittal Market Platform
+            Inteligencia de Mercado Capittal
           </h3>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Nuestra plataforma propietaria ofrece acceso exclusivo a valoraciones de mercado, 
-            análisis de transacciones comparables y herramientas de due diligence automatizadas.
+            Nuestro sistema propietario ofrece acceso exclusivo a valoraciones de mercado, 
+            análisis de transacciones comparables y datos de inteligencia M&A actualizados en tiempo real.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -81,7 +81,7 @@ const MarketInsights = () => {
               className="capittal-button text-lg px-8 py-4"
               onClick={() => window.open('https://capittalmarket.com', '_blank')}
             >
-              Explorar Capittal Market
+              Acceder a Capittal Market
               <ExternalLink className="ml-2" size={20} />
             </Button>
             
@@ -89,7 +89,7 @@ const MarketInsights = () => {
               variant="outline" 
               className="bg-transparent border-0.5 border-black rounded-lg px-8 py-4 text-lg font-medium hover:bg-black hover:text-white transition-all duration-300"
             >
-              Solicitar Demo
+              Solicitar Acceso
             </Button>
           </div>
 
