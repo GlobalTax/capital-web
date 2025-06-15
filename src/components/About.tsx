@@ -7,12 +7,13 @@ const About = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            Parte del Grupo Navarro
+            Gestión Integral de Procesos de Compraventa
           </h2>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Capittal forma parte del grupo navarro, respaldado por más de 70 profesionales especializados 
-            en abogados, asesores fiscales, laborales y economistas especialistas en la gestión de empresas.
+            Capittal forma parte del Grupo Navarro, un ecosistema integral de servicios profesionales 
+            que garantiza el éxito de cada transacción. Contamos con más de 70 especialistas que 
+            trabajan de forma coordinada para maximizar el valor de tu operación desde el primer día.
           </p>
         </div>
 
