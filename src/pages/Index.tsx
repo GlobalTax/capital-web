@@ -3,6 +3,7 @@ import React from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import MarketInsights from '@/components/MarketInsights';
+import WhyChooseCapittal from '@/components/WhyChooseCapittal';
 import Services from '@/components/Services';
 import About from '@/components/About';
 import CaseStudies from '@/components/CaseStudies';
@@ -16,6 +17,7 @@ const Index = () => {
       <Header />
       <Hero />
       <MarketInsights />
+      <WhyChooseCapittal />
       <Services />
       <About />
       <CaseStudies />
