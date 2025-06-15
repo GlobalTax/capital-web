@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -12,8 +13,8 @@ const Hero = () => {
               Líderes en M&A desde 2008
             </div>
             
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8 leading-tight">
-              Maximizamos el valor de tu empresa
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-8 leading-tight">
+              Especialista en compraventa de empresas
             </h1>
             
             <p className="text-lg text-gray-600 mb-12 leading-relaxed max-w-2xl">
