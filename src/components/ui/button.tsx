@@ -6,17 +6,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-white text-black border-0.5 border-black hover:shadow-lg hover:-translate-y-1",
+        default: "bg-white text-black border border-gray-300 hover:shadow-lg hover:-translate-y-1",
         destructive:
-          "bg-red-500 text-white border-0.5 border-red-500 hover:bg-red-600 hover:shadow-lg hover:-translate-y-1",
+          "bg-red-500 text-white border border-red-300 hover:bg-red-600 hover:shadow-lg hover:-translate-y-1",
         outline:
-          "border-0.5 border-black bg-white hover:bg-gray-50 hover:shadow-lg hover:-translate-y-1",
+          "border border-gray-300 bg-white hover:bg-gray-50 hover:shadow-lg hover:-translate-y-1",
         secondary:
-          "bg-gray-100 text-gray-900 border-0.5 border-gray-300 hover:bg-gray-200 hover:shadow-lg hover:-translate-y-1",
+          "bg-gray-100 text-gray-900 border border-gray-300 hover:bg-gray-200 hover:shadow-lg hover:-translate-y-1",
         ghost: "hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200",
         link: "text-black underline-offset-4 hover:underline",
       },

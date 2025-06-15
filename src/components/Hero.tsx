@@ -28,7 +28,7 @@ const Hero = () => {
             </p>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-0.5 border-gray-200">
+            <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-gray-300">
               <div className="text-center">
                 <div className="text-2xl font-bold text-black mb-2">€1.0B+</div>
                 <div className="text-sm text-gray-600">Valor Transaccional</div>
@@ -44,14 +44,14 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <Button className="bg-white text-black border-0.5 border-black rounded-lg text-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out">
+              <Button className="bg-white text-black border border-gray-300 rounded-lg text-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out">
                 Evaluar mi Empresa
                 <ArrowRight className="ml-3" size={24} />
               </Button>
               
               <Button 
                 variant="outline" 
-                className="bg-transparent border-0.5 border-black rounded-lg px-12 py-6 text-lg font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm"
+                className="bg-transparent border border-gray-300 rounded-lg px-12 py-6 text-lg font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm"
               >
                 Ver Casos de Éxito
               </Button>
@@ -62,7 +62,7 @@ const Hero = () => {
           <div className="lg:col-span-5">
             <div className="relative">
               {/* Main Dashboard Card */}
-              <div className="bg-white rounded-lg border-0.5 border-black shadow-lg overflow-hidden">
+              <div className="bg-white rounded-lg border border-gray-300 shadow-lg overflow-hidden">
                 <div className="bg-gray-900 text-white p-6">
                   <h3 className="text-lg font-semibold mb-2">Capittal Market Dashboard</h3>
                   <p className="text-gray-300 text-sm">Análisis en tiempo real</p>
@@ -71,7 +71,7 @@ const Hero = () => {
                 {/* Market Data Table */}
                 <div className="p-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between py-3 border-b border-0.5 border-gray-100">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-300">
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <span className="font-medium text-gray-900">Tech Startup</span>
@@ -82,7 +82,7 @@ const Hero = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between py-3 border-b border-0.5 border-gray-100">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-300">
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span className="font-medium text-gray-900">Industrial Co.</span>
@@ -105,7 +105,7 @@ const Hero = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-6 pt-6 border-t border-0.5 border-gray-200">
+                  <div className="mt-6 pt-6 border-t border-gray-300">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Transacciones Q4</span>
                       <span className="font-bold text-gray-900">47 activas</span>
@@ -125,7 +125,7 @@ const Hero = () => {
                 </div>
               </div>
               
-              <div className="absolute -bottom-4 -left-4 bg-white border-0.5 border-gray-200 rounded-lg p-4 shadow-lg">
+              <div className="absolute -bottom-4 -left-4 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
                 <div className="flex items-center space-x-2">
                   <Users className="w-5 h-5 text-gray-600" />
                   <div>

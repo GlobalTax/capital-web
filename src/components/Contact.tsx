@@ -64,7 +64,7 @@ const Contact = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Contact Form */}
-          <div className="bg-white border-0.5 border-black rounded-lg p-8 shadow-sm">
+          <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm">
             <h3 className="text-2xl font-bold text-black mb-6">
               Hablemos de su Proyecto
             </h3>
@@ -81,7 +81,7 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-300/50"
                     placeholder="Su nombre"
                   />
                 </div>
@@ -96,7 +96,7 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-300/50"
                     placeholder="email@empresa.com"
                   />
                 </div>
@@ -112,7 +112,7 @@ const Contact = () => {
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-300/50"
                     placeholder="Nombre de su empresa"
                   />
                 </div>
@@ -126,7 +126,7 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-300/50"
                     placeholder="+34 600 000 000"
                   />
                 </div>
@@ -142,14 +142,14 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   rows={5}
-                  className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20 resize-none"
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-300/50 resize-none"
                   placeholder="Cuéntenos sobre su proyecto o necesidades..."
                 />
               </div>
 
               <Button 
                 type="submit"
-                className="bg-white text-black border-0.5 border-black rounded-lg w-full py-4 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
+                className="bg-white text-black border border-gray-300 rounded-lg w-full py-4 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
               >
                 Enviar Mensaje
               </Button>
@@ -158,7 +158,7 @@ const Contact = () => {
 
           {/* Contact Information */}
           <div className="space-y-8">
-            <div className="bg-white border-0.5 border-black rounded-lg p-8 shadow-sm">
+            <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm">
               <h3 className="text-2xl font-bold text-black mb-6">
                 Información de Contacto
               </h3>
@@ -213,7 +213,7 @@ const Contact = () => {
             </div>
 
             {/* Response Time */}
-            <div className="bg-gray-50 border-0.5 border-gray-200 rounded-lg p-6">
+            <div className="bg-gray-50 border border-gray-300 rounded-lg p-6">
               <h4 className="text-lg font-bold text-black mb-4">
                 Tiempo de Respuesta
               </h4>

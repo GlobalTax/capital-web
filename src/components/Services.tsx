@@ -78,7 +78,7 @@ const Services = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {coreServices.map((service, index) => (
               <div key={index} className="group">
-                <div className="bg-white border-0.5 border-black rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
                   {/* Icon */}
                   <div className="text-black mb-6 group-hover:scale-110 transition-transform duration-300">
                     {service.icon}
@@ -105,7 +105,7 @@ const Services = () => {
                   </div>
 
                   {/* Button */}
-                  <Button className="bg-white text-black border-0.5 border-black rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-base py-3">
+                  <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-base py-3">
                     Más información
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -122,7 +122,7 @@ const Services = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {complementaryServices.map((service, index) => (
-              <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group cursor-pointer">
+              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group cursor-pointer">
                 <CardContent className="p-6">
                   <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
                     {service.icon}

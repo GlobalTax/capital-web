@@ -42,9 +42,9 @@ const Team = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {teamMembers.map((member, index) => (
-            <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center">
+            <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center">
               <CardContent className="p-6">
-                <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-6 border-0.5 border-black"></div>
+                <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-6 border border-gray-300"></div>
                 
                 <h3 className="text-lg font-semibold text-black mb-2">
                   {member.name}

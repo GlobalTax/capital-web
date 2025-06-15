@@ -45,7 +45,7 @@ const MarketInsights = () => {
         {/* Market Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {insights.map((insight, index) => (
-            <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+            <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
               <CardContent className="p-6">
                 <div className="text-black mb-3 flex justify-center">
                   {insight.icon}
@@ -67,7 +67,7 @@ const MarketInsights = () => {
         </div>
 
         {/* Market Intelligence CTA */}
-        <div className="bg-white border-0.5 border-black rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-8 text-center">
           <h3 className="text-2xl font-bold text-black mb-4">
             Inteligencia de Mercado Capittal
           </h3>
@@ -78,7 +78,7 @@ const MarketInsights = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
-              className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
+              className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
               onClick={() => window.open('https://capittalmarket.com', '_blank')}
             >
               Acceder a Capittal Market
@@ -87,7 +87,7 @@ const MarketInsights = () => {
             
             <Button 
               variant="outline" 
-              className="bg-transparent border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:bg-black hover:text-white transition-all duration-300"
+              className="bg-transparent border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:bg-black hover:text-white transition-all duration-300"
             >
               Solicitar Acceso
             </Button>

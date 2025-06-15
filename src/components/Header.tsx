@@ -11,7 +11,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-0.5 border-gray-200">
+    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -33,11 +33,11 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-2">
             <Link to="/contacto">
-              <Button className="bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <Button className="bg-white text-black border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
                 Contacto
               </Button>
             </Link>
-            <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors border-0.5 border-black rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 ease-out">
+            <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors border border-gray-300 rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 ease-out">
               <Phone size={20} />
             </a>
           </div>
