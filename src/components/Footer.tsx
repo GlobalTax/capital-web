@@ -38,7 +38,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-white text-black border-t border-gray-200">
+    <footer className="bg-white text-black border-t border-0.5 border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -65,7 +65,7 @@ const Footer = () => {
                   <li key={linkIndex}>
                     <a 
                       href="#" 
-                      className="text-gray-600 hover:text-black transition-colors duration-200"
+                      className="text-gray-600 hover:text-black transition-colors duration-300"
                     >
                       {link}
                     </a>
@@ -77,20 +77,20 @@ const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-200 mt-12 pt-8">
+        <div className="border-t border-0.5 border-gray-200 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-600 mb-4 md:mb-0">
               © {currentYear} Capittal. Todos los derechos reservados.
             </div>
             
             <div className="flex space-x-6 text-gray-600">
-              <a href="#" className="hover:text-black transition-colors duration-200">
+              <a href="#" className="hover:text-black transition-colors duration-300">
                 Política de Privacidad
               </a>
-              <a href="#" className="hover:text-black transition-colors duration-200">
+              <a href="#" className="hover:text-black transition-colors duration-300">
                 Términos de Uso
               </a>
-              <a href="#" className="hover:text-black transition-colors duration-200">
+              <a href="#" className="hover:text-black transition-colors duration-300">
                 Cookies
               </a>
             </div>
