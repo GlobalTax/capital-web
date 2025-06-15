@@ -11,30 +11,9 @@ const VentaEmpresasHero = () => {
     'Asesoramiento integral durante todo el proceso'
   ];
 
-  const stats = [
-    { label: 'Empresas vendidas', value: '200+' },
-    { label: 'Valor total transacciones', value: '€2.5B' },
-    { label: 'Tasa de éxito', value: '85%' },
-    { label: 'Múltiplo promedio', value: '4.2x' }
-  ];
-
   return (
     <section className="bg-white py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Stats Bar */}
-        <div className="bg-gray-50 rounded-xl p-6 mb-16">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            {stats.map((stat, index) => (
-              <div key={index}>
-                <div className="text-2xl lg:text-3xl font-bold text-black mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center bg-gray-100 rounded-full px-4 py-2 mb-6">
@@ -42,7 +21,7 @@ const VentaEmpresasHero = () => {
               <span className="text-sm font-medium text-black">Especialistas en M&A</span>
             </div>
 
-            <h1 className="text-4xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-bold text-black mb-6 leading-tight">
               Vende tu Empresa al
               <span className="block text-gray-600">Mejor Precio</span>
             </h1>
@@ -73,57 +52,13 @@ const VentaEmpresasHero = () => {
           </div>
 
           <div className="relative">
-            <div className="capittal-card p-8 max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-black mb-6 text-center">
-                Valoración Gratuita
-              </h3>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre de la empresa
-                  </label>
-                  <input
-                    type="text"
-                    className="capittal-input w-full"
-                    placeholder="Introduce el nombre"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sector de actividad
-                  </label>
-                  <input
-                    type="text"
-                    className="capittal-input w-full"
-                    placeholder="Ej: Tecnología, Retail..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Facturación anual aproximada
-                  </label>
-                  <select className="capittal-input w-full">
-                    <option>Menos de 1M€</option>
-                    <option>1M€ - 5M€</option>
-                    <option>5M€ - 10M€</option>
-                    <option>10M€ - 50M€</option>
-                    <option>Más de 50M€</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email de contacto
-                  </label>
-                  <input
-                    type="email"
-                    className="capittal-input w-full"
-                    placeholder="tu@email.com"
-                  />
-                </div>
-                <Button className="capittal-button w-full">
-                  Obtener Valoración
-                </Button>
-              </div>
+            <div className="relative rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=800&h=600" 
+                alt="Reunión de negocios - Venta de empresas"
+                className="w-full h-[500px] object-cover"
+              />
+              <div className="absolute inset-0 bg-black/10"></div>
             </div>
           </div>
         </div>
