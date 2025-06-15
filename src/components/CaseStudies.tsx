@@ -32,10 +32,10 @@ const CaseStudies = () => {
     <section id="casos" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6">
             Casos de Éxito
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Nuestro historial habla por sí mismo. Descubra cómo hemos ayudado a empresas 
             a alcanzar sus objetivos estratégicos.
           </p>
@@ -52,17 +52,17 @@ const CaseStudies = () => {
                   <span className="text-2xl font-bold text-black">{case_.value}</span>
                 </div>
                 
-                <h3 className="text-xl font-semibold text-black mb-3">
+                <h3 className="text-2xl font-semibold text-black mb-3">
                   {case_.title}
                 </h3>
                 
-                <p className="text-gray-600 mb-4 leading-relaxed">
+                <p className="text-gray-600 mb-4 leading-relaxed text-base">
                   {case_.description}
                 </p>
 
                 <div className="space-y-2">
                   {case_.highlights.map((highlight, idx) => (
-                    <div key={idx} className="flex items-center text-sm text-gray-600">
+                    <div key={idx} className="flex items-center text-base text-gray-600">
                       <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
                       {highlight}
                     </div>
@@ -75,10 +75,10 @@ const CaseStudies = () => {
 
         {/* CTA */}
         <div className="text-center mt-16">
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-xl text-gray-600 mb-6">
             ¿Quiere conocer más detalles sobre nuestros casos de éxito?
           </p>
-          <button className="bg-white text-black border-0.5 border-black rounded-[10px] px-6 py-3 font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <button className="bg-white text-black border-0.5 border-black rounded-[10px] px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             Descargar Case Studies
           </button>
         </div>
