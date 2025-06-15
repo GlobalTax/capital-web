@@ -8,13 +8,13 @@ export const menuData = {
   ],
 
   serviciosItems: [
+    { label: 'Venta de Empresas', href: '/venta-empresas' },
+    { label: 'Compra de Empresas', href: '/compra-empresas' },
+    { label: 'Valoraciones', href: '/servicios/valoraciones' },
     { label: 'Corporate Finance', href: '/servicios/corporate-finance' },
     { label: 'Due Diligence', href: '/servicios/due-diligence' },
     { label: 'Fusiones y Adquisiciones', href: '/servicios/fusiones-adquisiciones' },
     { label: 'Reestructuraciones', href: '/servicios/reestructuraciones' },
-    { label: 'Valoraciones', href: '/servicios/valoraciones' },
-    { label: 'Venta de Empresas', href: '/venta-empresas' },
-    { label: 'Compra de Empresas', href: '/compra-empresas' },
   ],
 
   sectoresItems: [
