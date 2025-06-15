@@ -49,19 +49,19 @@ const CompaniesForSale = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {companies.map((company, index) => (
             <Card key={index} className="bg-white border-0.5 border-gray-300 rounded-lg shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 h-full">
-              <CardContent className="p-3">
-                <div className="mb-2">
-                  <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
+              <CardContent className="p-5">
+                <div className="mb-3">
+                  <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
                     {company.sector}
                   </span>
                 </div>
 
-                <h3 className="text-base font-semibold text-black mb-2 leading-tight">
+                <h3 className="text-lg font-semibold text-black mb-3 leading-tight">
                   {company.title}
                 </h3>
 
-                <div className="space-y-1 mb-3">
-                  <div className="grid grid-cols-3 gap-3 text-xs">
+                <div className="space-y-2 mb-4">
+                  <div className="grid grid-cols-3 gap-3 text-sm">
                     <div>
                       <span className="text-gray-500 block">Facturación:</span>
                       <span className="font-medium text-black">{company.revenue}</span>
@@ -80,7 +80,7 @@ const CompaniesForSale = () => {
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed">
                   {company.description}
                 </p>
               </CardContent>
