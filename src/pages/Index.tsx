@@ -6,6 +6,7 @@ import LogoCarousel from '@/components/LogoCarousel';
 import MarketInsights from '@/components/MarketInsights';
 import WhyChooseCapittal from '@/components/WhyChooseCapittal';
 import Services from '@/components/Services';
+import CompaniesForSale from '@/components/CompaniesForSale';
 import About from '@/components/About';
 import CaseStudies from '@/components/CaseStudies';
 import Team from '@/components/Team';
@@ -21,6 +22,7 @@ const Index = () => {
       <MarketInsights />
       <WhyChooseCapittal />
       <Services />
+      <CompaniesForSale />
       <About />
       <CaseStudies />
       <Team />
