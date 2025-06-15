@@ -1,214 +1,203 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
-import { formatSpanishPhone } from '@/utils/validationUtils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     company: '',
+    email: '',
     phone: '',
-    message: '',
+    message: ''
   });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulate form submission
-    toast({
-      title: "Mensaje enviado",
-      description: "Nos pondremos en contacto contigo en las próximas 24 horas.",
-    });
-    
-    setFormData({
-      name: '',
-      email: '',
-      company: '',
-      phone: '',
-      message: '',
-    });
+    console.log('Form submitted:', formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'phone') {
-      setFormData({
-        ...formData,
-        [name]: formatSpanishPhone(value),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: 'Teléfono',
+      content: '+34 91 234 5678',
+      description: 'Lunes a Viernes, 9:00 - 18:00'
+    },
+    {
+      icon: Mail,
+      title: 'Email',
+      content: 'info@capittal.com',
+      description: 'Respuesta en menos de 24h'
+    },
+    {
+      icon: MapPin,
+      title: 'Oficina',
+      content: 'Paseo de la Castellana 123',
+      description: '28046 Madrid, España'
+    },
+    {
+      icon: Clock,
+      title: 'Horario',
+      content: 'Lunes a Viernes',
+      description: '9:00 - 18:00'
     }
-  };
+  ];
 
   return (
     <section id="contacto" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Contacto
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+            Contacta con Nosotros
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            ¿Está considerando una transacción estratégica? Hablemos sobre cómo podemos 
-            ayudarle a maximizar el valor de su empresa.
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            ¿Tienes un proyecto en mente? Estamos aquí para ayudarte a conseguir 
+            los mejores resultados para tu empresa.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Contact Information */}
-          <div>
-            <h3 className="text-2xl font-semibold text-black mb-8">
-              Información de Contacto
-            </h3>
-
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Contact Info */}
+          <div className="lg:col-span-1">
             <div className="space-y-6">
-              <div className="flex items-start">
-                <MapPin className="mr-4 mt-1 text-black" size={20} />
-                <div>
-                  <p className="font-medium text-black">Oficina Principal</p>
-                  <p className="text-gray-600">
-                    Paseo de la Castellana 123<br />
-                    28046 Madrid, España
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <Phone className="mr-4 mt-1 text-black" size={20} />
-                <div>
-                  <p className="font-medium text-black">Teléfono</p>
-                  <p className="text-gray-600">+34 91 234 5678</p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <Mail className="mr-4 mt-1 text-black" size={20} />
-                <div>
-                  <p className="font-medium text-black">Email</p>
-                  <p className="text-gray-600">info@capittal.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <Clock className="mr-4 mt-1 text-black" size={20} />
-                <div>
-                  <p className="font-medium text-black">Horario</p>
-                  <p className="text-gray-600">
-                    Lunes - Viernes: 9:00 - 18:00<br />
-                    Consultas urgentes: 24/7
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 capittal-card">
-              <h4 className="text-lg font-semibold text-black mb-4">
-                Consulta Gratuita
-              </h4>
-              <p className="text-gray-600 mb-4">
-                Ofrecemos una consulta inicial gratuita de 30 minutos para evaluar 
-                su situación y discutir las mejores opciones estratégicas.
-              </p>
-              <Button className="capittal-button">
-                Agendar Consulta
-              </Button>
+              {contactInfo.map((info, index) => {
+                const IconComponent = info.icon;
+                return (
+                  <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                    <CardContent className="p-6">
+                      <div className="flex items-start space-x-4">
+                        <div className="p-3 bg-white border-0.5 border-black rounded-lg">
+                          <IconComponent className="h-5 w-5 text-black" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-black mb-1">
+                            {info.title}
+                          </h3>
+                          <p className="text-black font-medium mb-1">
+                            {info.content}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {info.description}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
 
           {/* Contact Form */}
-          <div>
-            <form onSubmit={handleSubmit} className="capittal-card">
-              <h3 className="text-2xl font-semibold text-black mb-6">
-                Envíanos un Mensaje
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Nombre *
-                  </label>
-                  <Input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="capittal-input"
-                  />
-                </div>
+          <div className="lg:col-span-2">
+            <Card className="bg-white border-0.5 border-black rounded-lg shadow-sm">
+              <CardContent className="p-8">
+                <h3 className="text-2xl font-bold text-black mb-6">
+                  Solicita una Consulta Gratuita
+                </h3>
                 
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Email *
-                  </label>
-                  <Input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="capittal-input"
-                  />
-                </div>
-              </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre completo
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="w-full bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20 transition-all duration-300"
+                        placeholder="Tu nombre"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                        Empresa
+                      </label>
+                      <input
+                        type="text"
+                        id="company"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleChange}
+                        className="w-full bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20 transition-all duration-300"
+                        placeholder="Nombre de la empresa"
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Empresa
-                  </label>
-                  <Input
-                    type="text"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleChange}
-                    className="capittal-input"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Teléfono
-                  </label>
-                  <Input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="capittal-input"
-                    placeholder="+34 123 456 789"
-                    maxLength={15}
-                  />
-                </div>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20 transition-all duration-300"
+                        placeholder="tu@email.com"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="w-full bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20 transition-all duration-300"
+                        placeholder="+34 600 000 000"
+                      />
+                    </div>
+                  </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-black mb-2">
-                  Mensaje *
-                </label>
-                <Textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className="capittal-input resize-none"
-                  placeholder="Cuéntanos sobre tu proyecto o consulta..."
-                />
-              </div>
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Mensaje
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={6}
+                      className="w-full bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20 transition-all duration-300"
+                      placeholder="Cuéntanos sobre tu proyecto..."
+                      required
+                    />
+                  </div>
 
-              <Button type="submit" className="capittal-button w-full">
-                Enviar Mensaje
-              </Button>
-            </form>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-white text-black border-0.5 border-black rounded-lg px-6 py-4 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
+                  >
+                    Enviar Consulta
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
