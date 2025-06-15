@@ -92,29 +92,6 @@ const Team = () => {
             </Card>
           ))}
         </div>
-
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-black mb-4">Experiencia</h3>
-            <p className="text-gray-600 leading-relaxed text-sm">
-              Décadas de experiencia combinada en las transacciones más complejas del mercado.
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-black mb-4">Integridad</h3>
-            <p className="text-gray-600 leading-relaxed text-sm">
-              Compromiso absoluto con la confidencialidad y los más altos estándares éticos.
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-black mb-4">Resultados</h3>
-            <p className="text-gray-600 leading-relaxed text-sm">
-              Enfoque obsesivo en la ejecución exitosa y la creación de valor para nuestros clientes.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   );
