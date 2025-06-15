@@ -1,26 +1,47 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, TrendingUp, Users, Award } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <section className="pt-40 pb-32 bg-white min-h-screen flex items-center">
+    <section className="pt-32 pb-20 bg-gradient-to-br from-white via-gray-50 to-white min-h-screen flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Left Column - Content */}
-          <div>
-            <h1 className="text-6xl md:text-7xl font-normal text-black mb-10 leading-tight tracking-tight">
+          <div className="lg:col-span-7">
+            <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-full text-sm font-medium mb-8">
+              <Award className="w-4 h-4 mr-2" />
+              Líderes en M&A desde 2008
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-normal text-black mb-8 leading-tight tracking-tight">
               Maximizamos el
               <br />
               <span className="text-gray-600">valor</span>
               {' '}de tu empresa
             </h1>
             
-            <p className="text-2xl text-gray-600 mb-16 leading-relaxed font-normal max-w-lg">
-              Somos especialistas en fusiones y adquisiciones con más de 15 años de experiencia. 
+            <p className="text-xl text-gray-600 mb-12 leading-relaxed font-normal max-w-2xl">
+              Especialistas en fusiones y adquisiciones con más de 15 años de experiencia. 
               Te acompañamos en cada paso para conseguir la mejor valoración.
             </p>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-gray-200">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-black mb-2">€2.5B+</div>
+                <div className="text-sm text-gray-600">Valor Transaccional</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-black mb-2">200+</div>
+                <div className="text-sm text-gray-600">Operaciones</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-black mb-2">95%</div>
+                <div className="text-sm text-gray-600">Éxito</div>
+              </div>
+            </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
               <Button className="capittal-button text-xl px-12 py-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
@@ -37,16 +58,80 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Column - Stats Card */}
-          <div className="relative">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
-              <div className="aspect-video bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-12">
-                <div className="text-center">
-                  <div className="text-8xl font-bold text-black mb-6">15+</div>
-                  <h3 className="text-3xl font-bold text-gray-800 mb-6">Años de Experiencia</h3>
-                  <p className="text-gray-600 max-w-sm text-lg">
-                    Maximizando el valor de empresas a través de nuestro proceso probado
-                  </p>
+          {/* Right Column - Interactive Dashboard */}
+          <div className="lg:col-span-5">
+            <div className="relative">
+              {/* Main Dashboard Card */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
+                <div className="bg-gray-900 text-white p-6">
+                  <h3 className="text-lg font-semibold mb-2">Capittal Market Dashboard</h3>
+                  <p className="text-gray-300 text-sm">Análisis en tiempo real</p>
+                </div>
+                
+                {/* Market Data Table */}
+                <div className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="font-medium text-gray-900">Tech Startup</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900">€15M</div>
+                        <div className="text-sm text-green-600">+12%</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="font-medium text-gray-900">Industrial Co.</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900">€45M</div>
+                        <div className="text-sm text-blue-600">+8%</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between py-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <span className="font-medium text-gray-900">Retail Chain</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900">€32M</div>
+                        <div className="text-sm text-orange-600">+15%</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Transacciones Q4</span>
+                      <span className="font-bold text-gray-900">47 activas</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Floating Stats */}
+              <div className="absolute -top-4 -right-4 bg-black text-white rounded-xl p-4 shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5" />
+                  <div>
+                    <div className="font-bold">+23%</div>
+                    <div className="text-xs text-gray-300">Este mes</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="absolute -bottom-4 -left-4 bg-white border border-gray-200 rounded-xl p-4 shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <Users className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <div className="font-bold text-gray-900">156</div>
+                    <div className="text-xs text-gray-500">Empresas</div>
+                  </div>
                 </div>
               </div>
             </div>

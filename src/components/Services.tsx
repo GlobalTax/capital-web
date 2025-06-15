@@ -1,27 +1,28 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, Search, Calculator, Users, FileText, Target, Building, ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Search, Calculator, Users, FileText, Target, Building, ShoppingCart, ArrowRight } from 'lucide-react';
 
 const Services = () => {
   const coreServices = [
     {
       icon: <Building size={40} />,
-      title: 'Venta de Empresas',
-      description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta. Desde la valoración hasta el cierre exitoso.',
-      featured: true
+      title: 'Vender Empresa',
+      description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta.',
+      features: ['Valoración precisa', 'Proceso confidencial', 'Acceso a compradores cualificados']
     },
     {
       icon: <ShoppingCart size={40} />,
-      title: 'Compra de Empresas',
-      description: 'Te ayudamos a identificar, evaluar y adquirir empresas que se alineen con tu estrategia de crecimiento.',
-      featured: true
+      title: 'Comprar Empresa',
+      description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
+      features: ['Identificación objetivos', 'Due diligence completo', 'Negociación exitosa']
     },
     {
       icon: <Calculator size={40} />,
-      title: 'Valoraciones Empresariales',
-      description: 'Evaluaciones precisas y metodologías probadas para determinar el valor real de cualquier empresa.',
-      featured: true
+      title: 'Valoraciones',
+      description: 'Evaluaciones precisas con metodologías probadas y análisis exhaustivo.',
+      features: ['Múltiples metodologías', 'Análisis comparables', 'Informe detallado']
     },
   ];
 
@@ -65,46 +66,77 @@ const Services = () => {
           </p>
         </div>
 
-        {/* Core Services */}
-        <div className="mb-16">
-          <h3 className="text-2xl font-bold text-black text-center mb-8">
-            Servicios Core Business
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Core Services - Different Layout */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h3 className="text-2xl font-bold text-black mb-4">
+              Servicios Core Business
+            </h3>
+            <div className="w-24 h-1 bg-black mx-auto"></div>
+          </div>
+          
+          <div className="space-y-16">
             {coreServices.map((service, index) => (
-              <Card key={index} className="capittal-card group cursor-pointer border-2 border-black">
-                <CardContent className="p-8 text-center">
-                  <div className="text-black mb-6 group-hover:scale-110 transition-transform duration-300 flex justify-center">
-                    {service.icon}
+              <div key={index} className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
+                <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                  <div className="flex items-center mb-6">
+                    <div className="text-black mr-4">
+                      {service.icon}
+                    </div>
+                    <h3 className="text-3xl font-bold text-black">
+                      {service.title}
+                    </h3>
                   </div>
-                  <h3 className="text-2xl font-bold text-black mb-4">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed text-lg">
+                  
+                  <p className="text-lg text-gray-600 mb-6 leading-relaxed">
                     {service.description}
                   </p>
-                </CardContent>
-              </Card>
+
+                  <div className="space-y-3 mb-8">
+                    {service.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center">
+                        <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
+                        <span className="text-gray-700">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="capittal-button group">
+                    Más información
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+                
+                <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-8 shadow-lg">
+                    <div className="aspect-square bg-white rounded-xl border border-gray-100 flex items-center justify-center">
+                      <div className="text-6xl text-gray-300">
+                        {service.icon}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Complementary Services */}
+        {/* Complementary Services - Card Grid */}
         <div>
           <h3 className="text-2xl font-bold text-black text-center mb-8">
             Servicios Complementarios
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {complementaryServices.map((service, index) => (
-              <Card key={index} className="capittal-card group cursor-pointer">
+              <Card key={index} className="capittal-card group cursor-pointer hover:shadow-xl transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
                     {service.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-black mb-3">
+                  <h3 className="text-lg font-semibold text-black mb-3">
                     {service.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed text-sm">
                     {service.description}
                   </p>
                 </CardContent>
