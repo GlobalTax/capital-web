@@ -49,18 +49,18 @@ const CompaniesForSale = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {companies.map((company, index) => (
             <Card key={index} className="capittal-card h-full">
-              <CardContent className="p-6">
-                <div className="mb-4">
+              <CardContent className="p-4">
+                <div className="mb-3">
                   <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
                     {company.sector}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold text-black mb-4 leading-tight">
+                <h3 className="text-lg font-semibold text-black mb-3 leading-tight">
                   {company.title}
                 </h3>
 
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 mb-4">
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-gray-500 block">Facturación:</span>
