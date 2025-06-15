@@ -9,26 +9,47 @@ const Team = () => {
       position: 'Managing Partner',
       experience: '20+ años en M&A',
       background: 'Ex-Goldman Sachs, MBA IESE',
-      image: '/api/placeholder/300/400',
+      image: '/lovable-uploads/5459d292-9157-404f-915b-a1608e1f4779.png',
     },
     {
       name: 'Ana Rodriguez',
       position: 'Partner',
       experience: '15+ años en Corporate Finance',
       background: 'Ex-JP Morgan, CFA',
-      image: '/api/placeholder/300/400',
+      image: '/lovable-uploads/b3d6115b-5184-49d6-8c1d-3493d1d72ca7.png',
     },
     {
       name: 'Miguel Santos',
       position: 'Senior Director',
       experience: '12+ años en Due Diligence',
       background: 'Ex-McKinsey, MBA Wharton',
-      image: '/api/placeholder/300/400',
+      image: '/lovable-uploads/3aeb6303-e888-4dde-846f-88ec5c6606ae.png',
+    },
+    {
+      name: 'David López',
+      position: 'Director',
+      experience: '10+ años en Valoraciones',
+      background: 'Ex-Deloitte, CPA',
+      image: '/lovable-uploads/8c3bfca2-1cf0-42a1-935b-61cf6c319ecb.png',
+    },
+    {
+      name: 'Roberto García',
+      position: 'Senior Associate',
+      experience: '8+ años en Análisis Financiero',
+      background: 'Ex-KPMG, Master Finance',
+      image: '/lovable-uploads/20da2e90-43c8-4c44-a119-a68b49bf41c0.png',
+    },
+    {
+      name: 'Antonio Navarro',
+      position: 'Managing Director',
+      experience: '25+ años en Investment Banking',
+      background: 'Ex-Morgan Stanley, MBA Harvard',
+      image: '/lovable-uploads/dfc75c41-289d-4bfd-963f-7838a1a06225.png',
     },
   ];
 
   return (
-    <section id="equipo" className="py-20 bg-gray-50">
+    <section id="equipo" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
@@ -40,11 +61,17 @@ const Team = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {teamMembers.map((member, index) => (
-            <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center">
+            <Card key={index} className="capittal-card text-center">
               <CardContent className="p-6">
-                <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-6 border border-gray-300"></div>
+                <div className="w-32 h-32 mx-auto mb-6 overflow-hidden rounded-lg border-0.5 border-black">
+                  <img 
+                    src={member.image} 
+                    alt={member.name}
+                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                  />
+                </div>
                 
                 <h3 className="text-lg font-semibold text-black mb-2">
                   {member.name}
