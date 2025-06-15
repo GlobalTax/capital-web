@@ -39,7 +39,7 @@ const ValuationCalculator = () => {
     <div className="min-h-screen bg-white py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black mb-4">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Calculadora de Valoración Empresarial
           </h1>
           <p className="text-lg text-gray-600">
@@ -53,7 +53,7 @@ const ValuationCalculator = () => {
           validateStep={validateStep}
         />
 
-        <div className="bg-white rounded-lg p-8 mb-8 border-0.5 border-black shadow-sm">
+        <div className="bg-white rounded-lg p-8 mb-8 border border-gray-200">
           <StepContent
             currentStep={currentStep}
             companyData={companyData}

@@ -2,51 +2,55 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Building2, 
-  Search, 
-  Calculator, 
-  TrendingUp, 
-  RefreshCw,
-  ArrowRight 
-} from 'lucide-react';
+import { TrendingUp, Search, Calculator, Users, FileText, Target, Building, ShoppingCart, ArrowRight } from 'lucide-react';
 
 const Services = () => {
-  const services = [
+  const coreServices = [
     {
-      icon: Building2,
-      title: 'Fusiones y Adquisiciones',
-      description: 'Asesoramiento integral en compraventa de empresas, desde la valoración inicial hasta el cierre de la transacción.',
-      features: ['Venta de empresas', 'Adquisiciones estratégicas', 'Management buyouts'],
-      link: '/servicios/fusiones-adquisiciones'
+      icon: <Building size={32} />,
+      title: 'Vender Empresa',
+      description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta.',
+      features: ['Valoración precisa', 'Proceso confidencial', 'Acceso a compradores cualificados']
     },
     {
-      icon: Search,
-      title: 'Due Diligence',
-      description: 'Análisis exhaustivo de aspectos financieros, legales y operativos para identificar riesgos y oportunidades.',
-      features: ['DD Financiero', 'DD Comercial', 'DD Operativo'],
-      link: '/servicios/due-diligence'
+      icon: <ShoppingCart size={32} />,
+      title: 'Comprar Empresa',
+      description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
+      features: ['Identificación objetivos', 'Due diligence completo', 'Negociación exitosa']
     },
     {
-      icon: Calculator,
+      icon: <Calculator size={32} />,
       title: 'Valoraciones',
-      description: 'Valoraciones independientes utilizando múltiples metodologías para determinar el valor justo de mercado.',
-      features: ['Valoración DCF', 'Múltiplos comparables', 'Valoración por activos'],
-      link: '/servicios/valoraciones'
+      description: 'Evaluaciones precisas con metodologías probadas y análisis exhaustivo.',
+      features: ['Múltiples metodologías', 'Análisis comparables', 'Informe detallado']
+    },
+  ];
+
+  const complementaryServices = [
+    {
+      icon: <TrendingUp size={24} />,
+      title: 'Fusiones y Adquisiciones',
+      description: 'Asesoramiento integral en operaciones de M&A, desde la estrategia inicial hasta el cierre exitoso de la transacción.',
     },
     {
-      icon: TrendingUp,
+      icon: <Search size={24} />,
+      title: 'Due Diligence',
+      description: 'Análisis exhaustivo financiero, legal y comercial para identificar riesgos y oportunidades en cada inversión.',
+    },
+    {
+      icon: <Users size={24} />,
       title: 'Corporate Finance',
-      description: 'Estructuración financiera y búsqueda de capital para financiar crecimiento y operaciones corporativas.',
-      features: ['Búsqueda de capital', 'Refinanciación', 'Capital de crecimiento'],
-      link: '/servicios/corporate-finance'
+      description: 'Estructuración financiera, levantamiento de capital y optimización de la estructura de balance.',
     },
     {
-      icon: RefreshCw,
+      icon: <FileText size={24} />,
       title: 'Reestructuraciones',
-      description: 'Asesoramiento en situaciones de crisis financiera y procesos de reorganización empresarial.',
-      features: ['Reestructuración financiera', 'Planes de viabilidad', 'Turnaround'],
-      link: '/servicios/reestructuraciones'
+      description: 'Procesos de reestructuración operativa y financiera para maximizar el valor empresarial.',
+    },
+    {
+      icon: <Target size={24} />,
+      title: 'Estrategia Corporativa',
+      description: 'Definición de estrategias de crecimiento inorgánico y identificación de oportunidades de mercado.',
     },
   ];
 
@@ -58,56 +62,81 @@ const Services = () => {
             Nuestros Servicios
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Ofrecemos una gama completa de servicios de asesoramiento financiero 
-            para acompañarte en las decisiones más importantes de tu empresa.
+            Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => {
-            const IconComponent = service.icon;
-            return (
-              <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="p-3 bg-white border-0.5 border-black rounded-lg mr-4 group-hover:shadow-sm transition-all duration-300 ease-out">
-                      <IconComponent className="h-6 w-6 text-black" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-black">
-                      {service.title}
-                    </h3>
+        {/* Core Services - Enhanced Cards */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h3 className="text-xl font-bold text-black mb-4">
+              Servicios Core Business
+            </h3>
+            <div className="w-24 h-1 bg-black mx-auto rounded-[10px]"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {coreServices.map((service, index) => (
+              <div key={index} className="group">
+                <div className="bg-white border-0.5 border-black rounded-[10px] p-8 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out">
+                  {/* Icon */}
+                  <div className="text-black mb-6 group-hover:scale-110 transition-transform duration-300">
+                    {service.icon}
                   </div>
                   
-                  <p className="text-gray-600 mb-6 leading-relaxed text-sm">
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-black mb-4">
+                    {service.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 leading-relaxed text-base">
                     {service.description}
                   </p>
 
-                  <div className="space-y-2 mb-6">
+                  {/* Features */}
+                  <div className="space-y-3 mb-8">
                     {service.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center text-sm text-gray-600">
+                      <div key={idx} className="flex items-center">
                         <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
-                        {feature}
+                        <span className="text-gray-700 text-sm">{feature}</span>
                       </div>
                     ))}
                   </div>
 
-                  <Button className="w-full bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">
-                    Saber más
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  {/* Button */}
+                  <Button className="bg-white text-black border-0.5 border-black rounded-[10px] w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-base py-3">
+                    Más información
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="text-center mt-16">
-          <p className="text-lg text-gray-600 mb-6">
-            ¿No encuentras exactamente lo que necesitas?
-          </p>
-          <Button className="bg-white text-black border-0.5 border-black rounded-lg px-8 py-4 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-            Consulta Personalizada
-          </Button>
+        {/* Complementary Services - Simplified Cards */}
+        <div>
+          <h3 className="text-xl font-bold text-black text-center mb-8">
+            Servicios Complementarios
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {complementaryServices.map((service, index) => (
+              <Card key={index} className="bg-white border-0.5 border-black rounded-[10px] shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out group cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-base font-semibold text-black mb-3">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    {service.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </section>

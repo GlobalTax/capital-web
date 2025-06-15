@@ -28,7 +28,7 @@ const Team = () => {
   ];
 
   return (
-    <section id="equipo" className="py-20 bg-white">
+    <section id="equipo" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
@@ -42,9 +42,9 @@ const Team = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {teamMembers.map((member, index) => (
-            <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center">
+            <Card key={index} className="bg-white border-0.5 border-black rounded-[10px] shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 ease-out group text-center">
               <CardContent className="p-6">
-                <div className="w-32 h-32 bg-gray-100 rounded-lg mx-auto mb-6 border-0.5 border-black"></div>
+                <div className="w-32 h-32 bg-gray-200 rounded-[10px] mx-auto mb-6 border-0.5 border-black"></div>
                 
                 <h3 className="text-lg font-semibold text-black mb-2">
                   {member.name}
@@ -68,21 +68,21 @@ const Team = () => {
 
         {/* Team Values */}
         <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center">
             <h3 className="text-lg font-semibold text-black mb-4">Experiencia</h3>
             <p className="text-gray-600 leading-relaxed text-sm">
               Décadas de experiencia combinada en las transacciones más complejas del mercado.
             </p>
           </div>
           
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center">
             <h3 className="text-lg font-semibold text-black mb-4">Integridad</h3>
             <p className="text-gray-600 leading-relaxed text-sm">
               Compromiso absoluto con la confidencialidad y los más altos estándares éticos.
             </p>
           </div>
           
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center">
             <h3 className="text-lg font-semibold text-black mb-4">Resultados</h3>
             <p className="text-gray-600 leading-relaxed text-sm">
               Enfoque obsesivo en la ejecución exitosa y la creación de valor para nuestros clientes.
