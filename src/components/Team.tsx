@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Carousel,
   CarouselContent,
@@ -73,6 +74,15 @@ const Team = () => {
             <CarouselPrevious className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -left-12" />
             <CarouselNext className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -right-12" />
           </Carousel>
+        </div>
+
+        <div className="text-center mt-12">
+          <Link 
+            to="/equipo"
+            className="inline-flex items-center px-6 py-3 bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
+          >
+            Ver Equipo Completo
+          </Link>
         </div>
       </div>
     </section>
