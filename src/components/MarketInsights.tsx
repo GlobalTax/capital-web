@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 const MarketInsights = () => {
   const insights = [
     {
-      value: "€1.2B",
+      value: "€300M",
       label: "Volumen Transaccional Q4",
       change: "+15%",
       positive: true
