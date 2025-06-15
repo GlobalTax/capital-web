@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, TrendingUp, Users, Building } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 const CompaniesForSale = () => {
   const companies = [
@@ -34,19 +34,6 @@ const CompaniesForSale = () => {
     }
   ];
 
-  const getSectorIcon = (category: string) => {
-    switch (category) {
-      case 'tech':
-        return <Building className="w-5 h-5 text-gray-600" />;
-      case 'industrial':
-        return <Users className="w-5 h-5 text-gray-600" />;
-      case 'services':
-        return <TrendingUp className="w-5 h-5 text-gray-600" />;
-      default:
-        return <Building className="w-5 h-5 text-gray-600" />;
-    }
-  };
-
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,11 +50,10 @@ const CompaniesForSale = () => {
           {companies.map((company, index) => (
             <Card key={index} className="capittal-card h-full">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4">
                   <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
                     {company.sector}
                   </span>
-                  {getSectorIcon(company.category)}
                 </div>
 
                 <h3 className="text-lg font-semibold text-black mb-4 leading-tight">
@@ -94,13 +80,9 @@ const CompaniesForSale = () => {
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed">
                   {company.description}
                 </p>
-
-                <button className="capittal-button w-full">
-                  Ver Detalles
-                </button>
               </CardContent>
             </Card>
           ))}
