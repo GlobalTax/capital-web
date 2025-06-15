@@ -33,17 +33,17 @@ const About = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">
               Quiénes Somos
             </h2>
             
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="text-base text-gray-600 mb-8 leading-relaxed">
               Capittal es una boutique de inversión especializada en fusiones y adquisiciones 
               con un enfoque personalizado y resultados excepcionales. Nuestro equipo combina 
               décadas de experiencia en banca de inversión con un profundo conocimiento sectorial.
             </p>
 
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="text-base text-gray-600 mb-8 leading-relaxed">
               Trabajamos exclusivamente con empresas medianas y grandes, proporcionando 
               asesoramiento estratégico de primer nivel y ejecutando transacciones complejas 
               con la máxima confidencialidad y eficiencia.

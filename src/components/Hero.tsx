@@ -15,14 +15,14 @@ const Hero = () => {
               Líderes en M&A desde 2008
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-normal text-black mb-8 leading-tight tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-normal text-black mb-8 leading-tight tracking-tight">
               Maximizamos el
               <br />
               <span className="text-black">valor</span>
               {' '}de tu empresa
             </h1>
             
-            <p className="text-xl text-gray-600 mb-12 leading-relaxed font-normal max-w-2xl">
+            <p className="text-lg text-gray-600 mb-12 leading-relaxed font-normal max-w-2xl">
               Especialistas en compraventa de empresas con más de 15 años de experiencia. 
               Te acompañamos en cada paso para lograr el mejor precio.
             </p>
@@ -30,28 +30,28 @@ const Hero = () => {
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-gray-200">
               <div className="text-center">
-                <div className="text-3xl font-bold text-black mb-2">€1.0B+</div>
+                <div className="text-2xl font-bold text-black mb-2">€1.0B+</div>
                 <div className="text-sm text-gray-600">Valor Transaccional</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-black mb-2">200+</div>
+                <div className="text-2xl font-bold text-black mb-2">200+</div>
                 <div className="text-sm text-gray-600">Operaciones</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-black mb-2">95%</div>
+                <div className="text-2xl font-bold text-black mb-2">95%</div>
                 <div className="text-sm text-gray-600">Éxito</div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <Button className="capittal-button text-xl px-12 py-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+              <Button className="capittal-button text-lg px-12 py-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                 Evaluar mi Empresa
                 <ArrowRight className="ml-3" size={24} />
               </Button>
               
               <Button 
                 variant="outline" 
-                className="bg-transparent border-0.5 border-black rounded-lg px-12 py-6 text-xl font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm"
+                className="bg-transparent border-0.5 border-black rounded-[10px] px-12 py-6 text-lg font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm"
               >
                 Ver Casos de Éxito
               </Button>

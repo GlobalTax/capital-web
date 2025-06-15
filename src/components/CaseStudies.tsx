@@ -32,10 +32,10 @@ const CaseStudies = () => {
     <section id="casos" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">
             Casos de Éxito
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Nuestro historial habla por sí mismo. Descubra cómo hemos ayudado a empresas 
             a alcanzar sus objetivos estratégicos.
           </p>

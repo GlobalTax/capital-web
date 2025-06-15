@@ -7,19 +7,19 @@ import { TrendingUp, Search, Calculator, Users, FileText, Target, Building, Shop
 const Services = () => {
   const coreServices = [
     {
-      icon: <Building size={40} />,
+      icon: <Building size={36} />,
       title: 'Vender Empresa',
       description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta.',
       features: ['Valoración precisa', 'Proceso confidencial', 'Acceso a compradores cualificados']
     },
     {
-      icon: <ShoppingCart size={40} />,
+      icon: <ShoppingCart size={36} />,
       title: 'Comprar Empresa',
       description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
       features: ['Identificación objetivos', 'Due diligence completo', 'Negociación exitosa']
     },
     {
-      icon: <Calculator size={40} />,
+      icon: <Calculator size={36} />,
       title: 'Valoraciones',
       description: 'Evaluaciones precisas con metodologías probadas y análisis exhaustivo.',
       features: ['Múltiples metodologías', 'Análisis comparables', 'Informe detallado']
@@ -28,27 +28,27 @@ const Services = () => {
 
   const complementaryServices = [
     {
-      icon: <TrendingUp size={32} />,
+      icon: <TrendingUp size={28} />,
       title: 'Fusiones y Adquisiciones',
       description: 'Asesoramiento integral en operaciones de M&A, desde la estrategia inicial hasta el cierre exitoso de la transacción.',
     },
     {
-      icon: <Search size={32} />,
+      icon: <Search size={28} />,
       title: 'Due Diligence',
       description: 'Análisis exhaustivo financiero, legal y comercial para identificar riesgos y oportunidades en cada inversión.',
     },
     {
-      icon: <Users size={32} />,
+      icon: <Users size={28} />,
       title: 'Corporate Finance',
       description: 'Estructuración financiera, levantamiento de capital y optimización de la estructura de balance.',
     },
     {
-      icon: <FileText size={32} />,
+      icon: <FileText size={28} />,
       title: 'Reestructuraciones',
       description: 'Procesos de reestructuración operativa y financiera para maximizar el valor empresarial.',
     },
     {
-      icon: <Target size={32} />,
+      icon: <Target size={28} />,
       title: 'Estrategia Corporativa',
       description: 'Definición de estrategias de crecimiento inorgánico y identificación de oportunidades de mercado.',
     },
@@ -58,10 +58,10 @@ const Services = () => {
     <section id="servicios" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">
             Nuestros Servicios
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
           </p>
         </div>
@@ -69,7 +69,7 @@ const Services = () => {
         {/* Core Services - Enhanced Cards */}
         <div className="mb-20">
           <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-black mb-4">
+            <h3 className="text-xl font-bold text-black mb-4">
               Servicios Core Business
             </h3>
             <div className="w-24 h-1 bg-black mx-auto rounded-[10px]"></div>
@@ -85,7 +85,7 @@ const Services = () => {
                   </div>
                   
                   {/* Title */}
-                  <h3 className="text-2xl font-bold text-black mb-4">
+                  <h3 className="text-xl font-bold text-black mb-4">
                     {service.title}
                   </h3>
                   
@@ -117,7 +117,7 @@ const Services = () => {
 
         {/* Complementary Services - Simplified Cards */}
         <div>
-          <h3 className="text-2xl font-bold text-black text-center mb-8">
+          <h3 className="text-xl font-bold text-black text-center mb-8">
             Servicios Complementarios
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -127,7 +127,7 @@ const Services = () => {
                   <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
                     {service.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-black mb-3">
+                  <h3 className="text-base font-semibold text-black mb-3">
                     {service.title}
                   </h3>
                   <p className="text-gray-600 leading-relaxed text-sm">
