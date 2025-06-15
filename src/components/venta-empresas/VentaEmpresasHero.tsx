@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, ArrowRight, TrendingUp, Eye, Users, Target } from 'lucide-react';
+import { CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
 
 const VentaEmpresasHero = () => {
   const benefits = [
@@ -51,94 +51,94 @@ const VentaEmpresasHero = () => {
           </div>
 
           <div className="relative">
-            {/* Modern Card-based Dashboard */}
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 shadow-2xl border border-gray-100">
-              {/* Header with metrics */}
+            {/* Chart Container - Same style as homepage */}
+            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
+              {/* Header */}
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h3 className="text-xl font-bold text-black mb-1">Ventas Activas</h3>
-                  <p className="text-gray-500 text-sm">Transacciones Q4 2024</p>
+                  <h3 className="text-xl font-bold text-black">Ventas 2024</h3>
+                  <p className="text-gray-500 text-sm">Transacciones completadas</p>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-black">€87M</div>
-                  <div className="text-sm text-green-600">+23% vs Q3</div>
+                  <div className="text-sm text-green-600">+23%</div>
                 </div>
               </div>
-              
-              {/* Progress cards */}
-              <div className="space-y-4 mb-8">
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                      <span className="font-semibold text-gray-900">TechFlow Solutions</span>
-                    </div>
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-black">€15.2M</span>
-                    <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
-                      Cierre próximo
-                    </span>
-                  </div>
-                  <div className="mt-3 bg-gray-100 rounded-full h-2">
-                    <div className="bg-emerald-500 h-2 rounded-full" style={{width: '85%'}}></div>
-                  </div>
+
+              {/* Chart Area */}
+              <div className="h-64 relative mb-8">
+                {/* Background Grid */}
+                <div className="absolute inset-0 grid grid-cols-6 gap-4 opacity-20">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="border-r border-gray-200 last:border-r-0"></div>
+                  ))}
                 </div>
                 
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="font-semibold text-gray-900">Industrial Group</span>
-                    </div>
-                    <Users className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-black">€32M</span>
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
-                      Due Diligence
-                    </span>
-                  </div>
-                  <div className="mt-3 bg-gray-100 rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{width: '60%'}}></div>
-                  </div>
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-400 -ml-8">
+                  <span>30M</span>
+                  <span>20M</span>
+                  <span>10M</span>
+                  <span>0</span>
                 </div>
                 
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                      <span className="font-semibold text-gray-900">RetailMax Chain</span>
-                    </div>
-                    <Target className="h-4 w-4 text-gray-400" />
+                {/* Chart Bars */}
+                <div className="flex items-end justify-between h-full pt-4 px-2">
+                  <div className="flex flex-col items-center space-y-2 flex-1">
+                    <div className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-md shadow-lg" 
+                         style={{height: '45%', width: '24px'}}></div>
+                    <span className="text-xs text-gray-600 font-medium">Ene</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-black">€8.7M</span>
-                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">
-                      Negociación
-                    </span>
+                  <div className="flex flex-col items-center space-y-2 flex-1">
+                    <div className="bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t-md shadow-lg" 
+                         style={{height: '60%', width: '24px'}}></div>
+                    <span className="text-xs text-gray-600 font-medium">Feb</span>
                   </div>
-                  <div className="mt-3 bg-gray-100 rounded-full h-2">
-                    <div className="bg-amber-500 h-2 rounded-full" style={{width: '40%'}}></div>
+                  <div className="flex flex-col items-center space-y-2 flex-1">
+                    <div className="bg-gradient-to-t from-amber-500 to-amber-400 rounded-t-md shadow-lg" 
+                         style={{height: '35%', width: '24px'}}></div>
+                    <span className="text-xs text-gray-600 font-medium">Mar</span>
+                  </div>
+                  <div className="flex flex-col items-center space-y-2 flex-1">
+                    <div className="bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-md shadow-lg" 
+                         style={{height: '80%', width: '24px'}}></div>
+                    <span className="text-xs text-gray-600 font-medium">Abr</span>
+                  </div>
+                  <div className="flex flex-col items-center space-y-2 flex-1">
+                    <div className="bg-gradient-to-t from-rose-500 to-rose-400 rounded-t-md shadow-lg" 
+                         style={{height: '55%', width: '24px'}}></div>
+                    <span className="text-xs text-gray-600 font-medium">May</span>
+                  </div>
+                  <div className="flex flex-col items-center space-y-2 flex-1">
+                    <div className="bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t-md shadow-lg" 
+                         style={{height: '90%', width: '24px'}}></div>
+                    <span className="text-xs text-gray-600 font-medium">Jun</span>
                   </div>
                 </div>
               </div>
               
-              {/* Bottom stats */}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
+              {/* Bottom Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
                 <div className="text-center">
                   <div className="text-lg font-bold text-black">18</div>
-                  <div className="text-xs text-gray-500">Operaciones activas</div>
+                  <div className="text-xs text-gray-500">Operaciones</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-black">4.8x</div>
-                  <div className="text-xs text-gray-500">Múltiplo promedio</div>
+                  <div className="text-xs text-gray-500">Múltiplo avg</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-black">92%</div>
+                  <div className="text-xs text-gray-500">Tasa éxito</div>
                 </div>
               </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full opacity-60"></div>
+              <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-tr from-emerald-100 to-blue-100 rounded-full opacity-40"></div>
             </div>
             
-            {/* Floating indicators */}
+            {/* Floating indicators - Same style as homepage */}
             <div className="absolute -top-6 -right-6 bg-black text-white rounded-xl p-4 shadow-xl">
               <div className="text-center">
                 <div className="text-lg font-bold">€125M</div>
