@@ -56,12 +56,12 @@ const VentaEmpresasHero = () => {
               {/* Header */}
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h3 className="text-xl font-bold text-black">Ventas 2024</h3>
-                  <p className="text-gray-500 text-sm">Transacciones completadas</p>
+                  <h3 className="text-xl font-bold text-black">Ingresos 2024</h3>
+                  <p className="text-gray-500 text-sm">Crecimiento mensual</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-black">€87M</div>
-                  <div className="text-sm text-green-600">+23%</div>
+                  <div className="text-2xl font-bold text-black">€2.4M</div>
+                  <div className="text-sm text-green-600">+12%</div>
                 </div>
               </div>
 
@@ -76,9 +76,11 @@ const VentaEmpresasHero = () => {
                 
                 {/* Y-axis labels */}
                 <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-400 -ml-8">
-                  <span>30M</span>
-                  <span>20M</span>
-                  <span>10M</span>
+                  <span>500k</span>
+                  <span>400k</span>
+                  <span>300k</span>
+                  <span>200k</span>
+                  <span>100k</span>
                   <span>0</span>
                 </div>
                 
@@ -86,32 +88,32 @@ const VentaEmpresasHero = () => {
                 <div className="flex items-end justify-between h-full pt-4 px-2">
                   <div className="flex flex-col items-center space-y-2 flex-1">
                     <div className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-md shadow-lg" 
-                         style={{height: '45%', width: '24px'}}></div>
+                         style={{height: '60%', width: '24px'}}></div>
                     <span className="text-xs text-gray-600 font-medium">Ene</span>
                   </div>
                   <div className="flex flex-col items-center space-y-2 flex-1">
                     <div className="bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t-md shadow-lg" 
-                         style={{height: '60%', width: '24px'}}></div>
+                         style={{height: '75%', width: '24px'}}></div>
                     <span className="text-xs text-gray-600 font-medium">Feb</span>
                   </div>
                   <div className="flex flex-col items-center space-y-2 flex-1">
                     <div className="bg-gradient-to-t from-amber-500 to-amber-400 rounded-t-md shadow-lg" 
-                         style={{height: '35%', width: '24px'}}></div>
+                         style={{height: '45%', width: '24px'}}></div>
                     <span className="text-xs text-gray-600 font-medium">Mar</span>
                   </div>
                   <div className="flex flex-col items-center space-y-2 flex-1">
                     <div className="bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-md shadow-lg" 
-                         style={{height: '80%', width: '24px'}}></div>
+                         style={{height: '90%', width: '24px'}}></div>
                     <span className="text-xs text-gray-600 font-medium">Abr</span>
                   </div>
                   <div className="flex flex-col items-center space-y-2 flex-1">
                     <div className="bg-gradient-to-t from-rose-500 to-rose-400 rounded-t-md shadow-lg" 
-                         style={{height: '55%', width: '24px'}}></div>
+                         style={{height: '65%', width: '24px'}}></div>
                     <span className="text-xs text-gray-600 font-medium">May</span>
                   </div>
                   <div className="flex flex-col items-center space-y-2 flex-1">
                     <div className="bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t-md shadow-lg" 
-                         style={{height: '90%', width: '24px'}}></div>
+                         style={{height: '85%', width: '24px'}}></div>
                     <span className="text-xs text-gray-600 font-medium">Jun</span>
                   </div>
                 </div>
@@ -120,16 +122,16 @@ const VentaEmpresasHero = () => {
               {/* Bottom Stats */}
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-black">18</div>
-                  <div className="text-xs text-gray-500">Operaciones</div>
+                  <div className="text-lg font-bold text-black">24</div>
+                  <div className="text-xs text-gray-500">Clientes</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-black">4.8x</div>
-                  <div className="text-xs text-gray-500">Múltiplo avg</div>
+                  <div className="text-lg font-bold text-black">98%</div>
+                  <div className="text-xs text-gray-500">Satisfacción</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-black">92%</div>
-                  <div className="text-xs text-gray-500">Tasa éxito</div>
+                  <div className="text-lg font-bold text-black">15</div>
+                  <div className="text-xs text-gray-500">Años exp.</div>
                 </div>
               </div>
 
@@ -141,15 +143,15 @@ const VentaEmpresasHero = () => {
             {/* Floating indicators - Same style as homepage */}
             <div className="absolute -top-6 -right-6 bg-black text-white rounded-xl p-4 shadow-xl">
               <div className="text-center">
-                <div className="text-lg font-bold">€125M</div>
-                <div className="text-xs text-gray-300">Pipeline total</div>
+                <div className="text-lg font-bold">+23%</div>
+                <div className="text-xs text-gray-300">Crecimiento</div>
               </div>
             </div>
             
             <div className="absolute -bottom-6 -left-6 bg-white border-2 border-green-500 rounded-xl p-4 shadow-xl">
               <div className="text-center">
-                <div className="text-lg font-bold text-green-600">92%</div>
-                <div className="text-xs text-gray-600">Tasa éxito</div>
+                <div className="text-lg font-bold text-green-600">€2.4M</div>
+                <div className="text-xs text-gray-600">Ingresos</div>
               </div>
             </div>
           </div>
