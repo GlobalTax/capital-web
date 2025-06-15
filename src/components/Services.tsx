@@ -1,10 +1,31 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, Search, Calculator, Users, FileText, Target } from 'lucide-react';
+import { TrendingUp, Search, Calculator, Users, FileText, Target, Building, ShoppingCart } from 'lucide-react';
 
 const Services = () => {
-  const services = [
+  const coreServices = [
+    {
+      icon: <Building size={40} />,
+      title: 'Venta de Empresas',
+      description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta. Desde la valoración hasta el cierre exitoso.',
+      featured: true
+    },
+    {
+      icon: <ShoppingCart size={40} />,
+      title: 'Compra de Empresas',
+      description: 'Te ayudamos a identificar, evaluar y adquirir empresas que se alineen con tu estrategia de crecimiento.',
+      featured: true
+    },
+    {
+      icon: <Calculator size={40} />,
+      title: 'Valoraciones Empresariales',
+      description: 'Evaluaciones precisas y metodologías probadas para determinar el valor real de cualquier empresa.',
+      featured: true
+    },
+  ];
+
+  const complementaryServices = [
     {
       icon: <TrendingUp size={32} />,
       title: 'Fusiones y Adquisiciones',
@@ -14,11 +35,6 @@ const Services = () => {
       icon: <Search size={32} />,
       title: 'Due Diligence',
       description: 'Análisis exhaustivo financiero, legal y comercial para identificar riesgos y oportunidades en cada inversión.',
-    },
-    {
-      icon: <Calculator size={32} />,
-      title: 'Valoraciones Empresariales',
-      description: 'Evaluaciones precisas y metodologías probadas para determinar el valor real de su empresa o target.',
     },
     {
       icon: <Users size={32} />,
@@ -45,27 +61,56 @@ const Services = () => {
             Nuestros Servicios
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Ofrecemos un conjunto integral de servicios especializados en M&A y finanzas corporativas 
-            para impulsar el crecimiento de su empresa.
+            Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
-            <Card key={index} className="capittal-card group cursor-pointer">
-              <CardContent className="p-6">
-                <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-black mb-3">
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {service.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Core Services */}
+        <div className="mb-16">
+          <h3 className="text-2xl font-bold text-black text-center mb-8">
+            Servicios Core Business
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {coreServices.map((service, index) => (
+              <Card key={index} className="capittal-card group cursor-pointer border-2 border-black">
+                <CardContent className="p-8 text-center">
+                  <div className="text-black mb-6 group-hover:scale-110 transition-transform duration-300 flex justify-center">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-2xl font-bold text-black mb-4">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed text-lg">
+                    {service.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Complementary Services */}
+        <div>
+          <h3 className="text-2xl font-bold text-black text-center mb-8">
+            Servicios Complementarios
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {complementaryServices.map((service, index) => (
+              <Card key={index} className="capittal-card group cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="text-black mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold text-black mb-3">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {service.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </section>
