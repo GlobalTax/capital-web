@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
+import { CheckCircle, ArrowRight, TrendingUp, Eye, Users, Target } from 'lucide-react';
 
 const VentaEmpresasHero = () => {
   const benefits = [
@@ -21,12 +21,11 @@ const VentaEmpresasHero = () => {
               <span className="text-sm font-medium text-black">Especialistas en M&A</span>
             </div>
 
-            <h1 className="text-3xl lg:text-4xl font-bold text-black mb-6 leading-tight">
-              Vende tu Empresa al
-              <span className="block text-gray-600">Mejor Precio</span>
+            <h1 className="text-2xl font-bold text-black mb-6 leading-tight">
+              Vende tu Empresa al Mejor Precio
             </h1>
             
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
               Más de 15 años de experiencia ayudando a empresarios a obtener 
               el máximo valor por sus negocios. Proceso confidencial y resultados garantizados.
             </p>
@@ -52,75 +51,105 @@ const VentaEmpresasHero = () => {
           </div>
 
           <div className="relative">
-            {/* Main Dashboard Card */}
-            <div className="bg-white rounded-lg border border-gray-300 shadow-lg overflow-hidden">
-              <div className="bg-gray-900 text-white p-6">
-                <h3 className="text-lg font-semibold mb-2">Panel de Ventas M&A</h3>
-                <p className="text-gray-300 text-sm">Transacciones en proceso</p>
+            {/* Modern Card-based Dashboard */}
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 shadow-2xl border border-gray-100">
+              {/* Header with metrics */}
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-black mb-1">Ventas Activas</h3>
+                  <p className="text-gray-500 text-sm">Transacciones Q4 2024</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-black">€87M</div>
+                  <div className="text-sm text-green-600">+23% vs Q3</div>
+                </div>
               </div>
               
-              {/* Market Data Table */}
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between py-3 border-b border-gray-300">
+              {/* Progress cards */}
+              <div className="space-y-4 mb-8">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="font-medium text-gray-900">SaaS Platform</span>
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <span className="font-semibold text-gray-900">TechFlow Solutions</span>
                     </div>
-                    <div className="text-right">
-                      <div className="font-bold text-gray-900">€8.5M</div>
-                      <div className="text-sm text-green-600">En proceso</div>
-                    </div>
+                    <Eye className="h-4 w-4 text-gray-400" />
                   </div>
-                  
-                  <div className="flex items-center justify-between py-3 border-b border-gray-300">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="font-medium text-gray-900">Manufacturing</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-gray-900">€25M</div>
-                      <div className="text-sm text-blue-600">Due Diligence</div>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-black">€15.2M</span>
+                    <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
+                      Cierre próximo
+                    </span>
                   </div>
-                  
-                  <div className="flex items-center justify-between py-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                      <span className="font-medium text-gray-900">E-commerce</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-gray-900">€12M</div>
-                      <div className="text-sm text-orange-600">Negociación</div>
-                    </div>
+                  <div className="mt-3 bg-gray-100 rounded-full h-2">
+                    <div className="bg-emerald-500 h-2 rounded-full" style={{width: '85%'}}></div>
                   </div>
                 </div>
                 
-                <div className="mt-6 pt-6 border-t border-gray-300">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Ventas completadas Q4</span>
-                    <span className="font-bold text-gray-900">12 cerradas</span>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="font-semibold text-gray-900">Industrial Group</span>
+                    </div>
+                    <Users className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-black">€32M</span>
+                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                      Due Diligence
+                    </span>
+                  </div>
+                  <div className="mt-3 bg-gray-100 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{width: '60%'}}></div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                      <span className="font-semibold text-gray-900">RetailMax Chain</span>
+                    </div>
+                    <Target className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-black">€8.7M</span>
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">
+                      Negociación
+                    </span>
+                  </div>
+                  <div className="mt-3 bg-gray-100 rounded-full h-2">
+                    <div className="bg-amber-500 h-2 rounded-full" style={{width: '40%'}}></div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Floating Stats */}
-            <div className="absolute -top-4 -right-4 bg-black text-white rounded-lg p-4 shadow-lg">
-              <div className="flex items-center space-x-2">
-                <div>
-                  <div className="font-bold">€45M</div>
-                  <div className="text-xs text-gray-300">Vendido</div>
+              
+              {/* Bottom stats */}
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-black">18</div>
+                  <div className="text-xs text-gray-500">Operaciones activas</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-black">4.8x</div>
+                  <div className="text-xs text-gray-500">Múltiplo promedio</div>
                 </div>
               </div>
             </div>
             
-            <div className="absolute -bottom-4 -left-4 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
-              <div className="flex items-center space-x-2">
-                <div>
-                  <div className="font-bold text-gray-900">4.2x</div>
-                  <div className="text-xs text-gray-500">Múltiplo</div>
-                </div>
+            {/* Floating indicators */}
+            <div className="absolute -top-6 -right-6 bg-black text-white rounded-xl p-4 shadow-xl">
+              <div className="text-center">
+                <div className="text-lg font-bold">€125M</div>
+                <div className="text-xs text-gray-300">Pipeline total</div>
+              </div>
+            </div>
+            
+            <div className="absolute -bottom-6 -left-6 bg-white border-2 border-green-500 rounded-xl p-4 shadow-xl">
+              <div className="text-center">
+                <div className="text-lg font-bold text-green-600">92%</div>
+                <div className="text-xs text-gray-600">Tasa éxito</div>
               </div>
             </div>
           </div>
