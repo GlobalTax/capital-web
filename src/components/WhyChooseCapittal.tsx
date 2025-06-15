@@ -1,5 +1,5 @@
+
 import React from 'react';
-import { Button } from '@/components/ui/button';
 
 const WhyChooseCapittal = () => {
   const reasons = [
@@ -35,14 +35,6 @@ const WhyChooseCapittal = () => {
     }
   ];
 
-  const benefits = [
-    "Acceso a nuestra red exclusiva de compradores internacionales",
-    "Valoración gratuita y sin compromiso de tu empresa",
-    "Acompañamiento completo desde la preparación hasta el cierre",
-    "Negociación experta que maximiza precio y términos",
-    "Due diligence coordinado para minimizar disrupciones"
-  ];
-
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,7 +55,7 @@ const WhyChooseCapittal = () => {
         </div>
 
         {/* Main reasons grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {reasons.map((reason, index) => (
             <div 
               key={index} 
@@ -85,65 +77,6 @@ const WhyChooseCapittal = () => {
               </p>
             </div>
           ))}
-        </div>
-
-        {/* Benefits section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Left side - Benefits list */}
-          <div>
-            <h3 className="text-3xl font-bold text-black mb-8">
-              Lo Que Incluye Nuestro Servicio
-            </h3>
-            
-            <div className="space-y-6">
-              {benefits.map((benefit, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-start space-x-4 group"
-                >
-                  <div className="bg-white border border-gray-300 rounded-lg p-2 group-hover:bg-black group-hover:text-white transition-all duration-300">
-                    <div className="w-3 h-3 bg-current rounded-full"></div>
-                  </div>
-                  <p className="text-gray-700 leading-relaxed group-hover:text-black transition-colors duration-300">
-                    {benefit}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right side - CTA Card */}
-          <div className="bg-black text-white rounded-lg p-8 border border-gray-300 shadow-lg">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">
-                ¿Quieres Saber Cuánto Vale tu Empresa?
-              </h3>
-              
-              <p className="text-lg mb-6 text-gray-300">
-                Obtén una valoración profesional gratuita y sin compromiso
-              </p>
-              
-              <div className="space-y-4">
-                <Button className="bg-white text-black border border-white rounded-lg hover:bg-gray-100 w-full py-4 text-lg font-semibold hover:scale-105 transition-all duration-300">
-                  Valoración Gratuita
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="border border-white rounded-lg text-white hover:bg-white hover:text-black w-full py-4 text-lg font-semibold hover:scale-105 transition-all duration-300"
-                >
-                  Solicitar Reunión
-                </Button>
-              </div>
-              
-              <div className="flex items-center justify-center mt-6 pt-6 border-t border-gray-600">
-                <div className="flex items-center space-x-4 text-sm">
-                  <span>24h respuesta</span>
-                  <span>100% confidencial</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
