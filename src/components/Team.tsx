@@ -1,6 +1,13 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const Team = () => {
   const teamMembers = [
@@ -61,36 +68,52 @@ const Team = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {teamMembers.map((member, index) => (
-            <Card key={index} className="capittal-card text-center">
-              <CardContent className="p-6">
-                <div className="w-32 h-32 mx-auto mb-6 overflow-hidden rounded-lg border-0.5 border-black">
-                  <img 
-                    src={member.image} 
-                    alt={member.name}
-                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                  />
-                </div>
-                
-                <h3 className="text-lg font-semibold text-black mb-2">
-                  {member.name}
-                </h3>
-                
-                <p className="text-base font-medium text-gray-700 mb-2">
-                  {member.position}
-                </p>
-                
-                <p className="text-gray-600 mb-2 text-sm">
-                  {member.experience}
-                </p>
-                
-                <p className="text-xs text-gray-500">
-                  {member.background}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="relative">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {teamMembers.map((member, index) => (
+                <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="capittal-card text-center h-full">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className="w-32 h-32 mx-auto mb-6 overflow-hidden rounded-lg border-0.5 border-black">
+                        <img 
+                          src={member.image} 
+                          alt={member.name}
+                          className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                        />
+                      </div>
+                      
+                      <div className="flex-1 flex flex-col justify-center">
+                        <h3 className="text-lg font-semibold text-black mb-2">
+                          {member.name}
+                        </h3>
+                        
+                        <p className="text-base font-medium text-gray-700 mb-2">
+                          {member.position}
+                        </p>
+                        
+                        <p className="text-gray-600 mb-2 text-sm">
+                          {member.experience}
+                        </p>
+                        
+                        <p className="text-xs text-gray-500">
+                          {member.background}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="capittal-button -left-12 hover:shadow-lg" />
+            <CarouselNext className="capittal-button -right-12 hover:shadow-lg" />
+          </Carousel>
         </div>
       </div>
     </section>
