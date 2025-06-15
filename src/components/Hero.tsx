@@ -5,7 +5,7 @@ import { ArrowRight, TrendingUp, Users, Award } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <section className="pt-32 pb-20 bg-gradient-to-br from-white via-gray-50 to-white min-h-screen flex items-center">
+    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Left Column - Content */}
@@ -18,7 +18,7 @@ const Hero = () => {
             <h1 className="text-5xl md:text-7xl font-normal text-black mb-8 leading-tight tracking-tight">
               Maximizamos el
               <br />
-              <span className="text-gray-600">valor</span>
+              <span className="text-black">valor</span>
               {' '}de tu empresa
             </h1>
             
