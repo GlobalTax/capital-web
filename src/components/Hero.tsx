@@ -39,7 +39,7 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Column - Simple Image/Stats */}
+          {/* Right Column - Stats Card */}
           <div className="relative animate-fade-in">
             {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl transform rotate-3 opacity-20"></div>
