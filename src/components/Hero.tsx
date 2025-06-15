@@ -30,7 +30,7 @@ const Hero = () => {
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-gray-200">
               <div className="text-center">
-                <div className="text-3xl font-bold text-black mb-2">€2.5B+</div>
+                <div className="text-3xl font-bold text-black mb-2">€1.0B+</div>
                 <div className="text-sm text-gray-600">Valor Transaccional</div>
               </div>
               <div className="text-center">
