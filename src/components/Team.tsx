@@ -57,10 +57,10 @@ const Team = () => {
             }}
             className="w-full"
           >
-            <CarouselContent className="-ml-4">
+            <CarouselContent className="-ml-1">
               {teamMembers.map((member, index) => (
-                <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="w-48 h-48 mx-auto overflow-hidden rounded-lg border-0.5 border-gray-300">
+                <CarouselItem key={index} className="pl-1 md:basis-1/4 lg:basis-1/5">
+                  <div className="w-32 h-32 mx-auto overflow-hidden rounded-lg border-0.5 border-gray-300">
                     <img 
                       src={member.image} 
                       alt={member.name}
