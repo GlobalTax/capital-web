@@ -52,13 +52,76 @@ const VentaEmpresasHero = () => {
           </div>
 
           <div className="relative">
-            <div className="relative rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=800&h=600" 
-                alt="Reunión de negocios - Venta de empresas"
-                className="w-full h-[500px] object-cover"
-              />
-              <div className="absolute inset-0 bg-black/10"></div>
+            {/* Main Dashboard Card */}
+            <div className="bg-white rounded-lg border border-gray-300 shadow-lg overflow-hidden">
+              <div className="bg-gray-900 text-white p-6">
+                <h3 className="text-lg font-semibold mb-2">Panel de Ventas M&A</h3>
+                <p className="text-gray-300 text-sm">Transacciones en proceso</p>
+              </div>
+              
+              {/* Market Data Table */}
+              <div className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-b border-gray-300">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="font-medium text-gray-900">SaaS Platform</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900">€8.5M</div>
+                      <div className="text-sm text-green-600">En proceso</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-3 border-b border-gray-300">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="font-medium text-gray-900">Manufacturing</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900">€25M</div>
+                      <div className="text-sm text-blue-600">Due Diligence</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="font-medium text-gray-900">E-commerce</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900">€12M</div>
+                      <div className="text-sm text-orange-600">Negociación</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-gray-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Ventas completadas Q4</span>
+                    <span className="font-bold text-gray-900">12 cerradas</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Floating Stats */}
+            <div className="absolute -top-4 -right-4 bg-black text-white rounded-lg p-4 shadow-lg">
+              <div className="flex items-center space-x-2">
+                <div>
+                  <div className="font-bold">€45M</div>
+                  <div className="text-xs text-gray-300">Vendido</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="absolute -bottom-4 -left-4 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
+              <div className="flex items-center space-x-2">
+                <div>
+                  <div className="font-bold text-gray-900">4.2x</div>
+                  <div className="text-xs text-gray-500">Múltiplo</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
