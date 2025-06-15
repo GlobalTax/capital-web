@@ -23,8 +23,8 @@ const Hero = () => {
             </h1>
             
             <p className="text-xl text-gray-600 mb-12 leading-relaxed font-normal max-w-2xl">
-              Especialistas en fusiones y adquisiciones con más de 15 años de experiencia. 
-              Te acompañamos en cada paso para conseguir la mejor valoración.
+              Especialistas en compraventa de empresas con más de 15 años de experiencia. 
+              Te acompañamos en cada paso para lograr el mejor precio.
             </p>
 
             {/* Stats Row */}
