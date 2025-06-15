@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
+import { CheckCircle, ArrowRight, TrendingUp, Building2 } from 'lucide-react';
 
 const VentaEmpresasHero = () => {
   const benefits = [
@@ -9,6 +9,14 @@ const VentaEmpresasHero = () => {
     'Proceso confidencial y profesional',
     'Acceso a compradores cualificados',
     'Asesoramiento integral durante todo el proceso'
+  ];
+
+  const empresasEnVenta = [
+    { nombre: 'Tech Startup', valor: '€15M', crecimiento: '+12%', tipo: 'Tecnología' },
+    { nombre: 'Industrial Co.', valor: '€45M', crecimiento: '+8%', tipo: 'Industrial' },
+    { nombre: 'Retail Chain', valor: '€32M', crecimiento: '+15%', tipo: 'Retail' },
+    { nombre: 'Healthcare Ltd.', valor: '€28M', crecimiento: '+10%', tipo: 'Salud' },
+    { nombre: 'Energy Solutions', valor: '€67M', crecimiento: '+6%', tipo: 'Energía' }
   ];
 
   return (
@@ -51,87 +59,53 @@ const VentaEmpresasHero = () => {
           </div>
 
           <div className="relative">
-            {/* Chart Container - Same style as homepage */}
+            {/* Market Dashboard Container */}
             <div className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
               {/* Header */}
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h3 className="text-xl font-bold text-black">Ingresos 2024</h3>
-                  <p className="text-gray-500 text-sm">Crecimiento mensual</p>
+                  <h3 className="text-xl font-bold text-black">Capittal Market Dashboard</h3>
+                  <p className="text-gray-500 text-sm">Análisis en tiempo real</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-black">€2.4M</div>
-                  <div className="text-sm text-green-600">+12%</div>
+                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-lg text-sm font-semibold">
+                  +23% Este mes
                 </div>
               </div>
 
-              {/* Chart Area */}
-              <div className="h-64 relative mb-8">
-                {/* Background Grid */}
-                <div className="absolute inset-0 grid grid-cols-6 gap-4 opacity-20">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="border-r border-gray-200 last:border-r-0"></div>
-                  ))}
-                </div>
-                
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-400 -ml-8">
-                  <span>500k</span>
-                  <span>400k</span>
-                  <span>300k</span>
-                  <span>200k</span>
-                  <span>100k</span>
-                  <span>0</span>
-                </div>
-                
-                {/* Chart Bars */}
-                <div className="flex items-end justify-between h-full pt-4 px-2">
-                  <div className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-md shadow-lg" 
-                         style={{height: '60%', width: '24px'}}></div>
-                    <span className="text-xs text-gray-600 font-medium">Ene</span>
+              {/* Empresas List */}
+              <div className="space-y-4 mb-8">
+                {empresasEnVenta.map((empresa, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-black">{empresa.nombre}</div>
+                        <div className="text-xs text-gray-500">{empresa.tipo}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-black">{empresa.valor}</div>
+                      <div className="text-green-600 text-sm font-semibold">{empresa.crecimiento}</div>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t-md shadow-lg" 
-                         style={{height: '75%', width: '24px'}}></div>
-                    <span className="text-xs text-gray-600 font-medium">Feb</span>
-                  </div>
-                  <div className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="bg-gradient-to-t from-amber-500 to-amber-400 rounded-t-md shadow-lg" 
-                         style={{height: '45%', width: '24px'}}></div>
-                    <span className="text-xs text-gray-600 font-medium">Mar</span>
-                  </div>
-                  <div className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-md shadow-lg" 
-                         style={{height: '90%', width: '24px'}}></div>
-                    <span className="text-xs text-gray-600 font-medium">Abr</span>
-                  </div>
-                  <div className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="bg-gradient-to-t from-rose-500 to-rose-400 rounded-t-md shadow-lg" 
-                         style={{height: '65%', width: '24px'}}></div>
-                    <span className="text-xs text-gray-600 font-medium">May</span>
-                  </div>
-                  <div className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t-md shadow-lg" 
-                         style={{height: '85%', width: '24px'}}></div>
-                    <span className="text-xs text-gray-600 font-medium">Jun</span>
-                  </div>
-                </div>
+                ))}
               </div>
               
               {/* Bottom Stats */}
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-black">24</div>
-                  <div className="text-xs text-gray-500">Clientes</div>
+                  <div className="text-lg font-bold text-black">156</div>
+                  <div className="text-xs text-gray-500">Empresas</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-black">98%</div>
-                  <div className="text-xs text-gray-500">Satisfacción</div>
+                  <div className="text-lg font-bold text-black">Q4 2024</div>
+                  <div className="text-xs text-gray-500">Transacciones</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-black">15</div>
-                  <div className="text-xs text-gray-500">Años exp.</div>
+                  <div className="text-lg font-bold text-black">47</div>
+                  <div className="text-xs text-gray-500">Activas</div>
                 </div>
               </div>
 
@@ -140,18 +114,18 @@ const VentaEmpresasHero = () => {
               <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-tr from-emerald-100 to-blue-100 rounded-full opacity-40"></div>
             </div>
             
-            {/* Floating indicators - Same style as homepage */}
+            {/* Floating indicators */}
             <div className="absolute -top-6 -right-6 bg-black text-white rounded-xl p-4 shadow-xl">
               <div className="text-center">
-                <div className="text-lg font-bold">+23%</div>
-                <div className="text-xs text-gray-300">Crecimiento</div>
+                <div className="text-lg font-bold">€187M</div>
+                <div className="text-xs text-gray-300">Valor Total</div>
               </div>
             </div>
             
             <div className="absolute -bottom-6 -left-6 bg-white border-2 border-green-500 rounded-xl p-4 shadow-xl">
               <div className="text-center">
-                <div className="text-lg font-bold text-green-600">€2.4M</div>
-                <div className="text-xs text-gray-600">Ingresos</div>
+                <div className="text-lg font-bold text-green-600">23</div>
+                <div className="text-xs text-gray-600">Vendidas</div>
               </div>
             </div>
           </div>
