@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, Users, Award } from 'lucide-react';
 
 const Hero = () => {
   return (
@@ -11,7 +10,6 @@ const Hero = () => {
           {/* Left Column - Content */}
           <div className="lg:col-span-7">
             <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-8">
-              <Award className="w-4 h-4 mr-2" />
               Líderes en M&A desde 2008
             </div>
             
@@ -46,7 +44,6 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-6">
               <Button className="bg-white text-black border border-gray-300 rounded-lg text-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out">
                 Evaluar mi Empresa
-                <ArrowRight className="ml-3" size={24} />
               </Button>
               
               <Button 
@@ -117,7 +114,6 @@ const Hero = () => {
               {/* Floating Stats */}
               <div className="absolute -top-4 -right-4 bg-black text-white rounded-lg p-4 shadow-lg">
                 <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5" />
                   <div>
                     <div className="font-bold">+23%</div>
                     <div className="text-xs text-gray-300">Este mes</div>
@@ -127,7 +123,6 @@ const Hero = () => {
               
               <div className="absolute -bottom-4 -left-4 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
                 <div className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-gray-600" />
                   <div>
                     <div className="font-bold text-gray-900">156</div>
                     <div className="text-xs text-gray-500">Empresas</div>

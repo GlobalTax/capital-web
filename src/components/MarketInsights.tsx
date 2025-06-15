@@ -2,26 +2,22 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, BarChart, Users, ExternalLink } from 'lucide-react';
 
 const MarketInsights = () => {
   const insights = [
     {
-      icon: <TrendingUp size={24} />,
       value: "€1.2B",
       label: "Volumen Transaccional Q4",
       change: "+15%",
       positive: true
     },
     {
-      icon: <BarChart size={24} />,
       value: "47",
       label: "Transacciones Activas",
       change: "+8%",
       positive: true
     },
     {
-      icon: <Users size={24} />,
       value: "156",
       label: "Empresas Valoradas",
       change: "+23%",
@@ -47,9 +43,6 @@ const MarketInsights = () => {
           {insights.map((insight, index) => (
             <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
               <CardContent className="p-6">
-                <div className="text-black mb-3 flex justify-center">
-                  {insight.icon}
-                </div>
                 <div className="text-2xl font-bold text-black mb-1">
                   {insight.value}
                 </div>
@@ -82,7 +75,6 @@ const MarketInsights = () => {
               onClick={() => window.open('https://capittalmarket.com', '_blank')}
             >
               Acceder a Capittal Market
-              <ExternalLink className="ml-2" size={18} />
             </Button>
             
             <Button 
