@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -84,15 +85,24 @@ const Footer = () => {
             </div>
             
             <div className="flex space-x-6 text-gray-600">
-              <a href="#" className="hover:text-black transition-colors duration-300">
+              <Link 
+                to="/politica-privacidad" 
+                className="hover:text-black transition-colors duration-300"
+              >
                 Política de Privacidad
-              </a>
-              <a href="#" className="hover:text-black transition-colors duration-300">
+              </Link>
+              <Link 
+                to="/terminos-uso" 
+                className="hover:text-black transition-colors duration-300"
+              >
                 Términos de Uso
-              </a>
-              <a href="#" className="hover:text-black transition-colors duration-300">
+              </Link>
+              <Link 
+                to="/cookies" 
+                className="hover:text-black transition-colors duration-300"
+              >
                 Cookies
-              </a>
+              </Link>
             </div>
           </div>
         </div>

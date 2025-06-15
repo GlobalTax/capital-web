@@ -17,6 +17,11 @@ import VentaEmpresas from "./pages/VentaEmpresas";
 import CompraEmpresas from "./pages/CompraEmpresas";
 import CalculadoraValoracion from "./pages/CalculadoraValoracion";
 
+// Páginas legales
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
+import TerminosUso from "./pages/TerminosUso";
+import Cookies from "./pages/Cookies";
+
 // Por Qué Elegirnos
 import PorQueElegirnos from "./pages/por-que-elegirnos";
 import Experiencia from "./pages/por-que-elegirnos/experiencia";
@@ -63,6 +68,11 @@ const App = () => (
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
+          
+          {/* Páginas legales */}
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+          <Route path="/terminos-uso" element={<TerminosUso />} />
+          <Route path="/cookies" element={<Cookies />} />
           
           {/* Por Qué Elegirnos */}
           <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
