@@ -9,8 +9,7 @@ const Hero = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Column - Content */}
-          <div className="animate-fade-in">
-            {/* Main heading */}
+          <div>
             <h1 className="text-5xl md:text-6xl font-normal text-black mb-8 leading-tight tracking-tight">
               Maximizamos el
               <br />
@@ -23,7 +22,6 @@ const Hero = () => {
               Te acompañamos en cada paso para conseguir la mejor valoración.
             </p>
 
-            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button className="capittal-button text-lg px-10 py-5 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                 Evaluar mi Empresa
@@ -40,13 +38,8 @@ const Hero = () => {
           </div>
 
           {/* Right Column - Stats Card */}
-          <div className="relative animate-fade-in">
-            {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl transform rotate-3 opacity-20"></div>
-            
-            {/* Main content container */}
-            <div className="relative bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
-              {/* Content area */}
+          <div className="relative">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
               <div className="aspect-video bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-8">
                 <div className="text-center">
                   <div className="text-6xl font-bold text-black mb-4">15+</div>
