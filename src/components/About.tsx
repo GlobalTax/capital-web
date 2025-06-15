@@ -33,23 +33,23 @@ const About = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
           <div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
               Quiénes Somos
             </h2>
             
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="text-base text-gray-600 mb-8 leading-relaxed">
               Capittal es una boutique de inversión especializada en fusiones y adquisiciones 
               con un enfoque personalizado y resultados excepcionales. Nuestro equipo combina 
               décadas de experiencia en banca de inversión con un profundo conocimiento sectorial.
             </p>
 
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="text-base text-gray-600 mb-8 leading-relaxed">
               Trabajamos exclusivamente con empresas medianas y grandes, proporcionando 
               asesoramiento estratégico de primer nivel y ejecutando transacciones complejas 
               con la máxima confidencialidad y eficiencia.
             </p>
 
-            <Button className="bg-white text-black border-0.5 border-black rounded-[10px] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-lg px-8 py-4">
+            <Button className="bg-white text-black border-0.5 border-black rounded-[10px] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base px-6 py-3">
               Conocer Más
             </Button>
           </div>
@@ -61,10 +61,10 @@ const About = () => {
                 <div className="text-black mb-3">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2">
+                <h3 className="text-lg font-semibold text-black mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 text-base leading-relaxed">
+                <p className="text-gray-600 text-sm leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -75,23 +75,23 @@ const About = () => {
         {/* Stats Section */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="text-center">
-            <div className="text-5xl font-bold text-black mb-2">98%</div>
-            <div className="text-gray-600 font-medium text-lg">Tasa de Éxito</div>
+            <div className="text-3xl font-bold text-black mb-2">98%</div>
+            <div className="text-gray-600 font-medium text-base">Tasa de Éxito</div>
           </div>
           
           <div className="text-center">
-            <div className="text-5xl font-bold text-black mb-2">45</div>
-            <div className="text-gray-600 font-medium text-lg">Días Promedio</div>
+            <div className="text-3xl font-bold text-black mb-2">45</div>
+            <div className="text-gray-600 font-medium text-base">Días Promedio</div>
           </div>
           
           <div className="text-center">
-            <div className="text-5xl font-bold text-black mb-2">25+</div>
-            <div className="text-gray-600 font-medium text-lg">Sectores</div>
+            <div className="text-3xl font-bold text-black mb-2">25+</div>
+            <div className="text-gray-600 font-medium text-base">Sectores</div>
           </div>
           
           <div className="text-center">
-            <div className="text-5xl font-bold text-black mb-2">12</div>
-            <div className="text-gray-600 font-medium text-lg">Países</div>
+            <div className="text-3xl font-bold text-black mb-2">12</div>
+            <div className="text-gray-600 font-medium text-base">Países</div>
           </div>
         </div>
       </div>
