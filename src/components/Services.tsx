@@ -66,7 +66,7 @@ const Services = () => {
           </p>
         </div>
 
-        {/* Core Services - Different Layout */}
+        {/* Core Services - Enhanced Cards */}
         <div className="mb-20">
           <div className="text-center mb-12">
             <h3 className="text-2xl font-bold text-black mb-4">
@@ -75,53 +75,54 @@ const Services = () => {
             <div className="w-24 h-1 bg-black mx-auto"></div>
           </div>
           
-          <div className="space-y-16">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {coreServices.map((service, index) => (
-              <div key={index} className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
-                <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
-                  <div className="flex items-center mb-6">
-                    <div className="text-black mr-4">
-                      {service.icon}
-                    </div>
-                    <h3 className="text-3xl font-bold text-black">
-                      {service.title}
-                    </h3>
+              <div key={index} className="group relative">
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white rounded-2xl transform group-hover:scale-105 transition-transform duration-300"></div>
+                
+                {/* Main card */}
+                <div className="relative bg-white border border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
+                  {/* Icon */}
+                  <div className="text-black mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                    {service.icon}
                   </div>
                   
-                  <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-black mb-4">
+                    {service.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 leading-relaxed">
                     {service.description}
                   </p>
 
+                  {/* Features */}
                   <div className="space-y-3 mb-8">
                     {service.features.map((feature, idx) => (
                       <div key={idx} className="flex items-center">
                         <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
-                        <span className="text-gray-700">{feature}</span>
+                        <span className="text-gray-700 text-sm">{feature}</span>
                       </div>
                     ))}
                   </div>
 
-                  <Button className="capittal-button group">
+                  {/* Button */}
+                  <Button className="capittal-button group w-full">
                     Más información
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
-                
-                <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-8 shadow-lg">
-                    <div className="aspect-square bg-white rounded-xl border border-gray-100 flex items-center justify-center">
-                      <div className="text-6xl text-gray-300">
-                        {service.icon}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
+                {/* Accent line */}
+                <div className="absolute top-0 left-8 right-8 h-1 bg-black rounded-b-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Complementary Services - Card Grid */}
+        {/* Complementary Services - Simplified Cards */}
         <div>
           <h3 className="text-2xl font-bold text-black text-center mb-8">
             Servicios Complementarios
