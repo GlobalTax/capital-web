@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const VentaEmpresasFAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -29,22 +30,6 @@ const VentaEmpresasFAQ = () => {
     {
       question: '¿Qué sucede con mis empleados?',
       answer: 'La retención del equipo es crucial para el éxito de la venta. Trabajamos con compradores que valoran el capital humano y buscamos estructuras que incentiven la continuidad del equipo clave. También podemos ayudar a diseñar planes de retención durante el proceso.'
-    },
-    {
-      question: '¿Cuál es el tamaño mínimo de empresa que asesoráis?',
-      answer: 'Generalmente trabajamos con empresas que facturan al menos 2-3 millones de euros anuales y tienen un EBITDA mínimo de 500.000€. Sin embargo, evaluamos cada caso individualmente, especialmente si la empresa tiene características especiales o gran potencial de crecimiento.'
-    },
-    {
-      question: '¿Cómo determinamos el precio de venta?',
-      answer: 'Realizamos una valoración completa utilizando múltiples metodologías: múltiplos de mercado, flujos de caja descontados, y comparables de transacciones recientes. Consideramos factores como rentabilidad, crecimiento, posición competitiva, y condiciones del mercado para establecer un rango de valoración realista.'
-    },
-    {
-      question: '¿Qué tipos de compradores tenéis en vuestra red?',
-      answer: 'Tenemos acceso a una amplia red que incluye compradores estratégicos (empresas del sector), fondos de private equity, family offices, inversores individuales, y compradores internacionales. Seleccionamos los más adecuados según el perfil de tu empresa y tus objetivos.'
-    },
-    {
-      question: '¿Qué garantías ofrecéis sobre el éxito de la operación?',
-      answer: 'Si bien no podemos garantizar la venta (depende de muchos factores externos), nuestra tasa de éxito es del 85%. Solo cobramos si la operación se cierra, y trabajamos incansablemente para encontrar el mejor comprador al mejor precio. Nuestro éxito está directamente ligado al tuyo.'
     }
   ];
 
@@ -53,25 +38,25 @@ const VentaEmpresasFAQ = () => {
   };
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-24 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl font-bold text-black mb-6">
             Preguntas Frecuentes
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg text-gray-600">
             Resolvemos las dudas más comunes sobre el proceso de venta de empresas
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-12">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div key={index} className="capittal-card">
               <button
-                className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
+                className="w-full text-left flex justify-between items-center hover:bg-gray-50 transition-colors p-2 -m-2 rounded-lg"
                 onClick={() => toggleFAQ(index)}
               >
-                <h3 className="text-lg font-semibold text-black pr-4">
+                <h3 className="text-base font-semibold text-black pr-4">
                   {faq.question}
                 </h3>
                 {openIndex === index ? (
@@ -82,7 +67,7 @@ const VentaEmpresasFAQ = () => {
               </button>
               
               {openIndex === index && (
-                <div className="px-6 pb-4">
+                <div className="mt-4 pt-4 border-t border-gray-200">
                   <p className="text-gray-600 leading-relaxed">
                     {faq.answer}
                   </p>
@@ -92,13 +77,13 @@ const VentaEmpresasFAQ = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">
+        <div className="text-center">
+          <p className="text-gray-600 mb-6">
             ¿No encuentras la respuesta que buscas?
           </p>
-          <button className="capittal-button">
+          <Button className="capittal-button">
             Contacta con Nuestros Expertos
-          </button>
+          </Button>
         </div>
       </div>
     </section>
