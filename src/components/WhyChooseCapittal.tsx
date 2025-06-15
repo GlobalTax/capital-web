@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -54,9 +53,7 @@ const WhyChooseCapittal = () => {
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Por Qué Elegir
-            <br />
-            <span className="text-black">Capittal</span>
+            Por Qué Elegir Capittal
           </h2>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
