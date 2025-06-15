@@ -64,7 +64,7 @@ const MarketInsights = () => {
           <h3 className="text-2xl font-bold text-black mb-4">
             Inteligencia de Mercado Capittal
           </h3>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed text-base">
+          <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
             Nuestro sistema propietario ofrece acceso exclusivo a valoraciones de mercado, 
             análisis de transacciones comparables y datos de inteligencia M&A actualizados en tiempo real.
           </p>
