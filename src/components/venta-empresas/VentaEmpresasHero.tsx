@@ -20,7 +20,7 @@ const VentaEmpresasHero = () => {
   ];
 
   return (
-    <section className="bg-white py-24">
+    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -29,7 +29,7 @@ const VentaEmpresasHero = () => {
               <span className="text-sm font-medium text-black">Especialistas en M&A</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-black mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6 leading-tight">
               Vende tu Empresa al Mejor Precio
             </h1>
             
@@ -42,17 +42,17 @@ const VentaEmpresasHero = () => {
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">{benefit}</span>
+                  <span className="text-gray-600">{benefit}</span>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="capittal-button text-lg px-8 py-4 group">
+              <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-lg px-8 py-4 group">
                 Solicitar Valoración Gratuita
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" className="text-lg px-8 py-4 border-black hover:bg-gray-50">
+              <Button variant="outline" className="text-lg px-8 py-4 border-gray-300 hover:bg-gray-50">
                 Descargar Guía
               </Button>
             </div>
@@ -67,7 +67,7 @@ const VentaEmpresasHero = () => {
                   <h3 className="text-xl font-bold text-black">Capittal Market Dashboard</h3>
                   <p className="text-gray-500 text-sm">Análisis en tiempo real</p>
                 </div>
-                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-lg text-sm font-semibold">
+                <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-black">
                   +23% Este mes
                 </div>
               </div>

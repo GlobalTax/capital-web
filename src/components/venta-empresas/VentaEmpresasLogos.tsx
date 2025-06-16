@@ -73,7 +73,7 @@ const VentaEmpresasLogos = () => {
     <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Operaciones Realizadas
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -84,7 +84,7 @@ const VentaEmpresasLogos = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {operaciones.map((operacion, index) => (
-            <div key={index} className={`capittal-card text-center group ${operacion.destacada ? 'ring-2 ring-black' : ''}`}>
+            <div key={index} className={`bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group ${operacion.destacada ? 'ring-2 ring-black' : ''}`}>
               {/* Logo placeholder */}
               <div className="bg-gray-100 border border-gray-300 rounded-lg h-20 flex items-center justify-center mb-6 group-hover:bg-gray-50 transition-colors duration-300">
                 <span className="text-gray-500 font-bold text-lg">
@@ -118,7 +118,7 @@ const VentaEmpresasLogos = () => {
           ))}
         </div>
 
-        <div className="capittal-card max-w-4xl mx-auto">
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out max-w-4xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-black mb-2">200+</div>

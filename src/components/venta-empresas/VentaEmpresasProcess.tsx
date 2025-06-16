@@ -46,7 +46,7 @@ const VentaEmpresasProcess = () => {
     <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Nuestro Proceso de Venta
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -60,12 +60,12 @@ const VentaEmpresasProcess = () => {
             const Icon = step.icon;
             return (
               <div key={index} className="relative">
-                <div className="capittal-card h-full">
+                <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                   <div className="flex items-center justify-between mb-6">
                     <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-gray-600">
                       {step.duration}
                     </div>
                   </div>
@@ -74,7 +74,7 @@ const VentaEmpresasProcess = () => {
                     Paso {index + 1}
                   </div>
                   
-                  <h3 className="text-lg font-bold text-black mb-4">
+                  <h3 className="text-xl font-bold text-black mb-4">
                     {step.title}
                   </h3>
                   
@@ -87,7 +87,7 @@ const VentaEmpresasProcess = () => {
           })}
         </div>
 
-        <div className="capittal-card max-w-4xl mx-auto text-center">
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out max-w-4xl mx-auto text-center">
           <h3 className="text-xl font-bold text-black mb-6">
             Duración Total del Proceso
           </h3>

@@ -41,7 +41,7 @@ const VentaEmpresasFAQ = () => {
     <section className="py-24 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Preguntas Frecuentes
           </h2>
           <p className="text-lg text-gray-600">
@@ -51,7 +51,7 @@ const VentaEmpresasFAQ = () => {
 
         <div className="space-y-4 mb-12">
           {faqs.map((faq, index) => (
-            <div key={index} className="capittal-card">
+            <div key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
               <button
                 className="w-full text-left flex justify-between items-center hover:bg-gray-50 transition-colors p-2 -m-2 rounded-lg"
                 onClick={() => toggleFAQ(index)}
@@ -81,7 +81,7 @@ const VentaEmpresasFAQ = () => {
           <p className="text-gray-600 mb-6">
             ¿No encuentras la respuesta que buscas?
           </p>
-          <Button className="capittal-button">
+          <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             Contacta con Nuestros Expertos
           </Button>
         </div>
