@@ -4,7 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 export const ensureCurrentUserIsAdmin = async () => {
   try {
     // Obtener el usuario actual
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.error('Error obteniendo usuario:', userError);
+      return false;
+    }
     
     if (!user) {
       console.log('No hay usuario autenticado');
@@ -13,20 +18,17 @@ export const ensureCurrentUserIsAdmin = async () => {
 
     console.log('Usuario actual:', user.id, user.email);
 
-    // Verificar si el usuario ya es admin
-    const { data: existingAdmin, error: checkError } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    // Usar la nueva función check_is_admin para verificar permisos
+    const { data: isAdmin, error: checkError } = await supabase
+      .rpc('check_is_admin', { check_user_id: user.id });
 
     if (checkError) {
       console.error('Error verificando admin:', checkError);
       return false;
     }
 
-    if (existingAdmin) {
-      console.log('Usuario ya es admin:', existingAdmin);
+    if (isAdmin) {
+      console.log('Usuario ya es admin');
       return true;
     }
 
@@ -36,7 +38,7 @@ export const ensureCurrentUserIsAdmin = async () => {
       .from('admin_users')
       .insert({
         user_id: user.id,
-        role: 'admin',
+        role: 'super_admin',
         is_active: true
       })
       .select()

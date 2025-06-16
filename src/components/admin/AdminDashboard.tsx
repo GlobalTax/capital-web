@@ -38,8 +38,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         });
       } else {
         toast({
-          title: "Usuario configurado",
-          description: "Acceso de administrador verificado correctamente.",
+          title: "Acceso autorizado",
+          description: "Bienvenido al panel de administración.",
         });
       }
     } catch (error) {
@@ -49,21 +49,31 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         description: "Error configurando permisos de administrador.",
         variant: "destructive",
       });
+      setIsAdminSetup(false);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    onLogout();
+    try {
+      await supabase.auth.signOut();
+      onLogout();
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      toast({
+        title: "Error",
+        description: "Error al cerrar sesión.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-0.5 border-black mx-auto mb-4"></div>
           <p className="text-gray-600">Configurando permisos...</p>
         </div>
       </div>
@@ -79,10 +89,17 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             No se pudieron configurar los permisos de administrador. 
             Por favor, contacta al administrador del sistema.
           </p>
-          <Button onClick={setupAdmin} className="mr-4 bg-black text-white border border-black rounded-lg">
+          <Button 
+            onClick={setupAdmin} 
+            className="mr-4 bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+          >
             Reintentar
           </Button>
-          <Button variant="outline" onClick={handleLogout} className="border border-gray-300 rounded-lg">
+          <Button 
+            variant="outline" 
+            onClick={handleLogout} 
+            className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+          >
             Cerrar Sesión
           </Button>
         </div>
@@ -92,14 +109,14 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white border-b border-gray-300 shadow-sm">
+      <header className="bg-white border-b-0.5 border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-black">Panel de Administración - Capittal</h1>
             <Button 
               variant="outline" 
               onClick={handleLogout}
-              className="border border-gray-300 rounded-lg"
+              className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
               Cerrar Sesión
             </Button>
@@ -109,7 +126,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="case-studies" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-gray-100 rounded-lg">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white border-0.5 border-black rounded-lg">
             <TabsTrigger value="case-studies" className="rounded-lg">Casos de Éxito</TabsTrigger>
             <TabsTrigger value="operations" className="rounded-lg">Operaciones</TabsTrigger>
             <TabsTrigger value="multiples" className="rounded-lg">Múltiplos</TabsTrigger>
