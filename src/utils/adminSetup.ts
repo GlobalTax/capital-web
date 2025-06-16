@@ -18,41 +18,46 @@ export const ensureCurrentUserIsAdmin = async () => {
 
     console.log('Usuario actual:', user.id, user.email);
 
-    // Con las nuevas políticas RLS simplificadas, podemos hacer upsert directamente
-    console.log('Configurando usuario como admin...');
-    const { data: upsertData, error: upsertError } = await supabase
+    // Intentar insertar directamente sin verificaciones previas
+    console.log('Insertando usuario como admin...');
+    const { data: insertData, error: insertError } = await supabase
       .from('admin_users')
-      .upsert({
+      .insert({
         user_id: user.id,
         role: 'super_admin',
         is_active: true
-      }, {
-        onConflict: 'user_id'
       })
       .select()
       .single();
 
-    if (upsertError) {
-      console.error('Error insertando/actualizando admin:', upsertError);
-      return false;
+    if (insertError) {
+      // Si ya existe, intentar actualizar
+      if (insertError.code === '23505') { // unique violation
+        console.log('Usuario ya existe, actualizando...');
+        const { data: updateData, error: updateError } = await supabase
+          .from('admin_users')
+          .update({
+            role: 'super_admin',
+            is_active: true
+          })
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error actualizando admin:', updateError);
+          return false;
+        }
+
+        console.log('Usuario actualizado como admin exitosamente:', updateData);
+        return true;
+      } else {
+        console.error('Error insertando admin:', insertError);
+        return false;
+      }
     }
 
-    console.log('Usuario configurado como admin exitosamente:', upsertData);
-
-    // Verificar que la configuración fue exitosa
-    const { data: verificationData, error: verificationError } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .single();
-
-    if (verificationError) {
-      console.error('Error verificando configuración de admin:', verificationError);
-      return false;
-    }
-
-    console.log('Verificación exitosa:', verificationData);
+    console.log('Usuario insertado como admin exitosamente:', insertData);
     return true;
 
   } catch (error) {
@@ -73,16 +78,19 @@ export const debugAdminStatus = async () => {
     console.log('Debug: Usuario ID:', user.id);
     console.log('Debug: Email:', user.email);
 
-    // Consulta directa a la tabla
+    // Consulta directa a la tabla usando select sin filtros complejos
     const { data: adminUsers, error } = await supabase
       .from('admin_users')
-      .select('*')
-      .eq('user_id', user.id);
+      .select('*');
 
-    console.log('Debug: Registros admin encontrados:', adminUsers);
+    console.log('Debug: Todos los registros admin:', adminUsers);
     if (error) {
       console.log('Debug: Error consultando admin_users:', error);
     }
+
+    // Buscar el usuario actual en los resultados
+    const currentUserAdmin = adminUsers?.find(admin => admin.user_id === user.id);
+    console.log('Debug: Registro del usuario actual:', currentUserAdmin);
 
   } catch (error) {
     console.error('Debug: Error general:', error);

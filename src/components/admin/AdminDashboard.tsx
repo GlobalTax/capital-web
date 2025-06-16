@@ -35,6 +35,9 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
       await debugAdminStatus();
       console.log('=== FIN DEBUG ===');
       
+      // Esperar un poco para que termine el debug
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const isAdmin = await ensureCurrentUserIsAdmin();
       
       if (isAdmin) {
@@ -49,7 +52,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         setDebugInfo('Error: No se pudo configurar como administrador');
         toast({
           title: "Error de configuración",
-          description: "No se pudo configurar el usuario como administrador. Intenta de nuevo.",
+          description: "No se pudo configurar el usuario como administrador.",
           variant: "destructive",
         });
       }
@@ -89,7 +92,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           <h2 className="text-lg font-medium text-black mb-2">Configurando permisos...</h2>
           <p className="text-sm text-gray-600 mb-4">{debugInfo}</p>
           <div className="bg-gray-50 border-0.5 border-black rounded-lg p-3">
-            <p className="text-xs text-gray-500">Esto puede tomar unos segundos</p>
+            <p className="text-xs text-gray-500">Verificando acceso de administrador</p>
           </div>
         </div>
       </div>
