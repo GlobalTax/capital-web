@@ -18,75 +18,53 @@ export const ensureCurrentUserIsAdmin = async () => {
 
     console.log('Usuario actual:', user.id, user.email);
 
-    // Verificar si ya es admin usando la función RPC
+    // Primero intentar insertar directamente (más confiable que verificar primero)
+    console.log('Intentando configurar usuario como admin...');
+    const { data: insertData, error: insertError } = await supabase
+      .from('admin_users')
+      .upsert({
+        user_id: user.id,
+        role: 'super_admin',
+        is_active: true
+      }, {
+        onConflict: 'user_id'
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error insertando/actualizando admin:', insertError);
+      return false;
+    }
+
+    console.log('Usuario configurado como admin:', insertData);
+
+    // Verificar que la configuración fue exitosa usando RPC
     const { data: isAdmin, error: checkError } = await supabase
       .rpc('check_is_admin', { check_user_id: user.id });
 
     if (checkError) {
-      console.error('Error verificando admin:', checkError);
-      
-      // Si la función RPC falla, intentar consulta directa
-      console.log('Intentando consulta directa a admin_users...');
-      const { data: adminRecord, error: directError } = await supabase
+      console.error('Error verificando admin después de insertar:', checkError);
+      // Si RPC falla, hacer verificación directa
+      const { data: directCheck, error: directError } = await supabase
         .from('admin_users')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single();
 
-      if (directError && directError.code !== 'PGRST116') {
-        console.error('Error en consulta directa:', directError);
+      if (directError) {
+        console.error('Error en verificación directa:', directError);
         return false;
       }
 
-      if (adminRecord) {
-        console.log('Usuario ya es admin (consulta directa)');
-        return true;
-      }
-    } else if (isAdmin) {
-      console.log('Usuario ya es admin (RPC)');
+      console.log('Verificación directa exitosa:', directCheck);
       return true;
     }
 
-    // Si no es admin, intentar agregarlo
-    console.log('Agregando usuario como admin...');
-    const { data: newAdmin, error: insertError } = await supabase
-      .from('admin_users')
-      .insert({
-        user_id: user.id,
-        role: 'super_admin',
-        is_active: true
-      })
-      .select()
-      .single();
+    console.log('Verificación RPC resultado:', isAdmin);
+    return isAdmin === true;
 
-    if (insertError) {
-      console.error('Error creando admin:', insertError);
-      
-      // Si el error es de conflicto, verificar si ya existe
-      if (insertError.code === '23505') {
-        console.log('El usuario ya existe como admin, actualizando...');
-        const { error: updateError } = await supabase
-          .from('admin_users')
-          .update({
-            role: 'super_admin',
-            is_active: true
-          })
-          .eq('user_id', user.id);
-
-        if (updateError) {
-          console.error('Error actualizando admin:', updateError);
-          return false;
-        }
-        
-        console.log('Usuario actualizado como admin');
-        return true;
-      }
-      return false;
-    }
-
-    console.log('Usuario creado como admin:', newAdmin);
-    return true;
   } catch (error) {
     console.error('Error en ensureCurrentUserIsAdmin:', error);
     return false;
@@ -105,7 +83,7 @@ export const debugAdminStatus = async () => {
     console.log('Debug: Usuario ID:', user.id);
     console.log('Debug: Email:', user.email);
 
-    // Intentar consulta directa
+    // Consulta directa a la tabla
     const { data: adminUsers, error } = await supabase
       .from('admin_users')
       .select('*')
@@ -123,6 +101,16 @@ export const debugAdminStatus = async () => {
     console.log('Debug: Resultado RPC check_is_admin:', rpcResult);
     if (rpcError) {
       console.log('Debug: Error en RPC:', rpcError);
+    }
+
+    // Verificar tabla completa (para debug)
+    const { data: allAdmins, error: allError } = await supabase
+      .from('admin_users')
+      .select('*');
+
+    console.log('Debug: Todos los registros admin:', allAdmins);
+    if (allError) {
+      console.log('Debug: Error consultando todos los admins:', allError);
     }
 
   } catch (error) {
