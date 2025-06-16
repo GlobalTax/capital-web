@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import OperationsManager from './OperationsManager';
 import MultiplesManager from './MultiplesManager';
 import StatisticsManager from './StatisticsManager';
 import TestimonialsManager from './TestimonialsManager';
+import TeamMembersManager from './TeamMembersManager';
 import { ensureCurrentUserIsAdmin, debugAdminStatus } from '@/utils/adminSetup';
 
 interface AdminDashboardProps {
@@ -158,7 +158,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="case-studies" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
+          <TabsList className="grid w-full grid-cols-6 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
             <TabsTrigger 
               value="case-studies" 
               className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
@@ -189,6 +189,12 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             >
               Testimonios
             </TabsTrigger>
+            <TabsTrigger 
+              value="team" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Equipo
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="case-studies" className="space-y-6">
@@ -209,6 +215,10 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
           <TabsContent value="testimonials" className="space-y-6">
             <TestimonialsManager />
+          </TabsContent>
+
+          <TabsContent value="team" className="space-y-6">
+            <TeamMembersManager />
           </TabsContent>
         </Tabs>
       </main>

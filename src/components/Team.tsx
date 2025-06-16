@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Carousel,
@@ -9,34 +9,41 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { supabase } from '@/integrations/supabase/client';
+
+interface TeamMember {
+  id: string;
+  name: string;
+  position?: string;
+  image_url?: string;
+  is_active: boolean;
+  display_order: number;
+}
 
 const Team = () => {
-  const teamMembers = [
-    {
-      name: 'Carlos Martínez',
-      image: '/lovable-uploads/5459d292-9157-404f-915b-a1608e1f4779.png',
-    },
-    {
-      name: 'Ana Rodriguez',
-      image: '/lovable-uploads/b3d6115b-5184-49d6-8c1d-3493d1d72ca7.png',
-    },
-    {
-      name: 'Miguel Santos',
-      image: '/lovable-uploads/3aeb6303-e888-4dde-846f-88ec5c6606ae.png',
-    },
-    {
-      name: 'David López',
-      image: '/lovable-uploads/8c3bfca2-1cf0-42a1-935b-61cf6c319ecb.png',
-    },
-    {
-      name: 'Roberto García',
-      image: '/lovable-uploads/20da2e90-43c8-4c44-a119-a68b49bf41c0.png',
-    },
-    {
-      name: 'Antonio Navarro',
-      image: '/lovable-uploads/dfc75c41-289d-4bfd-963f-7838a1a06225.png',
-    },
-  ];
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setTeamMembers(data || []);
+    } catch (error) {
+      console.error('Error al cargar miembros del equipo:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <section id="equipo" className="py-20 bg-white">
@@ -51,39 +58,57 @@ const Team = () => {
           </p>
         </div>
 
-        <div className="relative">
-          <Carousel
-            plugins={[
-              Autoplay({
-                delay: 3000,
-                stopOnInteraction: true,
-              }),
-            ]}
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-2">
-              {teamMembers.map((member, index) => (
-                <CarouselItem key={index} className="pl-2 basis-auto">
-                  <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-gray-300">
-                    <img 
-                      src={member.image} 
-                      alt={member.name}
-                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -left-12" />
-            <CarouselNext className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -right-12" />
-          </Carousel>
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-black"></div>
+          </div>
+        ) : teamMembers.length > 0 ? (
+          <div className="relative">
+            <Carousel
+              plugins={[
+                Autoplay({
+                  delay: 3000,
+                  stopOnInteraction: true,
+                }),
+              ]}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2">
+                {teamMembers.map((member) => (
+                  <CarouselItem key={member.id} className="pl-2 basis-auto">
+                    <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-gray-300">
+                      {member.image_url ? (
+                        <img 
+                          src={member.image_url} 
+                          alt={member.name}
+                          className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500 text-center font-medium">
+                            {member.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -left-12" />
+              <CarouselNext className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -right-12" />
+            </Carousel>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No hay miembros del equipo disponibles.</p>
+          </div>
+        )}
 
-        <div className="text-center mt-16">
+        <div className="text-center mt-20">
           <Link 
             to="/equipo"
             className="inline-flex items-center px-6 py-3 bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
