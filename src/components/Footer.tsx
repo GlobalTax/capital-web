@@ -1,110 +1,53 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
-  const footerSections = [
-    {
-      title: 'Servicios',
-      links: [
-        'Fusiones y Adquisiciones',
-        'Due Diligence',
-        'Valoraciones',
-        'Corporate Finance',
-        'Reestructuraciones',
-      ],
-    },
-    {
-      title: 'Sectores',
-      links: [
-        'Tecnología',
-        'Healthcare',
-        'Industrial',
-        'Retail & Consumer',
-        'Financial Services',
-      ],
-    },
-    {
-      title: 'Recursos',
-      links: [
-        'Market Reports',
-        'Webinars',
-        'Case Studies',
-        'Newsletter',
-        'Blog',
-      ],
-    },
-  ];
-
   return (
-    <footer className="bg-white text-black border-t border-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
+    <footer className="bg-white border-t border-gray-300 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-2xl font-bold mb-6">Capittal</h3>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              Especialistas en fusiones y adquisiciones con más de 15 años de experiencia 
-              asesorando a empresas en sus transacciones más importantes.
+            <Link to="/" className="flex items-center mb-6">
+              <img src="/capittal-logo.svg" alt="Capittal Logo" className="h-8 mr-3" />
+              <span className="font-bold text-xl text-black">Capittal</span>
+            </Link>
+            <p className="text-gray-600">
+              Tu socio estratégico en fusiones y adquisiciones.
             </p>
-            <div className="space-y-2 text-gray-600">
-              <p>Paseo de la Castellana 123</p>
-              <p>28046 Madrid, España</p>
-              <p>+34 91 234 5678</p>
-              <p>info@capittal.com</p>
-            </div>
           </div>
-
-          {/* Footer Sections */}
-          {footerSections.map((section, index) => (
-            <div key={index}>
-              <h4 className="text-lg font-semibold mb-6">{section.title}</h4>
-              <ul className="space-y-3">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <a 
-                      href="#" 
-                      className="text-gray-600 hover:text-black transition-colors duration-300"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          
+          <div>
+            <h3 className="text-black font-bold mb-4">Servicios</h3>
+            <ul className="space-y-2 text-gray-600">
+              <li><Link to="/venta-empresas" className="hover:text-black transition-colors">Venta de Empresas</Link></li>
+              <li><Link to="/compra-empresas" className="hover:text-black transition-colors">Compra de Empresas</Link></li>
+              <li><Link to="/calculadora-valoracion" className="hover:text-black transition-colors">Valoración</Link></li>
+              <li><Link to="/casos-exito" className="hover:text-black transition-colors">Casos de Éxito</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-black font-bold mb-4">Empresa</h3>
+            <ul className="space-y-2 text-gray-600">
+              <li><Link to="/nosotros" className="hover:text-black transition-colors">Sobre Nosotros</Link></li>
+              <li><Link to="/equipo" className="hover:text-black transition-colors">Equipo</Link></li>
+              <li><Link to="/contacto" className="hover:text-black transition-colors">Contacto</Link></li>
+              <li><Link to="/admin" className="hover:text-black transition-colors">Administración</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-black font-bold mb-4">Legal</h3>
+            <ul className="space-y-2 text-gray-600">
+              <li><Link to="/politica-privacidad" className="hover:text-black transition-colors">Política de Privacidad</Link></li>
+              <li><Link to="/terminos-uso" className="hover:text-black transition-colors">Términos de Uso</Link></li>
+              <li><Link to="/cookies" className="hover:text-black transition-colors">Política de Cookies</Link></li>
+            </ul>
+          </div>
         </div>
-
-        {/* Bottom Section */}
-        <div className="border-t border-gray-300 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-600 mb-4 md:mb-0">
-              © {currentYear} Capittal. Todos los derechos reservados.
-            </div>
-            
-            <div className="flex space-x-6 text-gray-600">
-              <Link 
-                to="/politica-privacidad" 
-                className="hover:text-black transition-colors duration-300"
-              >
-                Política de Privacidad
-              </Link>
-              <Link 
-                to="/terminos-uso" 
-                className="hover:text-black transition-colors duration-300"
-              >
-                Términos de Uso
-              </Link>
-              <Link 
-                to="/cookies" 
-                className="hover:text-black transition-colors duration-300"
-              >
-                Cookies
-              </Link>
-            </div>
-          </div>
+        
+        <div className="mt-12 border-t border-gray-300 pt-6 text-center text-gray-500">
+          © {new Date().getFullYear()} Capittal. Todos los derechos reservados.
         </div>
       </div>
     </footer>
