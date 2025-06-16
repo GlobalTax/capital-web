@@ -5,6 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import ImageUploadField from './ImageUploadField';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import OperationPreview from './preview/OperationPreview';
 
 interface Operation {
   id: string;
@@ -308,6 +316,23 @@ const OperationsManager = () => {
               >
                 {editingOperation ? 'Actualizar' : 'Crear'}
               </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border border-gray-300 rounded-lg"
+                  >
+                    Previsualizar
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Previsualización</DialogTitle>
+                  </DialogHeader>
+                  <OperationPreview operation={formData} />
+                </DialogContent>
+              </Dialog>
               <Button
                 type="button"
                 variant="outline"

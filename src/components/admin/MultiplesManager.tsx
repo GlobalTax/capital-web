@@ -1,10 +1,17 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import MultiplePreview from './preview/MultiplePreview';
 
 interface Multiple {
   id: string;
@@ -259,6 +266,23 @@ const MultiplesManager = () => {
               >
                 {editingMultiple ? 'Actualizar' : 'Crear'}
               </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border border-gray-300 rounded-lg"
+                  >
+                    Previsualizar
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>Previsualización</DialogTitle>
+                  </DialogHeader>
+                  <MultiplePreview multiple={formData} />
+                </DialogContent>
+              </Dialog>
               <Button
                 type="button"
                 variant="outline"

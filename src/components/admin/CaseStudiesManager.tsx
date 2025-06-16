@@ -5,6 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import ImageUploadField from './ImageUploadField';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import CaseStudyPreview from './preview/CaseStudyPreview';
 
 interface CaseStudy {
   id: string;
@@ -341,6 +349,23 @@ const CaseStudiesManager = () => {
               >
                 {editingCase ? 'Actualizar' : 'Crear'}
               </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border border-gray-300 rounded-lg"
+                  >
+                    Previsualizar
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Previsualización</DialogTitle>
+                  </DialogHeader>
+                  <CaseStudyPreview caseStudy={formData} />
+                </DialogContent>
+              </Dialog>
               <Button
                 type="button"
                 variant="outline"
