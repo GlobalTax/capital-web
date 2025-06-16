@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const Team = () => {
   const teamMembers = [
@@ -52,6 +53,12 @@ const Team = () => {
 
         <div className="relative">
           <Carousel
+            plugins={[
+              Autoplay({
+                delay: 3000,
+                stopOnInteraction: true,
+              }),
+            ]}
             opts={{
               align: "start",
               loop: true,
@@ -76,7 +83,7 @@ const Team = () => {
           </Carousel>
         </div>
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-16">
           <Link 
             to="/equipo"
             className="inline-flex items-center px-6 py-3 bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
