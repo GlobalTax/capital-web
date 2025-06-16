@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const VentaEmpresasFAQ = () => {
@@ -59,11 +58,9 @@ const VentaEmpresasFAQ = () => {
                 <h3 className="text-base font-semibold text-black pr-4">
                   {faq.question}
                 </h3>
-                {openIndex === index ? (
-                  <ChevronUp className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                )}
+                <div className="w-5 h-5 text-gray-500 flex-shrink-0">
+                  {openIndex === index ? '−' : '+'}
+                </div>
               </button>
               
               {openIndex === index && (

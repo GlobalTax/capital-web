@@ -1,41 +1,34 @@
 
 import React from 'react';
-import { Search, FileText, Users, TrendingUp, Handshake, Award } from 'lucide-react';
 
 const VentaEmpresasProcess = () => {
   const steps = [
     {
-      icon: Search,
       title: 'Análisis Inicial',
       description: 'Evaluación completa de tu empresa, incluyendo situación financiera, posición en el mercado y potencial de crecimiento.',
       duration: '1-2 semanas'
     },
     {
-      icon: FileText,
       title: 'Preparación de Documentación',
       description: 'Creación del memorando de venta, análisis financiero detallado y documentación legal necesaria.',
       duration: '2-3 semanas'
     },
     {
-      icon: Users,
       title: 'Identificación de Compradores',
       description: 'Búsqueda activa de compradores estratégicos e inversores financieros que encajen con tu empresa.',
       duration: '3-4 semanas'
     },
     {
-      icon: TrendingUp,
       title: 'Marketing y Presentación',
       description: 'Presentación profesional a compradores cualificados manteniendo la confidencialidad del proceso.',
       duration: '4-6 semanas'
     },
     {
-      icon: Handshake,
       title: 'Negociación',
       description: 'Gestión de ofertas, negociación de términos y condiciones para maximizar el valor de la transacción.',
       duration: '2-4 semanas'
     },
     {
-      icon: Award,
       title: 'Cierre',
       description: 'Acompañamiento en el proceso de due diligence y cierre final de la operación.',
       duration: '4-8 semanas'
@@ -57,13 +50,12 @@ const VentaEmpresasProcess = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {steps.map((step, index) => {
-            const Icon = step.icon;
             return (
               <div key={index} className="relative">
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                   <div className="flex items-center justify-between mb-6">
                     <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center">
-                      <Icon className="h-6 w-6" />
+                      <span className="text-lg font-bold">{index + 1}</span>
                     </div>
                     <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-gray-600">
                       {step.duration}

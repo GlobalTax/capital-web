@@ -1,39 +1,33 @@
 
 import React from 'react';
-import { BarChart3, DollarSign, Users2, Zap, Shield, Rocket } from 'lucide-react';
 
 const VentaEmpresasValuation = () => {
   const factors = [
     {
-      icon: BarChart3,
       title: 'Rentabilidad y Crecimiento',
       description: 'EBITDA, márgenes, tendencia de crecimiento y proyecciones futuras',
       impact: 'Alto',
       weight: '30%'
     },
     {
-      icon: DollarSign,
       title: 'Flujo de Caja',
       description: 'Generación de caja libre, predictibilidad y estabilidad de ingresos',
       impact: 'Alto',
       weight: '25%'
     },
     {
-      icon: Users2,
       title: 'Equipo Directivo',
       description: 'Calidad del management, dependencia del fundador y estructura organizativa',
       impact: 'Medio',
       weight: '15%'
     },
     {
-      icon: Zap,
       title: 'Posición Competitiva',
       description: 'Cuota de mercado, diferenciación, barreras de entrada y ventajas competitivas',
       impact: 'Alto',
       weight: '20%'
     },
     {
-      icon: Shield,
       title: 'Diversificación',
       description: 'Base de clientes, proveedores, productos y diversificación geográfica',
       impact: 'Medio',
@@ -78,12 +72,11 @@ const VentaEmpresasValuation = () => {
             </h3>
             <div className="space-y-6">
               {factors.map((factor, index) => {
-                const Icon = factor.icon;
                 return (
-                  <div key={index} className="capittal-card">
+                  <div key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
                     <div className="flex items-start space-x-4">
                       <div className="bg-black text-white rounded-lg w-12 h-12 flex items-center justify-center flex-shrink-0">
-                        <Icon className="h-6 w-6" />
+                        <span className="text-lg font-bold">{index + 1}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-3">
@@ -110,7 +103,7 @@ const VentaEmpresasValuation = () => {
             <h3 className="text-xl font-bold text-black mb-8">
               Múltiplos EBITDA por Sector
             </h3>
-            <div className="capittal-card bg-gray-50 mb-8">
+            <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out bg-gray-50 mb-8">
               <div className="space-y-4">
                 {multiples.map((multiple, index) => (
                   <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
@@ -127,14 +120,14 @@ const VentaEmpresasValuation = () => {
               </div>
             </div>
 
-            <div className="capittal-card">
+            <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
               <h4 className="text-lg font-bold text-black mb-6">
                 Optimiza el Valor de tu Empresa
               </h4>
               <ul className="space-y-3">
                 {optimizaciones.map((opt, index) => (
                   <li key={index} className="flex items-center space-x-3">
-                    <Rocket className="h-5 w-5 text-green-600 flex-shrink-0" />
+                    <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0" />
                     <span className="text-gray-600">{opt}</span>
                   </li>
                 ))}

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, ArrowRight, TrendingUp, Building2 } from 'lucide-react';
 
 const VentaEmpresasHero = () => {
   const benefits = [
@@ -25,7 +24,6 @@ const VentaEmpresasHero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center bg-gray-100 rounded-full px-4 py-2 mb-6">
-              <TrendingUp className="h-4 w-4 text-black mr-2" />
               <span className="text-sm font-medium text-black">Especialistas en M&A</span>
             </div>
 
@@ -41,16 +39,15 @@ const VentaEmpresasHero = () => {
             <div className="space-y-4 mb-10">
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0" />
                   <span className="text-gray-600">{benefit}</span>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-lg px-8 py-4 group">
+              <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-lg px-8 py-4">
                 Solicitar Valoración Gratuita
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button variant="outline" className="text-lg px-8 py-4 border-gray-300 hover:bg-gray-50">
                 Descargar Guía
@@ -78,7 +75,7 @@ const VentaEmpresasHero = () => {
                   <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-white" />
+                        <div className="w-5 h-5 bg-white rounded-sm" />
                       </div>
                       <div>
                         <div className="font-semibold text-black">{empresa.nombre}</div>

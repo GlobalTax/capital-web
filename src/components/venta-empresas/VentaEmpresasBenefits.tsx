@@ -1,41 +1,34 @@
 
 import React from 'react';
-import { Shield, Target, Clock, Users, TrendingUp, Award } from 'lucide-react';
 
 const VentaEmpresasBenefits = () => {
   const benefits = [
     {
-      icon: Target,
       title: 'Máxima Valoración',
       description: 'Utilizamos técnicas avanzadas de valoración y posicionamiento estratégico para obtener el mejor precio posible.',
       stats: '+25% valoración promedio'
     },
     {
-      icon: Shield,
       title: 'Confidencialidad Total',
       description: 'Proceso completamente confidencial que protege tu empresa, empleados y clientes durante toda la operación.',
       stats: '100% confidencial'
     },
     {
-      icon: Users,
       title: 'Red de Compradores',
       description: 'Acceso a nuestra extensa red de compradores estratégicos, fondos de inversión y family offices.',
       stats: '+500 contactos'
     },
     {
-      icon: Clock,
       title: 'Eficiencia Temporal',
       description: 'Proceso optimizado que minimiza las distracciones en tu negocio y acelera los tiempos de cierre.',
       stats: '4-6 meses promedio'
     },
     {
-      icon: TrendingUp,
       title: 'Optimización Fiscal',
       description: 'Estructuración de la operación para minimizar el impacto fiscal y maximizar el beneficio neto.',
       stats: 'Hasta 15% ahorro'
     },
     {
-      icon: Award,
       title: 'Asesoramiento Post-Venta',
       description: 'Acompañamiento en la transición y asesoramiento para futuras inversiones del capital obtenido.',
       stats: '12 meses seguimiento'
@@ -78,11 +71,10 @@ const VentaEmpresasBenefits = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {benefits.map((benefit, index) => {
-            const Icon = benefit.icon;
             return (
-              <div key={index} className="capittal-card text-center group">
+              <div key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group">
                 <div className="bg-black text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Icon className="h-8 w-8" />
+                  <span className="text-xl font-bold">{index + 1}</span>
                 </div>
                 
                 <h3 className="text-lg font-bold text-black mb-4">
@@ -119,7 +111,7 @@ const VentaEmpresasBenefits = () => {
             </div>
           </div>
           
-          <div className="capittal-card bg-gray-50">
+          <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out bg-gray-50">
             <h4 className="text-xl font-bold text-black mb-8 text-center">
               Nuestros Resultados
             </h4>
