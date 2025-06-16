@@ -7,6 +7,7 @@ import CaseStudiesManager from './CaseStudiesManager';
 import OperationsManager from './OperationsManager';
 import StatisticsManager from './StatisticsManager';
 import MultiplesManager from './MultiplesManager';
+import TestimonialsManager from './TestimonialsManager';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -59,6 +60,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     { id: 'operations', label: 'Operaciones', component: OperationsManager },
     { id: 'statistics', label: 'Estadísticas', component: StatisticsManager },
     { id: 'multiples', label: 'Múltiplos', component: MultiplesManager },
+    { id: 'testimonials', label: 'Testimonios', component: TestimonialsManager },
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || CaseStudiesManager;

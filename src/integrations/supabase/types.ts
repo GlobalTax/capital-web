@@ -315,6 +315,57 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          client_company: string
+          client_name: string
+          client_photo_url: string | null
+          client_position: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          project_type: string | null
+          rating: number | null
+          sector: string | null
+          testimonial_text: string
+          updated_at: string
+        }
+        Insert: {
+          client_company: string
+          client_name: string
+          client_photo_url?: string | null
+          client_position?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          project_type?: string | null
+          rating?: number | null
+          sector?: string | null
+          testimonial_text: string
+          updated_at?: string
+        }
+        Update: {
+          client_company?: string
+          client_name?: string
+          client_photo_url?: string | null
+          client_position?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          project_type?: string | null
+          rating?: number | null
+          sector?: string | null
+          testimonial_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tool_ratings: {
         Row: {
           company_sector: string | null
