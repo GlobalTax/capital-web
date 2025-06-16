@@ -158,12 +158,37 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="case-studies" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white border-0.5 border-black rounded-lg">
-            <TabsTrigger value="case-studies" className="rounded-lg">Casos de Éxito</TabsTrigger>
-            <TabsTrigger value="operations" className="rounded-lg">Operaciones</TabsTrigger>
-            <TabsTrigger value="multiples" className="rounded-lg">Múltiplos</TabsTrigger>
-            <TabsTrigger value="statistics" className="rounded-lg">Estadísticas</TabsTrigger>
-            <TabsTrigger value="testimonials" className="rounded-lg">Testimonios</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
+            <TabsTrigger 
+              value="case-studies" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Casos de Éxito
+            </TabsTrigger>
+            <TabsTrigger 
+              value="operations" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Operaciones
+            </TabsTrigger>
+            <TabsTrigger 
+              value="multiples" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Múltiplos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="statistics" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Estadísticas
+            </TabsTrigger>
+            <TabsTrigger 
+              value="testimonials" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Testimonios
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="case-studies" className="space-y-6">
