@@ -38,6 +38,7 @@ export type Database = {
           company_size: string | null
           created_at: string
           description: string
+          display_locations: string[] | null
           featured_image_url: string | null
           highlights: string[] | null
           id: string
@@ -55,6 +56,7 @@ export type Database = {
           company_size?: string | null
           created_at?: string
           description: string
+          display_locations?: string[] | null
           featured_image_url?: string | null
           highlights?: string[] | null
           id?: string
@@ -72,6 +74,7 @@ export type Database = {
           company_size?: string | null
           created_at?: string
           description?: string
+          display_locations?: string[] | null
           featured_image_url?: string | null
           highlights?: string[] | null
           id?: string
@@ -92,6 +95,7 @@ export type Database = {
           company_name: string
           created_at: string
           description: string
+          display_locations: string[] | null
           featured_image_url: string | null
           id: string
           is_active: boolean | null
@@ -107,6 +111,7 @@ export type Database = {
           company_name: string
           created_at?: string
           description: string
+          display_locations?: string[] | null
           featured_image_url?: string | null
           id?: string
           is_active?: boolean | null
@@ -122,6 +127,7 @@ export type Database = {
           company_name?: string
           created_at?: string
           description?: string
+          display_locations?: string[] | null
           featured_image_url?: string | null
           id?: string
           is_active?: boolean | null
@@ -233,6 +239,7 @@ export type Database = {
       }
       key_statistics: {
         Row: {
+          display_locations: string[] | null
           display_order: number | null
           id: string
           is_active: boolean | null
@@ -242,6 +249,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          display_locations?: string[] | null
           display_order?: number | null
           id?: string
           is_active?: boolean | null
@@ -251,6 +259,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          display_locations?: string[] | null
           display_order?: number | null
           id?: string
           is_active?: boolean | null
@@ -297,6 +306,7 @@ export type Database = {
       sector_valuation_multiples: {
         Row: {
           description: string | null
+          display_locations: string[] | null
           display_order: number | null
           id: string
           is_active: boolean | null
@@ -307,6 +317,7 @@ export type Database = {
         }
         Insert: {
           description?: string | null
+          display_locations?: string[] | null
           display_order?: number | null
           id?: string
           is_active?: boolean | null
@@ -317,6 +328,7 @@ export type Database = {
         }
         Update: {
           description?: string | null
+          display_locations?: string[] | null
           display_order?: number | null
           id?: string
           is_active?: boolean | null
@@ -334,6 +346,7 @@ export type Database = {
           client_photo_url: string | null
           client_position: string | null
           created_at: string
+          display_locations: string[] | null
           display_order: number | null
           id: string
           is_active: boolean | null
@@ -350,6 +363,7 @@ export type Database = {
           client_photo_url?: string | null
           client_position?: string | null
           created_at?: string
+          display_locations?: string[] | null
           display_order?: number | null
           id?: string
           is_active?: boolean | null
@@ -366,6 +380,7 @@ export type Database = {
           client_photo_url?: string | null
           client_position?: string | null
           created_at?: string
+          display_locations?: string[] | null
           display_order?: number | null
           id?: string
           is_active?: boolean | null

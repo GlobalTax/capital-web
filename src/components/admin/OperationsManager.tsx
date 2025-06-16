@@ -18,7 +18,16 @@ interface Operation {
   is_active: boolean;
   logo_url?: string;
   featured_image_url?: string;
+  display_locations?: string[];
 }
+
+const availableLocations = [
+  { value: 'home', label: 'Página Principal' },
+  { value: 'operaciones', label: 'Operaciones' },
+  { value: 'venta-empresas', label: 'Venta de Empresas' },
+  { value: 'compra-empresas', label: 'Compra de Empresas' },
+  { value: 'servicios', label: 'Servicios' }
+];
 
 const OperationsManager = () => {
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -37,7 +46,8 @@ const OperationsManager = () => {
     is_featured: false,
     is_active: true,
     logo_url: undefined,
-    featured_image_url: undefined
+    featured_image_url: undefined,
+    display_locations: ['home', 'operaciones']
   };
 
   const [formData, setFormData] = useState(emptyOperation);
@@ -103,7 +113,10 @@ const OperationsManager = () => {
 
   const handleEdit = (operation: Operation) => {
     setEditingOperation(operation);
-    setFormData(operation);
+    setFormData({
+      ...operation,
+      display_locations: operation.display_locations || ['home', 'operaciones']
+    });
     setShowForm(true);
   };
 
@@ -124,6 +137,21 @@ const OperationsManager = () => {
         title: "Error",
         description: error.message,
         variant: "destructive",
+      });
+    }
+  };
+
+  const handleLocationChange = (location: string, checked: boolean) => {
+    const currentLocations = formData.display_locations || [];
+    if (checked) {
+      setFormData({
+        ...formData,
+        display_locations: [...currentLocations, location]
+      });
+    } else {
+      setFormData({
+        ...formData,
+        display_locations: currentLocations.filter(loc => loc !== location)
       });
     }
   };
@@ -215,6 +243,23 @@ const OperationsManager = () => {
                 rows={3}
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">Ubicaciones donde mostrar</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {availableLocations.map((location) => (
+                  <label key={location.value} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.display_locations?.includes(location.value) || false}
+                      onChange={(e) => handleLocationChange(location.value, e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-gray-700">{location.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,6 +359,19 @@ const OperationsManager = () => {
                   <span className="mr-4">{operation.sector}</span>
                   <span className="mr-4">{operation.valuation_amount}M{operation.valuation_currency}</span>
                   <span>{operation.year}</span>
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(operation.display_locations || []).map((location) => {
+                      const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
+                      return (
+                        <span key={location} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                          {locationLabel}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <div className="flex space-x-2">

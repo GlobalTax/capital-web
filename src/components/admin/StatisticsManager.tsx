@@ -12,7 +12,15 @@ interface Statistic {
   metric_label: string;
   display_order: number;
   is_active: boolean;
+  display_locations?: string[];
 }
+
+const availableLocations = [
+  { value: 'home', label: 'Página Principal' },
+  { value: 'market-insights', label: 'Market Insights' },
+  { value: 'nosotros', label: 'Nosotros' },
+  { value: 'servicios', label: 'Servicios' }
+];
 
 const StatisticsManager = () => {
   const [statistics, setStatistics] = useState<Statistic[]>([]);
@@ -53,7 +61,8 @@ const StatisticsManager = () => {
           metric_value: statistic.metric_value,
           metric_label: statistic.metric_label,
           display_order: statistic.display_order,
-          is_active: statistic.is_active
+          is_active: statistic.is_active,
+          display_locations: statistic.display_locations
         })
         .eq('id', statistic.id);
 
@@ -75,6 +84,19 @@ const StatisticsManager = () => {
     setStatistics(prev => prev.map(stat => 
       stat.id === id ? { ...stat, [field]: value } : stat
     ));
+  };
+
+  const handleLocationChange = (statisticId: string, location: string, checked: boolean) => {
+    setStatistics(prev => prev.map(stat => {
+      if (stat.id === statisticId) {
+        const currentLocations = stat.display_locations || [];
+        const newLocations = checked 
+          ? [...currentLocations, location]
+          : currentLocations.filter(loc => loc !== location);
+        return { ...stat, display_locations: newLocations };
+      }
+      return stat;
+    }));
   };
 
   if (isLoading) {
@@ -119,6 +141,23 @@ const StatisticsManager = () => {
                     />
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">Ubicaciones donde mostrar</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {availableLocations.map((location) => (
+                      <label key={location.value} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={statistic.display_locations?.includes(location.value) || false}
+                          onChange={(e) => handleLocationChange(statistic.id, location.value, e.target.checked)}
+                          className="rounded"
+                        />
+                        <span className="text-sm text-gray-700">{location.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
                 
                 <div className="flex items-center mb-4">
                   <label className="flex items-center">
@@ -149,8 +188,8 @@ const StatisticsManager = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex justify-between items-center">
-                <div>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
                   <h3 className="text-lg font-bold text-black">{statistic.metric_key}</h3>
                   <div className="text-gray-600">
                     <span className="text-2xl font-bold text-black mr-2">{statistic.metric_value}</span>
@@ -163,6 +202,19 @@ const StatisticsManager = () => {
                     ) : (
                       <span className="text-red-600 ml-1">Inactivo</span>
                     )}
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(statistic.display_locations || []).map((location) => {
+                        const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
+                        return (
+                          <span key={location} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                            {locationLabel}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
                 <Button

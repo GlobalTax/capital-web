@@ -14,7 +14,15 @@ interface Multiple {
   description?: string;
   display_order: number;
   is_active: boolean;
+  display_locations?: string[];
 }
+
+const availableLocations = [
+  { value: 'home', label: 'Página Principal' },
+  { value: 'multiplos', label: 'Múltiplos' },
+  { value: 'calculadora-valoracion', label: 'Calculadora de Valoración' },
+  { value: 'servicios', label: 'Servicios' }
+];
 
 const MultiplesManager = () => {
   const [multiples, setMultiples] = useState<Multiple[]>([]);
@@ -29,7 +37,8 @@ const MultiplesManager = () => {
     median_multiple: '',
     description: '',
     display_order: 0,
-    is_active: true
+    is_active: true,
+    display_locations: ['home', 'multiplos']
   };
 
   const [formData, setFormData] = useState(emptyMultiple);
@@ -95,7 +104,10 @@ const MultiplesManager = () => {
 
   const handleEdit = (multiple: Multiple) => {
     setEditingMultiple(multiple);
-    setFormData(multiple);
+    setFormData({
+      ...multiple,
+      display_locations: multiple.display_locations || ['home', 'multiplos']
+    });
     setShowForm(true);
   };
 
@@ -116,6 +128,21 @@ const MultiplesManager = () => {
         title: "Error",
         description: error.message,
         variant: "destructive",
+      });
+    }
+  };
+
+  const handleLocationChange = (location: string, checked: boolean) => {
+    const currentLocations = formData.display_locations || [];
+    if (checked) {
+      setFormData({
+        ...formData,
+        display_locations: [...currentLocations, location]
+      });
+    } else {
+      setFormData({
+        ...formData,
+        display_locations: currentLocations.filter(loc => loc !== location)
       });
     }
   };
@@ -196,6 +223,23 @@ const MultiplesManager = () => {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">Ubicaciones donde mostrar</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {availableLocations.map((location) => (
+                  <label key={location.value} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.display_locations?.includes(location.value) || false}
+                      onChange={(e) => handleLocationChange(location.value, e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-gray-700">{location.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="flex items-center">
               <label className="flex items-center">
                 <input
@@ -252,8 +296,21 @@ const MultiplesManager = () => {
                 {multiple.description && (
                   <p className="text-gray-600 mb-2">{multiple.description}</p>
                 )}
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 mb-2">
                   Orden: {multiple.display_order}
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(multiple.display_locations || []).map((location) => {
+                      const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
+                      return (
+                        <span key={location} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                          {locationLabel}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <div className="flex space-x-2">

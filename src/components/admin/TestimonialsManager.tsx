@@ -1,36 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Star, Eye, EyeOff } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
 
 interface Testimonial {
   id: string;
@@ -42,35 +15,44 @@ interface Testimonial {
   rating: number;
   sector?: string;
   project_type?: string;
+  display_order: number;
   is_featured: boolean;
   is_active: boolean;
-  display_order: number;
-  created_at: string;
-  updated_at: string;
+  display_locations?: string[];
 }
+
+const availableLocations = [
+  { value: 'home', label: 'Página Principal' },
+  { value: 'testimonios', label: 'Testimonios' },
+  { value: 'nosotros', label: 'Nosotros' },
+  { value: 'servicios', label: 'Servicios' },
+  { value: 'venta-empresas', label: 'Venta de Empresas' },
+  { value: 'compra-empresas', label: 'Compra de Empresas' }
+];
 
 const TestimonialsManager = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm({
-    defaultValues: {
-      client_name: '',
-      client_company: '',
-      client_position: '',
-      testimonial_text: '',
-      client_photo_url: '',
-      rating: 5,
-      sector: '',
-      project_type: '',
-      is_featured: false,
-      is_active: true,
-      display_order: 0,
-    },
-  });
+  const emptyTestimonial: Omit<Testimonial, 'id'> = {
+    client_name: '',
+    client_company: '',
+    client_position: '',
+    testimonial_text: '',
+    client_photo_url: '',
+    rating: 5,
+    sector: '',
+    project_type: '',
+    display_order: 0,
+    is_featured: false,
+    is_active: true,
+    display_locations: ['home', 'testimonios']
+  };
+
+  const [formData, setFormData] = useState(emptyTestimonial);
 
   useEffect(() => {
     fetchTestimonials();
@@ -84,86 +66,65 @@ const TestimonialsManager = () => {
         .order('display_order')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching testimonials:', error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los testimonios.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      if (error) throw error;
       setTestimonials(data || []);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching testimonials:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los testimonios.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
       if (editingTestimonial) {
         const { error } = await supabase
           .from('testimonials')
-          .update(values)
+          .update(formData)
           .eq('id', editingTestimonial.id);
-
-        if (error) {
-          console.error('Error updating testimonial:', error);
-          toast({
-            title: "Error",
-            description: "No se pudo actualizar el testimonio.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        toast({
-          title: "Éxito",
-          description: "Testimonio actualizado correctamente.",
-        });
+        
+        if (error) throw error;
+        toast({ title: "Testimonio actualizado correctamente" });
       } else {
         const { error } = await supabase
           .from('testimonials')
-          .insert([values]);
-
-        if (error) {
-          console.error('Error creating testimonial:', error);
-          toast({
-            title: "Error",
-            description: "No se pudo crear el testimonio.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        toast({
-          title: "Éxito",
-          description: "Testimonio creado correctamente.",
-        });
+          .insert([formData]);
+        
+        if (error) throw error;
+        toast({ title: "Testimonio creado correctamente" });
       }
 
-      setIsDialogOpen(false);
+      setFormData(emptyTestimonial);
       setEditingTestimonial(null);
-      form.reset();
+      setShowForm(false);
       fetchTestimonials();
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
   const handleEdit = (testimonial: Testimonial) => {
     setEditingTestimonial(testimonial);
-    form.reset(testimonial);
-    setIsDialogOpen(true);
+    setFormData({
+      ...testimonial,
+      display_locations: testimonial.display_locations || ['home', 'testimonios']
+    });
+    setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este testimonio?')) {
-      return;
-    }
+    if (!confirm('¿Estás seguro de que quieres eliminar este testimonio?')) return;
 
     try {
       const { error } = await supabase
@@ -171,411 +132,286 @@ const TestimonialsManager = () => {
         .delete()
         .eq('id', id);
 
-      if (error) {
-        console.error('Error deleting testimonial:', error);
-        toast({
-          title: "Error",
-          description: "No se pudo eliminar el testimonio.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      if (error) throw error;
+      toast({ title: "Testimonio eliminado correctamente" });
+      fetchTestimonials();
+    } catch (error: any) {
       toast({
-        title: "Éxito",
-        description: "Testimonio eliminado correctamente.",
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
-      fetchTestimonials();
-    } catch (error) {
-      console.error('Error:', error);
     }
   };
 
-  const toggleFeatured = async (testimonial: Testimonial) => {
+  const toggleStatus = async (id: string, field: 'is_active' | 'is_featured', value: boolean) => {
     try {
       const { error } = await supabase
         .from('testimonials')
-        .update({ is_featured: !testimonial.is_featured })
-        .eq('id', testimonial.id);
+        .update({ [field]: value })
+        .eq('id', id);
 
-      if (error) {
-        console.error('Error updating featured status:', error);
-        return;
-      }
-
+      if (error) throw error;
       fetchTestimonials();
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const toggleActive = async (testimonial: Testimonial) => {
-    try {
-      const { error } = await supabase
-        .from('testimonials')
-        .update({ is_active: !testimonial.is_active })
-        .eq('id', testimonial.id);
-
-      if (error) {
-        console.error('Error updating active status:', error);
-        return;
-      }
-
-      fetchTestimonials();
-    } catch (error) {
-      console.error('Error:', error);
+  const handleLocationChange = (location: string, checked: boolean) => {
+    const currentLocations = formData.display_locations || [];
+    if (checked) {
+      setFormData({
+        ...formData,
+        display_locations: [...currentLocations, location]
+      });
+    } else {
+      setFormData({
+        ...formData,
+        display_locations: currentLocations.filter(loc => loc !== location)
+      });
     }
-  };
-
-  const openCreateDialog = () => {
-    setEditingTestimonial(null);
-    form.reset({
-      client_name: '',
-      client_company: '',
-      client_position: '',
-      testimonial_text: '',
-      client_photo_url: '',
-      rating: 5,
-      sector: '',
-      project_type: '',
-      is_featured: false,
-      is_active: true,
-      display_order: 0,
-    });
-    setIsDialogOpen(true);
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-      </div>
-    );
+    return <div className="p-6">Cargando testimonios...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-black">Gestión de Testimonios</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={openCreateDialog}
-              className="bg-white text-black border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Nuevo Testimonio
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingTestimonial ? 'Editar Testimonio' : 'Nuevo Testimonio'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingTestimonial 
-                  ? 'Modifica los datos del testimonio existente.'
-                  : 'Añade un nuevo testimonio de cliente.'
-                }
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="client_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre del Cliente</FormLabel>
-                        <FormControl>
-                          <Input {...field} required />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="client_company"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Empresa</FormLabel>
-                        <FormControl>
-                          <Input {...field} required />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="client_position"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cargo/Posición</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="testimonial_text"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Testimonio</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} rows={4} required />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="sector"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Sector</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="project_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Proyecto</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="venta">Venta</SelectItem>
-                            <SelectItem value="valoración">Valoración</SelectItem>
-                            <SelectItem value="fusión">Fusión</SelectItem>
-                            <SelectItem value="adquisición">Adquisición</SelectItem>
-                            <SelectItem value="reestructuración">Reestructuración</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="rating"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Puntuación (1-5)</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="5">5 estrellas</SelectItem>
-                            <SelectItem value="4">4 estrellas</SelectItem>
-                            <SelectItem value="3">3 estrellas</SelectItem>
-                            <SelectItem value="2">2 estrellas</SelectItem>
-                            <SelectItem value="1">1 estrella</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="display_order"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Orden</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="client_photo_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL Foto</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="https://..." />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <FormField
-                    control={form.control}
-                    name="is_featured"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="rounded"
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
-                          Destacado
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="is_active"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="rounded"
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
-                          Activo
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button type="submit">
-                    {editingTestimonial ? 'Actualizar' : 'Crear'}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => {
+            setFormData(emptyTestimonial);
+            setEditingTestimonial(null);
+            setShowForm(true);
+          }}
+          className="bg-black text-white border border-black rounded-lg"
+        >
+          Nuevo Testimonio
+        </Button>
       </div>
 
-      <div className="grid gap-4">
+      {showForm && (
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+          <h3 className="text-lg font-bold text-black mb-4">
+            {editingTestimonial ? 'Editar Testimonio' : 'Nuevo Testimonio'}
+          </h3>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Nombre del Cliente</label>
+                <Input
+                  value={formData.client_name}
+                  onChange={(e) => setFormData({...formData, client_name: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Empresa del Cliente</label>
+                <Input
+                  value={formData.client_company}
+                  onChange={(e) => setFormData({...formData, client_company: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Posición del Cliente</label>
+                <Input
+                  value={formData.client_position || ''}
+                  onChange={(e) => setFormData({...formData, client_position: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">URL de la Foto del Cliente</label>
+                <Input
+                  type="url"
+                  value={formData.client_photo_url || ''}
+                  onChange={(e) => setFormData({...formData, client_photo_url: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Sector</label>
+                <Input
+                  value={formData.sector || ''}
+                  onChange={(e) => setFormData({...formData, sector: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Tipo de Proyecto</label>
+                <Input
+                  value={formData.project_type || ''}
+                  onChange={(e) => setFormData({...formData, project_type: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Orden de Visualización</label>
+                <Input
+                  type="number"
+                  value={formData.display_order}
+                  onChange={(e) => setFormData({...formData, display_order: parseInt(e.target.value)})}
+                  className="border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Rating</label>
+                <Input
+                  type="number"
+                  value={formData.rating}
+                  onChange={(e) => setFormData({...formData, rating: parseInt(e.target.value)})}
+                  className="border border-gray-300 rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">Testimonio</label>
+              <Textarea
+                value={formData.testimonial_text}
+                onChange={(e) => setFormData({...formData, testimonial_text: e.target.value})}
+                className="border border-gray-300 rounded-lg"
+                rows={4}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">Ubicaciones donde mostrar</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {availableLocations.map((location) => (
+                  <label key={location.value} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.display_locations?.includes(location.value) || false}
+                      onChange={(e) => handleLocationChange(location.value, e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-gray-700">{location.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.is_featured}
+                  onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
+                  className="mr-2"
+                />
+                Destacado
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                  className="mr-2"
+                />
+                Activo
+              </label>
+            </div>
+
+            <div className="flex space-x-4">
+              <Button
+                type="submit"
+                className="bg-black text-white border border-black rounded-lg"
+              >
+                {editingTestimonial ? 'Actualizar' : 'Crear'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingTestimonial(null);
+                  setFormData(emptyTestimonial);
+                }}
+                className="border border-gray-300 rounded-lg"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4">
         {testimonials.map((testimonial) => (
-          <Card key={testimonial.id} className="bg-white border border-gray-300 rounded-lg shadow-sm">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{testimonial.client_name}</CardTitle>
-                  <p className="text-gray-600">
-                    {testimonial.client_position} en {testimonial.client_company}
-                  </p>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <div className="flex">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                      ))}
+          <div key={testimonial.id} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center space-x-4 mb-2">
+                  {testimonial.client_photo_url && (
+                    <img
+                      src={testimonial.client_photo_url}
+                      alt={`Foto de ${testimonial.client_name}`}
+                      className="w-12 h-12 object-cover rounded-full"
+                    />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-black">{testimonial.client_name}</h3>
+                    <div className="text-sm text-gray-600">
+                      {testimonial.client_position && <span>{testimonial.client_position} en </span>}
+                      {testimonial.client_company}
                     </div>
-                    <span className="text-sm text-gray-500">({testimonial.rating}/5)</span>
                   </div>
                 </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleFeatured(testimonial)}
-                    className={testimonial.is_featured ? 'bg-yellow-50 border-yellow-300' : ''}
-                  >
-                    <Star className={`w-4 h-4 ${testimonial.is_featured ? 'text-yellow-500 fill-current' : 'text-gray-400'}`} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleActive(testimonial)}
-                    className={testimonial.is_active ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-300'}
-                  >
-                    {testimonial.is_active ? (
-                      <Eye className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <EyeOff className="w-4 h-4 text-gray-400" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(testimonial)}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(testimonial.id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
+                <p className="text-gray-600 mb-2">{testimonial.testimonial_text}</p>
+                <div className="text-sm text-gray-500 mb-2">
+                  {testimonial.sector && <span className="mr-2">Sector: {testimonial.sector}</span>}
+                  {testimonial.project_type && <span>Tipo: {testimonial.project_type}</span>}
+                  <span>Orden: {testimonial.display_order}</span>
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(testimonial.display_locations || []).map((location) => {
+                      const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
+                      return (
+                        <span key={location} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                          {locationLabel}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 mb-3">"{testimonial.testimonial_text}"</p>
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Sector: {testimonial.sector || 'No especificado'}</span>
-                <span>Proyecto: {testimonial.project_type || 'No especificado'}</span>
-                <span>Orden: {testimonial.display_order}</span>
+              <div className="flex space-x-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEdit(testimonial)}
+                  className="border border-gray-300 rounded-lg"
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDelete(testimonial.id)}
+                  className="border border-red-300 text-red-600 rounded-lg"
+                >
+                  Eliminar
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
-
-      {testimonials.length === 0 && (
-        <Card className="bg-white border border-gray-300 rounded-lg text-center p-8">
-          <CardContent>
-            <p className="text-gray-500">No hay testimonios creados aún.</p>
-            <Button 
-              onClick={openCreateDialog}
-              className="mt-4"
-            >
-              Crear primer testimonio
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
