@@ -54,15 +54,15 @@ const VentaEmpresasProcess = () => {
               <div key={index} className="relative">
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="bg-black text-white rounded-full w-12 h-12 flex items-center justify-center">
-                      <span className="text-lg font-bold">{index + 1}</span>
+                    <div className="bg-gray-50 text-gray-400 rounded-lg w-8 h-8 flex items-center justify-center">
+                      <span className="text-xs font-medium">{index + 1}</span>
                     </div>
                     <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-gray-600">
                       {step.duration}
                     </div>
                   </div>
                   
-                  <div className="text-sm font-medium text-gray-500 mb-2">
+                  <div className="text-xs font-medium text-gray-400 mb-2">
                     Paso {index + 1}
                   </div>
                   

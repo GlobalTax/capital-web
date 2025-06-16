@@ -60,7 +60,7 @@ const VentaEmpresasBenefits = () => {
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             ¿Por Qué Elegir Capittal?
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -73,8 +73,8 @@ const VentaEmpresasBenefits = () => {
           {benefits.map((benefit, index) => {
             return (
               <div key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group">
-                <div className="bg-black text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-xl font-bold">{index + 1}</span>
+                <div className="bg-gray-50 text-gray-300 rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-100 transition-colors duration-300">
+                  <span className="text-sm font-medium">{index + 1}</span>
                 </div>
                 
                 <h3 className="text-lg font-bold text-black mb-4">

@@ -56,7 +56,7 @@ const VentaEmpresasValuation = () => {
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Factores que Determinan la Valoración
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -75,8 +75,8 @@ const VentaEmpresasValuation = () => {
                 return (
                   <div key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
                     <div className="flex items-start space-x-4">
-                      <div className="bg-black text-white rounded-lg w-12 h-12 flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg font-bold">{index + 1}</span>
+                      <div className="bg-gray-50 text-gray-300 rounded-lg w-8 h-8 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium">{index + 1}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-3">
@@ -127,7 +127,7 @@ const VentaEmpresasValuation = () => {
               <ul className="space-y-3">
                 {optimizaciones.map((opt, index) => (
                   <li key={index} className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0" />
+                    <div className="w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0" />
                     <span className="text-gray-600">{opt}</span>
                   </li>
                 ))}
