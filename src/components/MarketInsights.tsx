@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { TrendingUp, Database, BarChart3 } from 'lucide-react';
 
 interface Statistic {
   id: string;
@@ -114,7 +115,7 @@ const MarketInsights = () => {
           {isLoading ? (
             // Loading skeleton
             [...Array(3)].map((_, index) => (
-              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm text-center">
+              <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm text-center">
                 <CardContent className="p-6">
                   <div className="animate-pulse">
                     <div className="h-8 bg-gray-200 rounded w-20 mx-auto mb-2"></div>
@@ -125,8 +126,8 @@ const MarketInsights = () => {
               </Card>
             ))
           ) : (
-            insights.map((insight) => (
-              <Card key={insight.id} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+            insights.map((insight, index) => (
+              <Card key={insight.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
                 <CardContent className="p-6">
                   <div className="text-2xl font-bold text-black mb-1">
                     {insight.metric_value}
@@ -134,7 +135,8 @@ const MarketInsights = () => {
                   <div className="text-gray-600 text-sm mb-2">
                     {insight.metric_label}
                   </div>
-                  <div className="text-sm font-medium text-green-600">
+                  <div className="text-sm font-medium text-green-600 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 mr-1" />
                     +15% vs Q3
                   </div>
                 </CardContent>
@@ -144,7 +146,7 @@ const MarketInsights = () => {
         </div>
 
         {/* Market Intelligence CTA */}
-        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white border-0.5 border-black rounded-lg shadow-sm p-8 text-center">
           <h3 className="text-2xl font-bold text-black mb-4">
             Inteligencia de Mercado Capittal
           </h3>
@@ -153,9 +155,9 @@ const MarketInsights = () => {
             análisis de transacciones comparables y datos de inteligencia M&A actualizados en tiempo real.
           </p>
           
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-8">
             <Button 
-              className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
+              className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
               onClick={() => window.open('https://capittalmarket.com', '_blank')}
             >
               Acceder a Capittal Market
@@ -163,24 +165,33 @@ const MarketInsights = () => {
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 text-left">
-            <div>
-              <h4 className="font-semibold text-black mb-2 text-base">Valoraciones en Tiempo Real</h4>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Metodologías DCF, múltiplos y transacciones comparables actualizadas diariamente.
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <div className="flex items-start space-x-3">
+              <BarChart3 className="w-6 h-6 text-black mt-1 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-black mb-2 text-base">Valoraciones en Tiempo Real</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Metodologías DCF, múltiplos y transacciones comparables actualizadas diariamente.
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-black mb-2 text-base">Base de Datos M&A</h4>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Acceso a más de 10,000 transacciones históricas con detalles financieros.
-              </p>
+            <div className="flex items-start space-x-3">
+              <Database className="w-6 h-6 text-black mt-1 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-black mb-2 text-base">Base de Datos M&A</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Acceso a más de 10,000 transacciones históricas con detalles financieros.
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-black mb-2 text-base">Analytics Avanzados</h4>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Dashboards interactivos y reportes personalizados para decisiones informadas.
-              </p>
+            <div className="flex items-start space-x-3">
+              <TrendingUp className="w-6 h-6 text-black mt-1 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-black mb-2 text-base">Analytics Avanzados</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Dashboards interactivos y reportes personalizados para decisiones informadas.
+                </p>
+              </div>
             </div>
           </div>
         </div>
