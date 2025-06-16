@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import ImageUploadField from './ImageUploadField';
 
 interface Operation {
   id: string;
@@ -16,6 +16,8 @@ interface Operation {
   description: string;
   is_featured: boolean;
   is_active: boolean;
+  logo_url?: string;
+  featured_image_url?: string;
 }
 
 const OperationsManager = () => {
@@ -33,7 +35,9 @@ const OperationsManager = () => {
     year: new Date().getFullYear(),
     description: '',
     is_featured: false,
-    is_active: true
+    is_active: true,
+    logo_url: undefined,
+    featured_image_url: undefined
   };
 
   const [formData, setFormData] = useState(emptyOperation);
@@ -213,6 +217,24 @@ const OperationsManager = () => {
               />
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ImageUploadField
+                label="Logo de la Empresa"
+                value={formData.logo_url}
+                onChange={(url) => setFormData({...formData, logo_url: url})}
+                folder="operations/logos"
+                placeholder="URL del logo o sube una imagen"
+              />
+              
+              <ImageUploadField
+                label="Imagen Destacada"
+                value={formData.featured_image_url}
+                onChange={(url) => setFormData({...formData, featured_image_url: url})}
+                folder="operations/featured"
+                placeholder="URL de la imagen destacada o sube una imagen"
+              />
+            </div>
+
             <div className="flex items-center space-x-4">
               <label className="flex items-center">
                 <input
@@ -264,17 +286,28 @@ const OperationsManager = () => {
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center space-x-4 mb-2">
-                  <h3 className="text-lg font-bold text-black">{operation.company_name}</h3>
-                  {operation.is_featured && (
-                    <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
-                      Destacado
-                    </span>
+                  {operation.logo_url && (
+                    <img
+                      src={operation.logo_url}
+                      alt={`Logo ${operation.company_name}`}
+                      className="w-12 h-12 object-contain rounded"
+                    />
                   )}
-                  {!operation.is_active && (
-                    <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                      Inactivo
-                    </span>
-                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-black">{operation.company_name}</h3>
+                    <div className="flex items-center space-x-2">
+                      {operation.is_featured && (
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                          Destacado
+                        </span>
+                      )}
+                      {!operation.is_active && (
+                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
+                          Inactivo
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <p className="text-gray-600 mb-2">{operation.description}</p>
                 <div className="text-sm text-gray-500">

@@ -38,10 +38,12 @@ export type Database = {
           company_size: string | null
           created_at: string
           description: string
+          featured_image_url: string | null
           highlights: string[] | null
           id: string
           is_active: boolean | null
           is_featured: boolean | null
+          logo_url: string | null
           sector: string
           title: string
           updated_at: string
@@ -53,10 +55,12 @@ export type Database = {
           company_size?: string | null
           created_at?: string
           description: string
+          featured_image_url?: string | null
           highlights?: string[] | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          logo_url?: string | null
           sector: string
           title: string
           updated_at?: string
@@ -68,10 +72,12 @@ export type Database = {
           company_size?: string | null
           created_at?: string
           description?: string
+          featured_image_url?: string | null
           highlights?: string[] | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          logo_url?: string | null
           sector?: string
           title?: string
           updated_at?: string
@@ -86,9 +92,11 @@ export type Database = {
           company_name: string
           created_at: string
           description: string
+          featured_image_url: string | null
           id: string
           is_active: boolean | null
           is_featured: boolean | null
+          logo_url: string | null
           sector: string
           updated_at: string
           valuation_amount: number
@@ -99,9 +107,11 @@ export type Database = {
           company_name: string
           created_at?: string
           description: string
+          featured_image_url?: string | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          logo_url?: string | null
           sector: string
           updated_at?: string
           valuation_amount: number
@@ -112,9 +122,11 @@ export type Database = {
           company_name?: string
           created_at?: string
           description?: string
+          featured_image_url?: string | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          logo_url?: string | null
           sector?: string
           updated_at?: string
           valuation_amount?: number
