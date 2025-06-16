@@ -19,7 +19,6 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [isAdminSetup, setIsAdminSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState<string>('');
-  const [attemptCount, setAttemptCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,8 +27,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
   const setupAdmin = async () => {
     setIsLoading(true);
-    setAttemptCount(prev => prev + 1);
-    setDebugInfo(`Intento ${attemptCount + 1}: Iniciando configuración de admin...`);
+    setDebugInfo('Iniciando configuración de admin...');
     
     try {
       // Ejecutar debug primero
@@ -41,23 +39,23 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
       
       if (isAdmin) {
         setIsAdminSetup(true);
-        setDebugInfo(`Éxito: Usuario configurado como administrador (intento ${attemptCount + 1})`);
+        setDebugInfo('Éxito: Usuario configurado como administrador');
         toast({
           title: "Acceso autorizado",
           description: "Bienvenido al panel de administración.",
         });
       } else {
         setIsAdminSetup(false);
-        setDebugInfo(`Error: No se pudo configurar como administrador (intento ${attemptCount + 1})`);
+        setDebugInfo('Error: No se pudo configurar como administrador');
         toast({
           title: "Error de configuración",
-          description: "No se pudo configurar el usuario como administrador. Intenta de nuevo o contacta soporte.",
+          description: "No se pudo configurar el usuario como administrador. Intenta de nuevo.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error configurando admin:', error);
-      setDebugInfo(`Error: ${error} (intento ${attemptCount + 1})`);
+      setDebugInfo(`Error: ${error}`);
       toast({
         title: "Error",
         description: "Error configurando permisos de administrador.",
@@ -118,19 +116,12 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             </p>
           </div>
           
-          {attemptCount < 3 && (
-            <p className="text-sm text-gray-500 mb-6">
-              Intento {attemptCount} de 3. Si el problema persiste, contacta al administrador del sistema.
-            </p>
-          )}
-          
           <div className="flex gap-4 justify-center">
             <Button 
               onClick={setupAdmin} 
-              disabled={attemptCount >= 3}
-              className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
-              {attemptCount >= 3 ? 'Máximo de intentos alcanzado' : 'Reintentar'}
+              Reintentar
             </Button>
             <Button 
               variant="outline" 

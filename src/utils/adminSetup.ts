@@ -18,9 +18,9 @@ export const ensureCurrentUserIsAdmin = async () => {
 
     console.log('Usuario actual:', user.id, user.email);
 
-    // Primero intentar insertar directamente (más confiable que verificar primero)
-    console.log('Intentando configurar usuario como admin...');
-    const { data: insertData, error: insertError } = await supabase
+    // Con las nuevas políticas RLS simplificadas, podemos hacer upsert directamente
+    console.log('Configurando usuario como admin...');
+    const { data: upsertData, error: upsertError } = await supabase
       .from('admin_users')
       .upsert({
         user_id: user.id,
@@ -32,38 +32,28 @@ export const ensureCurrentUserIsAdmin = async () => {
       .select()
       .single();
 
-    if (insertError) {
-      console.error('Error insertando/actualizando admin:', insertError);
+    if (upsertError) {
+      console.error('Error insertando/actualizando admin:', upsertError);
       return false;
     }
 
-    console.log('Usuario configurado como admin:', insertData);
+    console.log('Usuario configurado como admin exitosamente:', upsertData);
 
-    // Verificar que la configuración fue exitosa usando RPC
-    const { data: isAdmin, error: checkError } = await supabase
-      .rpc('check_is_admin', { check_user_id: user.id });
+    // Verificar que la configuración fue exitosa
+    const { data: verificationData, error: verificationError } = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single();
 
-    if (checkError) {
-      console.error('Error verificando admin después de insertar:', checkError);
-      // Si RPC falla, hacer verificación directa
-      const { data: directCheck, error: directError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single();
-
-      if (directError) {
-        console.error('Error en verificación directa:', directError);
-        return false;
-      }
-
-      console.log('Verificación directa exitosa:', directCheck);
-      return true;
+    if (verificationError) {
+      console.error('Error verificando configuración de admin:', verificationError);
+      return false;
     }
 
-    console.log('Verificación RPC resultado:', isAdmin);
-    return isAdmin === true;
+    console.log('Verificación exitosa:', verificationData);
+    return true;
 
   } catch (error) {
     console.error('Error en ensureCurrentUserIsAdmin:', error);
@@ -71,7 +61,7 @@ export const ensureCurrentUserIsAdmin = async () => {
   }
 };
 
-// Función adicional para debug
+// Función de debug simplificada
 export const debugAdminStatus = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -92,25 +82,6 @@ export const debugAdminStatus = async () => {
     console.log('Debug: Registros admin encontrados:', adminUsers);
     if (error) {
       console.log('Debug: Error consultando admin_users:', error);
-    }
-
-    // Intentar RPC
-    const { data: rpcResult, error: rpcError } = await supabase
-      .rpc('check_is_admin', { check_user_id: user.id });
-
-    console.log('Debug: Resultado RPC check_is_admin:', rpcResult);
-    if (rpcError) {
-      console.log('Debug: Error en RPC:', rpcError);
-    }
-
-    // Verificar tabla completa (para debug)
-    const { data: allAdmins, error: allError } = await supabase
-      .from('admin_users')
-      .select('*');
-
-    console.log('Debug: Todos los registros admin:', allAdmins);
-    if (allError) {
-      console.log('Debug: Error consultando todos los admins:', allError);
     }
 
   } catch (error) {
