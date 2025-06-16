@@ -1,9 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import StatisticPreview from './preview/StatisticPreview';
 
 interface Statistic {
   id: string;
@@ -178,6 +185,22 @@ const StatisticsManager = () => {
                   >
                     Guardar
                   </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="border border-gray-300 rounded-lg"
+                      >
+                        Previsualizar
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Previsualización</DialogTitle>
+                      </DialogHeader>
+                      <StatisticPreview statistic={statistic} />
+                    </DialogContent>
+                  </Dialog>
                   <Button
                     variant="outline"
                     onClick={() => setEditingStatistic(null)}
