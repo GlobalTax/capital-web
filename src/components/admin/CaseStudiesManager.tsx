@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import CaseStudyPreview from './preview/CaseStudyPreview';
+import SectorSelect from './shared/SectorSelect';
 
 interface CaseStudy {
   id: string;
@@ -93,12 +94,16 @@ const CaseStudiesManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const dataToSubmit = {
-        ...formData,
-        highlights: formData.highlights?.filter(h => h.trim() !== '') || []
-      };
+    // Si no hay ubicaciones seleccionadas, marcar como inactivo (borrador)
+    const isDraft = !formData.display_locations || formData.display_locations.length === 0;
+    const dataToSubmit = {
+      ...formData,
+      highlights: formData.highlights?.filter(h => h.trim() !== '') || [],
+      is_active: !isDraft,
+      display_locations: formData.display_locations || []
+    };
 
+    try {
       if (editingCase) {
         const { error } = await supabase
           .from('case_studies')
@@ -106,14 +111,18 @@ const CaseStudiesManager = () => {
           .eq('id', editingCase.id);
         
         if (error) throw error;
-        toast({ title: "Caso actualizado correctamente" });
+        toast({ 
+          title: isDraft ? "Caso guardado como borrador" : "Caso actualizado correctamente" 
+        });
       } else {
         const { error } = await supabase
           .from('case_studies')
           .insert([dataToSubmit]);
         
         if (error) throw error;
-        toast({ title: "Caso creado correctamente" });
+        toast({ 
+          title: isDraft ? "Caso creado como borrador" : "Caso creado correctamente" 
+        });
       }
 
       setFormData(emptyCase);
@@ -231,10 +240,9 @@ const CaseStudiesManager = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-black mb-2">Sector</label>
-                <Input
+                <SectorSelect
                   value={formData.sector}
-                  onChange={(e) => setFormData({...formData, sector: e.target.value})}
-                  className="border border-gray-300 rounded-lg"
+                  onChange={(value) => setFormData({...formData, sector: value})}
                   required
                 />
               </div>
@@ -287,7 +295,10 @@ const CaseStudiesManager = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black mb-2">Ubicaciones donde mostrar</label>
+              <label className="block text-sm font-medium text-black mb-2">
+                Ubicaciones donde mostrar
+                <span className="text-sm text-gray-500 ml-2">(Si no seleccionas ninguna, se guardará como borrador)</span>
+              </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {availableLocations.map((location) => (
                   <label key={location.value} className="flex items-center space-x-2">
@@ -405,8 +416,13 @@ const CaseStudiesManager = () => {
                         </span>
                       )}
                       {!caseStudy.is_active && (
-                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                          Inactivo
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                          Borrador
+                        </span>
+                      )}
+                      {(!caseStudy.display_locations || caseStudy.display_locations.length === 0) && (
+                        <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          Sin ubicaciones
                         </span>
                       )}
                     </div>

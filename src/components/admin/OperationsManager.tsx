@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import OperationPreview from './preview/OperationPreview';
+import SectorSelect from './shared/SectorSelect';
 
 interface Operation {
   id: string;
@@ -88,22 +89,34 @@ const OperationsManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Si no hay ubicaciones seleccionadas, marcar como inactivo (borrador)
+    const isDraft = !formData.display_locations || formData.display_locations.length === 0;
+    const dataToSubmit = {
+      ...formData,
+      is_active: !isDraft,
+      display_locations: formData.display_locations || []
+    };
+    
     try {
       if (editingOperation) {
         const { error } = await supabase
           .from('company_operations')
-          .update(formData)
+          .update(dataToSubmit)
           .eq('id', editingOperation.id);
         
         if (error) throw error;
-        toast({ title: "Operación actualizada correctamente" });
+        toast({ 
+          title: isDraft ? "Operación guardada como borrador" : "Operación actualizada correctamente" 
+        });
       } else {
         const { error } = await supabase
           .from('company_operations')
-          .insert([formData]);
+          .insert([dataToSubmit]);
         
         if (error) throw error;
-        toast({ title: "Operación creada correctamente" });
+        toast({ 
+          title: isDraft ? "Operación creada como borrador" : "Operación creada correctamente" 
+        });
       }
 
       setFormData(emptyOperation);
@@ -203,10 +216,9 @@ const OperationsManager = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-black mb-2">Sector</label>
-                <Input
+                <SectorSelect
                   value={formData.sector}
-                  onChange={(e) => setFormData({...formData, sector: e.target.value})}
-                  className="border border-gray-300 rounded-lg"
+                  onChange={(value) => setFormData({...formData, sector: value})}
                   required
                 />
               </div>
@@ -254,7 +266,10 @@ const OperationsManager = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black mb-2">Ubicaciones donde mostrar</label>
+              <label className="block text-sm font-medium text-black mb-2">
+                Ubicaciones donde mostrar
+                <span className="text-sm text-gray-500 ml-2">(Si no seleccionas ninguna, se guardará como borrador)</span>
+              </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {availableLocations.map((location) => (
                   <label key={location.value} className="flex items-center space-x-2">
@@ -372,8 +387,13 @@ const OperationsManager = () => {
                         </span>
                       )}
                       {!operation.is_active && (
-                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                          Inactivo
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                          Borrador
+                        </span>
+                      )}
+                      {(!operation.display_locations || operation.display_locations.length === 0) && (
+                        <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          Sin ubicaciones
                         </span>
                       )}
                     </div>
