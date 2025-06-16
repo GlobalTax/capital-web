@@ -9,7 +9,7 @@ import OperationsManager from './OperationsManager';
 import MultiplesManager from './MultiplesManager';
 import StatisticsManager from './StatisticsManager';
 import TestimonialsManager from './TestimonialsManager';
-import { ensureCurrentUserIsAdmin } from '@/utils/adminSetup';
+import { ensureCurrentUserIsAdmin, debugAdminStatus } from '@/utils/adminSetup';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -18,6 +18,7 @@ interface AdminDashboardProps {
 const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [isAdminSetup, setIsAdminSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -26,17 +27,24 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
   const setupAdmin = async () => {
     setIsLoading(true);
+    setDebugInfo('Iniciando configuración de admin...');
+    
     try {
+      // Ejecutar debug primero
+      await debugAdminStatus();
+      
       const isAdmin = await ensureCurrentUserIsAdmin();
       setIsAdminSetup(isAdmin);
       
       if (!isAdmin) {
+        setDebugInfo('Error: No se pudo configurar como administrador');
         toast({
           title: "Error de configuración",
-          description: "No se pudo configurar el usuario como administrador.",
+          description: "No se pudo configurar el usuario como administrador. Revisa la consola para más detalles.",
           variant: "destructive",
         });
       } else {
+        setDebugInfo('Éxito: Usuario configurado como administrador');
         toast({
           title: "Acceso autorizado",
           description: "Bienvenido al panel de administración.",
@@ -44,6 +52,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
       }
     } catch (error) {
       console.error('Error configurando admin:', error);
+      setDebugInfo(`Error: ${error}`);
       toast({
         title: "Error",
         description: "Error configurando permisos de administrador.",
@@ -72,9 +81,10 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <div className="animate-spin rounded-full h-12 w-12 border-0.5 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">Configurando permisos...</p>
+          <p className="text-gray-600 mb-2">Configurando permisos...</p>
+          <p className="text-xs text-gray-500">{debugInfo}</p>
         </div>
       </div>
     );
@@ -83,25 +93,32 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   if (!isAdminSetup) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md">
+        <div className="text-center max-w-md p-6">
           <h2 className="text-2xl font-bold text-black mb-4">Error de Permisos</h2>
-          <p className="text-gray-600 mb-6">
-            No se pudieron configurar los permisos de administrador. 
-            Por favor, contacta al administrador del sistema.
+          <p className="text-gray-600 mb-4">
+            No se pudieron configurar los permisos de administrador.
           </p>
-          <Button 
-            onClick={setupAdmin} 
-            className="mr-4 bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-          >
-            Reintentar
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout} 
-            className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-          >
-            Cerrar Sesión
-          </Button>
+          <div className="bg-gray-50 border-0.5 border-black rounded-lg p-4 mb-6">
+            <p className="text-xs text-gray-500 font-mono">{debugInfo}</p>
+          </div>
+          <p className="text-sm text-gray-500 mb-6">
+            Revisa la consola del navegador (F12) para más información técnica.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button 
+              onClick={setupAdmin} 
+              className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+            >
+              Reintentar
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout} 
+              className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+            >
+              Cerrar Sesión
+            </Button>
+          </div>
         </div>
       </div>
     );
