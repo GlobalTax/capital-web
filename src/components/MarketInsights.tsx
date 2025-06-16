@@ -1,29 +1,100 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
+interface Statistic {
+  id: string;
+  metric_key: string;
+  metric_value: string;
+  metric_label: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 const MarketInsights = () => {
-  const insights = [
-    {
-      value: "€300M",
-      label: "Volumen Transaccional Q4",
-      change: "+15%",
-      positive: true
-    },
-    {
-      value: "47",
-      label: "Transacciones Activas",
-      change: "+8%",
-      positive: true
-    },
-    {
-      value: "156",
-      label: "Empresas Valoradas",
-      change: "+23%",
-      positive: true
+  const [insights, setInsights] = useState<Statistic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
+  const fetchInsights = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('key_statistics')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order')
+        .limit(3);
+
+      if (error) {
+        console.error('Error fetching statistics:', error);
+        // Use fallback data if database fetch fails
+        setInsights([
+          {
+            id: '1',
+            metric_key: 'volumen_transaccional',
+            metric_value: '€300M',
+            metric_label: 'Volumen Transaccional Q4',
+            display_order: 1,
+            is_active: true
+          },
+          {
+            id: '2',
+            metric_key: 'transacciones_activas',
+            metric_value: '47',
+            metric_label: 'Transacciones Activas',
+            display_order: 2,
+            is_active: true
+          },
+          {
+            id: '3',
+            metric_key: 'empresas_valoradas',
+            metric_value: '156',
+            metric_label: 'Empresas Valoradas',
+            display_order: 3,
+            is_active: true
+          }
+        ]);
+      } else {
+        setInsights(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      // Use fallback data
+      setInsights([
+        {
+          id: '1',
+          metric_key: 'volumen_transaccional',
+          metric_value: '€300M',
+          metric_label: 'Volumen Transaccional Q4',
+          display_order: 1,
+          is_active: true
+        },
+        {
+          id: '2',
+          metric_key: 'transacciones_activas',
+          metric_value: '47',
+          metric_label: 'Transacciones Activas',
+          display_order: 2,
+          is_active: true
+        },
+        {
+          id: '3',
+          metric_key: 'empresas_valoradas',
+          metric_value: '156',
+          metric_label: 'Empresas Valoradas',
+          display_order: 3,
+          is_active: true
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   return (
     <section className="py-20 bg-gray-50">
@@ -40,23 +111,36 @@ const MarketInsights = () => {
 
         {/* Market Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {insights.map((insight, index) => (
-            <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-black mb-1">
-                  {insight.value}
-                </div>
-                <div className="text-gray-600 text-sm mb-2">
-                  {insight.label}
-                </div>
-                <div className={`text-sm font-medium ${
-                  insight.positive ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {insight.change} vs Q3
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {isLoading ? (
+            // Loading skeleton
+            [...Array(3)].map((_, index) => (
+              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm text-center">
+                <CardContent className="p-6">
+                  <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded w-20 mx-auto mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            insights.map((insight) => (
+              <Card key={insight.id} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+                <CardContent className="p-6">
+                  <div className="text-2xl font-bold text-black mb-1">
+                    {insight.metric_value}
+                  </div>
+                  <div className="text-gray-600 text-sm mb-2">
+                    {insight.metric_label}
+                  </div>
+                  <div className="text-sm font-medium text-green-600">
+                    +15% vs Q3
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Market Intelligence CTA */}
