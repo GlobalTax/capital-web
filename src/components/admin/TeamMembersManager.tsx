@@ -35,7 +35,6 @@ const TeamMembersManager = () => {
     is_active: true
   });
   const { toast } = useToast();
-  const { uploadImage, deleteImage, isUploading } = useImageUpload();
 
   useEffect(() => {
     fetchTeamMembers();
@@ -121,10 +120,6 @@ const TeamMembersManager = () => {
     if (!confirm('¿Estás seguro de que quieres eliminar este miembro del equipo?')) return;
 
     try {
-      if (imageUrl) {
-        await deleteImage(imageUrl);
-      }
-
       const { error } = await supabase
         .from('team_members')
         .delete()
@@ -144,20 +139,6 @@ const TeamMembersManager = () => {
         description: `Error al eliminar: ${error.message}`,
         variant: "destructive",
       });
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    const imageUrl = await uploadImage(file, 'team');
-    if (imageUrl) {
-      setFormData(prev => ({ ...prev, image_url: imageUrl }));
-    }
-  };
-
-  const handleImageRemove = async () => {
-    if (formData.image_url) {
-      await deleteImage(formData.image_url);
-      setFormData(prev => ({ ...prev, image_url: '' }));
     }
   };
 
@@ -276,9 +257,9 @@ const TeamMembersManager = () => {
               <ImageUploadField
                 label="Foto del Miembro"
                 value={formData.image_url}
-                onUpload={handleImageUpload}
-                onRemove={handleImageRemove}
-                isUploading={isUploading}
+                onChange={(url) => setFormData(prev => ({ ...prev, image_url: url || '' }))}
+                folder="team"
+                placeholder="URL de la imagen del miembro del equipo"
               />
 
               <div className="flex items-center space-x-2">
