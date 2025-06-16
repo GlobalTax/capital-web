@@ -9,6 +9,120 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          role: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["admin_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      case_studies: {
+        Row: {
+          company_size: string | null
+          created_at: string
+          description: string
+          highlights: string[] | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          sector: string
+          title: string
+          updated_at: string
+          value_amount: number | null
+          value_currency: string | null
+          year: number | null
+        }
+        Insert: {
+          company_size?: string | null
+          created_at?: string
+          description: string
+          highlights?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          sector: string
+          title: string
+          updated_at?: string
+          value_amount?: number | null
+          value_currency?: string | null
+          year?: number | null
+        }
+        Update: {
+          company_size?: string | null
+          created_at?: string
+          description?: string
+          highlights?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          sector?: string
+          title?: string
+          updated_at?: string
+          value_amount?: number | null
+          value_currency?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      company_operations: {
+        Row: {
+          company_name: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          sector: string
+          updated_at: string
+          valuation_amount: number
+          valuation_currency: string | null
+          year: number
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          sector: string
+          updated_at?: string
+          valuation_amount: number
+          valuation_currency?: string | null
+          year: number
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          sector?: string
+          updated_at?: string
+          valuation_amount?: number
+          valuation_currency?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       company_valuations: {
         Row: {
           cif: string | null
@@ -105,6 +219,36 @@ export type Database = {
         }
         Relationships: []
       }
+      key_statistics: {
+        Row: {
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          metric_key: string
+          metric_label: string
+          metric_value: string
+          updated_at: string
+        }
+        Insert: {
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          metric_key: string
+          metric_label: string
+          metric_value: string
+          updated_at?: string
+        }
+        Update: {
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          metric_key?: string
+          metric_label?: string
+          metric_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sector_multiples: {
         Row: {
           description: string | null
@@ -135,6 +279,39 @@ export type Database = {
           last_updated?: string
           revenue_multiple?: number
           sector_name?: string
+        }
+        Relationships: []
+      }
+      sector_valuation_multiples: {
+        Row: {
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          median_multiple: string
+          multiple_range: string
+          sector_name: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          median_multiple: string
+          multiple_range: string
+          sector_name: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          median_multiple?: string
+          multiple_range?: string
+          sector_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -185,10 +362,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      admin_role: "super_admin" | "admin" | "editor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -303,6 +483,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      admin_role: ["super_admin", "admin", "editor"],
+    },
   },
 } as const
