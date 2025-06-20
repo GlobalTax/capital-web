@@ -25,29 +25,29 @@ const DocumentacionMAPopularArticles = () => {
   ];
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-24 bg-gray-50/30">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-light text-black mb-4">Artículos Populares</h2>
-          <p className="text-gray-500">
-            Otros recursos que pueden interesarte
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-light text-gray-900 mb-6">Recursos relacionados</h2>
+          <p className="text-lg text-gray-500 font-light">
+            Herramientas y guías que complementan tu conocimiento en M&A
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {popularArticles.map((articulo, index) => (
-            <div key={index} className="bg-white p-8 rounded-lg hover:shadow-sm transition-shadow group cursor-pointer">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-gray-200 transition-colors">
-                <articulo.icon className="w-6 h-6 text-gray-600" />
+            <div key={index} className="bg-white p-12 rounded-2xl hover:shadow-sm transition-all duration-300 group cursor-pointer">
+              <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center mb-8 group-hover:bg-gray-100 transition-colors duration-300">
+                <articulo.icon className="w-7 h-7 text-gray-400" />
               </div>
-              <h3 className="font-medium text-black mb-3">{articulo.title}</h3>
-              <p className="text-gray-500 mb-6 text-sm">{articulo.description}</p>
+              <h3 className="text-xl font-medium text-gray-900 mb-4">{articulo.title}</h3>
+              <p className="text-gray-500 mb-8 font-light leading-relaxed">{articulo.description}</p>
               <a 
                 href={articulo.link}
-                className="text-black font-medium hover:underline flex items-center gap-2 group text-sm"
+                className="text-gray-900 font-medium hover:text-gray-600 flex items-center gap-3 group-hover:gap-4 transition-all duration-300"
               >
-                <span>Leer más</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Explorar</span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-300" />
               </a>
             </div>
           ))}
