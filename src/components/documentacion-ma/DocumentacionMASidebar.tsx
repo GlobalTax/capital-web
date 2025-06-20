@@ -1,50 +1,53 @@
 
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { FileText, Users, Target, TrendingUp, Briefcase, Award } from 'lucide-react';
 import { Icons } from '@/components/ui/icons';
 
 const DocumentacionMASidebar = () => {
+  const location = useLocation();
+  
   const navigationItems = [{
     title: "¿Por qué nosotros?",
     icon: Award,
     items: [{
       label: 'Nuestro método',
-      href: '#introduccion'
+      href: '/documentacion-ma/nuestro-metodo'
     }, {
       label: 'Conoce al equipo',
-      href: '#tipos-operaciones'
+      href: '/documentacion-ma/conoce-equipo'
     }, {
       label: 'Resultados',
-      href: '#proceso-ma'
+      href: '/documentacion-ma/resultados'
     }]
   }, {
     title: "Nuestro proceso",
     icon: Briefcase,
     items: [{
       label: 'Fase 1',
-      href: '#valoracion'
+      href: '/documentacion-ma/fase-1'
     }, {
       label: 'Fase II: La lucha',
-      href: '#due-diligence'
+      href: '/documentacion-ma/fase-2-lucha'
     }, {
       label: 'Dynamic Components',
-      href: '#financiacion'
+      href: '/documentacion-ma/dynamic-components'
     }, {
       label: 'Customization',
-      href: '#aspectos-legales'
+      href: '/documentacion-ma/customization'
     }]
   }, {
     title: "Style",
     icon: Target,
     items: [{
       label: 'Typography',
-      href: '#integracion'
+      href: '/documentacion-ma/typography'
     }, {
       label: 'Spacing',
-      href: '#integracion'
+      href: '/documentacion-ma/spacing'
     }, {
       label: 'Variables',
-      href: '#integracion'
+      href: '/documentacion-ma/variables'
     }]
   }];
 
@@ -69,7 +72,15 @@ const DocumentacionMASidebar = () => {
               </div>
               <div className="space-y-1 ml-8">
                 {section.items.map((item, itemIndex) => (
-                  <a key={itemIndex} href={item.href} className="block py-2 text-sm text-black hover:text-black transition-colors">
+                  <a 
+                    key={itemIndex} 
+                    href={item.href} 
+                    className={`block py-2 text-sm transition-colors ${
+                      location.pathname === item.href 
+                        ? 'text-black font-medium' 
+                        : 'text-black hover:text-black'
+                    }`}
+                  >
                     {item.label}
                   </a>
                 ))}

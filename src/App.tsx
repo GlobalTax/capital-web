@@ -17,6 +17,18 @@ import TerminosUso from '@/pages/TerminosUso';
 import Cookies from '@/pages/Cookies';
 import DocumentacionMA from '@/pages/DocumentacionMA';
 
+// Documentación M&A pages
+import NuestroMetodo from '@/pages/documentacion-ma/NuestroMetodo';
+import ConoceEquipo from '@/pages/documentacion-ma/ConoceEquipo';
+import Resultados from '@/pages/documentacion-ma/Resultados';
+import Fase1 from '@/pages/documentacion-ma/Fase1';
+import Fase2Lucha from '@/pages/documentacion-ma/Fase2Lucha';
+import DynamicComponents from '@/pages/documentacion-ma/DynamicComponents';
+import Customization from '@/pages/documentacion-ma/Customization';
+import Typography from '@/pages/documentacion-ma/Typography';
+import Spacing from '@/pages/documentacion-ma/Spacing';
+import Variables from '@/pages/documentacion-ma/Variables';
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -33,7 +45,19 @@ function App() {
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/casos-exito" element={<CasosExito />} />
           <Route path="/admin" element={<Admin />} />
+          
+          {/* Documentación M&A routes */}
           <Route path="/documentacion-ma" element={<DocumentacionMA />} />
+          <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
+          <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
+          <Route path="/documentacion-ma/resultados" element={<Resultados />} />
+          <Route path="/documentacion-ma/fase-1" element={<Fase1 />} />
+          <Route path="/documentacion-ma/fase-2-lucha" element={<Fase2Lucha />} />
+          <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
+          <Route path="/documentacion-ma/customization" element={<Customization />} />
+          <Route path="/documentacion-ma/typography" element={<Typography />} />
+          <Route path="/documentacion-ma/spacing" element={<Spacing />} />
+          <Route path="/documentacion-ma/variables" element={<Variables />} />
           
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/terminos-uso" element={<TerminosUso />} />
