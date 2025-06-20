@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -31,7 +30,7 @@ function Footerdemo() {
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
-            <p className="mb-6 text-[14px] text-gray-600 font-bold">
+            <p className="mb-6 text-[14px] text-black">
               Tu socio estratégico en fusiones y adquisiciones. Únete a nuestro newsletter para las últimas actualizaciones.
             </p>
             <form className="relative">
@@ -53,7 +52,7 @@ function Footerdemo() {
           
           <div>
             <h3 className="text-black font-bold mb-4">Servicios</h3>
-            <nav className="space-y-2 text-[14px] text-gray-600 font-bold">
+            <nav className="space-y-2 text-[14px] text-black">
               <Link to="/venta-empresas" className="block hover:text-black transition-colors">
                 Venta de Empresas
               </Link>
@@ -71,7 +70,7 @@ function Footerdemo() {
           
           <div>
             <h3 className="text-black font-bold mb-4">Empresa</h3>
-            <nav className="space-y-2 text-[14px] text-gray-600 font-bold">
+            <nav className="space-y-2 text-[14px] text-black">
               <Link to="/nosotros" className="block hover:text-black transition-colors">
                 Sobre Nosotros
               </Link>
@@ -89,7 +88,7 @@ function Footerdemo() {
           
           <div className="relative">
             <h3 className="text-black font-bold mb-4">Contacto</h3>
-            <address className="space-y-2 text-[14px] text-gray-600 font-bold not-italic mb-6">
+            <address className="space-y-2 text-[14px] text-black not-italic mb-6">
               <p>P.º de la Castellana, 11, B - A</p>
               <p>Chamberí, 28046 Madrid</p>
               <p>Email: info@capittal.com</p>
@@ -168,10 +167,10 @@ function Footerdemo() {
         </div>
         
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t-0.5 border-black pt-8 text-center md:flex-row">
-          <p className="text-[14px] text-gray-500 font-bold">
+          <p className="text-[14px] text-black">
             © {new Date().getFullYear()} Capittal. Todos los derechos reservados.
           </p>
-          <nav className="flex gap-4 text-[14px] text-gray-600 font-bold">
+          <nav className="flex gap-4 text-[14px] text-black">
             <Link to="/politica-privacidad" className="hover:text-black transition-colors">
               Política de Privacidad
             </Link>
