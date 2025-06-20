@@ -2,25 +2,21 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import DocumentacionMAHero from '@/components/documentacion-ma/DocumentacionMAHero';
-import DocumentacionMAStartHere from '@/components/documentacion-ma/DocumentacionMAStartHere';
-import DocumentacionMATableOfContents from '@/components/documentacion-ma/DocumentacionMATableOfContents';
+import DocumentacionMASidebar from '@/components/documentacion-ma/DocumentacionMASidebar';
 import DocumentacionMAContent from '@/components/documentacion-ma/DocumentacionMAContent';
-import DocumentacionMAPopularArticles from '@/components/documentacion-ma/DocumentacionMAPopularArticles';
 
 const DocumentacionMA = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <div className="pt-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <DocumentacionMAHero />
-          <DocumentacionMAStartHere />
-          <DocumentacionMATableOfContents />
-          <DocumentacionMAContent />
+        <div className="flex min-h-screen">
+          <DocumentacionMASidebar />
+          <div className="flex-1 max-w-4xl mx-auto px-8 py-16">
+            <DocumentacionMAContent />
+          </div>
         </div>
       </div>
-      <DocumentacionMAPopularArticles />
       <Footer />
     </div>
   );
