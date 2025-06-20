@@ -92,13 +92,13 @@ const DynamicComponentsContent = () => {
           </div>
         </div>
 
-        <blockquote className="border-l-4 border-gray-200 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
+        <blockquote className="border-l-4 border-gray-300 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
           "La <strong>adaptabilidad</strong> es clave en M&A. Cada operación es única y requiere un enfoque personalizado."
         </blockquote>
       </div>
 
       {/* Related Articles */}
-      <div className="border-t border-gray-100 pt-12">
+      <div className="border-t border-gray-200 pt-12">
         <h2 className="text-2xl font-medium text-black mb-8">Related articles</h2>
         <div className="space-y-4">
           <a href="/documentacion-ma/customization" className="flex items-center justify-between p-4 hover:bg-gray-50/50 rounded-lg transition-colors group">

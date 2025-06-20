@@ -35,7 +35,7 @@ const TypographyContent = () => {
           Typography
         </h1>
         <p className="text-xl text-black leading-relaxed mb-8 max-w-3xl font-light">
-          La <strong>comunicación clara</strong> es fundamental en M&A. Utilizamos una tipografía consistente y profesional en toda nuestra documentación.
+          La <strong>comunicación clara</strong> es fundamental en M&A. Cada palabra cuenta.
         </p>
         <div className="flex items-center gap-4 text-sm text-black">
           <span>Last updated</span>
@@ -45,43 +45,60 @@ const TypographyContent = () => {
 
       {/* Rich Text Content */}
       <div className="prose prose-lg max-w-none">
-        <h2 className="text-3xl font-medium text-black mb-8">Estándares Tipográficos</h2>
+        <h2 className="text-3xl font-medium text-black mb-8">Comunicación Efectiva</h2>
         
         <p className="text-black mb-8 leading-relaxed">
-          Mantenemos <strong>estándares tipográficos</strong> consistentes en toda nuestra documentación para asegurar claridad y profesionalidad en cada presentación.
+          En el mundo M&A, la <strong>precisión en la comunicación</strong> puede determinar el éxito de una transacción. Cada documento, presentación y conversación debe ser clara y persuasiva.
         </p>
 
-        <div className="space-y-8 mb-12">
-          <div>
-            <h3 className="text-2xl font-medium text-black mb-4">Jerarquía Tipográfica</h3>
-            <div className="space-y-4">
-              <div className="border-l-4 border-black pl-6">
-                <h1 className="text-4xl font-light text-black mb-2">Título Principal</h1>
-                <p className="text-sm text-gray-600">48px - Font Weight: Light</p>
-              </div>
-              <div className="border-l-4 border-gray-300 pl-6">
-                <h2 className="text-3xl font-medium text-black mb-2">Título Secundario</h2>
-                <p className="text-sm text-gray-600">36px - Font Weight: Medium</p>
-              </div>
-              <div className="border-l-4 border-gray-300 pl-6">
-                <h3 className="text-xl font-medium text-black mb-2">Subtítulo</h3>
-                <p className="text-sm text-gray-600">24px - Font Weight: Medium</p>
-              </div>
-              <div className="border-l-4 border-gray-300 pl-6">
-                <p className="text-base text-black mb-2">Texto de cuerpo</p>
-                <p className="text-sm text-gray-600">16px - Font Weight: Regular</p>
-              </div>
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <div className="bg-gray-50/30 p-6 rounded-lg">
+            <h4 className="text-lg font-medium text-black mb-4">Documentos Clave</h4>
+            <ul className="list-disc list-inside space-y-2 text-black">
+              <li>Memorandos de inversión</li>
+              <li>Cartas de intención</li>
+              <li>Presentaciones ejecutivas</li>
+              <li>Informes de valoración</li>
+            </ul>
+          </div>
+          <div className="bg-gray-50/30 p-6 rounded-lg">
+            <h4 className="text-lg font-medium text-black mb-4">Estilo de Comunicación</h4>
+            <ul className="list-disc list-inside space-y-2 text-black">
+              <li>Conciso y directo</li>
+              <li>Datos respaldados</li>
+              <li>Narrativa convincente</li>
+              <li>Terminología precisa</li>
+            </ul>
+          </div>
+        </div>
+
+        <h4 className="text-xl font-medium text-black mb-6">Jerarquía Visual</h4>
+        
+        <p className="text-black mb-6 leading-relaxed">
+          Utilizamos <strong>jerarquía visual</strong> para guiar la atención hacia los puntos más importantes de cada comunicación.
+        </p>
+
+        <div className="bg-gray-50/30 p-6 rounded-lg mb-12">
+          <h4 className="text-lg font-medium text-black mb-4">Elementos Visuales</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm text-black font-medium">Títulos:</span>
+              <span className="text-sm text-black ml-2">Manrope Bold</span>
+            </div>
+            <div>
+              <span className="text-sm text-black font-medium">Cuerpo:</span>
+              <span className="text-sm text-black ml-2">Manrope Regular</span>
             </div>
           </div>
         </div>
 
-        <blockquote className="border-l-4 border-gray-200 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
-          "La tipografía es la <strong>voz silenciosa</strong> de nuestros documentos. Cada detalle cuenta para transmitir profesionalidad y confianza."
+        <blockquote className="border-l-4 border-gray-300 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
+          "En M&A, la <strong>claridad</strong> en la comunicación es tan importante como los números en el balance."
         </blockquote>
       </div>
 
       {/* Related Articles */}
-      <div className="border-t border-gray-100 pt-12">
+      <div className="border-t border-gray-200 pt-12">
         <h2 className="text-2xl font-medium text-black mb-8">Related articles</h2>
         <div className="space-y-4">
           <a href="/documentacion-ma/spacing" className="flex items-center justify-between p-4 hover:bg-gray-50/50 rounded-lg transition-colors group">

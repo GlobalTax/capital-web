@@ -52,7 +52,7 @@ const DocumentacionMASidebar = () => {
   }];
 
   return (
-    <div className="w-80 border-r border-gray-100 bg-white h-screen sticky top-20 overflow-y-auto">
+    <div className="w-80 border-r border-gray-200 bg-white h-screen sticky top-20 overflow-y-auto">
       <div className="p-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -89,7 +89,7 @@ const DocumentacionMASidebar = () => {
           ))}
         </nav>
         
-        <div className="mt-12 pt-8 border-t border-gray-100">
+        <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="space-y-4">
             <a href="#" className="flex items-center gap-3 text-sm text-black hover:text-black">
               <div className="w-5 h-5">

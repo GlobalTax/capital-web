@@ -35,7 +35,7 @@ const VariablesContent = () => {
           Variables
         </h1>
         <p className="text-xl text-black leading-relaxed mb-8 max-w-3xl font-light">
-          Las <strong>variables clave</strong> en operaciones de M&A que determinan el éxito de cada transacción y requieren análisis detallado.
+          Variables clave que definen el <strong>éxito</strong> de cada operación M&A.
         </p>
         <div className="flex items-center gap-4 text-sm text-black">
           <span>Last updated</span>
@@ -45,10 +45,10 @@ const VariablesContent = () => {
 
       {/* Rich Text Content */}
       <div className="prose prose-lg max-w-none">
-        <h2 className="text-3xl font-medium text-black mb-8">Variables Críticas en M&A</h2>
+        <h2 className="text-3xl font-medium text-black mb-8">Variables Críticas</h2>
         
         <p className="text-black mb-8 leading-relaxed">
-          Identificamos y analizamos las <strong>variables críticas</strong> que impactan directamente en el valor y el éxito de cada operación de fusión o adquisición.
+          En M&A, identificamos y monitoreamos <strong>variables críticas</strong> que determinan el éxito de cada transacción desde la fase inicial hasta el cierre.
         </p>
 
         <div className="grid md:grid-cols-2 gap-6 mb-12">
@@ -65,45 +65,44 @@ const VariablesContent = () => {
             <h4 className="text-lg font-medium text-black mb-4">Variables Estratégicas</h4>
             <ul className="list-disc list-inside space-y-2 text-black">
               <li>Posición competitiva</li>
-              <li>Sinergias potenciales</li>
+              <li>Sinergias esperadas</li>
               <li>Riesgos regulatorios</li>
-              <li>Cultura organizacional</li>
+              <li>Integración cultural</li>
             </ul>
           </div>
         </div>
 
-        <h4 className="text-xl font-medium text-black mb-6">Análisis de Sensibilidad</h4>
+        <h4 className="text-xl font-medium text-black mb-6">Métricas de Control</h4>
         
         <p className="text-black mb-6 leading-relaxed">
-          Realizamos <strong>análisis de sensibilidad</strong> para entender cómo las variaciones en estas variables afectan la valoración y los resultados proyectados de la operación.
+          Establecemos <strong>métricas de control</strong> para monitorear el progreso y ajustar la estrategia según sea necesario.
         </p>
 
         <div className="bg-gray-50/30 p-6 rounded-lg mb-12">
-          <h4 className="text-lg font-medium text-black mb-4">Impacto en Valoración</h4>
-          <p className="text-black mb-4">Variación de ±10% en variables clave:</p>
-          <div className="grid grid-cols-2 gap-4">
+          <h4 className="text-lg font-medium text-black mb-4">KPIs Principales</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <span className="text-sm text-black font-medium">EBITDA:</span>
-              <span className="text-sm text-black ml-2">±15-20% en valoración</span>
+              <span className="text-sm text-black font-medium">ROI Esperado:</span>
+              <span className="text-sm text-black ml-2">15-25% anual</span>
             </div>
             <div>
-              <span className="text-sm text-black font-medium">Múltiplos:</span>
-              <span className="text-sm text-black ml-2">±10-15% en valoración</span>
+              <span className="text-sm text-black font-medium">Tiempo Cierre:</span>
+              <span className="text-sm text-black ml-2">4-8 meses</span>
             </div>
           </div>
         </div>
 
-        <blockquote className="border-l-4 border-gray-200 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
-          "El control de las <strong>variables críticas</strong> es lo que separa las operaciones exitosas de las que no alcanzan sus objetivos."
+        <blockquote className="border-l-4 border-gray-300 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
+          "El control de <strong>variables críticas</strong> es fundamental para maximizar el valor en cada transacción M&A."
         </blockquote>
       </div>
 
       {/* Related Articles */}
-      <div className="border-t border-gray-100 pt-12">
+      <div className="border-t border-gray-200 pt-12">
         <h2 className="text-2xl font-medium text-black mb-8">Related articles</h2>
         <div className="space-y-4">
-          <a href="/documentacion-ma/nuestro-metodo" className="flex items-center justify-between p-4 hover:bg-gray-50/50 rounded-lg transition-colors group">
-            <span className="text-black group-hover:text-black">Nuestro método</span>
+          <a href="/documentacion-ma/spacing" className="flex items-center justify-between p-4 hover:bg-gray-50/50 rounded-lg transition-colors group">
+            <span className="text-black group-hover:text-black">Spacing</span>
             <svg className="w-4 h-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M7 17l9.2-9.2M17 17V7H7"/>
             </svg>
