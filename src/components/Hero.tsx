@@ -38,7 +38,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-6">
               <Button className="bg-white text-black border border-gray-300 rounded-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out text-base">Valorar mi empresa</Button>
               
-              <Button variant="outline" className="bg-transparent border border-gray-300 px-12 py-6 font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm text-sm rounded-md">
+              <Button variant="outline" className="bg-transparent border border-gray-300 px-12 py-6 font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm text-sm rounded-none">
                 Ver Casos de Éxito
               </Button>
             </div>
