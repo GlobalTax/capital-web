@@ -32,6 +32,7 @@ export const menuData = {
     { label: 'Newsletter', href: '/recursos/newsletter' },
     { label: 'Webinars', href: '/recursos/webinars' },
     { label: 'Calculadora de Valoración', href: '/calculadora-valoracion' },
+    { label: 'Documentación M&A', href: '/documentacion-ma' },
   ],
 
   // Renombrado de "empresaItems" a "nosotrosItems" para mayor claridad

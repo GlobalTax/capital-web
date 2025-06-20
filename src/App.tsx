@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
@@ -14,6 +15,7 @@ import NotFound from '@/pages/NotFound';
 import PoliticaPrivacidad from '@/pages/PoliticaPrivacidad';
 import TerminosUso from '@/pages/TerminosUso';
 import Cookies from '@/pages/Cookies';
+import DocumentacionMA from '@/pages/DocumentacionMA';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ function App() {
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/casos-exito" element={<CasosExito />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/documentacion-ma" element={<DocumentacionMA />} />
           
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/terminos-uso" element={<TerminosUso />} />
