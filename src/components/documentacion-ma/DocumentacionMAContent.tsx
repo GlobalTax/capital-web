@@ -35,7 +35,7 @@ const DocumentacionMAContent = () => {
           Nuestro método
         </h1>
         <p className="text-xl text-black leading-relaxed mb-8 max-w-3xl font-light">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          En <strong>Capittal</strong>, aplicamos una metodología integral que combina <strong>análisis riguroso</strong>, <strong>experiencia sectorial</strong> y <strong>enfoque personalizado</strong> para maximizar el valor en cada transacción de M&A.
         </p>
         <div className="flex items-center gap-4 text-sm text-black">
           <span>Last updated</span>
@@ -45,65 +45,65 @@ const DocumentacionMAContent = () => {
 
       {/* Rich Text Content */}
       <div className="prose prose-lg max-w-none">
-        <h2 className="text-3xl font-medium text-black mb-8">Setting Up Your Webflow Account</h2>
+        <h2 className="text-3xl font-medium text-black mb-8">Nuestro Enfoque Metodológico</h2>
         
         <p className="text-black mb-8 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Nuestro método se fundamenta en <strong>tres pilares esenciales</strong>: el <strong>análisis exhaustivo</strong> de cada oportunidad, la <strong>estructuración óptima</strong> de las operaciones y la <strong>ejecución impecable</strong> de cada fase del proceso.
         </p>
 
-        <h4 className="text-xl font-medium text-black mb-6">Create a Webflow Account</h4>
+        <h4 className="text-xl font-medium text-black mb-6">Fase de Análisis y Diagnóstico</h4>
         
         <p className="text-black mb-6 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Iniciamos cada proyecto con un <strong>diagnóstico profundo</strong> que nos permite identificar las <strong>oportunidades de valor</strong> y los <strong>riesgos potenciales</strong>. Esta fase incluye el análisis financiero, comercial y estratégico de la empresa.
         </p>
 
         <ol className="list-decimal list-inside mb-8 space-y-2 text-black ml-4">
-          <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-          <li>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</li>
+          <li><strong>Análisis financiero</strong>: Evaluación exhaustiva de estados financieros y proyecciones</li>
+          <li><strong>Due diligence comercial</strong>: Análisis del mercado, competencia y posicionamiento</li>
         </ol>
 
-        <h4 className="text-xl font-medium text-black mb-6">Explore the Template Marketplace</h4>
+        <h4 className="text-xl font-medium text-black mb-6">Estructuración de la Operación</h4>
         
         <p className="text-black mb-6 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Una vez completado el análisis, diseñamos la <strong>estructura óptima</strong> para la transacción, considerando aspectos <strong>fiscales</strong>, <strong>legales</strong> y <strong>financieros</strong> que maximicen el valor para todas las partes involucradas.
         </p>
 
         <ol className="list-decimal list-inside mb-12 space-y-2 text-black ml-4">
-          <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-          <li>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</li>
+          <li><strong>Optimización fiscal</strong>: Estructuras que minimizan la carga tributaria</li>
+          <li><strong>Negociación estratégica</strong>: Términos que protegen y maximizan valor</li>
         </ol>
 
-        <h3 className="text-2xl font-medium text-black mb-8">Lorem Ipsum: Benefits in Wireframing</h3>
+        <h3 className="text-2xl font-medium text-black mb-8">Metodología de Valoración</h3>
         
         <p className="text-black mb-8 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Aplicamos <strong>múltiples metodologías de valoración</strong> para obtener un rango de valor preciso y fundamentado. Utilizamos el <strong>método DCF</strong>, <strong>múltiplos comparables</strong> y <strong>transacciones precedentes</strong> para asegurar la objetividad del proceso.
         </p>
 
         <blockquote className="border-l-4 border-gray-200 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+          "La precisión en la <strong>valoración</strong> es fundamental para el éxito de cualquier operación de M&A. Nuestro enfoque multi-metodológico garantiza resultados <strong>objetivos y defendibles</strong>."
         </blockquote>
 
-        <h3 className="text-2xl font-medium text-black mb-8">Customizing Your Documentation</h3>
+        <h3 className="text-2xl font-medium text-black mb-8">Proceso de Ejecución</h3>
         
         <p className="text-black mb-8 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          La <strong>ejecución impecable</strong> distingue las operaciones exitosas. Coordinamos todos los aspectos del proceso, desde la <strong>preparación de documentación</strong> hasta el <strong>cierre de la transacción</strong>, asegurando que cada detalle esté perfectamente alineado.
         </p>
 
-        <h4 className="text-xl font-medium text-black mb-6">Replace Lorem Ipsum with Actual Content</h4>
+        <h4 className="text-xl font-medium text-black mb-6">Gestión del Proceso</h4>
         
         <p className="text-black mb-6 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Nuestro equipo gestiona <strong>cada fase del proceso</strong> con precisión milimétrica, manteniendo la <strong>confidencialidad</strong> y asegurando el <strong>cumplimiento regulatorio</strong> en todo momento.
         </p>
 
         <ol className="list-decimal list-inside mb-8 space-y-2 text-black ml-4">
-          <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-          <li>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</li>
+          <li><strong>Preparación de data room</strong>: Organización exhaustiva de información</li>
+          <li><strong>Coordinación con asesores</strong>: Gestión integral del equipo profesional</li>
         </ol>
 
-        <h5 className="text-lg font-medium text-black mb-6">Adjust Styling and Formatting</h5>
+        <h5 className="text-lg font-medium text-black mb-6">Seguimiento Post-Transacción</h5>
         
         <p className="text-black mb-12 leading-relaxed">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Nuestro compromiso se extiende más allá del cierre. Proporcionamos <strong>seguimiento continuo</strong> para asegurar la <strong>integración exitosa</strong> y la <strong>materialización de sinergias</strong> identificadas durante el proceso.
         </p>
       </div>
 
