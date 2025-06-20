@@ -2,9 +2,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import DocumentacionMASidebar from '@/components/documentacion-ma/DocumentacionMAS
-
-idebar';
+import DocumentacionMASidebar from '@/components/documentacion-ma/DocumentacionMASidebar';
 import VariablesContent from '@/components/documentacion-ma/content/VariablesContent';
 
 const Variables = () => {
