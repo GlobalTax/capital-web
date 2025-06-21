@@ -16,6 +16,7 @@ import PoliticaPrivacidad from '@/pages/PoliticaPrivacidad';
 import TerminosUso from '@/pages/TerminosUso';
 import Cookies from '@/pages/Cookies';
 import DocumentacionMA from '@/pages/DocumentacionMA';
+import ProgramaColaboradores from '@/pages/ProgramaColaboradores';
 
 // Documentación M&A pages
 import NuestroMetodo from '@/pages/documentacion-ma/NuestroMetodo';
@@ -45,6 +46,7 @@ function App() {
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/casos-exito" element={<CasosExito />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           
           {/* Documentación M&A routes */}
           <Route path="/documentacion-ma" element={<DocumentacionMA />} />
