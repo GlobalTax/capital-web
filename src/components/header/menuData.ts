@@ -43,6 +43,8 @@ export const menuData = {
     { label: 'Nosotros', href: '/nosotros' },
   ],
 
-  // Contacto eliminado del menú principal
-  navItems: [],
+  // Programa de Colaboradores ahora tiene su propio lugar en el menú principal
+  navItems: [
+    { label: 'Programa de Colaboradores', href: '/programa-colaboradores' },
+  ],
 };
