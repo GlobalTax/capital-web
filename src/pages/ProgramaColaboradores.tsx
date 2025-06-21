@@ -97,7 +97,7 @@ const ProgramaColaboradores = () => {
               Comenzar Ahora
             </Button>
             <Link to="/contacto">
-              <Button variant="outline" className="text-lg px-8 py-4 border-0.5 border-black">
+              <Button variant="outline" className="text-lg px-8 py-4 border-0.5 border-border">
                 Más Información
               </Button>
             </Link>

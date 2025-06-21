@@ -60,7 +60,7 @@ const Team = () => {
 
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-black"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-border"></div>
           </div>
         ) : teamMembers.length > 0 ? (
           <div className="relative">
@@ -80,7 +80,7 @@ const Team = () => {
               <CarouselContent className="-ml-2">
                 {teamMembers.map((member) => (
                   <CarouselItem key={member.id} className="pl-2 basis-auto">
-                    <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-gray-300">
+                    <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-border">
                       {member.image_url ? (
                         <img 
                           src={member.image_url} 
@@ -98,8 +98,8 @@ const Team = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -left-12" />
-              <CarouselNext className="bg-white text-black border-0.5 border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -right-12" />
+              <CarouselPrevious className="bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -left-12" />
+              <CarouselNext className="bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -right-12" />
             </Carousel>
           </div>
         ) : (
@@ -111,7 +111,7 @@ const Team = () => {
         <div className="text-center mt-20">
           <Link 
             to="/equipo"
-            className="inline-flex items-center px-6 py-3 bg-white text-black border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
+            className="inline-flex items-center px-6 py-3 bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
           >
             Ver Equipo Completo
           </Link>

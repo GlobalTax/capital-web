@@ -59,11 +59,11 @@ const WhyChooseCapittal = () => {
           {reasons.map((reason, index) => (
             <div 
               key={index} 
-              className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group"
+              className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group"
             >
               {/* Highlight */}
               <div className="flex items-center justify-between mb-6">
-                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-bold border border-gray-300">
+                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-bold border-0.5 border-border">
                   {reason.highlight}
                 </div>
               </div>

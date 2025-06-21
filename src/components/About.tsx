@@ -19,22 +19,22 @@ const About = () => {
 
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">70+</div>
             <div className="text-gray-600 font-medium text-base">Profesionales</div>
           </div>
           
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">15+</div>
             <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
           </div>
           
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">4</div>
             <div className="text-gray-600 font-medium text-base">Especialidades</div>
           </div>
           
-          <div className="text-center bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="text-center bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             <div className="text-3xl font-bold text-black mb-2">100%</div>
             <div className="text-gray-600 font-medium text-base">Dedicación</div>
           </div>
@@ -42,7 +42,7 @@ const About = () => {
 
         {/* Specialties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+          <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
             <h3 className="text-lg font-semibold text-black mb-2">
               Abogados
             </h3>
@@ -51,7 +51,7 @@ const About = () => {
             </p>
           </div>
 
-          <div className="bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+          <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
             <h3 className="text-lg font-semibold text-black mb-2">
               Asesores Fiscales
             </h3>
@@ -60,7 +60,7 @@ const About = () => {
             </p>
           </div>
 
-          <div className="bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+          <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
             <h3 className="text-lg font-semibold text-black mb-2">
               Asesores Laborales
             </h3>
@@ -69,7 +69,7 @@ const About = () => {
             </p>
           </div>
 
-          <div className="bg-white border-0.5 border-black rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+          <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
             <h3 className="text-lg font-semibold text-black mb-2">
               Economistas
             </h3>

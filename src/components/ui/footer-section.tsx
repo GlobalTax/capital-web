@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,7 +27,7 @@ function Footerdemo() {
   }, [isDarkMode])
 
   return (
-    <footer className="relative border-t-0.5 border-black bg-white text-black transition-colors duration-300">
+    <footer className="relative border-t-0.5 border-border bg-white text-black transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
@@ -37,7 +38,7 @@ function Footerdemo() {
               <Input
                 type="email"
                 placeholder="Introduce tu email"
-                className="pr-12 bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                className="pr-12 bg-white border-0.5 border-border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
               />
               <Button
                 type="submit"
@@ -99,7 +100,7 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <Facebook className="h-4 w-4" />
                       <span className="sr-only">Facebook</span>
                     </Button>
@@ -112,7 +113,7 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <Twitter className="h-4 w-4" />
                       <span className="sr-only">Twitter</span>
                     </Button>
@@ -125,7 +126,7 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <Instagram className="h-4 w-4" />
                       <span className="sr-only">Instagram</span>
                     </Button>
@@ -138,7 +139,7 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <Linkedin className="h-4 w-4" />
                       <span className="sr-only">LinkedIn</span>
                     </Button>
@@ -166,7 +167,7 @@ function Footerdemo() {
           </div>
         </div>
         
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t-0.5 border-black pt-8 text-center md:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t-0.5 border-border pt-8 text-center md:flex-row">
           <p className="text-[14px] text-black">
             © {new Date().getFullYear()} Capittal. Todos los derechos reservados.
           </p>

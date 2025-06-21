@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 const Hero = () => {
@@ -20,7 +21,7 @@ const Hero = () => {
             </p>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-gray-300">
+            <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-border">
               <div className="text-center">
                 <div className="text-2xl font-bold text-black mb-2">€1.0B+</div>
                 <div className="text-sm text-gray-600">Valor Transaccional</div>
@@ -36,9 +37,9 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <Button className="bg-white text-black border border-gray-300 rounded-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out text-base">Valorar mi empresa</Button>
+              <Button className="bg-white text-black border-0.5 border-border rounded-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out text-base">Valorar mi empresa</Button>
               
-              <Button variant="outline" className="bg-transparent border border-gray-300 px-12 py-6 font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm text-sm rounded-lg">
+              <Button variant="outline" className="bg-transparent border-0.5 border-border px-12 py-6 font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm text-sm rounded-lg">
                 Ver Casos de Éxito
               </Button>
             </div>
@@ -48,16 +49,16 @@ const Hero = () => {
           <div className="lg:col-span-5">
             <div className="relative">
               {/* Main Dashboard Card */}
-              <div className="bg-white rounded-lg border border-gray-300 shadow-lg overflow-hidden">
+              <div className="bg-white rounded-lg border-0.5 border-border shadow-lg overflow-hidden">
                 <div className="bg-gray-900 text-white p-6">
-                  <h3 className="text-lg font-semibold mb-2">Capittal Market </h3>
+                  <h3 className="text-lg font-semibold mb-2">Capittal Market </h3>
                   <p className="text-gray-300 text-sm">Análisis en tiempo real</p>
                 </div>
                 
                 {/* Market Data Table */}
                 <div className="p-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between py-3 border-b border-gray-300">
+                    <div className="flex items-center justify-between py-3 border-b border-border">
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <span className="font-medium text-gray-900">Tech Startup</span>
@@ -68,7 +69,7 @@ const Hero = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between py-3 border-b border-gray-300">
+                    <div className="flex items-center justify-between py-3 border-b border-border">
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span className="font-medium text-gray-900">Industrial Co.</span>
@@ -91,7 +92,7 @@ const Hero = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-6 pt-6 border-t border-gray-300">
+                  <div className="mt-6 pt-6 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Transacciones Q4</span>
                       <span className="font-bold text-gray-900">47 activas</span>
@@ -110,7 +111,7 @@ const Hero = () => {
                 </div>
               </div>
               
-              <div className="absolute -bottom-4 -left-4 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
+              <div className="absolute -bottom-4 -left-4 bg-white border-0.5 border-border rounded-lg p-4 shadow-lg">
                 <div className="flex items-center space-x-2">
                   <div>
                     <div className="font-bold text-gray-900">156</div>
