@@ -1,9 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, TrendingUp, Award } from 'lucide-react';
+import { useCache } from '@/hooks/useCache';
+import { globalCache } from '@/utils/cache';
 
 interface CaseStudy {
   id: string;
@@ -20,36 +22,34 @@ interface CaseStudy {
 }
 
 const CaseStudies = () => {
-  const [cases, setCases] = useState<CaseStudy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const fetchCaseStudies = React.useCallback(async (): Promise<CaseStudy[]> => {
+    const { data, error } = await supabase
+      .from('case_studies')
+      .select('*')
+      .eq('is_active', true)
+      .order('is_featured', { ascending: false })
+      .order('year', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(3);
 
-  useEffect(() => {
-    fetchCaseStudies();
+    if (error) {
+      console.error('Error fetching case studies:', error);
+      throw error;
+    }
+
+    return data || [];
   }, []);
 
-  const fetchCaseStudies = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('case_studies')
-        .select('*')
-        .eq('is_active', true)
-        .order('is_featured', { ascending: false })
-        .order('year', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      if (error) {
-        console.error('Error fetching case studies:', error);
-        return;
-      }
-
-      setCases(data || []);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { 
+    data: cases, 
+    isLoading, 
+    error 
+  } = useCache(
+    'case_studies_featured',
+    fetchCaseStudies,
+    globalCache,
+    10 * 60 * 1000 // 10 minutos de cache
+  );
 
   if (isLoading) {
     return (
@@ -84,7 +84,11 @@ const CaseStudies = () => {
           </p>
         </div>
 
-        {cases.length > 0 ? (
+        {error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600">Error al cargar los casos de éxito.</p>
+          </div>
+        ) : cases && cases.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {cases.map((case_) => (
               <Card key={case_.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">

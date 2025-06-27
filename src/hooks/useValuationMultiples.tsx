@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sectorMultiplesCache } from '@/utils/cache';
 
 interface ValuationMultiple {
   id: string;
@@ -24,6 +25,18 @@ export const useValuationMultiples = () => {
   const fetchMultiples = async () => {
     try {
       setIsLoading(true);
+      
+      // Intentar obtener del cache primero
+      const cacheKey = 'valuation_multiples';
+      const cachedData = sectorMultiplesCache.get<ValuationMultiple[]>(cacheKey);
+      
+      if (cachedData) {
+        setMultiples(cachedData);
+        setError(null);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('sector_valuation_multiples')
         .select('*')
@@ -36,7 +49,12 @@ export const useValuationMultiples = () => {
         return;
       }
 
-      setMultiples(data || []);
+      const multiplesData = data || [];
+      
+      // Guardar en cache
+      sectorMultiplesCache.set(cacheKey, multiplesData);
+      
+      setMultiples(multiplesData);
       setError(null);
     } catch (err) {
       console.error('Error:', err);

@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { supabase } from '@/integrations/supabase/client';
-import { useLazyData, useLazyLoad } from '@/hooks/useLazyLoad';
+import { useLazyLoad } from '@/hooks/useLazyLoad';
+import { useCache } from '@/hooks/useCache';
 import LazyImage from '@/components/LazyImage';
+import { globalCache } from '@/utils/cache';
 
 interface TeamMember {
   id: string;
@@ -43,7 +45,12 @@ const Team = () => {
     data: teamMembers, 
     isLoading, 
     error 
-  } = useLazyData(fetchTeamMembers, [isVisible]);
+  } = useCache(
+    'team_members',
+    fetchTeamMembers,
+    globalCache,
+    15 * 60 * 1000 // 15 minutos de cache
+  );
 
   return (
     <section ref={ref} id="equipo" className="py-20 bg-white">
@@ -66,7 +73,7 @@ const Team = () => {
           <div className="text-center py-12">
             <p className="text-red-600">Error al cargar el equipo: {error}</p>
           </div>
-        ) : teamMembers && teamMembers.length > 0 ? (
+        ) : teamMembers && teamMembers.length > 0 && isVisible ? (
           <div className="relative">
             <Carousel
               plugins={[

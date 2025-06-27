@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Quote } from 'lucide-react';
+import { useCache } from '@/hooks/useCache';
+import { globalCache } from '@/utils/cache';
 
 interface Testimonial {
   id: string;
@@ -19,36 +21,34 @@ interface Testimonial {
 }
 
 const Testimonials = () => {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const fetchTestimonials = React.useCallback(async (): Promise<Testimonial[]> => {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .select('*')
+      .eq('is_active', true)
+      .order('is_featured', { ascending: false })
+      .order('display_order')
+      .order('created_at', { ascending: false })
+      .limit(3);
 
-  useEffect(() => {
-    fetchTestimonials();
+    if (error) {
+      console.error('Error fetching testimonials:', error);
+      throw error;
+    }
+
+    return data || [];
   }, []);
 
-  const fetchTestimonials = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('testimonials')
-        .select('*')
-        .eq('is_active', true)
-        .order('is_featured', { ascending: false })
-        .order('display_order')
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      if (error) {
-        console.error('Error fetching testimonials:', error);
-        return;
-      }
-
-      setTestimonials(data || []);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { 
+    data: testimonials, 
+    isLoading, 
+    error 
+  } = useCache(
+    'testimonials_featured',
+    fetchTestimonials,
+    globalCache,
+    10 * 60 * 1000 // 10 minutos de cache
+  );
 
   if (isLoading) {
     return (
@@ -65,7 +65,7 @@ const Testimonials = () => {
     );
   }
 
-  if (testimonials.length === 0) {
+  if (error || !testimonials || testimonials.length === 0) {
     return null;
   }
 
