@@ -72,17 +72,18 @@ export const useFormValidation = <T extends Record<string, any>>(
     }));
   }, [data, validateField]);
 
-  // Obtener estado de validación de un campo
+  // Obtener estado de validación de un campo - corregido para coincidir con la interfaz esperada
   const getFieldState = useCallback((field: keyof T) => {
     const isTouched = touched.has(field);
-    const hasError = errors[field];
+    const errorMessage = errors[field];
+    const hasError = Boolean(errorMessage);
     const isValid = !hasError && isTouched;
     
     return {
       isTouched,
       hasError,
       isValid,
-      errorMessage: hasError
+      errorMessage
     };
   }, [touched, errors]);
 
