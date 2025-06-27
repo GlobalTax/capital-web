@@ -101,7 +101,7 @@ const MarketInsights = () => {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-orange-600 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Capittal Market
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
@@ -129,13 +129,13 @@ const MarketInsights = () => {
             insights.map((insight, index) => (
               <Card key={insight.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
                 <CardContent className="p-6">
-                  <div className="text-2xl font-bold text-orange-600 mb-1">
+                  <div className="text-2xl font-bold text-black mb-1">
                     {insight.metric_value}
                   </div>
                   <div className="text-gray-600 text-sm mb-2">
                     {insight.metric_label}
                   </div>
-                  <div className="text-sm font-medium text-orange-600 flex items-center justify-center">
+                  <div className="text-sm font-medium text-green-600 flex items-center justify-center">
                     <TrendingUp className="w-4 h-4 mr-1" />
                     +15% vs Q3
                   </div>
@@ -147,7 +147,7 @@ const MarketInsights = () => {
 
         {/* Market Intelligence CTA */}
         <div className="bg-white border-0.5 border-black rounded-lg shadow-sm p-8 text-center">
-          <h3 className="text-2xl font-bold text-orange-600 mb-4">
+          <h3 className="text-2xl font-bold text-black mb-4">
             Inteligencia de Mercado Capittal
           </h3>
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
@@ -157,7 +157,7 @@ const MarketInsights = () => {
           
           <div className="flex justify-center mb-8">
             <Button 
-              className="bg-orange-600 text-white border-0.5 border-orange-600 rounded-lg px-6 py-3 text-lg font-medium hover:bg-orange-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
+              className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
               onClick={() => window.open('https://capittalmarket.com', '_blank')}
             >
               Acceder a Capittal Market
@@ -167,7 +167,7 @@ const MarketInsights = () => {
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
             <div className="flex items-start space-x-3">
-              <BarChart3 className="w-6 h-6 text-orange-600 mt-1 flex-shrink-0" />
+              <BarChart3 className="w-6 h-6 text-black mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-black mb-2 text-base">Valoraciones en Tiempo Real</h4>
                 <p className="text-gray-600 text-sm leading-relaxed">
@@ -176,7 +176,7 @@ const MarketInsights = () => {
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <Database className="w-6 h-6 text-orange-600 mt-1 flex-shrink-0" />
+              <Database className="w-6 h-6 text-black mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-black mb-2 text-base">Base de Datos M&A</h4>
                 <p className="text-gray-600 text-sm leading-relaxed">
@@ -185,7 +185,7 @@ const MarketInsights = () => {
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <TrendingUp className="w-6 h-6 text-orange-600 mt-1 flex-shrink-0" />
+              <TrendingUp className="w-6 h-6 text-black mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-black mb-2 text-base">Analytics Avanzados</h4>
                 <p className="text-gray-600 text-sm leading-relaxed">

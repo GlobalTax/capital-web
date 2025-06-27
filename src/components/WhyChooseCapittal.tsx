@@ -40,11 +40,11 @@ const WhyChooseCapittal = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
             La Diferencia Capittal
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-orange-600 mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
             Por Qué Elegir Capittal
           </h2>
           
@@ -63,7 +63,7 @@ const WhyChooseCapittal = () => {
             >
               {/* Highlight */}
               <div className="flex items-center justify-between mb-6">
-                <div className="bg-orange-600 text-white px-3 py-1 rounded-lg text-sm font-bold border-0.5 border-border">
+                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-bold border-0.5 border-border">
                   {reason.highlight}
                 </div>
               </div>
