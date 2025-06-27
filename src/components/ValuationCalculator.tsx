@@ -12,6 +12,9 @@ const ValuationCalculator = () => {
     result, 
     isCalculating,
     showValidation,
+    errors,
+    getFieldState,
+    handleFieldBlur,
     updateField, 
     nextStep,
     prevStep,
@@ -62,6 +65,9 @@ const ValuationCalculator = () => {
             isCalculating={isCalculating}
             resetCalculator={resetCalculator}
             showValidation={showValidation}
+            getFieldState={getFieldState}
+            handleFieldBlur={handleFieldBlur}
+            errors={errors}
           />
 
           {currentStep < 4 && (

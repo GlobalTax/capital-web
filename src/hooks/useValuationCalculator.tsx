@@ -1,39 +1,54 @@
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyData, ValuationResult, SectorMultiple } from '@/types/valuation';
-import { createValidationState, validateStepData } from '@/utils/valuationValidation';
 import { calculateCompanyValuation } from '@/utils/valuationCalculation';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { createValidationRules, validateStepFields, getStepFields } from '@/utils/valuationValidationRules';
+
+const initialCompanyData: CompanyData = {
+  // Paso 1
+  contactName: '',
+  companyName: '',
+  cif: '',
+  email: '',
+  phone: '',
+  industry: '',
+  yearsOfOperation: 0,
+  employeeRange: '',
+  
+  // Paso 2
+  revenue: 0,
+  ebitda: 0,
+  netProfitMargin: 0,
+  growthRate: 0,
+  
+  // Paso 3
+  location: '',
+  ownershipParticipation: '',
+  competitiveAdvantage: ''
+};
 
 export const useValuationCalculator = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showValidation, setShowValidation] = useState(false);
   const [sectorMultiples, setSectorMultiples] = useState<SectorMultiple[]>([]);
-  const [companyData, setCompanyData] = useState<CompanyData>({
-    // Paso 1
-    contactName: '',
-    companyName: '',
-    cif: '',
-    email: '',
-    phone: '',
-    industry: '',
-    yearsOfOperation: 0,
-    employeeRange: '',
-    
-    // Paso 2
-    revenue: 0,
-    ebitda: 0,
-    netProfitMargin: 0,
-    growthRate: 0,
-    
-    // Paso 3
-    location: '',
-    ownershipParticipation: '',
-    competitiveAdvantage: ''
-  });
-
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+
+  // Usar el nuevo hook de validación
+  const validationRules = createValidationRules();
+  const {
+    data: companyData,
+    errors,
+    touched,
+    isValid: isFormValid,
+    updateField: updateFormField,
+    markFieldAsTouched,
+    getFieldState,
+    validateAll,
+    reset: resetForm
+  } = useFormValidation(initialCompanyData, validationRules);
 
   // Cargar múltiplos por sector desde Supabase
   useEffect(() => {
@@ -59,28 +74,30 @@ export const useValuationCalculator = () => {
     fetchSectorMultiples();
   }, []);
 
-  // Memoizar la validación de datos para evitar recálculos innecesarios
-  const validationState = useMemo(() => {
-    return createValidationState(companyData);
-  }, [companyData]);
+  // Validar si el paso actual es válido
+  const isCurrentStepValid = useCallback(() => {
+    return validateStepFields(currentStep, companyData, validationRules);
+  }, [currentStep, companyData, validationRules]);
 
-  // Memoizar si el paso actual es válido
-  const isCurrentStepValid = useMemo(() => {
-    return validateStepData(currentStep, validationState);
-  }, [currentStep, validationState]);
-
+  // Wrapper para updateField que mantiene compatibilidad
   const updateField = useCallback((field: keyof CompanyData, value: string | number) => {
-    setCompanyData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  }, []);
+    updateFormField(field, value);
+  }, [updateFormField]);
+
+  // Función para manejar blur y marcar campos como tocados
+  const handleFieldBlur = useCallback((field: keyof CompanyData) => {
+    markFieldAsTouched(field);
+  }, [markFieldAsTouched]);
 
   const nextStep = useCallback(() => {
     console.log('nextStep called, currentStep:', currentStep);
     
+    // Marcar todos los campos del paso actual como tocados
+    const stepFields = getStepFields(currentStep);
+    stepFields.forEach(field => markFieldAsTouched(field as keyof CompanyData));
+    
     // Validar el paso actual antes de avanzar
-    if (!isCurrentStepValid) {
+    if (!isCurrentStepValid()) {
       setShowValidation(true);
       return;
     }
@@ -91,7 +108,7 @@ export const useValuationCalculator = () => {
       console.log('Moving from step', prev, 'to step', newStep);
       return newStep;
     });
-  }, [currentStep, isCurrentStepValid]);
+  }, [currentStep, isCurrentStepValid, markFieldAsTouched]);
 
   const prevStep = useCallback(() => {
     console.log('prevStep called');
@@ -106,8 +123,8 @@ export const useValuationCalculator = () => {
   }, []);
 
   const validateStep = useCallback((step: number): boolean => {
-    return validateStepData(step, validationState);
-  }, [validationState]);
+    return validateStepFields(step, companyData, validationRules);
+  }, [companyData, validationRules]);
 
   const calculateValuation = useCallback(async () => {
     console.log('calculateValuation called');
@@ -126,27 +143,11 @@ export const useValuationCalculator = () => {
   }, [companyData, sectorMultiples]);
 
   const resetCalculator = useCallback(() => {
-    setCompanyData({
-      contactName: '',
-      companyName: '',
-      cif: '',
-      email: '',
-      phone: '',
-      industry: '',
-      yearsOfOperation: 0,
-      employeeRange: '',
-      revenue: 0,
-      ebitda: 0,
-      netProfitMargin: 0,
-      growthRate: 0,
-      location: '',
-      ownershipParticipation: '',
-      competitiveAdvantage: ''
-    });
+    resetForm();
     setResult(null);
     setCurrentStep(1);
     setShowValidation(false);
-  }, []);
+  }, [resetForm]);
 
   return {
     currentStep,
@@ -155,9 +156,13 @@ export const useValuationCalculator = () => {
     isCalculating,
     showValidation,
     sectorMultiples,
-    validationState,
-    isCurrentStepValid,
+    errors,
+    touched,
+    isCurrentStepValid: isCurrentStepValid(),
+    isFormValid,
     updateField,
+    handleFieldBlur,
+    getFieldState,
     nextStep,
     prevStep,
     goToStep,

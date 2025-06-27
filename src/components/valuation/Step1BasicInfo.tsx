@@ -1,90 +1,73 @@
 
 import React from 'react';
-import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone, formatSpanishPhone } from '@/utils/validationUtils';
+import { formatSpanishPhone } from '@/utils/validationUtils';
+import { validateCIF } from '@/utils/valuationValidation';
 import { Check } from 'lucide-react';
 
 interface Step1Props {
   companyData: any;
   updateField: (field: string, value: string | number) => void;
   showValidation?: boolean;
+  getFieldState?: (field: string) => {
+    isTouched: boolean;
+    hasError: boolean;
+    isValid: boolean;
+    errorMessage?: string;
+  };
+  handleFieldBlur?: (field: string) => void;
+  errors?: Record<string, string>;
 }
 
-// Función para validar CIF español
-const validateCIF = (cif: string): boolean => {
-  if (!cif || cif.length !== 9) return false;
-  
-  const cifRegex = /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/;
-  if (!cifRegex.test(cif.toUpperCase())) return false;
-  
-  const letter = cif.charAt(0).toUpperCase();
-  const numbers = cif.substring(1, 8);
-  const control = cif.charAt(8).toUpperCase();
-  
-  // Calcular dígito de control
-  let sum = 0;
-  for (let i = 0; i < numbers.length; i++) {
-    let digit = parseInt(numbers.charAt(i));
-    if (i % 2 === 1) { // posiciones pares (índice impar)
-      sum += digit;
-    } else { // posiciones impares (índice par)
-      digit *= 2;
-      sum += digit > 9 ? digit - 9 : digit;
-    }
-  }
-  
-  const controlNumber = (10 - (sum % 10)) % 10;
-  const controlLetter = 'JABCDEFGHI'.charAt(controlNumber);
-  
-  // Verificar según el tipo de organización
-  const numberControl = ['A', 'B', 'E', 'H'].includes(letter);
-  const letterControl = ['K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'W'].includes(letter);
-  
-  if (numberControl) {
-    return control === controlNumber.toString();
-  } else if (letterControl) {
-    return control === controlLetter;
-  } else {
-    return control === controlNumber.toString() || control === controlLetter;
-  }
-};
-
-const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showValidation = false }) => {
-  const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
-
-  const handleBlur = (fieldName: string) => {
-    setTouchedFields(prev => new Set(prev).add(fieldName));
-  };
-
+const Step1BasicInfo: React.FC<Step1Props> = ({ 
+  companyData, 
+  updateField, 
+  showValidation = false,
+  getFieldState,
+  handleFieldBlur,
+  errors = {}
+}) => {
   const handlePhoneChange = (value: string) => {
     const formattedPhone = formatSpanishPhone(value);
     updateField('phone', formattedPhone);
   };
 
-  const contactNameValidation = validateContactName(companyData.contactName);
-  const companyNameValidation = validateCompanyName(companyData.companyName);
-  const emailValidation = validateEmail(companyData.email);
-  const phoneValidation = validateSpanishPhone(companyData.phone);
-  const cifValid = Boolean(companyData.cif) && validateCIF(companyData.cif);
-
-  const getFieldClassName = (isValid: boolean, hasValue: boolean, fieldName: string) => {
-    const isTouched = touchedFields.has(fieldName);
-    
-    if (!showValidation && !isTouched) {
+  const getFieldClassName = (fieldName: string, hasValue: boolean) => {
+    if (!getFieldState) {
+      // Fallback al comportamiento anterior si no hay getFieldState
       return "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300";
     }
     
-    if (isValid && hasValue && (isTouched || showValidation)) {
+    const state = getFieldState(fieldName);
+    
+    if (state.isValid && hasValue) {
       return "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 border-green-500 pr-10";
-    } else if (!isValid && (showValidation || (isTouched && hasValue))) {
+    } else if (state.hasError && (showValidation || state.isTouched)) {
       return "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 border-red-500";
     }
     
     return "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300";
   };
 
-  const shouldShowCheckIcon = (isValid: boolean, hasValue: boolean, fieldName: string) => {
-    const isTouched = touchedFields.has(fieldName);
-    return isValid && hasValue && (isTouched || showValidation);
+  const shouldShowCheckIcon = (fieldName: string, hasValue: boolean) => {
+    if (!getFieldState) return false;
+    const state = getFieldState(fieldName);
+    return state.isValid && hasValue;
+  };
+
+  const shouldShowError = (fieldName: string) => {
+    if (!getFieldState) {
+      return showValidation && errors[fieldName];
+    }
+    const state = getFieldState(fieldName);
+    return state.hasError && (showValidation || state.isTouched);
+  };
+
+  const getErrorMessage = (fieldName: string) => {
+    if (!getFieldState) {
+      return errors[fieldName];
+    }
+    const state = getFieldState(fieldName);
+    return state.errorMessage;
   };
 
   return (
@@ -103,15 +86,15 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             autoComplete="given-name"
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
-            onBlur={() => handleBlur('contactName')}
-            className={getFieldClassName(contactNameValidation.isValid, Boolean(companyData.contactName), 'contactName')}
+            onBlur={() => handleFieldBlur?.('contactName')}
+            className={getFieldClassName('contactName', Boolean(companyData.contactName))}
             placeholder="Ingrese su nombre completo"
           />
-          {shouldShowCheckIcon(contactNameValidation.isValid, Boolean(companyData.contactName), 'contactName') && (
+          {shouldShowCheckIcon('contactName', Boolean(companyData.contactName)) && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !contactNameValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{contactNameValidation.message}</p>
+          {shouldShowError('contactName') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('contactName')}</p>
           )}
         </div>
 
@@ -126,21 +109,21 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             autoComplete="organization"
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
-            onBlur={() => handleBlur('companyName')}
-            className={getFieldClassName(companyNameValidation.isValid, Boolean(companyData.companyName), 'companyName')}
+            onBlur={() => handleFieldBlur?.('companyName')}
+            className={getFieldClassName('companyName', Boolean(companyData.companyName))}
             placeholder="Ingrese el nombre de su empresa"
           />
-          {shouldShowCheckIcon(companyNameValidation.isValid, Boolean(companyData.companyName), 'companyName') && (
+          {shouldShowCheckIcon('companyName', Boolean(companyData.companyName)) && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !companyNameValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{companyNameValidation.message}</p>
+          {shouldShowError('companyName') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('companyName')}</p>
           )}
         </div>
 
         <div className="relative">
           <label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
-            CIF *
+            CIF
           </label>
           <input
             type="text"
@@ -149,16 +132,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             autoComplete="off"
             value={companyData.cif}
             onChange={(e) => updateField('cif', e.target.value.toUpperCase())}
-            onBlur={() => handleBlur('cif')}
-            className={getFieldClassName(cifValid, Boolean(companyData.cif), 'cif')}
+            onBlur={() => handleFieldBlur?.('cif')}
+            className={getFieldClassName('cif', Boolean(companyData.cif))}
             placeholder="A12345674"
             maxLength={9}
           />
-          {shouldShowCheckIcon(cifValid, Boolean(companyData.cif), 'cif') && (
+          {shouldShowCheckIcon('cif', Boolean(companyData.cif)) && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !cifValid && (
-            <p className="mt-1 text-sm text-red-600">Por favor, ingrese un CIF válido</p>
+          {shouldShowError('cif') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('cif')}</p>
           )}
         </div>
 
@@ -173,15 +156,15 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             autoComplete="email"
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
-            onBlur={() => handleBlur('email')}
-            className={getFieldClassName(emailValidation.isValid, Boolean(companyData.email), 'email')}
+            onBlur={() => handleFieldBlur?.('email')}
+            className={getFieldClassName('email', Boolean(companyData.email))}
             placeholder="empresa@ejemplo.com"
           />
-          {shouldShowCheckIcon(emailValidation.isValid, Boolean(companyData.email), 'email') && (
+          {shouldShowCheckIcon('email', Boolean(companyData.email)) && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !emailValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{emailValidation.message}</p>
+          {shouldShowError('email') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('email')}</p>
           )}
         </div>
 
@@ -196,16 +179,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             autoComplete="tel"
             value={companyData.phone}
             onChange={(e) => handlePhoneChange(e.target.value)}
-            onBlur={() => handleBlur('phone')}
-            className={getFieldClassName(phoneValidation.isValid, Boolean(companyData.phone), 'phone')}
+            onBlur={() => handleFieldBlur?.('phone')}
+            className={getFieldClassName('phone', Boolean(companyData.phone))}
             placeholder="+34 123 456 789"
             maxLength={15}
           />
-          {shouldShowCheckIcon(phoneValidation.isValid, Boolean(companyData.phone), 'phone') && (
+          {shouldShowCheckIcon('phone', Boolean(companyData.phone)) && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !phoneValidation.isValid && (
-            <p className="mt-1 text-sm text-red-600">{phoneValidation.message}</p>
+          {shouldShowError('phone') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('phone')}</p>
           )}
         </div>
 
@@ -220,9 +203,9 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             value={companyData.industry}
             onChange={(e) => {
               updateField('industry', e.target.value);
-              handleBlur('industry');
+              handleFieldBlur?.('industry');
             }}
-            className={getFieldClassName(Boolean(companyData.industry), Boolean(companyData.industry), 'industry')}
+            className={getFieldClassName('industry', Boolean(companyData.industry))}
           >
             <option value="">Seleccione un sector</option>
             <option value="tecnologia">Tecnología</option>
@@ -240,11 +223,11 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             <option value="construccion">Construcción</option>
             <option value="otro">Otro</option>
           </select>
-          {shouldShowCheckIcon(Boolean(companyData.industry), Boolean(companyData.industry), 'industry') && (
+          {shouldShowCheckIcon('industry', Boolean(companyData.industry)) && (
             <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
           )}
-          {showValidation && !companyData.industry && (
-            <p className="mt-1 text-sm text-red-600">El sector es obligatorio</p>
+          {shouldShowError('industry') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('industry')}</p>
           )}
         </div>
 
@@ -259,16 +242,16 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             autoComplete="off"
             value={companyData.yearsOfOperation || ''}
             onChange={(e) => updateField('yearsOfOperation', parseInt(e.target.value) || 0)}
-            onBlur={() => handleBlur('yearsOfOperation')}
-            className={getFieldClassName(Boolean(companyData.yearsOfOperation > 0), Boolean(companyData.yearsOfOperation), 'yearsOfOperation')}
+            onBlur={() => handleFieldBlur?.('yearsOfOperation')}
+            className={getFieldClassName('yearsOfOperation', Boolean(companyData.yearsOfOperation))}
             placeholder="5"
             min="1"
           />
-          {shouldShowCheckIcon(Boolean(companyData.yearsOfOperation > 0), Boolean(companyData.yearsOfOperation), 'yearsOfOperation') && (
+          {shouldShowCheckIcon('yearsOfOperation', Boolean(companyData.yearsOfOperation > 0)) && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          {showValidation && !(companyData.yearsOfOperation > 0) && (
-            <p className="mt-1 text-sm text-red-600">Los años de funcionamiento son obligatorios</p>
+          {shouldShowError('yearsOfOperation') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('yearsOfOperation')}</p>
           )}
         </div>
 
@@ -283,9 +266,9 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             value={companyData.employeeRange}
             onChange={(e) => {
               updateField('employeeRange', e.target.value);
-              handleBlur('employeeRange');
+              handleFieldBlur?.('employeeRange');
             }}
-            className={getFieldClassName(Boolean(companyData.employeeRange), Boolean(companyData.employeeRange), 'employeeRange')}
+            className={getFieldClassName('employeeRange', Boolean(companyData.employeeRange))}
           >
             <option value="">Seleccione un rango</option>
             <option value="2-5">2-5 empleados</option>
@@ -295,11 +278,11 @@ const Step1BasicInfo: React.FC<Step1Props> = ({ companyData, updateField, showVa
             <option value="250-499">250-499 empleados</option>
             <option value="500+">500+ empleados</option>
           </select>
-          {shouldShowCheckIcon(Boolean(companyData.employeeRange), Boolean(companyData.employeeRange), 'employeeRange') && (
+          {shouldShowCheckIcon('employeeRange', Boolean(companyData.employeeRange)) && (
             <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
           )}
-          {showValidation && !companyData.employeeRange && (
-            <p className="mt-1 text-sm text-red-600">El rango de empleados es obligatorio</p>
+          {shouldShowError('employeeRange') && (
+            <p className="mt-1 text-sm text-red-600">{getErrorMessage('employeeRange')}</p>
           )}
         </div>
       </div>

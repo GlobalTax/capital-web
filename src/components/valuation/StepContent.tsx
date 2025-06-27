@@ -13,6 +13,14 @@ interface StepContentProps {
   isCalculating: boolean;
   resetCalculator: () => void;
   showValidation?: boolean;
+  getFieldState?: (field: string) => {
+    isTouched: boolean;
+    hasError: boolean;
+    isValid: boolean;
+    errorMessage?: string;
+  };
+  handleFieldBlur?: (field: string) => void;
+  errors?: Record<string, string>;
 }
 
 const StepContent: React.FC<StepContentProps> = ({
@@ -22,7 +30,10 @@ const StepContent: React.FC<StepContentProps> = ({
   result,
   isCalculating,
   resetCalculator,
-  showValidation = false
+  showValidation = false,
+  getFieldState,
+  handleFieldBlur,
+  errors
 }) => {
   switch (currentStep) {
     case 1:
@@ -31,6 +42,9 @@ const StepContent: React.FC<StepContentProps> = ({
           companyData={companyData} 
           updateField={updateField}
           showValidation={showValidation}
+          getFieldState={getFieldState}
+          handleFieldBlur={handleFieldBlur}
+          errors={errors}
         />
       );
     case 2:
