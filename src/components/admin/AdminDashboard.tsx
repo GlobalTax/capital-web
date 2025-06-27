@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import CaseStudiesManager from './CaseStudiesManager';
 import OperationsManager from './OperationsManager';
 import MultiplesManager from './MultiplesManager';
@@ -19,6 +20,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [isAdminSetup, setIsAdminSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const { signOut } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,12 +32,10 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     setDebugInfo('Iniciando configuración de admin...');
     
     try {
-      // Ejecutar debug primero
       console.log('=== INICIANDO DEBUG DE ADMIN ===');
       await debugAdminStatus();
       console.log('=== FIN DEBUG ===');
       
-      // Esperar un poco para que termine el debug
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const isAdmin = await ensureCurrentUserIsAdmin();
@@ -72,7 +72,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       onLogout();
     } catch (error) {
       console.error('Error al cerrar sesión:', error);

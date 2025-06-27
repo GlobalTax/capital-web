@@ -1,41 +1,20 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
+import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import AdminAuth from '@/components/admin/AdminAuth';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 
 const Admin = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check for existing session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    };
-
-    checkSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, isLoading } = useAuth();
 
   const handleAuthSuccess = () => {
-    // The auth state change listener will handle setting the user
+    // El contexto maneja automáticamente los cambios de estado
+    console.log('Auth success - context will handle state updates');
   };
 
   const handleLogout = () => {
-    setUser(null);
+    // El contexto maneja automáticamente el logout
+    console.log('Logout handled by context');
   };
 
   if (isLoading) {

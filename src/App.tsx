@@ -1,7 +1,8 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/contexts/AuthContext';
+import AdminAccess from '@/components/admin/AdminAccess';
 import Index from '@/pages/Index';
 import Nosotros from '@/pages/Nosotros';
 import Equipo from '@/pages/Equipo';
@@ -35,39 +36,44 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/nosotros" element={<Nosotros />} />
-          <Route path="/equipo" element={<Equipo />} />
-          <Route path="/contacto" element={<Contacto />} />
-          <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
-          <Route path="/venta-empresas" element={<VentaEmpresas />} />
-          <Route path="/compra-empresas" element={<CompraEmpresas />} />
-          <Route path="/casos-exito" element={<CasosExito />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
-          
-          {/* Documentación M&A routes */}
-          <Route path="/documentacion-ma" element={<DocumentacionMA />} />
-          <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
-          <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
-          <Route path="/documentacion-ma/resultados" element={<Resultados />} />
-          <Route path="/documentacion-ma/fase-1" element={<Fase1 />} />
-          <Route path="/documentacion-ma/fase-2-lucha" element={<Fase2Lucha />} />
-          <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
-          <Route path="/documentacion-ma/customization" element={<Customization />} />
-          <Route path="/documentacion-ma/typography" element={<Typography />} />
-          <Route path="/documentacion-ma/spacing" element={<Spacing />} />
-          <Route path="/documentacion-ma/variables" element={<Variables />} />
-          
-          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-          <Route path="/terminos-uso" element={<TerminosUso />} />
-          <Route path="/cookies" element={<Cookies />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-      <Toaster />
+      <AuthProvider>
+        <Router>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/nosotros" element={<Nosotros />} />
+              <Route path="/equipo" element={<Equipo />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
+              <Route path="/venta-empresas" element={<VentaEmpresas />} />
+              <Route path="/compra-empresas" element={<CompraEmpresas />} />
+              <Route path="/casos-exito" element={<CasosExito />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
+              
+              {/* Documentación M&A routes */}
+              <Route path="/documentacion-ma" element={<DocumentacionMA />} />
+              <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
+              <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
+              <Route path="/documentacion-ma/resultados" element={<Resultados />} />
+              <Route path="/documentacion-ma/fase-1" element={<Fase1 />} />
+              <Route path="/documentacion-ma/fase-2-lucha" element={<Fase2Lucha />} />
+              <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
+              <Route path="/documentacion-ma/customization" element={<Customization />} />
+              <Route path="/documentacion-ma/typography" element={<Typography />} />
+              <Route path="/documentacion-ma/spacing" element={<Spacing />} />
+              <Route path="/documentacion-ma/variables" element={<Variables />} />
+              
+              <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+              <Route path="/terminos-uso" element={<TerminosUso />} />
+              <Route path="/cookies" element={<Cookies />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <AdminAccess />
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
