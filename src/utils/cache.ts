@@ -10,7 +10,7 @@ interface CacheOptions {
   maxSize?: number; // Maximum number of entries
 }
 
-class Cache {
+export class Cache {
   private cache = new Map<string, CacheEntry<any>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes
   private maxSize = 100;
