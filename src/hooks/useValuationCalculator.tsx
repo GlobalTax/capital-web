@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone } from '@/utils/validationUtils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -139,6 +139,46 @@ export const useValuationCalculator = () => {
     fetchSectorMultiples();
   }, []);
 
+  // Memoizar la validación de datos para evitar recálculos innecesarios
+  const validationState = useMemo(() => {
+    return {
+      contactName: validateContactName(companyData.contactName),
+      companyName: validateCompanyName(companyData.companyName),
+      email: validateEmail(companyData.email),
+      phone: validateSpanishPhone(companyData.phone),
+      cif: companyData.cif ? { isValid: validateCIF(companyData.cif), message: validateCIF(companyData.cif) ? undefined : 'El CIF no es válido' } : { isValid: true },
+      industry: { isValid: Boolean(companyData.industry), message: companyData.industry ? undefined : 'El sector es obligatorio' },
+      employeeRange: { isValid: Boolean(companyData.employeeRange), message: companyData.employeeRange ? undefined : 'El rango de empleados es obligatorio' },
+      revenue: { isValid: companyData.revenue > 0, message: companyData.revenue > 0 ? undefined : 'Los ingresos deben ser mayores a 0' },
+      ebitda: { isValid: companyData.ebitda > 0, message: companyData.ebitda > 0 ? undefined : 'El EBITDA debe ser mayor a 0' },
+      location: { isValid: Boolean(companyData.location), message: companyData.location ? undefined : 'La ubicación es obligatoria' },
+      ownershipParticipation: { isValid: Boolean(companyData.ownershipParticipation), message: companyData.ownershipParticipation ? undefined : 'El porcentaje de participación es obligatorio' },
+      competitiveAdvantage: { isValid: Boolean(companyData.competitiveAdvantage), message: companyData.competitiveAdvantage ? undefined : 'La ventaja competitiva es obligatoria' }
+    };
+  }, [companyData]);
+
+  // Memoizar si el paso actual es válido
+  const isCurrentStepValid = useMemo(() => {
+    switch (currentStep) {
+      case 1:
+        return validationState.contactName.isValid && 
+               validationState.companyName.isValid && 
+               validationState.email.isValid &&
+               validationState.phone.isValid &&
+               validationState.industry.isValid &&
+               validationState.employeeRange.isValid;
+      case 2:
+        return validationState.revenue.isValid && 
+               validationState.ebitda.isValid;
+      case 3:
+        return validationState.location.isValid && 
+               validationState.ownershipParticipation.isValid && 
+               validationState.competitiveAdvantage.isValid;
+      default:
+        return true;
+    }
+  }, [currentStep, validationState]);
+
   const updateField = useCallback((field: keyof CompanyData, value: string | number) => {
     setCompanyData(prev => ({
       ...prev,
@@ -148,14 +188,20 @@ export const useValuationCalculator = () => {
 
   const nextStep = useCallback(() => {
     console.log('nextStep called, currentStep:', currentStep);
-    // Siempre permitir avanzar sin validación
+    
+    // Validar el paso actual antes de avanzar
+    if (!isCurrentStepValid) {
+      setShowValidation(true);
+      return;
+    }
+    
     setShowValidation(false);
     setCurrentStep(prev => {
       const newStep = Math.min(prev + 1, 4);
       console.log('Moving from step', prev, 'to step', newStep);
       return newStep;
     });
-  }, [currentStep]);
+  }, [currentStep, isCurrentStepValid]);
 
   const prevStep = useCallback(() => {
     console.log('prevStep called');
@@ -170,9 +216,25 @@ export const useValuationCalculator = () => {
   }, []);
 
   const validateStep = useCallback((step: number): boolean => {
-    // Siempre devolver true para permitir navegación libre
-    return true;
-  }, []);
+    switch (step) {
+      case 1:
+        return validationState.contactName.isValid && 
+               validationState.companyName.isValid && 
+               validationState.email.isValid &&
+               validationState.phone.isValid &&
+               validationState.industry.isValid &&
+               validationState.employeeRange.isValid;
+      case 2:
+        return validationState.revenue.isValid && 
+               validationState.ebitda.isValid;
+      case 3:
+        return validationState.location.isValid && 
+               validationState.ownershipParticipation.isValid && 
+               validationState.competitiveAdvantage.isValid;
+      default:
+        return true;
+    }
+  }, [validationState]);
 
   const calculateValuation = useCallback(async () => {
     console.log('calculateValuation called');
@@ -258,6 +320,8 @@ export const useValuationCalculator = () => {
     isCalculating,
     showValidation,
     sectorMultiples,
+    validationState,
+    isCurrentStepValid,
     updateField,
     nextStep,
     prevStep,
