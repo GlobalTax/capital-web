@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Database, BarChart3 } from 'lucide-react';
-
 interface Statistic {
   id: string;
   metric_key: string;
@@ -13,92 +11,76 @@ interface Statistic {
   display_order: number;
   is_active: boolean;
 }
-
 const MarketInsights = () => {
   const [insights, setInsights] = useState<Statistic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     fetchInsights();
   }, []);
-
   const fetchInsights = async () => {
     try {
-      const { data, error } = await supabase
-        .from('key_statistics')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order')
-        .limit(3);
-
+      const {
+        data,
+        error
+      } = await supabase.from('key_statistics').select('*').eq('is_active', true).order('display_order').limit(3);
       if (error) {
         console.error('Error fetching statistics:', error);
         // Use fallback data if database fetch fails
-        setInsights([
-          {
-            id: '1',
-            metric_key: 'volumen_transaccional',
-            metric_value: '€300M',
-            metric_label: 'Volumen Transaccional Q4',
-            display_order: 1,
-            is_active: true
-          },
-          {
-            id: '2',
-            metric_key: 'transacciones_activas',
-            metric_value: '47',
-            metric_label: 'Transacciones Activas',
-            display_order: 2,
-            is_active: true
-          },
-          {
-            id: '3',
-            metric_key: 'empresas_valoradas',
-            metric_value: '156',
-            metric_label: 'Empresas Valoradas',
-            display_order: 3,
-            is_active: true
-          }
-        ]);
-      } else {
-        setInsights(data || []);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      // Use fallback data
-      setInsights([
-        {
+        setInsights([{
           id: '1',
           metric_key: 'volumen_transaccional',
           metric_value: '€300M',
           metric_label: 'Volumen Transaccional Q4',
           display_order: 1,
           is_active: true
-        },
-        {
+        }, {
           id: '2',
           metric_key: 'transacciones_activas',
           metric_value: '47',
           metric_label: 'Transacciones Activas',
           display_order: 2,
           is_active: true
-        },
-        {
+        }, {
           id: '3',
           metric_key: 'empresas_valoradas',
           metric_value: '156',
           metric_label: 'Empresas Valoradas',
           display_order: 3,
           is_active: true
-        }
-      ]);
+        }]);
+      } else {
+        setInsights(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      // Use fallback data
+      setInsights([{
+        id: '1',
+        metric_key: 'volumen_transaccional',
+        metric_value: '€300M',
+        metric_label: 'Volumen Transaccional Q4',
+        display_order: 1,
+        is_active: true
+      }, {
+        id: '2',
+        metric_key: 'transacciones_activas',
+        metric_value: '47',
+        metric_label: 'Transacciones Activas',
+        display_order: 2,
+        is_active: true
+      }, {
+        id: '3',
+        metric_key: 'empresas_valoradas',
+        metric_value: '156',
+        metric_label: 'Empresas Valoradas',
+        display_order: 3,
+        is_active: true
+      }]);
     } finally {
       setIsLoading(false);
     }
   };
-
-  return (
-    <section className="py-20 bg-gray-50">
+  return <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
@@ -112,10 +94,9 @@ const MarketInsights = () => {
 
         {/* Market Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {isLoading ? (
-            // Loading skeleton
-            [...Array(3)].map((_, index) => (
-              <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm text-center">
+          {isLoading ?
+        // Loading skeleton
+        [...Array(3)].map((_, index) => <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm text-center">
                 <CardContent className="p-6">
                   <div className="animate-pulse">
                     <div className="h-8 bg-gray-200 rounded w-20 mx-auto mb-2"></div>
@@ -123,11 +104,7 @@ const MarketInsights = () => {
                     <div className="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
                   </div>
                 </CardContent>
-              </Card>
-            ))
-          ) : (
-            insights.map((insight, index) => (
-              <Card key={insight.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+              </Card>) : insights.map((insight, index) => <Card key={insight.id} className="bg-white border-0.2 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
                 <CardContent className="p-6">
                   <div className="text-2xl font-bold text-black mb-1">
                     {insight.metric_value}
@@ -140,9 +117,7 @@ const MarketInsights = () => {
                     +15% vs Q3
                   </div>
                 </CardContent>
-              </Card>
-            ))
-          )}
+              </Card>)}
         </div>
 
         {/* Market Intelligence CTA */}
@@ -156,10 +131,7 @@ const MarketInsights = () => {
           </p>
           
           <div className="flex justify-center mb-8">
-            <Button 
-              className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out"
-              onClick={() => window.open('https://capittalmarket.com', '_blank')}
-            >
+            <Button className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
               Acceder a Capittal Market
             </Button>
           </div>
@@ -196,8 +168,6 @@ const MarketInsights = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default MarketInsights;
