@@ -47,13 +47,13 @@ const BlogSection = () => {
     <section className="py-32">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-1">
-          <h1 className="text-2xl font-semibold md:text-4xl text-black">
+          <h1 className="text-2xl font-semibold md:text-4xl text-orange-600">
             Artículos Especializados
           </h1>
           <Link to="/blog">
             <Button
               variant="outline"
-              className="md:h-10 md:px-4 md:py-2 bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
+              className="md:h-10 md:px-4 md:py-2 bg-white text-orange-600 border-0.5 border-orange-600 rounded-lg hover:bg-orange-600 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
               size="sm"
             >
               Ver Todos los Artículos
@@ -63,7 +63,7 @@ const BlogSection = () => {
         <div className="grid grid-cols-1 gap-16 md:grid-cols-2 lg:grid-cols-4 lg:gap-10">
           {data.map((item) => (
             <Link key={item.id} to={item.link} className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium text-orange-600">
                 {item.category}
               </span>
               <h3 className="mb-1 text-lg font-semibold text-black">{item.title}</h3>

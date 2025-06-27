@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -44,6 +45,10 @@
     --sidebar-accent-foreground: 240 6% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217 91% 60%;
+
+    /* Orange accent color */
+    --orange: 25 95% 53%;
+    --orange-foreground: 0 0% 100%;
   }
 }
 
@@ -76,6 +81,18 @@
   .capittal-input {
     @apply bg-white border-0.5 border-border rounded-lg px-4 py-3 
            focus:outline-none focus:ring-2 focus:ring-black/20;
+  }
+
+  .orange-accent {
+    @apply text-orange-600;
+  }
+
+  .orange-bg-accent {
+    @apply bg-orange-600 text-white;
+  }
+
+  .orange-border-accent {
+    @apply border-orange-600;
   }
 
   @keyframes fadeInUp {
