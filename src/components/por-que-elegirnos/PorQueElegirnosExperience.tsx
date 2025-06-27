@@ -26,7 +26,7 @@ const PorQueElegirnosExperience = () => {
       icon: TrendingUp,
       title: "Resultados Probados",
       description: "Track record consistente con múltiplos superiores a la media del mercado.",
-      color: "from-orange-500 to-orange-600"
+      color: "from-black to-gray-800"
     }
   ];
 

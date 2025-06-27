@@ -36,7 +36,7 @@ const PorQueElegirnosResults = () => {
       prefix: "",
       label: "Tasa de Éxito",
       description: "Operaciones completadas",
-      color: "from-orange-500 to-orange-600"
+      color: "from-black to-gray-800"
     }
   ];
 

@@ -6,7 +6,7 @@ const About = () => {
     <section id="nosotros" className="py-32">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-orange-600 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Gestión Integral de Procesos de Compraventa
           </h2>
           
@@ -20,29 +20,29 @@ const About = () => {
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20">
           <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">70+</div>
+            <div className="text-3xl font-bold text-black mb-2">70+</div>
             <div className="text-gray-600 font-medium text-base">Profesionales</div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">15+</div>
+            <div className="text-3xl font-bold text-black mb-2">15+</div>
             <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">4</div>
+            <div className="text-3xl font-bold text-black mb-2">4</div>
             <div className="text-gray-600 font-medium text-base">Especialidades</div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">100%</div>
+            <div className="text-3xl font-bold text-black mb-2">100%</div>
             <div className="text-gray-600 font-medium text-base">Dedicación</div>
           </div>
         </div>
 
         {/* Ecosystem Section */}
         <div className="mb-20 text-center">
-          <h3 className="text-xl font-bold text-orange-600 mb-6">
+          <h3 className="text-xl font-bold text-black mb-6">
             Ecosistema Integral del Grupo Navarro
           </h3>
           <p className="text-gray-600 max-w-4xl mx-auto leading-relaxed">
@@ -55,7 +55,7 @@ const About = () => {
         {/* Specialties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-orange-600 mb-3">
+            <h3 className="text-lg font-semibold text-black mb-3">
               Abogados
             </h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -64,7 +64,7 @@ const About = () => {
           </div>
 
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-orange-600 mb-3">
+            <h3 className="text-lg font-semibold text-black mb-3">
               Asesores Fiscales
             </h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -73,7 +73,7 @@ const About = () => {
           </div>
 
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-orange-600 mb-3">
+            <h3 className="text-lg font-semibold text-black mb-3">
               Asesores Laborales
             </h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -82,7 +82,7 @@ const About = () => {
           </div>
 
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-orange-600 mb-3">
+            <h3 className="text-lg font-semibold text-black mb-3">
               Economistas
             </h3>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -93,7 +93,7 @@ const About = () => {
 
         {/* Value Proposition */}
         <div className="mt-20 text-center">
-          <h3 className="text-xl font-bold text-orange-600 mb-6">
+          <h3 className="text-xl font-bold text-black mb-6">
             Nuestro Compromiso
           </h3>
           <p className="text-gray-600 max-w-4xl mx-auto leading-relaxed">

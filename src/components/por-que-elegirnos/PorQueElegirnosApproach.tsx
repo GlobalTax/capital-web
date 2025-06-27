@@ -33,8 +33,8 @@ const PorQueElegirnosApproach = () => {
       title: "Maximización de Valor",
       description: "Nuestro objetivo es obtener el mejor precio y términos posibles para tu empresa.",
       points: ["Valoración optimizada", "Múltiples ofertas", "Negociación experta"],
-      gradient: "from-orange-50 to-orange-100",
-      iconColor: "from-orange-500 to-orange-600"
+      gradient: "from-gray-50 to-gray-100",
+      iconColor: "from-black to-gray-800"
     }
   ];
 
