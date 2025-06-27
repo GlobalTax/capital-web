@@ -82,12 +82,12 @@ const Hero = () => {
                     
                     <div className="flex items-center justify-between py-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-black rounded-full"></div>
                         <span className="font-medium text-gray-900">Retail Chain</span>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-gray-900">€32M</div>
-                        <div className="text-sm text-orange-600">+15%</div>
+                        <div className="text-sm text-black">+15%</div>
                       </div>
                     </div>
                   </div>
