@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
@@ -19,7 +20,22 @@ import Cookies from '@/pages/Cookies';
 import DocumentacionMA from '@/pages/DocumentacionMA';
 import ProgramaColaboradores from '@/pages/ProgramaColaboradores';
 
-// Blog
+// Por Qué Elegirnos
+import PorQueElegirnos from '@/pages/por-que-elegirnos/index';
+
+// Servicios
+import Valoraciones from '@/pages/servicios/Valoraciones';
+import CorporateFinance from '@/pages/servicios/CorporateFinance';
+import DueDiligence from '@/pages/servicios/DueDiligence';
+import FusionesAdquisiciones from '@/pages/servicios/FusionesAdquisiciones';
+import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
+
+// Sectores
+import Healthcare from '@/pages/sectores/Healthcare';
+import Industrial from '@/pages/sectores/Industrial';
+import Tecnologia from '@/pages/sectores/Tecnologia';
+
+// Recursos
 import Blog from '@/pages/recursos/Blog';
 
 // Documentación M&A pages
@@ -54,7 +70,23 @@ function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
               
-              {/* Blog */}
+              {/* Por Qué Elegirnos routes */}
+              <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
+              
+              {/* Servicios routes */}
+              <Route path="/servicios/valoraciones" element={<Valoraciones />} />
+              <Route path="/servicios/corporate-finance" element={<CorporateFinance />} />
+              <Route path="/servicios/due-diligence" element={<DueDiligence />} />
+              <Route path="/servicios/fusiones-adquisiciones" element={<FusionesAdquisiciones />} />
+              <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
+              
+              {/* Sectores routes */}
+              <Route path="/sectores/healthcare" element={<Healthcare />} />
+              <Route path="/sectores/industrial" element={<Industrial />} />
+              <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+              
+              {/* Recursos routes */}
+              <Route path="/recursos/blog" element={<Blog />} />
               <Route path="/blog" element={<Blog />} />
               
               {/* Documentación M&A routes */}

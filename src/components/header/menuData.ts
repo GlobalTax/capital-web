@@ -1,35 +1,47 @@
 
 export const menuData = {
   porQueElegirnosItems: [
-    { label: 'Nosotros', href: '/nosotros' },
-    { label: 'Equipo', href: '/equipo' },
-    { label: 'Casos de Éxito', href: '/casos-exito' },
+    { label: 'Visión General', href: '/por-que-elegirnos' },
+    { label: 'Nuestra Experiencia', href: '/por-que-elegirnos/experiencia' },
+    { label: 'Metodología', href: '/por-que-elegirnos/metodologia' },
+    { label: 'Resultados', href: '/por-que-elegirnos/resultados' },
   ],
 
   serviciosItems: [
     { label: 'Venta de Empresas', href: '/venta-empresas' },
     { label: 'Compra de Empresas', href: '/compra-empresas' },
-    { label: 'Calculadora de Valoración', href: '/calculadora-valoracion' },
+    { label: 'Valoraciones', href: '/servicios/valoraciones' },
+    { label: 'Corporate Finance', href: '/servicios/corporate-finance' },
+    { label: 'Due Diligence', href: '/servicios/due-diligence' },
+    { label: 'Fusiones y Adquisiciones', href: '/servicios/fusiones-adquisiciones' },
+    { label: 'Reestructuraciones', href: '/servicios/reestructuraciones' },
   ],
 
   sectoresItems: [
-    { label: 'Contacto', href: '/contacto' },
+    { label: 'Financial Services', href: '/sectores/financial-services' },
+    { label: 'Healthcare', href: '/sectores/healthcare' },
+    { label: 'Industrial', href: '/sectores/industrial' },
+    { label: 'Retail & Consumer', href: '/sectores/retail-consumer' },
+    { label: 'Tecnología', href: '/sectores/tecnologia' },
   ],
 
   recursosItems: [
-    { label: 'Blog', href: '/blog' },
+    { label: 'Blog', href: '/recursos/blog' },
+    { label: 'Case Studies', href: '/recursos/case-studies' },
+    { label: 'Market Reports', href: '/recursos/market-reports' },
+    { label: 'Newsletter', href: '/recursos/newsletter' },
+    { label: 'Webinars', href: '/recursos/webinars' },
     { label: 'Calculadora de Valoración', href: '/calculadora-valoracion' },
     { label: 'Documentación M&A', href: '/documentacion-ma' },
   ],
 
-  // Renombrado de "empresaItems" a "nosotrosItems" para mayor claridad
   nosotrosItems: [
-    { label: 'Nosotros', href: '/nosotros' },
+    { label: 'Por Qué Elegirnos', href: '/por-que-elegirnos' },
     { label: 'Casos de Éxito', href: '/casos-exito' },
     { label: 'Equipo', href: '/equipo' },
+    { label: 'Nosotros', href: '/nosotros' },
   ],
 
-  // Programa de Colaboradores ahora tiene su propio lugar en el menú principal
   navItems: [
     { label: 'Programa de Colaboradores', href: '/programa-colaboradores' },
   ],
