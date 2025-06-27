@@ -19,6 +19,9 @@ import Cookies from '@/pages/Cookies';
 import DocumentacionMA from '@/pages/DocumentacionMA';
 import ProgramaColaboradores from '@/pages/ProgramaColaboradores';
 
+// Blog
+import Blog from '@/pages/recursos/Blog';
+
 // Documentación M&A pages
 import NuestroMetodo from '@/pages/documentacion-ma/NuestroMetodo';
 import ConoceEquipo from '@/pages/documentacion-ma/ConoceEquipo';
@@ -50,6 +53,9 @@ function App() {
               <Route path="/casos-exito" element={<CasosExito />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
+              
+              {/* Blog */}
+              <Route path="/blog" element={<Blog />} />
               
               {/* Documentación M&A routes */}
               <Route path="/documentacion-ma" element={<DocumentacionMA />} />

@@ -10,6 +10,7 @@ import CompaniesForSale from '@/components/CompaniesForSale';
 import About from '@/components/About';
 import CaseStudies from '@/components/CaseStudies';
 import Team from '@/components/Team';
+import BlogSection from '@/components/BlogSection';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 
@@ -26,6 +27,7 @@ const Index = () => {
       <About />
       <CaseStudies />
       <Team />
+      <BlogSection />
       <Contact />
       <Footer />
     </div>
