@@ -2,186 +2,124 @@
 "use client"
 
 import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Facebook, Instagram, Linkedin, Moon, Send, Sun, Twitter } from "lucide-react"
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
 import { Link } from 'react-router-dom'
 
+const sections = [
+  {
+    title: "Servicios",
+    links: [
+      { name: "Venta de Empresas", href: "/venta-empresas" },
+      { name: "Compra de Empresas", href: "/compra-empresas" },
+      { name: "Valoración", href: "/calculadora-valoracion" },
+      { name: "Casos de Éxito", href: "/casos-exito" },
+    ],
+  },
+  {
+    title: "Empresa",
+    links: [
+      { name: "Sobre Nosotros", href: "/nosotros" },
+      { name: "Equipo", href: "/equipo" },
+      { name: "Contacto", href: "/contacto" },
+      { name: "Documentación M&A", href: "/documentacion-ma" },
+    ],
+  },
+  {
+    title: "Recursos",
+    links: [
+      { name: "Blog", href: "/blog" },
+      { name: "Programa Colaboradores", href: "/programa-colaboradores" },
+    ],
+  },
+];
+
+const socialLinks = [
+  { icon: <Facebook className="h-5 w-5" />, href: "#", label: "Facebook" },
+  { icon: <Instagram className="h-5 w-5" />, href: "#", label: "Instagram" },
+  { icon: <Twitter className="h-5 w-5" />, href: "#", label: "Twitter" },
+  { icon: <Linkedin className="h-5 w-5" />, href: "#", label: "LinkedIn" },
+];
+
+const legalLinks = [
+  { name: "Política de Privacidad", href: "/politica-privacidad" },
+  { name: "Términos de Uso", href: "/terminos-uso" },
+  { name: "Política de Cookies", href: "/cookies" },
+];
+
 function Footerdemo() {
-  const [isDarkMode, setIsDarkMode] = React.useState(false)
-
-  React.useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }, [isDarkMode])
-
   return (
-    <footer className="relative border-t-0.5 border-border bg-white text-black transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-          <div className="relative">
-            <p className="mb-6 text-[14px] text-black">
-              Tu socio estratégico en fusiones y adquisiciones. Únete a nuestro newsletter para las últimas actualizaciones.
+    <footer className="relative border-t-0.5 border-black bg-white text-black">
+      <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start">
+          <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <Link to="/" className="flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-black">Capittal</h2>
+              </Link>
+            </div>
+            <p className="max-w-[70%] text-sm text-gray-600">
+              Tu socio estratégico en fusiones y adquisiciones. Expertos en M&A con más de una década de experiencia en el mercado español.
             </p>
-            <form className="relative">
-              <Input
-                type="email"
-                placeholder="Introduce tu email"
-                className="pr-12 bg-white border-0.5 border-border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="absolute right-1 top-1 h-8 w-8 rounded-full bg-black text-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-              >
-                <Send className="h-4 w-4" />
-                <span className="sr-only">Suscribirse</span>
-              </Button>
-            </form>
-          </div>
-          
-          <div>
-            <h3 className="text-black font-bold mb-4">Servicios</h3>
-            <nav className="space-y-2 text-[14px] text-black">
-              <Link to="/venta-empresas" className="block hover:text-black transition-colors">
-                Venta de Empresas
-              </Link>
-              <Link to="/compra-empresas" className="block hover:text-black transition-colors">
-                Compra de Empresas
-              </Link>
-              <Link to="/calculadora-valoracion" className="block hover:text-black transition-colors">
-                Valoración
-              </Link>
-              <Link to="/casos-exito" className="block hover:text-black transition-colors">
-                Casos de Éxito
-              </Link>
-            </nav>
-          </div>
-          
-          <div>
-            <h3 className="text-black font-bold mb-4">Empresa</h3>
-            <nav className="space-y-2 text-[14px] text-black">
-              <Link to="/nosotros" className="block hover:text-black transition-colors">
-                Sobre Nosotros
-              </Link>
-              <Link to="/equipo" className="block hover:text-black transition-colors">
-                Equipo
-              </Link>
-              <Link to="/contacto" className="block hover:text-black transition-colors">
-                Contacto
-              </Link>
-              <Link to="/documentacion-ma" className="block hover:text-black transition-colors">
-                Documentación M&A
-              </Link>
-            </nav>
-          </div>
-          
-          <div className="relative">
-            <h3 className="text-black font-bold mb-4">Contacto</h3>
-            <address className="space-y-2 text-[14px] text-black not-italic mb-6">
-              <p>P.º de la Castellana, 11, B - A</p>
-              <p>Chamberí, 28046 Madrid</p>
-              <p>Email: info@capittal.com</p>
-            </address>
-            
-            <h4 className="text-black font-medium mb-4">Síguenos</h4>
-            <div className="mb-6 flex space-x-4">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <Facebook className="h-4 w-4" />
-                      <span className="sr-only">Facebook</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Síguenos en Facebook</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <Twitter className="h-4 w-4" />
-                      <span className="sr-only">Twitter</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Síguenos en Twitter</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <Instagram className="h-4 w-4" />
-                      <span className="sr-only">Instagram</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Síguenos en Instagram</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white border-0.5 border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <Linkedin className="h-4 w-4" />
-                      <span className="sr-only">LinkedIn</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Conéctate con nosotros en LinkedIn</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <div className="mb-6">
+              <address className="space-y-1 text-sm text-gray-600 not-italic">
+                <p>P.º de la Castellana, 11, B - A</p>
+                <p>Chamberí, 28046 Madrid</p>
+                <p>Email: info@capittal.com</p>
+              </address>
             </div>
-            
-            <div className="flex items-center space-x-2">
-              <Sun className="h-4 w-4" />
-              <Switch
-                id="dark-mode"
-                checked={isDarkMode}
-                onCheckedChange={setIsDarkMode}
-                className="data-[state=checked]:bg-black data-[state=unchecked]:bg-gray-300"
-              />
-              <Moon className="h-4 w-4" />
-              <Label htmlFor="dark-mode" className="sr-only">
-                Cambiar modo oscuro
-              </Label>
-            </div>
+            <ul className="flex items-center space-x-6">
+              {socialLinks.map((social, idx) => (
+                <li key={idx}>
+                  <a 
+                    href={social.href} 
+                    aria-label={social.label}
+                    className="text-gray-600 hover:text-black transition-colors duration-300"
+                  >
+                    {social.icon}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
+            {sections.map((section, sectionIdx) => (
+              <div key={sectionIdx}>
+                <h3 className="mb-4 font-bold text-black">{section.title}</h3>
+                <ul className="space-y-3 text-sm">
+                  {section.links.map((link, linkIdx) => (
+                    <li key={linkIdx}>
+                      <Link 
+                        to={link.href}
+                        className="text-gray-600 hover:text-black transition-colors duration-300 font-medium"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
         
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t-0.5 border-border pt-8 text-center md:flex-row">
-          <p className="text-[14px] text-black">
+        <div className="mt-12 flex flex-col justify-between gap-4 border-t-0.5 border-black pt-8 text-sm font-medium md:flex-row md:items-center">
+          <p className="order-2 text-gray-600 lg:order-1">
             © {new Date().getFullYear()} Capittal. Todos los derechos reservados.
           </p>
-          <nav className="flex gap-4 text-[14px] text-black">
-            <Link to="/politica-privacidad" className="hover:text-black transition-colors">
-              Política de Privacidad
-            </Link>
-            <Link to="/terminos-uso" className="hover:text-black transition-colors">
-              Términos de Uso
-            </Link>
-            <Link to="/cookies" className="hover:text-black transition-colors">
-              Política de Cookies
-            </Link>
-          </nav>
+          <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row md:gap-6">
+            {legalLinks.map((link, idx) => (
+              <li key={idx}>
+                <Link 
+                  to={link.href}
+                  className="text-gray-600 hover:text-black transition-colors duration-300"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>
