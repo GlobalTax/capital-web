@@ -1,7 +1,13 @@
 
 import React from 'react';
+import { useLazyLoad } from '@/hooks/useLazyLoad';
 
 const LogoCarousel = () => {
+  const { ref, isVisible } = useLazyLoad<HTMLElement>({ 
+    threshold: 0.1,
+    rootMargin: '100px'
+  });
+
   // Logos de ejemplo - puedes reemplazarlos con logos reales
   const logos = [
     { name: 'TechCorp', url: '/placeholder.svg' },
@@ -18,7 +24,7 @@ const LogoCarousel = () => {
   const duplicatedLogos = [...logos, ...logos];
 
   return (
-    <section className="py-16 bg-white border-t border-b border-gray-300">
+    <section ref={ref} className="py-16 bg-white border-t border-b border-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl font-bold text-black mb-4">
@@ -29,22 +35,24 @@ const LogoCarousel = () => {
           </p>
         </div>
         
-        <div className="relative overflow-hidden">
-          <div className="flex animate-scroll">
-            {duplicatedLogos.map((logo, index) => (
-              <div
-                key={`${logo.name}-${index}`}
-                className="flex-shrink-0 mx-8 grayscale hover:grayscale-0 transition-all duration-300"
-              >
-                <div className="w-32 h-16 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500 font-medium text-sm">
-                    {logo.name}
-                  </span>
+        {isVisible && (
+          <div className="relative overflow-hidden">
+            <div className="flex animate-scroll">
+              {duplicatedLogos.map((logo, index) => (
+                <div
+                  key={`${logo.name}-${index}`}
+                  className="flex-shrink-0 mx-8 grayscale hover:grayscale-0 transition-all duration-300"
+                >
+                  <div className="w-32 h-16 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500 font-medium text-sm">
+                      {logo.name}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

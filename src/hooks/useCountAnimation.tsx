@@ -1,27 +1,10 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useLazyLoad } from './useLazyLoad';
 
 export const useCountAnimation = (end: number, duration: number = 2000, suffix: string = '') => {
   const [count, setCount] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const countRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isVisible) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    if (countRef.current) {
-      observer.observe(countRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [isVisible]);
+  const { ref, isVisible } = useLazyLoad<HTMLDivElement>({ threshold: 0.3 });
 
   useEffect(() => {
     if (!isVisible) return;
@@ -41,5 +24,5 @@ export const useCountAnimation = (end: number, duration: number = 2000, suffix: 
     requestAnimationFrame(animate);
   }, [isVisible, end, duration]);
 
-  return { count: count + suffix, ref: countRef };
+  return { count: count + suffix, ref };
 };

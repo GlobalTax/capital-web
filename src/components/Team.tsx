@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Carousel,
@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { supabase } from '@/integrations/supabase/client';
+import { useLazyData, useLazyLoad } from '@/hooks/useLazyLoad';
+import LazyImage from '@/components/LazyImage';
 
 interface TeamMember {
   id: string;
@@ -21,32 +23,30 @@ interface TeamMember {
 }
 
 const Team = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { ref, isVisible } = useLazyLoad<HTMLElement>({ 
+    threshold: 0.1,
+    rootMargin: '100px'
+  });
 
-  useEffect(() => {
-    fetchTeamMembers();
+  const fetchTeamMembers = React.useCallback(async (): Promise<TeamMember[]> => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
   }, []);
 
-  const fetchTeamMembers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setTeamMembers(data || []);
-    } catch (error) {
-      console.error('Error al cargar miembros del equipo:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { 
+    data: teamMembers, 
+    isLoading, 
+    error 
+  } = useLazyData(fetchTeamMembers, [isVisible]);
 
   return (
-    <section id="equipo" className="py-20 bg-white">
+    <section ref={ref} id="equipo" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
@@ -62,7 +62,11 @@ const Team = () => {
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-border"></div>
           </div>
-        ) : teamMembers.length > 0 ? (
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600">Error al cargar el equipo: {error}</p>
+          </div>
+        ) : teamMembers && teamMembers.length > 0 ? (
           <div className="relative">
             <Carousel
               plugins={[
@@ -82,10 +86,11 @@ const Team = () => {
                   <CarouselItem key={member.id} className="pl-2 basis-auto">
                     <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-border">
                       {member.image_url ? (
-                        <img 
-                          src={member.image_url} 
+                        <LazyImage
+                          src={member.image_url}
                           alt={member.name}
                           className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                          placeholderClassName="w-full h-full"
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
