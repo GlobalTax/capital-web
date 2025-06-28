@@ -39,27 +39,27 @@ const AdminSidebar = () => {
 
   const getNavClass = (url: string, exact = false) => {
     return isActive(url, exact)
-      ? "bg-gray-900/10 text-gray-900 font-medium border-r-2 border-blue-600 shadow-sm"
-      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200";
+      ? "bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-l-2 border-blue-500"
+      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200";
   };
 
   return (
-    <Sidebar className="border-r border-gray-200/60 bg-white/95 backdrop-blur-sm shadow-sm">
-      <SidebarHeader className="border-b border-gray-100/80 p-6 bg-gradient-to-r from-gray-50/50 to-white">
+    <Sidebar className="border-r border-slate-200 bg-white shadow-sm">
+      <SidebarHeader className="border-b border-slate-100 p-4 bg-slate-50/50">
         <SidebarHeaderComponent isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent className="gap-2 p-3">
-        <SidebarGroup className="px-2 py-2">
+      <SidebarContent className="gap-1 p-2">
+        <SidebarGroup className="px-2 py-1">
           <SidebarMenu className="gap-1">
             {dashboardItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild className="h-11 px-4 rounded-xl font-medium transition-all duration-300 hover:shadow-sm">
+                <SidebarMenuButton asChild className="h-9 px-3 rounded-lg font-medium transition-all duration-200">
                   <NavLink
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}
                   >
-                    {!isCollapsed && <span className="text-sm tracking-wide">{item.title}</span>}
+                    {!isCollapsed && <span className="text-sm">{item.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
