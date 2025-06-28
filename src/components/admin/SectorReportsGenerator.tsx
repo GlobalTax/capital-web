@@ -8,11 +8,14 @@ import SectorReportForm from './sector-reports/SectorReportForm';
 import SectorReportPreview from './sector-reports/SectorReportPreview';
 import { useSectorReportGenerator } from '@/hooks/useSectorReportGenerator';
 import { SectorReportRequest, SectorReportResult } from '@/types/sectorReports';
+import { downloadSectorReportPDF } from '@/utils/sectorReportPdfGenerator';
+import { useToast } from '@/hooks/use-toast';
 
 const SectorReportsGenerator = () => {
   const [activeTab, setActiveTab] = useState<'generate' | 'history'>('generate');
   const [selectedReport, setSelectedReport] = useState<SectorReportResult | null>(null);
   const { isGenerating, generatedReports, generateSectorReport, clearReports } = useSectorReportGenerator();
+  const { toast } = useToast();
 
   const handleGenerateReport = async (request: SectorReportRequest) => {
     try {
@@ -28,16 +31,20 @@ const SectorReportsGenerator = () => {
     setSelectedReport(report);
   };
 
-  const handleDownloadReport = (report: SectorReportResult) => {
-    const blob = new Blob([report.content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${report.title.replace(/[^a-zA-Z0-9]/g, '_')}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleDownloadReport = async (report: SectorReportResult) => {
+    try {
+      await downloadSectorReportPDF(report);
+      toast({
+        title: "PDF descargado",
+        description: "El reporte ha sido descargado como PDF",
+      });
+    } catch (error) {
+      toast({
+        title: "Error al descargar PDF",
+        description: "No se pudo generar el PDF. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -164,7 +171,7 @@ const SectorReportsGenerator = () => {
                               onClick={() => handleDownloadReport(report)}
                             >
                               <Download className="h-4 w-4 mr-1" />
-                              Descargar
+                              PDF
                             </Button>
                           </div>
                         </div>

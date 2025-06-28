@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { X, Download, Copy } from 'lucide-react';
+import { X, Download, Copy, FileText } from 'lucide-react';
 import { SectorReportResult } from '@/types/sectorReports';
 import { useToast } from '@/hooks/use-toast';
+import { downloadSectorReportPDF } from '@/utils/sectorReportPdfGenerator';
 
 interface SectorReportPreviewProps {
   report: SectorReportResult;
@@ -24,7 +25,7 @@ const SectorReportPreview: React.FC<SectorReportPreviewProps> = ({ report, onClo
     });
   };
 
-  const handleDownload = () => {
+  const handleDownloadMarkdown = () => {
     const blob = new Blob([report.content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -34,6 +35,22 @@ const SectorReportPreview: React.FC<SectorReportPreviewProps> = ({ report, onClo
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      await downloadSectorReportPDF(report);
+      toast({
+        title: "PDF descargado",
+        description: "El reporte ha sido descargado como PDF",
+      });
+    } catch (error) {
+      toast({
+        title: "Error al descargar PDF",
+        description: "No se pudo generar el PDF. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -61,9 +78,13 @@ const SectorReportPreview: React.FC<SectorReportPreviewProps> = ({ report, onClo
             <Copy className="h-4 w-4 mr-1" />
             Copiar
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownload}>
+          <Button variant="outline" size="sm" onClick={handleDownloadMarkdown}>
             <Download className="h-4 w-4 mr-1" />
-            Descargar
+            MD
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+            <FileText className="h-4 w-4 mr-1" />
+            PDF
           </Button>
         </div>
       </CardHeader>
