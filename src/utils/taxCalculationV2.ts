@@ -1,6 +1,68 @@
 
 import { TaxSimulatorData, TaxCalculationResult } from '@/types/valuationV2';
 
+// Tramos IRPF 2025 actualizados
+const IRPF_2025_BRACKETS = [
+  { min: 0, max: 6000, rate: 0.19 },
+  { min: 6000, max: 50000, rate: 0.21 },
+  { min: 50000, max: 200000, rate: 0.23 },
+  { min: 200000, max: 300000, rate: 0.27 },
+  { min: 300000, max: Infinity, rate: 0.30 }
+];
+
+const calculateProgressiveTax = (amount: number): { totalTax: number; breakdown: any[] } => {
+  let totalTax = 0;
+  const breakdown = [];
+  
+  for (const bracket of IRPF_2025_BRACKETS) {
+    if (amount <= bracket.min) break;
+    
+    const taxableInBracket = Math.min(amount, bracket.max) - bracket.min;
+    const taxInBracket = taxableInBracket * bracket.rate;
+    
+    totalTax += taxInBracket;
+    
+    if (taxableInBracket > 0) {
+      breakdown.push({
+        description: `Tramo ${bracket.min.toLocaleString('es-ES')}€ - ${bracket.max === Infinity ? 'en adelante' : bracket.max.toLocaleString('es-ES') + '€'}`,
+        amount: taxableInBracket,
+        rate: bracket.rate * 100
+      });
+    }
+  }
+  
+  return { totalTax, breakdown };
+};
+
+const calculateAbatementCoefficient = (
+  acquisitionDate: string,
+  capitalGain: number,
+  assetType: 'shares' | 'property' = 'shares'
+): number => {
+  const acquisitionYear = new Date(acquisitionDate).getFullYear();
+  
+  // Solo aplica a bienes adquiridos antes del 31-12-1994
+  if (acquisitionYear >= 1995) return 0;
+  
+  // Calcular años entre adquisición y 31-12-1996 que excedan de 2
+  const yearsForReduction = Math.max(0, 1996 - acquisitionYear - 2);
+  
+  let reductionRate = 0;
+  if (assetType === 'shares') {
+    // Acciones: 25% por año
+    reductionRate = Math.min(yearsForReduction * 0.25, 1); // Máximo 100%
+  } else {
+    // Inmuebles: 11.11% por año
+    reductionRate = Math.min(yearsForReduction * 0.1111, 1); // Máximo 100%
+  }
+  
+  // Máximo 400.000€ de ganancia reducible
+  const maxReducibleGain = 400000;
+  const reducibleGain = Math.min(capitalGain, maxReducibleGain);
+  
+  return reducibleGain * reductionRate;
+};
+
 export const calculateSpanishTaxImpact = (
   simulatorData: TaxSimulatorData,
   salePrice: number
@@ -17,65 +79,42 @@ export const calculateSpanishTaxImpact = (
   // Plusvalía bruta
   const capitalGain = actualSalePrice - acquisitionValue - deductibleExpenses;
   
-  // Ganancia gravable (sin reducciones automáticas por años)
-  let taxableGain = capitalGain;
-  let taxRate = 0;
+  // Calcular coeficientes de abatimiento (solo para personas físicas y participaciones pre-1995)
+  let abatementBenefit = 0;
+  if (simulatorData.taxpayerType === 'individual' && simulatorData.acquisitionDate) {
+    abatementBenefit = calculateAbatementCoefficient(
+      simulatorData.acquisitionDate,
+      capitalGain,
+      'shares'
+    );
+  }
+  
+  // Ganancia gravable después de abatimientos
+  let taxableGain = Math.max(0, capitalGain - abatementBenefit);
+  
+  let totalTax = 0;
   let taxBreakdown: { description: string; amount: number; rate: number; }[] = [];
+  let reinvestmentBenefit = 0;
+  let vitaliciaBenefit = 0;
   
   if (simulatorData.taxpayerType === 'individual') {
-    // PERSONAS FÍSICAS - Tarifa del ahorro (Ley 35/2006 IRPF)
-    if (taxableGain <= 6000) {
-      taxRate = 0.19;
-      taxBreakdown.push({
-        description: 'Tramo 1 (hasta 6.000€)',
-        amount: taxableGain,
-        rate: 19
-      });
-    } else if (taxableGain <= 50000) {
-      const tramo1 = 6000 * 0.19;
-      const tramo2 = (taxableGain - 6000) * 0.21;
-      taxRate = (tramo1 + tramo2) / taxableGain;
-      taxBreakdown.push(
-        {
-          description: 'Tramo 1 (hasta 6.000€)',
-          amount: 6000,
-          rate: 19
-        },
-        {
-          description: 'Tramo 2 (6.000€ - 50.000€)',
-          amount: taxableGain - 6000,
-          rate: 21
-        }
-      );
-    } else {
-      const tramo1 = 6000 * 0.19;
-      const tramo2 = 44000 * 0.21;
-      const tramo3 = (taxableGain - 50000) * 0.23;
-      taxRate = (tramo1 + tramo2 + tramo3) / taxableGain;
-      taxBreakdown.push(
-        {
-          description: 'Tramo 1 (hasta 6.000€)',
-          amount: 6000,
-          rate: 19
-        },
-        {
-          description: 'Tramo 2 (6.000€ - 50.000€)',
-          amount: 44000,
-          rate: 21
-        },
-        {
-          description: 'Tramo 3 (más de 50.000€)',
-          amount: taxableGain - 50000,
-          rate: 23
-        }
-      );
+    // PERSONAS FÍSICAS - Nuevos tramos IRPF 2025
+    const { totalTax: calculatedTax, breakdown } = calculateProgressiveTax(taxableGain);
+    totalTax = calculatedTax;
+    taxBreakdown = breakdown;
+    
+    // Beneficio por renta vitalicia
+    if (simulatorData.vitaliciaPlan && simulatorData.vitaliciaAmount > 0) {
+      const vitaliciaPercentage = Math.min(simulatorData.vitaliciaAmount / capitalGain, 1);
+      vitaliciaBenefit = totalTax * vitaliciaPercentage;
+      totalTax -= vitaliciaBenefit;
     }
   } else {
     // SOCIEDADES - Ley 27/2014 del Impuesto sobre Sociedades
     if (simulatorData.currentTaxBase && simulatorData.currentTaxBase <= 1000000) {
       // PYME: 15% primeros 300K, 25% resto
       if (taxableGain <= 300000) {
-        taxRate = 0.15;
+        totalTax = taxableGain * 0.15;
         taxBreakdown.push({
           description: 'Tipo reducido PYME (hasta 300.000€)',
           amount: taxableGain,
@@ -84,7 +123,7 @@ export const calculateSpanishTaxImpact = (
       } else {
         const parte1 = 300000 * 0.15;
         const parte2 = (taxableGain - 300000) * 0.25;
-        taxRate = (parte1 + parte2) / taxableGain;
+        totalTax = parte1 + parte2;
         taxBreakdown.push(
           {
             description: 'Tipo reducido PYME (hasta 300.000€)',
@@ -100,27 +139,22 @@ export const calculateSpanishTaxImpact = (
       }
     } else {
       // Tipo general 25%
-      taxRate = 0.25;
+      totalTax = taxableGain * 0.25;
       taxBreakdown.push({
         description: 'Tipo general sociedades',
         amount: taxableGain,
         rate: 25
       });
     }
-  }
-  
-  // Calcular impuesto antes de reinversión
-  let totalTax = taxableGain * taxRate;
-  
-  // Beneficio por reinversión (Art. 42 LIS - solo sociedades)
-  let reinvestmentBenefit = 0;
-  if (simulatorData.taxpayerType === 'company' && 
-      simulatorData.reinvestmentPlan && 
-      simulatorData.reinvestmentQualifies &&
-      simulatorData.reinvestmentAmount >= capitalGain * 0.7) {
-    // Exención de hasta el 100% si reinvierte el 70% o más
-    reinvestmentBenefit = totalTax;
-    totalTax = 0;
+    
+    // Beneficio por reinversión (Art. 42 LIS - solo sociedades)
+    if (simulatorData.reinvestmentPlan && 
+        simulatorData.reinvestmentQualifies &&
+        simulatorData.reinvestmentAmount >= capitalGain * 0.7) {
+      // Exención de hasta el 100% si reinvierte el 70% o más
+      reinvestmentBenefit = totalTax;
+      totalTax = 0;
+    }
   }
   
   // Neto después de impuestos
@@ -128,6 +162,7 @@ export const calculateSpanishTaxImpact = (
   
   // Tipo efectivo
   const effectiveTaxRate = capitalGain > 0 ? (totalTax / capitalGain) : 0;
+  const taxRate = taxableGain > 0 ? (totalTax / taxableGain) : 0;
   
   return {
     salePrice: actualSalePrice,
@@ -139,6 +174,8 @@ export const calculateSpanishTaxImpact = (
     totalTax,
     netAfterTax,
     reinvestmentBenefit,
+    vitaliciaBenefit,
+    abatementBenefit,
     effectiveTaxRate,
     taxBreakdown
   };

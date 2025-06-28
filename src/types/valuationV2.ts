@@ -25,12 +25,15 @@ export interface CompanyDataV2 {
 export interface TaxSimulatorData {
   taxpayerType: 'individual' | 'company';
   acquisitionValue: number;
+  acquisitionDate: string; // Nuevo: fecha de adquisición
   yearsHeld: number;
   salePercentage: number;
   currentTaxBase?: number; // Para sociedades
   reinvestmentPlan: boolean;
   reinvestmentAmount: number;
   reinvestmentQualifies: boolean; // Cumple requisitos art. 42 LIS
+  vitaliciaPlan: boolean; // Nuevo: plan de renta vitalicia para personas físicas
+  vitaliciaAmount: number; // Nuevo: importe a reinvertir en renta vitalicia
 }
 
 export interface TaxCalculationResult {
@@ -43,6 +46,8 @@ export interface TaxCalculationResult {
   totalTax: number;
   netAfterTax: number;
   reinvestmentBenefit: number;
+  vitaliciaBenefit: number; // Nuevo: beneficio por renta vitalicia
+  abatementBenefit: number; // Nuevo: beneficio por coeficientes de abatimiento
   effectiveTaxRate: number;
   taxBreakdown: {
     description: string;
