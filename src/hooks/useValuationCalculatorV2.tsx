@@ -26,16 +26,7 @@ const initialCompanyDataV2: CompanyDataV2 = {
   // Paso 3
   location: '',
   ownershipParticipation: '',
-  competitiveAdvantage: '',
-
-  // Paso 4: Datos fiscales
-  acquisitionCost: 0,
-  yearsHeld: 1,
-  salePercentage: 100,
-  taxRegime: 'general',
-  reinvestmentPlan: false,
-  reinvestmentAmount: 0,
-  previousCapitalGains: 0
+  competitiveAdvantage: ''
 };
 
 export const useValuationCalculatorV2 = () => {
@@ -113,7 +104,7 @@ export const useValuationCalculatorV2 = () => {
     
     setShowValidation(false);
     setCurrentStep(prev => {
-      const newStep = Math.min(prev + 1, 5); // Ahora son 5 pasos
+      const newStep = Math.min(prev + 1, 4); // Ahora son 4 pasos
       console.log('Moving from step', prev, 'to step', newStep);
       return newStep;
     });
@@ -142,8 +133,8 @@ export const useValuationCalculatorV2 = () => {
     try {
       const valuationResult = await calculateCompanyValuationV2(companyData, sectorMultiples);
       setResult(valuationResult);
-      setCurrentStep(5); // Ir al paso de resultados (ahora es el 5)
-      console.log('Valuation calculated, moved to step 5');
+      setCurrentStep(4); // Ir al paso de resultados (ahora es el 4)
+      console.log('Valuation calculated, moved to step 4');
     } catch (error) {
       console.error('Error calculating valuation:', error);
     } finally {

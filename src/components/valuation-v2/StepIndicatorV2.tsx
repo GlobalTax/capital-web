@@ -12,8 +12,7 @@ const steps = [
   { number: 1, title: 'Información básica' },
   { number: 2, title: 'Datos financieros' },
   { number: 3, title: 'Características' },
-  { number: 4, title: 'Datos fiscales' },
-  { number: 5, title: 'Resultado' }
+  { number: 4, title: 'Resultado' }
 ];
 
 const StepIndicatorV2: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, validateStep }) => {

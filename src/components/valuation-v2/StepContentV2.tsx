@@ -3,8 +3,7 @@ import React from 'react';
 import Step1BasicInfo from '../valuation/Step1BasicInfo';
 import Step2FinancialData from '../valuation/Step2FinancialData';
 import Step3Characteristics from '../valuation/Step3Characteristics';
-import Step4TaxData from './Step4TaxData';
-import Step5Results from './Step5Results';
+import Step4Results from './Step4Results';
 
 interface StepContentProps {
   currentStep: number;
@@ -66,18 +65,7 @@ const StepContentV2: React.FC<StepContentProps> = ({
       );
     case 4:
       return (
-        <Step4TaxData
-          companyData={companyData}
-          updateField={updateField}
-          showValidation={showValidation}
-          getFieldState={getFieldState}
-          handleFieldBlur={handleFieldBlur}
-          errors={errors}
-        />
-      );
-    case 5:
-      return (
-        <Step5Results 
+        <Step4Results 
           result={result}
           companyData={companyData}
           isCalculating={isCalculating}

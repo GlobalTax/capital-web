@@ -20,27 +20,35 @@ export interface CompanyDataV2 {
   location: string;
   ownershipParticipation: string;
   competitiveAdvantage: string;
+}
 
-  // Paso 4: Datos fiscales (nuevos)
-  acquisitionCost: number;
+export interface TaxSimulatorData {
+  taxpayerType: 'individual' | 'company';
+  acquisitionValue: number;
   yearsHeld: number;
   salePercentage: number;
-  taxRegime: 'general' | 'pyme' | 'startup';
+  currentTaxBase?: number; // Para sociedades
   reinvestmentPlan: boolean;
   reinvestmentAmount: number;
-  previousCapitalGains: number;
+  reinvestmentQualifies: boolean; // Cumple requisitos art. 42 LIS
 }
 
 export interface TaxCalculationResult {
   salePrice: number;
-  acquisitionCost: number;
+  acquisitionValue: number;
   capitalGain: number;
+  deductibleExpenses: number;
   taxableGain: number;
   taxRate: number;
   totalTax: number;
   netAfterTax: number;
   reinvestmentBenefit: number;
   effectiveTaxRate: number;
+  taxBreakdown: {
+    description: string;
+    amount: number;
+    rate: number;
+  }[];
 }
 
 export interface ValuationResultV2 {
@@ -53,7 +61,6 @@ export interface ValuationResultV2 {
   multiples: {
     ebitdaMultipleUsed: number;
   };
-  taxImpact?: TaxCalculationResult;
 }
 
 export interface SectorMultiple {

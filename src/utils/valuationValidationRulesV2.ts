@@ -67,24 +67,6 @@ export const createValidationRulesV2 = (): ValidationRules => {
     competitiveAdvantage: (value: string) => ({
       isValid: value.trim().length >= 10,
       message: 'Describa la ventaja competitiva (mínimo 10 caracteres)'
-    }),
-
-    // Paso 4: Datos fiscales
-    acquisitionCost: (value: number) => ({
-      isValid: value >= 0,
-      message: 'El coste de adquisición debe ser mayor o igual a 0'
-    }),
-    yearsHeld: (value: number) => ({
-      isValid: value >= 0,
-      message: 'Los años de tenencia deben ser mayor o igual a 0'
-    }),
-    salePercentage: (value: number) => ({
-      isValid: value > 0 && value <= 100,
-      message: 'El porcentaje de venta debe estar entre 1 y 100'
-    }),
-    taxRegime: (value: string) => ({
-      isValid: ['general', 'pyme', 'startup'].includes(value),
-      message: 'Seleccione un régimen fiscal válido'
     })
   };
 };
@@ -97,8 +79,6 @@ export const getStepFieldsV2 = (step: number): string[] => {
       return ['revenue', 'ebitda'];
     case 3:
       return ['location', 'ownershipParticipation', 'competitiveAdvantage'];
-    case 4:
-      return ['acquisitionCost', 'salePercentage', 'taxRegime'];
     default:
       return [];
   }

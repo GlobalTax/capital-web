@@ -29,7 +29,7 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
       </Button>
       
       <div className="text-sm text-gray-500">
-        Paso {currentStep} de 4 {currentStep === 5 ? '(Resultados)' : ''}
+        Paso {currentStep} de 4
       </div>
       
       <Button
@@ -37,10 +37,10 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
         disabled={isNextDisabled}
         className="flex items-center bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >
-        {currentStep === 4 ? (
+        {currentStep === 3 ? (
           <>
             <Calculator className="h-4 w-4 mr-2" />
-            Calcular Impacto Fiscal
+            Calcular Valoración
           </>
         ) : (
           <>

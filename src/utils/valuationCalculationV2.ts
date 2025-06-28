@@ -1,6 +1,5 @@
 
 import { CompanyDataV2, ValuationResultV2, SectorMultiple } from '@/types/valuationV2';
-import { calculateTaxImpact } from '@/utils/taxCalculation';
 
 export const calculateCompanyValuationV2 = async (
   companyData: CompanyDataV2, 
@@ -35,9 +34,6 @@ export const calculateCompanyValuationV2 = async (
   // Calcular valoración usando solo múltiplo EBITDA
   const ebitdaValuation = ebitdaToUse * sectorData.ebitda_multiple;
   const finalValuation = Math.round(ebitdaValuation);
-  
-  // Calcular impacto fiscal
-  const taxImpact = calculateTaxImpact(companyData, finalValuation);
 
   const valuationResult: ValuationResultV2 = {
     ebitdaMultiple: Math.round(ebitdaValuation),
@@ -48,8 +44,7 @@ export const calculateCompanyValuationV2 = async (
     },
     multiples: {
       ebitdaMultipleUsed: sectorData.ebitda_multiple
-    },
-    taxImpact
+    }
   };
 
   return valuationResult;
