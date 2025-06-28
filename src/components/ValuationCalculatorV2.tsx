@@ -1,0 +1,87 @@
+
+import React from 'react';
+import { useValuationCalculatorV2 } from '@/hooks/useValuationCalculatorV2';
+import StepIndicatorV2 from '@/components/valuation-v2/StepIndicatorV2';
+import StepContentV2 from '@/components/valuation-v2/StepContentV2';
+import NavigationButtonsV2 from '@/components/valuation-v2/NavigationButtonsV2';
+
+const ValuationCalculatorV2 = () => {
+  const { 
+    currentStep,
+    companyData, 
+    result, 
+    isCalculating,
+    showValidation,
+    errors,
+    getFieldState,
+    handleFieldBlur,
+    updateField, 
+    nextStep,
+    prevStep,
+    goToStep,
+    validateStep,
+    calculateValuation, 
+    resetCalculator 
+  } = useValuationCalculatorV2();
+
+  const handleNext = () => {
+    console.log('handleNext called, currentStep:', currentStep);
+    
+    if (currentStep === 4) {
+      console.log('In step 4, calculating valuation with tax impact...');
+      calculateValuation();
+    } else {
+      console.log('Moving to next step...');
+      nextStep();
+    }
+  };
+
+  const isNextDisabled = isCalculating;
+
+  return (
+    <div className="min-h-screen bg-white py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Calculadora de Valoración Empresarial con Impacto Fiscal
+          </h1>
+          <p className="text-lg text-gray-600">
+            Obtén una valoración estimada de tu empresa y analiza el impacto fiscal de la venta
+          </p>
+        </div>
+
+        <StepIndicatorV2 
+          currentStep={currentStep} 
+          goToStep={goToStep}
+          validateStep={validateStep}
+        />
+
+        <div className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
+          <StepContentV2
+            currentStep={currentStep}
+            companyData={companyData}
+            updateField={updateField}
+            result={result}
+            isCalculating={isCalculating}
+            resetCalculator={resetCalculator}
+            showValidation={showValidation}
+            getFieldState={getFieldState}
+            handleFieldBlur={handleFieldBlur}
+            errors={errors}
+          />
+
+          {currentStep < 5 && (
+            <NavigationButtonsV2
+              currentStep={currentStep}
+              isNextDisabled={isNextDisabled}
+              onPrev={prevStep}
+              onNext={handleNext}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ValuationCalculatorV2;

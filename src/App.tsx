@@ -8,6 +8,7 @@ import Nosotros from '@/pages/Nosotros';
 import Equipo from '@/pages/Equipo';
 import Contacto from '@/pages/Contacto';
 import CalculadoraValoracion from '@/pages/CalculadoraValoracion';
+import CalculadoraValoracionV2 from "@/pages/CalculadoraValoracionV2";
 import VentaEmpresas from '@/pages/VentaEmpresas';
 import CompraEmpresas from '@/pages/CompraEmpresas';
 import CasosExito from '@/pages/CasosExito';
@@ -67,6 +68,7 @@ function App() {
               <Route path="/equipo" element={<Equipo />} />
               <Route path="/contacto" element={<Contacto />} />
               <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
+              <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
               <Route path="/venta-empresas" element={<VentaEmpresas />} />
               <Route path="/compra-empresas" element={<CompraEmpresas />} />
               <Route path="/casos-exito" element={<CasosExito />} />
