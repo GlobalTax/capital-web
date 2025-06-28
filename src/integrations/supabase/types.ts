@@ -308,6 +308,66 @@ export type Database = {
           },
         ]
       }
+      collaborator_applications: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          experience: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          ip_address: unknown | null
+          motivation: string | null
+          phone: string
+          profession: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          experience?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          motivation?: string | null
+          phone: string
+          profession: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          experience?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          motivation?: string | null
+          phone?: string
+          profession?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       company_operations: {
         Row: {
           company_name: string
@@ -452,6 +512,66 @@ export type Database = {
           whatsapp_sent?: boolean | null
           whatsapp_sent_at?: string | null
           years_of_operation?: number | null
+        }
+        Relationships: []
+      }
+      contact_leads: {
+        Row: {
+          company: string
+          company_size: string | null
+          country: string | null
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          ip_address: unknown | null
+          phone: string | null
+          referral: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          company: string
+          company_size?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          phone?: string | null
+          referral?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          company?: string
+          company_size?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          phone?: string | null
+          referral?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
         }
         Relationships: []
       }

@@ -16,6 +16,8 @@ import TeamMembersManager from './TeamMembersManager';
 import CarouselLogosManager from './CarouselLogosManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import BlogPostsManager from './BlogPostsManager';
+import ContactLeadsManager from './ContactLeadsManager';
+import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -61,6 +63,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         <Route path="/carousel-logos" element={<CarouselLogosManager />} />
         <Route path="/carousel-testimonials" element={<CarouselTestimonialsManager />} />
         <Route path="/blog" element={<BlogPostsManager />} />
+        <Route path="/contact-leads" element={<ContactLeadsManager />} />
+        <Route path="/collaborator-applications" element={<CollaboratorApplicationsManager />} />
       </Routes>
     </AdminLayout>
   );

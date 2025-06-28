@@ -30,7 +30,9 @@ export const useAdminLayout = () => {
         'team': 'Equipo',
         'testimonials': 'Testimonios',
         'carousel-testimonials': 'Testimonios Carrusel',
-        'carousel-logos': 'Logos Carrusel'
+        'carousel-logos': 'Logos Carrusel',
+        'contact-leads': 'Leads de Contacto',
+        'collaborator-applications': 'Solicitudes Colaboradores'
       };
 
       if (sectionTitles[section]) {

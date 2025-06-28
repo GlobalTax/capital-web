@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from '@/hooks/use-toast';
 import { formatSpanishPhone } from '@/utils/validationUtils';
+import { useContactLeads } from '@/hooks/useContactLeads';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -25,24 +24,28 @@ const Contact = () => {
     referral: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { submitContactLead, isSubmitting } = useContactLeads();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simulate form submission
-    toast({
-      title: "Solicitud enviada",
-      description: "Nos pondremos en contacto contigo en las próximas 24 horas para programar tu consulta gratuita.",
-    });
-    
-    setFormData({
-      fullName: '',
-      company: '',
-      phone: '',
-      email: '',
-      country: '',
-      companySize: '',
-      referral: '',
-    });
+    try {
+      await submitContactLead(formData);
+      
+      // Limpiar formulario después del envío exitoso
+      setFormData({
+        fullName: '',
+        company: '',
+        phone: '',
+        email: '',
+        country: '',
+        companySize: '',
+        referral: '',
+      });
+    } catch (error) {
+      // El error ya se maneja en el hook
+      console.error('Error en el formulario:', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -271,11 +274,12 @@ const Contact = () => {
                 
                 <div className="flex w-full flex-col justify-end space-y-3 pt-2">
                   <InteractiveHoverButton
-                    text="Solicitar Consulta"
+                    text={isSubmitting ? "Enviando..." : "Solicitar Consulta"}
                     variant="primary"
                     size="lg"
                     className="w-full"
                     type="submit"
+                    disabled={isSubmitting}
                   />
                   <div className="text-xs text-gray-500">
                     Al enviar este formulario, aceptas que nos pongamos en contacto contigo.
