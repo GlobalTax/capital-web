@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,8 @@ import {
   FileText,
   Users,
   ArrowRight,
-  Activity
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
 const ModernRecentActivity = () => {
