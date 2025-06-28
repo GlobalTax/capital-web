@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,15 +9,18 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, Eye, Calendar, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Calendar, Tag, Sparkles } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { BlogPost, BlogPostFormData } from '@/types/blog';
 import { useToast } from '@/hooks/use-toast';
+import AIContentGenerator from './AIContentGenerator';
 
 const BlogPostsManager = () => {
   const { posts, isLoading, createPost, updatePost, deletePost, fetchPosts } = useBlogPosts();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [aiGeneratorOpen, setAiGeneratorOpen] = useState(false);
+  const [aiGenerationType, setAiGenerationType] = useState<'title' | 'content' | 'excerpt' | 'seo' | 'tags'>('title');
   const [formData, setFormData] = useState<BlogPostFormData>({
     title: '',
     slug: '',
@@ -87,6 +89,46 @@ const BlogPostsManager = () => {
   const handleTagsChange = (tagsString: string) => {
     const tags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     setFormData(prev => ({ ...prev, tags }));
+  };
+
+  const handleAIGeneration = (type: 'title' | 'content' | 'excerpt' | 'seo' | 'tags') => {
+    setAiGenerationType(type);
+    setAiGeneratorOpen(true);
+  };
+
+  const handleAIContentGenerated = (content: string) => {
+    switch (aiGenerationType) {
+      case 'title':
+        // Si el contenido tiene múltiples títulos, tomar el primero
+        const titles = content.split('\n').filter(line => line.trim());
+        const selectedTitle = titles[0].replace(/^\d+\.\s*/, '').replace(/^-\s*/, '').trim();
+        handleTitleChange(selectedTitle);
+        break;
+      case 'content':
+        setFormData(prev => ({ ...prev, content }));
+        break;
+      case 'excerpt':
+        setFormData(prev => ({ ...prev, excerpt: content }));
+        break;
+      case 'seo':
+        // Parsear el contenido SEO
+        const lines = content.split('\n');
+        const metaTitle = lines.find(line => line.includes('Meta título') || line.includes('título'))?.split(':')[1]?.trim() || '';
+        const metaDescription = lines.find(line => line.includes('Meta descripción') || line.includes('descripción'))?.split(':')[1]?.trim() || '';
+        setFormData(prev => ({
+          ...prev,
+          meta_title: metaTitle || prev.meta_title,
+          meta_description: metaDescription || prev.meta_description
+        }));
+        break;
+      case 'tags':
+        // Parsear los tags generados
+        const tagsList = content.split(/[,\n]/).map(tag => 
+          tag.trim().replace(/^\d+\.\s*/, '').replace(/^-\s*/, '').trim()
+        ).filter(tag => tag.length > 0);
+        setFormData(prev => ({ ...prev, tags: tagsList }));
+        break;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,7 +202,7 @@ const BlogPostsManager = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-black">Gestión de Blog</h2>
-          <p className="text-gray-600">Crea y gestiona los posts del blog</p>
+          <p className="text-gray-600">Crea y gestiona los posts del blog con ayuda de IA</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -192,12 +234,24 @@ const BlogPostsManager = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="title">Título *</Label>
-                      <Input
-                        id="title"
-                        value={formData.title}
-                        onChange={(e) => handleTitleChange(e.target.value)}
-                        required
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          id="title"
+                          value={formData.title}
+                          onChange={(e) => handleTitleChange(e.target.value)}
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAIGeneration('title')}
+                          className="flex items-center gap-1"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          IA
+                        </Button>
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="slug">Slug *</Label>
@@ -212,23 +266,51 @@ const BlogPostsManager = () => {
 
                   <div>
                     <Label htmlFor="excerpt">Extracto</Label>
-                    <Textarea
-                      id="excerpt"
-                      value={formData.excerpt}
-                      onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                      rows={3}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Textarea
+                          id="excerpt"
+                          value={formData.excerpt}
+                          onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+                          rows={3}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAIGeneration('excerpt')}
+                          className="flex items-center gap-1"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          IA
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
                     <Label htmlFor="content">Contenido (Markdown) *</Label>
-                    <Textarea
-                      id="content"
-                      value={formData.content}
-                      onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                      rows={15}
-                      required
-                    />
+                    <div className="space-y-2">
+                      <div className="flex gap-2 mb-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAIGeneration('content')}
+                          className="flex items-center gap-1"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          Generar Artículo Completo
+                        </Button>
+                      </div>
+                      <Textarea
+                        id="content"
+                        value={formData.content}
+                        onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                        rows={15}
+                        required
+                      />
+                    </div>
                   </div>
                 </TabsContent>
 
@@ -265,14 +347,28 @@ const BlogPostsManager = () => {
 
                   <div>
                     <Label htmlFor="tags">Tags (separadas por comas)</Label>
-                    <Input
-                      id="tags"
-                      value={formData.tags.join(', ')}
-                      onChange={(e) => handleTagsChange(e.target.value)}
-                      placeholder="fusiones, adquisiciones, valoración"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="tags"
+                        value={formData.tags.join(', ')}
+                        onChange={(e) => handleTagsChange(e.target.value)}
+                        placeholder="fusiones, adquisiciones, valoración"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAIGeneration('tags')}
+                        className="flex items-center gap-1"
+                        disabled={!formData.title && !formData.content}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        IA
+                      </Button>
+                    </div>
                   </div>
 
+                  {/* ... keep existing code (author_name, featured_image_url, switches) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="author_name">Autor</Label>
@@ -313,6 +409,19 @@ const BlogPostsManager = () => {
                 </TabsContent>
 
                 <TabsContent value="seo" className="space-y-4">
+                  <div className="flex gap-2 mb-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAIGeneration('seo')}
+                      className="flex items-center gap-1"
+                      disabled={!formData.title}
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      Optimizar SEO con IA
+                    </Button>
+                  </div>
                   <div>
                     <Label htmlFor="meta_title">Meta Título</Label>
                     <Input
@@ -439,6 +548,16 @@ const BlogPostsManager = () => {
           </CardContent>
         </Card>
       )}
+
+      <AIContentGenerator
+        isOpen={aiGeneratorOpen}
+        onClose={() => setAiGeneratorOpen(false)}
+        onContentGenerated={handleAIContentGenerated}
+        type={aiGenerationType}
+        currentTitle={formData.title}
+        currentContent={formData.content}
+        category={formData.category}
+      />
     </div>
   );
 };
