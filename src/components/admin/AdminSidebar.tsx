@@ -40,17 +40,17 @@ const AdminSidebar = () => {
         <SidebarHeaderComponent isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
+      <SidebarContent className="gap-0 p-1">
+        <SidebarGroup className="p-1">
+          <SidebarMenu className="gap-0">
             {dashboardItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild className="h-7 px-2">
                   <NavLink
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}
                   >
-                    {!isCollapsed && <span>{item.title}</span>}
+                    {!isCollapsed && <span className="text-sm">{item.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -20,13 +20,13 @@ interface SidebarNavigationGroupProps {
 
 const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavigationGroupProps) => {
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="text-xs">{group.title}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
+    <SidebarGroup className="py-0 px-1">
+      <SidebarGroupLabel className="text-xs px-2 py-1 h-auto">{group.title}</SidebarGroupLabel>
+      <SidebarGroupContent className="py-0">
+        <SidebarMenu className="gap-0">
           {group.items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild className="h-7 px-2">
                 <NavLink
                   to={item.url}
                   className={getNavClass(item.url)}
