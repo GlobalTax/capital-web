@@ -34,11 +34,6 @@ export const navigationGroups: NavigationGroup[] = [
         icon: PenTool,
         badge: 'NEW'
       },
-      {
-        title: 'Blog Posts (Clásico)',
-        url: '/admin/blog',
-        icon: FileText,
-      },
     ],
   },
   {
