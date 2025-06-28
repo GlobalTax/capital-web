@@ -70,11 +70,18 @@ export const serviciosData: MenuCategory[] = [
     title: "Servicios Especializados",
     items: [
       {
-        id: "corporate-finance",
-        label: "Corporate Finance",
-        href: "/servicios/corporate-finance",
-        icon: TrendingUp,
-        description: "Soluciones financieras corporativas avanzadas"
+        id: "asesoramiento-legal",
+        label: "Asesoramiento Legal en Compraventas",
+        href: "/servicios/asesoramiento-legal",
+        icon: Scale,
+        description: "Asesoramiento jurídico integral en operaciones M&A"
+      },
+      {
+        id: "planificacion-fiscal",
+        label: "Planificación Fiscal",
+        href: "/servicios/planificacion-fiscal",
+        icon: Calculator,
+        description: "Optimización tributaria en operaciones empresariales"
       },
       {
         id: "due-diligence",
@@ -82,13 +89,6 @@ export const serviciosData: MenuCategory[] = [
         href: "/servicios/due-diligence",
         icon: FileText,
         description: "Análisis exhaustivo de riesgos y oportunidades"
-      },
-      {
-        id: "fusiones-adquisiciones",
-        label: "Fusiones y Adquisiciones",
-        href: "/servicios/fusiones-adquisiciones",
-        icon: ArrowRightLeft,
-        description: "Gestión completa de operaciones M&A"
       },
       {
         id: "reestructuraciones",

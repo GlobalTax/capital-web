@@ -24,9 +24,9 @@ import PorQueElegirnos from '@/pages/por-que-elegirnos/index';
 
 // Servicios
 import Valoraciones from '@/pages/servicios/Valoraciones';
-import CorporateFinance from '@/pages/servicios/CorporateFinance';
+import AsesoramientoLegal from '@/pages/servicios/AsesoramientoLegal';
+import PlanificacionFiscal from '@/pages/servicios/PlanificacionFiscal';
 import DueDiligence from '@/pages/servicios/DueDiligence';
-import FusionesAdquisiciones from '@/pages/servicios/FusionesAdquisiciones';
 import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
 
 // Sectores - Updated and new pages
@@ -78,9 +78,9 @@ function App() {
               
               {/* Servicios routes */}
               <Route path="/servicios/valoraciones" element={<Valoraciones />} />
-              <Route path="/servicios/corporate-finance" element={<CorporateFinance />} />
+              <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
+              <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
               <Route path="/servicios/due-diligence" element={<DueDiligence />} />
-              <Route path="/servicios/fusiones-adquisiciones" element={<FusionesAdquisiciones />} />
               <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
               
               {/* Sectores routes - Updated and new */}
