@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Sparkles, FileText, Download, Eye, Trash2, Wand2, LayoutGrid, 
-  History, Template, Palette, Share2, BarChart3, Crown
+  History, FileTemplate, Palette, Share2, BarChart3, Crown
 } from 'lucide-react';
 import SectorReportForm from './sector-reports/SectorReportForm';
 import SectorReportPreview from './sector-reports/SectorReportPreview';
@@ -135,7 +136,7 @@ const SectorReportsGenerator = () => {
                   onClick={() => setViewMode('templates')}
                   size="lg"
                 >
-                  <Template className="h-5 w-5 mr-2" />
+                  <FileTemplate className="h-5 w-5 mr-2" />
                   Templates IA
                 </Button>
                 <Button
@@ -177,7 +178,7 @@ const SectorReportsGenerator = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <Template className="h-5 w-5" />
+                    <FileTemplate className="h-5 w-5" />
                     Templates Inteligentes
                   </CardTitle>
                   <CardDescription>
@@ -505,7 +506,7 @@ const SectorReportsGenerator = () => {
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Template className="h-4 w-4 inline mr-1" />
+          <FileTemplate className="h-4 w-4 inline mr-1" />
           Templates IA
         </button>
         <button

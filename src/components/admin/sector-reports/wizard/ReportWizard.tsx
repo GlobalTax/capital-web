@@ -14,9 +14,10 @@ interface ReportWizardProps {
   onGenerate: (request: SectorReportRequest) => void;
   isGenerating: boolean;
   onClose: () => void;
+  initialData?: Partial<SectorReportRequest> | null;
 }
 
-const ReportWizard: React.FC<ReportWizardProps> = ({ onGenerate, isGenerating, onClose }) => {
+const ReportWizard: React.FC<ReportWizardProps> = ({ onGenerate, isGenerating, onClose, initialData }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<SectorReportRequest>>({
     reportType: 'market-analysis',
@@ -26,8 +27,12 @@ const ReportWizard: React.FC<ReportWizardProps> = ({ onGenerate, isGenerating, o
     includeData: {
       multiples: true,
       caseStudies: true,
-      statistics: true
-    }
+      statistics: true,
+      visualizations: false,
+      infographics: false,
+      heatmaps: false
+    },
+    ...initialData
   });
 
   const steps = [

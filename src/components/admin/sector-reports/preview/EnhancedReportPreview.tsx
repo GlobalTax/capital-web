@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   X, Download, Copy, FileText, Edit3, Save, Undo, Eye, 
-  BookOpen, MessageSquare, Share2, Version, ChartBar 
+  BookOpen, MessageSquare, Share2, GitBranch, ChartBar 
 } from 'lucide-react';
 import { SectorReportResult } from '@/types/sectorReports';
 import { useToast } from '@/hooks/use-toast';
@@ -392,7 +392,7 @@ const EnhancedReportPreview: React.FC<EnhancedReportPreviewProps> = ({
               Exportar
             </Button>
             <Button variant="outline" size="sm">
-              <Version className="h-4 w-4 mr-1" />
+              <GitBranch className="h-4 w-4 mr-1" />
               Versiones
             </Button>
           </div>

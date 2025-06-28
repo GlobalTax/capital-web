@@ -23,7 +23,14 @@ const QuickTemplates: React.FC<QuickTemplatesProps> = ({ onSelectTemplate }) => 
         depth: 'basic' as const,
         period: 'year' as const,
         targetAudience: 'executives' as const,
-        includeData: { multiples: true, caseStudies: false, statistics: true }
+        includeData: { 
+          multiples: true, 
+          caseStudies: false, 
+          statistics: true, 
+          visualizations: false, 
+          infographics: false, 
+          heatmaps: false 
+        }
       }
     },
     {
@@ -37,7 +44,14 @@ const QuickTemplates: React.FC<QuickTemplatesProps> = ({ onSelectTemplate }) => 
         depth: 'advanced' as const,
         period: '3-years' as const,
         targetAudience: 'investors' as const,
-        includeData: { multiples: true, caseStudies: true, statistics: true }
+        includeData: { 
+          multiples: true, 
+          caseStudies: true, 
+          statistics: true, 
+          visualizations: true, 
+          infographics: false, 
+          heatmaps: false 
+        }
       }
     },
     {
@@ -51,7 +65,14 @@ const QuickTemplates: React.FC<QuickTemplatesProps> = ({ onSelectTemplate }) => 
         depth: 'intermediate' as const,
         period: 'year' as const,
         targetAudience: 'advisors' as const,
-        includeData: { multiples: false, caseStudies: true, statistics: true }
+        includeData: { 
+          multiples: false, 
+          caseStudies: true, 
+          statistics: true, 
+          visualizations: true, 
+          infographics: false, 
+          heatmaps: true 
+        }
       }
     },
     {
@@ -66,7 +87,14 @@ const QuickTemplates: React.FC<QuickTemplatesProps> = ({ onSelectTemplate }) => 
         period: 'year' as const,
         targetAudience: 'investors' as const,
         customFocus: 'Enfoque especial en criterios ESG, sostenibilidad ambiental, gobierno corporativo y responsabilidad social',
-        includeData: { multiples: false, caseStudies: true, statistics: true }
+        includeData: { 
+          multiples: false, 
+          caseStudies: true, 
+          statistics: true, 
+          visualizations: false, 
+          infographics: true, 
+          heatmaps: false 
+        }
       }
     }
   ];
