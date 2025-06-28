@@ -6,7 +6,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
@@ -30,24 +29,22 @@ const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavi
         <SidebarMenu className="gap-1">
           {group.items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild className="h-10 px-3 rounded-md font-normal">
-                <NavLink
-                  to={item.url}
-                  className={getNavClass(item.url)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {!isCollapsed && (
-                    <div className="flex items-center justify-between w-full ml-2">
-                      <span className="text-sm">{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-700 border-gray-200">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </NavLink>
-              </SidebarMenuButton>
+              <NavLink
+                to={item.url}
+                className={getNavClass(item.url)}
+              >
+                <item.icon className="h-4 w-4 flex-shrink-0" />
+                {!isCollapsed && (
+                  <div className="flex items-center justify-between w-full ml-2">
+                    <span className="text-sm">{item.title}</span>
+                    {item.badge && (
+                      <Badge variant="secondary" className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-700 border-gray-200">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </NavLink>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

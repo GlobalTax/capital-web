@@ -7,7 +7,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
   useSidebar,
@@ -36,8 +35,8 @@ const AdminSidebar = () => {
 
   const getNavClass = (url: string, exact = false) => {
     return isActive(url, exact)
-      ? "bg-gray-900 text-white hover:bg-gray-800"
-      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50";
+      ? "bg-gray-900 text-white hover:bg-gray-800 flex items-center h-10 px-3 rounded-md font-normal w-full transition-colors duration-200"
+      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center h-10 px-3 rounded-md font-normal w-full transition-colors duration-200";
   };
 
   return (
@@ -48,21 +47,21 @@ const AdminSidebar = () => {
 
       <SidebarContent className="gap-0 p-0">
         <SidebarGroup className="px-4 py-6">
-          <SidebarMenu className="gap-1">
-            {dashboardItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild className="h-10 px-3 rounded-md font-normal">
+          <SidebarGroupContent className="py-0">
+            <SidebarMenu className="gap-1">
+              {dashboardItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
                   <NavLink
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
                     {!isCollapsed && <span className="text-sm ml-2">{item.title}</span>}
                   </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
 
         {navigationGroups.map((group) => (
