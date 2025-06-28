@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -185,7 +184,7 @@ const CarouselTestimonialsManager = () => {
         .eq('id', id);
 
       if (error) throw error;
-      fetchTestimoniials();
+      fetchTestimonials();
     } catch (error) {
       console.error('Error updating order:', error);
       toast({
