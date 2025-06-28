@@ -10,7 +10,7 @@ import CaseStudiesManager from './CaseStudiesManager';
 import OperationsManager from './OperationsManager';
 import MultiplesManager from './MultiplesManager';
 import StatisticsManager from './StatisticsManager';
-import TeamManager from './TeamManager';
+import TeamMembersManager from './TeamMembersManager';
 import TestimonialsManager from './TestimonialsManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import CarouselLogosManager from './CarouselLogosManager';
@@ -37,7 +37,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               <Route path="operations" element={<OperationsManager />} />
               <Route path="multiples" element={<MultiplesManager />} />
               <Route path="statistics" element={<StatisticsManager />} />
-              <Route path="team" element={<TeamManager />} />
+              <Route path="team" element={<TeamMembersManager />} />
               <Route path="testimonials" element={<TestimonialsManager />} />
               <Route path="carousel-testimonials" element={<CarouselTestimonialsManager />} />
               <Route path="carousel-logos" element={<CarouselLogosManager />} />
