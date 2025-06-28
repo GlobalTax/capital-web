@@ -36,7 +36,7 @@ const AdminSidebar = () => {
 
   return (
     <Sidebar className="border-r border-border">
-      <SidebarHeader className="border-b border-border p-6">
+      <SidebarHeader className="border-b border-border p-3">
         <SidebarHeaderComponent isCollapsed={isCollapsed} />
       </SidebarHeader>
 
@@ -50,7 +50,6 @@ const AdminSidebar = () => {
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}
                   >
-                    <item.icon className="h-4 w-4" />
                     {!isCollapsed && <span>{item.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>

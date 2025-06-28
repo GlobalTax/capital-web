@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
 
 interface BreadcrumbItem {
   title: string;
@@ -14,11 +13,11 @@ interface AdminBreadcrumbsProps {
 
 const AdminBreadcrumbs = ({ items }: AdminBreadcrumbsProps) => {
   return (
-    <nav className="flex items-center space-x-1 text-sm text-gray-600">
-      <Home className="h-4 w-4" />
+    <nav className="flex items-center space-x-2 text-sm text-gray-600">
+      <span>Dashboard</span>
       {items.map((item, index) => (
-        <React.Fragment key={index}>
-          <ChevronRight className="h-4 w-4 text-gray-400" />
+        <div key={index} className="flex items-center space-x-2">
+          <span className="text-gray-400">/</span>
           {item.url && index < items.length - 1 ? (
             <Link 
               to={item.url} 
@@ -31,7 +30,7 @@ const AdminBreadcrumbs = ({ items }: AdminBreadcrumbsProps) => {
               {item.title}
             </span>
           )}
-        </React.Fragment>
+        </div>
       ))}
     </nav>
   );

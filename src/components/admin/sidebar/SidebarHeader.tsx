@@ -8,12 +8,12 @@ interface SidebarHeaderProps {
 const SidebarHeader = ({ isCollapsed }: SidebarHeaderProps) => {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-        <span className="text-primary-foreground font-bold text-sm">C</span>
+      <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
+        <span className="text-primary-foreground font-bold text-xs">C</span>
       </div>
       {!isCollapsed && (
         <div>
-          <h2 className="font-bold text-lg">Capittal</h2>
+          <h2 className="font-bold text-sm">Capittal</h2>
           <p className="text-xs text-muted-foreground">Panel Admin</p>
         </div>
       )}

@@ -21,7 +21,7 @@ interface SidebarNavigationGroupProps {
 const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavigationGroupProps) => {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-xs">{group.title}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {group.items.map((item) => (
@@ -31,10 +31,9 @@ const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavi
                   to={item.url}
                   className={getNavClass(item.url)}
                 >
-                  <item.icon className="h-4 w-4" />
                   {!isCollapsed && (
                     <div className="flex items-center justify-between w-full">
-                      <span>{item.title}</span>
+                      <span className="text-sm">{item.title}</span>
                       {item.badge && (
                         <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs">
                           {item.badge}
