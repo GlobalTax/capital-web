@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { TrendingUp } from 'lucide-react';
 import ModernDashboardStats from './dashboard/ModernDashboardStats';
 import ModernQuickActions from './dashboard/ModernQuickActions';
 import ModernRecentActivity from './dashboard/ModernRecentActivity';
