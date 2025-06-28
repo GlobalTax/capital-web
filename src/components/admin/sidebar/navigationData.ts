@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   FileText,
@@ -26,6 +25,22 @@ export const dashboardItems: NavigationItem[] = [
 
 export const navigationGroups: NavigationGroup[] = [
   {
+    title: 'Contenido IA',
+    items: [
+      {
+        title: 'AI Content Studio Pro',
+        url: '/admin/blog-v2',
+        icon: PenTool,
+        badge: 'NEW'
+      },
+      {
+        title: 'Blog Posts (Clásico)',
+        url: '/admin/blog',
+        icon: FileText,
+      },
+    ],
+  },
+  {
     title: 'Contenido',
     items: [
       {
@@ -37,11 +52,6 @@ export const navigationGroups: NavigationGroup[] = [
         title: 'Operaciones',
         url: '/admin/operations',
         icon: Building2,
-      },
-      {
-        title: 'Blog Posts',
-        url: '/admin/blog',
-        icon: PenTool,
       },
     ],
   },
