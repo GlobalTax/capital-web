@@ -6,6 +6,7 @@ export interface NavigationItem {
   url: string;
   icon: LucideIcon;
   exact?: boolean;
+  badge?: string;
 }
 
 export interface NavigationGroup {

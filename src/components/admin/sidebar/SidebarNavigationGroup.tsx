@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
 import { NavigationGroup } from './types';
 
 interface SidebarNavigationGroupProps {
@@ -31,7 +32,16 @@ const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavi
                   className={getNavClass(item.url)}
                 >
                   <item.icon className="h-4 w-4" />
-                  {!isCollapsed && <span>{item.title}</span>}
+                  {!isCollapsed && (
+                    <div className="flex items-center justify-between w-full">
+                      <span>{item.title}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
