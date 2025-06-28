@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Menu, X, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import DesktopNavigation from './header/DesktopNavigation';
-import MobileNavigation from './header/MobileNavigation';
-import { menuData } from './header/menuData';
+import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
+import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,13 +21,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <DesktopNavigation 
-            serviciosItems={menuData.serviciosItems}
-            sectoresItems={menuData.sectoresItems}
-            recursosItems={menuData.recursosItems}
-            nosotrosItems={menuData.nosotrosItems}
-            navItems={menuData.navItems}
-          />
+          <AdvancedDesktopNavigation />
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
@@ -56,14 +49,9 @@ const Header = () => {
         </div>
 
         {/* Mobile Navigation */}
-        <MobileNavigation 
+        <AdvancedMobileNavigation 
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
-          serviciosItems={menuData.serviciosItems}
-          sectoresItems={menuData.sectoresItems}
-          recursosItems={menuData.recursosItems}
-          nosotrosItems={menuData.nosotrosItems}
-          navItems={menuData.navItems}
         />
       </div>
     </header>
