@@ -30,22 +30,22 @@ const AdminSidebar = () => {
 
   const getNavClass = (url: string, exact = false) => {
     return isActive(url, exact)
-      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-      : "hover:bg-accent hover:text-accent-foreground";
+      ? "bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-l-2 border-blue-500"
+      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200";
   };
 
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarHeader className="border-b border-border p-3">
+    <Sidebar className="border-r border-slate-200 bg-white shadow-sm">
+      <SidebarHeader className="border-b border-slate-100 p-4 bg-slate-50/50">
         <SidebarHeaderComponent isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent className="gap-0 p-1">
-        <SidebarGroup className="p-1">
-          <SidebarMenu className="gap-0">
+      <SidebarContent className="gap-1 p-2">
+        <SidebarGroup className="px-2 py-1">
+          <SidebarMenu className="gap-1">
             {dashboardItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild className="h-7 px-2">
+                <SidebarMenuButton asChild className="h-9 px-3 rounded-lg font-medium transition-all duration-200">
                   <NavLink
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}

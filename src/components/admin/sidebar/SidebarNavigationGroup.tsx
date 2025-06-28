@@ -20,13 +20,15 @@ interface SidebarNavigationGroupProps {
 
 const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavigationGroupProps) => {
   return (
-    <SidebarGroup className="py-0 px-1">
-      <SidebarGroupLabel className="text-xs px-2 py-1 h-auto">{group.title}</SidebarGroupLabel>
+    <SidebarGroup className="px-2 py-1">
+      <SidebarGroupLabel className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mb-1">
+        {group.title}
+      </SidebarGroupLabel>
       <SidebarGroupContent className="py-0">
-        <SidebarMenu className="gap-0">
+        <SidebarMenu className="gap-1">
           {group.items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild className="h-7 px-2">
+              <SidebarMenuButton asChild className="h-9 px-3 rounded-lg font-medium transition-all duration-200">
                 <NavLink
                   to={item.url}
                   className={getNavClass(item.url)}
@@ -35,7 +37,7 @@ const SidebarNavigationGroup = ({ group, isCollapsed, getNavClass }: SidebarNavi
                     <div className="flex items-center justify-between w-full">
                       <span className="text-sm">{item.title}</span>
                       {item.badge && (
-                        <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs">
+                        <Badge variant="secondary" className="ml-2 px-2 py-0.5 text-xs bg-blue-50 text-blue-700 border-blue-200">
                           {item.badge}
                         </Badge>
                       )}
