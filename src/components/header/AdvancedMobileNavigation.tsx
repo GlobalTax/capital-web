@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Phone, ArrowLeft, ArrowRight } from 'lucide-react';
-import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuData';
+import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
 
 interface AdvancedMobileNavigationProps {
   isMenuOpen: boolean;

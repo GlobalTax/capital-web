@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -10,7 +9,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { ArrowRight } from 'lucide-react';
-import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuData';
+import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
 
 const ServiciosMenu = () => (
   <div className="grid gap-8 lg:grid-cols-4">
