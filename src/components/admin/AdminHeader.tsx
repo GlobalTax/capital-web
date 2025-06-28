@@ -17,9 +17,6 @@ const AdminHeader = ({ onLogout }: AdminHeaderProps) => {
         <SidebarTrigger />
         <div>
           <h1 className="text-lg font-light text-gray-900">Panel de Administración</h1>
-          <p className="text-sm text-gray-500 font-light">
-            Gestiona tu contenido y configuraciones
-          </p>
         </div>
       </div>
 
