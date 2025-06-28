@@ -40,19 +40,19 @@ const SectorReportForm: React.FC<SectorReportFormProps> = ({ onGenerate, isGener
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (field: string, checked: boolean | 'indeterminate') => {
+    const booleanValue = checked === true;
     setFormData(prev => ({
       ...prev,
       includeData: {
         ...prev.includeData,
-        [name]: checked
+        [field]: booleanValue
       }
     }));
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -157,72 +157,48 @@ const SectorReportForm: React.FC<SectorReportFormProps> = ({ onGenerate, isGener
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="multiples"
-                  name="multiples"
                   checked={formData.includeData.multiples}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    includeData: { ...prev.includeData, multiples: checked || false }
-                  }))}
+                  onCheckedChange={(checked) => handleCheckboxChange('multiples', checked)}
                 />
                 <Label htmlFor="multiples">Múltiplos de Valoración</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="caseStudies"
-                  name="caseStudies"
                   checked={formData.includeData.caseStudies}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    includeData: { ...prev.includeData, caseStudies: checked || false }
-                  }))}
+                  onCheckedChange={(checked) => handleCheckboxChange('caseStudies', checked)}
                 />
                 <Label htmlFor="caseStudies">Casos de Estudio</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="statistics"
-                  name="statistics"
                   checked={formData.includeData.statistics}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    includeData: { ...prev.includeData, statistics: checked || false }
-                  }))}
+                  onCheckedChange={(checked) => handleCheckboxChange('statistics', checked)}
                 />
                 <Label htmlFor="statistics">Estadísticas Clave</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="visualizations"
-                  name="visualizations"
                   checked={formData.includeData.visualizations}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    includeData: { ...prev.includeData, visualizations: checked || false }
-                  }))}
+                  onCheckedChange={(checked) => handleCheckboxChange('visualizations', checked)}
                 />
                 <Label htmlFor="visualizations">Visualizaciones</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="infographics"
-                  name="infographics"
                   checked={formData.includeData.infographics}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    includeData: { ...prev.includeData, infographics: checked || false }
-                  }))}
+                  onCheckedChange={(checked) => handleCheckboxChange('infographics', checked)}
                 />
                 <Label htmlFor="infographics">Infografías</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="heatmaps"
-                  name="heatmaps"
                   checked={formData.includeData.heatmaps}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    includeData: { ...prev.includeData, heatmaps: checked || false }
-                  }))}
+                  onCheckedChange={(checked) => handleCheckboxChange('heatmaps', checked)}
                 />
                 <Label htmlFor="heatmaps">Mapas de Calor</Label>
               </div>
