@@ -26,35 +26,32 @@ const AdminSidebar = () => {
       return location.pathname === url;
     }
     
-    // Para rutas no exactas, verificar que sea una sub-ruta válida
-    // Evitar que /admin coincida con /admin/algo
     if (url === '/admin') {
       return location.pathname === '/admin';
     }
     
-    // Para otras rutas, verificar que después del prefijo haya un / o sea el final
     return location.pathname.startsWith(url) && 
            (location.pathname === url || location.pathname.startsWith(url + '/'));
   };
 
   const getNavClass = (url: string, exact = false) => {
     return isActive(url, exact)
-      ? "bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-l-2 border-blue-500"
-      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200";
+      ? "bg-gray-900 text-white hover:bg-gray-800"
+      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50";
   };
 
   return (
-    <Sidebar className="border-r border-slate-200 bg-white shadow-sm">
-      <SidebarHeader className="border-b border-slate-100 p-4 bg-slate-50/50">
+    <Sidebar className="border-r border-gray-200 bg-white">
+      <SidebarHeader className="border-b border-gray-200 p-6">
         <SidebarHeaderComponent isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent className="gap-1 p-2">
-        <SidebarGroup className="px-2 py-1">
+      <SidebarContent className="gap-0 p-0">
+        <SidebarGroup className="px-4 py-6">
           <SidebarMenu className="gap-1">
             {dashboardItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild className="h-9 px-3 rounded-lg font-medium transition-all duration-200">
+                <SidebarMenuButton asChild className="h-10 px-3 rounded-md font-normal">
                   <NavLink
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}

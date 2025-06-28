@@ -17,22 +17,22 @@ const AdminBreadcrumbs = ({ items }: AdminBreadcrumbsProps) => {
     <nav className="flex items-center space-x-2 text-sm">
       <Link 
         to="/admin" 
-        className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+        className="text-gray-500 hover:text-gray-900 font-light"
       >
         Dashboard
       </Link>
       {items.map((item, index) => (
         <div key={index} className="flex items-center space-x-2">
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-gray-400" />
           {item.url && index < items.length - 1 ? (
             <Link 
               to={item.url} 
-              className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+              className="text-gray-500 hover:text-gray-900 font-light"
             >
               {item.title}
             </Link>
           ) : (
-            <span className={`${index === items.length - 1 ? "text-slate-900 font-semibold" : "text-slate-600"}`}>
+            <span className={`${index === items.length - 1 ? "text-gray-900 font-medium" : "text-gray-500"}`}>
               {item.title}
             </span>
           )}
