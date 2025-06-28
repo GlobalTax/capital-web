@@ -68,9 +68,16 @@ const CarouselLogosManager = () => {
     }
 
     try {
+      const logoToInsert = {
+        company_name: newLogo.company_name,
+        logo_url: newLogo.logo_url || null,
+        display_order: newLogo.display_order || 0,
+        is_active: newLogo.is_active ?? true
+      };
+
       const { error } = await supabase
         .from('carousel_logos')
-        .insert([newLogo]);
+        .insert(logoToInsert);
 
       if (error) throw error;
 
@@ -234,7 +241,7 @@ const CarouselLogosManager = () => {
               value={newLogo.logo_url || ''}
               onChange={(url) => setNewLogo({ ...newLogo, logo_url: url })}
               placeholder="URL del logo"
-              bucketName="logos"
+              folder="logos"
             />
 
             <div>
@@ -306,7 +313,7 @@ const CarouselLogosManager = () => {
                     value={editForm.logo_url || ''}
                     onChange={(url) => setEditForm({ ...editForm, logo_url: url })}
                     placeholder="URL del logo"
-                    bucketName="logos"
+                    folder="logos"
                   />
 
                   <div>

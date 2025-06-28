@@ -73,9 +73,18 @@ const CarouselTestimonialsManager = () => {
     }
 
     try {
+      const testimonialToInsert = {
+        quote: newTestimonial.quote,
+        client_name: newTestimonial.client_name,
+        client_company: newTestimonial.client_company,
+        logo_url: newTestimonial.logo_url || null,
+        display_order: newTestimonial.display_order || 0,
+        is_active: newTestimonial.is_active ?? true
+      };
+
       const { error } = await supabase
         .from('carousel_testimonials')
-        .insert([newTestimonial]);
+        .insert(testimonialToInsert);
 
       if (error) throw error;
 
@@ -176,7 +185,7 @@ const CarouselTestimonialsManager = () => {
         .eq('id', id);
 
       if (error) throw error;
-      fetchTestimonials();
+      fetchTestimoniials();
     } catch (error) {
       console.error('Error updating order:', error);
       toast({
@@ -266,7 +275,7 @@ const CarouselTestimonialsManager = () => {
               value={newTestimonial.logo_url || ''}
               onChange={(url) => setNewTestimonial({ ...newTestimonial, logo_url: url })}
               placeholder="URL del logo de la empresa"
-              bucketName="logos"
+              folder="logos"
             />
 
             <div>
@@ -361,7 +370,7 @@ const CarouselTestimonialsManager = () => {
                     value={editForm.logo_url || ''}
                     onChange={(url) => setEditForm({ ...editForm, logo_url: url })}
                     placeholder="URL del logo de la empresa"
-                    bucketName="logos"
+                    folder="logos"
                   />
 
                   <div>
