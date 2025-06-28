@@ -27,7 +27,7 @@ export const dashboardItems: NavigationItem[] = [
 
 export const navigationGroups: NavigationGroup[] = [
   {
-    title: 'Contenido IA',
+    title: 'Reports IA',
     items: [
       {
         title: 'AI Content Studio Pro',
