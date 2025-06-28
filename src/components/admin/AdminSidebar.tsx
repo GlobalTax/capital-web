@@ -56,7 +56,8 @@ const AdminSidebar = () => {
                     to={item.url}
                     className={getNavClass(item.url, item.exact)}
                   >
-                    {!isCollapsed && <span className="text-sm">{item.title}</span>}
+                    <item.icon className="h-4 w-4" />
+                    {!isCollapsed && <span className="text-sm ml-2">{item.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

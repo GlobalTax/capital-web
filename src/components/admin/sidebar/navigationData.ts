@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   FileText,
@@ -16,7 +17,7 @@ import { NavigationItem, NavigationGroup } from './types';
 
 export const dashboardItems: NavigationItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Inicio',
     url: '/admin',
     icon: LayoutDashboard,
     exact: true,

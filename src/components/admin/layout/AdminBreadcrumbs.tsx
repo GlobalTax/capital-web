@@ -19,7 +19,7 @@ const AdminBreadcrumbs = ({ items }: AdminBreadcrumbsProps) => {
         to="/admin" 
         className="text-gray-500 hover:text-gray-900 font-light"
       >
-        Dashboard
+        Inicio
       </Link>
       {items.map((item, index) => (
         <div key={index} className="flex items-center space-x-2">
