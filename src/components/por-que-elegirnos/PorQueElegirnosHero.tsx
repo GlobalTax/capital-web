@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Award, Users, TrendingUp, Shield } from 'lucide-react';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
 
@@ -87,12 +87,18 @@ const PorQueElegirnosHero = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.8s' }}>
-            <Button className="capittal-button text-lg px-8 py-4 hover:scale-105 hover:shadow-xl transition-all duration-300">
-              Conocer Nuestro Equipo
-            </Button>
-            <Button variant="outline" className="text-lg px-8 py-4 border-2 border-black hover:bg-black hover:text-white hover:scale-105 transition-all duration-300">
-              Ver Casos de Éxito
-            </Button>
+            <InteractiveHoverButton 
+              text="Conocer Nuestro Equipo"
+              variant="large"
+              size="lg"
+              className="hover:scale-105 hover:shadow-xl"
+            />
+            <InteractiveHoverButton 
+              text="Ver Casos de Éxito"
+              variant="outline"
+              size="lg"
+              className="hover:scale-105"
+            />
           </div>
         </div>
       </div>

@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+
 const Hero = () => {
-  return <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
+  return (
+    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Left Column - Content */}
@@ -37,11 +39,19 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <Button className="bg-white text-black rounded-lg px-12 py-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out text-base">Valorar mi empresa</Button>
+              <InteractiveHoverButton 
+                text="Valorar mi empresa"
+                variant="large"
+                size="lg"
+                className="hover:-translate-y-1"
+              />
               
-              <Button variant="outline" className="bg-transparent px-12 py-6 font-normal hover:bg-black hover:text-white transition-all duration-300 shadow-sm text-sm rounded-lg">
-                Ver Casos de Éxito
-              </Button>
+              <InteractiveHoverButton 
+                text="Ver Casos de Éxito"
+                variant="outline"
+                size="lg"
+                className="hover:-translate-y-1"
+              />
             </div>
           </div>
 
@@ -123,6 +133,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Hero;

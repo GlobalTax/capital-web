@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -270,12 +270,13 @@ const Contact = () => {
                 </div>
                 
                 <div className="flex w-full flex-col justify-end space-y-3 pt-2">
-                  <Button 
+                  <InteractiveHoverButton
+                    text="Solicitar Consulta"
+                    variant="large"
+                    size="lg"
+                    className="w-full"
                     type="submit"
-                    className="capittal-button w-full text-lg py-4"
-                  >
-                    Solicitar Consulta Gratuita
-                  </Button>
+                  />
                   <div className="text-xs text-gray-500">
                     Al enviar este formulario, aceptas que nos pongamos en contacto contigo.
                     Para más información sobre cómo manejamos tu información personal, visita nuestra{" "}

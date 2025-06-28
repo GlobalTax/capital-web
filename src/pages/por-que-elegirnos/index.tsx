@@ -8,7 +8,7 @@ import PorQueElegirnosExperience from '@/components/por-que-elegirnos/PorQueEleg
 import PorQueElegirnosApproach from '@/components/por-que-elegirnos/PorQueElegirnosApproach';
 import PorQueElegirnosResults from '@/components/por-que-elegirnos/PorQueElegirnosResults';
 import PorQueElegirnosTestimonials from '@/components/por-que-elegirnos/PorQueElegirnosTestimonials';
-import { Button } from '@/components/ui/button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const PorQueElegirnos = () => {
   return (
@@ -36,9 +36,11 @@ const PorQueElegirnos = () => {
                   <p className="text-gray-600 mb-6">
                     Más de 15 años especializados exclusivamente en M&A con un track record excepcional
                   </p>
-                  <Button className="capittal-button">
-                    Ver Experiencia
-                  </Button>
+                  <InteractiveHoverButton 
+                    text="Ver Experiencia"
+                    variant="default"
+                    size="default"
+                  />
                 </div>
               </Link>
               
@@ -48,9 +50,11 @@ const PorQueElegirnos = () => {
                   <p className="text-gray-600 mb-6">
                     Proceso optimizado y probado que maximiza el valor de cada transacción
                   </p>
-                  <Button className="capittal-button">
-                    Ver Metodología
-                  </Button>
+                  <InteractiveHoverButton 
+                    text="Ver Metodología"
+                    variant="default"
+                    size="default"
+                  />
                 </div>
               </Link>
               
@@ -60,9 +64,11 @@ const PorQueElegirnos = () => {
                   <p className="text-gray-600 mb-6">
                     Datos y métricas que demuestran nuestro éxito en cada operación
                   </p>
-                  <Button className="capittal-button">
-                    Ver Resultados
-                  </Button>
+                  <InteractiveHoverButton 
+                    text="Ver Resultados"
+                    variant="default"
+                    size="default"
+                  />
                 </div>
               </Link>
             </div>

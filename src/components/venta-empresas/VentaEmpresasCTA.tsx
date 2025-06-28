@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Phone, Mail, Calendar, Download } from 'lucide-react';
 
 const VentaEmpresasCTA = () => {
@@ -153,9 +152,13 @@ const VentaEmpresasCTA = () => {
                 ></textarea>
               </div>
               
-              <Button className="capittal-button w-full text-lg py-4">
-                Solicitar Valoración Gratuita
-              </Button>
+              <InteractiveHoverButton 
+                text="Solicitar Valoración"
+                variant="large"
+                size="lg"
+                className="w-full"
+                type="submit"
+              />
               
               <p className="text-sm text-gray-500 text-center">
                 Al enviar este formulario, aceptas que nos pongamos en contacto contigo 

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Menu, X, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DesktopNavigation from './header/DesktopNavigation';
@@ -33,9 +33,11 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-2">
             <Link to="/contacto">
-              <Button className="bg-white text-black border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-                Contacto
-              </Button>
+              <InteractiveHoverButton 
+                text="Contacto"
+                variant="default"
+                size="default"
+              />
             </Link>
             <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors border border-gray-300 rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 ease-out">
               <Phone size={20} />
@@ -44,14 +46,12 @@ const Header = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2"
+              className="p-2 text-black hover:text-gray-600"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </Button>
+            </button>
           </div>
         </div>
 
