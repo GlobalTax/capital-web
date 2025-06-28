@@ -1,25 +1,34 @@
-
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-
 const VentaEmpresasHero = () => {
-  const benefits = [
-    'Maximizamos el valor de tu empresa',
-    'Proceso confidencial y profesional',
-    'Acceso a compradores cualificados',
-    'Asesoramiento integral durante todo el proceso'
-  ];
-
-  const empresasEnVenta = [
-    { nombre: 'Tech Startup', valor: '€15M', crecimiento: '+12%', tipo: 'Tecnología' },
-    { nombre: 'Industrial Co.', valor: '€45M', crecimiento: '+8%', tipo: 'Industrial' },
-    { nombre: 'Retail Chain', valor: '€32M', crecimiento: '+15%', tipo: 'Retail' },
-    { nombre: 'Healthcare Ltd.', valor: '€28M', crecimiento: '+10%', tipo: 'Salud' },
-    { nombre: 'Energy Solutions', valor: '€67M', crecimiento: '+6%', tipo: 'Energía' }
-  ];
-
-  return (
-    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center">
+  const benefits = ['Maximizamos el valor de tu empresa', 'Proceso confidencial y profesional', 'Acceso a compradores cualificados', 'Asesoramiento integral durante todo el proceso'];
+  const empresasEnVenta = [{
+    nombre: 'Tech Startup',
+    valor: '€15M',
+    crecimiento: '+12%',
+    tipo: 'Tecnología'
+  }, {
+    nombre: 'Industrial Co.',
+    valor: '€45M',
+    crecimiento: '+8%',
+    tipo: 'Industrial'
+  }, {
+    nombre: 'Retail Chain',
+    valor: '€32M',
+    crecimiento: '+15%',
+    tipo: 'Retail'
+  }, {
+    nombre: 'Healthcare Ltd.',
+    valor: '€28M',
+    crecimiento: '+10%',
+    tipo: 'Salud'
+  }, {
+    nombre: 'Energy Solutions',
+    valor: '€67M',
+    crecimiento: '+6%',
+    tipo: 'Energía'
+  }];
+  return <section className="pt-32 pb-20 bg-white min-h-screen flex items-center py-[120px]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -37,25 +46,15 @@ const VentaEmpresasHero = () => {
             </p>
 
             <div className="space-y-4 mb-10">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center space-x-3">
+              {benefits.map((benefit, index) => <div key={index} className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0" />
                   <span className="text-gray-600">{benefit}</span>
-                </div>
-              ))}
+                </div>)}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <InteractiveHoverButton 
-                text="Solicitar Valoración Gratuita"
-                variant="primary"
-                size="lg"
-              />
-              <InteractiveHoverButton 
-                text="Descargar Guía"
-                variant="outline"
-                size="lg"
-              />
+              <InteractiveHoverButton text="Solicitar Valoración Gratuita" variant="primary" size="lg" />
+              <InteractiveHoverButton text="Descargar Guía" variant="outline" size="lg" />
             </div>
           </div>
 
@@ -75,8 +74,7 @@ const VentaEmpresasHero = () => {
 
               {/* Empresas List */}
               <div className="space-y-4 mb-8">
-                {empresasEnVenta.map((empresa, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                {empresasEnVenta.map((empresa, index) => <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                         <div className="w-5 h-5 bg-white rounded-sm" />
@@ -90,8 +88,7 @@ const VentaEmpresasHero = () => {
                       <div className="font-bold text-black">{empresa.valor}</div>
                       <div className="text-green-600 text-sm font-semibold">{empresa.crecimiento}</div>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
               
               {/* Bottom Stats */}
@@ -132,8 +129,6 @@ const VentaEmpresasHero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default VentaEmpresasHero;
