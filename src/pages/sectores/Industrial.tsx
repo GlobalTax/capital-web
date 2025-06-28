@@ -2,6 +2,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import SectorHero from '@/components/SectorHero';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Factory, Cog, TrendingUp, Users, Award, CheckCircle } from 'lucide-react';
@@ -50,26 +51,16 @@ const Industrial = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-r from-gray-900 to-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Sector Industrial
-            </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-              Especialistas en M&A para empresas industriales, manufactureras 
-              y de ingeniería con experiencia probada en transacciones complejas.
-            </p>
-            <Button className="capittal-button text-lg px-8 py-4 bg-white text-black hover:bg-gray-100">
-              Analizar Oportunidad
-            </Button>
-          </div>
-        </div>
-      </section>
+      <SectorHero
+        sector="Industrial"
+        title="Sector Industrial"
+        description="Especialistas en M&A para empresas industriales, manufactureras y de ingeniería con experiencia probada en transacciones complejas. Comprendemos las dinámicas operativas del sector."
+        primaryButtonText="Analizar Oportunidad"
+        secondaryButtonText="Ver Casos Industriales"
+      />
 
       {/* Stats Section */}
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -77,7 +68,7 @@ const Industrial = () => {
                 <div className="text-3xl md:text-4xl font-bold text-black mb-2">
                   {stat.number}
                 </div>
-                <div className="text-gray-600">
+                <div className="text-slate-600">
                   {stat.label}
                 </div>
               </div>
@@ -87,26 +78,26 @@ const Industrial = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
               Servicios Especializados
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
               Ofrecemos servicios adaptados a las particularidades del sector industrial
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <Card key={index} className="border-0.5 border-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <CardHeader className="text-center">
-                  <service.icon className="w-12 h-12 mx-auto mb-4 text-black" />
-                  <CardTitle className="text-xl">{service.title}</CardTitle>
+                  <service.icon className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+                  <CardTitle className="text-xl font-bold">{service.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 text-center">
+                  <p className="text-slate-600 text-center">
                     {service.description}
                   </p>
                 </CardContent>
@@ -124,7 +115,7 @@ const Industrial = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
                 Nuestra Experiencia Industrial
               </h2>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg text-slate-600 mb-8">
                 Comprendemos las complejidades operativas, regulatorias y técnicas 
                 del sector industrial. Nuestro equipo combina experiencia financiera 
                 con conocimiento sectorial profundo.
@@ -133,21 +124,21 @@ const Industrial = () => {
                 {expertise.map((area, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-gray-700">{area}</span>
+                    <span className="text-slate-700">{area}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-gray-100 p-8 rounded-lg">
-              <Award className="w-16 h-16 text-black mb-6" />
+            <div className="bg-slate-50 p-8 rounded-lg border-0.5 border-black">
+              <Award className="w-16 h-16 text-blue-600 mb-6" />
               <h3 className="text-2xl font-bold text-black mb-4">
                 Reconocimiento Sectorial
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-slate-600 mb-4">
                 Premiados como "Mejor Asesor M&A Industrial" por tres años consecutivos 
                 por la Asociación Europea de Investment Banking.
               </p>
-              <p className="text-gray-600">
+              <p className="text-slate-600">
                 Nuestro expertise en due diligence técnica y valoración de activos 
                 industriales es reconocido a nivel internacional.
               </p>
@@ -157,12 +148,12 @@ const Industrial = () => {
       </section>
 
       {/* Case Study Preview */}
-      <section className="py-20 bg-gray-900 text-white">
+      <section className="py-20 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Caso de Éxito Reciente
           </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-4xl mx-auto">
+          <p className="text-xl text-slate-300 mb-8 max-w-4xl mx-auto">
             Asesoramos la adquisición de una empresa química europea por un grupo industrial 
             asiático por €450M, incluyendo due diligence técnica completa y estructuración 
             financiera optimizada.
@@ -170,18 +161,18 @@ const Industrial = () => {
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div>
               <div className="text-3xl font-bold text-white mb-2">€450M</div>
-              <div className="text-gray-400">Valor de Transacción</div>
+              <div className="text-slate-400">Valor de Transacción</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-white mb-2">6 meses</div>
-              <div className="text-gray-400">Tiempo de Ejecución</div>
+              <div className="text-slate-400">Tiempo de Ejecución</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-white mb-2">12</div>
-              <div className="text-gray-400">Plantas Evaluadas</div>
+              <div className="text-slate-400">Plantas Evaluadas</div>
             </div>
           </div>
-          <Button className="capittal-button bg-white text-black hover:bg-gray-100">
+          <Button className="capittal-button bg-white text-black hover:bg-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
             Ver Casos Completos
           </Button>
         </div>
@@ -193,7 +184,7 @@ const Industrial = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
             ¿Tiene un proyecto industrial?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-xl text-slate-600 mb-8">
             Nuestros especialistas están listos para analizar su oportunidad 
             y proporcionar el asesoramiento que necesita.
           </p>
