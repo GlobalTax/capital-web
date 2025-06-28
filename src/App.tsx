@@ -97,6 +97,7 @@ function App() {
               {/* Recursos routes */}
               <Route path="/recursos/blog" element={<Blog />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               
               {/* Documentación M&A routes */}
               <Route path="/documentacion-ma" element={<DocumentacionMA />} />

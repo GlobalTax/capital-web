@@ -11,6 +11,7 @@ import TestimonialsManager from './TestimonialsManager';
 import TeamMembersManager from './TeamMembersManager';
 import CarouselLogosManager from './CarouselLogosManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
+import BlogPostsManager from './BlogPostsManager';
 import { ensureCurrentUserIsAdmin, debugAdminStatus } from '@/utils/adminSetup';
 
 interface AdminDashboardProps {
@@ -159,7 +160,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="case-studies" className="w-full">
-          <TabsList className="grid w-full grid-cols-8 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
+          <TabsList className="grid w-full grid-cols-9 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
             <TabsTrigger 
               value="case-studies" 
               className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
@@ -208,6 +209,12 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             >
               Test. Carrusel
             </TabsTrigger>
+            <TabsTrigger 
+              value="blog" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Blog
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="case-studies" className="space-y-6">
@@ -240,6 +247,10 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
           <TabsContent value="carousel-testimonials" className="space-y-6">
             <CarouselTestimonialsManager />
+          </TabsContent>
+
+          <TabsContent value="blog" className="space-y-6">
+            <BlogPostsManager />
           </TabsContent>
         </Tabs>
       </main>

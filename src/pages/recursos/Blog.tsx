@@ -4,73 +4,46 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
-
-const articles = [
-  {
-    id: 1,
-    title: "Tendencias en Fusiones y Adquisiciones 2024",
-    description:
-      "Análisis completo de las principales tendencias del mercado M&A en España. Descubre los sectores más activos, múltiplos de valoración y oportunidades de inversión para el próximo año.",
-    date: "15 de Marzo, 2024",
-    category: "M&A",
-    author: "Equipo Capittal",
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "Cómo Valorar una Empresa: Guía Completa",
-    description:
-      "Metodologías de valoración empresarial explicadas paso a paso. Aprende a aplicar múltiplos de EBITDA, DCF y otros métodos utilizados por profesionales en transacciones reales.",
-    date: "12 de Marzo, 2024",
-    category: "Valoración",
-    author: "Equipo Capittal",
-    featured: false,
-  },
-  {
-    id: 3,
-    title: "Due Diligence: Claves del Proceso",
-    description:
-      "Todo lo que necesitas saber sobre el proceso de due diligence en operaciones M&A. Desde la preparación inicial hasta los aspectos críticos que pueden determinar el éxito de la transacción.",
-    date: "8 de Marzo, 2024",
-    category: "Due Diligence",
-    author: "Equipo Capittal",
-    featured: false,
-  },
-  {
-    id: 4,
-    title: "Múltiplos Sectoriales en España",
-    description:
-      "Análisis detallado de los múltiplos de valoración por sectores en el mercado español. Datos actualizados y comparativas con mercados internacionales para tomar mejores decisiones de inversión.",
-    date: "5 de Marzo, 2024",
-    category: "Análisis",
-    author: "Equipo Capittal",
-    featured: false,
-  },
-  {
-    id: 5,
-    title: "Estrategias de Crecimiento Inorgánico",
-    description:
-      "Cómo las empresas pueden acelerar su crecimiento a través de adquisiciones estratégicas. Casos de éxito y lecciones aprendidas en el mercado español.",
-    date: "2 de Marzo, 2024",
-    category: "Estrategia",
-    author: "Equipo Capittal",
-    featured: false,
-  },
-  {
-    id: 6,
-    title: "Financiación de Operaciones M&A",
-    description:
-      "Opciones de financiación para operaciones de fusiones y adquisiciones. Desde deuda bancaria hasta fondos de private equity y venture capital.",
-    date: "28 de Febrero, 2024",
-    category: "Financiación",
-    author: "Equipo Capittal",
-    featured: false,
-  },
-];
+import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { Link } from 'react-router-dom';
 
 const Blog = () => {
-  const featuredArticle = articles.find(article => article.featured);
-  const regularArticles = articles.filter(article => !article.featured);
+  const { posts, isLoading } = useBlogPosts();
+  
+  // Filtrar solo posts publicados
+  const publishedPosts = posts.filter(post => post.is_published);
+  const featuredArticle = publishedPosts.find(post => post.is_featured);
+  const regularArticles = publishedPosts.filter(post => !post.is_featured);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substr(0, maxLength).trim() + '...';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <section className="pt-32 pb-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando artículos...</p>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -91,71 +64,118 @@ const Blog = () => {
           {/* Artículo Destacado */}
           {featuredArticle && (
             <div className="mb-20">
-              <div className="bg-white border-0.5 border-border rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1">
-                <div className="flex items-center gap-2 mb-4">
-                  <Tag className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-500">Artículo Destacado</span>
-                </div>
-                <h2 className="text-3xl font-bold text-black mb-4">
-                  {featuredArticle.title}
-                </h2>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  {featuredArticle.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6 text-sm text-gray-500">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{featuredArticle.date}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span>{featuredArticle.author}</span>
-                    </div>
-                    <span className="px-3 py-1 bg-gray-100 rounded-lg font-medium">
-                      {featuredArticle.category}
-                    </span>
+              <Link to={`/blog/${featuredArticle.slug}`}>
+                <div className="bg-white border-0.5 border-border rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Tag className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-500">Artículo Destacado</span>
                   </div>
-                  <Button className="bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium">
-                    Leer Artículo
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  {featuredArticle.featured_image_url && (
+                    <div className="mb-6">
+                      <img
+                        src={featuredArticle.featured_image_url}
+                        alt={featuredArticle.title}
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                  <h2 className="text-3xl font-bold text-black mb-4">
+                    {featuredArticle.title}
+                  </h2>
+                  <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                    {featuredArticle.excerpt || truncateText(featuredArticle.content, 200)}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>{featuredArticle.published_at ? formatDate(featuredArticle.published_at) : formatDate(featuredArticle.created_at)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span>{featuredArticle.author_name}</span>
+                      </div>
+                      <span className="px-3 py-1 bg-gray-100 rounded-lg font-medium">
+                        {featuredArticle.category}
+                      </span>
+                    </div>
+                    <Button className="bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium">
+                      Leer Artículo
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
           )}
 
           {/* Grid de Artículos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {regularArticles.map((article) => (
-              <div 
-                key={article.id}
-                className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer"
-              >
-                <div className="flex flex-col h-full">
-                  <span className="text-sm font-medium text-gray-500 mb-3 px-3 py-1 bg-gray-100 rounded-lg self-start">
-                    {article.category}
-                  </span>
-                  
-                  <h3 className="text-xl font-bold text-black mb-3 hover:text-gray-800 transition-colors">
-                    {article.title}
-                  </h3>
-                  
-                  <p className="text-sm text-gray-600 mb-6 flex-grow leading-relaxed">
-                    {article.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Calendar className="h-3 w-3" />
-                      <span>{article.date}</span>
+          {regularArticles.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {regularArticles.map((article) => (
+                <Link key={article.id} to={`/blog/${article.slug}`}>
+                  <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer">
+                    <div className="flex flex-col h-full">
+                      {article.featured_image_url && (
+                        <div className="mb-4">
+                          <img
+                            src={article.featured_image_url}
+                            alt={article.title}
+                            className="w-full h-40 object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
+                      
+                      <span className="text-sm font-medium text-gray-500 mb-3 px-3 py-1 bg-gray-100 rounded-lg self-start">
+                        {article.category}
+                      </span>
+                      
+                      <h3 className="text-xl font-bold text-black mb-3 hover:text-gray-800 transition-colors">
+                        {article.title}
+                      </h3>
+                      
+                      <p className="text-sm text-gray-600 mb-6 flex-grow leading-relaxed">
+                        {article.excerpt || truncateText(article.content, 150)}
+                      </p>
+                      
+                      <div className="flex items-center justify-between mt-auto">
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Calendar className="h-3 w-3" />
+                          <span>{article.published_at ? formatDate(article.published_at) : formatDate(article.created_at)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span>{article.reading_time} min</span>
+                          <ArrowRight className="h-4 w-4 text-gray-400 hover:text-black hover:translate-x-1 transition-all duration-300" />
+                        </div>
+                      </div>
+
+                      {article.tags && article.tags.length > 0 && (
+                        <div className="flex gap-1 mt-3 flex-wrap">
+                          {article.tags.slice(0, 3).map((tag, index) => (
+                            <span
+                              key={index}
+                              className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <ArrowRight className="h-4 w-4 text-gray-400 hover:text-black hover:translate-x-1 transition-all duration-300" />
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {publishedPosts.length === 0 && (
+            <div className="text-center py-16">
+              <h3 className="text-2xl font-bold text-black mb-4">Próximamente</h3>
+              <p className="text-gray-600 mb-8">
+                Estamos preparando contenido de valor para ti.
+              </p>
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className="text-center mt-16">
