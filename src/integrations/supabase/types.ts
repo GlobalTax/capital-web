@@ -33,6 +33,72 @@ export type Database = {
         }
         Relationships: []
       }
+      carousel_logos: {
+        Row: {
+          company_name: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      carousel_testimonials: {
+        Row: {
+          client_company: string
+          client_name: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          quote: string
+          updated_at: string
+        }
+        Insert: {
+          client_company: string
+          client_name: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          quote: string
+          updated_at?: string
+        }
+        Update: {
+          client_company?: string
+          client_name?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          quote?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       case_studies: {
         Row: {
           company_size: string | null

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,8 @@ import MultiplesManager from './MultiplesManager';
 import StatisticsManager from './StatisticsManager';
 import TestimonialsManager from './TestimonialsManager';
 import TeamMembersManager from './TeamMembersManager';
+import CarouselLogosManager from './CarouselLogosManager';
+import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import { ensureCurrentUserIsAdmin, debugAdminStatus } from '@/utils/adminSetup';
 
 interface AdminDashboardProps {
@@ -158,7 +159,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="case-studies" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
+          <TabsList className="grid w-full grid-cols-8 mb-8 h-12 bg-white border-0.5 border-black rounded-lg p-1">
             <TabsTrigger 
               value="case-studies" 
               className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
@@ -195,6 +196,18 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             >
               Equipo
             </TabsTrigger>
+            <TabsTrigger 
+              value="carousel-logos" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Logos Carrusel
+            </TabsTrigger>
+            <TabsTrigger 
+              value="carousel-testimonials" 
+              className="text-sm font-medium text-gray-600 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-300"
+            >
+              Test. Carrusel
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="case-studies" className="space-y-6">
@@ -219,6 +232,14 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
           <TabsContent value="team" className="space-y-6">
             <TeamMembersManager />
+          </TabsContent>
+
+          <TabsContent value="carousel-logos" className="space-y-6">
+            <CarouselLogosManager />
+          </TabsContent>
+
+          <TabsContent value="carousel-testimonials" className="space-y-6">
+            <CarouselTestimonialsManager />
           </TabsContent>
         </Tabs>
       </main>
