@@ -33,6 +33,9 @@ export interface SectorReportResult {
     includeData: SectorReportRequest['includeData'];
     period: string;
     depth: string;
+    estimatedReadTime?: number;
+    confidence?: number;
+    dataQuality?: 'high' | 'medium' | 'low';
   };
 }
 
@@ -40,4 +43,26 @@ export interface SectorData {
   multiples?: any[];
   caseStudies?: any[];
   statistics?: any[];
+}
+
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  config: Partial<SectorReportRequest>;
+  category: 'quick' | 'investor' | 'strategic' | 'specialized';
+  estimatedTime: string;
+  targetWords: string;
+}
+
+export interface ReportAnalytics {
+  totalReports: number;
+  reportsToday: number;
+  reportsThisWeek: number;
+  totalWords: number;
+  averageWords: number;
+  popularSectors: { sector: string; count: number }[];
+  popularTypes: { type: string; count: number }[];
+  timeDistribution: { hour: number; count: number }[];
 }
