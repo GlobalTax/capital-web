@@ -13,7 +13,7 @@ const InteractiveHoverButton = React.forwardRef<
   HTMLButtonElement,
   InteractiveHoverButtonProps
 >(({ text = "Button", variant = "primary", size = "default", className, ...props }, ref) => {
-  const baseClasses = "relative cursor-pointer rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20";
+  const baseClasses = "relative cursor-pointer rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20 flex items-center justify-center text-center";
   
   const variantClasses = {
     primary: "bg-black text-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1",
