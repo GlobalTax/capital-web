@@ -94,7 +94,8 @@ const visualItems = [
 
 const AdminSidebar = () => {
   const location = useLocation();
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
+  const isCollapsed = state === 'collapsed';
 
   const isActive = (url: string, exact = false) => {
     if (exact) {
@@ -116,7 +117,7 @@ const AdminSidebar = () => {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">C</span>
           </div>
-          {!collapsed && (
+          {!isCollapsed && (
             <div>
               <h2 className="font-bold text-lg">Capittal</h2>
               <p className="text-xs text-muted-foreground">Panel Admin</p>
@@ -136,7 +137,7 @@ const AdminSidebar = () => {
                     className={getNavClass(item.url, item.exact)}
                   >
                     <item.icon className="h-4 w-4" />
-                    {!collapsed && <span>{item.title}</span>}
+                    {!isCollapsed && <span>{item.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -156,7 +157,7 @@ const AdminSidebar = () => {
                       className={getNavClass(item.url)}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -177,7 +178,7 @@ const AdminSidebar = () => {
                       className={getNavClass(item.url)}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -198,7 +199,7 @@ const AdminSidebar = () => {
                       className={getNavClass(item.url)}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -219,7 +220,7 @@ const AdminSidebar = () => {
                       className={getNavClass(item.url)}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
