@@ -66,8 +66,7 @@
 @layer components {
   .capittal-button {
     @apply relative cursor-pointer overflow-hidden rounded-lg bg-white text-black px-6 py-3 font-medium 
-           border-0.5 border-black transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1
-           group;
+           border-0.5 border-black transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1;
   }
   
   .capittal-button:before {
