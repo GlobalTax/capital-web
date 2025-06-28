@@ -24,8 +24,8 @@ const ValoracionesHero = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="inline-flex items-center bg-blue-50 rounded-full px-4 py-2 mb-6">
-              <span className="text-sm font-medium text-blue-600">Valoración Empresarial Gratuita</span>
+            <div className="inline-flex items-center bg-black text-white rounded-lg px-4 py-2 mb-6">
+              <span className="text-sm font-medium">Valoración Empresarial Profesional</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
@@ -72,7 +72,7 @@ const ValoracionesHero = () => {
                 const Icon = metrica.icon;
                 return (
                   <div key={index} className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                    <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-3 mx-auto">
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div className="text-2xl font-bold text-black mb-1">{metrica.valor}</div>
@@ -85,19 +85,14 @@ const ValoracionesHero = () => {
 
           <div className="relative">
             {/* Preview de la Calculadora */}
-            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-black">Calculadora de Valoración</h3>
-                  <p className="text-gray-500 text-sm">Paso 1 de 3</p>
-                </div>
-                <div className="bg-green-100 rounded-lg px-3 py-1 text-sm font-semibold text-green-700">
-                  Gratuita
-                </div>
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+              <div className="bg-gray-900 text-white p-6">
+                <h3 className="text-lg font-semibold mb-2">Calculadora de Valoración</h3>
+                <p className="text-gray-300 text-sm">Paso 1 de 3</p>
               </div>
-
+              
               {/* Simulación de campos */}
-              <div className="space-y-6">
+              <div className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nombre de la Empresa
@@ -134,10 +129,6 @@ const ValoracionesHero = () => {
                   />
                 </Link>
               </div>
-
-              {/* Elementos decorativos */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full opacity-60"></div>
-              <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-tr from-emerald-100 to-blue-100 rounded-full opacity-40"></div>
             </div>
             
             {/* Indicadores flotantes */}

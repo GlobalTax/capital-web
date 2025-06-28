@@ -31,7 +31,7 @@ const ValoracionesMethodology = () => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-50 to-white">
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
@@ -48,10 +48,10 @@ const ValoracionesMethodology = () => {
             const Icon = metodologia.icon;
             return (
               <div key={index} className="group">
-                <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:shadow-xl hover:border-gray-300 transition-all duration-500 hover:-translate-y-1 h-full">
+                <div className="bg-white rounded-lg p-8 border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 h-full">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <Icon className="w-8 h-8 text-white" />
                       </div>
                     </div>
@@ -61,7 +61,7 @@ const ValoracionesMethodology = () => {
                         <h3 className="text-xl font-bold text-black group-hover:text-blue-600 transition-colors duration-300">
                           {metodologia.titulo}
                         </h3>
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        <span className="bg-black text-white px-3 py-1 rounded-full text-sm font-semibold">
                           {metodologia.precision}
                         </span>
                       </div>
@@ -77,7 +77,7 @@ const ValoracionesMethodology = () => {
         </div>
 
         <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
+          <div className="bg-white rounded-lg p-8 border border-gray-200">
             <h3 className="text-2xl font-bold text-black mb-4">
               ¿Por qué confiar en nuestra valoración?
             </h3>
@@ -87,15 +87,15 @@ const ValoracionesMethodology = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-8 text-center">
               <div>
-                <div className="text-3xl font-bold text-blue-600">500+</div>
+                <div className="text-3xl font-bold text-black">500+</div>
                 <div className="text-gray-600">Empresas valoradas</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-purple-600">€2.8B+</div>
+                <div className="text-3xl font-bold text-black">€2.8B+</div>
                 <div className="text-gray-600">Valor total analizado</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-green-600">95%</div>
+                <div className="text-3xl font-bold text-black">95%</div>
                 <div className="text-gray-600">Precisión promedio</div>
               </div>
             </div>

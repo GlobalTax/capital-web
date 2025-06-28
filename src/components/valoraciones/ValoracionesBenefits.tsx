@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CheckCircle, ArrowRight, TrendingUp, Users, Shield, Clock } from 'lucide-react';
+import { CheckCircle, TrendingUp, Users, Shield, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
@@ -42,7 +42,7 @@ const ValoracionesBenefits = () => {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
@@ -58,13 +58,13 @@ const ValoracionesBenefits = () => {
             const Icon = caso.icon;
             return (
               <div key={index} className="group text-center">
-                <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 h-full">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 h-full">
+                  <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-black mb-3">{caso.titulo}</h3>
                   <p className="text-gray-600 text-sm mb-4 leading-relaxed">{caso.descripcion}</p>
-                  <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg text-xs font-semibold">
+                  <div className="bg-gray-100 text-black px-3 py-2 rounded-lg text-xs font-semibold">
                     {caso.beneficio}
                   </div>
                 </div>
@@ -73,7 +73,7 @@ const ValoracionesBenefits = () => {
           })}
         </div>
 
-        <div className="bg-gradient-to-br from-gray-50 to-white rounded-3xl p-12 border border-gray-200">
+        <div className="bg-white rounded-lg p-12 border border-gray-200">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-3xl font-bold text-black mb-6">
@@ -98,10 +98,10 @@ const ValoracionesBenefits = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+              <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-6">
                   <h4 className="text-xl font-bold text-black">Reporte de Valoración</h4>
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-black text-white px-3 py-1 rounded-full text-sm font-semibold">
                     Ejemplo
                   </span>
                 </div>
@@ -138,8 +138,8 @@ const ValoracionesBenefits = () => {
               </div>
 
               {/* Elementos decorativos */}
-              <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full opacity-20"></div>
-              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-gradient-to-tr from-green-500 to-blue-500 rounded-full opacity-30"></div>
+              <div className="absolute -top-4 -right-4 w-12 h-12 bg-black rounded-full opacity-20"></div>
+              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-gray-800 rounded-full opacity-30"></div>
             </div>
           </div>
         </div>

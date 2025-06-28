@@ -13,15 +13,8 @@ const ValoracionesCTA = () => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-br from-black to-gray-900 text-white relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <section className="py-20 bg-black text-white">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="space-y-8">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold leading-tight">
@@ -39,7 +32,7 @@ const ValoracionesCTA = () => {
               const Icon = garantia.icon;
               return (
                 <div key={index} className="flex flex-col items-center space-y-2">
-                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <span className="text-sm text-gray-300 text-center">{garantia.texto}</span>
@@ -55,7 +48,7 @@ const ValoracionesCTA = () => {
                 text="Calcular Valoración Gratuita"
                 variant="secondary"
                 size="lg"
-                className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4 group"
+                className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
               />
             </Link>
             

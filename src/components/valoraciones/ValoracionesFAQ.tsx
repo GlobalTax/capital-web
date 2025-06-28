@@ -37,7 +37,7 @@ const ValoracionesFAQ = () => {
   };
 
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-50 to-white">
+    <section className="py-20 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
@@ -50,10 +50,10 @@ const ValoracionesFAQ = () => {
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-white rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300">
+            <div key={index} className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all duration-300">
               <button
                 onClick={() => toggleAccordion(index)}
-                className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-gray-50 rounded-2xl transition-colors duration-200"
+                className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors duration-200"
               >
                 <h3 className="text-lg font-semibold text-black pr-4">
                   {faq.pregunta}
