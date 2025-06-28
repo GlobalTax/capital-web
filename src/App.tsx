@@ -73,7 +73,7 @@ function App() {
               <Route path="/venta-empresas" element={<VentaEmpresas />} />
               <Route path="/compra-empresas" element={<CompraEmpresas />} />
               <Route path="/casos-exito" element={<CasosExito />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/*" element={<Admin />} />
               <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
               
               {/* Por Qué Elegirnos routes */}
