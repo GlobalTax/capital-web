@@ -12,7 +12,7 @@ export const useBlogPosts = () => {
   const fetchPosts = async (publishedOnly = false) => {
     try {
       setIsLoading(true);
-      let query = (supabase as any).from('blog_posts').select('*');
+      let query = supabase.from('blog_posts').select('*');
       
       if (publishedOnly) {
         query = query.eq('is_published', true);
@@ -30,6 +30,7 @@ export const useBlogPosts = () => {
         description: "Error al cargar los posts del blog.",
         variant: "destructive",
       });
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +38,7 @@ export const useBlogPosts = () => {
 
   const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
         .eq('slug', slug)
@@ -54,7 +55,7 @@ export const useBlogPosts = () => {
 
   const createPost = async (postData: Partial<BlogPost>) => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('blog_posts')
         .insert([postData as any])
         .select()
@@ -81,7 +82,7 @@ export const useBlogPosts = () => {
 
   const updatePost = async (id: string, postData: Partial<BlogPost>) => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('blog_posts')
         .update(postData as any)
         .eq('id', id)
@@ -109,7 +110,7 @@ export const useBlogPosts = () => {
 
   const deletePost = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('blog_posts')
         .delete()
         .eq('id', id);

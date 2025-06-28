@@ -33,6 +33,69 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author_avatar_url: string | null
+          author_name: string
+          category: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          reading_time: number
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_avatar_url?: string | null
+          author_name?: string
+          category: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          reading_time?: number
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_avatar_url?: string | null
+          author_name?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          reading_time?: number
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       carousel_logos: {
         Row: {
           company_name: string

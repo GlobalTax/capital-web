@@ -38,24 +38,33 @@ export const useDashboardStats = () => {
         teamMembersResult,
         statisticsResult
       ] = await Promise.all([
-        supabase.from('case_studies').select('id', { count: 'exact' }),
-        supabase.from('company_operations').select('id', { count: 'exact' }),
-        (supabase as any).from('blog_posts').select('id', { count: 'exact' }),
-        supabase.from('testimonials').select('id', { count: 'exact' }),
-        supabase.from('team_members').select('id', { count: 'exact' }),
-        supabase.from('key_statistics').select('id', { count: 'exact' })
+        supabase.from('case_studies').select('id', { count: 'exact' }).then(res => res.count || 0),
+        supabase.from('company_operations').select('id', { count: 'exact' }).then(res => res.count || 0),
+        supabase.from('blog_posts').select('id', { count: 'exact' }).then(res => res.count || 0),
+        supabase.from('testimonials').select('id', { count: 'exact' }).then(res => res.count || 0),
+        supabase.from('team_members').select('id', { count: 'exact' }).then(res => res.count || 0),
+        supabase.from('key_statistics').select('id', { count: 'exact' }).then(res => res.count || 0)
       ]);
 
       setStats({
-        caseStudies: caseStudiesResult.count || 0,
-        operations: operationsResult.count || 0,
-        blogPosts: blogPostsResult.count || 0,
-        testimonials: testimonialsResult.count || 0,
-        teamMembers: teamMembersResult.count || 0,
-        statistics: statisticsResult.count || 0,
+        caseStudies: caseStudiesResult,
+        operations: operationsResult,
+        blogPosts: blogPostsResult,
+        testimonials: testimonialsResult,
+        teamMembers: teamMembersResult,
+        statistics: statisticsResult,
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+      // Mantener stats en 0 en caso de error
+      setStats({
+        caseStudies: 0,
+        operations: 0,
+        blogPosts: 0,
+        testimonials: 0,
+        teamMembers: 0,
+        statistics: 0,
+      });
     } finally {
       setIsLoading(false);
     }
