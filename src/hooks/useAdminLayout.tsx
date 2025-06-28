@@ -15,7 +15,9 @@ export const useAdminLayout = () => {
     const path = location.pathname;
     const segments = path.split('/').filter(Boolean);
     
-    const breadcrumbs: BreadcrumbItem[] = [];
+    const breadcrumbs: BreadcrumbItem[] = [
+      { title: 'Inicio', url: '/admin' }
+    ];
 
     if (segments.length > 1) {
       const section = segments[1];
@@ -23,10 +25,9 @@ export const useAdminLayout = () => {
         'case-studies': 'Casos de Éxito',
         'operations': 'Operaciones',
         'blog': 'Blog Posts',
-        'blog-v2': 'AI Content Studio Pro',
-        'multiples': 'Múltiplos de Valoración',
-        'statistics': 'Estadísticas Clave',
-        'team': 'Miembros del Equipo',
+        'multiples': 'Múltiplos',
+        'statistics': 'Estadísticas',
+        'team': 'Equipo',
         'testimonials': 'Testimonios',
         'carousel-testimonials': 'Testimonios Carrusel',
         'carousel-logos': 'Logos Carrusel',
