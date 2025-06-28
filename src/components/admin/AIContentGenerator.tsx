@@ -117,13 +117,7 @@ const AIContentGenerator = ({
                   id="prompt"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={
-                    type === 'title' 
-                      ? "Ej: Valoración de empresas tecnológicas, Due diligence en el sector salud, etc."
-                      : type === 'content'
-                      ? "Ej: Cómo valorar una startup tecnológica"
-                      : "Describe brevemente el contenido del artículo"
-                  }
+                  placeholder="Describe brevemente el contenido del artículo"
                   rows={3}
                 />
               ) : (
