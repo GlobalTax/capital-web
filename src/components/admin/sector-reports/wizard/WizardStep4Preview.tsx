@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { SectorReportRequest } from '@/types/sectorReports';
 import { CheckCircle, FileText, Calendar, Users, Database, Target } from 'lucide-react';
 
