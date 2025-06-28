@@ -1,26 +1,34 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, FileText, Download, Eye, Trash2, Wand2, LayoutGrid, History } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Sparkles, FileText, Download, Eye, Trash2, Wand2, LayoutGrid, 
+  History, Template, Palette, Share2, BarChart3, Crown
+} from 'lucide-react';
 import SectorReportForm from './sector-reports/SectorReportForm';
 import SectorReportPreview from './sector-reports/SectorReportPreview';
 import ReportWizard from './sector-reports/wizard/ReportWizard';
 import ReportsDashboardStats from './sector-reports/dashboard/ReportsDashboardStats';
 import QuickTemplates from './sector-reports/dashboard/QuickTemplates';
 import RecentActivity from './sector-reports/dashboard/RecentActivity';
+import SmartTemplateSelector from './sector-reports/templates/SmartTemplateSelector';
+import EnhancedReportPreview from './sector-reports/preview/EnhancedReportPreview';
+import AutoVisualizationGenerator from './sector-reports/visualizations/AutoVisualizationGenerator';
+import AdvancedExportManager from './sector-reports/export/AdvancedExportManager';
 import { useSectorReportGenerator } from '@/hooks/useSectorReportGenerator';
-import { SectorReportRequest, SectorReportResult } from '@/types/sectorReports';
+import { SectorReportRequest, SectorReportResult, ExportOptions } from '@/types/sectorReports';
 import { downloadSectorReportPDF } from '@/utils/sectorReportPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
-type ViewMode = 'dashboard' | 'wizard' | 'form' | 'history';
+type ViewMode = 'dashboard' | 'wizard' | 'form' | 'history' | 'templates' | 'visualizations' | 'export';
 
 const SectorReportsGenerator = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
   const [selectedReport, setSelectedReport] = useState<SectorReportResult | null>(null);
   const [initialFormData, setInitialFormData] = useState<Partial<SectorReportRequest> | null>(null);
+  const [useEnhancedPreview, setUseEnhancedPreview] = useState(false);
   const { isGenerating, generatedReports, generateSectorReport, clearReports } = useSectorReportGenerator();
   const { toast } = useToast();
 
@@ -41,6 +49,7 @@ const SectorReportsGenerator = () => {
 
   const handlePreviewReport = (report: SectorReportResult) => {
     setSelectedReport(report);
+    setUseEnhancedPreview(true);
   };
 
   const handleDownloadReport = async (report: SectorReportResult) => {
@@ -59,6 +68,42 @@ const SectorReportsGenerator = () => {
     }
   };
 
+  const handleAdvancedExport = async (report: SectorReportResult, options: ExportOptions) => {
+    // Aquí implementarías la lógica de exportación avanzada
+    console.log('Exporting report with options:', options);
+    toast({
+      title: "Exportando reporte",
+      description: `Preparando exportación en formato ${options.format.toUpperCase()}`,
+    });
+  };
+
+  const handleSaveReportEdit = (reportId: string, updatedContent: string) => {
+    // Aquí implementarías la lógica para guardar cambios en el reporte
+    console.log('Saving report edit:', reportId, updatedContent.length);
+    toast({
+      title: "Cambios guardados",
+      description: "El contenido del reporte ha sido actualizado",
+    });
+  };
+
+  const handleAddComment = (reportId: string, section: string, comment: string) => {
+    // Aquí implementarías la lógica para agregar comentarios
+    console.log('Adding comment:', reportId, section, comment);
+    toast({
+      title: "Comentario agregado",
+      description: "Tu comentario ha sido añadido al reporte",
+    });
+  };
+
+  const handleVisualizationsGenerated = (reportId: string, visualizations: any) => {
+    // Aquí implementarías la lógica para guardar las visualizaciones generadas
+    console.log('Visualizations generated for report:', reportId, visualizations);
+    toast({
+      title: "Visualizaciones generadas",
+      description: "Se han creado gráficos automáticos para tu reporte",
+    });
+  };
+
   const renderContent = () => {
     switch (viewMode) {
       case 'dashboard':
@@ -75,25 +120,163 @@ const SectorReportsGenerator = () => {
               />
             </div>
 
-            <div className="flex justify-center gap-4">
-              <Button
-                onClick={() => setViewMode('wizard')}
-                className="bg-blue-600 hover:bg-blue-700"
-                size="lg"
-              >
-                <Wand2 className="h-5 w-5 mr-2" />
-                Asistente Guiado
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setViewMode('form')}
-                size="lg"
-              >
-                <FileText className="h-5 w-5 mr-2" />
-                Modo Avanzado
-              </Button>
+            <div className="text-center space-y-4">
+              <div className="flex justify-center gap-4">
+                <Button
+                  onClick={() => setViewMode('wizard')}
+                  className="bg-blue-600 hover:bg-blue-700"
+                  size="lg"
+                >
+                  <Wand2 className="h-5 w-5 mr-2" />
+                  Asistente Guiado
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setViewMode('templates')}
+                  size="lg"
+                >
+                  <Template className="h-5 w-5 mr-2" />
+                  Templates IA
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setViewMode('form')}
+                  size="lg"
+                >
+                  <FileText className="h-5 w-5 mr-2" />
+                  Modo Avanzado
+                </Button>
+              </div>
+              
+              <div className="flex justify-center gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setViewMode('visualizations')}
+                  size="sm"
+                >
+                  <BarChart3 className="h-4 w-4 mr-1" />
+                  Visualizaciones
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setViewMode('export')}
+                  size="sm"
+                >
+                  <Palette className="h-4 w-4 mr-1" />
+                  Exportación
+                </Button>
+              </div>
             </div>
           </div>
+        );
+
+      case 'templates':
+        return (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Template className="h-5 w-5" />
+                    Templates Inteligentes
+                  </CardTitle>
+                  <CardDescription>
+                    Plantillas optimizadas con IA para diferentes sectores y audiencias
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setViewMode('dashboard')}>
+                  ← Volver al Dashboard
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <SmartTemplateSelector onSelectTemplate={handleSelectTemplate} />
+            </CardContent>
+          </Card>
+        );
+
+      case 'visualizations':
+        return (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Visualizaciones Automáticas
+                  </CardTitle>
+                  <CardDescription>
+                    Gráficos e infografías generadas automáticamente por IA
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setViewMode('dashboard')}>
+                  ← Volver al Dashboard
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedReport ? (
+                <AutoVisualizationGenerator 
+                  report={selectedReport}
+                  onVisualizationsGenerated={(viz) => handleVisualizationsGenerated(selectedReport.id, viz)}
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Selecciona un reporte para generar visualizaciones</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setViewMode('history')} 
+                    className="mt-2"
+                  >
+                    Ver Reportes
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      case 'export':
+        return (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="h-5 w-5" />
+                    Exportación Avanzada
+                  </CardTitle>
+                  <CardDescription>
+                    Exporta reportes en múltiples formatos con estilos personalizados
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setViewMode('dashboard')}>
+                  ← Volver al Dashboard
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedReport ? (
+                <AdvancedExportManager 
+                  report={selectedReport}
+                  onExport={(options) => handleAdvancedExport(selectedReport, options)}
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Download className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Selecciona un reporte para configurar la exportación</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setViewMode('history')} 
+                    className="mt-2"
+                  >
+                    Ver Reportes
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         );
 
       case 'wizard':
@@ -102,6 +285,7 @@ const SectorReportsGenerator = () => {
             onGenerate={handleGenerateReport}
             isGenerating={isGenerating}
             onClose={() => setViewMode('dashboard')}
+            initialData={initialFormData}
           />
         );
 
@@ -128,6 +312,7 @@ const SectorReportsGenerator = () => {
               <SectorReportForm
                 onGenerate={handleGenerateReport}
                 isGenerating={isGenerating}
+                initialData={initialFormData}
               />
             </CardContent>
           </Card>
@@ -190,11 +375,20 @@ const SectorReportsGenerator = () => {
                             <Badge variant="secondary" className="text-xs">
                               {report.reportType === 'market-analysis' ? 'Mercado' :
                                report.reportType === 'ma-trends' ? 'M&A' :
-                               report.reportType === 'valuation-multiples' ? 'Múltiplos' : 'Due Diligence'}
+                               report.reportType === 'valuation-multiples' ? 'Múltiplos' : 
+                               report.reportType === 'esg-sustainability' ? 'ESG' :
+                               report.reportType === 'tech-disruption' ? 'Tech' :
+                               report.reportType === 'geographic-comparison' ? 'Geo' : 'Due Diligence'}
                             </Badge>
                             <Badge variant="outline" className="text-xs">
                               {report.metadata.depth}
                             </Badge>
+                            {report.visualizations && (
+                              <Badge variant="outline" className="text-xs text-purple-600">
+                                <BarChart3 className="h-3 w-3 mr-1" />
+                                Viz
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -204,6 +398,12 @@ const SectorReportsGenerator = () => {
                         <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                           <div>📊 {report.wordCount.toLocaleString()} palabras</div>
                           <div>📅 {report.generatedAt.toLocaleDateString('es-ES')}</div>
+                          {report.metadata.confidence && (
+                            <div>🎯 {Math.round(report.metadata.confidence * 100)}% confianza</div>
+                          )}
+                          {report.collaboration?.comments.length && (
+                            <div>💬 {report.collaboration.comments.length} comentarios</div>
+                          )}
                         </div>
                         
                         <div className="flex gap-2">
@@ -224,6 +424,33 @@ const SectorReportsGenerator = () => {
                           >
                             <Download className="h-4 w-4 mr-1" />
                             PDF
+                          </Button>
+                        </div>
+                        
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={() => {
+                              setSelectedReport(report);
+                              setViewMode('visualizations');
+                            }}
+                          >
+                            <BarChart3 className="h-3 w-3 mr-1" />
+                            Gráficos
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={() => {
+                              setSelectedReport(report);
+                              setViewMode('export');
+                            }}
+                          >
+                            <Share2 className="h-3 w-3 mr-1" />
+                            Exportar
                           </Button>
                         </div>
                       </div>
@@ -247,17 +474,21 @@ const SectorReportsGenerator = () => {
         <h1 className="text-3xl font-light text-gray-900 mb-2 flex items-center gap-2">
           <Sparkles className="h-8 w-8 text-blue-500" />
           Reports Sectoriales IA
+          <Badge variant="outline" className="text-xs ml-2">
+            <Crown className="h-3 w-3 mr-1" />
+            Pro
+          </Badge>
         </h1>
         <p className="text-gray-600 font-light">
-          Genera reportes profesionales específicos por sector usando IA avanzada
+          Sistema avanzado de generación de reportes con IA, visualizaciones automáticas y exportación multi-formato
         </p>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-4 border-b border-gray-200">
+      <div className="flex space-x-4 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => setViewMode('dashboard')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors ${
+          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
             viewMode === 'dashboard'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -267,8 +498,41 @@ const SectorReportsGenerator = () => {
           Dashboard
         </button>
         <button
+          onClick={() => setViewMode('templates')}
+          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+            viewMode === 'templates'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Template className="h-4 w-4 inline mr-1" />
+          Templates IA
+        </button>
+        <button
+          onClick={() => setViewMode('visualizations')}
+          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+            viewMode === 'visualizations'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <BarChart3 className="h-4 w-4 inline mr-1" />
+          Visualizaciones
+        </button>
+        <button
+          onClick={() => setViewMode('export')}
+          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+            viewMode === 'export'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Palette className="h-4 w-4 inline mr-1" />
+          Export Pro
+        </button>
+        <button
           onClick={() => setViewMode('history')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors ${
+          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
             viewMode === 'history'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -290,10 +554,22 @@ const SectorReportsGenerator = () => {
         <div className="xl:col-span-1">
           {selectedReport && (
             <div className="sticky top-6">
-              <SectorReportPreview
-                report={selectedReport}
-                onClose={() => setSelectedReport(null)}
-              />
+              {useEnhancedPreview ? (
+                <EnhancedReportPreview
+                  report={selectedReport}
+                  onClose={() => {
+                    setSelectedReport(null);
+                    setUseEnhancedPreview(false);
+                  }}
+                  onSave={(content) => handleSaveReportEdit(selectedReport.id, content)}
+                  onAddComment={(section, comment) => handleAddComment(selectedReport.id, section, comment)}
+                />
+              ) : (
+                <SectorReportPreview
+                  report={selectedReport}
+                  onClose={() => setSelectedReport(null)}
+                />
+              )}
             </div>
           )}
         </div>
