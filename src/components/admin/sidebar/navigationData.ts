@@ -10,6 +10,8 @@ import {
   MessageSquare,
   Star,
   Image,
+  Mail,
+  UserPlus,
 } from 'lucide-react';
 import { NavigationItem, NavigationGroup } from './types';
 
@@ -55,6 +57,21 @@ export const navigationGroups: NavigationGroup[] = [
         title: 'Estadísticas',
         url: '/admin/statistics',
         icon: TrendingUp,
+      },
+    ],
+  },
+  {
+    title: 'Leads',
+    items: [
+      {
+        title: 'Leads de Contacto',
+        url: '/admin/contact-leads',
+        icon: Mail,
+      },
+      {
+        title: 'Solicitudes Colaboradores',
+        url: '/admin/collaborator-applications',
+        icon: UserPlus,
       },
     ],
   },
