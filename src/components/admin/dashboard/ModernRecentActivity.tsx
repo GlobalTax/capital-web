@@ -35,32 +35,32 @@ const ModernRecentActivity = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Actividad Reciente */}
       <Card className="lg:col-span-2 border border-gray-100 bg-white">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3">
           <CardTitle>
             <div>
-              <h3 className="text-lg font-semibold text-black">Actividad Reciente</h3>
-              <p className="text-sm text-gray-600 font-normal">Últimas acciones en el sistema</p>
+              <h3 className="text-base font-semibold text-black">Actividad Reciente</h3>
+              <p className="text-xs text-gray-600 font-normal">Últimas acciones en el sistema</p>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2">
           {activities.map((activity) => (
-            <div key={activity.id} className="p-4 border border-gray-50 hover:bg-gray-25 transition-colors">
-              <div className="space-y-2">
-                <h4 className="font-medium text-black">
+            <div key={activity.id} className="p-2 border border-gray-50 hover:bg-gray-25 transition-colors">
+              <div className="space-y-1">
+                <h4 className="text-sm font-medium text-black">
                   {activity.title}
                 </h4>
-                <p className="text-sm text-gray-600">{activity.description}</p>
+                <p className="text-xs text-gray-600">{activity.description}</p>
                 <span className="text-xs text-gray-500">{activity.time}</span>
               </div>
             </div>
           ))}
           
-          <div className="pt-4 border-t border-gray-100">
-            <Button variant="ghost" className="w-full justify-center text-gray-600 hover:text-black hover:bg-gray-50">
+          <div className="pt-2 border-t border-gray-100">
+            <Button variant="ghost" className="w-full justify-center text-sm text-gray-600 hover:text-black hover:bg-gray-50">
               Ver toda la actividad
             </Button>
           </div>
@@ -69,24 +69,24 @@ const ModernRecentActivity = () => {
 
       {/* Estadísticas en Tiempo Real */}
       <Card className="border border-gray-100 bg-white">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3">
           <CardTitle>
             <div>
-              <h3 className="text-lg font-semibold text-black">Estadísticas</h3>
-              <p className="text-sm text-gray-600 font-normal">En tiempo real</p>
+              <h3 className="text-base font-semibold text-black">Estadísticas</h3>
+              <p className="text-xs text-gray-600 font-normal">En tiempo real</p>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2">
           {stats.map((stat, index) => (
-            <div key={index} className="flex items-center justify-between p-3 border border-gray-50">
-              <span className="text-sm font-medium text-gray-700">{stat.label}</span>
-              <span className="text-lg font-bold text-black">{stat.value}</span>
+            <div key={index} className="flex items-center justify-between p-2 border border-gray-50">
+              <span className="text-xs font-medium text-gray-700">{stat.label}</span>
+              <span className="text-base font-bold text-black">{stat.value}</span>
             </div>
           ))}
           
-          <div className="pt-4 border-t border-gray-100">
-            <Button variant="outline" className="w-full text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-black">
+          <div className="pt-2 border-t border-gray-100">
+            <Button variant="outline" className="w-full text-xs text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-black">
               Ver Métricas Completas
             </Button>
           </div>

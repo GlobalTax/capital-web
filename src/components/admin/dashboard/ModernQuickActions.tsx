@@ -30,25 +30,25 @@ const ModernQuickActions = () => {
 
   return (
     <Card className="border border-gray-100 bg-white">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-black">Acciones Rápidas</CardTitle>
-        <p className="text-sm text-gray-600">Comienza rápidamente con las tareas más comunes</p>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold text-black">Acciones Rápidas</CardTitle>
+        <p className="text-xs text-gray-600">Comienza rápidamente con las tareas más comunes</p>
       </CardHeader>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-1">
         {quickActions.map((action) => (
           <Link key={action.title} to={action.link} className="group block">
-            <div className="flex items-center justify-between p-4 border border-gray-50 hover:border-gray-100 hover:bg-gray-25 transition-colors">
-              <div className="space-y-1">
+            <div className="flex items-center justify-between p-3 border border-gray-50 hover:border-gray-100 hover:bg-gray-25 transition-colors">
+              <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-black">{action.title}</h3>
+                  <h3 className="text-sm font-medium text-black">{action.title}</h3>
                   {action.badge && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-100">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-100">
                       {action.badge}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600">{action.description}</p>
+                <p className="text-xs text-gray-600">{action.description}</p>
               </div>
             </div>
           </Link>
