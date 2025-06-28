@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Plus, Edit, Save, X, MoveUp, MoveDown } from 'lucide-react';
 import ImageUploadField from './ImageUploadField';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface CarouselLogo {
   id: string;
@@ -31,13 +31,17 @@ const CarouselLogosManager = () => {
     is_active: true
   });
   const { toast } = useToast();
+  const { isAdmin, isLoading: authLoading } = useAdminAuth();
 
   useEffect(() => {
-    fetchLogos();
-  }, []);
+    if (!authLoading && isAdmin) {
+      fetchLogos();
+    }
+  }, [isAdmin, authLoading]);
 
   const fetchLogos = async () => {
     try {
+      // Los administradores pueden ver todos los logos, no solo los activos
       const { data, error } = await supabase
         .from('carousel_logos')
         .select('*')
@@ -197,10 +201,21 @@ const CarouselLogosManager = () => {
     setEditForm({});
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-black"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-black mb-2">Acceso Denegado</h2>
+          <p className="text-gray-600">No tienes permisos para acceder a este panel.</p>
+        </div>
       </div>
     );
   }

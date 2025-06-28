@@ -38,7 +38,7 @@ const LogoCarousel = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch logos
+      // Con RLS habilitado, solo se pueden ver logos y testimoniales activos
       const { data: logosData, error: logosError } = await supabase
         .from('carousel_logos')
         .select('*')
@@ -47,6 +47,7 @@ const LogoCarousel = () => {
 
       if (logosError) {
         console.error('Error fetching carousel logos:', logosError);
+        // No mostrar error al usuario, simplemente continuar sin logos
       } else {
         setLogos(logosData || []);
       }
@@ -60,6 +61,7 @@ const LogoCarousel = () => {
 
       if (testimonialsError) {
         console.error('Error fetching carousel testimonials:', testimonialsError);
+        // No mostrar error al usuario, simplemente continuar sin testimoniales
       } else {
         setTestimonials(testimonialsData || []);
       }
