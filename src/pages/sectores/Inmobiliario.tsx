@@ -4,46 +4,46 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, Store, Truck, Users, Award, CheckCircle } from 'lucide-react';
+import { Building, Home, MapPin, TrendingUp, Award, CheckCircle } from 'lucide-react';
 
-const RetailConsumer = () => {
+const Inmobiliario = () => {
   const services = [
     {
-      icon: Store,
-      title: "M&A Retail",
-      description: "Asesoramiento en fusiones y adquisiciones para cadenas retail, franquicias y comercio especializado."
+      icon: Building,
+      title: "Real Estate Comercial",
+      description: "M&A en oficinas, centros comerciales, naves industriales y activos inmobiliarios comerciales."
     },
     {
-      icon: ShoppingBag,
-      title: "E-commerce M&A",
-      description: "Especialización en plataformas de comercio electrónico, marketplaces y retail digital."
+      icon: Home,
+      title: "Promoción Residencial",
+      description: "Transacciones en promotoras, constructoras y desarrolladores de proyectos residenciales."
     },
     {
-      icon: Truck,
-      title: "Supply Chain",
-      description: "Análisis de cadenas de suministro, logística y optimización de operaciones retail."
+      icon: MapPin,
+      title: "Gestión de Activos",
+      description: "Valoración de portfolios inmobiliarios, SOCIMIs y fondos de inversión inmobiliaria."
     },
     {
-      icon: Users,
-      title: "Consumer Brands",
-      description: "Valoración de marcas de consumo, análisis de market share y posicionamiento competitivo."
+      icon: TrendingUp,
+      title: "PropTech M&A",
+      description: "Due diligence en empresas de tecnología inmobiliaria, plataformas digitales y servicios."
     }
   ];
 
   const expertise = [
-    "Retail Tradicional y Moderno",
-    "E-commerce y Marketplaces",
-    "Moda y Lifestyle",
-    "Alimentación y Bebidas",
-    "Electrodomésticos y Electrónica",
-    "Franquicias y Licencias"
+    "Promoción y Construcción",
+    "Centros Comerciales y Retail",
+    "Oficinas y Espacios Corporativos",
+    "Logística e Industrial",
+    "SOCIMIs y REITs",
+    "PropTech y Servicios"
   ];
 
   const stats = [
-    { number: "40+", label: "Transacciones Retail" },
-    { number: "€1.6B", label: "Valor Transaccional" },
-    { number: "22", label: "Países Europeos" },
-    { number: "88%", label: "Integración Exitosa" }
+    { number: "30+", label: "Transacciones Inmobiliarias" },
+    { number: "€2.8B", label: "Valor de Activos" },
+    { number: "15M m²", label: "Superficie Gestionada" },
+    { number: "95%", label: "Due Diligence Exitosa" }
   ];
 
   return (
@@ -51,18 +51,18 @@ const RetailConsumer = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-r from-pink-900 to-rose-700">
+      <section className="pt-32 pb-20 bg-gradient-to-r from-stone-900 to-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Retail & Consumer
+              Sector Inmobiliario
             </h1>
-            <p className="text-xl text-pink-100 max-w-3xl mx-auto mb-8">
-              Especialistas en transacciones para empresas de retail, bienes de consumo 
-              y marcas con experiencia en transformación digital y omnicanalidad.
+            <p className="text-xl text-stone-100 max-w-3xl mx-auto mb-8">
+              Especialistas en M&A inmobiliario con experiencia en todos los segmentos, 
+              desde promoción residencial hasta activos comerciales e industriales.
             </p>
             <Button className="capittal-button text-lg px-8 py-4 bg-white text-black hover:bg-gray-100">
-              Explorar Retail M&A
+              Explorar Real Estate M&A
             </Button>
           </div>
         </div>
@@ -94,7 +94,7 @@ const RetailConsumer = () => {
               Servicios Especializados
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Servicios adaptados al ecosistema retail y consumer en constante evolución
+              Servicios adaptados a la complejidad del mercado inmobiliario español y europeo
             </p>
           </div>
           
@@ -102,7 +102,7 @@ const RetailConsumer = () => {
             {services.map((service, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader className="text-center">
-                  <service.icon className="w-12 h-12 mx-auto mb-4 text-pink-600" />
+                  <service.icon className="w-12 h-12 mx-auto mb-4 text-stone-600" />
                   <CardTitle className="text-xl">{service.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -122,12 +122,12 @@ const RetailConsumer = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-                Expertise en Retail & Consumer
+                Expertise Inmobiliario
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Comprendemos las dinámicas del consumo, la transformación digital del retail, 
-                y los desafíos de la omnicanalidad. Nuestro equipo tiene experiencia directa 
-                en operaciones retail y marcas de consumo.
+                Comprendemos los ciclos inmobiliarios, la regulación urbanística, y las 
+                complejidades fiscales del sector. Nuestro equipo incluye arquitectos, 
+                urbanistas y especialistas en derecho inmobiliario.
               </p>
               <div className="grid sm:grid-cols-2 gap-4">
                 {expertise.map((area, index) => (
@@ -138,18 +138,18 @@ const RetailConsumer = () => {
                 ))}
               </div>
             </div>
-            <div className="bg-pink-50 p-8 rounded-lg">
-              <Award className="w-16 h-16 text-pink-600 mb-6" />
+            <div className="bg-stone-50 p-8 rounded-lg">
+              <Award className="w-16 h-16 text-stone-600 mb-6" />
               <h3 className="text-2xl font-bold text-black mb-4">
-                Líderes en Retail M&A
+                Líderes en Real Estate
               </h3>
               <p className="text-gray-600 mb-4">
-                Reconocidos como "Best Retail M&A Advisor" por Retail Week 
-                y premiados por nuestro trabajo en transformación digital retail.
+                Reconocidos como "Real Estate M&A Advisor of the Year" por Real Estate 
+                Finance por nuestro trabajo en transacciones complejas.
               </p>
               <p className="text-gray-600">
-                Hemos asesorado la integración exitosa de más de 40 transacciones 
-                retail, incluyendo procesos de digitalización post-fusión.
+                Hemos gestionado más de €2.8B en transacciones inmobiliarias, 
+                incluyendo portfolios complejos y operaciones internacionales.
               </p>
             </div>
           </div>
@@ -157,31 +157,31 @@ const RetailConsumer = () => {
       </section>
 
       {/* Case Study Preview */}
-      <section className="py-20 bg-pink-900 text-white">
+      <section className="py-20 bg-stone-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Caso de Éxito Destacado
           </h2>
-          <p className="text-xl text-pink-100 mb-8 max-w-4xl mx-auto">
-            Asesoramos la adquisición de una cadena de moda española con 120 tiendas 
-            por un grupo retail europeo por €250M, incluyendo plan de digitalización integral.
+          <p className="text-xl text-stone-100 mb-8 max-w-4xl mx-auto">
+            Asesoramos la venta de un portfolio de centros comerciales españoles 
+            a un REIT europeo por €650M, incluyendo reestructuración de contratos de arrendamiento.
           </p>
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div>
-              <div className="text-3xl font-bold text-white mb-2">€250M</div>
-              <div className="text-pink-300">Valor de Transacción</div>
+              <div className="text-3xl font-bold text-white mb-2">€650M</div>
+              <div className="text-stone-300">Valor de Portfolio</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-white mb-2">120</div>
-              <div className="text-pink-300">Tiendas Integradas</div>
+              <div className="text-3xl font-bold text-white mb-2">12</div>
+              <div className="text-stone-300">Centros Comerciales</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-white mb-2">85%</div>
-              <div className="text-pink-300">Digitalización Lograda</div>
+              <div className="text-3xl font-bold text-white mb-2">95%</div>
+              <div className="text-stone-300">Ocupación Media</div>
             </div>
           </div>
           <Button className="capittal-button bg-white text-black hover:bg-gray-100">
-            Ver Casos Retail
+            Ver Casos Inmobiliarios
           </Button>
         </div>
       </section>
@@ -190,18 +190,18 @@ const RetailConsumer = () => {
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            ¿Tiene una empresa retail o consumer?
+            ¿Tiene un proyecto inmobiliario?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Nuestros especialistas están preparados para analizar su negocio 
-            y maximizar el valor en su proceso de M&A.
+            Nuestros especialistas inmobiliarios están preparados para analizar 
+            su portfolio y maximizar el valor de sus activos.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button className="capittal-button text-lg px-8 py-4">
-              Consulta Retail Gratuita
+              Consulta Inmobiliaria
             </Button>
             <Button variant="outline" className="text-lg px-8 py-4 border-black text-black hover:bg-black hover:text-white">
-              Descargar Retail Report
+              Descargar Real Estate Report
             </Button>
           </div>
         </div>
@@ -212,4 +212,4 @@ const RetailConsumer = () => {
   );
 };
 
-export default RetailConsumer;
+export default Inmobiliario;

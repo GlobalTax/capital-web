@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
@@ -30,10 +29,14 @@ import DueDiligence from '@/pages/servicios/DueDiligence';
 import FusionesAdquisiciones from '@/pages/servicios/FusionesAdquisiciones';
 import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
 
-// Sectores
+// Sectores - Updated and new pages
 import Healthcare from '@/pages/sectores/Healthcare';
 import Industrial from '@/pages/sectores/Industrial';
 import Tecnologia from '@/pages/sectores/Tecnologia';
+import FinancialServices from '@/pages/sectores/FinancialServices';
+import RetailConsumer from '@/pages/sectores/RetailConsumer';
+import Energia from '@/pages/sectores/Energia';
+import Inmobiliario from '@/pages/sectores/Inmobiliario';
 
 // Recursos
 import Blog from '@/pages/recursos/Blog';
@@ -80,10 +83,14 @@ function App() {
               <Route path="/servicios/fusiones-adquisiciones" element={<FusionesAdquisiciones />} />
               <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
               
-              {/* Sectores routes */}
+              {/* Sectores routes - Updated and new */}
               <Route path="/sectores/healthcare" element={<Healthcare />} />
               <Route path="/sectores/industrial" element={<Industrial />} />
               <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+              <Route path="/sectores/financial-services" element={<FinancialServices />} />
+              <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
+              <Route path="/sectores/energia" element={<Energia />} />
+              <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
               
               {/* Recursos routes */}
               <Route path="/recursos/blog" element={<Blog />} />
