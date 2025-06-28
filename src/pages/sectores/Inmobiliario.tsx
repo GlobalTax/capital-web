@@ -3,11 +3,21 @@ import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SectorHero from '@/components/SectorHero';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building, Home, MapPin, TrendingUp, Award, CheckCircle } from 'lucide-react';
+import SectorStats from '@/components/sector/SectorStats';
+import SectorServices from '@/components/sector/SectorServices';
+import SectorExpertise from '@/components/sector/SectorExpertise';
+import SectorCaseStudy from '@/components/sector/SectorCaseStudy';
+import SectorCTA from '@/components/sector/SectorCTA';
+import { Building, Home, MapPin, TrendingUp } from 'lucide-react';
 
 const Inmobiliario = () => {
+  const stats = [
+    { number: "30+", label: "Transacciones Inmobiliarias" },
+    { number: "€2.8B", label: "Valor de Activos" },
+    { number: "15M m²", label: "Superficie Gestionada" },
+    { number: "95%", label: "Due Diligence Exitosa" }
+  ];
+
   const services = [
     {
       icon: Building,
@@ -31,7 +41,7 @@ const Inmobiliario = () => {
     }
   ];
 
-  const expertise = [
+  const expertiseAreas = [
     "Promoción y Construcción",
     "Centros Comerciales y Retail",
     "Oficinas y Espacios Corporativos",
@@ -40,11 +50,10 @@ const Inmobiliario = () => {
     "PropTech y Servicios"
   ];
 
-  const stats = [
-    { number: "30+", label: "Transacciones Inmobiliarias" },
-    { number: "€2.8B", label: "Valor de Activos" },
-    { number: "15M m²", label: "Superficie Gestionada" },
-    { number: "95%", label: "Due Diligence Exitosa" }
+  const caseStudyMetrics = [
+    { value: "€650M", label: "Valor de Portfolio" },
+    { value: "12", label: "Centros Comerciales" },
+    { value: "95%", label: "Ocupación Media" }
   ];
 
   return (
@@ -59,144 +68,36 @@ const Inmobiliario = () => {
         secondaryButtonText="Ver Casos Inmobiliarios"
       />
 
-      {/* Stats Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-black mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-slate-600">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <SectorStats stats={stats} />
 
-      {/* Services Section */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
-              Servicios Especializados
-            </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Servicios adaptados a la complejidad del mercado inmobiliario español y europeo
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services.map((service, index) => (
-              <Card key={index} className="border-0.5 border-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <CardHeader className="text-center">
-                  <service.icon className="w-12 h-12 mx-auto mb-4 text-blue-600" />
-                  <CardTitle className="text-xl font-bold">{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600 text-center">
-                    {service.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <SectorServices
+        title="Servicios Especializados"
+        subtitle="Servicios adaptados a la complejidad del mercado inmobiliario español y europeo"
+        services={services}
+      />
 
-      {/* Expertise Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-                Expertise Inmobiliario
-              </h2>
-              <p className="text-lg text-slate-600 mb-8">
-                Comprendemos los ciclos inmobiliarios, la regulación urbanística, y las 
-                complejidades fiscales del sector. Nuestro equipo incluye arquitectos, 
-                urbanistas y especialistas en derecho inmobiliario.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {expertise.map((area, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">{area}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-slate-50 p-8 rounded-lg border-0.5 border-black">
-              <Award className="w-16 h-16 text-blue-600 mb-6" />
-              <h3 className="text-2xl font-bold text-black mb-4">
-                Líderes en Real Estate
-              </h3>
-              <p className="text-slate-600 mb-4">
-                Reconocidos como "Real Estate M&A Advisor of the Year" por Real Estate 
-                Finance por nuestro trabajo en transacciones complejas.
-              </p>
-              <p className="text-slate-600">
-                Hemos gestionado más de €2.8B en transacciones inmobiliarias, 
-                incluyendo portfolios complejos y operaciones internacionales.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SectorExpertise
+        title="Expertise Inmobiliario"
+        description="Comprendemos los ciclos inmobiliarios, la regulación urbanística, y las complejidades fiscales del sector. Nuestro equipo incluye arquitectos, urbanistas y especialistas en derecho inmobiliario."
+        expertiseAreas={expertiseAreas}
+        achievementTitle="Líderes en Real Estate"
+        achievementDescription="Reconocidos como 'Real Estate M&A Advisor of the Year' por Real Estate Finance por nuestro trabajo en transacciones complejas."
+        achievementDetails="Hemos gestionado más de €2.8B en transacciones inmobiliarias, incluyendo portfolios complejos y operaciones internacionales."
+      />
 
-      {/* Case Study Preview */}
-      <section className="py-20 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Caso de Éxito Destacado
-          </h2>
-          <p className="text-xl text-slate-300 mb-8 max-w-4xl mx-auto">
-            Asesoramos la venta de un portfolio de centros comerciales españoles 
-            a un REIT europeo por €650M, incluyendo reestructuración de contratos de arrendamiento.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">€650M</div>
-              <div className="text-slate-400">Valor de Portfolio</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">12</div>
-              <div className="text-slate-400">Centros Comerciales</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">95%</div>
-              <div className="text-slate-400">Ocupación Media</div>
-            </div>
-          </div>
-          <Button className="capittal-button bg-white text-black hover:bg-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-            Ver Casos Inmobiliarios
-          </Button>
-        </div>
-      </section>
+      <SectorCaseStudy
+        title="Caso de Éxito Destacado"
+        description="Asesoramos la venta de un portfolio de centros comerciales españoles a un REIT europeo por €650M, incluyendo reestructuración de contratos de arrendamiento."
+        metrics={caseStudyMetrics}
+        buttonText="Ver Casos Inmobiliarios"
+      />
 
-      {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            ¿Tiene un proyecto inmobiliario?
-          </h2>
-          <p className="text-xl text-slate-600 mb-8">
-            Nuestros especialistas inmobiliarios están preparados para analizar 
-            su portfolio y maximizar el valor de sus activos.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="capittal-button text-lg px-8 py-4">
-              Consulta Inmobiliaria
-            </Button>
-            <Button variant="outline" className="text-lg px-8 py-4 border-black text-black hover:bg-black hover:text-white">
-              Descargar Real Estate Report
-            </Button>
-          </div>
-        </div>
-      </section>
+      <SectorCTA
+        title="¿Tiene un proyecto inmobiliario?"
+        description="Nuestros especialistas inmobiliarios están preparados para analizar su portfolio y maximizar el valor de sus activos."
+        primaryButtonText="Consulta Inmobiliaria"
+        secondaryButtonText="Descargar Real Estate Report"
+      />
 
       <Footer />
     </div>
