@@ -6,7 +6,8 @@ import { STANDARD_SECTORS } from './sectorOptions';
 interface SectorSelectProps {
   id?: string;
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange?: (value: string) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
   className?: string;
@@ -16,12 +17,22 @@ const SectorSelect: React.FC<SectorSelectProps> = ({
   id,
   value,
   onValueChange,
+  onChange,
   placeholder = "Selecciona un sector",
   required = false,
   className = ""
 }) => {
+  const handleValueChange = (value: string) => {
+    if (onValueChange) {
+      onValueChange(value);
+    }
+    if (onChange) {
+      onChange(value);
+    }
+  };
+
   return (
-    <Select value={value} onValueChange={onValueChange} required={required}>
+    <Select value={value} onValueChange={handleValueChange} required={required}>
       <SelectTrigger id={id} className={`border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 ${className}`}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
