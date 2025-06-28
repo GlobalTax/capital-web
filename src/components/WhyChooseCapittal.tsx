@@ -40,15 +40,15 @@ const WhyChooseCapittal = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg badge-text mb-6">
             La Diferencia Capittal
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="section-title text-black mb-6">
             Por Qué Elegir Capittal
           </h2>
           
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="section-subtitle max-w-3xl mx-auto">
             No somos una consultora generalista. Somos especialistas en M&A que vivimos 
             y respiramos compraventa de empresas todos los días.
           </p>
@@ -63,16 +63,16 @@ const WhyChooseCapittal = () => {
             >
               {/* Highlight */}
               <div className="flex items-center justify-between mb-6">
-                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-bold border-0.5 border-border">
+                <div className="bg-black text-white px-3 py-1 rounded-lg badge-text border-0.5 border-border">
                   {reason.highlight}
                 </div>
               </div>
               
-              <h3 className="text-xl font-bold text-black mb-4">
+              <h3 className="card-title text-black mb-4">
                 {reason.title}
               </h3>
               
-              <p className="text-gray-600 leading-relaxed">
+              <p className="card-description leading-relaxed">
                 {reason.description}
               </p>
             </div>

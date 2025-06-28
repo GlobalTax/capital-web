@@ -1,131 +1,51 @@
+
 import React from 'react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Play } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          {/* Left Column - Content */}
-          <div className="lg:col-span-7">
-            <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-8">
-              Líderes en M&A desde 2008
-            </div>
-            
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-8 leading-tight">
-              Especialista en compraventa de empresas
-            </h1>
-            
-            <p className="text-lg text-gray-600 mb-12 leading-relaxed max-w-2xl">
-              Especialistas en compraventa de empresas con más de 15 años de experiencia. 
-              Te acompañamos en cada paso para lograr el mejor precio.
-            </p>
-
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-8 mb-12 py-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-black mb-2">€1.0B+</div>
-                <div className="text-sm text-gray-600">Valor Transaccional</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-black mb-2">200+</div>
-                <div className="text-sm text-gray-600">Operaciones</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-black mb-2">95%</div>
-                <div className="text-sm text-gray-600">Éxito</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-6">
-              <InteractiveHoverButton 
-                text="Valorar mi empresa"
-                variant="primary"
-                size="lg"
-              />
-              
-              <InteractiveHoverButton 
-                text="Ver Casos de Éxito"
-                variant="secondary"
-                size="lg"
-              />
-            </div>
+    <section className="pt-32 pb-20 bg-gradient-to-b from-white to-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-small font-medium mb-8">
+            Especialistas en M&A desde 2008
           </div>
-
-          {/* Right Column - Interactive Dashboard */}
-          <div className="lg:col-span-5">
-            <div className="relative">
-              {/* Main Dashboard Card */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="bg-gray-900 text-white p-6">
-                  <h3 className="text-lg font-semibold mb-2">Capittal Market </h3>
-                  <p className="text-gray-300 text-sm">Análisis en tiempo real</p>
-                </div>
-                
-                {/* Market Data Table */}
-                <div className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="font-medium text-gray-900">Tech Startup</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">€15M</div>
-                        <div className="text-sm text-green-600">+12%</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="font-medium text-gray-900">Industrial Co.</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">€45M</div>
-                        <div className="text-sm text-blue-600">+8%</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-black rounded-full"></div>
-                        <span className="font-medium text-gray-900">Retail Chain</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">€32M</div>
-                        <div className="text-sm text-black">+15%</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 pt-6">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Transacciones Q4</span>
-                      <span className="font-bold text-gray-900">47 activas</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating Stats */}
-              <div className="absolute -top-4 -right-4 bg-black text-white rounded-lg p-4 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <div className="font-bold">+23%</div>
-                    <div className="text-xs text-gray-300">Este mes</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute -bottom-4 -left-4 bg-white rounded-lg p-4 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <div className="font-bold text-gray-900">156</div>
-                    <div className="text-xs text-gray-500">Empresas</div>
-                  </div>
-                </div>
-              </div>
+          
+          <h1 className="text-display font-bold text-black mb-8 leading-tight max-w-4xl mx-auto">
+            Maximizamos el Valor de tu Empresa en su Venta
+          </h1>
+          
+          <p className="content-text text-gray-600 max-w-3xl mx-auto mb-12">
+            Somos la boutique M&A líder en España. Conseguimos valoraciones superiores 
+            al mercado gracias a nuestro proceso optimizado y experiencia de más de 15 años.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+            <Button className="capittal-button button-label text-lg px-8 py-4 bg-black text-white hover:bg-gray-800 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              Valorar mi Empresa Gratis
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            
+            <Button variant="outline" className="button-label text-lg px-8 py-4 border-gray-300 text-black hover:bg-gray-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <Play className="mr-2 h-5 w-5" />
+              Ver Casos de Éxito
+            </Button>
+          </div>
+          
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="metric-value text-black mb-2">200+</div>
+              <div className="metric-label">Operaciones Completadas</div>
+            </div>
+            <div className="text-center">
+              <div className="metric-value text-black mb-2">€2.5B</div>
+              <div className="metric-label">Valor Total Transacciones</div>
+            </div>
+            <div className="text-center">
+              <div className="metric-value text-black mb-2">40%</div>
+              <div className="metric-label">Superior al Mercado</div>
             </div>
           </div>
         </div>
