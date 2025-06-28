@@ -12,7 +12,7 @@ export const useBlogPosts = () => {
   const fetchPosts = async (publishedOnly = false) => {
     try {
       setIsLoading(true);
-      let query = supabase.from('blog_posts').select('*');
+      let query = (supabase as any).from('blog_posts').select('*');
       
       if (publishedOnly) {
         query = query.eq('is_published', true);
@@ -22,7 +22,7 @@ export const useBlogPosts = () => {
 
       if (error) throw error;
       
-      setPosts((data as BlogPost[]) || []);
+      setPosts((data as unknown as BlogPost[]) || []);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
       toast({
@@ -37,7 +37,7 @@ export const useBlogPosts = () => {
 
   const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('blog_posts')
         .select('*')
         .eq('slug', slug)
@@ -45,7 +45,7 @@ export const useBlogPosts = () => {
         .single();
 
       if (error) throw error;
-      return data as BlogPost;
+      return data as unknown as BlogPost;
     } catch (error) {
       console.error('Error fetching blog post:', error);
       return null;
@@ -54,9 +54,9 @@ export const useBlogPosts = () => {
 
   const createPost = async (postData: Partial<BlogPost>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('blog_posts')
-        .insert([postData])
+        .insert([postData as any])
         .select()
         .single();
 
@@ -67,7 +67,7 @@ export const useBlogPosts = () => {
         description: "Post creado correctamente.",
       });
 
-      return data as BlogPost;
+      return data as unknown as BlogPost;
     } catch (error) {
       console.error('Error creating blog post:', error);
       toast({
@@ -81,9 +81,9 @@ export const useBlogPosts = () => {
 
   const updatePost = async (id: string, postData: Partial<BlogPost>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('blog_posts')
-        .update(postData)
+        .update(postData as any)
         .eq('id', id)
         .select()
         .single();
@@ -95,7 +95,7 @@ export const useBlogPosts = () => {
         description: "Post actualizado correctamente.",
       });
 
-      return data as BlogPost;
+      return data as unknown as BlogPost;
     } catch (error) {
       console.error('Error updating blog post:', error);
       toast({
@@ -109,7 +109,7 @@ export const useBlogPosts = () => {
 
   const deletePost = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('blog_posts')
         .delete()
         .eq('id', id);
