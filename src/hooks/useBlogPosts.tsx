@@ -22,7 +22,7 @@ export const useBlogPosts = () => {
 
       if (error) throw error;
       
-      setPosts(data || []);
+      setPosts((data as BlogPost[]) || []);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
       toast({
@@ -45,7 +45,7 @@ export const useBlogPosts = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as BlogPost;
     } catch (error) {
       console.error('Error fetching blog post:', error);
       return null;
@@ -67,7 +67,7 @@ export const useBlogPosts = () => {
         description: "Post creado correctamente.",
       });
 
-      return data;
+      return data as BlogPost;
     } catch (error) {
       console.error('Error creating blog post:', error);
       toast({
@@ -95,7 +95,7 @@ export const useBlogPosts = () => {
         description: "Post actualizado correctamente.",
       });
 
-      return data;
+      return data as BlogPost;
     } catch (error) {
       console.error('Error updating blog post:', error);
       toast({

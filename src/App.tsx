@@ -19,6 +19,7 @@ import TerminosUso from '@/pages/TerminosUso';
 import Cookies from '@/pages/Cookies';
 import DocumentacionMA from '@/pages/DocumentacionMA';
 import ProgramaColaboradores from '@/pages/ProgramaColaboradores';
+import BlogPost from '@/pages/blog/BlogPost';
 
 // Por Qué Elegirnos
 import PorQueElegirnos from '@/pages/por-que-elegirnos/index';
