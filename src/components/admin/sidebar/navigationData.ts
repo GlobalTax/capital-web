@@ -12,12 +12,17 @@ import {
   Image,
   Mail,
   UserPlus,
+  Calendar,
+  Clock,
+  Settings,
+  HelpCircle,
+  Zap
 } from 'lucide-react';
 import { NavigationItem, NavigationGroup } from './types';
 
 export const dashboardItems: NavigationItem[] = [
   {
-    title: 'Inicio',
+    title: 'Dashboard',
     url: '/admin',
     icon: LayoutDashboard,
     exact: true,
@@ -26,7 +31,7 @@ export const dashboardItems: NavigationItem[] = [
 
 export const navigationGroups: NavigationGroup[] = [
   {
-    title: 'Contenido IA',
+    title: 'Gestión de Contenido',
     items: [
       {
         title: 'AI Content Studio Pro',
@@ -35,15 +40,10 @@ export const navigationGroups: NavigationGroup[] = [
         badge: 'NEW'
       },
       {
-        title: 'Blog Posts (Clásico)',
+        title: 'Blog Posts',
         url: '/admin/blog',
         icon: FileText,
       },
-    ],
-  },
-  {
-    title: 'Contenido',
-    items: [
       {
         title: 'Casos de Éxito',
         url: '/admin/case-studies',
@@ -57,22 +57,7 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
-    title: 'Datos',
-    items: [
-      {
-        title: 'Múltiplos',
-        url: '/admin/multiples',
-        icon: BarChart3,
-      },
-      {
-        title: 'Estadísticas',
-        url: '/admin/statistics',
-        icon: TrendingUp,
-      },
-    ],
-  },
-  {
-    title: 'Leads',
+    title: 'CRM & Leads',
     items: [
       {
         title: 'Leads de Contacto',
@@ -87,10 +72,25 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
-    title: 'Usuarios',
+    title: 'Datos y Métricas',
     items: [
       {
-        title: 'Equipo',
+        title: 'Múltiplos de Valoración',
+        url: '/admin/multiples',
+        icon: BarChart3,
+      },
+      {
+        title: 'Estadísticas Clave',
+        url: '/admin/statistics',
+        icon: TrendingUp,
+      },
+    ],
+  },
+  {
+    title: 'Equipo y Testimonios',
+    items: [
+      {
+        title: 'Miembros del Equipo',
         url: '/admin/team',
         icon: Users,
       },
@@ -100,14 +100,14 @@ export const navigationGroups: NavigationGroup[] = [
         icon: MessageSquare,
       },
       {
-        title: 'Test. Carrusel',
+        title: 'Testimonios Carrusel',
         url: '/admin/carousel-testimonials',
         icon: Star,
       },
     ],
   },
   {
-    title: 'Visuales',
+    title: 'Recursos Visuales',
     items: [
       {
         title: 'Logos Carrusel',
