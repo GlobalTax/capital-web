@@ -128,7 +128,7 @@ const SectorReportsGenerator = () => {
                   size="lg"
                 >
                   <Wand2 className="h-5 w-5 mr-2" />
-                  Asistente Guiado
+                  <span className="button-label">Asistente Guiado</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -136,7 +136,7 @@ const SectorReportsGenerator = () => {
                   size="lg"
                 >
                   <Layout className="h-5 w-5 mr-2" />
-                  Templates IA
+                  <span className="button-label">Templates IA</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -144,7 +144,7 @@ const SectorReportsGenerator = () => {
                   size="lg"
                 >
                   <FileText className="h-5 w-5 mr-2" />
-                  Modo Avanzado
+                  <span className="button-label">Modo Avanzado</span>
                 </Button>
               </div>
               
@@ -155,7 +155,7 @@ const SectorReportsGenerator = () => {
                   size="sm"
                 >
                   <BarChart3 className="h-4 w-4 mr-1" />
-                  Visualizaciones
+                  <span className="button-label-sm">Visualizaciones</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -163,7 +163,7 @@ const SectorReportsGenerator = () => {
                   size="sm"
                 >
                   <Palette className="h-4 w-4 mr-1" />
-                  Exportación
+                  <span className="button-label-sm">Exportación</span>
                 </Button>
               </div>
             </div>
@@ -176,11 +176,11 @@ const SectorReportsGenerator = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="card-title flex items-center gap-2">
                     <Layout className="h-5 w-5" />
                     Templates Inteligentes
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="card-description">
                     Plantillas optimizadas con IA para diferentes sectores y audiencias
                   </CardDescription>
                 </div>
@@ -201,11 +201,11 @@ const SectorReportsGenerator = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="card-title flex items-center gap-2">
                     <BarChart3 className="h-5 w-5" />
                     Visualizaciones Automáticas
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="card-description">
                     Gráficos e infografías generadas automáticamente por IA
                   </CardDescription>
                 </div>
@@ -223,7 +223,7 @@ const SectorReportsGenerator = () => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>Selecciona un reporte para generar visualizaciones</p>
+                  <p className="content-text">Selecciona un reporte para generar visualizaciones</p>
                   <Button 
                     variant="outline" 
                     onClick={() => setViewMode('history')} 
@@ -243,11 +243,11 @@ const SectorReportsGenerator = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="card-title flex items-center gap-2">
                     <Palette className="h-5 w-5" />
                     Exportación Avanzada
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="card-description">
                     Exporta reportes en múltiples formatos con estilos personalizados
                   </CardDescription>
                 </div>
@@ -265,7 +265,7 @@ const SectorReportsGenerator = () => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Download className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>Selecciona un reporte para configurar la exportación</p>
+                  <p className="content-text">Selecciona un reporte para configurar la exportación</p>
                   <Button 
                     variant="outline" 
                     onClick={() => setViewMode('history')} 
@@ -295,11 +295,11 @@ const SectorReportsGenerator = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="card-title flex items-center gap-2">
                     <FileText className="h-5 w-5" />
                     Configuración Avanzada
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="card-description">
                     Control total sobre todos los parámetros del reporte
                   </CardDescription>
                 </div>
@@ -322,8 +322,8 @@ const SectorReportsGenerator = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-medium">Historial de Reportes</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="section-title">Historial de Reportes</h3>
+                <p className="section-subtitle">
                   {generatedReports.length} reportes generados
                 </p>
               </div>
@@ -342,7 +342,7 @@ const SectorReportsGenerator = () => {
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    Limpiar Historial
+                    <span className="button-label-sm">Limpiar Historial</span>
                   </Button>
                 )}
               </div>
@@ -352,11 +352,11 @@ const SectorReportsGenerator = () => {
               <Card>
                 <CardContent className="py-12 text-center text-gray-500">
                   <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h4 className="text-lg font-medium mb-2">No hay reportes generados</h4>
-                  <p className="text-sm mb-4">Crea tu primer reporte para verlo aquí</p>
+                  <h4 className="card-title mb-2">No hay reportes generados</h4>
+                  <p className="card-description mb-4">Crea tu primer reporte para verlo aquí</p>
                   <Button onClick={() => setViewMode('dashboard')}>
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Crear Reporte
+                    <span className="button-label">Crear Reporte</span>
                   </Button>
                 </CardContent>
               </Card>
@@ -367,11 +367,11 @@ const SectorReportsGenerator = () => {
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate mb-2">
+                          <CardTitle className="report-title truncate mb-2">
                             {report.sector}
                           </CardTitle>
                           <div className="flex flex-wrap gap-1 mb-2">
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="badge-text">
                               {report.reportType === 'market-analysis' ? 'Mercado' :
                                report.reportType === 'ma-trends' ? 'M&A' :
                                report.reportType === 'valuation-multiples' ? 'Múltiplos' : 
@@ -379,11 +379,11 @@ const SectorReportsGenerator = () => {
                                report.reportType === 'tech-disruption' ? 'Tech' :
                                report.reportType === 'geographic-comparison' ? 'Geo' : 'Due Diligence'}
                             </Badge>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="badge-text">
                               {report.metadata.depth}
                             </Badge>
                             {report.visualizations && (
-                              <Badge variant="outline" className="text-xs text-purple-600">
+                              <Badge variant="outline" className="badge-text text-purple-600">
                                 <BarChart3 className="h-3 w-3 mr-1" />
                                 Viz
                               </Badge>
@@ -394,7 +394,7 @@ const SectorReportsGenerator = () => {
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                        <div className="grid grid-cols-2 gap-2 report-meta">
                           <div>📊 {report.wordCount.toLocaleString()} palabras</div>
                           <div>📅 {report.generatedAt.toLocaleDateString('es-ES')}</div>
                           {report.metadata.confidence && (
@@ -413,7 +413,7 @@ const SectorReportsGenerator = () => {
                             onClick={() => handlePreviewReport(report)}
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            Ver
+                            <span className="button-label-sm">Ver</span>
                           </Button>
                           <Button
                             variant="outline"
@@ -422,7 +422,7 @@ const SectorReportsGenerator = () => {
                             onClick={() => handleDownloadReport(report)}
                           >
                             <Download className="h-4 w-4 mr-1" />
-                            PDF
+                            <span className="button-label-sm">PDF</span>
                           </Button>
                         </div>
                         
@@ -430,26 +430,26 @@ const SectorReportsGenerator = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="flex-1 text-xs"
+                            className="flex-1"
                             onClick={() => {
                               setSelectedReport(report);
                               setViewMode('visualizations');
                             }}
                           >
                             <BarChart3 className="h-3 w-3 mr-1" />
-                            Gráficos
+                            <span className="help-text">Gráficos</span>
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="flex-1 text-xs"
+                            className="flex-1"
                             onClick={() => {
                               setSelectedReport(report);
                               setViewMode('export');
                             }}
                           >
                             <Share2 className="h-3 w-3 mr-1" />
-                            Exportar
+                            <span className="help-text">Exportar</span>
                           </Button>
                         </div>
                       </div>
@@ -470,15 +470,15 @@ const SectorReportsGenerator = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b border-gray-200 pb-6">
-        <h1 className="text-3xl font-light text-gray-900 mb-2 flex items-center gap-2">
+        <h1 className="page-title flex items-center gap-2">
           <Sparkles className="h-8 w-8 text-blue-500" />
           Reports Sectoriales IA
-          <Badge variant="outline" className="text-xs ml-2">
+          <Badge variant="outline" className="badge-text ml-2">
             <Crown className="h-3 w-3 mr-1" />
             Pro
           </Badge>
         </h1>
-        <p className="text-gray-600 font-light">
+        <p className="page-subtitle">
           Sistema avanzado de generación de reportes con IA, visualizaciones automáticas y exportación multi-formato
         </p>
       </div>
@@ -487,7 +487,7 @@ const SectorReportsGenerator = () => {
       <div className="flex space-x-4 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => setViewMode('dashboard')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+          className={`pb-3 px-1 nav-item transition-colors whitespace-nowrap ${
             viewMode === 'dashboard'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -498,7 +498,7 @@ const SectorReportsGenerator = () => {
         </button>
         <button
           onClick={() => setViewMode('templates')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+          className={`pb-3 px-1 nav-item transition-colors whitespace-nowrap ${
             viewMode === 'templates'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -509,7 +509,7 @@ const SectorReportsGenerator = () => {
         </button>
         <button
           onClick={() => setViewMode('visualizations')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+          className={`pb-3 px-1 nav-item transition-colors whitespace-nowrap ${
             viewMode === 'visualizations'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -520,7 +520,7 @@ const SectorReportsGenerator = () => {
         </button>
         <button
           onClick={() => setViewMode('export')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+          className={`pb-3 px-1 nav-item transition-colors whitespace-nowrap ${
             viewMode === 'export'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -531,7 +531,7 @@ const SectorReportsGenerator = () => {
         </button>
         <button
           onClick={() => setViewMode('history')}
-          className={`pb-3 px-1 font-medium text-sm transition-colors whitespace-nowrap ${
+          className={`pb-3 px-1 nav-item transition-colors whitespace-nowrap ${
             viewMode === 'history'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 hover:text-gray-700'

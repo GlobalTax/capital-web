@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -20,6 +21,41 @@ export default {
 		extend: {
 			fontFamily: {
 				'sans': ['Manrope', 'system-ui', 'sans-serif'],
+			},
+			fontSize: {
+				// Textos del sistema
+				'caption': ['11px', { lineHeight: '16px' }],    // Captions, timestamps
+				'small': ['12px', { lineHeight: '16px' }],      // Labels, badges
+				'body-sm': ['13px', { lineHeight: '18px' }],    // Tablas, formularios pequeños
+				'body': ['14px', { lineHeight: '20px' }],       // Texto principal UI
+				'body-lg': ['16px', { lineHeight: '24px' }],    // Contenido, lectura
+				
+				// Títulos
+				'h6': ['14px', { lineHeight: '20px', fontWeight: '600' }],
+				'h5': ['16px', { lineHeight: '24px', fontWeight: '600' }],
+				'h4': ['18px', { lineHeight: '28px', fontWeight: '600' }],
+				'h3': ['20px', { lineHeight: '28px', fontWeight: '600' }],
+				'h2': ['24px', { lineHeight: '32px', fontWeight: '700' }],
+				'h1': ['32px', { lineHeight: '40px', fontWeight: '700' }],
+				
+				// Display (para landing pages, headers principales)
+				'display-sm': ['36px', { lineHeight: '44px', fontWeight: '700' }],
+				'display': ['48px', { lineHeight: '56px', fontWeight: '700' }],
+				
+				// Mantener tamaños Tailwind estándar para compatibilidad
+				'xs': ['12px', { lineHeight: '16px' }],
+				'sm': ['14px', { lineHeight: '20px' }],
+				'base': ['16px', { lineHeight: '24px' }],
+				'lg': ['18px', { lineHeight: '28px' }],
+				'xl': ['20px', { lineHeight: '28px' }],
+				'2xl': ['24px', { lineHeight: '32px' }],
+				'3xl': ['30px', { lineHeight: '36px' }],
+				'4xl': ['36px', { lineHeight: '40px' }],
+				'5xl': ['48px', { lineHeight: '1' }],
+				'6xl': ['60px', { lineHeight: '1' }],
+				'7xl': ['72px', { lineHeight: '1' }],
+				'8xl': ['96px', { lineHeight: '1' }],
+				'9xl': ['128px', { lineHeight: '1' }],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

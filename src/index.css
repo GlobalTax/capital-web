@@ -64,6 +64,7 @@
 }
 
 @layer components {
+  /* Componentes existentes de Capittal */
   .capittal-card {
     @apply bg-white rounded-lg p-6 shadow-sm 
            transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1;
@@ -74,6 +75,61 @@
            focus:outline-none focus:ring-2 focus:ring-black/20;
   }
 
+  /* Sistema de Tipografía para SaaS */
+  
+  /* Textos del Dashboard */
+  .metric-value { @apply text-h2 font-bold; }
+  .metric-label { @apply text-body text-muted-foreground; }
+  .metric-change { @apply text-small font-medium; }
+  
+  /* Navegación */
+  .nav-item { @apply text-body font-medium transition-colors hover:text-foreground; }
+  .nav-item-active { @apply text-body font-semibold text-foreground; }
+  .nav-section-title { @apply text-small font-semibold text-muted-foreground uppercase tracking-wide; }
+  
+  /* Formularios */
+  .form-label { @apply text-small font-medium text-foreground; }
+  .form-help { @apply text-caption text-muted-foreground; }
+  .form-error { @apply text-caption text-destructive; }
+  .form-input { @apply text-body; }
+  
+  /* Tablas */
+  .table-header { @apply text-small font-semibold text-muted-foreground uppercase tracking-wide; }
+  .table-cell { @apply text-body; }
+  .table-cell-sm { @apply text-body-sm text-muted-foreground; }
+  
+  /* Cards y Paneles */
+  .card-title { @apply text-h4 font-semibold; }
+  .card-description { @apply text-body text-muted-foreground; }
+  .card-subtitle { @apply text-h6 font-medium; }
+  
+  /* Botones y Acciones */
+  .button-label { @apply text-body font-medium; }
+  .button-label-sm { @apply text-body-sm font-medium; }
+  
+  /* Estados y Badges */
+  .badge-text { @apply text-small font-medium; }
+  .status-text { @apply text-caption font-medium uppercase tracking-wide; }
+  
+  /* Headers de Sección */
+  .section-title { @apply text-h3 font-semibold; }
+  .section-subtitle { @apply text-body-lg text-muted-foreground; }
+  .page-title { @apply text-h2 font-bold; }
+  .page-subtitle { @apply text-body-lg text-muted-foreground; }
+  
+  /* Contenido y Texto */
+  .content-text { @apply text-body-lg leading-relaxed; }
+  .help-text { @apply text-body-sm text-muted-foreground; }
+  .timestamp { @apply text-caption text-muted-foreground; }
+  
+  /* Reportes Sectoriales */
+  .report-title { @apply text-h3 font-semibold; }
+  .report-meta { @apply text-body-sm text-muted-foreground; }
+  .report-section-title { @apply text-h5 font-semibold; }
+  .report-content { @apply text-body-lg leading-relaxed; }
+  .report-caption { @apply text-caption text-muted-foreground; }
+
+  /* Animaciones existentes */
   @keyframes fadeInUp {
     from {
       opacity: 0;
