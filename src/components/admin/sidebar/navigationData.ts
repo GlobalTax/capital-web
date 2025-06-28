@@ -12,6 +12,7 @@ import {
   Image,
   Mail,
   UserPlus,
+  BookOpen,
 } from 'lucide-react';
 import { NavigationItem, NavigationGroup } from './types';
 
@@ -32,6 +33,12 @@ export const navigationGroups: NavigationGroup[] = [
         title: 'AI Content Studio Pro',
         url: '/admin/blog-v2',
         icon: PenTool,
+        badge: 'NEW'
+      },
+      {
+        title: 'Reports Sectoriales IA',
+        url: '/admin/sector-reports',
+        icon: BookOpen,
         badge: 'NEW'
       },
     ],

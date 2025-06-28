@@ -25,6 +25,8 @@ export const useAdminLayout = () => {
         'case-studies': 'Casos de Éxito',
         'operations': 'Operaciones',
         'blog': 'Blog Posts',
+        'blog-v2': 'AI Content Studio Pro',
+        'sector-reports': 'Reports Sectoriales IA',
         'multiples': 'Múltiplos',
         'statistics': 'Estadísticas',
         'team': 'Equipo',

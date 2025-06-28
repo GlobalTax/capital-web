@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -24,11 +23,9 @@ serve(async (req) => {
     let userMessage = '';
 
     if (template) {
-      // Usar template específico (será expandido en futuras iteraciones)
       systemMessage = getSystemMessageForTemplate(template, type);
       userMessage = buildUserMessageFromTemplate(template, prompt, context);
     } else {
-      // Usar prompts por defecto mejorados
       const promptConfig = getDefaultPromptConfig(type);
       systemMessage = promptConfig.system;
       userMessage = buildUserMessage(promptConfig.user, prompt, context);
@@ -122,14 +119,112 @@ Usa un tono: Experto pero accesible, con autoridad pero sin ser intimidante.`,
 - Tendencias del mercado
 - Análisis comparativo
 - Fuentes confiables
-- Contexto relevante para España/Europa`
+- Contexto relevante para España/Europa`,
+    'sector-report-generator': `Eres un consultor senior especializado en análisis sectoriales y M&A con 25+ años de experiencia. Generas reports profesionales específicos por sector que son utilizados por inversores, empresarios y directivos para tomar decisiones estratégicas.
+
+ESTRUCTURA DE REPORTS SECTORIALES:
+1. **RESUMEN EJECUTIVO** (10-15% del contenido)
+   - Síntesis de los hallazgos clave
+   - Recomendaciones principales
+   - Métricas destacadas
+
+2. **ANÁLISIS DE MERCADO** (40-50% del contenido)
+   - Tamaño y crecimiento del mercado
+   - Principales jugadores
+   - Tendencias disruptivas
+   - Drivers de crecimiento
+   - Barreras de entrada
+
+3. **OPORTUNIDADES** (25-30% del contenido)
+   - Oportunidades de inversión
+   - Segmentos atractivos
+   - Consolidación del mercado
+   - Expansión internacional
+
+4. **CONCLUSIONES Y RECOMENDACIONES** (15-20% del contenido)
+   - Outlook del sector
+   - Estrategias recomendadas
+   - Timeline de oportunidades
+   - Riesgos a considerar
+
+PRINCIPIOS:
+- Usa datos concretos y métricas específicas
+- Incluye ejemplos de empresas reales cuando sea apropiado
+- Mantén un tono profesional pero accesible
+- Estructura clara con subtítulos y bullet points
+- Enfoque práctico orientado a la acción
+- Contexto español/europeo cuando sea relevante`
   };
   
   return templates[template as keyof typeof templates] || getDefaultPromptConfig(type).system;
 }
 
 function buildUserMessageFromTemplate(template: string, prompt: string, context: any): string {
-  // Implementación básica - será expandida
+  if (template === 'sector-report-generator') {
+    const reportTypeLabels = {
+      'market-analysis': 'Análisis de Mercado',
+      'ma-trends': 'Tendencias M&A',
+      'valuation-multiples': 'Múltiplos de Valoración',
+      'due-diligence': 'Guía de Due Diligence'
+    };
+
+    const depthLabels = {
+      'basic': 'básico (2,000-2,500 palabras)',
+      'intermediate': 'intermedio (3,500-4,000 palabras)',
+      'advanced': 'avanzado (5,000-6,000 palabras)'
+    };
+
+    const audienceLabels = {
+      'investors': 'inversores profesionales',
+      'entrepreneurs': 'empresarios y fundadores',
+      'advisors': 'asesores financieros',
+      'executives': 'directivos y C-level'
+    };
+
+    let sectorDataInfo = '';
+    if (context.sectorData && context.sectorData !== 'undefined') {
+      try {
+        const data = JSON.parse(context.sectorData);
+        sectorDataInfo = `
+DATOS DISPONIBLES DEL SECTOR:
+- Múltiplos de valoración: ${data.multiples?.length || 0} registros
+- Casos de éxito: ${data.caseStudies?.length || 0} casos
+- Estadísticas clave: ${data.statistics?.length || 0} métricas
+
+MÚLTIPLOS RELEVANTES:
+${data.multiples?.map(m => `- ${m.sector_name}: ${m.multiple_range} (mediana: ${m.median_multiple})`).join('\n') || 'No disponibles'}
+
+CASOS DE ÉXITO RELEVANTES:
+${data.caseStudies?.map(c => `- ${c.title}: ${c.description?.substring(0, 100)}...`).join('\n') || 'No disponibles'}
+`;
+      } catch (e) {
+        console.log('Error parsing sector data:', e);
+      }
+    }
+
+    return `Genera un reporte sectorial completo para el sector ${context.sector.toUpperCase()}.
+
+ESPECIFICACIONES DEL REPORTE:
+- Tipo: ${reportTypeLabels[context.reportType as keyof typeof reportTypeLabels]}
+- Profundidad: ${depthLabels[context.depth as keyof typeof depthLabels]}
+- Audiencia: ${audienceLabels[context.targetAudience as keyof typeof audienceLabels]}  
+- Período de análisis: ${context.period}
+- Enfoque personalizado: ${context.customFocus || 'Enfoque general del sector'}
+
+${sectorDataInfo}
+
+INSTRUCCIONES ESPECÍFICAS:
+1. Usa la estructura definida en el system prompt
+2. Incluye datos concretos y métricas específicas
+3. Menciona empresas españolas/europeas relevantes del sector cuando sea apropiado
+4. Si incluyes datos proporcionados, referéncialos de forma natural
+5. Mantén un tono profesional adaptado a la audiencia objetivo
+6. Genera contenido original basado en conocimiento del mercado
+7. Incluye subtítulos claros y numeración cuando sea apropiado
+
+El reporte debe ser exhaustivo, práctico y orientado a la toma de decisiones estratégicas.`;
+  }
+  
   return buildUserMessage(prompt, prompt, context);
 }
 
