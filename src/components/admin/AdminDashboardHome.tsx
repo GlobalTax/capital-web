@@ -52,7 +52,7 @@ const AdminDashboardHome = () => {
     <div className="space-y-6 bg-white">
       {/* Header minimalista */}
       <div className="border-b border-gray-200 pb-6">
-        <h1 className="text-3xl font-light text-gray-900 mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-light text-gray-900 mb-2">Inicio</h1>
         <p className="text-gray-600 font-light">
           Panel de administración Capittal
         </p>

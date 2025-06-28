@@ -16,7 +16,7 @@ export const useAdminLayout = () => {
     const segments = path.split('/').filter(Boolean);
     
     const breadcrumbs: BreadcrumbItem[] = [
-      { title: 'Dashboard', url: '/admin' }
+      { title: 'Inicio', url: '/admin' }
     ];
 
     if (segments.length > 1) {
