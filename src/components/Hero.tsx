@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
@@ -41,16 +40,14 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-6">
               <InteractiveHoverButton 
                 text="Valorar mi empresa"
-                variant="large"
+                variant="primary"
                 size="lg"
-                className="hover:-translate-y-1"
               />
               
               <InteractiveHoverButton 
                 text="Ver Casos de Éxito"
-                variant="outline"
+                variant="secondary"
                 size="lg"
-                className="hover:-translate-y-1"
               />
             </div>
           </div>

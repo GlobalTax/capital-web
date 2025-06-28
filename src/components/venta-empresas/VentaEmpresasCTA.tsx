@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Phone, Mail, Calendar, Download } from 'lucide-react';
@@ -154,7 +155,7 @@ const VentaEmpresasCTA = () => {
               
               <InteractiveHoverButton 
                 text="Solicitar Valoración"
-                variant="large"
+                variant="primary"
                 size="lg"
                 className="w-full"
                 type="submit"

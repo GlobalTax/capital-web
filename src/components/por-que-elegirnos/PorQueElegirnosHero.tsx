@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Award, Users, TrendingUp, Shield } from 'lucide-react';
@@ -89,15 +88,13 @@ const PorQueElegirnosHero = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.8s' }}>
             <InteractiveHoverButton 
               text="Conocer Nuestro Equipo"
-              variant="large"
+              variant="primary"
               size="lg"
-              className="hover:scale-105 hover:shadow-xl"
             />
             <InteractiveHoverButton 
               text="Ver Casos de Éxito"
-              variant="outline"
+              variant="secondary"
               size="lg"
-              className="hover:scale-105"
             />
           </div>
         </div>

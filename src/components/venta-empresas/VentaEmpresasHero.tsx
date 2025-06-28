@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const VentaEmpresasHero = () => {
   const benefits = [
@@ -46,12 +46,16 @@ const VentaEmpresasHero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-lg px-8 py-4">
-                Solicitar Valoración Gratuita
-              </Button>
-              <Button variant="outline" className="text-lg px-8 py-4 border-gray-300 hover:bg-gray-50">
-                Descargar Guía
-              </Button>
+              <InteractiveHoverButton 
+                text="Solicitar Valoración Gratuita"
+                variant="primary"
+                size="lg"
+              />
+              <InteractiveHoverButton 
+                text="Descargar Guía"
+                variant="outline"
+                size="lg"
+              />
             </div>
           </div>
 

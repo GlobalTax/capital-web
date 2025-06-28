@@ -272,7 +272,7 @@ const Contact = () => {
                 <div className="flex w-full flex-col justify-end space-y-3 pt-2">
                   <InteractiveHoverButton
                     text="Solicitar Consulta"
-                    variant="large"
+                    variant="primary"
                     size="lg"
                     className="w-full"
                     type="submit"

@@ -38,7 +38,7 @@ const PorQueElegirnos = () => {
                   </p>
                   <InteractiveHoverButton 
                     text="Ver Experiencia"
-                    variant="default"
+                    variant="secondary"
                     size="default"
                   />
                 </div>
@@ -52,7 +52,7 @@ const PorQueElegirnos = () => {
                   </p>
                   <InteractiveHoverButton 
                     text="Ver Metodología"
-                    variant="default"
+                    variant="secondary"
                     size="default"
                   />
                 </div>
@@ -66,7 +66,7 @@ const PorQueElegirnos = () => {
                   </p>
                   <InteractiveHoverButton 
                     text="Ver Resultados"
-                    variant="default"
+                    variant="secondary"
                     size="default"
                   />
                 </div>
