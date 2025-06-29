@@ -77,8 +77,8 @@ const ModernDashboardStats = ({ stats }: ModernDashboardStatsProps) => {
                     <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
                     <span className={`text-xs font-medium ${
                       stat.changeType === 'positive' ? 'text-green-600' : 
-                      stat.changeType === 'negative' ? 'text-red-600' : 
-                      'text-gray-500'
+                      stat.changeType === 'neutral' ? 'text-gray-500' : 
+                      'text-red-600'
                     }`}>
                       {stat.change}
                     </span>
