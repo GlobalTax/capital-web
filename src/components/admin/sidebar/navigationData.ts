@@ -13,6 +13,7 @@ import {
   Mail,
   UserPlus,
   BookOpen,
+  Calculator,
 } from 'lucide-react';
 import { NavigationItem, NavigationGroup } from './types';
 
@@ -80,6 +81,11 @@ export const navigationGroups: NavigationGroup[] = [
         title: 'Leads de Contacto',
         url: '/admin/contact-leads',
         icon: Mail,
+      },
+      {
+        title: 'Valoraciones',
+        url: '/admin/valuation-leads',
+        icon: Calculator,
       },
       {
         title: 'Solicitudes Colaboradores',

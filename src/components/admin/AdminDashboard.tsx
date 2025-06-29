@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -16,6 +17,7 @@ import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import CarouselLogosManager from './CarouselLogosManager';
 import ContactLeadsManager from './ContactLeadsManager';
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
+import ValuationLeadsManager from './ValuationLeadsManager';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -43,6 +45,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               <Route path="carousel-logos" element={<CarouselLogosManager />} />
               <Route path="contact-leads" element={<ContactLeadsManager />} />
               <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
+              <Route path="valuation-leads" element={<ValuationLeadsManager />} />
             </Routes>
           </main>
         </SidebarInset>
