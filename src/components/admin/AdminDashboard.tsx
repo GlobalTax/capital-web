@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminHeader from './AdminHeader';
 import AdminDashboardHome from './AdminDashboardHome';
@@ -12,8 +13,8 @@ import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import TeamMembersManager from './TeamMembersManager';
 import ContactLeadsManager from './ContactLeadsManager';
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
-import AIContentStudioPro from './ai/AIContentStudioPro';
-import SectorReportsGenerator from './ai/SectorReportsGenerator';
+import AIContentStudioPro from './AIContentStudioPro';
+import SectorReportsGenerator from './SectorReportsGenerator';
 import { FileText } from 'lucide-react';
 import ReportManager from './ReportManager';
 

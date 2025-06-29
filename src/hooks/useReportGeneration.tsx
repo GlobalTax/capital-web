@@ -135,12 +135,12 @@ export const useReportGeneration = () => {
         // Obtener datos del reporte
         const reportData = await fetchReportData(config.metrics, config.type);
         
-        // Guardar en la base de datos
+        // Guardar en la base de datos - convertir ReportData a JSON compatible
         const { data, error } = await supabase
           .from('generated_reports')
           .insert({
             config_id: config.id,
-            report_data: reportData,
+            report_data: reportData as any, // Casting para compatibilidad con JSON
             status: 'completed'
           })
           .select()
