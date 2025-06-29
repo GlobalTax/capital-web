@@ -15,7 +15,8 @@ import ContactLeadsManager from './ContactLeadsManager';
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
 import AIContentStudioWrapper from './AIContentStudioWrapper';
 import SectorReportsGenerator from './SectorReportsGenerator';
-import { FileText } from 'lucide-react';
+import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
+import { FileText, BarChart3 } from 'lucide-react';
 import ReportManager from './ReportManager';
 
 interface AdminDashboardProps {
@@ -29,6 +30,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     switch (activeTab) {
       case 'dashboard':
         return <AdminDashboardHome />;
+      case 'marketing-intelligence':
+        return <MarketingIntelligenceDashboard />;
       case 'blog':
         return <BlogPostsManagerV2 />;
       case 'case-studies':
@@ -79,6 +82,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             <div className="space-y-1">
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: () => React.createElement('svg') },
+                { id: 'marketing-intelligence', label: 'Marketing Intelligence', icon: BarChart3 },
                 { id: 'blog', label: 'Blog Posts', icon: () => React.createElement('svg') },
                 { id: 'case-studies', label: 'Case Studies', icon: () => React.createElement('svg') },
                 { id: 'testimonials', label: 'Testimonials', icon: () => React.createElement('svg') },
