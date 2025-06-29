@@ -1,7 +1,9 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import type { AdvancedDashboardStats, DateRange } from '@/types/dashboard';
+import type { DashboardFilters } from '@/types/filters';
 import { 
   fetchRevenueMetrics, 
   fetchContentMetrics, 
@@ -13,7 +15,7 @@ import {
   generateSampleMetrics
 } from '@/utils/analytics';
 
-export const useAdvancedDashboardStats = () => {
+export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
   const [stats, setStats] = useState<AdvancedDashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +23,9 @@ export const useAdvancedDashboardStats = () => {
     start: startOfMonth(new Date()),
     end: new Date()
   });
+
+  // Usar filtros si se proporcionan, sino usar dateRange interno
+  const effectiveDateRange = filters?.dateRange || dateRange;
 
   // Datos adicionales para gráficos
   const [historicalRevenueData, setHistoricalRevenueData] = useState<any[]>([]);
@@ -31,9 +36,13 @@ export const useAdvancedDashboardStats = () => {
       setIsLoading(true);
       setError(null);
 
-      console.log('Fetching advanced dashboard stats for date range:', dateRange);
+      console.log('Fetching advanced dashboard stats with filters:', {
+        dateRange: effectiveDateRange,
+        sectors: filters?.sectors,
+        searchQuery: filters?.searchQuery
+      });
 
-      // Fetch parallel data
+      // Fetch parallel data con filtros aplicados
       const [
         revenueData, 
         contentData, 
@@ -42,15 +51,15 @@ export const useAdvancedDashboardStats = () => {
         historicalRevenue,
         historicalContent
       ] = await Promise.all([
-        fetchRevenueMetrics(dateRange),
-        fetchContentMetrics(dateRange),
+        fetchRevenueMetrics(effectiveDateRange, filters?.sectors),
+        fetchContentMetrics(effectiveDateRange, filters?.searchQuery),
         fetchSystemMetrics(),
-        fetchTopPerformingPosts(),
-        fetchHistoricalRevenueMetrics(),
-        fetchHistoricalContentMetrics()
+        fetchTopPerformingPosts(filters?.searchQuery),
+        fetchHistoricalRevenueMetrics(filters?.sectors),
+        fetchHistoricalContentMetrics(filters?.searchQuery)
       ]);
 
-      console.log('Fetched data:', { 
+      console.log('Fetched data with filters:', { 
         revenueData, 
         contentData, 
         systemData, 
@@ -69,16 +78,22 @@ export const useAdvancedDashboardStats = () => {
       // Add top performing posts
       calculatedStats.topPerformingPosts = topPosts;
 
-      // Get total leads from contact_leads table
-      const { count: leadsCount } = await supabase
+      // Get total leads from contact_leads table con filtros
+      let leadsQuery = supabase
         .from('contact_leads')
         .select('*', { count: 'exact', head: true })
-        .gte('created_at', dateRange.start.toISOString())
-        .lte('created_at', dateRange.end.toISOString());
+        .gte('created_at', effectiveDateRange.start.toISOString())
+        .lte('created_at', effectiveDateRange.end.toISOString());
 
+      // Aplicar filtro de búsqueda a leads si existe
+      if (filters?.searchQuery) {
+        leadsQuery = leadsQuery.or(`full_name.ilike.%${filters.searchQuery}%,company.ilike.%${filters.searchQuery}%`);
+      }
+
+      const { count: leadsCount } = await leadsQuery;
       calculatedStats.totalLeads = leadsCount || 0;
 
-      console.log('Final calculated stats:', calculatedStats);
+      console.log('Final calculated stats with filters:', calculatedStats);
       setStats(calculatedStats);
     } catch (err) {
       console.error('Error fetching advanced dashboard stats:', err);
@@ -86,7 +101,7 @@ export const useAdvancedDashboardStats = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [dateRange]);
+  }, [effectiveDateRange, filters]);
 
   const generateSampleData = useCallback(async () => {
     try {
@@ -114,7 +129,7 @@ export const useAdvancedDashboardStats = () => {
     stats,
     isLoading,
     error,
-    dateRange,
+    dateRange: effectiveDateRange,
     historicalRevenueData,
     historicalContentData,
     updateDateRange,

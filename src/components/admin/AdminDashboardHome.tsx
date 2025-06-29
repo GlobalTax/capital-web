@@ -1,13 +1,25 @@
 
 import React from 'react';
 import AdvancedDashboardStatsComponent from './dashboard/AdvancedDashboardStats';
+import DashboardFilters from './dashboard/DashboardFilters';
 import ModernQuickActions from './dashboard/ModernQuickActions';
 import ModernRecentActivity from './dashboard/ModernRecentActivity';
 import { useAdvancedDashboardStats } from '@/hooks/useAdvancedDashboardStats';
+import { useAdvancedDashboardFilters } from '@/hooks/useAdvancedDashboardFilters';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
 const AdminDashboardHome = () => {
+  const {
+    filters,
+    filterOptions,
+    updateDateRange,
+    updateSectors,
+    updateSearchQuery,
+    resetFilters,
+    hasActiveFilters
+  } = useAdvancedDashboardFilters();
+
   const { 
     stats, 
     isLoading, 
@@ -16,7 +28,7 @@ const AdminDashboardHome = () => {
     historicalContentData,
     refetch, 
     generateSampleData 
-  } = useAdvancedDashboardStats();
+  } = useAdvancedDashboardStats(filters);
 
   if (isLoading) {
     return (
@@ -26,6 +38,9 @@ const AdminDashboardHome = () => {
           <div className="h-8 bg-gray-100 rounded w-64 animate-pulse"></div>
           <div className="h-4 bg-gray-100 rounded w-96 animate-pulse"></div>
         </div>
+        
+        {/* Filters Skeleton */}
+        <div className="h-32 bg-gray-100 rounded animate-pulse"></div>
         
         {/* Stats Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -101,6 +116,17 @@ const AdminDashboardHome = () => {
 
   return (
     <div className="space-y-6 bg-white">
+      {/* Filtros del Dashboard */}
+      <DashboardFilters
+        filters={filters}
+        filterOptions={filterOptions}
+        onDateRangeChange={updateDateRange}
+        onSectorsChange={updateSectors}
+        onSearchChange={updateSearchQuery}
+        onReset={resetFilters}
+        hasActiveFilters={hasActiveFilters}
+      />
+
       {/* Dashboard Avanzado con Gráficos */}
       <AdvancedDashboardStatsComponent 
         stats={stats}
