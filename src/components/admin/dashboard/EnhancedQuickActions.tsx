@@ -58,62 +58,64 @@ const EnhancedQuickActions = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-      {/* Acciones Principales */}
-      <Card className="bg-white border border-gray-100 shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-light text-gray-900">
-            Acciones Rápidas
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link key={action.title} to={action.link} className="block">
-                <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                  <div className="p-2 rounded-lg bg-gray-50">
-                    <Icon className="h-4 w-4 text-gray-600" />
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* Acciones Principales */}
+        <Card className="bg-white border-0.5 border-gray-200 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-light text-gray-900">
+              Acciones Rápidas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link key={action.title} to={action.link} className="block">
+                  <div className="flex items-center gap-4 p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <div className="p-2 rounded-lg bg-gray-50">
+                      <Icon className="h-4 w-4 text-gray-500" />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-light text-gray-900 mb-1 truncate">{action.title}</h3>
+                      <p className="text-sm text-gray-500 truncate">{action.description}</p>
+                    </div>
                   </div>
-                  
-                  <div className="flex-1">
-                    <h3 className="font-light text-gray-900 mb-1">{action.title}</h3>
-                    <p className="text-sm text-gray-500">{action.description}</p>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </CardContent>
-      </Card>
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
 
-      {/* Acciones Contextuales */}
-      <Card className="bg-white border border-gray-100 shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-light text-gray-900">
-            {isWorkingHours ? 'Tareas Pendientes' : 'Revisión de Fin de Día'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {contextualActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link key={action.title} to={action.link} className="block">
-                <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                  <div className="p-2 rounded-lg bg-gray-50">
-                    <Icon className="h-4 w-4 text-gray-600" />
+        {/* Acciones Contextuales */}
+        <Card className="bg-white border-0.5 border-gray-200 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-light text-gray-900">
+              {isWorkingHours ? 'Tareas Pendientes' : 'Revisión de Fin de Día'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {contextualActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link key={action.title} to={action.link} className="block">
+                  <div className="flex items-center gap-4 p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <div className="p-2 rounded-lg bg-gray-50">
+                      <Icon className="h-4 w-4 text-gray-500" />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-light text-gray-900 mb-1 truncate">{action.title}</h3>
+                      <p className="text-sm text-gray-500 truncate">{action.description}</p>
+                    </div>
                   </div>
-                  
-                  <div className="flex-1">
-                    <h3 className="font-light text-gray-900 mb-1">{action.title}</h3>
-                    <p className="text-sm text-gray-500">{action.description}</p>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </CardContent>
-      </Card>
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

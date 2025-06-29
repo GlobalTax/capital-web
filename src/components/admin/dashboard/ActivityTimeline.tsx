@@ -45,63 +45,65 @@ const ActivityTimeline = () => {
   };
 
   return (
-    <Card className="bg-white border border-gray-100 shadow-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-light text-gray-900">
-          Actividad Reciente
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent>
-        <div className="space-y-6">
-          {activities.map((activity, index) => {
-            const Icon = activity.icon;
-            return (
-              <div key={activity.id} className="relative">
-                {/* Timeline line */}
-                {index !== activities.length - 1 && (
-                  <div className="absolute left-6 top-12 w-0.5 h-6 bg-gray-200" />
-                )}
-                
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div className="p-2 rounded-lg bg-gray-50">
-                    <Icon className="h-4 w-4 text-gray-600" />
-                  </div>
+    <div className="w-full">
+      <Card className="bg-white border-0.5 border-gray-200 shadow-sm h-fit">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-light text-gray-900">
+            Actividad Reciente
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent className="p-4 lg:p-6">
+          <div className="space-y-6">
+            {activities.map((activity, index) => {
+              const Icon = activity.icon;
+              return (
+                <div key={activity.id} className="relative">
+                  {/* Timeline line */}
+                  {index !== activities.length - 1 && (
+                    <div className="absolute left-5 top-12 w-0.5 h-6 bg-gray-200" />
+                  )}
                   
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-light text-gray-900 text-sm mb-1">
-                      {activity.title}
-                    </h4>
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className="p-2 rounded-lg bg-gray-50 flex-shrink-0">
+                      <Icon className="h-4 w-4 text-gray-500" />
+                    </div>
                     
-                    <p className="text-sm text-gray-500 mb-2">
-                      {activity.description}
-                    </p>
-                    
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <Avatar className="h-4 w-4">
-                          <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
-                            {getInitials(activity.user)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{activity.user}</span>
-                      </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-light text-gray-900 text-sm mb-1 truncate">
+                        {activity.title}
+                      </h4>
                       
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{activity.time}</span>
+                      <p className="text-sm text-gray-500 mb-2 line-clamp-2">
+                        {activity.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Avatar className="h-4 w-4">
+                            <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
+                              {getInitials(activity.user)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{activity.user}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{activity.time}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

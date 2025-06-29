@@ -52,29 +52,31 @@ const EnhancedDashboardStats = ({ stats }: EnhancedDashboardStatsProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-      {statsData.map((stat, index) => {
-        const Icon = stat.icon;
-        return (
-          <Card 
-            key={index} 
-            className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200"
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <Icon className="h-5 w-5 text-gray-600" />
+    <div className="w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4 lg:gap-6">
+        {statsData.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <Card 
+              key={index} 
+              className="bg-white border-0.5 border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+            >
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex items-center gap-3 lg:gap-4">
+                  <div className="p-2 lg:p-3 rounded-lg bg-gray-50">
+                    <Icon className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
+                  </div>
+                  
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs lg:text-sm text-gray-500 mb-1 truncate">{stat.title}</p>
+                    <p className="text-lg lg:text-2xl font-light text-gray-900">{stat.value}</p>
+                  </div>
                 </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">{stat.title}</p>
-                  <p className="text-2xl font-light text-gray-900">{stat.value}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };

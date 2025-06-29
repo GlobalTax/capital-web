@@ -16,57 +16,55 @@ const DashboardHeader = ({ totalValuations, todayLeads, activeUsers }: Dashboard
   });
 
   return (
-    <div className="mb-12">
-      <div className="flex items-center justify-between mb-8">
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-light text-gray-900 mb-2">Panel Capittal</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl lg:text-3xl font-light text-gray-900 mb-2">Panel Capittal</h1>
+          <p className="text-gray-500 text-sm lg:text-base">
             Bienvenido de vuelta. Aquí tienes el resumen de hoy.
           </p>
         </div>
         
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            <Clock className="h-4 w-4" />
-            <span>{currentTime}</span>
-          </div>
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Clock className="h-4 w-4" />
+          <span>{currentTime}</span>
         </div>
       </div>
 
-      {/* Métricas Minimalistas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white border border-gray-100 shadow-sm">
-          <CardContent className="p-6">
+      {/* Métricas Minimalistas - Responsive Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 lg:gap-6">
+        <Card className="bg-white border-0.5 border-gray-200 shadow-sm col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-2">
+          <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Valoraciones Totales</p>
-                <p className="text-2xl font-light text-gray-900">{totalValuations}</p>
+                <p className="text-xs lg:text-sm text-gray-500 mb-1">Valoraciones Totales</p>
+                <p className="text-xl lg:text-2xl font-light text-gray-900">{totalValuations}</p>
               </div>
-              <TrendingUp className="h-5 w-5 text-gray-400" />
+              <TrendingUp className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border border-gray-100 shadow-sm">
-          <CardContent className="p-6">
+        <Card className="bg-white border-0.5 border-gray-200 shadow-sm col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1 2xl:col-span-2">
+          <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Leads Hoy</p>
-                <p className="text-2xl font-light text-gray-900">{todayLeads}</p>
+                <p className="text-xs lg:text-sm text-gray-500 mb-1">Leads Hoy</p>
+                <p className="text-xl lg:text-2xl font-light text-gray-900">{todayLeads}</p>
               </div>
-              <Bell className="h-5 w-5 text-gray-400" />
+              <Bell className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border border-gray-100 shadow-sm">
-          <CardContent className="p-6">
+        <Card className="bg-white border-0.5 border-gray-200 shadow-sm col-span-1 sm:col-span-2 lg:col-span-1 xl:col-span-2 2xl:col-span-2">
+          <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Usuarios Activos</p>
-                <p className="text-2xl font-light text-gray-900">{activeUsers}</p>
+                <p className="text-xs lg:text-sm text-gray-500 mb-1">Usuarios Activos</p>
+                <p className="text-xl lg:text-2xl font-light text-gray-900">{activeUsers}</p>
               </div>
-              <Users className="h-5 w-5 text-gray-400" />
+              <Users className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
             </div>
           </CardContent>
         </Card>
