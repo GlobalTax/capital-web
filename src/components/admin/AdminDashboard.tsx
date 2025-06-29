@@ -13,7 +13,7 @@ import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import TeamMembersManager from './TeamMembersManager';
 import ContactLeadsManager from './ContactLeadsManager';
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
-import AIContentStudioPro from './AIContentStudioPro';
+import AIContentStudioWrapper from './AIContentStudioWrapper';
 import SectorReportsGenerator from './SectorReportsGenerator';
 import { FileText } from 'lucide-react';
 import ReportManager from './ReportManager';
@@ -54,7 +54,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
       case 'reports':
         return <ReportManager />;
       case 'ai-studio':
-        return <AIContentStudioPro />;
+        return <AIContentStudioWrapper />;
       case 'sector-reports':
         return <SectorReportsGenerator />;
       case 'settings':
