@@ -16,8 +16,6 @@ import {
   UserPlus,
   BookOpen,
   Calculator,
-  ChevronDown,
-  ChevronRight,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -38,9 +36,10 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
   };
 
   const getNavClass = (url: string, exact = false) => {
+    const baseClasses = "flex items-center h-11 px-3 mx-2 rounded-lg font-medium text-sm transition-all duration-200 relative group";
     return isActive(url, exact)
-      ? "bg-gray-900 text-white flex items-center h-10 px-3 rounded-md font-normal w-full transition-colors duration-200"
-      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center h-10 px-3 rounded-md font-normal w-full transition-colors duration-200";
+      ? `${baseClasses} bg-gray-900 text-white shadow-sm`
+      : `${baseClasses} text-gray-700 hover:text-gray-900 hover:bg-gray-100/80`;
   };
 
   const navigationGroups = [
@@ -90,42 +89,47 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
   ];
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-200`}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out shadow-sm`}>
       {/* Header */}
-      <div className="border-b border-gray-200 p-6">
+      <div className="border-b border-gray-200 p-4 lg:p-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-            <span className="text-white font-medium text-sm">C</span>
+          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center shadow-sm">
+            <span className="text-white font-semibold text-sm">C</span>
           </div>
           {!collapsed && (
-            <div>
-              <h2 className="font-medium text-gray-900 text-lg">Capittal</h2>
-              <p className="text-xs text-gray-500 font-light">Panel Administrativo</p>
+            <div className="transition-opacity duration-200">
+              <h2 className="font-semibold text-gray-900 text-lg">Capittal</h2>
+              <p className="text-xs text-gray-500 font-medium">Panel Administrativo</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto py-4">
         {/* Dashboard */}
-        <div className="px-4 py-6">
+        <div className="mb-6">
           <div className="space-y-1">
             <NavLink
               to="/admin"
               className={getNavClass('/admin', true)}
             >
               <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
-              {!collapsed && <span className="text-sm ml-2">Inicio</span>}
+              {!collapsed && (
+                <span className="ml-3 transition-opacity duration-200">Inicio</span>
+              )}
+              {isActive('/admin', true) && (
+                <div className="absolute right-2 w-1 h-6 bg-white rounded-full opacity-80" />
+              )}
             </NavLink>
           </div>
         </div>
 
         {/* Navigation Groups */}
-        {navigationGroups.map((group) => (
-          <div key={group.title} className="px-4 py-2">
+        {navigationGroups.map((group, groupIndex) => (
+          <div key={group.title} className="mb-6">
             {!collapsed && (
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3 py-2 mb-2">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 mb-3 transition-opacity duration-200">
                 {group.title}
               </h3>
             )}
@@ -138,14 +142,17 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
                 >
                   <item.icon className="h-4 w-4 flex-shrink-0" />
                   {!collapsed && (
-                    <div className="flex items-center justify-between w-full ml-2">
-                      <span className="text-sm">{item.title}</span>
+                    <div className="flex items-center justify-between w-full ml-3 transition-opacity duration-200">
+                      <span>{item.title}</span>
                       {item.badge && (
-                        <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-700 border border-gray-200 rounded">
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 border border-blue-200 rounded-md font-medium">
                           {item.badge}
                         </span>
                       )}
                     </div>
+                  )}
+                  {isActive(item.url) && (
+                    <div className="absolute right-2 w-1 h-6 bg-white rounded-full opacity-80" />
                   )}
                 </NavLink>
               ))}
