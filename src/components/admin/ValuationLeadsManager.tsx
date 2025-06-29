@@ -26,7 +26,7 @@ interface ValuationLead {
   location?: string;
   years_of_operation?: number;
   created_at: string;
-  ip_address?: string;
+  ip_address?: unknown;
 }
 
 const ValuationLeadsManager = () => {
@@ -345,7 +345,7 @@ const ValuationLeadsManager = () => {
                                 <div>
                                   <h4 className="font-medium mb-2">Información Técnica</h4>
                                   <p><strong>Fecha de solicitud:</strong> {formatDate(selectedValuation.created_at)}</p>
-                                  {selectedValuation.ip_address && <p><strong>IP:</strong> {selectedValuation.ip_address}</p>}
+                                  {selectedValuation.ip_address && <p><strong>IP:</strong> {String(selectedValuation.ip_address)}</p>}
                                 </div>
                               </div>
                             )}
