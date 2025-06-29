@@ -212,7 +212,9 @@ const WorkflowsManager = () => {
                     <div className="text-sm">
                       {workflow.trigger_conditions?.conditions?.map((condition: any, index: number) => (
                         <span key={index} className="bg-white px-2 py-1 rounded text-xs mr-1">
-                          {condition.field} {condition.operator} {condition.value}
+                          {condition.field} {condition.operator} {
+                            typeof condition.value === 'string' ? `"${condition.value}"` : condition.value
+                          }
                         </span>
                       ))}
                     </div>

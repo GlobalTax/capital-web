@@ -10,7 +10,7 @@ import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
 import MarketingAutomationDashboard from './MarketingAutomationDashboard';
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState('home');
 
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   }
 
   const handleSignOut = async () => {
-    await logout();
+    await signOut();
     toast({
       title: "👋 Adiós!",
       description: "Has cerrado sesión exitosamente.",
