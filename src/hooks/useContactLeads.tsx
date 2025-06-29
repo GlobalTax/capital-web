@@ -27,7 +27,7 @@ export const useContactLeads = () => {
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
       
-      // Insertar en Supabase
+      // Insertar en Supabase principal
       const { data, error } = await supabase
         .from('contact_leads')
         .insert({
@@ -69,7 +69,28 @@ export const useContactLeads = () => {
           
       } catch (hubspotError) {
         console.error('Error enviando a HubSpot:', hubspotError);
-        // No fallar el formulario por error de HubSpot
+      }
+
+      // Enviar a segunda base de datos
+      try {
+        const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
+          body: {
+            type: 'contact',
+            data: {
+              ...data,
+              ip_address: ipData?.ip,
+              user_agent: navigator.userAgent,
+            }
+          }
+        });
+
+        if (syncError) {
+          console.error('Error sincronizando con segunda DB:', syncError);
+        } else {
+          console.log('Lead sincronizado exitosamente:', syncResult);
+        }
+      } catch (secondaryDbError) {
+        console.error('Error enviando a segunda DB:', secondaryDbError);
       }
 
       toast({
