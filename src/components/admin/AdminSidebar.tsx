@@ -36,10 +36,10 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
   };
 
   const getNavClass = (url: string, exact = false) => {
-    const baseClasses = "flex items-center h-11 px-3 mx-2 rounded-lg font-medium text-sm transition-all duration-200 relative group";
+    const baseClasses = "flex items-center h-10 px-3 mx-2 rounded-lg font-medium text-sm transition-all duration-200 relative group";
     return isActive(url, exact)
       ? `${baseClasses} bg-gray-900 text-white shadow-sm`
-      : `${baseClasses} text-gray-700 hover:text-gray-900 hover:bg-gray-100/80`;
+      : `${baseClasses} text-gray-700 hover:text-gray-900 hover:bg-gray-100`;
   };
 
   const navigationGroups = [
@@ -89,9 +89,9 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
   ];
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out shadow-sm`}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out shadow-sm flex-shrink-0`}>
       {/* Header */}
-      <div className="border-b border-gray-200 p-4 lg:p-6">
+      <div className="border-b border-gray-200 p-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-white font-semibold text-sm">C</span>
@@ -108,7 +108,7 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-4">
         {/* Dashboard */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="space-y-1">
             <NavLink
               to="/admin"
@@ -119,7 +119,7 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
                 <span className="ml-3 transition-opacity duration-200">Inicio</span>
               )}
               {isActive('/admin', true) && (
-                <div className="absolute right-2 w-1 h-6 bg-white rounded-full opacity-80" />
+                <div className="absolute right-2 w-1 h-5 bg-white rounded-full opacity-80" />
               )}
             </NavLink>
           </div>
@@ -127,9 +127,9 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
 
         {/* Navigation Groups */}
         {navigationGroups.map((group, groupIndex) => (
-          <div key={group.title} className="mb-6">
+          <div key={group.title} className="mb-4">
             {!collapsed && (
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 mb-3 transition-opacity duration-200">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 mb-2 transition-opacity duration-200">
                 {group.title}
               </h3>
             )}
@@ -152,7 +152,7 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
                     </div>
                   )}
                   {isActive(item.url) && (
-                    <div className="absolute right-2 w-1 h-6 bg-white rounded-full opacity-80" />
+                    <div className="absolute right-2 w-1 h-5 bg-white rounded-full opacity-80" />
                   )}
                 </NavLink>
               ))}
