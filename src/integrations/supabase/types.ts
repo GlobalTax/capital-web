@@ -33,6 +33,48 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_workflows: {
+        Row: {
+          actions: Json
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed: string | null
+          name: string
+          trigger_conditions: Json
+          updated_at: string | null
+        }
+        Insert: {
+          actions: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed?: string | null
+          name: string
+          trigger_conditions: Json
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed?: string | null
+          name?: string
+          trigger_conditions?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author_avatar_url: string | null
@@ -685,6 +727,184 @@ export type Database = {
         }
         Relationships: []
       }
+      email_sequence_steps: {
+        Row: {
+          attachment_type: string | null
+          content: string
+          created_at: string | null
+          delay_hours: number
+          email_template: string | null
+          id: string
+          include_attachment: boolean | null
+          is_active: boolean | null
+          sequence_id: string | null
+          step_order: number
+          subject: string
+        }
+        Insert: {
+          attachment_type?: string | null
+          content: string
+          created_at?: string | null
+          delay_hours?: number
+          email_template?: string | null
+          id?: string
+          include_attachment?: boolean | null
+          is_active?: boolean | null
+          sequence_id?: string | null
+          step_order: number
+          subject: string
+        }
+        Update: {
+          attachment_type?: string | null
+          content?: string
+          created_at?: string | null
+          delay_hours?: number
+          email_template?: string | null
+          id?: string
+          include_attachment?: boolean | null
+          is_active?: boolean | null
+          sequence_id?: string | null
+          step_order?: number
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequences: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          trigger_conditions: Json | null
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          trigger_conditions?: Json | null
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          trigger_conditions?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      form_ab_tests: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          page_path: string
+          start_date: string | null
+          test_name: string
+          traffic_split: number | null
+          updated_at: string | null
+          variant_a_config: Json
+          variant_b_config: Json
+          winner_variant: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          page_path: string
+          start_date?: string | null
+          test_name: string
+          traffic_split?: number | null
+          updated_at?: string | null
+          variant_a_config: Json
+          variant_b_config: Json
+          winner_variant?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          page_path?: string
+          start_date?: string | null
+          test_name?: string
+          traffic_split?: number | null
+          updated_at?: string | null
+          variant_a_config?: Json
+          variant_b_config?: Json
+          winner_variant?: string | null
+        }
+        Relationships: []
+      }
+      form_conversions: {
+        Row: {
+          conversion_value: number | null
+          converted: boolean | null
+          created_at: string | null
+          form_data: Json | null
+          id: string
+          ip_address: unknown | null
+          session_id: string
+          test_id: string | null
+          user_agent: string | null
+          variant: string
+          visitor_id: string
+        }
+        Insert: {
+          conversion_value?: number | null
+          converted?: boolean | null
+          created_at?: string | null
+          form_data?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          session_id: string
+          test_id?: string | null
+          user_agent?: string | null
+          variant: string
+          visitor_id: string
+        }
+        Update: {
+          conversion_value?: number | null
+          converted?: boolean | null
+          created_at?: string | null
+          form_data?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string
+          test_id?: string | null
+          user_agent?: string | null
+          variant?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_conversions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "form_ab_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generated_reports: {
         Row: {
           config_id: string | null
@@ -1140,6 +1360,56 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_attribution: {
+        Row: {
+          attribution_weight: number | null
+          campaign: string | null
+          channel: string
+          conversion_value: number | null
+          created_at: string | null
+          id: string
+          lead_score_id: string | null
+          medium: string | null
+          source: string | null
+          touchpoint_data: Json
+          touchpoint_order: number | null
+        }
+        Insert: {
+          attribution_weight?: number | null
+          campaign?: string | null
+          channel: string
+          conversion_value?: number | null
+          created_at?: string | null
+          id?: string
+          lead_score_id?: string | null
+          medium?: string | null
+          source?: string | null
+          touchpoint_data: Json
+          touchpoint_order?: number | null
+        }
+        Update: {
+          attribution_weight?: number | null
+          campaign?: string | null
+          channel?: string
+          conversion_value?: number | null
+          created_at?: string | null
+          id?: string
+          lead_score_id?: string | null
+          medium?: string | null
+          source?: string | null
+          touchpoint_data?: Json
+          touchpoint_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_attribution_lead_score_id_fkey"
+            columns: ["lead_score_id"]
+            isOneToOne: false
+            referencedRelation: "lead_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1202,6 +1472,73 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      scheduled_emails: {
+        Row: {
+          clicked_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          lead_score_id: string | null
+          opened_at: string | null
+          recipient_email: string
+          scheduled_for: string
+          sent_at: string | null
+          sequence_id: string | null
+          status: string | null
+          step_id: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          lead_score_id?: string | null
+          opened_at?: string | null
+          recipient_email: string
+          scheduled_for: string
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string | null
+          step_id?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          lead_score_id?: string | null
+          opened_at?: string | null
+          recipient_email?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string | null
+          step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_emails_lead_score_id_fkey"
+            columns: ["lead_score_id"]
+            isOneToOne: false
+            referencedRelation: "lead_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_emails_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_emails_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequence_steps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sector_multiples: {
         Row: {
@@ -1601,6 +1938,60 @@ export type Database = {
           },
         ]
       }
+      workflow_executions: {
+        Row: {
+          actions_completed: number | null
+          completed_at: string | null
+          error_message: string | null
+          execution_status: string | null
+          id: string
+          lead_score_id: string | null
+          started_at: string | null
+          total_actions: number | null
+          trigger_data: Json | null
+          workflow_id: string | null
+        }
+        Insert: {
+          actions_completed?: number | null
+          completed_at?: string | null
+          error_message?: string | null
+          execution_status?: string | null
+          id?: string
+          lead_score_id?: string | null
+          started_at?: string | null
+          total_actions?: number | null
+          trigger_data?: Json | null
+          workflow_id?: string | null
+        }
+        Update: {
+          actions_completed?: number | null
+          completed_at?: string | null
+          error_message?: string | null
+          execution_status?: string | null
+          id?: string
+          lead_score_id?: string | null
+          started_at?: string | null
+          total_actions?: number | null
+          trigger_data?: Json | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_lead_score_id_fkey"
+            columns: ["lead_score_id"]
+            isOneToOne: false
+            referencedRelation: "lead_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "automation_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1621,6 +2012,10 @@ export type Database = {
       current_user_is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      process_automation_workflows: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
     }
     Enums: {

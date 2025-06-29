@@ -1,123 +1,98 @@
-
-import React, { useState } from 'react';
-import AdminHeader from './AdminHeader';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useSession, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 import AdminDashboardHome from './AdminDashboardHome';
-import BlogPostsManagerV2 from './BlogPostsManagerV2';
-import CaseStudiesManager from './CaseStudiesManager';
-import TestimonialsManager from './TestimonialsManager';
-import OperationsManager from './OperationsManager';
-import MultiplesManager from './MultiplesManager';
-import StatisticsManager from './StatisticsManager';
-import CarouselLogosManager from './CarouselLogosManager';
-import CarouselTestimonialsManager from './CarouselTestimonialsManager';
-import TeamMembersManager from './TeamMembersManager';
-import ContactLeadsManager from './ContactLeadsManager';
-import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
-import AIContentStudioWrapper from './AIContentStudioWrapper';
-import SectorReportsGenerator from './SectorReportsGenerator';
+import LeadScoringIntelligenceDashboard from './LeadScoringIntelligenceDashboard';
 import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
-import { FileText, BarChart3 } from 'lucide-react';
-import ReportManager from './ReportManager';
+import MarketingAutomationDashboard from './MarketingAutomationDashboard';
 
-interface AdminDashboardProps {
-  onLogout: () => void;
-}
+const AdminDashboard = () => {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const { toast } = useToast();
+  const [activeSection, setActiveSection] = useState('home');
 
-const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+    }
+  }, [status, router]);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "👋 Adiós!",
+      description: "Has cerrado sesión exitosamente.",
+    });
+    router.push('/');
+  };
+
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case 'home':
         return <AdminDashboardHome />;
+      case 'lead-scoring':
+        return <LeadScoringIntelligenceDashboard />;
       case 'marketing-intelligence':
         return <MarketingIntelligenceDashboard />;
-      case 'blog':
-        return <BlogPostsManagerV2 />;
-      case 'case-studies':
-        return <CaseStudiesManager />;
-      case 'testimonials':
-        return <TestimonialsManager />;
-      case 'operations':
-        return <OperationsManager />;
-      case 'multiples':
-        return <MultiplesManager />;
-      case 'statistics':
-        return <StatisticsManager />;
-      case 'carousel-logos':
-        return <CarouselLogosManager />;
-      case 'carousel-testimonials':
-        return <CarouselTestimonialsManager />;
-      case 'team':
-        return <TeamMembersManager />;
-      case 'leads':
-        return <ContactLeadsManager />;
-      case 'collaborators':
-        return <CollaboratorApplicationsManager />;
-      case 'reports':
-        return <ReportManager />;
-      case 'ai-studio':
-        return <AIContentStudioWrapper />;
-      case 'sector-reports':
-        return <SectorReportsGenerator />;
-      case 'settings':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Configuración</h2>
-            <p className="text-gray-600">Panel de configuración del sistema.</p>
-          </div>
-        );
+      case 'marketing-automation':
+        return <MarketingAutomationDashboard />;
       default:
         return <AdminDashboardHome />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminHeader onLogout={onLogout} />
-      
-      <div className="flex">
-        <div className="w-64 bg-white shadow-sm">
-          <nav className="mt-5 px-2">
-            <div className="space-y-1">
-              {[
-                { id: 'dashboard', label: 'Dashboard', icon: () => React.createElement('svg') },
-                { id: 'marketing-intelligence', label: 'Marketing Intelligence', icon: BarChart3 },
-                { id: 'blog', label: 'Blog Posts', icon: () => React.createElement('svg') },
-                { id: 'case-studies', label: 'Case Studies', icon: () => React.createElement('svg') },
-                { id: 'testimonials', label: 'Testimonials', icon: () => React.createElement('svg') },
-                { id: 'operations', label: 'Operaciones', icon: () => React.createElement('svg') },
-                { id: 'multiples', label: 'Múltiplos', icon: () => React.createElement('svg') },
-                { id: 'statistics', label: 'Estadísticas', icon: () => React.createElement('svg') },
-                { id: 'carousel-logos', label: 'Logos Carousel', icon: () => React.createElement('svg') },
-                { id: 'carousel-testimonials', label: 'Testimonials Carousel', icon: () => React.createElement('svg') },
-                { id: 'team', label: 'Team Members', icon: () => React.createElement('svg') },
-                { id: 'leads', label: 'Leads', icon: () => React.createElement('svg') },
-                { id: 'collaborators', label: 'Collaborators', icon: () => React.createElement('svg') },
-                { id: 'reports', label: 'Reportes Automatizados', icon: FileText },
-                { id: 'ai-studio', label: 'AI Studio', icon: () => React.createElement('svg') },
-                { id: 'sector-reports', label: 'Sector Reports', icon: () => React.createElement('svg') },
-                { id: 'settings', label: 'Configuración', icon: () => React.createElement('svg') },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`${
-                    activeTab === item.id
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full`}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </nav>
-        </div>
+    <div className="container mx-auto py-10">
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Panel de Administración</h1>
+        <Button variant="destructive" onClick={handleSignOut}>
+          Cerrar Sesión
+        </Button>
+      </div>
 
-        <div className="flex-1 p-6">
-          {renderContent()}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle>Navegación</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('home')}>
+              Inicio
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('lead-scoring')}>
+              Lead Scoring
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-intelligence')}>
+              Marketing Intelligence
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-automation')}>
+              Marketing Automation
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="md:col-span-3">
+          {renderActiveSection()}
         </div>
       </div>
     </div>
