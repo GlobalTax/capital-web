@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useMarketingIntelligence } from '@/hooks/useMarketingIntelligence';
 import { useAttributionAnalytics } from '@/hooks/useAttributionAnalytics';
 import PredictiveDashboard from './dashboard/PredictiveDashboard';
+import CompanyIntelligence from './dashboard/CompanyIntelligence';
 import { 
   Users, TrendingUp, AlertTriangle, Target, 
   BarChart3, Clock, Brain, Zap, Eye, 
@@ -168,6 +169,9 @@ const MarketingIntelligenceDashboard = () => {
             </Card>
           </div>
 
+          {/* Componente de Empresas Mejorado */}
+          <CompanyIntelligence limit={10} />
+
           {/* Gráficos Overview */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Funnel de Conversión */}
@@ -220,73 +224,39 @@ const MarketingIntelligenceDashboard = () => {
             </Card>
           </div>
 
-          {/* Actividad Reciente y Top Empresas */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Top Empresas por Score */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Empresas por Lead Score</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {companies
-                    .sort((a, b) => b.engagementScore - a.engagementScore)
-                    .slice(0, 5)
-                    .map((company, index) => (
-                    <div key={company.domain} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold">{company.name}</h4>
-                          <p className="text-sm text-gray-600">{company.industry} • {company.size}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-blue-600">{company.engagementScore}</div>
-                        <div className="text-xs text-gray-500">{company.visitCount} visitas</div>
-                      </div>
+          {/* Alertas Recientes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                Alertas Recientes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {alerts.slice(0, 5).map((alert) => (
+                  <div key={alert.id} className="border-l-4 border-red-400 pl-4 py-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">{alert.priority.toUpperCase()}</Badge>
+                      <span className="text-xs text-gray-500">{alert.type}</span>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Alertas Recientes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                  Alertas Recientes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {alerts.slice(0, 5).map((alert) => (
-                    <div key={alert.id} className="border-l-4 border-red-400 pl-4 py-2">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary">{alert.priority.toUpperCase()}</Badge>
-                        <span className="text-xs text-gray-500">{alert.type}</span>
-                      </div>
-                      <h4 className="font-semibold text-sm mt-1">{alert.title}</h4>
-                      <p className="text-xs text-gray-600">{alert.description}</p>
-                      {!alert.isRead && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="mt-2"
-                          onClick={() => markAlertAsRead(alert.id)}
-                        >
-                          Marcar como leída
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                    <h4 className="font-semibold text-sm mt-1">{alert.title}</h4>
+                    <p className="text-xs text-gray-600">{alert.description}</p>
+                    {!alert.isRead && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => markAlertAsRead(alert.id)}
+                      >
+                        Marcar como leída
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Dashboard Predictivo */}
@@ -378,52 +348,9 @@ const MarketingIntelligenceDashboard = () => {
           )}
         </TabsContent>
 
-        {/* Companies Tab */}
+        {/* Companies Tab - Versión Completa */}
         <TabsContent value="companies" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Todas las Empresas Identificadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2">Empresa</th>
-                      <th className="text-left p-2">Industria</th>
-                      <th className="text-left p-2">Ubicación</th>
-                      <th className="text-left p-2">Visitas</th>
-                      <th className="text-left p-2">Engagement</th>
-                      <th className="text-left p-2">Última Visita</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {companies.map((company) => (
-                      <tr key={company.domain} className="border-b hover:bg-gray-50">
-                        <td className="p-2">
-                          <div>
-                            <div className="font-medium">{company.name}</div>
-                            <div className="text-xs text-gray-500">{company.domain}</div>
-                          </div>
-                        </td>
-                        <td className="p-2">{company.industry}</td>
-                        <td className="p-2">{company.location}</td>
-                        <td className="p-2">{company.visitCount}</td>
-                        <td className="p-2">
-                          <Badge variant={company.engagementScore > 70 ? 'default' : 'secondary'}>
-                            {company.engagementScore}
-                          </Badge>
-                        </td>
-                        <td className="p-2 text-xs text-gray-600">
-                          {new Date(company.lastVisit).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <CompanyIntelligence />
         </TabsContent>
 
         {/* Alerts Tab */}
