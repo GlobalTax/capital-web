@@ -9,7 +9,6 @@ interface DashboardStats {
   testimonials: number;
   teamMembers: number;
   statistics: number;
-  valuations: number;
 }
 
 export const useDashboardStats = () => {
@@ -20,7 +19,6 @@ export const useDashboardStats = () => {
     testimonials: 0,
     teamMembers: 0,
     statistics: 0,
-    valuations: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -38,16 +36,14 @@ export const useDashboardStats = () => {
         blogPostsResult,
         testimonialsResult,
         teamMembersResult,
-        statisticsResult,
-        valuationsResult
+        statisticsResult
       ] = await Promise.all([
         supabase.from('case_studies').select('id', { count: 'exact' }).then(res => res.count || 0),
         supabase.from('company_operations').select('id', { count: 'exact' }).then(res => res.count || 0),
         supabase.from('blog_posts').select('id', { count: 'exact' }).then(res => res.count || 0),
         supabase.from('testimonials').select('id', { count: 'exact' }).then(res => res.count || 0),
         supabase.from('team_members').select('id', { count: 'exact' }).then(res => res.count || 0),
-        supabase.from('key_statistics').select('id', { count: 'exact' }).then(res => res.count || 0),
-        supabase.from('company_valuations').select('id', { count: 'exact' }).then(res => res.count || 0)
+        supabase.from('key_statistics').select('id', { count: 'exact' }).then(res => res.count || 0)
       ]);
 
       setStats({
@@ -57,7 +53,6 @@ export const useDashboardStats = () => {
         testimonials: testimonialsResult,
         teamMembers: teamMembersResult,
         statistics: statisticsResult,
-        valuations: valuationsResult,
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -69,7 +64,6 @@ export const useDashboardStats = () => {
         testimonials: 0,
         teamMembers: 0,
         statistics: 0,
-        valuations: 0,
       });
     } finally {
       setIsLoading(false);

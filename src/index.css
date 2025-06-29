@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design System Base - Capittal Admin */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
@@ -35,19 +35,16 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 0 0% 0%;
 
-    --radius: 8px;
-    
-    /* Dashboard Variables */
-    --spacing: 0.25rem;
-    --sidebar-width: 16rem;
-    --header-height: 3rem;
-    
-    /* Chart Colors */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 50%;
-    --chart-5: 340 75% 55%;
+    --radius: 10px;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5% 26%;
+    --sidebar-primary: 240 6% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -67,219 +64,74 @@
 }
 
 @layer components {
-  /* Layout containers - Simplified and clean */
-  .admin-container {
-    @apply w-full h-screen overflow-hidden;
+  .capittal-card {
+    @apply bg-white rounded-lg p-6 shadow-sm 
+           transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1;
   }
-  
-  .admin-content {
-    @apply bg-gray-50 flex-1 overflow-auto;
+
+  .capittal-input {
+    @apply bg-white rounded-lg px-4 py-3 
+           focus:outline-none focus:ring-2 focus:ring-black/20;
   }
-  
-  /* Grid system */
-  .admin-grid {
-    @apply grid gap-6;
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  
-  .admin-grid-2 {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-  
-  .admin-grid-3 {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
-  
-  .admin-grid-4 {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
   }
-  
-  /* Typography */
-  .admin-title {
-    @apply text-2xl font-semibold text-gray-900;
+
+  .animate-fade-in {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
   }
-  
-  .admin-subtitle {
-    @apply text-lg font-medium text-gray-900;
+
+  .animate-scale-in {
+    animation: scaleIn 0.6s ease-out forwards;
+    opacity: 0;
   }
-  
-  .admin-label {
-    @apply block text-sm font-medium text-gray-900 mb-2;
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.7s ease-out forwards;
+    opacity: 0;
   }
-  
-  .admin-text {
-    @apply text-gray-600;
-  }
-  
-  .admin-text-sm {
-    @apply text-sm text-gray-500;
-  }
-  
-  /* Form components */
-  .admin-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
-           focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900
-           transition-colors duration-200;
-  }
-  
-  .admin-textarea {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
-           focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900
-           transition-colors duration-200 resize-none;
-  }
-  
-  .admin-select {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
-           focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900
-           bg-white transition-colors duration-200;
-  }
-  
-  /* Button system */
-  .admin-btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 
-           rounded-lg font-medium transition-all duration-200
-           focus:outline-none focus:ring-2 focus:ring-offset-2;
-  }
-  
-  .admin-btn-primary {
-    @apply admin-btn bg-gray-900 text-white hover:bg-gray-800 
-           focus:ring-gray-900;
-  }
-  
-  .admin-btn-secondary {
-    @apply admin-btn bg-white text-gray-900 border border-gray-300 
-           hover:bg-gray-50 focus:ring-gray-900;
-  }
-  
-  .admin-btn-danger {
-    @apply admin-btn bg-red-600 text-white hover:bg-red-700 
-           focus:ring-red-600;
-  }
-  
-  .admin-btn-sm {
-    @apply px-3 py-1.5 text-sm;
-  }
-  
-  /* Card components */
-  .admin-card {
-    @apply bg-white rounded-lg border border-gray-200 overflow-hidden;
-  }
-  
-  .admin-card-header {
-    @apply px-6 py-4 border-b border-gray-200 bg-gray-50;
-  }
-  
-  .admin-card-body {
-    @apply p-6;
-  }
-  
-  .admin-card-footer {
-    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
-  }
-  
-  /* Table components */
-  .admin-table {
-    @apply w-full border-collapse;
-  }
-  
-  .admin-table-header {
-    @apply bg-gray-50 border-b border-gray-200;
-  }
-  
-  .admin-table-th {
-    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 
-           uppercase tracking-wider;
-  }
-  
-  .admin-table-td {
-    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
-  }
-  
-  .admin-table-row {
-    @apply border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150;
-  }
-  
-  /* Status badges */
-  .admin-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-  
-  .admin-badge-success {
-    @apply admin-badge bg-green-100 text-green-800;
-  }
-  
-  .admin-badge-warning {
-    @apply admin-badge bg-yellow-100 text-yellow-800;
-  }
-  
-  .admin-badge-danger {
-    @apply admin-badge bg-red-100 text-red-800;
-  }
-  
-  .admin-badge-info {
-    @apply admin-badge bg-blue-100 text-blue-800;
-  }
-  
-  /* Form layouts */
-  .admin-form {
-    @apply space-y-6;
-  }
-  
-  .admin-form-group {
-    @apply space-y-2;
-  }
-  
-  .admin-form-row {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
-  }
-  
-  .admin-form-actions {
-    @apply flex items-center justify-end gap-3 pt-6 border-t border-gray-200;
-  }
-  
-  /* Loading states */
-  .admin-loading {
-    @apply animate-pulse;
-  }
-  
-  .admin-loading-card {
-    @apply bg-gray-200 rounded h-4;
-  }
-  
-  .admin-loading-title {
-    @apply bg-gray-200 rounded h-6 w-48;
-  }
-  
-  /* Utility classes */
-  .admin-divider {
-    @apply border-t border-gray-200 my-6;
-  }
-  
-  .admin-flex-between {
-    @apply flex items-center justify-between;
-  }
-  
-  .admin-flex-center {
-    @apply flex items-center justify-center;
-  }
-  
-  .admin-space-y {
-    @apply space-y-6;
-  }
-  
-  /* Dashboard specific */
-  .dashboard-metric {
-    @apply admin-card;
-  }
-  
-  .dashboard-metric-value {
-    @apply text-2xl font-semibold text-gray-900;
-  }
-  
-  .dashboard-metric-label {
-    @apply text-sm text-gray-600;
-  }
-  
-  .dashboard-chart {
-    @apply admin-card p-6;
+
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
   }
 }

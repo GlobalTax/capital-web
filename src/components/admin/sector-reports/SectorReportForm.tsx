@@ -1,226 +1,254 @@
-import React, { useState } from 'react';
+
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, FileText, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Sparkles, RefreshCw } from 'lucide-react';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 import { SectorReportRequest } from '@/types/sectorReports';
-import SectorSelect from '../shared/SectorSelect';
 
 interface SectorReportFormProps {
   onGenerate: (request: SectorReportRequest) => void;
   isGenerating: boolean;
-  initialData?: Partial<SectorReportRequest>;
 }
 
-const SectorReportForm: React.FC<SectorReportFormProps> = ({ onGenerate, isGenerating, initialData }) => {
-  const [formData, setFormData] = useState<SectorReportRequest>({
-    sector: initialData?.sector || '',
-    reportType: initialData?.reportType || 'market-analysis',
-    depth: initialData?.depth || 'intermediate',
-    period: initialData?.period || 'year',
-    targetAudience: initialData?.targetAudience || 'entrepreneurs',
-    customFocus: initialData?.customFocus || '',
-    includeData: initialData?.includeData || {
-      multiples: true,
-      caseStudies: true,
-      statistics: true,
-      visualizations: false,
-      infographics: false,
-      heatmaps: false
+const SectorReportForm: React.FC<SectorReportFormProps> = ({ onGenerate, isGenerating }) => {
+  const { register, handleSubmit, watch, setValue, getValues } = useForm<SectorReportRequest>({
+    defaultValues: {
+      sector: '',
+      reportType: 'market-analysis',
+      period: 'year',
+      depth: 'intermediate',
+      includeData: {
+        multiples: true,
+        caseStudies: true,
+        statistics: true
+      },
+      targetAudience: 'entrepreneurs',
+      customFocus: ''
     }
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const watchedPeriod = watch('period');
+  const watchedIncludeData = watch('includeData');
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckboxChange = (field: string, checked: boolean | 'indeterminate') => {
-    const booleanValue = checked === true;
-    setFormData(prev => ({
-      ...prev,
-      includeData: {
-        ...prev.includeData,
-        [field]: booleanValue
-      }
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onGenerate(formData);
+  const onSubmit = (data: SectorReportRequest) => {
+    onGenerate(data);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Configuración del Reporte
-        </CardTitle>
-        <CardDescription>
-          Define los parámetros para la generación del reporte sectorial
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Configuración Básica */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Configuración Básica</CardTitle>
+          <CardDescription>Define los parámetros principales del reporte</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div>
             <Label htmlFor="sector">Sector</Label>
             <SectorSelect
-              id="sector"
-              value={formData.sector}
-              onValueChange={(value) => handleSelectChange('sector', value)}
+              value={watch('sector')}
+              onChange={(value) => setValue('sector', value)}
+              placeholder="Selecciona el sector"
+              required
             />
           </div>
 
           <div>
             <Label htmlFor="reportType">Tipo de Reporte</Label>
-            <Select value={formData.reportType} onValueChange={(value) => handleSelectChange('reportType', value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona un tipo" />
+            <Select 
+              value={watch('reportType')} 
+              onValueChange={(value) => setValue('reportType', value as any)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el tipo de reporte" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="market-analysis">Análisis de Mercado</SelectItem>
                 <SelectItem value="ma-trends">Tendencias M&A</SelectItem>
                 <SelectItem value="valuation-multiples">Múltiplos de Valoración</SelectItem>
-                {/* <SelectItem value="esg-sustainability">ESG y Sostenibilidad</SelectItem>
-                <SelectItem value="tech-disruption">Disrupción Tecnológica</SelectItem>
-                <SelectItem value="geographic-comparison">Comparación Geográfica</SelectItem>
-                <SelectItem value="due-diligence">Due Diligence</SelectItem> */}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="depth">Profundidad del Análisis</Label>
-            <Select value={formData.depth} onValueChange={(value) => handleSelectChange('depth', value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona la profundidad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Básico</SelectItem>
-                <SelectItem value="intermediate">Intermedio</SelectItem>
-                <SelectItem value="advanced">Avanzado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="period">Período de Análisis</Label>
-            <Select value={formData.period} onValueChange={(value) => handleSelectChange('period', value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona el período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="year">Anual</SelectItem>
-                <SelectItem value="3-years">3 Años</SelectItem>
-                {/* <SelectItem value="5-years">5 Años</SelectItem>
-                <SelectItem value="10-years">10 Años</SelectItem> */}
+                <SelectItem value="due-diligence">Due Diligence Sectorial</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
             <Label htmlFor="targetAudience">Audiencia Objetivo</Label>
-            <Input
-              type="text"
-              id="targetAudience"
-              name="targetAudience"
-              value={formData.targetAudience}
-              onChange={handleChange}
-            />
+            <Select 
+              value={watch('targetAudience')} 
+              onValueChange={(value) => setValue('targetAudience', value as any)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona la audiencia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="investors">Inversores</SelectItem>
+                <SelectItem value="entrepreneurs">Empresarios</SelectItem>
+                <SelectItem value="advisors">Asesores</SelectItem>
+                <SelectItem value="executives">Directivos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Configuración Avanzada */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Configuración Avanzada</CardTitle>
+          <CardDescription>Personaliza el alcance y profundidad del análisis</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="period">Período de Análisis</Label>
+            <Select 
+              value={watch('period')} 
+              onValueChange={(value) => setValue('period', value as any)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="quarter">Último Trimestre</SelectItem>
+                <SelectItem value="year">Último Año</SelectItem>
+                <SelectItem value="3-years">Últimos 3 Años</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div>
-            <Label htmlFor="customFocus">Enfoque Personalizado</Label>
-            <Textarea
-              id="customFocus"
-              name="customFocus"
-              value={formData.customFocus}
-              onChange={handleChange}
-              placeholder="Define un enfoque específico para el reporte (opcional)"
-            />
-          </div>
-
-          <div>
-            <Label>Datos a Incluir</Label>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="multiples"
-                  checked={formData.includeData.multiples}
-                  onCheckedChange={(checked) => handleCheckboxChange('multiples', checked)}
+          {watchedPeriod === 'custom' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="customStartDate">Fecha Inicio</Label>
+                <Input
+                  type="date"
+                  {...register('customStartDate')}
                 />
-                <Label htmlFor="multiples">Múltiplos de Valoración</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="caseStudies"
-                  checked={formData.includeData.caseStudies}
-                  onCheckedChange={(checked) => handleCheckboxChange('caseStudies', checked)}
+              <div>
+                <Label htmlFor="customEndDate">Fecha Fin</Label>
+                <Input
+                  type="date"
+                  {...register('customEndDate')}
                 />
-                <Label htmlFor="caseStudies">Casos de Estudio</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="statistics"
-                  checked={formData.includeData.statistics}
-                  onCheckedChange={(checked) => handleCheckboxChange('statistics', checked)}
-                />
-                <Label htmlFor="statistics">Estadísticas Clave</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="visualizations"
-                  checked={formData.includeData.visualizations}
-                  onCheckedChange={(checked) => handleCheckboxChange('visualizations', checked)}
-                />
-                <Label htmlFor="visualizations">Visualizaciones</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="infographics"
-                  checked={formData.includeData.infographics}
-                  onCheckedChange={(checked) => handleCheckboxChange('infographics', checked)}
-                />
-                <Label htmlFor="infographics">Infografías</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="heatmaps"
-                  checked={formData.includeData.heatmaps}
-                  onCheckedChange={(checked) => handleCheckboxChange('heatmaps', checked)}
-                />
-                <Label htmlFor="heatmaps">Mapas de Calor</Label>
               </div>
             </div>
+          )}
+
+          <div>
+            <Label htmlFor="depth">Profundidad del Análisis</Label>
+            <Select 
+              value={watch('depth')} 
+              onValueChange={(value) => setValue('depth', value as any)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona la profundidad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basic">Básico (1,500-2,000 palabras)</SelectItem>
+                <SelectItem value="intermediate">Intermedio (3,000-4,000 palabras)</SelectItem>
+                <SelectItem value="advanced">Avanzado (5,000-6,000 palabras)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Datos a Incluir */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Datos a Incluir</CardTitle>
+          <CardDescription>Selecciona qué información incluir en el reporte</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="multiples">Múltiplos de Valoración</Label>
+              <p className="text-sm text-gray-500">Incluir múltiplos sectoriales actuales</p>
+            </div>
+            <Switch
+              checked={watchedIncludeData?.multiples || false}
+              onCheckedChange={(checked) => 
+                setValue('includeData', { ...watchedIncludeData, multiples: checked })
+              }
+            />
           </div>
 
-          <Button disabled={isGenerating}>
-            {isGenerating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Generando...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generar Reporte
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="caseStudies">Casos de Éxito</Label>
+              <p className="text-sm text-gray-500">Incluir casos de éxito relevantes</p>
+            </div>
+            <Switch
+              checked={watchedIncludeData?.caseStudies || false}
+              onCheckedChange={(checked) => 
+                setValue('includeData', { ...watchedIncludeData, caseStudies: checked })
+              }
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="statistics">Estadísticas de Mercado</Label>
+              <p className="text-sm text-gray-500">Incluir estadísticas clave del mercado</p>
+            </div>
+            <Switch
+              checked={watchedIncludeData?.statistics || false}
+              onCheckedChange={(checked) => 
+                setValue('includeData', { ...watchedIncludeData, statistics: checked })
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Enfoque Personalizado */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Enfoque Personalizado</CardTitle>
+          <CardDescription>Añade instrucciones específicas para personalizar el reporte</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label htmlFor="customFocus">Enfoque Especial (Opcional)</Label>
+            <Textarea
+              {...register('customFocus')}
+              placeholder="Ej: Enfocarse en empresas familiares, análisis de sostenibilidad, mercado español vs europeo..."
+              rows={3}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Botón de Generación */}
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={isGenerating || !watch('sector')}
+          className="flex items-center gap-2"
+          size="lg"
+        >
+          {isGenerating ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
+          {isGenerating ? 'Generando Reporte...' : 'Generar Reporte'}
+        </Button>
+      </div>
+    </form>
   );
 };
 

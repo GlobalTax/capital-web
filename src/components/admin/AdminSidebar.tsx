@@ -2,157 +2,78 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  FileText,
-  Building2,
-  PenTool,
-  BarChart3,
-  TrendingUp,
-  Users,
-  MessageSquare,
-  Star,
-  Image,
-  Mail,
-  UserPlus,
-  BookOpen,
-  Calculator,
-} from 'lucide-react';
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarHeader,
+  useSidebar,
+} from '@/components/ui/sidebar';
+import SidebarHeaderComponent from './sidebar/SidebarHeader';
+import SidebarNavigationGroup from './sidebar/SidebarNavigationGroup';
+import { dashboardItems, navigationGroups } from './sidebar/navigationData';
 
-interface AdminSidebarProps {
-  collapsed: boolean;
-}
-
-const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
+const AdminSidebar = () => {
   const location = useLocation();
+  const { state } = useSidebar();
+  const isCollapsed = state === 'collapsed';
 
   const isActive = (url: string, exact = false) => {
     if (exact) {
       return location.pathname === url;
     }
+    
     if (url === '/admin') {
       return location.pathname === '/admin';
     }
-    return location.pathname.startsWith(url);
+    
+    return location.pathname.startsWith(url) && 
+           (location.pathname === url || location.pathname.startsWith(url + '/'));
   };
 
   const getNavClass = (url: string, exact = false) => {
-    const baseClasses = "flex items-center h-10 px-3 mx-3 rounded-lg font-medium text-sm transition-all duration-200";
     return isActive(url, exact)
-      ? `${baseClasses} bg-gray-900 text-white shadow-sm`
-      : `${baseClasses} text-gray-700 hover:text-gray-900 hover:bg-gray-100`;
+      ? "bg-gray-900 text-white hover:bg-gray-800 flex items-center h-10 px-3 rounded-md font-normal w-full transition-colors duration-200"
+      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center h-10 px-3 rounded-md font-normal w-full transition-colors duration-200";
   };
 
-  const navigationGroups = [
-    {
-      title: 'Reports IA',
-      items: [
-        { title: 'AI Content Studio Pro', url: '/admin/blog-v2', icon: PenTool, badge: 'NEW' },
-        { title: 'Reports Sectoriales IA', url: '/admin/sector-reports', icon: BookOpen, badge: 'NEW' },
-      ],
-    },
-    {
-      title: 'Contenido',
-      items: [
-        { title: 'Casos de Éxito', url: '/admin/case-studies', icon: FileText },
-        { title: 'Operaciones', url: '/admin/operations', icon: Building2 },
-      ],
-    },
-    {
-      title: 'Datos',
-      items: [
-        { title: 'Múltiplos', url: '/admin/multiples', icon: BarChart3 },
-        { title: 'Estadísticas', url: '/admin/statistics', icon: TrendingUp },
-      ],
-    },
-    {
-      title: 'Leads',
-      items: [
-        { title: 'Leads de Contacto', url: '/admin/contact-leads', icon: Mail },
-        { title: 'Valoraciones', url: '/admin/valuation-leads', icon: Calculator },
-        { title: 'Solicitudes Colaboradores', url: '/admin/collaborator-applications', icon: UserPlus },
-      ],
-    },
-    {
-      title: 'Usuarios',
-      items: [
-        { title: 'Equipo', url: '/admin/team', icon: Users },
-        { title: 'Testimonios', url: '/admin/testimonials', icon: MessageSquare },
-        { title: 'Test. Carrusel', url: '/admin/carousel-testimonials', icon: Star },
-      ],
-    },
-    {
-      title: 'Visuales',
-      items: [
-        { title: 'Logos Carrusel', url: '/admin/carousel-logos', icon: Image },
-      ],
-    },
-  ];
-
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 h-screen`}>
-      {/* Header */}
-      <div className="border-b border-gray-200 p-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-semibold text-sm">C</span>
-          </div>
-          {!collapsed && (
-            <div className="transition-opacity duration-200 min-w-0">
-              <h2 className="font-semibold text-gray-900 text-lg truncate">Capittal</h2>
-              <p className="text-xs text-gray-500 font-medium truncate">Panel Administrativo</p>
-            </div>
-          )}
-        </div>
-      </div>
+    <Sidebar className="border-r border-gray-200 bg-white">
+      <SidebarHeader className="border-b border-gray-200 p-6">
+        <SidebarHeaderComponent isCollapsed={isCollapsed} />
+      </SidebarHeader>
 
-      {/* Navigation */}
-      <div className="flex-1 py-4 space-y-6 overflow-y-auto">
-        {/* Dashboard */}
-        <div>
-          <NavLink
-            to="/admin"
-            className={getNavClass('/admin', true)}
-          >
-            <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
-            {!collapsed && (
-              <span className="ml-3 transition-opacity duration-200 truncate">Inicio</span>
-            )}
-          </NavLink>
-        </div>
-
-        {/* Navigation Groups */}
-        {navigationGroups.map((group) => (
-          <div key={group.title}>
-            {!collapsed && (
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 mb-3 transition-opacity duration-200 truncate">
-                {group.title}
-              </h3>
-            )}
-            <div className="space-y-1">
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.title}
-                  to={item.url}
-                  className={getNavClass(item.url)}
-                >
-                  <item.icon className="h-4 w-4 flex-shrink-0" />
-                  {!collapsed && (
-                    <div className="flex items-center justify-between w-full ml-3 transition-opacity duration-200 min-w-0">
-                      <span className="truncate">{item.title}</span>
-                      {item.badge && (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 border border-blue-200 rounded-md font-medium flex-shrink-0 ml-2">
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </NavLink>
+      <SidebarContent className="gap-0 p-0">
+        <SidebarGroup className="px-4 py-6">
+          <SidebarGroupContent className="py-0">
+            <SidebarMenu className="gap-1">
+              {dashboardItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <NavLink
+                    to={item.url}
+                    className={getNavClass(item.url, item.exact)}
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    {!isCollapsed && <span className="text-sm ml-2">{item.title}</span>}
+                  </NavLink>
+                </SidebarMenuItem>
               ))}
-            </div>
-          </div>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {navigationGroups.map((group) => (
+          <SidebarNavigationGroup
+            key={group.title}
+            group={group}
+            isCollapsed={isCollapsed}
+            getNavClass={getNavClass}
+          />
         ))}
-      </div>
-    </div>
+      </SidebarContent>
+    </Sidebar>
   );
 };
 

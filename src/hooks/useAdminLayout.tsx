@@ -34,7 +34,6 @@ export const useAdminLayout = () => {
         'carousel-testimonials': 'Testimonios Carrusel',
         'carousel-logos': 'Logos Carrusel',
         'contact-leads': 'Leads de Contacto',
-        'valuation-leads': 'Valoraciones',
         'collaborator-applications': 'Solicitudes Colaboradores'
       };
 

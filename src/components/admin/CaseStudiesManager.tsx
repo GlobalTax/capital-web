@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Trash2, Plus, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import ImageUploadField from './ImageUploadField';
 import {
   Dialog,
@@ -96,6 +94,7 @@ const CaseStudiesManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Si no hay ubicaciones seleccionadas, marcar como inactivo (borrador)
     const isDraft = !formData.display_locations || formData.display_locations.length === 0;
     const dataToSubmit = {
       ...formData,
@@ -203,125 +202,104 @@ const CaseStudiesManager = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="admin-page">
-        <div className="admin-loading">
-          <div className="admin-loading-title"></div>
-          <div className="admin-loading-card h-32"></div>
-        </div>
-      </div>
-    );
+    return <div className="p-6">Cargando casos de éxito...</div>;
   }
 
   return (
-    <div className="admin-page">
-      {/* Header */}
-      <div className="admin-flex-between">
-        <div>
-          <h2 className="admin-title">Gestión de Casos de Éxito</h2>
-          <p className="admin-text mt-1">Administra los casos de éxito de la empresa</p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-black">Gestión de Casos de Éxito</h2>
         <Button
           onClick={() => {
             setFormData(emptyCase);
             setEditingCase(null);
             setShowForm(true);
           }}
-          className="admin-btn-primary"
+          className="bg-black text-white border border-black rounded-lg"
         >
-          <Plus className="h-4 w-4" />
           Nuevo Caso
         </Button>
       </div>
 
-      {/* Form */}
       {showForm && (
-        <div className="admin-section">
-          <div className="admin-flex-between mb-6">
-            <h3 className="admin-subtitle">
-              {editingCase ? 'Editar Caso' : 'Nuevo Caso'}
-            </h3>
-          </div>
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+          <h3 className="text-lg font-bold text-black mb-4">
+            {editingCase ? 'Editar Caso' : 'Nuevo Caso'}
+          </h3>
           
-          <form onSubmit={handleSubmit} className="admin-form">
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Título</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Título</label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="admin-input"
+                  className="border border-gray-300 rounded-lg"
                   required
                 />
               </div>
-              <div className="admin-form-group">
-                <label className="admin-label">Sector</label>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Sector</label>
                 <SectorSelect
                   value={formData.sector}
                   onChange={(value) => setFormData({...formData, sector: value})}
                   required
                 />
               </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Tamaño de Empresa</label>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Tamaño de Empresa</label>
                 <Input
                   value={formData.company_size || ''}
                   onChange={(e) => setFormData({...formData, company_size: e.target.value})}
-                  className="admin-input"
+                  className="border border-gray-300 rounded-lg"
                 />
               </div>
-              <div className="admin-form-group">
-                <label className="admin-label">Año</label>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Año</label>
                 <Input
                   type="number"
                   value={formData.year || ''}
                   onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
-                  className="admin-input"
+                  className="border border-gray-300 rounded-lg"
                 />
               </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label className="admin-label">Valoración (millones)</label>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Valoración (millones)</label>
                 <Input
                   type="number"
                   step="0.1"
                   value={formData.value_amount || ''}
                   onChange={(e) => setFormData({...formData, value_amount: parseFloat(e.target.value)})}
-                  className="admin-input"
+                  className="border border-gray-300 rounded-lg"
                 />
               </div>
-              <div className="admin-form-group">
-                <label className="admin-label">Moneda</label>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Moneda</label>
                 <Input
                   value={formData.value_currency}
                   onChange={(e) => setFormData({...formData, value_currency: e.target.value})}
-                  className="admin-input"
+                  className="border border-gray-300 rounded-lg"
                 />
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">Descripción</label>
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">Descripción</label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="admin-textarea"
+                className="border border-gray-300 rounded-lg"
                 rows={3}
                 required
               />
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-label">
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
                 Ubicaciones donde mostrar
-                <span className="admin-text-sm ml-2">(Si no seleccionas ninguna, se guardará como borrador)</span>
+                <span className="text-sm text-gray-500 ml-2">(Si no seleccionas ninguna, se guardará como borrador)</span>
               </label>
-              <div className="admin-grid-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {availableLocations.map((location) => (
                   <label key={location.value} className="flex items-center space-x-2">
                     <input
@@ -330,13 +308,13 @@ const CaseStudiesManager = () => {
                       onChange={(e) => handleLocationChange(location.value, e.target.checked)}
                       className="rounded"
                     />
-                    <span className="admin-text-sm">{location.label}</span>
+                    <span className="text-sm text-gray-700">{location.label}</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="admin-form-row">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ImageUploadField
                 label="Logo de la Empresa"
                 value={formData.logo_url}
@@ -354,7 +332,7 @@ const CaseStudiesManager = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -362,7 +340,7 @@ const CaseStudiesManager = () => {
                   onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
                   className="mr-2"
                 />
-                <span className="admin-text-sm">Destacado</span>
+                Destacado
               </label>
               <label className="flex items-center">
                 <input
@@ -371,31 +349,24 @@ const CaseStudiesManager = () => {
                   onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                   className="mr-2"
                 />
-                <span className="admin-text-sm">Activo</span>
+                Activo
               </label>
             </div>
 
-            <div className="admin-form-actions">
+            <div className="flex space-x-4">
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingCase(null);
-                  setFormData(emptyCase);
-                }}
-                className="admin-btn-secondary"
+                type="submit"
+                className="bg-black text-white border border-black rounded-lg"
               >
-                Cancelar
+                {editingCase ? 'Actualizar' : 'Crear'}
               </Button>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
                     type="button"
                     variant="outline"
-                    className="admin-btn-secondary"
+                    className="border border-gray-300 rounded-lg"
                   >
-                    <Eye className="h-4 w-4" />
                     Previsualizar
                   </Button>
                 </DialogTrigger>
@@ -407,94 +378,103 @@ const CaseStudiesManager = () => {
                 </DialogContent>
               </Dialog>
               <Button
-                type="submit"
-                className="admin-btn-primary"
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingCase(null);
+                  setFormData(emptyCase);
+                }}
+                className="border border-gray-300 rounded-lg"
               >
-                {editingCase ? 'Actualizar' : 'Crear'}
+                Cancelar
               </Button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Cases List */}
-      <div className="admin-space-y">
+      <div className="grid grid-cols-1 gap-4">
         {caseStudies.map((caseStudy) => (
-          <div key={caseStudy.id} className="admin-card">
-            <div className="admin-card-body">
-              <div className="admin-flex-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-4 mb-3">
-                    {caseStudy.logo_url && (
-                      <img
-                        src={caseStudy.logo_url}
-                        alt={`Logo ${caseStudy.title}`}
-                        className="w-12 h-12 object-contain rounded border border-gray-200"
-                      />
-                    )}
-                    <div>
-                      <h3 className="admin-subtitle">{caseStudy.title}</h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        {caseStudy.is_featured && (
-                          <span className="admin-badge-warning">Destacado</span>
-                        )}
-                        {!caseStudy.is_active && (
-                          <span className="admin-badge-info">Borrador</span>
-                        )}
-                        {(!caseStudy.display_locations || caseStudy.display_locations.length === 0) && (
-                          <span className="admin-badge-danger">Sin ubicaciones</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="admin-text mb-3">{caseStudy.description}</p>
-                  <div className="admin-text-sm mb-3">
-                    <span className="mr-4">{caseStudy.sector}</span>
-                    {caseStudy.value_amount && (
-                      <span className="mr-4">{caseStudy.value_amount}M{caseStudy.value_currency}</span>
-                    )}
-                    {caseStudy.year && <span>{caseStudy.year}</span>}
-                  </div>
-                  <div className="mb-3">
-                    <span className="admin-text-sm font-medium">Ubicaciones: </span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {(caseStudy.display_locations || []).map((location) => {
-                        const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
-                        return (
-                          <span key={location} className="admin-badge-info">
-                            {locationLabel}
-                          </span>
-                        );
-                      })}
+          <div key={caseStudy.id} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center space-x-4 mb-2">
+                  {caseStudy.logo_url && (
+                    <img
+                      src={caseStudy.logo_url}
+                      alt={`Logo ${caseStudy.title}`}
+                      className="w-12 h-12 object-contain rounded"
+                    />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-black">{caseStudy.title}</h3>
+                    <div className="flex items-center space-x-2">
+                      {caseStudy.is_featured && (
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                          Destacado
+                        </span>
+                      )}
+                      {!caseStudy.is_active && (
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                          Borrador
+                        </span>
+                      )}
+                      {(!caseStudy.display_locations || caseStudy.display_locations.length === 0) && (
+                        <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          Sin ubicaciones
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toggleStatus(caseStudy.id, 'is_active', !caseStudy.is_active)}
-                    className="admin-btn-sm admin-btn-secondary"
-                  >
-                    {caseStudy.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(caseStudy)}
-                    className="admin-btn-sm admin-btn-secondary"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(caseStudy.id)}
-                    className="admin-btn-sm text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <p className="text-gray-600 mb-2">{caseStudy.description}</p>
+                <div className="text-sm text-gray-500 mb-2">
+                  <span className="mr-4">{caseStudy.sector}</span>
+                  {caseStudy.value_amount && (
+                    <span className="mr-4">{caseStudy.value_amount}M{caseStudy.value_currency}</span>
+                  )}
+                  {caseStudy.year && <span>{caseStudy.year}</span>}
                 </div>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(caseStudy.display_locations || []).map((location) => {
+                      const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
+                      return (
+                        <span key={location} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                          {locationLabel}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEdit(caseStudy)}
+                  className="border border-gray-300 rounded-lg"
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => toggleStatus(caseStudy.id, 'is_active', !caseStudy.is_active)}
+                  className="border border-gray-300 rounded-lg"
+                >
+                  {caseStudy.is_active ? 'Desactivar' : 'Activar'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDelete(caseStudy.id)}
+                  className="border border-red-300 text-red-600 rounded-lg"
+                >
+                  Eliminar
+                </Button>
               </div>
             </div>
           </div>

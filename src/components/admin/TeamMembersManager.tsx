@@ -202,8 +202,8 @@ const TeamMembersManager = () => {
   }
 
   return (
-    <div className="w-full h-full p-4 space-y-6">
-      <div className="w-full flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-black">Gestión del Equipo</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -296,26 +296,26 @@ const TeamMembersManager = () => {
         </Dialog>
       </div>
 
-      <div className="w-full grid gap-4">
+      <div className="grid gap-4">
         {teamMembers.map((member, index) => (
-          <Card key={member.id} className="w-full bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
+          <Card key={member.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
                   {member.image_url && (
                     <img 
                       src={member.image_url} 
                       alt={member.name}
-                      className="w-16 h-16 rounded-lg object-cover border-0.5 border-gray-300 flex-shrink-0"
+                      className="w-16 h-16 rounded-lg object-cover border-0.5 border-gray-300"
                     />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-black truncate">{member.name}</h3>
+                  <div>
+                    <h3 className="font-bold text-black">{member.name}</h3>
                     {member.position && (
-                      <p className="text-sm text-gray-600 truncate">{member.position}</p>
+                      <p className="text-sm text-gray-600">{member.position}</p>
                     )}
                     {member.bio && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{member.bio}</p>
+                      <p className="text-xs text-gray-500 mt-1 max-w-md truncate">{member.bio}</p>
                     )}
                     <span className={`inline-block px-2 py-1 rounded text-xs mt-2 ${
                       member.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -325,7 +325,7 @@ const TeamMembersManager = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -367,7 +367,7 @@ const TeamMembersManager = () => {
         ))}
         
         {teamMembers.length === 0 && (
-          <div className="text-center py-8 w-full">
+          <div className="text-center py-8">
             <p className="text-gray-600">No hay miembros del equipo registrados.</p>
           </div>
         )}

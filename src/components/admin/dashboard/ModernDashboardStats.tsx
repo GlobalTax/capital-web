@@ -1,97 +1,77 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Building2, Users, MessageSquare, BarChart3, TrendingUp, Calculator } from 'lucide-react';
-
-interface DashboardStats {
-  caseStudies: number;
-  operations: number;
-  blogPosts: number;
-  testimonials: number;
-  teamMembers: number;
-  statistics: number;
-  valuations: number;
-}
+import { Link } from 'react-router-dom';
 
 interface ModernDashboardStatsProps {
-  stats: DashboardStats;
+  stats: {
+    caseStudies: number;
+    operations: number;
+    blogPosts: number;
+    testimonials: number;
+    teamMembers: number;
+    statistics: number;
+  };
 }
 
 const ModernDashboardStats = ({ stats }: ModernDashboardStatsProps) => {
-  const statsData = [
+  const statCards = [
     {
-      title: "Casos de Éxito",
+      title: 'Casos de Éxito',
       value: stats.caseStudies,
-      icon: FileText,
-      change: "+2.1%",
-      changeType: "positive" as const
+      link: '/admin/case-studies',
+      change: '+12%'
     },
     {
-      title: "Operaciones",
+      title: 'Operaciones',
       value: stats.operations,
-      icon: Building2,
-      change: "+1.8%",
-      changeType: "positive" as const
+      link: '/admin/operations',
+      change: '+8%'
     },
     {
-      title: "Valoraciones",
-      value: stats.valuations,
-      icon: Calculator,
-      change: "+12.5%",
-      changeType: "positive" as const
-    },
-    {
-      title: "Blog Posts",
+      title: 'Posts del Blog',
       value: stats.blogPosts,
-      icon: MessageSquare,
-      change: "+4.2%",
-      changeType: "positive" as const
+      link: '/admin/blog',
+      change: '+24%'
     },
     {
-      title: "Testimonios",
+      title: 'Testimonios',
       value: stats.testimonials,
-      icon: Users,
-      change: "0.0%",
-      changeType: "neutral" as const
+      link: '/admin/testimonials',
+      change: '+15%'
     },
     {
-      title: "Estadísticas",
+      title: 'Miembros del Equipo',
+      value: stats.teamMembers,
+      link: '/admin/team',
+      change: '+5%'
+    },
+    {
+      title: 'Estadísticas Clave',
       value: stats.statistics,
-      icon: TrendingUp,
-      change: "+0.8%",
-      changeType: "positive" as const
+      link: '/admin/statistics',
+      change: '+18%'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {statsData.map((stat, index) => {
-        const Icon = stat.icon;
-        return (
-          <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <div className="flex items-baseline space-x-2">
-                    <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-                    <span className={`text-xs font-medium ${
-                      stat.changeType === 'positive' ? 'text-green-600' : 
-                      stat.changeType === 'neutral' ? 'text-gray-500' : 
-                      'text-red-600'
-                    }`}>
-                      {stat.change}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-shrink-0">
-                  <Icon className="h-5 w-5 text-gray-400" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {statCards.map((stat) => (
+        <Link key={stat.title} to={stat.link} className="group">
+          <Card className="border border-gray-100 hover:border-gray-200 transition-colors bg-white">
+            <CardContent className="p-4">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-gray-600">{stat.title}</p>
+                <p className="text-2xl font-bold text-black">{stat.value}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500">{stat.change}</span>
+                  <span className="text-xs text-gray-400">vs mes anterior</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-        );
-      })}
+        </Link>
+      ))}
     </div>
   );
 };
