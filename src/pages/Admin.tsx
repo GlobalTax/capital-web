@@ -2,7 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminAuth from '@/components/admin/AdminAuth';
-import AdminDashboard from '@/components/admin/AdminDashboard';
+import MinimalAdminDashboard from '@/components/admin/minimal/MinimalAdminDashboard';
 
 const Admin = () => {
   const { user, isLoading } = useAuth();
@@ -19,10 +19,10 @@ const Admin = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm">Cargando...</p>
         </div>
       </div>
     );
@@ -32,7 +32,7 @@ const Admin = () => {
     return <AdminAuth onAuthSuccess={handleAuthSuccess} />;
   }
 
-  return <AdminDashboard onLogout={handleLogout} />;
+  return <MinimalAdminDashboard onLogout={handleLogout} />;
 };
 
 export default Admin;
