@@ -1,4 +1,3 @@
-
 export interface AnalyticsEvent {
   name: string;
   properties: Record<string, any>;
@@ -23,15 +22,28 @@ export interface AnalyticsConfig {
   clarityProjectId?: string;
   leadfeederTrackingId?: string;
   enableCompanyTracking?: boolean;
+  enableEnrichment?: boolean;
+  enableAlerting?: boolean;
 }
+
+import { CompanyEnrichmentService, LeadIntelligence } from './CompanyEnrichment';
+import { LeadScoringEngine } from './LeadScoringEngine';
+import { AlertingSystem } from './AlertingSystem';
 
 export class AnalyticsManager {
   private config: AnalyticsConfig;
   private events: AnalyticsEvent[] = [];
   private companies: Map<string, CompanyData> = new Map();
+  private enrichmentService: CompanyEnrichmentService;
+  private scoringEngine: LeadScoringEngine;
+  private alertingSystem: AlertingSystem;
+  private leadIntelligence: Map<string, LeadIntelligence> = new Map();
 
   constructor(config: AnalyticsConfig) {
     this.config = config;
+    this.enrichmentService = new CompanyEnrichmentService();
+    this.scoringEngine = new LeadScoringEngine();
+    this.alertingSystem = new AlertingSystem();
     this.init();
   }
 
@@ -141,22 +153,28 @@ export class AnalyticsManager {
 
   // Lead Scoring
   calculateLeadScore(companyDomain: string): number {
-    const company = this.companies.get(companyDomain);
-    if (!company) return 0;
+    const companyData = this.companies.get(companyDomain);
+    if (!companyData) return 0;
 
+    const leadIntel = this.leadIntelligence.get(companyDomain);
+    if (leadIntel) {
+      return leadIntel.overallScore;
+    }
+
+    // Fallback to basic scoring
     let score = 0;
     
     // Visit frequency (max 30 points)
-    score += Math.min(company.visitCount * 5, 30);
+    score += Math.min(companyData.visitCount * 5, 30);
     
     // Page depth (max 25 points)
-    score += Math.min(company.pages.length * 3, 25);
+    score += Math.min(companyData.pages.length * 3, 25);
     
     // Engagement time (max 25 points)
-    score += Math.min(company.engagementScore, 25);
+    score += Math.min(companyData.engagementScore, 25);
     
     // Industry relevance (max 20 points)
-    if (company.industry && ['Technology', 'Finance', 'Healthcare', 'Manufacturing'].includes(company.industry)) {
+    if (companyData.industry && ['Technology', 'Finance', 'Healthcare', 'Manufacturing'].includes(companyData.industry)) {
       score += 20;
     }
 
@@ -187,8 +205,8 @@ export class AnalyticsManager {
     }, 2000);
   }
 
-  // Company Identification
-  identifyCompany(companyData: CompanyData) {
+  // Enhanced company identification with enrichment and scoring
+  async identifyCompany(companyData: CompanyData) {
     const existing = this.companies.get(companyData.domain);
     
     if (existing) {
@@ -202,6 +220,11 @@ export class AnalyticsManager {
       this.companies.set(companyData.domain, companyData);
     }
 
+    // Enhanced processing for new or updated companies
+    if (this.config.enableEnrichment || this.config.enableAlerting) {
+      await this.processCompanyIntelligence(companyData.domain);
+    }
+
     // Track company visit event
     this.trackEvent('company_identified', {
       company_name: companyData.name,
@@ -211,6 +234,70 @@ export class AnalyticsManager {
     });
 
     console.log('Company identified:', companyData);
+  }
+
+  private async processCompanyIntelligence(domain: string): Promise<void> {
+    const companyData = this.companies.get(domain);
+    if (!companyData) return;
+
+    try {
+      // Enrich company data
+      let enrichmentData = null;
+      if (this.config.enableEnrichment) {
+        enrichmentData = await this.enrichmentService.enrichCompanyData(domain);
+      }
+
+      // Calculate advanced lead intelligence
+      const leadIntel = this.scoringEngine.calculateLeadScore(
+        companyData,
+        enrichmentData || undefined
+      );
+
+      // Store lead intelligence
+      this.leadIntelligence.set(domain, leadIntel);
+
+      // Process alerts
+      if (this.config.enableAlerting) {
+        const alerts = this.alertingSystem.processLeadIntelligence(leadIntel);
+        
+        if (alerts.length > 0) {
+          console.log(`🚨 Generated ${alerts.length} alerts for ${companyData.name}`);
+          
+          // Emit custom event for UI updates
+          window.dispatchEvent(new CustomEvent('marketing-intelligence-alert', {
+            detail: { alerts, leadIntel }
+          }));
+        }
+      }
+
+    } catch (error) {
+      console.error('Error processing company intelligence:', error);
+    }
+  }
+
+  // New methods for enhanced analytics
+  getLeadIntelligence(domain: string): LeadIntelligence | undefined {
+    return this.leadIntelligence.get(domain);
+  }
+
+  getAllLeadIntelligence(): LeadIntelligence[] {
+    return Array.from(this.leadIntelligence.values());
+  }
+
+  getAlerts(filters?: any) {
+    return this.alertingSystem.getAlerts(filters);
+  }
+
+  getUnreadAlertsCount(): number {
+    return this.alertingSystem.getUnreadCount();
+  }
+
+  markAlertAsRead(alertId: string): void {
+    return this.alertingSystem.markAsRead(alertId);
+  }
+
+  async enrichCompanyData(domain: string) {
+    return await this.enrichmentService.enrichCompanyData(domain);
   }
 
   // Get Analytics Data
@@ -232,18 +319,94 @@ export class AnalyticsManager {
   getAnalyticsSummary() {
     const events = this.getEvents();
     const companies = this.getCompanies();
+    const leadIntelligence = this.getAllLeadIntelligence();
+    const alerts = this.getAlerts({ isRead: false });
     
     return {
       totalEvents: events.length,
       totalCompanies: companies.length,
+      totalLeadIntelligence: leadIntelligence.length,
+      unreadAlerts: alerts.length,
       topEvents: this.getTopEvents(),
       recentActivity: events.slice(-10).reverse(),
       leadScore: {
         high: companies.filter(c => this.calculateLeadScore(c.domain) >= 70).length,
         medium: companies.filter(c => this.calculateLeadScore(c.domain) >= 40 && this.calculateLeadScore(c.domain) < 70).length,
         low: companies.filter(c => this.calculateLeadScore(c.domain) < 40).length
-      }
+      },
+      alertsByPriority: {
+        critical: alerts.filter(a => a.priority === 'critical').length,
+        high: alerts.filter(a => a.priority === 'high').length,
+        medium: alerts.filter(a => a.priority === 'medium').length,
+        low: alerts.filter(a => a.priority === 'low').length
+      },
+      topIndustries: this.getTopIndustries(),
+      conversionFunnel: this.getConversionFunnel()
     };
+  }
+
+  private getTopIndustries(): Array<{industry: string, count: number, avgScore: number}> {
+    const industries = new Map<string, {count: number, totalScore: number}>();
+    
+    this.getCompanies().forEach(company => {
+      if (company.industry) {
+        const current = industries.get(company.industry) || {count: 0, totalScore: 0};
+        current.count++;
+        current.totalScore += this.calculateLeadScore(company.domain);
+        industries.set(company.industry, current);
+      }
+    });
+
+    return Array.from(industries.entries())
+      .map(([industry, data]) => ({
+        industry,
+        count: data.count,
+        avgScore: Math.round(data.totalScore / data.count)
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }
+
+  private getConversionFunnel(): {stage: string, count: number, percentage: number}[] {
+    const companies = this.getCompanies();
+    const total = companies.length;
+    
+    if (total === 0) return [];
+
+    const stages = [
+      {
+        stage: 'Visitantes únicos',
+        count: total,
+        percentage: 100
+      },
+      {
+        stage: 'Visitantes recurrentes',
+        count: companies.filter(c => c.visitCount > 1).length,
+        percentage: 0
+      },
+      {
+        stage: 'Interés alto (calculadora)',
+        count: companies.filter(c => c.pages.some(p => p.includes('calculadora'))).length,
+        percentage: 0
+      },
+      {
+        stage: 'Intención (contacto)',
+        count: companies.filter(c => c.pages.some(p => p.includes('contacto'))).length,
+        percentage: 0
+      },
+      {
+        stage: 'Leads calientes (score ≥ 70)',
+        count: companies.filter(c => this.calculateLeadScore(c.domain) >= 70).length,
+        percentage: 0
+      }
+    ];
+
+    // Calculate percentages
+    stages.forEach(stage => {
+      stage.percentage = total > 0 ? Math.round((stage.count / total) * 100) : 0;
+    });
+
+    return stages;
   }
 
   private getTopEvents(): Array<{name: string, count: number}> {

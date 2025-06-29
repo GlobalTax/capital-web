@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +14,15 @@ import {
   BarChart3,
   Zap,
   Calendar,
-  Globe
+  Globe,
+  AlertTriangle,
+  Bell,
+  CheckCircle,
+  TrendingDown,
+  ArrowUp,
+  ArrowDown,
+  DollarSign,
+  Star
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -23,11 +30,17 @@ const MarketingIntelligenceDashboard = () => {
   const { 
     companies, 
     events, 
+    leadIntelligence,
+    alerts,
     summary, 
     isLoading, 
     trackEvent,
     getLeadScore,
-    getTopCompanies 
+    getTopCompanies,
+    getLeadIntelligenceByDomain,
+    markAlertAsRead,
+    getUnreadAlertsCount,
+    getAlertsByPriority
   } = useMarketingIntelligence();
 
   const [selectedTimeframe, setSelectedTimeframe] = useState('7d');
@@ -48,15 +61,24 @@ const MarketingIntelligenceDashboard = () => {
   }
 
   const topCompanies = getTopCompanies(5);
+  const unreadAlertsCount = getUnreadAlertsCount();
+  const criticalAlerts = getAlertsByPriority('critical');
+  const highPriorityAlerts = getAlertsByPriority('high');
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header with Alerts */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <BarChart3 className="h-8 w-8 text-blue-600" />
             Marketing Intelligence Platform
+            {unreadAlertsCount > 0 && (
+              <Badge variant="destructive" className="ml-2">
+                <Bell className="h-3 w-3 mr-1" />
+                {unreadAlertsCount}
+              </Badge>
+            )}
           </h1>
           <p className="text-gray-600 mt-2">
             Análisis avanzado de visitantes empresariales y leads de alta calidad
@@ -77,8 +99,39 @@ const MarketingIntelligenceDashboard = () => {
         </div>
       </div>
 
-      {/* KPIs Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Critical Alerts Banner */}
+      {criticalAlerts.length > 0 && (
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-red-800 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Alertas Críticas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {criticalAlerts.slice(0, 3).map((alert) => (
+                <div key={alert.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                  <div>
+                    <div className="font-medium text-red-800">{alert.title}</div>
+                    <div className="text-sm text-red-600">{alert.companyName}</div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => markAlertAsRead(alert.id)}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Enhanced KPIs Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Eventos</CardTitle>
@@ -107,6 +160,19 @@ const MarketingIntelligenceDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Lead Intelligence</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{summary?.totalLeadIntelligence || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Datos enriquecidos
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Leads de Alta Calidad</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -120,13 +186,13 @@ const MarketingIntelligenceDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Conversión</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Alertas Activas</CardTitle>
+            <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24.5%</div>
+            <div className="text-2xl font-bold">{unreadAlertsCount}</div>
             <p className="text-xs text-muted-foreground">
-              +3.2% vs mes anterior
+              {criticalAlerts.length} críticas
             </p>
           </CardContent>
         </Card>
@@ -136,6 +202,8 @@ const MarketingIntelligenceDashboard = () => {
       <Tabs defaultValue="companies" className="space-y-4">
         <TabsList>
           <TabsTrigger value="companies">Empresas Visitantes</TabsTrigger>
+          <TabsTrigger value="intelligence">Lead Intelligence</TabsTrigger>
+          <TabsTrigger value="alerts">Alertas & Acciones</TabsTrigger>
           <TabsTrigger value="events">Actividad en Tiempo Real</TabsTrigger>
           <TabsTrigger value="insights">Insights & Predicciones</TabsTrigger>
           <TabsTrigger value="config">Configuración</TabsTrigger>
@@ -187,36 +255,209 @@ const MarketingIntelligenceDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Lead Score Distribution */}
+            {/* Conversion Funnel */}
             <Card>
               <CardHeader>
-                <CardTitle>Distribución de Lead Score</CardTitle>
+                <CardTitle>Embudo de Conversión</CardTitle>
                 <CardDescription>
-                  Segmentación por calidad de leads
+                  Flujo de visitantes a leads calientes
                 </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {summary?.conversionFunnel?.map((stage: any, index: number) => (
+                    <div key={stage.stage} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${
+                          index === 0 ? 'bg-blue-500' :
+                          index === 1 ? 'bg-green-500' :
+                          index === 2 ? 'bg-yellow-500' :
+                          index === 3 ? 'bg-orange-500' :
+                          'bg-red-500'
+                        }`}></div>
+                        <span className="text-sm">{stage.stage}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-medium">{stage.count}</span>
+                        <span className="text-sm text-gray-500 ml-2">({stage.percentage}%)</span>
+                      </div>
+                    </div>
+                  )) || (
+                    <div className="text-center py-4 text-gray-500">
+                      No hay datos de conversión disponibles
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="intelligence" className="space-y-4">
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Lead Intelligence Detallado</CardTitle>
+                <CardDescription>
+                  Análisis profundo de empresas con datos enriquecidos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {leadIntelligence.slice(0, 10).map((intel) => (
+                    <div key={intel.companyData.domain} className="p-4 border rounded-lg">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-lg">{intel.companyData.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Badge variant="outline">{intel.companyData.industry}</Badge>
+                            <span>{intel.companyData.size}</span>
+                            <span>{intel.companyData.location}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white ${
+                            intel.overallScore >= 70 ? 'bg-green-500' : 
+                            intel.overallScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}>
+                            {intel.overallScore}/100
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4 mb-3">
+                        <div className="text-center p-2 bg-gray-50 rounded">
+                          <div className="text-lg font-semibold text-blue-600">{intel.fitScore}</div>
+                          <div className="text-xs text-gray-600">Fit Score</div>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 rounded">
+                          <div className="text-lg font-semibold text-green-600">{intel.engagementScore}</div>
+                          <div className="text-xs text-gray-600">Engagement</div>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 rounded">
+                          <div className="text-lg font-semibold text-orange-600">{intel.intentScore}</div>
+                          <div className="text-xs text-gray-600">Intent Score</div>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="text-sm font-medium mb-1">Triggers Identificados:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {intel.triggers.map((trigger, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {trigger}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm font-medium mb-1">Próximas Acciones:</div>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          {intel.nextActions.slice(0, 2).map((action, idx) => (
+                            <div key={idx} className="flex items-center gap-1">
+                              <ArrowUp className="h-3 w-3 text-blue-500" />
+                              {action}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )) || (
+                    <div className="text-center py-8 text-gray-500">
+                      No hay datos de lead intelligence disponibles
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="alerts" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                  Alertas de Alta Prioridad
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {alerts
+                    .filter(alert => ['critical', 'high'].includes(alert.priority))
+                    .slice(0, 10)
+                    .map((alert) => (
+                    <div key={alert.id} className="p-3 border rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant={alert.priority === 'critical' ? 'destructive' : 'default'}>
+                              {alert.priority}
+                            </Badge>
+                            <Badge variant="outline">{alert.type}</Badge>
+                          </div>
+                          <div className="font-medium">{alert.title}</div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {alert.description.split('\n')[0]}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {format(alert.createdAt, 'dd/MM/yyyy HH:mm')}
+                          </div>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => markAlertAsRead(alert.id)}
+                          disabled={alert.isRead}
+                        >
+                          {alert.isRead ? <CheckCircle className="h-4 w-4" /> : 'Marcar'}
+                        </Button>
+                      </div>
+                    </div>
+                  )) || (
+                    <div className="text-center py-4 text-gray-500">
+                      No hay alertas de alta prioridad
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribución de Alertas</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm">Alta Calidad (70-100)</span>
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-sm">Críticas</span>
                     </div>
-                    <span className="font-medium">{summary?.leadScore?.high || 0}</span>
+                    <span className="font-medium">{summary?.alertsByPriority?.critical || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                      <span className="text-sm">Altas</span>
+                    </div>
+                    <span className="font-medium">{summary?.alertsByPriority?.high || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <span className="text-sm">Media Calidad (40-69)</span>
+                      <span className="text-sm">Medias</span>
                     </div>
-                    <span className="font-medium">{summary?.leadScore?.medium || 0}</span>
+                    <span className="font-medium">{summary?.alertsByPriority?.medium || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <span className="text-sm">Baja Calidad (0-39)</span>
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm">Bajas</span>
                     </div>
-                    <span className="font-medium">{summary?.leadScore?.low || 0}</span>
+                    <span className="font-medium">{summary?.alertsByPriority?.low || 0}</span>
                   </div>
                 </div>
               </CardContent>
