@@ -1,8 +1,10 @@
 
 import React from 'react';
-import ModernDashboardStats from './dashboard/ModernDashboardStats';
-import ModernQuickActions from './dashboard/ModernQuickActions';
-import ModernRecentActivity from './dashboard/ModernRecentActivity';
+import DashboardHeader from './dashboard/DashboardHeader';
+import EnhancedDashboardStats from './dashboard/EnhancedDashboardStats';
+import InteractiveControlPanel from './dashboard/InteractiveControlPanel';
+import EnhancedQuickActions from './dashboard/EnhancedQuickActions';
+import ActivityTimeline from './dashboard/ActivityTimeline';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 const AdminDashboardHome = () => {
@@ -10,62 +12,63 @@ const AdminDashboardHome = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 bg-white">
-        {/* Header Skeleton */}
+      <div className="space-y-6 bg-gray-50 min-h-screen p-6">
+        {/* Loading skeletons */}
         <div className="space-y-3">
-          <div className="h-8 bg-gray-100 rounded w-64 animate-pulse"></div>
-          <div className="h-4 bg-gray-100 rounded w-96 animate-pulse"></div>
+          <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
         </div>
         
-        {/* Stats Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="animate-pulse bg-white border border-gray-200 rounded-lg p-6">
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
-                <div className="h-8 bg-gray-100 rounded w-1/2"></div>
-                <div className="h-3 bg-gray-100 rounded w-2/3"></div>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="animate-pulse bg-white rounded-lg p-6 h-24">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/2"></div>
             </div>
           ))}
         </div>
         
-        {/* Quick Actions Skeleton */}
-        <div className="space-y-4">
-          <div className="h-6 bg-gray-100 rounded w-48 animate-pulse"></div>
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-2 p-3 border border-gray-100 rounded-lg">
-                  <div className="h-4 bg-gray-100 rounded w-1/3 animate-pulse"></div>
-                  <div className="h-3 bg-gray-100 rounded w-2/3 animate-pulse"></div>
-                </div>
-              ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="animate-pulse bg-white rounded-lg p-6 h-40">
+              <div className="space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6 bg-white">
-      {/* Header minimalista */}
-      <div className="border-b border-gray-200 pb-6">
-        <h1 className="text-3xl font-light text-gray-900 mb-2">Inicio</h1>
-        <p className="text-gray-600 font-light">
-          Panel de administración Capittal
-        </p>
-      </div>
+  // Calcular métricas para el header
+  const todayLeads = 8; // Simulado - podrías calcularlo desde los datos reales
+  const activeUsers = 3; // Simulado
 
-      {/* Stats Cards minimalistas */}
-      <ModernDashboardStats stats={stats} />
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header con métricas en tiempo real */}
+      <DashboardHeader 
+        totalValuations={stats.valuations}
+        todayLeads={todayLeads}
+        activeUsers={activeUsers}
+      />
+
+      {/* Stats Cards mejoradas con gráficos */}
+      <EnhancedDashboardStats stats={stats} />
       
-      {/* Acciones Rápidas minimalistas */}
-      <ModernQuickActions />
+      {/* Panel de control interactivo con gráficos */}
+      <InteractiveControlPanel />
       
-      {/* Actividad Reciente minimalista */}
-      <ModernRecentActivity />
+      {/* Acciones rápidas mejoradas */}
+      <EnhancedQuickActions />
+      
+      {/* Timeline de actividad */}
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+        <ActivityTimeline />
+      </div>
     </div>
   );
 };
