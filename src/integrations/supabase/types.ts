@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ad_conversions: {
+        Row: {
+          company_domain: string | null
+          conversion_name: string | null
+          conversion_type: string
+          conversion_value: number | null
+          created_at: string
+          gclid: string | null
+          id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          company_domain?: string | null
+          conversion_name?: string | null
+          conversion_type: string
+          conversion_value?: number | null
+          created_at?: string
+          gclid?: string | null
+          id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          company_domain?: string | null
+          conversion_name?: string | null
+          conversion_type?: string
+          conversion_value?: number | null
+          created_at?: string
+          gclid?: string | null
+          id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -30,6 +78,111 @@ export type Database = {
           is_active?: boolean | null
           role?: Database["public"]["Enums"]["admin_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      apollo_companies: {
+        Row: {
+          apollo_id: string | null
+          company_domain: string
+          company_name: string
+          created_at: string
+          employee_count: number | null
+          founded_year: number | null
+          id: string
+          industry: string | null
+          is_target_account: boolean | null
+          last_enriched: string | null
+          location: string | null
+          revenue_range: string | null
+          technologies: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          apollo_id?: string | null
+          company_domain: string
+          company_name: string
+          created_at?: string
+          employee_count?: number | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          is_target_account?: boolean | null
+          last_enriched?: string | null
+          location?: string | null
+          revenue_range?: string | null
+          technologies?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          apollo_id?: string | null
+          company_domain?: string
+          company_name?: string
+          created_at?: string
+          employee_count?: number | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          is_target_account?: boolean | null
+          last_enriched?: string | null
+          location?: string | null
+          revenue_range?: string | null
+          technologies?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      attribution_touchpoints: {
+        Row: {
+          attribution_weight: number | null
+          campaign: string | null
+          channel: string
+          company_domain: string | null
+          content: string | null
+          conversion_value: number | null
+          created_at: string
+          id: string
+          medium: string | null
+          page_path: string | null
+          session_id: string | null
+          source: string | null
+          timestamp: string
+          touchpoint_order: number
+          visitor_id: string
+        }
+        Insert: {
+          attribution_weight?: number | null
+          campaign?: string | null
+          channel: string
+          company_domain?: string | null
+          content?: string | null
+          conversion_value?: number | null
+          created_at?: string
+          id?: string
+          medium?: string | null
+          page_path?: string | null
+          session_id?: string | null
+          source?: string | null
+          timestamp?: string
+          touchpoint_order: number
+          visitor_id: string
+        }
+        Update: {
+          attribution_weight?: number | null
+          campaign?: string | null
+          channel?: string
+          company_domain?: string | null
+          content?: string | null
+          conversion_value?: number | null
+          created_at?: string
+          id?: string
+          medium?: string | null
+          page_path?: string | null
+          session_id?: string | null
+          source?: string | null
+          timestamp?: string
+          touchpoint_order?: number
+          visitor_id?: string
         }
         Relationships: []
       }
@@ -949,6 +1102,75 @@ export type Database = {
           },
         ]
       }
+      integration_configs: {
+        Row: {
+          config_data: Json
+          created_at: string
+          id: string
+          integration_name: string
+          is_active: boolean | null
+          last_sync: string | null
+          sync_frequency_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          config_data?: Json
+          created_at?: string
+          id?: string
+          integration_name: string
+          is_active?: boolean | null
+          last_sync?: string | null
+          sync_frequency_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          config_data?: Json
+          created_at?: string
+          id?: string
+          integration_name?: string
+          is_active?: boolean | null
+          last_sync?: string | null
+          sync_frequency_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      integration_logs: {
+        Row: {
+          company_domain: string | null
+          created_at: string
+          data_payload: Json | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          integration_type: string
+          operation: string
+          status: string
+        }
+        Insert: {
+          company_domain?: string | null
+          created_at?: string
+          data_payload?: Json | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          integration_type: string
+          operation: string
+          status?: string
+        }
+        Update: {
+          company_domain?: string | null
+          created_at?: string
+          data_payload?: Json | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          integration_type?: string
+          operation?: string
+          status?: string
+        }
+        Relationships: []
+      }
       key_statistics: {
         Row: {
           display_locations: string[] | null
@@ -1357,6 +1579,51 @@ export type Database = {
           points?: number
           trigger_type?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      linkedin_intelligence: {
+        Row: {
+          company_domain: string
+          company_name: string
+          company_updates: string[] | null
+          confidence_score: number | null
+          created_at: string
+          decision_makers: Json | null
+          funding_signals: Json | null
+          growth_signals: string[] | null
+          id: string
+          last_updated: string | null
+          optimal_outreach_timing: string | null
+          recent_hires: number | null
+        }
+        Insert: {
+          company_domain: string
+          company_name: string
+          company_updates?: string[] | null
+          confidence_score?: number | null
+          created_at?: string
+          decision_makers?: Json | null
+          funding_signals?: Json | null
+          growth_signals?: string[] | null
+          id?: string
+          last_updated?: string | null
+          optimal_outreach_timing?: string | null
+          recent_hires?: number | null
+        }
+        Update: {
+          company_domain?: string
+          company_name?: string
+          company_updates?: string[] | null
+          confidence_score?: number | null
+          created_at?: string
+          decision_makers?: Json | null
+          funding_signals?: Json | null
+          growth_signals?: string[] | null
+          id?: string
+          last_updated?: string | null
+          optimal_outreach_timing?: string | null
+          recent_hires?: number | null
         }
         Relationships: []
       }

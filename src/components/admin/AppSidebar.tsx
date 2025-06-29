@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Home,
@@ -71,6 +70,12 @@ const sidebarItems: SidebarItem[] = [
     icon: AlertCircle,
     id: "alerts",
     description: "Notificaciones y eventos críticos"
+  },
+  {
+    title: "Integraciones",
+    icon: Settings,
+    id: "integrations",
+    description: "Apollo, Google Ads, LinkedIn y más"
   },
   {
     title: "Casos de Éxito",
@@ -180,7 +185,7 @@ const AppSidebar: React.FC = () => {
           Panel Principal
         </div>
         
-        {sidebarItems.slice(0, 7).map((item) => (
+        {sidebarItems.slice(0, 8).map((item) => (
           <NavLink
             key={item.id}
             to={`/admin/${item.id}`}
@@ -198,6 +203,11 @@ const AppSidebar: React.FC = () => {
                 AI
               </span>
             )}
+            {item.id === 'integrations' && (
+              <span className="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
+                NEW
+              </span>
+            )}
           </NavLink>
         ))}
 
@@ -205,7 +215,7 @@ const AppSidebar: React.FC = () => {
           Contenido IA
         </div>
         
-        {sidebarItems.slice(7, 11).map((item) => (
+        {sidebarItems.slice(8, 12).map((item) => (
           <NavLink
             key={item.id}
             to={`/admin/${item.id}`}
@@ -230,7 +240,7 @@ const AppSidebar: React.FC = () => {
           Datos
         </div>
         
-        {sidebarItems.slice(11, 13).map((item) => (
+        {sidebarItems.slice(12, 14).map((item) => (
           <NavLink
             key={item.id}
             to={`/admin/${item.id}`}
@@ -250,7 +260,7 @@ const AppSidebar: React.FC = () => {
           Leads
         </div>
         
-        {sidebarItems.slice(13, 15).map((item) => (
+        {sidebarItems.slice(14, 16).map((item) => (
           <NavLink
             key={item.id}
             to={`/admin/${item.id}`}
@@ -270,7 +280,7 @@ const AppSidebar: React.FC = () => {
           Usuarios
         </div>
         
-        {sidebarItems.slice(15, 17).map((item) => (
+        {sidebarItems.slice(16, 18).map((item) => (
           <NavLink
             key={item.id}
             to={`/admin/${item.id}`}
@@ -290,7 +300,7 @@ const AppSidebar: React.FC = () => {
           Visuales
         </div>
         
-        {sidebarItems.slice(17, 20).map((item) => (
+        {sidebarItems.slice(18, 21).map((item) => (
           <NavLink
             key={item.id}
             to={`/admin/${item.id}`}
@@ -307,7 +317,7 @@ const AppSidebar: React.FC = () => {
         ))}
 
         <div className="border-t border-gray-200 mt-6 pt-4">
-          {sidebarItems.slice(20).map((item) => (
+          {sidebarItems.slice(21).map((item) => (
             <NavLink
               key={item.id}
               to={`/admin/${item.id}`}

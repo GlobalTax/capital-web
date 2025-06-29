@@ -29,6 +29,7 @@ export const useAdminLayout = () => {
         'marketing-hub': 'Marketing Hub',
         'crm': 'CRM',
         'alerts': 'Alertas',
+        'integrations': 'Integraciones Estratégicas',
         'case-studies': 'Casos de Éxito',
         'operations': 'Operaciones',
         'blog': 'Blog Posts',
@@ -60,6 +61,6 @@ export const useAdminLayout = () => {
     sidebarCollapsed,
     setSidebarCollapsed,
     breadcrumbs: getBreadcrumbs(),
-    currentPath: location.pathname
+    current: location.pathname
   };
 };

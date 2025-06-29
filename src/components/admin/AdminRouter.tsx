@@ -53,6 +53,7 @@ const AdminRouter = () => {
       <Route path="marketing-hub" element={<MarketingHubDashboard />} />
       <Route path="crm" element={<CRMDashboard />} />
       <Route path="alerts" element={<AlertsDashboard />} />
+      <Route path="integrations" element={<IntegrationsManager />} />
       <Route path="case-studies" element={<CaseStudiesManager />} />
       <Route path="operations" element={<OperationsManager />} />
       <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
