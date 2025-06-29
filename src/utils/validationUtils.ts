@@ -67,3 +67,28 @@ export const validationUtils = {
     return validSectors.includes(sector);
   }
 };
+
+// Spanish phone formatter function
+export const formatSpanishPhone = (phone: string): string => {
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+  
+  // If it starts with +34, remove it
+  const cleanDigits = digits.startsWith('34') ? digits.slice(2) : digits;
+  
+  // Format as XXX XXX XXX
+  if (cleanDigits.length >= 9) {
+    return cleanDigits.slice(0, 9).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+  }
+  
+  // Return partial formatting for incomplete numbers
+  if (cleanDigits.length >= 6) {
+    return cleanDigits.replace(/(\d{3})(\d{3})(\d*)/, '$1 $2 $3').trim();
+  }
+  
+  if (cleanDigits.length >= 3) {
+    return cleanDigits.replace(/(\d{3})(\d*)/, '$1 $2').trim();
+  }
+  
+  return cleanDigits;
+};
