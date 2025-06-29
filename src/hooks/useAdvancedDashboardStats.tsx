@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +11,7 @@ import {
   fetchHistoricalContentMetrics,
   calculateAdvancedMetrics,
   generateSampleMetrics
-} from '@/utils/analyticsCalculations';
+} from '@/utils/analytics';
 
 export const useAdvancedDashboardStats = () => {
   const [stats, setStats] = useState<AdvancedDashboardStats | null>(null);
