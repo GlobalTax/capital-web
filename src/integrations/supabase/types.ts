@@ -795,6 +795,112 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          lead_score_id: string | null
+          message: string
+          priority: string | null
+          threshold_reached: number | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          lead_score_id?: string | null
+          message: string
+          priority?: string | null
+          threshold_reached?: number | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          lead_score_id?: string | null
+          message?: string
+          priority?: string | null
+          threshold_reached?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_alerts_lead_score_id_fkey"
+            columns: ["lead_score_id"]
+            isOneToOne: false
+            referencedRelation: "lead_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_behavior_events: {
+        Row: {
+          company_domain: string | null
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          page_path: string | null
+          points_awarded: number | null
+          referrer: string | null
+          rule_id: string | null
+          session_id: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          company_domain?: string | null
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          page_path?: string | null
+          points_awarded?: number | null
+          referrer?: string | null
+          rule_id?: string | null
+          session_id: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          company_domain?: string | null
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          page_path?: string | null
+          points_awarded?: number | null
+          referrer?: string | null
+          rule_id?: string | null
+          session_id?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_behavior_events_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "lead_scoring_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_magnet_downloads: {
         Row: {
           created_at: string
@@ -908,6 +1014,129 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      lead_scores: {
+        Row: {
+          assigned_to: string | null
+          company_domain: string | null
+          company_name: string | null
+          company_size: string | null
+          contact_name: string | null
+          created_at: string | null
+          crm_id: string | null
+          crm_synced: boolean | null
+          email: string | null
+          first_visit: string | null
+          hot_lead_threshold: number | null
+          id: string
+          industry: string | null
+          is_hot_lead: boolean | null
+          last_activity: string | null
+          lead_status: string | null
+          location: string | null
+          notes: string | null
+          phone: string | null
+          total_score: number | null
+          updated_at: string | null
+          visit_count: number | null
+          visitor_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_domain?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          crm_id?: string | null
+          crm_synced?: boolean | null
+          email?: string | null
+          first_visit?: string | null
+          hot_lead_threshold?: number | null
+          id?: string
+          industry?: string | null
+          is_hot_lead?: boolean | null
+          last_activity?: string | null
+          lead_status?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          total_score?: number | null
+          updated_at?: string | null
+          visit_count?: number | null
+          visitor_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          company_domain?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          crm_id?: string | null
+          crm_synced?: boolean | null
+          email?: string | null
+          first_visit?: string | null
+          hot_lead_threshold?: number | null
+          id?: string
+          industry?: string | null
+          is_hot_lead?: boolean | null
+          last_activity?: string | null
+          lead_status?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          total_score?: number | null
+          updated_at?: string | null
+          visit_count?: number | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      lead_scoring_rules: {
+        Row: {
+          company_size_filter: string[] | null
+          created_at: string | null
+          decay_days: number | null
+          description: string | null
+          id: string
+          industry_specific: string[] | null
+          is_active: boolean | null
+          name: string
+          page_pattern: string | null
+          points: number
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_size_filter?: string[] | null
+          created_at?: string | null
+          decay_days?: number | null
+          description?: string | null
+          id?: string
+          industry_specific?: string[] | null
+          is_active?: boolean | null
+          name: string
+          page_pattern?: string | null
+          points?: number
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_size_filter?: string[] | null
+          created_at?: string | null
+          decay_days?: number | null
+          description?: string | null
+          id?: string
+          industry_specific?: string[] | null
+          is_active?: boolean | null
+          name?: string
+          page_pattern?: string | null
+          points?: number
+          trigger_type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1377,9 +1606,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_lead_score: {
+        Args: { p_visitor_id: string }
+        Returns: number
+      }
       check_is_admin: {
         Args: { check_user_id: string }
         Returns: boolean
+      }
+      cleanup_old_lead_data: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       current_user_is_admin: {
         Args: Record<PropertyKey, never>
