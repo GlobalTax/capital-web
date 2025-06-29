@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 import AdminDashboardHome from './AdminDashboardHome';
-import ModernDashboardPage from './dashboard/ModernDashboardPage';
+import ModernDashboardPage from '../dashboard/ModernDashboardPage';
 import BlogPostsManagerV2 from './BlogPostsManagerV2';
 import SectorReportsGenerator from './SectorReportsGenerator';
 import CaseStudiesManager from './CaseStudiesManager';
