@@ -96,6 +96,42 @@ export type Database = {
         }
         Relationships: []
       }
+      business_metrics: {
+        Row: {
+          avg_deal_size: number
+          conversion_rate: number
+          created_at: string
+          deal_count: number
+          id: string
+          period_end: string
+          period_start: string
+          revenue_amount: number
+          updated_at: string
+        }
+        Insert: {
+          avg_deal_size?: number
+          conversion_rate?: number
+          created_at?: string
+          deal_count?: number
+          id?: string
+          period_end: string
+          period_start: string
+          revenue_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_deal_size?: number
+          conversion_rate?: number
+          created_at?: string
+          deal_count?: number
+          id?: string
+          period_end?: string
+          period_start?: string
+          revenue_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       carousel_logos: {
         Row: {
           company_name: string
@@ -575,6 +611,80 @@ export type Database = {
         }
         Relationships: []
       }
+      content_analytics: {
+        Row: {
+          avg_time_on_page: number
+          blog_post_id: string | null
+          bounce_rate: number
+          created_at: string
+          engagement_score: number
+          id: string
+          page_views: number
+          period_date: string
+          unique_visitors: number
+          updated_at: string
+        }
+        Insert: {
+          avg_time_on_page?: number
+          blog_post_id?: string | null
+          bounce_rate?: number
+          created_at?: string
+          engagement_score?: number
+          id?: string
+          page_views?: number
+          period_date: string
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_time_on_page?: number
+          blog_post_id?: string | null
+          bounce_rate?: number
+          created_at?: string
+          engagement_score?: number
+          id?: string
+          page_views?: number
+          period_date?: string
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_analytics_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dashboard_cache: {
+        Row: {
+          cache_data: Json
+          cache_key: string
+          created_at: string
+          expires_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          cache_data: Json
+          cache_key: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          cache_data?: Json
+          cache_key?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       key_statistics: {
         Row: {
           display_locations: string[] | null
@@ -695,6 +805,39 @@ export type Database = {
           multiple_range?: string
           sector_name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_metrics: {
+        Row: {
+          active_users: number
+          api_response_time: number
+          created_at: string
+          error_rate: number
+          id: string
+          recorded_at: string
+          server_load: number
+          uptime_percentage: number
+        }
+        Insert: {
+          active_users?: number
+          api_response_time?: number
+          created_at?: string
+          error_rate?: number
+          id?: string
+          recorded_at?: string
+          server_load?: number
+          uptime_percentage?: number
+        }
+        Update: {
+          active_users?: number
+          api_response_time?: number
+          created_at?: string
+          error_rate?: number
+          id?: string
+          recorded_at?: string
+          server_load?: number
+          uptime_percentage?: number
         }
         Relationships: []
       }
