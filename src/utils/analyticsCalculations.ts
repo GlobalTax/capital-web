@@ -1,4 +1,3 @@
-
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import type { 
@@ -28,7 +27,7 @@ export const fetchRevenueMetrics = async (dateRange: DateRange): Promise<Busines
 
 export const fetchHistoricalRevenueMetrics = async (): Promise<BusinessMetrics[]> => {
   const endDate = new Date();
-  const startDate = subMonths(startDate, 6);
+  const startDate = subMonths(endDate, 6);
   
   const { data, error } = await supabase
     .from('business_metrics')
