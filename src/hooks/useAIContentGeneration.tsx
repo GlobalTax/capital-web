@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -94,6 +93,19 @@ export const useAIContentGeneration = () => {
     });
   };
 
+  // Nuevos métodos para lead magnets
+  const generateLeadMagnetContent = async (type: 'report' | 'whitepaper' | 'checklist' | 'template', sector: string, title: string) => {
+    return generateContent({
+      type: 'leadmagnet',
+      prompt: `Generate ${type} content for ${sector} sector: ${title}`,
+      context: { 
+        title, 
+        category: sector,
+        contentType: type 
+      }
+    });
+  };
+
   return {
     isGenerating,
     generateTitle,
@@ -101,5 +113,6 @@ export const useAIContentGeneration = () => {
     generateExcerpt,
     generateSEO,
     generateTags,
+    generateLeadMagnetContent,
   };
 };

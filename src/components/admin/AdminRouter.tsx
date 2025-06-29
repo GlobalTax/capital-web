@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AdminDashboardHome from './AdminDashboardHome';
@@ -15,6 +14,7 @@ import TeamMembersManager from './TeamMembersManager';
 import TestimonialsManager from './TestimonialsManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import CarouselLogosManager from './CarouselLogosManager';
+import LeadMagnetsManager from './LeadMagnetsManager';
 
 const AdminRouter = () => {
   return (
@@ -33,6 +33,7 @@ const AdminRouter = () => {
       <Route path="testimonials" element={<TestimonialsManager />} />
       <Route path="carousel-testimonials" element={<CarouselTestimonialsManager />} />
       <Route path="carousel-logos" element={<CarouselLogosManager />} />
+      <Route path="lead-magnets" element={<LeadMagnetsManager />} />
     </Routes>
   );
 };

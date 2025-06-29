@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -35,7 +34,8 @@ export const useAdminLayout = () => {
         'carousel-testimonials': 'Testimonios Carrusel',
         'carousel-logos': 'Logos Carrusel',
         'contact-leads': 'Leads de Contacto',
-        'collaborator-applications': 'Solicitudes Colaboradores'
+        'collaborator-applications': 'Solicitudes Colaboradores',
+        'lead-magnets': 'Lead Magnets'
       };
 
       if (sectionTitles[section]) {

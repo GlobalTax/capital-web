@@ -762,6 +762,155 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_templates: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          template_config: Json | null
+          template_html: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          template_config?: Json | null
+          template_html: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          template_config?: Json | null
+          template_html?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lead_magnet_downloads: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          lead_magnet_id: string
+          referrer: string | null
+          user_agent: string | null
+          user_company: string | null
+          user_email: string
+          user_name: string | null
+          user_phone: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          lead_magnet_id: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_company?: string | null
+          user_email: string
+          user_name?: string | null
+          user_phone?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          lead_magnet_id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_company?: string | null
+          user_email?: string
+          user_name?: string | null
+          user_phone?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_magnet_downloads_lead_magnet_id_fkey"
+            columns: ["lead_magnet_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_magnets: {
+        Row: {
+          content: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          download_count: number
+          featured_image_url: string | null
+          file_url: string | null
+          id: string
+          landing_page_slug: string | null
+          lead_conversion_count: number
+          meta_description: string | null
+          meta_title: string | null
+          sector: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          download_count?: number
+          featured_image_url?: string | null
+          file_url?: string | null
+          id?: string
+          landing_page_slug?: string | null
+          lead_conversion_count?: number
+          meta_description?: string | null
+          meta_title?: string | null
+          sector: string
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          download_count?: number
+          featured_image_url?: string | null
+          file_url?: string | null
+          id?: string
+          landing_page_slug?: string | null
+          lead_conversion_count?: number
+          meta_description?: string | null
+          meta_title?: string | null
+          sector?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
           created_at: string

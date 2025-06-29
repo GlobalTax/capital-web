@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -152,6 +151,18 @@ const data = {
           title: "Logos Carrusel",
           url: "/admin/carousel-logos",
           icon: Image,
+          isActive: false,
+        },
+      ],
+    },
+    {
+      title: "Lead Generation",
+      items: [
+        {
+          title: "Lead Magnets",
+          url: "/admin/lead-magnets",
+          icon: BookOpen,
+          badge: "NEW",
           isActive: false,
         },
       ],

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -8,7 +7,7 @@ const corsHeaders = {
 }
 
 interface LeadData {
-  type: 'contact' | 'collaborator';
+  type: 'contact' | 'collaborator' | 'lead_magnet_download';
   data: any;
 }
 
@@ -61,6 +60,24 @@ serve(async (req) => {
         created_at: new Date().toISOString(),
         ip_address: data.ip_address,
         user_agent: data.user_agent,
+      };
+    } else if (type === 'lead_magnet_download') {
+      leadData = {
+        lead_type: 'lead_magnet_download',
+        full_name: data.user_name,
+        email: data.user_email,
+        phone: data.user_phone,
+        company: data.user_company,
+        lead_magnet_id: data.lead_magnet_id,
+        status: 'new',
+        source: 'capittal_lead_magnets',
+        created_at: new Date().toISOString(),
+        ip_address: data.ip_address,
+        user_agent: data.user_agent,
+        referrer: data.referrer,
+        utm_source: data.utm_source,
+        utm_medium: data.utm_medium,
+        utm_campaign: data.utm_campaign,
       };
     }
 
