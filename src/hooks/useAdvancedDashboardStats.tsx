@@ -8,6 +8,8 @@ import {
   fetchContentMetrics, 
   fetchSystemMetrics,
   fetchTopPerformingPosts,
+  fetchHistoricalRevenueMetrics,
+  fetchHistoricalContentMetrics,
   calculateAdvancedMetrics,
   generateSampleMetrics
 } from '@/utils/analyticsCalculations';
@@ -21,6 +23,10 @@ export const useAdvancedDashboardStats = () => {
     end: new Date()
   });
 
+  // Datos adicionales para gráficos
+  const [historicalRevenueData, setHistoricalRevenueData] = useState<any[]>([]);
+  const [historicalContentData, setHistoricalContentData] = useState<any[]>([]);
+
   const fetchAdvancedStats = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -29,14 +35,34 @@ export const useAdvancedDashboardStats = () => {
       console.log('Fetching advanced dashboard stats for date range:', dateRange);
 
       // Fetch parallel data
-      const [revenueData, contentData, systemData, topPosts] = await Promise.all([
+      const [
+        revenueData, 
+        contentData, 
+        systemData, 
+        topPosts,
+        historicalRevenue,
+        historicalContent
+      ] = await Promise.all([
         fetchRevenueMetrics(dateRange),
         fetchContentMetrics(dateRange),
         fetchSystemMetrics(),
-        fetchTopPerformingPosts()
+        fetchTopPerformingPosts(),
+        fetchHistoricalRevenueMetrics(),
+        fetchHistoricalContentMetrics()
       ]);
 
-      console.log('Fetched data:', { revenueData, contentData, systemData, topPosts });
+      console.log('Fetched data:', { 
+        revenueData, 
+        contentData, 
+        systemData, 
+        topPosts,
+        historicalRevenue,
+        historicalContent
+      });
+
+      // Set historical data for charts
+      setHistoricalRevenueData(historicalRevenue);
+      setHistoricalContentData(historicalContent);
 
       // Calculate advanced metrics
       const calculatedStats = calculateAdvancedMetrics(revenueData, contentData, systemData);
@@ -90,6 +116,8 @@ export const useAdvancedDashboardStats = () => {
     isLoading,
     error,
     dateRange,
+    historicalRevenueData,
+    historicalContentData,
     updateDateRange,
     refetch,
     generateSampleData

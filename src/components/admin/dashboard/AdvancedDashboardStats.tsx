@@ -15,19 +15,24 @@ import {
   Calendar
 } from 'lucide-react';
 import type { AdvancedDashboardStats } from '@/types/dashboard';
+import DashboardCharts from './DashboardCharts';
 
 interface AdvancedDashboardStatsProps {
   stats: AdvancedDashboardStats;
   onRefresh: () => void;
   onGenerateSample: () => void;
   isLoading?: boolean;
+  historicalRevenueData?: any[];
+  historicalContentData?: any[];
 }
 
 const AdvancedDashboardStatsComponent = ({ 
   stats, 
   onRefresh, 
   onGenerateSample, 
-  isLoading = false 
+  isLoading = false,
+  historicalRevenueData = [],
+  historicalContentData = []
 }: AdvancedDashboardStatsProps) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
@@ -157,6 +162,13 @@ const AdvancedDashboardStatsComponent = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* Gráficos Interactivos */}
+      <DashboardCharts 
+        stats={stats}
+        revenueData={historicalRevenueData}
+        contentData={historicalContentData}
+      />
 
       {/* Métricas del Sistema */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

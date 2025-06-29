@@ -26,6 +26,25 @@ export const fetchRevenueMetrics = async (dateRange: DateRange): Promise<Busines
   return data || [];
 };
 
+export const fetchHistoricalRevenueMetrics = async (): Promise<BusinessMetrics[]> => {
+  const endDate = new Date();
+  const startDate = subMonths(startDate, 6);
+  
+  const { data, error } = await supabase
+    .from('business_metrics')
+    .select('*')
+    .gte('period_start', format(startDate, 'yyyy-MM-dd'))
+    .lte('period_end', format(endDate, 'yyyy-MM-dd'))
+    .order('period_start', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching historical revenue metrics:', error);
+    return [];
+  }
+
+  return data || [];
+};
+
 export const fetchContentMetrics = async (dateRange: DateRange): Promise<ContentAnalytics[]> => {
   const { data, error } = await supabase
     .from('content_analytics')
@@ -36,6 +55,25 @@ export const fetchContentMetrics = async (dateRange: DateRange): Promise<Content
 
   if (error) {
     console.error('Error fetching content metrics:', error);
+    return [];
+  }
+
+  return data || [];
+};
+
+export const fetchHistoricalContentMetrics = async (): Promise<ContentAnalytics[]> => {
+  const endDate = new Date();
+  const startDate = subMonths(endDate, 6);
+  
+  const { data, error } = await supabase
+    .from('content_analytics')
+    .select('*')
+    .gte('period_date', format(startDate, 'yyyy-MM-dd'))
+    .lte('period_date', format(endDate, 'yyyy-MM-dd'))
+    .order('period_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching historical content metrics:', error);
     return [];
   }
 
@@ -136,45 +174,71 @@ export const calculateAdvancedMetrics = (
 
 export const generateSampleMetrics = async () => {
   const currentDate = new Date();
-  const startDate = startOfMonth(currentDate);
-  const endDate = endOfMonth(currentDate);
+  
+  // Generar datos históricos para los últimos 6 meses
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = startOfMonth(subMonths(currentDate, i));
+    const monthEnd = endOfMonth(subMonths(currentDate, i));
+    months.push({ start: monthStart, end: monthEnd });
+  }
 
-  // Generar métricas de negocio de ejemplo
-  const { error: businessError } = await supabase
-    .from('business_metrics')
-    .upsert({
-      revenue_amount: Math.floor(Math.random() * 100000) + 50000,
-      deal_count: Math.floor(Math.random() * 20) + 5,
-      conversion_rate: Math.random() * 20 + 5,
-      avg_deal_size: Math.floor(Math.random() * 50000) + 10000,
-      period_start: format(startDate, 'yyyy-MM-dd'),
-      period_end: format(endDate, 'yyyy-MM-dd')
-    });
+  // Generar métricas de negocio históricas
+  for (const month of months) {
+    const baseRevenue = 50000 + Math.random() * 50000;
+    const dealCount = Math.floor(Math.random() * 15) + 5;
+    
+    const { error: businessError } = await supabase
+      .from('business_metrics')
+      .upsert({
+        revenue_amount: baseRevenue,
+        deal_count: dealCount,
+        conversion_rate: Math.random() * 15 + 10,
+        avg_deal_size: baseRevenue / dealCount,
+        period_start: format(month.start, 'yyyy-MM-dd'),
+        period_end: format(month.end, 'yyyy-MM-dd')
+      });
 
-  // Generar métricas de contenido de ejemplo
-  const { error: contentError } = await supabase
-    .from('content_analytics')
-    .upsert({
-      page_views: Math.floor(Math.random() * 1000) + 100,
-      unique_visitors: Math.floor(Math.random() * 500) + 50,
-      avg_time_on_page: Math.floor(Math.random() * 300) + 60,
-      bounce_rate: Math.random() * 50 + 20,
-      engagement_score: Math.random() * 100 + 50,
-      period_date: format(currentDate, 'yyyy-MM-dd')
-    });
+    if (businessError) {
+      console.error('Error generating business metrics:', businessError);
+    }
+  }
 
-  // Generar métricas del sistema de ejemplo
+  // Generar métricas de contenido históricas
+  for (const month of months) {
+    const daysInMonth = month.end.getDate();
+    for (let day = 1; day <= Math.min(daysInMonth, 5); day++) {
+      const date = new Date(month.start.getFullYear(), month.start.getMonth(), day);
+      
+      const { error: contentError } = await supabase
+        .from('content_analytics')
+        .upsert({
+          page_views: Math.floor(Math.random() * 800) + 200,
+          unique_visitors: Math.floor(Math.random() * 400) + 100,
+          avg_time_on_page: Math.floor(Math.random() * 240) + 120,
+          bounce_rate: Math.random() * 40 + 30,
+          engagement_score: Math.random() * 80 + 40,
+          period_date: format(date, 'yyyy-MM-dd')
+        });
+
+      if (contentError) {
+        console.error('Error generating content metrics:', contentError);
+      }
+    }
+  }
+
+  // Generar métricas del sistema
   const { error: systemError } = await supabase
     .from('system_metrics')
     .insert({
-      api_response_time: Math.random() * 500 + 100,
-      error_rate: Math.random() * 5,
-      uptime_percentage: 99 + Math.random(),
-      active_users: Math.floor(Math.random() * 100) + 10,
-      server_load: Math.random() * 80 + 10
+      api_response_time: Math.random() * 400 + 150,
+      error_rate: Math.random() * 3,
+      uptime_percentage: 99.5 + Math.random() * 0.4,
+      active_users: Math.floor(Math.random() * 80) + 20,
+      server_load: Math.random() * 70 + 20
     });
 
-  if (businessError) console.error('Error generating business metrics:', businessError);
-  if (contentError) console.error('Error generating content metrics:', contentError);
-  if (systemError) console.error('Error generating system metrics:', systemError);
+  if (systemError) {
+    console.error('Error generating system metrics:', systemError);
+  }
 };
