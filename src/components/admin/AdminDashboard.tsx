@@ -30,7 +30,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         <AdminSidebar />
         <SidebarInset className="flex-1">
           <AdminHeader onLogout={onLogout} />
-          <main className="flex-1 p-6">
+          <main className="flex-1 overflow-auto bg-gray-50">
             <Routes>
               <Route index element={<AdminDashboardHome />} />
               <Route path="blog-v2" element={<BlogPostsManagerV2 />} />

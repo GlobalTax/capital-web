@@ -23,7 +23,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
           <div className="px-6 py-4 bg-white border-b border-gray-200">
             <AdminBreadcrumbs items={breadcrumbs} />
           </div>
-          <main className="flex-1 p-6 overflow-auto bg-white">
+          <main className="flex-1 overflow-auto bg-gray-50">
             {children}
           </main>
         </div>
