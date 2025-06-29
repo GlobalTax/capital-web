@@ -24,11 +24,13 @@ export interface AnalyticsConfig {
   enableCompanyTracking?: boolean;
   enableEnrichment?: boolean;
   enableAlerting?: boolean;
+  enableAttribution?: boolean;
 }
 
 import { CompanyEnrichmentService, LeadIntelligence } from './CompanyEnrichment';
 import { LeadScoringEngine } from './LeadScoringEngine';
 import { AlertingSystem } from './AlertingSystem';
+import { AttributionEngine, TouchPoint } from './AttributionEngine';
 
 export class AnalyticsManager {
   private config: AnalyticsConfig;
@@ -37,13 +39,17 @@ export class AnalyticsManager {
   private enrichmentService: CompanyEnrichmentService;
   private scoringEngine: LeadScoringEngine;
   private alertingSystem: AlertingSystem;
+  private attributionEngine: AttributionEngine;
   private leadIntelligence: Map<string, LeadIntelligence> = new Map();
+  private currentSessionId: string;
 
   constructor(config: AnalyticsConfig) {
     this.config = config;
     this.enrichmentService = new CompanyEnrichmentService();
     this.scoringEngine = new LeadScoringEngine();
     this.alertingSystem = new AlertingSystem();
+    this.attributionEngine = new AttributionEngine();
+    this.currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.init();
   }
 
@@ -111,7 +117,7 @@ export class AnalyticsManager {
     console.log('Company tracking initialized with ID:', trackingId);
   }
 
-  // Unified Event Tracking
+  // Enhanced Event Tracking with Attribution
   trackEvent(eventName: string, properties: Record<string, any> = {}) {
     const event: AnalyticsEvent = {
       name: eventName,
@@ -127,6 +133,11 @@ export class AnalyticsManager {
     // Store locally
     this.events.push(event);
 
+    // Enhanced attribution tracking
+    if (this.config.enableAttribution) {
+      this.trackAttributionTouchPoint(eventName, properties);
+    }
+
     // Send to GA4
     if (this.config.ga4MeasurementId && (window as any).gtag) {
       (window as any).gtag('event', eventName, properties);
@@ -138,6 +149,82 @@ export class AnalyticsManager {
     }
 
     console.log('Event tracked:', event);
+  }
+
+  private trackAttributionTouchPoint(eventName: string, properties: Record<string, any>) {
+    // Extract attribution data from URL parameters or referrer
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrer = document.referrer;
+    
+    let channel = 'Direct';
+    let source = 'direct';
+    let medium = 'none';
+    let campaign = undefined;
+
+    // Detect channel from URL parameters
+    if (urlParams.get('utm_source')) {
+      source = urlParams.get('utm_source') || 'unknown';
+      medium = urlParams.get('utm_medium') || 'unknown';
+      campaign = urlParams.get('utm_campaign') || undefined;
+      
+      if (medium.includes('cpc') || medium.includes('ppc')) {
+        channel = 'Paid Search';
+      } else if (medium.includes('social')) {
+        channel = 'Social Media';
+      } else if (medium.includes('email')) {
+        channel = 'Email';
+      } else {
+        channel = 'Other';
+      }
+    } else if (referrer) {
+      // Detect channel from referrer
+      if (referrer.includes('google.')) {
+        channel = 'SEO';
+        source = 'google';
+        medium = 'organic';
+      } else if (referrer.includes('linkedin.')) {
+        channel = 'LinkedIn';
+        source = 'linkedin';
+        medium = 'social';
+      } else if (referrer.includes('facebook.')) {
+        channel = 'Facebook';
+        source = 'facebook';
+        medium = 'social';
+      } else {
+        channel = 'Referral';
+        source = 'referral';
+        medium = 'referral';
+      }
+    }
+
+    // Determine event type
+    let eventType: TouchPoint['eventType'] = 'page_view';
+    if (eventName === 'form_submit' || eventName === 'contact_form_submit') {
+      eventType = 'form_submission';
+    } else if (eventName === 'calculator_used' || eventName === 'valuation_calculated') {
+      eventType = 'calculator_use';
+    } else if (eventName === 'pdf_download' || eventName === 'resource_download') {
+      eventType = 'download';
+    } else if (eventName === 'contact_clicked' || eventName === 'phone_clicked') {
+      eventType = 'contact';
+    }
+
+    const touchPoint: TouchPoint = {
+      id: `touch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      channel,
+      source,
+      medium,
+      campaign,
+      content: urlParams.get('utm_content') || undefined,
+      page: window.location.pathname,
+      companyDomain: properties.companyDomain || 'unknown.com',
+      sessionId: this.currentSessionId,
+      eventType,
+      value: properties.value || (eventType === 'form_submission' ? 1500 : undefined)
+    };
+
+    this.attributionEngine.addTouchPoint(touchPoint);
   }
 
   // Page View Tracking
@@ -230,7 +317,8 @@ export class AnalyticsManager {
       company_name: companyData.name,
       company_domain: companyData.domain,
       company_industry: companyData.industry,
-      lead_score: this.calculateLeadScore(companyData.domain)
+      lead_score: this.calculateLeadScore(companyData.domain),
+      companyDomain: companyData.domain // For attribution tracking
     });
 
     console.log('Company identified:', companyData);
@@ -275,6 +363,27 @@ export class AnalyticsManager {
     }
   }
 
+  // New Attribution Methods
+  getAttributionReport(modelType: 'first_touch' | 'last_touch' | 'linear' | 'time_decay' | 'position_based' = 'linear', dateRange?: { start: Date; end: Date }) {
+    return this.attributionEngine.getAttributionReport(modelType, dateRange);
+  }
+
+  getFunnelAnalysis() {
+    return this.attributionEngine.getFunnelAnalysis();
+  }
+
+  getCustomerJourneyMap() {
+    return this.attributionEngine.getCustomerJourneyMap();
+  }
+
+  getConversionPaths() {
+    return this.attributionEngine.getAllConversionPaths();
+  }
+
+  getTouchPoints() {
+    return this.attributionEngine.getAllTouchPoints();
+  }
+
   // New methods for enhanced analytics
   getLeadIntelligence(domain: string): LeadIntelligence | undefined {
     return this.leadIntelligence.get(domain);
@@ -315,12 +424,14 @@ export class AnalyticsManager {
       .slice(0, limit);
   }
 
-  // Analytics Summary
+  // Enhanced Analytics Summary with Attribution Data
   getAnalyticsSummary() {
     const events = this.getEvents();
     const companies = this.getCompanies();
     const leadIntelligence = this.getAllLeadIntelligence();
     const alerts = this.getAlerts({ isRead: false });
+    const attributionReport = this.getAttributionReport();
+    const funnelAnalysis = this.getFunnelAnalysis();
     
     return {
       totalEvents: events.length,
@@ -341,7 +452,15 @@ export class AnalyticsManager {
         low: alerts.filter(a => a.priority === 'low').length
       },
       topIndustries: this.getTopIndustries(),
-      conversionFunnel: this.getConversionFunnel()
+      conversionFunnel: this.getConversionFunnel(),
+      // New Attribution Data
+      attribution: {
+        totalConversions: attributionReport?.totalConversions || 0,
+        totalAttributedValue: attributionReport?.totalValue || 0,
+        topChannels: attributionReport?.channelPerformance?.slice(0, 5) || [],
+        averagePathLength: attributionReport?.averagePathLength || 0,
+        conversionRate: funnelAnalysis?.conversionRate || 0
+      }
     };
   }
 
