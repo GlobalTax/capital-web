@@ -685,6 +685,50 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_reports: {
+        Row: {
+          config_id: string | null
+          error_message: string | null
+          generated_at: string
+          id: string
+          pdf_url: string | null
+          recipients_sent: string[] | null
+          report_data: Json
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          config_id?: string | null
+          error_message?: string | null
+          generated_at?: string
+          id?: string
+          pdf_url?: string | null
+          recipients_sent?: string[] | null
+          report_data: Json
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          config_id?: string | null
+          error_message?: string | null
+          generated_at?: string
+          id?: string
+          pdf_url?: string | null
+          recipients_sent?: string[] | null
+          report_data?: Json
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_reports_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "report_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       key_statistics: {
         Row: {
           display_locations: string[] | null
@@ -735,6 +779,48 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      report_configs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          metrics: string[]
+          name: string
+          recipients: string[]
+          schedule: string
+          template: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          metrics?: string[]
+          name: string
+          recipients?: string[]
+          schedule: string
+          template: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          metrics?: string[]
+          name?: string
+          recipients?: string[]
+          schedule?: string
+          template?: string
+          type?: string
           updated_at?: string
         }
         Relationships: []
