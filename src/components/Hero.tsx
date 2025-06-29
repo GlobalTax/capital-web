@@ -56,8 +56,8 @@ const Hero = () => {
           <div className="relative">
             <div className="aspect-square bg-gradient-to-br from-gray-900 to-gray-700 rounded-2xl overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=800&h=800&q=80" 
-                alt="Profesional trabajando en análisis financiero" 
+                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=800&q=80" 
+                alt="Laptop profesional encendido mostrando análisis financiero" 
                 className="w-full h-full object-cover"
               />
             </div>
