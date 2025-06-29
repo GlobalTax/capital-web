@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import AdminDashboardHome from './AdminDashboardHome';
 import LeadScoringIntelligenceDashboard from './LeadScoringIntelligenceDashboard';
 import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
 import MarketingAutomationDashboard from './MarketingAutomationDashboard';
+import MarketingHubDashboard from './MarketingHubDashboard';
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
@@ -43,6 +43,8 @@ const AdminDashboard = () => {
         return <MarketingIntelligenceDashboard />;
       case 'marketing-automation':
         return <MarketingAutomationDashboard />;
+      case 'marketing-hub':
+        return <MarketingHubDashboard />;
       default:
         return <AdminDashboardHome />;
     }
@@ -74,6 +76,9 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-automation')}>
               Marketing Automation
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-hub')}>
+              🚀 Marketing Hub
             </Button>
           </CardContent>
         </Card>
