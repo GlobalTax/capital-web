@@ -54,75 +54,78 @@ import Customization from '@/pages/documentacion-ma/Customization';
 import Typography from '@/pages/documentacion-ma/Typography';
 import Spacing from '@/pages/documentacion-ma/Spacing';
 import Variables from '@/pages/documentacion-ma/Variables';
+import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <div className="App">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/nosotros" element={<Nosotros />} />
-              <Route path="/equipo" element={<Equipo />} />
-              <Route path="/contacto" element={<Contacto />} />
-              <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
-              <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
-              <Route path="/venta-empresas" element={<VentaEmpresas />} />
-              <Route path="/compra-empresas" element={<CompraEmpresas />} />
-              <Route path="/casos-exito" element={<CasosExito />} />
-              <Route path="/admin/*" element={<Admin />} />
-              <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
-              
-              {/* Por Qué Elegirnos routes */}
-              <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
-              
-              {/* Servicios routes */}
-              <Route path="/servicios/valoraciones" element={<Valoraciones />} />
-              <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
-              <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
-              <Route path="/servicios/due-diligence" element={<DueDiligence />} />
-              <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
-              
-              {/* Sectores routes - Updated and new */}
-              <Route path="/sectores/healthcare" element={<Healthcare />} />
-              <Route path="/sectores/industrial" element={<Industrial />} />
-              <Route path="/sectores/tecnologia" element={<Tecnologia />} />
-              <Route path="/sectores/financial-services" element={<FinancialServices />} />
-              <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
-              <Route path="/sectores/energia" element={<Energia />} />
-              <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
-              
-              {/* Recursos routes */}
-              <Route path="/recursos/blog" element={<Blog />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              
-              {/* Documentación M&A routes */}
-              <Route path="/documentacion-ma" element={<DocumentacionMA />} />
-              <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
-              <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
-              <Route path="/documentacion-ma/resultados" element={<Resultados />} />
-              <Route path="/documentacion-ma/fase-1" element={<Fase1 />} />
-              <Route path="/documentacion-ma/fase-2-lucha" element={<Fase2Lucha />} />
-              <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
-              <Route path="/documentacion-ma/customization" element={<Customization />} />
-              <Route path="/documentacion-ma/typography" element={<Typography />} />
-              <Route path="/documentacion-ma/spacing" element={<Spacing />} />
-              <Route path="/documentacion-ma/variables" element={<Variables />} />
-              
-              <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-              <Route path="/terminos-uso" element={<TerminosUso />} />
-              <Route path="/cookies" element={<Cookies />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <AdminAccess />
-            <Toaster />
-          </div>
-        </Router>
-      </AuthProvider>
+      <ErrorBoundaryProvider>
+        <AuthProvider>
+          <Router>
+            <div className="App">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/nosotros" element={<Nosotros />} />
+                <Route path="/equipo" element={<Equipo />} />
+                <Route path="/contacto" element={<Contacto />} />
+                <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
+                <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
+                <Route path="/venta-empresas" element={<VentaEmpresas />} />
+                <Route path="/compra-empresas" element={<CompraEmpresas />} />
+                <Route path="/casos-exito" element={<CasosExito />} />
+                <Route path="/admin/*" element={<Admin />} />
+                <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
+                
+                {/* Por Qué Elegirnos routes */}
+                <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
+                
+                {/* Servicios routes */}
+                <Route path="/servicios/valoraciones" element={<Valoraciones />} />
+                <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
+                <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
+                <Route path="/servicios/due-diligence" element={<DueDiligence />} />
+                <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
+                
+                {/* Sectores routes - Updated and new */}
+                <Route path="/sectores/healthcare" element={<Healthcare />} />
+                <Route path="/sectores/industrial" element={<Industrial />} />
+                <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+                <Route path="/sectores/financial-services" element={<FinancialServices />} />
+                <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
+                <Route path="/sectores/energia" element={<Energia />} />
+                <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
+                
+                {/* Recursos routes */}
+                <Route path="/recursos/blog" element={<Blog />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                
+                {/* Documentación M&A routes */}
+                <Route path="/documentacion-ma" element={<DocumentacionMA />} />
+                <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
+                <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
+                <Route path="/documentacion-ma/resultados" element={<Resultados />} />
+                <Route path="/documentacion-ma/fase-1" element={<Fase1 />} />
+                <Route path="/documentacion-ma/fase-2-lucha" element={<Fase2Lucha />} />
+                <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
+                <Route path="/documentacion-ma/customization" element={<Customization />} />
+                <Route path="/documentacion-ma/typography" element={<Typography />} />
+                <Route path="/documentacion-ma/spacing" element={<Spacing />} />
+                <Route path="/documentacion-ma/variables" element={<Variables />} />
+                
+                <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+                <Route path="/terminos-uso" element={<TerminosUso />} />
+                <Route path="/cookies" element={<Cookies />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <AdminAccess />
+              <Toaster />
+            </div>
+          </Router>
+        </AuthProvider>
+      </ErrorBoundaryProvider>
     </QueryClientProvider>
   );
 }
