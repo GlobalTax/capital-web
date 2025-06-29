@@ -22,6 +22,7 @@ export const useAdminLayout = () => {
     if (segments.length > 1) {
       const section = segments[1];
       const sectionTitles: Record<string, string> = {
+        'marketing-intelligence': 'Marketing Intelligence',
         'case-studies': 'Casos de Éxito',
         'operations': 'Operaciones',
         'blog': 'Blog Posts',

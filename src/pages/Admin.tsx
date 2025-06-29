@@ -2,18 +2,17 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminAuth from '@/components/admin/AdminAuth';
-import AdminDashboard from '@/components/admin/AdminDashboard';
+import AdminRouter from '@/components/admin/AdminRouter';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 const Admin = () => {
   const { user, isLoading } = useAuth();
 
   const handleAuthSuccess = () => {
-    // El contexto maneja automáticamente los cambios de estado
     console.log('Auth success - context will handle state updates');
   };
 
   const handleLogout = () => {
-    // El contexto maneja automáticamente el logout
     console.log('Logout handled by context');
   };
 
@@ -32,7 +31,11 @@ const Admin = () => {
     return <AdminAuth onAuthSuccess={handleAuthSuccess} />;
   }
 
-  return <AdminDashboard onLogout={handleLogout} />;
+  return (
+    <AdminLayout onLogout={handleLogout}>
+      <AdminRouter />
+    </AdminLayout>
+  );
 };
 
 export default Admin;

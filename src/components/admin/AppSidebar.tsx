@@ -15,6 +15,7 @@ import {
   Mail,
   UserPlus,
   BookOpen,
+  Brain,
 } from 'lucide-react';
 import { SearchForm } from './SearchForm';
 import { VersionSwitcher } from './VersionSwitcher';
@@ -40,6 +41,13 @@ const data = {
           title: "Inicio",
           url: "/admin",
           icon: LayoutDashboard,
+          isActive: false,
+        },
+        {
+          title: "Marketing Intelligence",
+          url: "/admin/marketing-intelligence",
+          icon: Brain,
+          badge: "AI",
           isActive: false,
         },
       ],
@@ -155,7 +163,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // Función para determinar si una ruta está activa
   const isActive = (url: string) => {
     if (url === '/admin') {
       return currentPath === '/admin';
@@ -163,7 +170,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return currentPath.startsWith(url);
   };
 
-  // Actualizar el estado activo de los items basado en la ruta actual
   const updatedData = {
     ...data,
     navMain: data.navMain.map(group => ({
