@@ -1,115 +1,117 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, FileText, Calculator, Scale, Users } from 'lucide-react';
 
 const Services = () => {
-  const services = [
+  const coreServices = [
     {
-      icon: TrendingUp,
-      title: "Venta de Empresas",
-      description: "Proceso completo de M&A para maximizar el valor de tu empresa. Desde la preparación hasta el cierre de la operación.",
-      features: ["Valoración gratuita", "Marketing estratégico", "Negociación profesional"],
-      link: "/venta-empresas"
+      title: 'Vender Empresa',
+      description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta.',
+      features: ['Valoración precisa', 'Proceso confidencial', 'Acceso a compradores cualificados']
     },
     {
-      icon: Calculator,
-      title: "Valoraciones",
-      description: "Valoraciones profesionales con metodologías reconocidas internacionalmente para toma de decisiones estratégicas.",
-      features: ["Múltiplos de mercado", "DCF detallado", "Análisis comparativo"],
-      link: "/servicios/valoraciones"
+      title: 'Comprar Empresa',
+      description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
+      features: ['Identificación objetivos', 'Due diligence completo', 'Negociación exitosa']
     },
     {
-      icon: FileText,
-      title: "Due Diligence",
-      description: "Análisis exhaustivo de oportunidades de inversión para minimizar riesgos y maximizar el retorno.",
-      features: ["Análisis financiero", "Legal y fiscal", "Operacional"],
-      link: "/servicios/due-diligence"
+      title: 'Valoraciones',
+      description: 'Evaluaciones precisas con metodologías probadas y análisis exhaustivo.',
+      features: ['Múltiples metodologías', 'Análisis comparables', 'Informe detallado']
+    },
+  ];
+
+  const complementaryServices = [
+    {
+      title: 'Fusiones y Adquisiciones',
+      description: 'Asesoramiento integral en operaciones de M&A, desde la estrategia inicial hasta el cierre exitoso de la transacción.',
     },
     {
-      icon: Scale,
-      title: "Asesoramiento Legal",
-      description: "Soporte legal completo en operaciones M&A con nuestro equipo de abogados especializados.",
-      features: ["Contratos M&A", "Estructura legal", "Compliance"],
-      link: "/servicios/asesoramiento-legal"
+      title: 'Due Diligence',
+      description: 'Análisis exhaustivo financiero, legal y comercial para identificar riesgos y oportunidades en cada inversión.',
     },
     {
-      icon: Users,
-      title: "Reestructuraciones",
-      description: "Optimización de la estructura empresarial para mejorar la eficiencia y preparar futuras operaciones.",
-      features: ["Reorganización societaria", "Optimización fiscal", "Governance"],
-      link: "/servicios/reestructuraciones"
-    }
+      title: 'Corporate Finance',
+      description: 'Estructuración financiera, levantamiento de capital y optimización de la estructura de balance.',
+    },
+    {
+      title: 'Reestructuraciones',
+      description: 'Procesos de reestructuración operativa y financiera para maximizar el valor empresarial.',
+    },
+    {
+      title: 'Estrategia Corporativa',
+      description: 'Definición de estrategias de crecimiento inorgánico y identificación de oportunidades de mercado.',
+    },
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section id="servicios" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg badge-text mb-6">
-            Servicios Especializados
-          </div>
-          
-          <h2 className="section-title text-black mb-6">
-            Servicios de M&A de Extremo a Extremo
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+            Nuestros Servicios
           </h2>
-          
-          <p className="section-subtitle max-w-3xl mx-auto">
-            Ofrecemos una gama completa de servicios especializados en M&A, desde la valoración inicial 
-            hasta el cierre exitoso de la operación.
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
           </p>
         </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {services.map((service, index) => {
-            const IconComponent = service.icon;
-            return (
-              <Card key={index} className="capittal-card group">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-black text-white rounded-lg">
-                      <IconComponent className="h-6 w-6" />
-                    </div>
-                  </div>
-                  
-                  <CardTitle className="card-title">
+        {/* Core Services - Enhanced Cards */}
+        <div className="mb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {coreServices.map((service, index) => (
+              <div key={index} className="group">
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-black mb-4">
                     {service.title}
-                  </CardTitle>
+                  </h3>
                   
-                  <CardDescription className="card-description">
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 leading-relaxed text-base">
                     {service.description}
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <ul className="space-y-2 mb-6">
-                    {service.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="help-text flex items-center">
-                        <div className="w-1.5 h-1.5 bg-black rounded-full mr-3 flex-shrink-0"></div>
-                        {feature}
-                      </li>
+                  </p>
+
+                  {/* Features */}
+                  <div className="space-y-3 mb-8">
+                    {service.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center">
+                        <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
+                        <span className="text-gray-700 text-sm">{feature}</span>
+                      </div>
                     ))}
-                  </ul>
-                  
-                  <Button variant="outline" className="w-full group-hover:bg-black group-hover:text-white transition-colors">
-                    <span className="button-label-sm">Más Información</span>
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </div>
+
+                  {/* Button */}
+                  <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
+                    Más información
                   </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* CTA */}
-        <div className="text-center">
-          <Button className="capittal-button button-label bg-black text-white hover:bg-gray-800">
-            Solicitar Consulta Gratuita
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+        {/* Complementary Services - Simplified Cards */}
+        <div>
+          <h3 className="text-xl font-bold text-black text-center mb-8">
+            Servicios Complementarios
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {complementaryServices.map((service, index) => (
+              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group cursor-pointer">
+                <CardContent className="p-6">
+                  <h3 className="text-base font-semibold text-black mb-3">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    {service.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </section>
