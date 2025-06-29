@@ -1,9 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import AdminDashboardHome from './AdminDashboardHome';
 import LeadScoringIntelligenceDashboard from './LeadScoringIntelligenceDashboard';
@@ -11,39 +10,27 @@ import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
 import MarketingAutomationDashboard from './MarketingAutomationDashboard';
 
 const AdminDashboard = () => {
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (!user) {
+      // Redirect will be handled by parent component
+      return;
     }
-  }, [status, router]);
+  }, [user]);
 
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Cargando dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
+  if (!user) {
     return null;
   }
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
     toast({
       title: "👋 Adiós!",
       description: "Has cerrado sesión exitosamente.",
     });
-    router.push('/');
   };
 
   const renderActiveSection = () => {

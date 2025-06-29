@@ -2,7 +2,7 @@
 import React from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
-import { AppSidebar } from './AppSidebar';
+import AppSidebar from './AppSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
 

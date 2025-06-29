@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Home,
@@ -6,7 +7,8 @@ import {
   Users,
   AlertCircle,
   Brain,
-  Workflow
+  Workflow,
+  TrendingUp
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
