@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, LogOut, BarChart3 } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Settings, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface MinimalHeaderProps {
@@ -10,20 +11,12 @@ interface MinimalHeaderProps {
 
 const MinimalHeader = ({ onLogout }: MinimalHeaderProps) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-medium text-sm">C</span>
-            </div>
-            <div>
-              <h1 className="font-medium text-gray-900">Capittal</h1>
-              <p className="text-xs text-gray-500 -mt-0.5">Panel Administrativo</p>
-            </div>
-          </div>
+    <header className="fixed top-0 right-0 left-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
+      <div className="h-16 flex items-center justify-between px-6">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
           
-          <nav className="flex items-center gap-1 ml-8">
+          <nav className="flex items-center gap-1">
             <NavLink
               to="/admin"
               end
@@ -35,7 +28,7 @@ const MinimalHeader = ({ onLogout }: MinimalHeaderProps) => {
                 }`
               }
             >
-              Dashboard
+              Minimalista
             </NavLink>
             <NavLink
               to="/admin/classic"
