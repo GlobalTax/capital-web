@@ -2,9 +2,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { BarChart3, PieChart, TrendingUp, Filter, Calendar, Download } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { TrendingUp, PieChart } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const InteractiveControlPanel = () => {
   const [activeFilter, setActiveFilter] = useState('30d');
@@ -19,11 +18,11 @@ const InteractiveControlPanel = () => {
   ];
 
   const sectorData = [
-    { sector: 'Tecnología', valoraciones: 45, porcentaje: 32 },
-    { sector: 'Retail', valoraciones: 28, porcentaje: 20 },
-    { sector: 'Industrial', valoraciones: 25, porcentaje: 18 },
-    { sector: 'Servicios', valoraciones: 22, porcentaje: 16 },
-    { sector: 'Otros', valoraciones: 20, porcentaje: 14 }
+    { sector: 'Tecnología', valoraciones: 45 },
+    { sector: 'Retail', valoraciones: 28 },
+    { sector: 'Industrial', valoraciones: 25 },
+    { sector: 'Servicios', valoraciones: 22 },
+    { sector: 'Otros', valoraciones: 20 }
   ];
 
   const filters = [
@@ -34,23 +33,23 @@ const InteractiveControlPanel = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
       {/* Gráfico Principal */}
-      <Card className="lg:col-span-2 shadow-lg">
+      <Card className="lg:col-span-2 bg-white border border-gray-100 shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-lg font-light text-gray-900">
+              <TrendingUp className="h-5 w-5 text-gray-600" />
               Valoraciones y Leads
             </CardTitle>
             <div className="flex items-center gap-2">
               {filters.map((filter) => (
                 <Button
                   key={filter.key}
-                  variant={activeFilter === filter.key ? "default" : "outline"}
+                  variant={activeFilter === filter.key ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setActiveFilter(filter.key)}
-                  className="text-xs"
+                  className="text-xs text-gray-600"
                 >
                   {filter.label}
                 </Button>
@@ -61,31 +60,31 @@ const InteractiveControlPanel = () => {
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="mes" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#64748b' }} />
+              <YAxis tick={{ fontSize: 12, fill: '#64748b' }} />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)' 
+                  border: '1px solid #e2e8f0', 
+                  borderRadius: '6px', 
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' 
                 }} 
               />
               <Line 
                 type="monotone" 
                 dataKey="valoraciones" 
-                stroke="#3B82F6" 
-                strokeWidth={3}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                stroke="#64748b" 
+                strokeWidth={2}
+                dot={{ fill: '#64748b', strokeWidth: 2, r: 3 }}
                 name="Valoraciones"
               />
               <Line 
                 type="monotone" 
                 dataKey="leads" 
-                stroke="#10B981" 
-                strokeWidth={3}
-                dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                stroke="#94a3b8" 
+                strokeWidth={2}
+                dot={{ fill: '#94a3b8', strokeWidth: 2, r: 3 }}
                 name="Leads"
               />
             </LineChart>
@@ -94,41 +93,24 @@ const InteractiveControlPanel = () => {
       </Card>
 
       {/* Panel de Sectores */}
-      <Card className="shadow-lg">
+      <Card className="bg-white border border-gray-100 shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <PieChart className="h-5 w-5 text-purple-600" />
+          <CardTitle className="flex items-center gap-2 text-lg font-light text-gray-900">
+            <PieChart className="h-5 w-5 text-gray-600" />
             Top Sectores
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {sectorData.map((item, index) => (
-              <div key={item.sector} className="flex items-center justify-between">
+              <div key={item.sector} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    index === 0 ? 'bg-blue-500' :
-                    index === 1 ? 'bg-green-500' :
-                    index === 2 ? 'bg-purple-500' :
-                    index === 3 ? 'bg-orange-500' : 'bg-gray-400'
-                  }`} />
-                  <span className="text-sm font-medium">{item.sector}</span>
+                  <div className="w-2 h-2 rounded-full bg-gray-400" />
+                  <span className="text-sm text-gray-700">{item.sector}</span>
                 </div>
-                <div className="text-right">
-                  <Badge variant="outline" className="text-xs">
-                    {item.valoraciones}
-                  </Badge>
-                  <p className="text-xs text-gray-500 mt-1">{item.porcentaje}%</p>
-                </div>
+                <span className="text-sm text-gray-500">{item.valoraciones}</span>
               </div>
             ))}
-          </div>
-
-          <div className="mt-6 pt-4 border-t">
-            <Button variant="outline" size="sm" className="w-full">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Reporte
-            </Button>
           </div>
         </CardContent>
       </Card>
