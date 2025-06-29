@@ -64,8 +64,8 @@ const CompanyIntelligence = ({ limit, showFilters = true }: CompanyIntelligenceP
     industry: company.industry || 'Desconocido',
     size: company.size || 'No especificado',
     location: company.location || 'No especificado',
-    pagesVisited: company.pagesVisited || [],
-    timeOnSite: company.timeOnSite || 0,
+    pagesVisited: [], // CompanyData doesn't have this property, so we use empty array
+    timeOnSite: 0, // CompanyData doesn't have this property, so we use 0
     leadScore: company.engagementScore || 0,
     lastVisit: new Date(company.lastVisit),
     domain: company.domain,
