@@ -12,18 +12,18 @@ interface AdminHeaderProps {
 
 const AdminHeader = ({ onLogout, onToggleSidebar }: AdminHeaderProps) => {
   return (
-    <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 flex-shrink-0">
+    <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 flex-shrink-0">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleSidebar}
-          className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg p-2"
+          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-2"
         >
           <Menu className="h-4 w-4" />
         </Button>
-        <div className="border-l border-slate-200 pl-4">
-          <h1 className="page-title">Panel de Administración</h1>
+        <div className="border-l border-gray-200 pl-4">
+          <h1 className="text-lg font-medium text-gray-900">Panel de Administración</h1>
         </div>
       </div>
 
@@ -32,11 +32,11 @@ const AdminHeader = ({ onLogout, onToggleSidebar }: AdminHeaderProps) => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg p-2"
+          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-2"
         >
           <Settings className="h-4 w-4" />
         </Button>
-        <div className="border-l border-slate-200 pl-3">
+        <div className="border-l border-gray-200 pl-3">
           <UserDropdown onLogout={onLogout} />
         </div>
       </div>

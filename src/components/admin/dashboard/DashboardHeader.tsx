@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Flex, Icon, Text, Title } from '@tremor/react';
 import { Clock } from 'lucide-react';
 
 const DashboardHeader = () => {
@@ -9,15 +10,15 @@ const DashboardHeader = () => {
   });
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 className="page-title mb-1">Panel Capittal</h1>
-        <p className="page-subtitle">Bienvenido de vuelta. Aquí tienes el resumen de hoy.</p>
+        <Title className="text-2xl lg:text-3xl font-light text-gray-900 mb-1">Panel Capittal</Title>
+        <Text className="text-gray-600">Bienvenido de vuelta. Aquí tienes el resumen de hoy.</Text>
       </div>
-      <div className="flex items-center justify-start sm:justify-end bg-white rounded-lg px-3 py-2 shadow-sm border border-slate-200">
-        <Clock className="h-4 w-4 text-slate-500" />
-        <span className="text-slate-700 ml-2 font-medium text-sm">{currentTime}</span>
-      </div>
+      <Flex className="justify-start sm:justify-end bg-white rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+        <Icon icon={Clock} className="text-gray-500" />
+        <Text className="text-gray-700 ml-2 font-medium">{currentTime}</Text>
+      </Flex>
     </div>
   );
 };

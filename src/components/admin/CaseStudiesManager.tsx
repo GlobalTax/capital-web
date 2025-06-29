@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import CaseStudyPreview from './preview/CaseStudyPreview';
 import SectorSelect from './shared/SectorSelect';
-import LegalCard from '../ui/LegalCard';
 
 interface CaseStudy {
   id: string;
@@ -204,22 +204,22 @@ const CaseStudiesManager = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="space-y-6">
-          <div className="loading-title"></div>
-          <div className="loading-card h-32"></div>
+      <div className="admin-page">
+        <div className="admin-loading">
+          <div className="admin-loading-title"></div>
+          <div className="admin-loading-card h-32"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="admin-page">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="admin-flex-between">
         <div>
-          <h2 className="page-title">Gestión de Casos de Éxito</h2>
-          <p className="page-subtitle mt-1">Administra los casos de éxito de la empresa</p>
+          <h2 className="admin-title">Gestión de Casos de Éxito</h2>
+          <p className="admin-text mt-1">Administra los casos de éxito de la empresa</p>
         </div>
         <Button
           onClick={() => {
@@ -227,7 +227,7 @@ const CaseStudiesManager = () => {
             setEditingCase(null);
             setShowForm(true);
           }}
-          className="btn-primary"
+          className="admin-btn-primary"
         >
           <Plus className="h-4 w-4" />
           Nuevo Caso
@@ -236,227 +236,237 @@ const CaseStudiesManager = () => {
 
       {/* Form */}
       {showForm && (
-        <LegalCard className="mb-8">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="section-title">
-                {editingCase ? 'Editar Caso' : 'Nuevo Caso'}
-              </h3>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="dashboard-grid-2">
-                <div className="space-y-2">
-                  <label className="form-label">Título</label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="form-input"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="form-label">Sector</label>
-                  <SectorSelect
-                    value={formData.sector}
-                    onChange={(value) => setFormData({...formData, sector: value})}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="dashboard-grid-2">
-                <div className="space-y-2">
-                  <label className="form-label">Tamaño de Empresa</label>
-                  <Input
-                    value={formData.company_size || ''}
-                    onChange={(e) => setFormData({...formData, company_size: e.target.value})}
-                    className="form-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="form-label">Año</label>
-                  <Input
-                    type="number"
-                    value={formData.year || ''}
-                    onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
-                    className="form-input"
-                  />
-                </div>
-              </div>
-
-              <div className="dashboard-grid-2">
-                <div className="space-y-2">
-                  <label className="form-label">Valoración (millones)</label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={formData.value_amount || ''}
-                    onChange={(e) => setFormData({...formData, value_amount: parseFloat(e.target.value)})}
-                    className="form-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="form-label">Moneda</label>
-                  <Input
-                    value={formData.value_currency}
-                    onChange={(e) => setFormData({...formData, value_currency: e.target.value})}
-                    className="form-input"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="form-label">Descripción</label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="form-textarea"
-                  rows={3}
+        <div className="admin-section">
+          <div className="admin-flex-between mb-6">
+            <h3 className="admin-subtitle">
+              {editingCase ? 'Editar Caso' : 'Nuevo Caso'}
+            </h3>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="admin-form">
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label className="admin-label">Título</label>
+                <Input
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="admin-input"
                   required
                 />
               </div>
-
-              <div className="space-y-2">
-                <label className="form-label">
-                  Ubicaciones donde mostrar
-                  <span className="metadata-text ml-2">(Si no seleccionas ninguna, se guardará como borrador)</span>
-                </label>
-                <div className="dashboard-grid-3">
-                  {availableLocations.map((location) => (
-                    <label key={location.value} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.display_locations?.includes(location.value) || false}
-                        onChange={(e) => handleLocationChange(location.value, e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="metadata-text">{location.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="dashboard-grid-2">
-                <ImageUploadField
-                  label="Logo de la Empresa"
-                  value={formData.logo_url}
-                  onChange={(url) => setFormData({...formData, logo_url: url})}
-                  folder="case-studies/logos"
-                  placeholder="URL del logo o sube una imagen"
-                />
-                
-                <ImageUploadField
-                  label="Imagen Destacada"
-                  value={formData.featured_image_url}
-                  onChange={(url) => setFormData({...formData, featured_image_url: url})}
-                  folder="case-studies/featured"
-                  placeholder="URL de la imagen destacada o sube una imagen"
+              <div className="admin-form-group">
+                <label className="admin-label">Sector</label>
+                <SectorSelect
+                  value={formData.sector}
+                  onChange={(value) => setFormData({...formData, sector: value})}
+                  required
                 />
               </div>
+            </div>
 
-              <div className="flex items-center space-x-6">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_featured}
-                    onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
-                    className="mr-2"
-                  />
-                  <span className="metadata-text">Destacado</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                    className="mr-2"
-                  />
-                  <span className="metadata-text">Activo</span>
-                </label>
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label className="admin-label">Tamaño de Empresa</label>
+                <Input
+                  value={formData.company_size || ''}
+                  onChange={(e) => setFormData({...formData, company_size: e.target.value})}
+                  className="admin-input"
+                />
               </div>
+              <div className="admin-form-group">
+                <label className="admin-label">Año</label>
+                <Input
+                  type="number"
+                  value={formData.year || ''}
+                  onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
+                  className="admin-input"
+                />
+              </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingCase(null);
-                    setFormData(emptyCase);
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancelar
-                </Button>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="btn-secondary"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Previsualizar
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Previsualización</DialogTitle>
-                    </DialogHeader>
-                    <CaseStudyPreview caseStudy={formData} />
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  type="submit"
-                  className="btn-primary"
-                >
-                  {editingCase ? 'Actualizar' : 'Crear'}
-                </Button>
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label className="admin-label">Valoración (millones)</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.value_amount || ''}
+                  onChange={(e) => setFormData({...formData, value_amount: parseFloat(e.target.value)})}
+                  className="admin-input"
+                />
               </div>
-            </form>
-          </div>
-        </LegalCard>
+              <div className="admin-form-group">
+                <label className="admin-label">Moneda</label>
+                <Input
+                  value={formData.value_currency}
+                  onChange={(e) => setFormData({...formData, value_currency: e.target.value})}
+                  className="admin-input"
+                />
+              </div>
+            </div>
+
+            <div className="admin-form-group">
+              <label className="admin-label">Descripción</label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                className="admin-textarea"
+                rows={3}
+                required
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label className="admin-label">
+                Ubicaciones donde mostrar
+                <span className="admin-text-sm ml-2">(Si no seleccionas ninguna, se guardará como borrador)</span>
+              </label>
+              <div className="admin-grid-3">
+                {availableLocations.map((location) => (
+                  <label key={location.value} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.display_locations?.includes(location.value) || false}
+                      onChange={(e) => handleLocationChange(location.value, e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="admin-text-sm">{location.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <ImageUploadField
+                label="Logo de la Empresa"
+                value={formData.logo_url}
+                onChange={(url) => setFormData({...formData, logo_url: url})}
+                folder="case-studies/logos"
+                placeholder="URL del logo o sube una imagen"
+              />
+              
+              <ImageUploadField
+                label="Imagen Destacada"
+                value={formData.featured_image_url}
+                onChange={(url) => setFormData({...formData, featured_image_url: url})}
+                folder="case-studies/featured"
+                placeholder="URL de la imagen destacada o sube una imagen"
+              />
+            </div>
+
+            <div className="flex items-center space-x-6">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.is_featured}
+                  onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
+                  className="mr-2"
+                />
+                <span className="admin-text-sm">Destacado</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                  className="mr-2"
+                />
+                <span className="admin-text-sm">Activo</span>
+              </label>
+            </div>
+
+            <div className="admin-form-actions">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingCase(null);
+                  setFormData(emptyCase);
+                }}
+                className="admin-btn-secondary"
+              >
+                Cancelar
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="admin-btn-secondary"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Previsualizar
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Previsualización</DialogTitle>
+                  </DialogHeader>
+                  <CaseStudyPreview caseStudy={formData} />
+                </DialogContent>
+              </Dialog>
+              <Button
+                type="submit"
+                className="admin-btn-primary"
+              >
+                {editingCase ? 'Actualizar' : 'Crear'}
+              </Button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Cases List */}
-      <div className="space-y-4">
+      <div className="admin-space-y">
         {caseStudies.map((caseStudy) => (
-          <LegalCard key={caseStudy.id}>
-            <div className="p-6">
-              <div className="flex items-start justify-between">
+          <div key={caseStudy.id} className="admin-card">
+            <div className="admin-card-body">
+              <div className="admin-flex-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-4 mb-3">
                     {caseStudy.logo_url && (
                       <img
                         src={caseStudy.logo_url}
                         alt={`Logo ${caseStudy.title}`}
-                        className="w-12 h-12 object-contain rounded border border-slate-200"
+                        className="w-12 h-12 object-contain rounded border border-gray-200"
                       />
                     )}
                     <div>
-                      <h3 className="section-title">{caseStudy.title}</h3>
+                      <h3 className="admin-subtitle">{caseStudy.title}</h3>
                       <div className="flex items-center space-x-2 mt-1">
                         {caseStudy.is_featured && (
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Destacado
-                          </span>
+                          <span className="admin-badge-warning">Destacado</span>
                         )}
                         {!caseStudy.is_active && (
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            Borrador
-                          </span>
+                          <span className="admin-badge-info">Borrador</span>
+                        )}
+                        {(!caseStudy.display_locations || caseStudy.display_locations.length === 0) && (
+                          <span className="admin-badge-danger">Sin ubicaciones</span>
                         )}
                       </div>
                     </div>
                   </div>
-                  <p className="body-text mb-3">{caseStudy.description}</p>
-                  <div className="metadata-text mb-3">
+                  <p className="admin-text mb-3">{caseStudy.description}</p>
+                  <div className="admin-text-sm mb-3">
                     <span className="mr-4">{caseStudy.sector}</span>
                     {caseStudy.value_amount && (
                       <span className="mr-4">{caseStudy.value_amount}M{caseStudy.value_currency}</span>
                     )}
                     {caseStudy.year && <span>{caseStudy.year}</span>}
+                  </div>
+                  <div className="mb-3">
+                    <span className="admin-text-sm font-medium">Ubicaciones: </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(caseStudy.display_locations || []).map((location) => {
+                        const locationLabel = availableLocations.find(loc => loc.value === location)?.label || location;
+                        return (
+                          <span key={location} className="admin-badge-info">
+                            {locationLabel}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -464,7 +474,7 @@ const CaseStudiesManager = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => toggleStatus(caseStudy.id, 'is_active', !caseStudy.is_active)}
-                    className="btn-secondary"
+                    className="admin-btn-sm admin-btn-secondary"
                   >
                     {caseStudy.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
                   </Button>
@@ -472,7 +482,7 @@ const CaseStudiesManager = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => handleEdit(caseStudy)}
-                    className="btn-secondary"
+                    className="admin-btn-sm admin-btn-secondary"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -480,14 +490,14 @@ const CaseStudiesManager = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => handleDelete(caseStudy.id)}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
+                    className="admin-btn-sm text-red-600 border-red-200 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </div>
-          </LegalCard>
+          </div>
         ))}
       </div>
     </div>
