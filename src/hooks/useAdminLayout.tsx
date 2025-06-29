@@ -39,8 +39,7 @@ export const useAdminLayout = () => {
 
       if (sectionTitles[section]) {
         breadcrumbs.push({
-          title: sectionTitles[section],
-          url: `/admin/${section}`
+          title: sectionTitles[section]
         });
       }
     }
