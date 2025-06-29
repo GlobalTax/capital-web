@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,7 @@ const WorkflowsManager = () => {
     description: '',
     trigger_conditions: {
       conditions: [
-        { field: 'total_score', operator: '>=', value: 80 }
+        { field: 'total_score', operator: '>=', value: 80 as string | number }
       ]
     },
     actions: {
@@ -39,7 +38,7 @@ const WorkflowsManager = () => {
       description: '',
       trigger_conditions: {
         conditions: [
-          { field: 'total_score', operator: '>=', value: 80 }
+          { field: 'total_score', operator: '>=', value: 80 as string | number }
         ]
       },
       actions: {
@@ -56,19 +55,19 @@ const WorkflowsManager = () => {
     {
       name: 'Lead Caliente → Notificación Comercial',
       description: 'Notifica al equipo comercial cuando un lead supera 80 puntos',
-      trigger: { field: 'total_score', operator: '>=', value: 80 },
+      trigger: { field: 'total_score', operator: '>=', value: 80 as string | number },
       actions: ['send_notification', 'assign_lead']
     },
     {
       name: 'Calculadora → Email Nurturing',
       description: 'Inicia secuencia de emails cuando alguien usa la calculadora',
-      trigger: { field: 'event_type', operator: '=', value: 'calculator_use' },
+      trigger: { field: 'event_type', operator: '=', value: 'calculator_use' as string | number },
       actions: ['start_email_sequence']
     },
     {
       name: 'Visitante Recurrente → Score Boost',
       description: 'Aumenta puntuación para visitantes frecuentes',
-      trigger: { field: 'visit_count', operator: '>=', value: 3 },
+      trigger: { field: 'visit_count', operator: '>=', value: 3 as string | number },
       actions: ['add_score', 'add_tag']
     }
   ];
