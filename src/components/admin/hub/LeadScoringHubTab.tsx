@@ -49,7 +49,7 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{marketingMetrics.hotProspects}</div>
-            <p className="text-xs text-gray-600">score > 80</p>
+            <p className="text-xs text-gray-600">score {'>'} 80</p>
           </CardContent>
         </Card>
 
@@ -60,7 +60,7 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{marketingMetrics.qualifiedLeads}</div>
-            <p className="text-xs text-gray-600">score > 50</p>
+            <p className="text-xs text-gray-600">score {'>'} 50</p>
           </CardContent>
         </Card>
 
@@ -234,7 +234,7 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
                 <div>
                   <h4 className="font-semibold text-sm">Contactar Hot Prospects</h4>
                   <p className="text-xs text-gray-600">
-                    {marketingMetrics.hotProspects} leads con score > 80 necesitan contacto inmediato
+                    {marketingMetrics.hotProspects} leads con score {'>'} 80 necesitan contacto inmediato
                   </p>
                 </div>
               </div>

@@ -166,7 +166,7 @@ const MarketingHubDashboard = () => {
                 <div className="text-3xl font-bold text-red-600 mb-2">
                   {marketingMetrics?.hotProspects}
                 </div>
-                <p className="text-gray-600">Score > 80 puntos</p>
+                <p className="text-gray-600">Score {'>'}80 puntos</p>
                 <div className="mt-2 text-sm text-green-600">
                   +{Math.floor(Math.random() * 10 + 5)} esta semana
                 </div>
