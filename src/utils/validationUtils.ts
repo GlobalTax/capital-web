@@ -68,6 +68,48 @@ export const validationUtils = {
   }
 };
 
+// Individual validation functions that return ValidationResult interface
+interface ValidationResult {
+  isValid: boolean;
+  message?: string;
+}
+
+// Email validation function
+export const validateEmail = (email: string): ValidationResult => {
+  const isValid = validationUtils.isValidEmail(email);
+  return {
+    isValid,
+    message: isValid ? undefined : 'El email no es válido'
+  };
+};
+
+// Company name validation function
+export const validateCompanyName = (name: string): ValidationResult => {
+  const isValid = validationUtils.isValidCompanyName(name);
+  return {
+    isValid,
+    message: isValid ? undefined : 'El nombre de la empresa debe tener entre 2 y 100 caracteres'
+  };
+};
+
+// Contact name validation function
+export const validateContactName = (name: string): ValidationResult => {
+  const isValid = validationUtils.isRequired(name);
+  return {
+    isValid,
+    message: isValid ? undefined : 'El nombre de contacto es obligatorio'
+  };
+};
+
+// Spanish phone validation function
+export const validateSpanishPhone = (phone: string): ValidationResult => {
+  const isValid = validationUtils.isValidPhone(phone);
+  return {
+    isValid,
+    message: isValid ? undefined : 'El teléfono debe ser un número español válido (9 dígitos empezando por 6, 7, 8 o 9)'
+  };
+};
+
 // Spanish phone formatter function
 export const formatSpanishPhone = (phone: string): string => {
   // Remove all non-digit characters
