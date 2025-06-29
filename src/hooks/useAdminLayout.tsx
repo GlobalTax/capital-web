@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -21,7 +22,13 @@ export const useAdminLayout = () => {
     if (segments.length > 1) {
       const section = segments[1];
       const sectionTitles: Record<string, string> = {
+        'dashboard': 'Dashboard',
         'marketing-intelligence': 'Marketing Intelligence',
+        'lead-scoring': 'Lead Scoring',
+        'marketing-automation': 'Marketing Automation',
+        'marketing-hub': 'Marketing Hub',
+        'crm': 'CRM',
+        'alerts': 'Alertas',
         'case-studies': 'Casos de Éxito',
         'operations': 'Operaciones',
         'blog': 'Blog Posts',
@@ -29,13 +36,14 @@ export const useAdminLayout = () => {
         'sector-reports': 'Reports Sectoriales IA',
         'multiples': 'Múltiplos',
         'statistics': 'Estadísticas',
+        'contact-leads': 'Leads de Contacto',
+        'collaborator-applications': 'Solicitudes Colaboradores',
         'team': 'Equipo',
         'testimonials': 'Testimonios',
         'carousel-testimonials': 'Testimonios Carrusel',
         'carousel-logos': 'Logos Carrusel',
-        'contact-leads': 'Leads de Contacto',
-        'collaborator-applications': 'Solicitudes Colaboradores',
-        'lead-magnets': 'Lead Magnets'
+        'lead-magnets': 'Lead Magnets',
+        'settings': 'Configuración'
       };
 
       if (sectionTitles[section]) {
