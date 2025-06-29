@@ -36,21 +36,6 @@
     --ring: 0 0% 0%;
 
     --radius: 8px;
-
-    /* Admin specific variables */
-    --admin-spacing-xs: 4px;
-    --admin-spacing-sm: 8px;
-    --admin-spacing: 12px;
-    --admin-spacing-md: 16px;
-    --admin-spacing-lg: 24px;
-    --admin-spacing-xl: 32px;
-    
-    --admin-gray-50: 249 250 251;
-    --admin-gray-100: 243 244 246;
-    --admin-gray-200: 229 231 235;
-    --admin-gray-300: 209 213 219;
-    --admin-gray-600: 75 85 99;
-    --admin-gray-900: 17 24 39;
   }
 }
 
@@ -70,23 +55,13 @@
 }
 
 @layer components {
-  /* Admin Design System Components */
-  
-  /* Layout containers */
+  /* Layout containers - Simplified and clean */
   .admin-container {
-    @apply w-full;
+    @apply w-full h-screen overflow-hidden;
   }
   
   .admin-content {
-    @apply bg-gray-50 min-h-screen;
-  }
-  
-  .admin-page {
-    @apply p-6 space-y-6 max-w-7xl mx-auto;
-  }
-  
-  .admin-section {
-    @apply bg-white rounded-lg border border-gray-200 p-6;
+    @apply bg-gray-50 flex-1 overflow-auto;
   }
   
   /* Grid system */

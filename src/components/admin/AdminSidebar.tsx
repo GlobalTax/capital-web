@@ -89,24 +89,24 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
   ];
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out flex-shrink-0`}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 h-screen`}>
       {/* Header */}
-      <div className="border-b border-gray-200 p-4">
+      <div className="border-b border-gray-200 p-4 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-white font-semibold text-sm">C</span>
           </div>
           {!collapsed && (
-            <div className="transition-opacity duration-200">
-              <h2 className="font-semibold text-gray-900 text-lg">Capittal</h2>
-              <p className="text-xs text-gray-500 font-medium">Panel Administrativo</p>
+            <div className="transition-opacity duration-200 min-w-0">
+              <h2 className="font-semibold text-gray-900 text-lg truncate">Capittal</h2>
+              <p className="text-xs text-gray-500 font-medium truncate">Panel Administrativo</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 py-4 space-y-6">
+      <div className="flex-1 py-4 space-y-6 overflow-y-auto">
         {/* Dashboard */}
         <div>
           <NavLink
@@ -115,7 +115,7 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
           >
             <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
             {!collapsed && (
-              <span className="ml-3 transition-opacity duration-200">Inicio</span>
+              <span className="ml-3 transition-opacity duration-200 truncate">Inicio</span>
             )}
           </NavLink>
         </div>
@@ -124,7 +124,7 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
         {navigationGroups.map((group) => (
           <div key={group.title}>
             {!collapsed && (
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 mb-3 transition-opacity duration-200">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 mb-3 transition-opacity duration-200 truncate">
                 {group.title}
               </h3>
             )}
@@ -137,10 +137,10 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
                 >
                   <item.icon className="h-4 w-4 flex-shrink-0" />
                   {!collapsed && (
-                    <div className="flex items-center justify-between w-full ml-3 transition-opacity duration-200">
-                      <span>{item.title}</span>
+                    <div className="flex items-center justify-between w-full ml-3 transition-opacity duration-200 min-w-0">
+                      <span className="truncate">{item.title}</span>
                       {item.badge && (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 border border-blue-200 rounded-md font-medium">
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 border border-blue-200 rounded-md font-medium flex-shrink-0 ml-2">
                           {item.badge}
                         </span>
                       )}

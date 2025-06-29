@@ -26,7 +26,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="admin-container flex min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex w-full">
       <AdminSidebar collapsed={sidebarCollapsed} />
       
       <div className="flex-1 flex flex-col min-w-0">
@@ -35,23 +35,25 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
         
-        <main className="flex-1 admin-content">
-          <Routes>
-            <Route index element={<AdminDashboardHome />} />
-            <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
-            <Route path="sector-reports" element={<SectorReportsGenerator />} />
-            <Route path="case-studies" element={<CaseStudiesManager />} />
-            <Route path="operations" element={<OperationsManager />} />
-            <Route path="multiples" element={<MultiplesManager />} />
-            <Route path="statistics" element={<StatisticsManager />} />
-            <Route path="team" element={<TeamMembersManager />} />
-            <Route path="testimonials" element={<TestimonialsManager />} />
-            <Route path="carousel-testimonials" element={<CarouselTestimonialsManager />} />
-            <Route path="carousel-logos" element={<CarouselLogosManager />} />
-            <Route path="contact-leads" element={<ContactLeadsManager />} />
-            <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
-            <Route path="valuation-leads" element={<ValuationLeadsManager />} />
-          </Routes>
+        <main className="flex-1 overflow-auto">
+          <div className="h-full">
+            <Routes>
+              <Route index element={<AdminDashboardHome />} />
+              <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
+              <Route path="sector-reports" element={<SectorReportsGenerator />} />
+              <Route path="case-studies" element={<CaseStudiesManager />} />
+              <Route path="operations" element={<OperationsManager />} />
+              <Route path="multiples" element={<MultiplesManager />} />
+              <Route path="statistics" element={<StatisticsManager />} />
+              <Route path="team" element={<TeamMembersManager />} />
+              <Route path="testimonials" element={<TestimonialsManager />} />
+              <Route path="carousel-testimonials" element={<CarouselTestimonialsManager />} />
+              <Route path="carousel-logos" element={<CarouselLogosManager />} />
+              <Route path="contact-leads" element={<ContactLeadsManager />} />
+              <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
+              <Route path="valuation-leads" element={<ValuationLeadsManager />} />
+            </Routes>
+          </div>
         </main>
       </div>
     </div>

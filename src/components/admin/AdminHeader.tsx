@@ -12,7 +12,7 @@ interface AdminHeaderProps {
 
 const AdminHeader = ({ onLogout, onToggleSidebar }: AdminHeaderProps) => {
   return (
-    <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 flex-shrink-0">
+    <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-10">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -23,7 +23,7 @@ const AdminHeader = ({ onLogout, onToggleSidebar }: AdminHeaderProps) => {
           <Menu className="h-4 w-4" />
         </Button>
         <div className="border-l border-gray-200 pl-4">
-          <h1 className="text-lg font-medium text-gray-900">Panel de Administración</h1>
+          <h1 className="text-lg font-medium text-gray-900 truncate">Panel de Administración</h1>
         </div>
       </div>
 

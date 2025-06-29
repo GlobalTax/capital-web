@@ -11,15 +11,15 @@ const AdminDashboardHome = () => {
 
   if (isLoading) {
     return (
-      <div className="admin-page">
-        <div className="admin-space-y admin-loading">
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div className="animate-pulse space-y-6">
           <div className="space-y-3">
-            <div className="admin-loading-title"></div>
-            <div className="admin-loading-card h-4 w-96"></div>
+            <div className="bg-gray-200 rounded h-6 w-48"></div>
+            <div className="bg-gray-200 rounded h-4 w-96"></div>
           </div>
-          <div className="admin-grid-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="admin-loading-card h-24"></div>
+              <div key={i} className="bg-gray-200 rounded h-24"></div>
             ))}
           </div>
         </div>
@@ -28,7 +28,7 @@ const AdminDashboardHome = () => {
   }
 
   return (
-    <div className="admin-page">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <DashboardHeader />
       <DashboardMetrics stats={stats} />
       <DashboardCharts />
