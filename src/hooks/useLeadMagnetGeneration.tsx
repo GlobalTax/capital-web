@@ -122,8 +122,7 @@ export const useLeadMagnetGeneration = () => {
         prompt,
         context: {
           title: options.title,
-          category: options.sector,
-          contentType: options.type
+          category: options.sector
         }
       });
 

@@ -171,13 +171,17 @@ export const useLeadMagnetDownloads = () => {
 
       if (error) throw error;
 
-      // Incrementar contador de descargas
-      await supabase
+      // Incrementar contador de descargas usando una query SQL directa
+      const { error: updateError } = await supabase
         .from('lead_magnets')
         .update({ 
-          download_count: supabase.raw('download_count + 1') 
+          download_count: await getCurrentDownloadCount(leadMagnetId) + 1
         })
         .eq('id', leadMagnetId);
+
+      if (updateError) {
+        console.error('Error actualizando contador:', updateError);
+      }
 
       // Sincronizar con segunda base de datos
       try {
@@ -210,6 +214,22 @@ export const useLeadMagnetDownloads = () => {
       });
       throw error;
     }
+  };
+
+  // Función auxiliar para obtener el conteo actual
+  const getCurrentDownloadCount = async (leadMagnetId: string): Promise<number> => {
+    const { data, error } = await supabase
+      .from('lead_magnets')
+      .select('download_count')
+      .eq('id', leadMagnetId)
+      .single();
+
+    if (error) {
+      console.error('Error obteniendo conteo:', error);
+      return 0;
+    }
+
+    return data?.download_count || 0;
   };
 
   return {
