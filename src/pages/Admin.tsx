@@ -2,7 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminAuth from '@/components/admin/AdminAuth';
-import MinimalAdminDashboard from '@/components/admin/minimal/MinimalAdminDashboard';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 
 const Admin = () => {
   const { user, isLoading } = useAuth();
@@ -32,7 +32,7 @@ const Admin = () => {
     return <AdminAuth onAuthSuccess={handleAuthSuccess} />;
   }
 
-  return <MinimalAdminDashboard onLogout={handleLogout} />;
+  return <AdminDashboard onLogout={handleLogout} />;
 };
 
 export default Admin;
