@@ -90,7 +90,7 @@ const ProspectsDashboard = () => {
     
     updateLeadInfo.mutate({
       visitorId: lead.visitor_id,
-      updates: { crm_synced: true, crm_id: `hs_${Date.now()}` }
+      updates: { crm_synced: true }
     });
   };
 
