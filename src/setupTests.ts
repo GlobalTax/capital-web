@@ -13,7 +13,10 @@ jest.mock('react-router-dom', () => ({
     state: null,
     key: 'default',
   }),
-  NavLink: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
+  NavLink: ({ children, to, ...props }: any) => {
+    const React = require('react');
+    return React.createElement('a', { href: to, ...props }, children);
+  },
 }));
 
 // Mock Supabase client
