@@ -26,16 +26,16 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="admin-container flex min-h-screen bg-gray-50">
       <AdminSidebar collapsed={sidebarCollapsed} />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader 
           onLogout={onLogout} 
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
         
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 admin-content">
           <Routes>
             <Route index element={<AdminDashboardHome />} />
             <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
