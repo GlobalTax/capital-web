@@ -451,18 +451,18 @@ const MarketingIntelligenceDashboard = () => {
                         {!alert.isRead && <Badge variant="outline">NUEVA</Badge>}
                       </div>
                       <span className="text-xs text-gray-500">
-                        {new Date(alert.timestamp).toLocaleString()}
+                        {new Date(alert.createdAt).toLocaleString()}
                       </span>
                     </div>
                     
                     <h3 className="font-semibold mb-2">{alert.title}</h3>
                     <p className="text-sm text-gray-700 mb-3">{alert.description}</p>
                     
-                    {alert.actionItems && alert.actionItems.length > 0 && (
+                    {alert.actions && alert.actions.length > 0 && (
                       <div className="mb-3">
                         <h4 className="text-sm font-medium text-gray-800 mb-1">Acciones recomendadas:</h4>
                         <ul className="text-sm text-gray-600 space-y-1">
-                          {alert.actionItems.map((action, index) => (
+                          {alert.actions.slice(0, 3).map((action, index) => (
                             <li key={index} className="flex items-start space-x-2">
                               <span className="text-blue-500">•</span>
                               <span>{action}</span>
@@ -474,7 +474,7 @@ const MarketingIntelligenceDashboard = () => {
                     
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">
-                        Confianza: {alert.confidence}%
+                        Lead Score: {alert.leadScore}
                       </span>
                       {!alert.isRead && (
                         <Button 
