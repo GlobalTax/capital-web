@@ -2,7 +2,7 @@
 import React from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
-import AdminSidebar from './AdminSidebar';
+import { AppSidebar } from './AppSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
 
@@ -17,7 +17,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
-        <AdminSidebar />
+        <AppSidebar />
         <div className="flex-1 flex flex-col">
           <AdminHeader onLogout={onLogout} />
           <div className="px-6 py-4 bg-white border-b border-gray-200">
