@@ -9,7 +9,7 @@ const AdminDashboardHome = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full h-full p-4">
+      <div className="w-full h-full p-8">
         <div className="space-y-8 animate-pulse">
           <div className="space-y-4">
             <div className="h-8 bg-gray-200 rounded w-64"></div>
@@ -80,24 +80,24 @@ const AdminDashboardHome = () => {
   ];
 
   return (
-    <div className="w-full h-full p-4 space-y-6">
-      {/* Header sin restricciones de ancho */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <Title className="text-3xl font-light text-gray-900">Panel Capittal</Title>
-          <Text className="text-gray-500 mt-2">
-            Bienvenido de vuelta. Aquí tienes el resumen de hoy.
-          </Text>
+    <div className="w-full min-h-full bg-gray-50">
+      <div className="w-full p-8 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <Title className="text-3xl font-light text-gray-900">Panel Capittal</Title>
+            <Text className="text-gray-500 mt-2">
+              Bienvenido de vuelta. Aquí tienes el resumen de hoy.
+            </Text>
+          </div>
+          <Flex className="justify-start sm:justify-end">
+            <Icon icon={Clock} className="text-gray-400" />
+            <Text className="text-gray-400 ml-2">{currentTime}</Text>
+          </Flex>
         </div>
-        <Flex className="justify-start sm:justify-end">
-          <Icon icon={Clock} className="text-gray-400" />
-          <Text className="text-gray-400 ml-2">{currentTime}</Text>
-        </Flex>
-      </div>
 
-      {/* Métricas Principales - Grid completamente responsivo */}
-      <div className="w-full">
-        <Grid numItemsSm={2} numItemsMd={3} numItemsLg={6} className="gap-4 w-full">
+        {/* Métricas Principales */}
+        <Grid numItemsSm={2} numItemsMd={3} numItemsLg={6} className="gap-6">
           <Card>
             <Flex alignItems="start">
               <div>
@@ -158,11 +158,9 @@ const AdminDashboardHome = () => {
             </Flex>
           </Card>
         </Grid>
-      </div>
 
-      {/* Métricas del Header */}
-      <div className="w-full">
-        <Grid numItemsSm={1} numItemsMd={2} numItemsLg={3} className="gap-4 w-full">
+        {/* Métricas del Header */}
+        <Grid numItemsSm={1} numItemsMd={2} numItemsLg={3} className="gap-6">
           <Card>
             <Flex alignItems="start">
               <div>
@@ -193,11 +191,9 @@ const AdminDashboardHome = () => {
             </Flex>
           </Card>
         </Grid>
-      </div>
 
-      {/* Gráficos y Datos - Ocupan todo el ancho */}
-      <div className="w-full">
-        <Grid numItemsLg={3} className="gap-4 w-full">
+        {/* Gráficos y Datos */}
+        <Grid numItemsLg={3} className="gap-6">
           {/* Gráfico Principal */}
           <Card className="col-span-full lg:col-span-2">
             <Title>Valoraciones y Leads</Title>
@@ -227,11 +223,9 @@ const AdminDashboardHome = () => {
             />
           </Card>
         </Grid>
-      </div>
 
-      {/* Acciones Rápidas y Actividad - Ocupan todo el ancho */}
-      <div className="w-full">
-        <Grid numItemsLg={2} className="gap-4 w-full">
+        {/* Acciones Rápidas y Actividad */}
+        <Grid numItemsLg={2} className="gap-6">
           {/* Acciones Rápidas */}
           <Card>
             <Title>Acciones Rápidas</Title>

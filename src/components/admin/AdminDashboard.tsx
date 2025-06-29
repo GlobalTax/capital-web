@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 import AdminDashboardHome from './AdminDashboardHome';
@@ -24,13 +23,20 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
-    <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen bg-gray-50">
-        <AdminSidebar />
-        <SidebarInset className="flex-1">
-          <AdminHeader onLogout={onLogout} />
-          <main className="flex-1 overflow-auto bg-gray-50">
+    <div className="flex h-screen bg-gray-50 w-full">
+      <AdminSidebar collapsed={sidebarCollapsed} />
+      
+      <div className="flex-1 flex flex-col min-w-0 w-full">
+        <AdminHeader 
+          onLogout={onLogout} 
+          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+        
+        <main className="flex-1 overflow-auto w-full">
+          <div className="w-full h-full">
             <Routes>
               <Route index element={<AdminDashboardHome />} />
               <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
@@ -47,10 +53,10 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
               <Route path="valuation-leads" element={<ValuationLeadsManager />} />
             </Routes>
-          </main>
-        </SidebarInset>
+          </div>
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
