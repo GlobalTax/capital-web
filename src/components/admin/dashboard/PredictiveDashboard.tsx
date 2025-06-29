@@ -109,7 +109,7 @@ const PredictiveDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{analytics.highValueOpportunities}</div>
             <p className="text-xs text-gray-600">
-              Probabilidad de conversión > 80%
+              Probabilidad de conversión {'>'}80%
             </p>
           </CardContent>
         </Card>
