@@ -3,54 +3,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design System Base - Capittal Admin */
+/* Sistema de Diseño LegalCRM - Capittal Admin */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Colores base según spec LegalCRM */
+    --background: 210 40% 98%; /* slate-50 */
+    --foreground: 222 84% 5%; /* slate-900 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 100%; /* white */
+    --card-foreground: 222 84% 5%; /* slate-900 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 100%; /* white */
+    --popover-foreground: 222 84% 5%; /* slate-900 */
 
-    --primary: 0 0% 0%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 221 83% 53%; /* blue-600 */
+    --primary-foreground: 0 0% 100%; /* white */
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 9% 46%;
+    --secondary: 210 40% 94%; /* slate-100 */
+    --secondary-foreground: 222 84% 5%; /* slate-900 */
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 40% 96%; /* slate-100 */
+    --muted-foreground: 215 16% 47%; /* slate-600 */
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 214 100% 97%; /* blue-50 */
+    --accent-foreground: 221 83% 53%; /* blue-600 */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%; /* red-500 */
+    --destructive-foreground: 0 0% 100%; /* white */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 0 0% 0%;
+    --border: 210 40% 92%; /* slate-200 */
+    --input: 210 40% 92%; /* slate-200 */
+    --ring: 221 83% 53%; /* blue-600 */
 
-    --radius: 8px;
-
-    /* Admin specific variables */
-    --admin-spacing-xs: 4px;
-    --admin-spacing-sm: 8px;
-    --admin-spacing: 12px;
-    --admin-spacing-md: 16px;
-    --admin-spacing-lg: 24px;
-    --admin-spacing-xl: 32px;
-    
-    --admin-gray-50: 249 250 251;
-    --admin-gray-100: 243 244 246;
-    --admin-gray-200: 229 231 235;
-    --admin-gray-300: 209 213 219;
-    --admin-gray-600: 75 85 99;
-    --admin-gray-900: 17 24 39;
+    --radius: 8px; /* 0.5rem según spec */
   }
 }
 
@@ -60,239 +46,155 @@
   }
 
   body {
-    @apply bg-white text-black font-sans;
+    @apply bg-slate-50 text-slate-900 font-sans;
   }
 
   html {
     scroll-behavior: smooth;
-    @apply bg-white;
+    @apply bg-slate-50;
   }
 }
 
 @layer components {
-  /* Admin Design System Components */
+  /* Componentes del Sistema LegalCRM */
   
-  /* Layout containers */
-  .admin-container {
-    @apply w-full;
+  /* Layout Base */
+  .app-layout {
+    @apply min-h-screen bg-slate-50;
   }
   
-  .admin-content {
-    @apply bg-gray-50 min-h-screen;
+  .app-main {
+    @apply max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8;
   }
   
-  .admin-page {
-    @apply p-6 space-y-6 max-w-7xl mx-auto;
+  /* Sidebar */
+  .sidebar {
+    @apply fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200;
   }
   
-  .admin-section {
-    @apply bg-white rounded-lg border border-gray-200 p-6;
+  .sidebar-section-title {
+    @apply px-3 mt-6 mb-2 text-xs font-semibold uppercase text-slate-500;
   }
   
-  /* Grid system */
-  .admin-grid {
+  .sidebar-link {
+    @apply group flex items-center gap-x-3 rounded-md p-3 mx-3 text-sm font-semibold leading-6 transition-all duration-200;
+  }
+  
+  .sidebar-link-active {
+    @apply bg-blue-50 text-blue-600 border-l-4 border-blue-600 pl-2 ml-3;
+  }
+  
+  .sidebar-link-default {
+    @apply text-slate-600 hover:text-slate-900 hover:bg-slate-100;
+  }
+  
+  /* Tarjetas Base */
+  .card-base {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+  }
+  
+  .stat-card {
+    @apply card-base p-5;
+  }
+  
+  /* Tipografía según spec LegalCRM */
+  .page-title {
+    @apply text-2xl font-bold text-slate-900;
+  }
+  
+  .page-subtitle {
+    @apply text-sm text-slate-600;
+  }
+  
+  .section-title {
+    @apply text-lg font-medium text-slate-900;
+  }
+  
+  .card-title {
+    @apply text-sm font-medium text-slate-500;
+  }
+  
+  .kpi-value {
+    @apply text-3xl font-bold text-slate-900;
+  }
+  
+  .body-text {
+    @apply text-sm text-slate-600;
+  }
+  
+  .metadata-text {
+    @apply text-xs text-slate-500;
+  }
+  
+  /* Estados de Color según spec */
+  .success-text {
+    @apply text-green-600;
+  }
+  
+  .error-text {
+    @apply text-red-600;
+  }
+  
+  /* Botones actualizados */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg 
+           border border-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
+           transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-sm font-medium rounded-lg 
+           border border-slate-300 hover:bg-slate-50 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 
+           transition-all duration-200;
+  }
+  
+  /* Forms actualizados */
+  .form-input {
+    @apply w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white
+           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
+  }
+  
+  .form-textarea {
+    @apply w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white
+           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 resize-none;
+  }
+  
+  .form-select {
+    @apply w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white
+           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-slate-700 mb-2;
+  }
+  
+  /* Grid y Layout Utilities */
+  .dashboard-grid {
     @apply grid gap-6;
   }
   
-  .admin-grid-2 {
+  .dashboard-grid-2 {
     @apply grid grid-cols-1 md:grid-cols-2 gap-6;
   }
   
-  .admin-grid-3 {
+  .dashboard-grid-3 {
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
   }
   
-  .admin-grid-4 {
+  .dashboard-grid-4 {
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
   }
   
-  /* Typography */
-  .admin-title {
-    @apply text-2xl font-semibold text-gray-900;
+  /* Estados de carga */
+  .loading-skeleton {
+    @apply animate-pulse bg-slate-200 rounded;
   }
   
-  .admin-subtitle {
-    @apply text-lg font-medium text-gray-900;
+  .loading-card {
+    @apply loading-skeleton h-24;
   }
   
-  .admin-label {
-    @apply block text-sm font-medium text-gray-900 mb-2;
-  }
-  
-  .admin-text {
-    @apply text-gray-600;
-  }
-  
-  .admin-text-sm {
-    @apply text-sm text-gray-500;
-  }
-  
-  /* Form components */
-  .admin-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
-           focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900
-           transition-colors duration-200;
-  }
-  
-  .admin-textarea {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
-           focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900
-           transition-colors duration-200 resize-none;
-  }
-  
-  .admin-select {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
-           focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900
-           bg-white transition-colors duration-200;
-  }
-  
-  /* Button system */
-  .admin-btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 
-           rounded-lg font-medium transition-all duration-200
-           focus:outline-none focus:ring-2 focus:ring-offset-2;
-  }
-  
-  .admin-btn-primary {
-    @apply admin-btn bg-gray-900 text-white hover:bg-gray-800 
-           focus:ring-gray-900;
-  }
-  
-  .admin-btn-secondary {
-    @apply admin-btn bg-white text-gray-900 border border-gray-300 
-           hover:bg-gray-50 focus:ring-gray-900;
-  }
-  
-  .admin-btn-danger {
-    @apply admin-btn bg-red-600 text-white hover:bg-red-700 
-           focus:ring-red-600;
-  }
-  
-  .admin-btn-sm {
-    @apply px-3 py-1.5 text-sm;
-  }
-  
-  /* Card components */
-  .admin-card {
-    @apply bg-white rounded-lg border border-gray-200 overflow-hidden;
-  }
-  
-  .admin-card-header {
-    @apply px-6 py-4 border-b border-gray-200 bg-gray-50;
-  }
-  
-  .admin-card-body {
-    @apply p-6;
-  }
-  
-  .admin-card-footer {
-    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
-  }
-  
-  /* Table components */
-  .admin-table {
-    @apply w-full border-collapse;
-  }
-  
-  .admin-table-header {
-    @apply bg-gray-50 border-b border-gray-200;
-  }
-  
-  .admin-table-th {
-    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 
-           uppercase tracking-wider;
-  }
-  
-  .admin-table-td {
-    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
-  }
-  
-  .admin-table-row {
-    @apply border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150;
-  }
-  
-  /* Status badges */
-  .admin-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-  
-  .admin-badge-success {
-    @apply admin-badge bg-green-100 text-green-800;
-  }
-  
-  .admin-badge-warning {
-    @apply admin-badge bg-yellow-100 text-yellow-800;
-  }
-  
-  .admin-badge-danger {
-    @apply admin-badge bg-red-100 text-red-800;
-  }
-  
-  .admin-badge-info {
-    @apply admin-badge bg-blue-100 text-blue-800;
-  }
-  
-  /* Form layouts */
-  .admin-form {
-    @apply space-y-6;
-  }
-  
-  .admin-form-group {
-    @apply space-y-2;
-  }
-  
-  .admin-form-row {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
-  }
-  
-  .admin-form-actions {
-    @apply flex items-center justify-end gap-3 pt-6 border-t border-gray-200;
-  }
-  
-  /* Loading states */
-  .admin-loading {
-    @apply animate-pulse;
-  }
-  
-  .admin-loading-card {
-    @apply bg-gray-200 rounded h-4;
-  }
-  
-  .admin-loading-title {
-    @apply bg-gray-200 rounded h-6 w-48;
-  }
-  
-  /* Utility classes */
-  .admin-divider {
-    @apply border-t border-gray-200 my-6;
-  }
-  
-  .admin-flex-between {
-    @apply flex items-center justify-between;
-  }
-  
-  .admin-flex-center {
-    @apply flex items-center justify-center;
-  }
-  
-  .admin-space-y {
-    @apply space-y-6;
-  }
-  
-  /* Dashboard specific */
-  .dashboard-metric {
-    @apply admin-card;
-  }
-  
-  .dashboard-metric-value {
-    @apply text-2xl font-semibold text-gray-900;
-  }
-  
-  .dashboard-metric-label {
-    @apply text-sm text-gray-600;
-  }
-  
-  .dashboard-chart {
-    @apply admin-card p-6;
+  .loading-title {
+    @apply loading-skeleton h-6 w-48;
   }
 }

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import AdminSidebar from './AdminSidebar';
+import AppLayout from '../layout/AppLayout';
 import AdminHeader from './AdminHeader';
 import AdminDashboardHome from './AdminDashboardHome';
 import BlogPostsManagerV2 from './BlogPostsManagerV2';
@@ -26,34 +26,37 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="admin-container flex min-h-screen bg-gray-50">
-      <AdminSidebar collapsed={sidebarCollapsed} />
-      
-      <div className="flex-1 flex flex-col min-w-0">
-        <AdminHeader 
-          onLogout={onLogout} 
-          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-        
-        <main className="flex-1 admin-content">
-          <Routes>
-            <Route index element={<AdminDashboardHome />} />
-            <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
-            <Route path="sector-reports" element={<SectorReportsGenerator />} />
-            <Route path="case-studies" element={<CaseStudiesManager />} />
-            <Route path="operations" element={<OperationsManager />} />
-            <Route path="multiples" element={<MultiplesManager />} />
-            <Route path="statistics" element={<StatisticsManager />} />
-            <Route path="team" element={<TeamMembersManager />} />
-            <Route path="testimonials" element={<TestimonialsManager />} />
-            <Route path="carousel-testimonials" element={<CarouselTestimonialsManager />} />
-            <Route path="carousel-logos" element={<CarouselLogosManager />} />
-            <Route path="contact-leads" element={<ContactLeadsManager />} />
-            <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
-            <Route path="valuation-leads" element={<ValuationLeadsManager />} />
-          </Routes>
-        </main>
-      </div>
+    <div className="app-layout">
+      <AppLayout 
+        sidebarCollapsed={sidebarCollapsed} 
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+      >
+        <div className="flex flex-col min-h-screen">
+          <AdminHeader 
+            onLogout={onLogout} 
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          />
+          
+          <main className="flex-1 bg-slate-50">
+            <Routes>
+              <Route index element={<AdminDashboardHome />} />
+              <Route path="blog-v2" element={<BlogPostsManagerV2 />} />
+              <Route path="sector-reports" element={<SectorReportsGenerator />} />
+              <Route path="case-studies" element={<CaseStudiesManager />} />
+              <Route path="operations" element={<OperationsManager />} />
+              <Route path="multiples" element={<MultiplesManager />} />
+              <Route path="statistics" element={<StatisticsManager />} />
+              <Route path="team" element={<TeamMembersManager />} />
+              <Route path="testimonials" element={<TestimonialsManager />} />
+              <Route path="carousel-testimonials" element={<CarouselTestimonialsManager />} />
+              <Route path="carousel-logos" element={<CarouselLogosManager />} />
+              <Route path="contact-leads" element={<ContactLeadsManager />} />
+              <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
+              <Route path="valuation-leads" element={<ValuationLeadsManager />} />
+            </Routes>
+          </main>
+        </div>
+      </AppLayout>
     </div>
   );
 };
