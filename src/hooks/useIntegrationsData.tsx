@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -101,7 +100,8 @@ export const useIntegrationsData = () => {
       // Transform the data to match our interface
       const transformedData = data?.map(item => ({
         ...item,
-        data_payload: item.data_payload || {}
+        data_payload: item.data_payload || {},
+        status: item.status as 'pending' | 'success' | 'error' // Type assertion to fix the status type
       })) || [];
       setIntegrationLogs(transformedData);
     } catch (error) {
