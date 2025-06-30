@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/cards';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -219,7 +219,7 @@ const GoogleAdsAttributionTab = ({ adConversions, touchpoints }: GoogleAdsAttrib
                   <span className="font-medium text-orange-800">Optimización</span>
                 </div>
                 <p className="text-sm text-orange-700">
-                  Considera aumentar presupuesto en campañas con ROAS > 4x.
+                  Considera aumentar presupuesto en campañas con ROAS mayor a 4x.
                 </p>
               </div>
             </div>
