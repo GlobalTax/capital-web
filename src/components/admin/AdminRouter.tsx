@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AdminDashboardHome from './AdminDashboardHome';
@@ -19,6 +18,7 @@ import TestimonialsManager from './TestimonialsManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import CarouselLogosManager from './CarouselLogosManager';
 import LeadMagnetsManager from './LeadMagnetsManager';
+import IntegrationsManager from './IntegrationsManager';
 
 // Componentes placeholder para las rutas que faltan
 const CRMDashboard = () => (

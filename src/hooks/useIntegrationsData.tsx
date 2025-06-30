@@ -62,7 +62,13 @@ export const useIntegrationsData = () => {
         .limit(100);
 
       if (error) throw error;
-      setLinkedinData(data || []);
+      // Transform the data to match our interface
+      const transformedData = data?.map(item => ({
+        ...item,
+        decision_makers: Array.isArray(item.decision_makers) ? item.decision_makers : [],
+        funding_signals: item.funding_signals || {}
+      })) || [];
+      setLinkedinData(transformedData);
     } catch (error) {
       console.error('Error fetching LinkedIn data:', error);
     }
@@ -92,7 +98,12 @@ export const useIntegrationsData = () => {
         .limit(50);
 
       if (error) throw error;
-      setIntegrationLogs(data || []);
+      // Transform the data to match our interface
+      const transformedData = data?.map(item => ({
+        ...item,
+        data_payload: item.data_payload || {}
+      })) || [];
+      setIntegrationLogs(transformedData);
     } catch (error) {
       console.error('Error fetching integration logs:', error);
     }
@@ -106,7 +117,12 @@ export const useIntegrationsData = () => {
         .order('integration_name');
 
       if (error) throw error;
-      setIntegrationConfigs(data || []);
+      // Transform the data to match our interface
+      const transformedData = data?.map(item => ({
+        ...item,
+        config_data: item.config_data || {}
+      })) || [];
+      setIntegrationConfigs(transformedData);
     } catch (error) {
       console.error('Error fetching integration configs:', error);
     }
@@ -160,11 +176,14 @@ export const useIntegrationsData = () => {
     }
   };
 
-  const trackAdConversion = async (conversionData: Partial<AdConversion>) => {
+  const trackAdConversion = async (conversionData: Omit<AdConversion, 'id' | 'created_at'>) => {
     try {
       const { data, error } = await supabase
         .from('ad_conversions')
-        .insert([conversionData])
+        .insert([{
+          ...conversionData,
+          conversion_type: conversionData.conversion_type || 'form_submission'
+        }])
         .select()
         .single();
 
@@ -205,14 +224,12 @@ export const useIntegrationsData = () => {
     }
   };
 
-  const updateIntegrationConfig = async (configId: string, updates: Partial<IntegrationConfig>) => {
+  const updateIntegrationConfig = async (configId: string, updates: Partial<IntegrationConfig>): Promise<void> => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('integration_configs')
         .update(updates)
-        .eq('id', configId)
-        .select()
-        .single();
+        .eq('id', configId);
 
       if (error) throw error;
 
@@ -222,8 +239,6 @@ export const useIntegrationsData = () => {
         title: "Configuración actualizada",
         description: "Los ajustes de integración se han guardado correctamente",
       });
-
-      return data;
     } catch (error) {
       console.error('Error updating integration config:', error);
       toast({

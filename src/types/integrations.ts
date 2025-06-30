@@ -67,7 +67,7 @@ export interface AttributionTouchpoint {
 
 export interface IntegrationLog {
   id: string;
-  integration_type: 'apollo' | 'google_ads' | 'linkedin' | 'hubspot' | 'slack';
+  integration_type: string;
   operation: string;
   company_domain?: string;
   status: 'pending' | 'success' | 'error';
