@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -123,7 +122,14 @@ export const useAdvancedLeadScoring = () => {
         .eq('is_active', true)
         .order('points', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Si no es admin, devolver array vacío en lugar de error
+        if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
+          console.warn('No admin access to scoring rules, using public rules only');
+          return [];
+        }
+        throw error;
+      }
       return data as LeadScoringRule[];
     },
     staleTime: 300000, // 5 minutos
@@ -142,7 +148,13 @@ export const useAdvancedLeadScoring = () => {
         .order('total_score', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
+          console.warn('No admin access to hot leads');
+          return [];
+        }
+        throw error;
+      }
       return data as LeadScore[];
     },
     staleTime: 120000, // 2 minutos
@@ -159,7 +171,13 @@ export const useAdvancedLeadScoring = () => {
         .order('total_score', { ascending: false })
         .limit(200);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
+          console.warn('No admin access to all leads');
+          return [];
+        }
+        throw error;
+      }
       return data as LeadScore[];
     },
     staleTime: 180000, // 3 minutos
@@ -180,7 +198,13 @@ export const useAdvancedLeadScoring = () => {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
+          console.warn('No admin access to alerts');
+          return [];
+        }
+        throw error;
+      }
       return data as LeadAlert[];
     },
     staleTime: 60000, // 1 minuto
@@ -205,7 +229,7 @@ export const useAdvancedLeadScoring = () => {
         throw new Error('Rate limited');
       }
 
-      // Encontrar regla aplicable
+      // Encontrar regla aplicable con fallback si no hay acceso admin
       const applicableRule = scoringRules?.find(rule => {
         if (rule.trigger_type !== eventType) return false;
         
@@ -266,7 +290,9 @@ export const useAdvancedLeadScoring = () => {
         .update({ is_read: true })
         .eq('id', alertId);
 
-      if (error) throw error;
+      if (error && !error.message?.includes('row-level security')) {
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leadAlerts'] });
@@ -289,7 +315,12 @@ export const useAdvancedLeadScoring = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes('row-level security')) {
+          throw new Error('No tienes permisos para actualizar leads. Se requiere acceso de administrador.');
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -298,6 +329,13 @@ export const useAdvancedLeadScoring = () => {
       toast({
         title: "Lead actualizado",
         description: "La información del lead ha sido actualizada exitosamente.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al actualizar lead",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });
@@ -361,7 +399,16 @@ export const useAdvancedLeadScoring = () => {
 
   // Estadísticas agregadas
   const getLeadStats = useCallback(() => {
-    if (!allLeads) return null;
+    if (!allLeads || allLeads.length === 0) {
+      return {
+        totalLeads: 0,
+        hotLeadsCount: 0,
+        averageScore: 0,
+        conversionRate: '0.0',
+        leadsByStatus: {},
+        topSources: []
+      };
+    }
 
     const totalLeads = allLeads.length;
     const hotLeadsCount = allLeads.filter(lead => lead.is_hot_lead).length;
