@@ -180,6 +180,16 @@ const IntegrationsManager = () => {
               📈 Google Ads Attribution
             </button>
             <button
+              onClick={() => setActiveTab('testing')}
+              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'testing'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              🧪 Testing & Health
+            </button>
+            <button
               onClick={() => setActiveTab('status')}
               className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'status'
@@ -221,6 +231,13 @@ const IntegrationsManager = () => {
             adConversions={adConversions}
             touchpoints={touchpoints}
           />
+        </TabsContent>
+
+        <TabsContent value="testing">
+          <div className="space-y-6">
+            <IntegrationsHealthDashboard />
+            <ApolloTestingPanel />
+          </div>
         </TabsContent>
 
         <TabsContent value="status">
