@@ -1,50 +1,94 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarHeader,
-  useSidebar,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
-import { VersionSwitcher } from './VersionSwitcher';
-import { SearchForm } from './SearchForm';
-import { SidebarSearch } from './navigation/SidebarSearch';
-import { QuickAccessSection } from './navigation/QuickAccessSection';
-import { NavigationGroup } from './navigation/NavigationGroup';
-import { navigationGroups } from './navigation/navigationData';
+import { 
+  LayoutDashboard, 
+  Target, 
+  Settings, 
+  Users, 
+  BarChart3,
+  Shield,
+  Home
+} from 'lucide-react';
+
+const menuItems = [
+  {
+    title: "Principal",
+    items: [
+      { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+      { title: "Lead Scoring", url: "/admin/lead-scoring", icon: Target },
+      { title: "Reglas de Scoring", url: "/admin/lead-scoring-rules", icon: BarChart3 },
+    ]
+  },
+  {
+    title: "Configuración",
+    items: [
+      { title: "Ajustes", url: "/admin/settings", icon: Settings },
+    ]
+  }
+];
 
 export function ModernAppSidebar() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { state } = useSidebar();
-
-  // Mostrar resultados de búsqueda si hay query
-  if (searchQuery.trim()) {
-    return (
-      <SidebarSearch 
-        searchQuery={searchQuery} 
-        onSearchChange={setSearchQuery} 
-      />
-    );
-  }
+  const location = useLocation();
 
   return (
-    <Sidebar className="border-r border-gray-200">
+    <Sidebar className="border-r">
       <SidebarHeader className="p-4">
-        <VersionSwitcher />
-        <div className="mt-4">
-          <SearchForm onSearch={setSearchQuery} value={searchQuery} />
+        <div className="flex items-center gap-2">
+          <Shield className="h-6 w-6 text-blue-600" />
+          <div>
+            <h2 className="text-lg font-semibold">Admin Panel</h2>
+            <p className="text-xs text-gray-500">Capittal</p>
+          </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Acceso Rápido */}
-        <QuickAccessSection />
-
-        {/* Grupos principales */}
-        {navigationGroups.map((group, groupIndex) => (
-          <NavigationGroup key={groupIndex} group={group} />
+        {menuItems.map((section) => (
+          <SidebarGroup key={section.title}>
+            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild
+                      isActive={location.pathname === item.url}
+                    >
+                      <Link to={item.url} className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         ))}
       </SidebarContent>
+
+      <SidebarFooter className="p-4">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <Home className="h-4 w-4" />
+          Volver al sitio web
+        </Link>
+      </SidebarFooter>
     </Sidebar>
   );
 }
