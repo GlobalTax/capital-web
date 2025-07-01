@@ -11,7 +11,15 @@ import LeadActivityFeed from './LeadActivityFeed';
 
 const RealTimeLeadsDashboard = () => {
   const { getLeadStats, hotLeads, isLoadingHotLeads } = useAdvancedLeadScoring();
-  const { totalHotLeads, totalLeads, isConnected } = useRealTimeLeads();
+  const { 
+    recentUpdates, 
+    clearUpdates, 
+    getLeadsPriority, 
+    totalHotLeads, 
+    totalLeads, 
+    isConnected 
+  } = useRealTimeLeads();
+  
   const stats = getLeadStats();
 
   const handleRefresh = () => {
@@ -108,8 +116,16 @@ const RealTimeLeadsDashboard = () => {
 
       {/* Paneles principales */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CriticalLeadsPanel />
-        <LeadActivityFeed />
+        <CriticalLeadsPanel 
+          getLeadsPriority={getLeadsPriority}
+          isConnected={isConnected}
+          totalHotLeads={totalHotLeads}
+        />
+        <LeadActivityFeed 
+          recentUpdates={recentUpdates}
+          clearUpdates={clearUpdates}
+          isConnected={isConnected}
+        />
       </div>
 
       {/* Acciones rápidas */}

@@ -5,11 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Activity, Star, TrendingUp, UserPlus, Clock } from 'lucide-react';
-import { useRealTimeLeads } from '@/hooks/useRealTimeLeads';
 
-const LeadActivityFeed = () => {
-  const { recentUpdates, clearUpdates, isConnected } = useRealTimeLeads();
+interface RealTimeLeadUpdate {
+  type: 'new_lead' | 'hot_lead' | 'score_update' | 'conversion';
+  leadData: any;
+  timestamp: string;
+}
 
+interface LeadActivityFeedProps {
+  recentUpdates: RealTimeLeadUpdate[];
+  clearUpdates: () => void;
+  isConnected: boolean;
+}
+
+const LeadActivityFeed = ({ recentUpdates, clearUpdates, isConnected }: LeadActivityFeedProps) => {
   const getUpdateIcon = (type: string) => {
     switch (type) {
       case 'new_lead':
@@ -36,7 +45,7 @@ const LeadActivityFeed = () => {
     }
   };
 
-  const getUpdateMessage = (update: any) => {
+  const getUpdateMessage = (update: RealTimeLeadUpdate) => {
     const company = update.leadData.company_name || update.leadData.company_domain || 'Empresa Anónima';
     const score = update.leadData.total_score || 0;
 

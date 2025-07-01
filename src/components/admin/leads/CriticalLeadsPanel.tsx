@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Phone, Mail, Clock, TrendingUp } from 'lucide-react';
-import { useRealTimeLeads } from '@/hooks/useRealTimeLeads';
 
-const CriticalLeadsPanel = () => {
-  const { getLeadsPriority, isConnected, totalHotLeads } = useRealTimeLeads();
+interface CriticalLeadsPanelProps {
+  getLeadsPriority: () => any[];
+  isConnected: boolean;
+  totalHotLeads: number;
+}
+
+const CriticalLeadsPanel = ({ getLeadsPriority, isConnected, totalHotLeads }: CriticalLeadsPanelProps) => {
   const priorityLeads = getLeadsPriority();
 
   const getPriorityIcon = (priority: string) => {
