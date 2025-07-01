@@ -22,28 +22,34 @@ export const useAdminLayout = () => {
     if (segments.length > 1) {
       const section = segments[1];
       const sectionTitles: Record<string, string> = {
-        'dashboard': 'Dashboard',
-        'marketing-intelligence': 'Marketing Intelligence',
+        // LEADS & WORKFLOWS
         'lead-scoring': 'Lead Scoring',
-        'marketing-automation': 'Marketing Automation',
-        'marketing-hub': 'Marketing Hub',
         'crm': 'CRM',
+        'marketing-automation': 'Marketing Automation',
         'alerts': 'Alertas',
-        'integrations': 'Integraciones Estratégicas',
-        'case-studies': 'Casos de Éxito',
-        'operations': 'Operaciones',
-        'blog': 'Blog Posts',
-        'blog-v2': 'AI Content Studio Pro',
-        'sector-reports': 'Reports Sectoriales IA',
-        'multiples': 'Múltiplos',
-        'statistics': 'Estadísticas',
         'contact-leads': 'Leads de Contacto',
         'collaborator-applications': 'Solicitudes Colaboradores',
+        
+        // CMS - CONTENIDO WEB
+        'blog-v2': 'AI Content Studio Pro',
+        'sector-reports': 'Reports Sectoriales IA',
+        'case-studies': 'Casos de Éxito',
+        'operations': 'Operaciones',
+        'multiples': 'Múltiplos',
+        'statistics': 'Estadísticas',
         'team': 'Equipo',
         'testimonials': 'Testimonios',
         'carousel-testimonials': 'Testimonios Carrusel',
         'carousel-logos': 'Logos Carrusel',
         'lead-magnets': 'Lead Magnets',
+        
+        // MARKETING INTELLIGENCE & ANALYTICS
+        'marketing-intelligence': 'Marketing Intelligence',
+        'marketing-hub': 'Marketing Hub',
+        'integrations': 'Integraciones Estratégicas',
+        
+        // CONFIGURACIÓN & SISTEMA
+        'dashboard': 'Dashboard',
         'settings': 'Configuración'
       };
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AdminDashboardHome from './AdminDashboardHome';
@@ -19,6 +20,7 @@ import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import CarouselLogosManager from './CarouselLogosManager';
 import LeadMagnetsManager from './LeadMagnetsManager';
 import IntegrationsManager from './IntegrationsManager';
+import LeadsWorkflowDashboard from './dashboards/LeadsWorkflowDashboard';
 
 // Componentes placeholder para las rutas que faltan
 const CRMDashboard = () => (
@@ -45,7 +47,7 @@ const SettingsDashboard = () => (
 const AdminRouter = () => {
   return (
     <Routes>
-      <Route index element={<AdminDashboardHome />} />
+      <Route index element={<LeadsWorkflowDashboard />} />
       <Route path="dashboard" element={<AdminDashboardHome />} />
       <Route path="marketing-intelligence" element={<MarketingIntelligenceDashboard />} />
       <Route path="lead-scoring" element={<LeadScoringIntelligenceDashboard />} />
