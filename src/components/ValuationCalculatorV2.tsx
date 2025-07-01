@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useValuationCalculatorV2 } from '@/hooks/useValuationCalculatorV2';
+import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import StepIndicatorV2 from '@/components/valuation-v2/StepIndicatorV2';
 import StepContentV2 from '@/components/valuation-v2/StepContentV2';
 import NavigationButtonsV2 from '@/components/valuation-v2/NavigationButtonsV2';
@@ -24,17 +25,62 @@ const ValuationCalculatorV2 = () => {
     resetCalculator 
   } = useValuationCalculatorV2();
 
+  const {
+    trackStepChange,
+    trackFieldUpdate,
+    trackValidationIssue,
+    trackCalculationStart,
+    trackCalculationComplete,
+    trackCalculationAbandon
+  } = useValuationCalculatorTracking();
+
+  // Track step changes
+  useEffect(() => {
+    trackStepChange(currentStep);
+  }, [currentStep, trackStepChange]);
+
+  // Enhanced updateField with tracking
+  const trackedUpdateField = (field: string, value: any) => {
+    updateField(field, value);
+    trackFieldUpdate(field, value);
+  };
+
+  // Enhanced handleFieldBlur with tracking
+  const trackedHandleFieldBlur = (field: string) => {
+    handleFieldBlur(field);
+    
+    // Track validation errors
+    const fieldErrors = errors[field];
+    if (fieldErrors && fieldErrors.length > 0) {
+      trackValidationIssue(field, fieldErrors.join(', '));
+    }
+  };
+
   const handleNext = () => {
     console.log('handleNext called, currentStep:', currentStep);
     
     if (currentStep === 3) {
       console.log('In step 3, calculating valuation...');
-      calculateValuation();
+      trackCalculationStart();
+      calculateValuation().then(() => {
+        trackCalculationComplete();
+      }).catch(() => {
+        trackCalculationAbandon(currentStep);
+      });
     } else {
       console.log('Moving to next step...');
       nextStep();
     }
   };
+
+  // Track abandon on unmount
+  useEffect(() => {
+    return () => {
+      if (currentStep < 4 && !result) {
+        trackCalculationAbandon(currentStep);
+      }
+    };
+  }, [currentStep, result, trackCalculationAbandon]);
 
   const isNextDisabled = isCalculating;
 
@@ -60,13 +106,13 @@ const ValuationCalculatorV2 = () => {
           <StepContentV2
             currentStep={currentStep}
             companyData={companyData}
-            updateField={updateField}
+            updateField={trackedUpdateField}
             result={result}
             isCalculating={isCalculating}
             resetCalculator={resetCalculator}
             showValidation={showValidation}
             getFieldState={getFieldState}
-            handleFieldBlur={handleFieldBlur}
+            handleFieldBlur={trackedHandleFieldBlur}
             errors={errors}
           />
 

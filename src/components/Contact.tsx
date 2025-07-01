@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { formatSpanishPhone } from '@/utils/validationUtils';
 import { useContactLeads } from '@/hooks/useContactLeads';
+import { useFormTracking } from '@/hooks/useFormTracking';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -25,12 +26,33 @@ const Contact = () => {
   });
 
   const { submitContactLead, isSubmitting } = useContactLeads();
+  
+  // Integrar tracking de formulario
+  const {
+    trackStart,
+    trackFieldChange,
+    trackValidationError,
+    trackSubmit,
+    trackComplete,
+    trackAbandon
+  } = useFormTracking('contact');
+
+  React.useEffect(() => {
+    // Track form start cuando se monta el componente
+    trackStart();
+  }, [trackStart]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Track submit attempt
+    trackSubmit();
+    
     try {
       await submitContactLead(formData);
+      
+      // Track successful completion
+      trackComplete();
       
       // Limpiar formulario después del envío exitoso
       setFormData({
@@ -43,13 +65,17 @@ const Contact = () => {
         referral: '',
       });
     } catch (error) {
-      // El error ya se maneja en el hook
+      // Track abandon si hay error
+      trackAbandon();
       console.error('Error en el formulario:', error);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Track field changes
+    trackFieldChange(name, value);
     
     if (name === 'phone') {
       setFormData({
@@ -65,10 +91,26 @@ const Contact = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
+    // Track select field changes
+    trackFieldChange(name, value);
+    
     setFormData({
       ...formData,
       [name]: value,
     });
+  };
+
+  const handleFieldBlur = (fieldName: string) => {
+    const value = formData[fieldName as keyof typeof formData];
+    
+    // Basic validation tracking
+    if (fieldName === 'email' && value && !value.includes('@')) {
+      trackValidationError(fieldName, 'Email inválido');
+    }
+    
+    if ((fieldName === 'fullName' || fieldName === 'company') && !value) {
+      trackValidationError(fieldName, 'Campo requerido');
+    }
   };
 
   return (
@@ -151,6 +193,7 @@ const Contact = () => {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
+                    onBlur={() => handleFieldBlur('fullName')}
                     placeholder="Tu nombre completo"
                     required
                     className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
@@ -166,6 +209,7 @@ const Contact = () => {
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
+                    onBlur={() => handleFieldBlur('company')}
                     placeholder="Nombre de tu empresa"
                     required
                     className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
@@ -181,6 +225,7 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
+                    onBlur={() => handleFieldBlur('phone')}
                     placeholder="+34 600 000 000"
                     className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
                   />
@@ -196,6 +241,7 @@ const Contact = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
+                    onBlur={() => handleFieldBlur('email')}
                     placeholder="tu@empresa.com"
                     required
                     className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
