@@ -10,6 +10,8 @@ import GoogleAdsAttributionTab from './integrations/GoogleAdsAttributionTab';
 import IntegrationsStatusPanel from './integrations/IntegrationsStatusPanel';
 import IntegrationsHealthDashboard from './integrations/IntegrationsHealthDashboard';
 import ApolloTestingPanel from './integrations/ApolloTestingPanel';
+import IntegrationsAnalyticsDashboard from './integrations/IntegrationsAnalyticsDashboard';
+import IntegrationsPerformanceMonitor from './integrations/IntegrationsPerformanceMonitor';
 
 const IntegrationsManager = () => {
   const {
@@ -181,6 +183,26 @@ const IntegrationsManager = () => {
               📈 Google Ads Attribution
             </button>
             <button
+              onClick={() => setActiveTab('analytics')}
+              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'analytics'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              📊 Analytics Avanzados
+            </button>
+            <button
+              onClick={() => setActiveTab('performance')}
+              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'performance'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              ⚡ Monitor Rendimiento
+            </button>
+            <button
               onClick={() => setActiveTab('testing')}
               className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'testing'
@@ -232,6 +254,14 @@ const IntegrationsManager = () => {
             adConversions={adConversions}
             touchpoints={touchpoints}
           />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <IntegrationsAnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <IntegrationsPerformanceMonitor />
         </TabsContent>
 
         <TabsContent value="testing">
