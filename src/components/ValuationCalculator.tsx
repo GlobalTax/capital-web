@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
+import { CompanyData } from '@/types/valuation';
 import StepIndicator from '@/components/valuation/StepIndicator';
 import StepContent from '@/components/valuation/StepContent';
 import NavigationButtons from '@/components/valuation/NavigationButtons';
@@ -40,13 +41,13 @@ const ValuationCalculator = () => {
   }, [currentStep, trackStepChange]);
 
   // Enhanced updateField with tracking
-  const trackedUpdateField = (field: string, value: any) => {
+  const trackedUpdateField = (field: keyof CompanyData, value: any) => {
     updateField(field, value);
     trackFieldUpdate(field, value);
   };
 
   // Enhanced handleFieldBlur with tracking
-  const trackedHandleFieldBlur = (field: string) => {
+  const trackedHandleFieldBlur = (field: keyof CompanyData) => {
     handleFieldBlur(field);
     
     // Track validation errors
