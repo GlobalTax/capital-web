@@ -1,5 +1,7 @@
-
 import { useState, useEffect } from 'react';
+import { useOptimizedQueries } from './useOptimizedQueries';
+import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useRateLimit } from './useRateLimit';
 import { 
   ApolloCompany, 
   ApolloContact,
@@ -45,27 +47,32 @@ export const useIntegrationsData = () => {
 
   const { calculateMetrics } = useIntegrationsMetrics();
 
+  const { executeOptimizedQuery, executeParallelQueries, clearCache } = useOptimizedQueries();
+  const { handleAsyncError } = useCentralizedErrorHandler();
+  const { executeWithRateLimit } = useRateLimit({ 
+    maxRequests: 10, 
+    windowMs: 60000 // 10 requests per minute
+  });
+
   // Wrapper functions that also refresh data
   const enrichCompanyWithApollo = async (domain: string) => {
-    try {
-      setIsLoading(true);
-      const result = await enrichCompanyAction(domain);
-      await refreshApolloData();
-      return result;
-    } finally {
-      setIsLoading(false);
-    }
+    return executeWithRateLimit(async () => {
+      return handleAsyncError(async () => {
+        const result = await enrichCompanyAction(domain);
+        clearCache('apollo_companies'); // Invalidate cache after update
+        return result;
+      }, { component: 'useIntegrationsData', action: 'enrichCompanyWithApollo' });
+    }, `enrich_company_${domain}`);
   };
 
   const enrichContactsForCompany = async (companyDomain: string) => {
-    try {
-      setIsLoading(true);
-      const result = await enrichContactsAction(companyDomain);
-      await refreshApolloData();
-      return result;
-    } finally {
-      setIsLoading(false);
-    }
+    return executeWithRateLimit(async () => {
+      return handleAsyncError(async () => {
+        const result = await enrichContactsAction(companyDomain);
+        clearCache('apollo_contacts'); // Invalidate cache after update
+        return result;
+      }, { component: 'useIntegrationsData', action: 'enrichContactsForCompany' });
+    }, `enrich_contacts_${companyDomain}`);
   };
 
   const updateIntegrationConfig = async (configId: string, updates: Partial<IntegrationConfig>): Promise<void> => {
@@ -88,34 +95,59 @@ export const useIntegrationsData = () => {
     setIntegrationConfigs(configs);
   };
 
+  // Optimized data fetching
   const fetchAllData = async () => {
     setIsLoading(true);
+    
     try {
-      const [
-        companies,
-        contacts,
-        conversions,
-        linkedin,
-        touchpointData,
-        logs,
-        configs
-      ] = await Promise.all([
-        fetchApolloCompanies(),
-        fetchApolloContacts(),
-        fetchAdConversions(),
-        fetchLinkedinData(),
-        fetchTouchpoints(),
-        fetchIntegrationLogs(),
-        fetchIntegrationConfigs()
-      ]);
+      const results = await executeParallelQueries([
+        () => executeOptimizedQuery<ApolloCompany>('apollo_companies', '*', {}, { 
+          cacheKey: 'apollo_companies',
+          cacheTtl: 300000 // 5 minutes
+        }),
+        () => executeOptimizedQuery<ApolloContact>('apollo_contacts', '*', {}, { 
+          cacheKey: 'apollo_contacts',
+          cacheTtl: 300000
+        }),
+        () => executeOptimizedQuery<AdConversion>('ad_conversions', '*', {}, { 
+          cacheKey: 'ad_conversions',
+          cacheTtl: 180000 // 3 minutes
+        }),
+        () => executeOptimizedQuery<LinkedinPost>('linkedin_posts', '*', {}, { 
+          cacheKey: 'linkedin_posts',
+          cacheTtl: 300000
+        }),
+        () => executeOptimizedQuery<IntegrationLog>('integration_logs', '*', {}, { 
+          cacheKey: 'integration_logs',
+          cacheTtl: 60000 // 1 minute
+        }),
+        () => executeOptimizedQuery<IntegrationConfig>('integration_configs', '*', {}, { 
+          cacheKey: 'integration_configs',
+          cacheTtl: 600000 // 10 minutes
+        })
+      ], {
+        cacheKey: 'integrations_all_data',
+        cacheTtl: 180000 // 3 minutes
+      });
 
-      setApolloCompanies(companies);
-      setApolloContacts(contacts);
-      setAdConversions(conversions);
-      setLinkedinData(linkedin);
-      setTouchpoints(touchpointData);
-      setIntegrationLogs(logs);
-      setIntegrationConfigs(configs);
+      const [
+        apolloCompaniesData,
+        apolloContactsData,
+        adConversionsData,
+        linkedinDataResult,
+        integrationLogsData,
+        integrationConfigsData
+      ] = results;
+
+      if (apolloCompaniesData) setApolloCompanies(apolloCompaniesData);
+      if (apolloContactsData) setApolloContacts(apolloContactsData);
+      if (adConversionsData) setAdConversions(adConversionsData);
+      if (linkedinDataResult) setLinkedinData(linkedinDataResult);
+      if (integrationLogsData) setIntegrationLogs(integrationLogsData);
+      if (integrationConfigsData) setIntegrationConfigs(integrationConfigsData);
+
+    } catch (error) {
+      console.error('Error fetching integrations data:', error);
     } finally {
       setIsLoading(false);
     }

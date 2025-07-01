@@ -1,37 +1,25 @@
 
-import { useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
 
+// Mantener compatibilidad con la interfaz anterior
 interface UseErrorHandlerReturn {
   handleError: (error: Error, context?: string) => void;
   handleAsyncError: (asyncFn: () => Promise<void>, context?: string) => Promise<void>;
 }
 
 export const useErrorHandler = (): UseErrorHandlerReturn => {
-  const { toast } = useToast();
+  const { handleError: centralizedHandleError, handleAsyncError: centralizedHandleAsyncError } = useCentralizedErrorHandler();
 
-  const handleError = useCallback((error: Error, context?: string) => {
-    console.error(`Error ${context ? `in ${context}` : ''}:`, error);
-    
-    toast({
-      title: "Error",
-      description: context 
-        ? `Error en ${context}: ${error.message}`
-        : error.message,
-      variant: "destructive",
-    });
-  }, [toast]);
+  const handleError = (error: Error, context?: string) => {
+    centralizedHandleError(error, { component: context });
+  };
 
-  const handleAsyncError = useCallback(async (
+  const handleAsyncError = async (
     asyncFn: () => Promise<void>, 
     context?: string
   ) => {
-    try {
-      await asyncFn();
-    } catch (error) {
-      handleError(error as Error, context);
-    }
-  }, [handleError]);
+    await centralizedHandleAsyncError(asyncFn, { component: context });
+  };
 
   return {
     handleError,
