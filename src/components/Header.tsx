@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X, Phone, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-300">
@@ -25,6 +27,16 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
+            {user && (
+              <Link to="/admin">
+                <InteractiveHoverButton 
+                  text="Admin"
+                  variant="secondary"
+                  size="sm"
+                  className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
+                />
+              </Link>
+            )}
             <Link to="/contacto">
               <InteractiveHoverButton 
                 text="Contacto"

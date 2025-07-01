@@ -2,8 +2,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Phone, ArrowLeft, ArrowRight } from 'lucide-react';
-import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
+import { Phone, ChevronDown, ChevronRight, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { serviciosData } from './data/serviciosData';
+import { sectoresData } from './data/sectoresData';
+import { nosotrosData } from './data/nosotrosData';
+import { recursosData } from './data/recursosData';
+import { colaboradoresData } from './data/colaboradoresData';
 
 interface AdvancedMobileNavigationProps {
   isMenuOpen: boolean;
@@ -11,207 +16,103 @@ interface AdvancedMobileNavigationProps {
 }
 
 const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileNavigationProps) => {
-  const [submenu, setSubmenu] = useState<'servicios' | 'sectores' | 'nosotros' | 'recursos' | null>(null);
+  const { user } = useAuth();
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   if (!isMenuOpen) return null;
 
-  const handleNavClick = () => {
-    setIsMenuOpen(false);
-    setSubmenu(null);
-  };
+  const navSections = [
+    { id: 'servicios', title: 'Servicios', items: serviciosData },
+    { id: 'sectores', title: 'Sectores', items: sectoresData },
+    { id: 'nosotros', title: 'Nosotros', items: nosotrosData },
+    { id: 'recursos', title: 'Recursos', items: recursosData },
+    { id: 'colaboradores', title: 'Colaboradores', items: colaboradoresData },
+  ];
 
   return (
-    <div className="md:hidden fixed inset-0 top-16 bg-white z-50 overflow-y-auto">
-      <div className="px-4 py-6">
-        {submenu && (
-          <div className="mb-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => setSubmenu(null)}
-              className="flex items-center space-x-2 p-0 h-auto text-gray-600 hover:text-gray-900"
+    <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg animate-slide-in max-h-[80vh] overflow-y-auto">
+      <nav className="px-4 py-6 space-y-4">
+        {/* Navegación por secciones */}
+        {navSections.map((section) => (
+          <div key={section.id}>
+            <button
+              onClick={() => toggleSection(section.id)}
+              className="flex items-center justify-between w-full text-left text-black text-sm font-medium py-2 hover:text-gray-600 transition-colors"
             >
-              <ArrowLeft className="size-4" />
-              <span className="text-sm">Volver</span>
+              <span>{section.title}</span>
+              {expandedSection === section.id ? 
+                <ChevronDown className="h-4 w-4" /> : 
+                <ChevronRight className="h-4 w-4" />
+              }
+            </button>
+            
+            {expandedSection === section.id && (
+              <div className="pl-4 space-y-2 mt-2 border-l-2 border-gray-100">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200 py-1"
+                    onClick={closeMenu}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Enlaces directos */}
+        <div className="border-t border-gray-200 pt-4 space-y-2">
+          <Link
+            to="/casos-exito"
+            className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
+            onClick={closeMenu}
+          >
+            Casos de Éxito
+          </Link>
+          <Link
+            to="/por-que-elegirnos"
+            className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
+            onClick={closeMenu}
+          >
+            Por Qué Elegirnos
+          </Link>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="border-t border-gray-200 pt-4 space-y-3">
+          {user && (
+            <Link to="/admin" onClick={closeMenu}>
+              <Button variant="outline" className="w-full justify-start">
+                <Shield className="h-4 w-4 mr-2" />
+                Panel de Administración
+              </Button>
+            </Link>
+          )}
+          
+          <Link to="/contacto" onClick={closeMenu}>
+            <Button className="capittal-button w-full">
+              Contacto
             </Button>
-          </div>
-        )}
-
-        {submenu === null && (
-          <div className="space-y-1">
-            <button
-              onClick={() => setSubmenu('servicios')}
-              className="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-sm font-medium text-gray-900">Servicios</span>
-              <ArrowRight className="size-4 text-gray-400" />
-            </button>
-            
-            <button
-              onClick={() => setSubmenu('sectores')}
-              className="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-sm font-medium text-gray-900">Sectores</span>
-              <ArrowRight className="size-4 text-gray-400" />
-            </button>
-            
-            <button
-              onClick={() => setSubmenu('nosotros')}
-              className="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-sm font-medium text-gray-900">Nosotros</span>
-              <ArrowRight className="size-4 text-gray-400" />
-            </button>
-            
-            <button
-              onClick={() => setSubmenu('recursos')}
-              className="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-sm font-medium text-gray-900">Recursos</span>
-              <ArrowRight className="size-4 text-gray-400" />
-            </button>
-
-            {colaboradoresData.map((item) => (
-              <Link
-                key={item.id}
-                to={item.href}
-                onClick={handleNavClick}
-                className="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                <ArrowRight className="size-4 text-gray-400" />
-              </Link>
-            ))}
-
-            <div className="pt-6 space-y-4">
-              <Link to="/contacto" onClick={handleNavClick} className="block w-full">
-                <Button className="w-full bg-black text-white hover:bg-gray-800">
-                  Contacto
-                </Button>
-              </Link>
-              <a 
-                href="tel:+34912345678" 
-                className="flex items-center justify-center w-full p-3 border border-black rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Phone size={20} className="text-black" />
-              </a>
-            </div>
-          </div>
-        )}
-
-        {submenu === 'servicios' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Servicios</h2>
-            {serviciosData.map((category) => (
-              <div key={category.title} className="space-y-4">
-                <div className="border-b border-gray-200 pb-2">
-                  <h3 className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-                    {category.title}
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {category.items.map((item) => (
-                    <Link
-                      key={item.id}
-                      to={item.href}
-                      onClick={handleNavClick}
-                      className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <item.icon className="size-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900">{item.label}</div>
-                        {item.description && (
-                          <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {submenu === 'sectores' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Sectores</h2>
-            <div className="space-y-2">
-              {sectoresData[0].items.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.href}
-                  onClick={handleNavClick}
-                  className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <item.icon className="size-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">{item.label}</div>
-                    {item.description && (
-                      <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {submenu === 'nosotros' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Nosotros</h2>
-            <div className="space-y-2">
-              {nosotrosData[0].items.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.href}
-                  onClick={handleNavClick}
-                  className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <item.icon className="size-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">{item.label}</div>
-                    {item.description && (
-                      <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {submenu === 'recursos' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Recursos</h2>
-            {recursosData.map((category) => (
-              <div key={category.title} className="space-y-4">
-                <div className="border-b border-gray-200 pb-2">
-                  <h3 className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-                    {category.title}
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {category.items.map((item) => (
-                    <Link
-                      key={item.id}
-                      to={item.href}
-                      onClick={handleNavClick}
-                      className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <item.icon className="size-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900">{item.label}</div>
-                        {item.description && (
-                          <p className="text-xs text-gray-500 mt-1">{item.description}</p>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          </Link>
+          
+          <a 
+            href="tel:+34912345678" 
+            className="flex items-center justify-center p-3 text-black hover:text-gray-600 transition-colors border border-black rounded-md w-full"
+          >
+            <Phone size={20} className="mr-2" />
+            Llamar Ahora
+          </a>
+        </div>
+      </nav>
     </div>
   );
 };

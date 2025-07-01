@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface UserDropdownProps {
   onLogout: () => void;
@@ -19,9 +20,18 @@ interface UserDropdownProps {
 
 const UserDropdown = ({ onLogout }: UserDropdownProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userEmail = user?.email || '';
   const userName = userEmail.split('@')[0] || 'Admin';
   const userInitials = userName.substring(0, 2).toUpperCase();
+
+  const handleProfileClick = () => {
+    navigate('/perfil');
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/admin/settings');
+  };
 
   return (
     <DropdownMenu>
@@ -44,11 +54,11 @@ const UserDropdown = ({ onLogout }: UserDropdownProps) => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem className="cursor-pointer" onClick={handleSettingsClick}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Configuración</span>
         </DropdownMenuItem>
