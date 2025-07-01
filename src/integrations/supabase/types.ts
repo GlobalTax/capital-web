@@ -1138,6 +1138,57 @@ export type Database = {
           },
         ]
       }
+      form_tracking_events: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_type: string
+          field_name: string | null
+          field_value: string | null
+          form_type: string
+          id: string
+          ip_address: unknown | null
+          page_path: string
+          session_id: string
+          timestamp: string
+          updated_at: string
+          user_agent: string | null
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          field_name?: string | null
+          field_value?: string | null
+          form_type: string
+          id?: string
+          ip_address?: unknown | null
+          page_path: string
+          session_id: string
+          timestamp?: string
+          updated_at?: string
+          user_agent?: string | null
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          field_name?: string | null
+          field_value?: string | null
+          form_type?: string
+          id?: string
+          ip_address?: unknown | null
+          page_path?: string
+          session_id?: string
+          timestamp?: string
+          updated_at?: string
+          user_agent?: string | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       generated_reports: {
         Row: {
           config_id: string | null
