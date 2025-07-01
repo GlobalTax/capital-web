@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
@@ -9,6 +8,8 @@ import ApolloIntelligenceTab from './integrations/ApolloIntelligenceTab';
 import ApolloContactsTab from './integrations/ApolloContactsTab';
 import GoogleAdsAttributionTab from './integrations/GoogleAdsAttributionTab';
 import IntegrationsStatusPanel from './integrations/IntegrationsStatusPanel';
+import IntegrationsHealthDashboard from './integrations/IntegrationsHealthDashboard';
+import ApolloTestingPanel from './integrations/ApolloTestingPanel';
 
 const IntegrationsManager = () => {
   const {
