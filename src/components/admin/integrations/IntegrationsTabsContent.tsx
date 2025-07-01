@@ -1,15 +1,13 @@
 
 import React from 'react';
-import { TabsContent } from '@/components/ui/tabs';
-import IntegrationsOverviewTab from './IntegrationsOverviewTab';
-import ApolloIntelligenceTab from './ApolloIntelligenceTab';
-import ApolloContactsTab from './ApolloContactsTab';
-import GoogleAdsAttributionTab from './GoogleAdsAttributionTab';
-import IntegrationsStatusPanel from './IntegrationsStatusPanel';
-import IntegrationsHealthDashboard from './IntegrationsHealthDashboard';
-import ApolloTestingPanel from './ApolloTestingPanel';
-import IntegrationsAnalyticsDashboard from './IntegrationsAnalyticsDashboard';
-import IntegrationsPerformanceMonitor from './IntegrationsPerformanceMonitor';
+import OverviewTabContent from './tabs/OverviewTabContent';
+import ApolloTabContent from './tabs/ApolloTabContent';
+import ContactsTabContent from './tabs/ContactsTabContent';
+import AdsTabContent from './tabs/AdsTabContent';
+import AnalyticsTabContent from './tabs/AnalyticsTabContent';
+import PerformanceTabContent from './tabs/PerformanceTabContent';
+import TestingTabContent from './tabs/TestingTabContent';
+import StatusTabContent from './tabs/StatusTabContent';
 import { 
   ApolloCompany, 
   ApolloContact, 
@@ -51,59 +49,40 @@ const IntegrationsTabsContent = ({
 }: IntegrationsTabsContentProps) => {
   return (
     <>
-      <TabsContent value="overview" className="space-y-6">
-        <IntegrationsOverviewTab 
-          metrics={metrics}
-          integrationConfigs={integrationConfigs}
-        />
-      </TabsContent>
+      <OverviewTabContent 
+        metrics={metrics}
+        integrationConfigs={integrationConfigs}
+      />
 
-      <TabsContent value="apollo">
-        <ApolloIntelligenceTab 
-          apolloCompanies={apolloCompanies}
-          onEnrichCompany={enrichCompanyWithApollo}
-          isLoading={isLoading}
-        />
-      </TabsContent>
+      <ApolloTabContent 
+        apolloCompanies={apolloCompanies}
+        onEnrichCompany={enrichCompanyWithApollo}
+        isLoading={isLoading}
+      />
 
-      <TabsContent value="contacts">
-        <ApolloContactsTab 
-          apolloContacts={apolloContacts}
-          apolloCompanies={apolloCompanies}
-          onEnrichContacts={enrichContactsForCompany}
-          isLoading={isLoading}
-        />
-      </TabsContent>
+      <ContactsTabContent 
+        apolloContacts={apolloContacts}
+        apolloCompanies={apolloCompanies}
+        onEnrichContacts={enrichContactsForCompany}
+        isLoading={isLoading}
+      />
 
-      <TabsContent value="ads">
-        <GoogleAdsAttributionTab 
-          adConversions={adConversions}
-          touchpoints={touchpoints}
-        />
-      </TabsContent>
+      <AdsTabContent 
+        adConversions={adConversions}
+        touchpoints={touchpoints}
+      />
 
-      <TabsContent value="analytics">
-        <IntegrationsAnalyticsDashboard />
-      </TabsContent>
+      <AnalyticsTabContent />
 
-      <TabsContent value="performance">
-        <IntegrationsPerformanceMonitor />
-      </TabsContent>
+      <PerformanceTabContent />
 
-      <TabsContent value="testing">
-        <div className="space-y-6">
-          <IntegrationsHealthDashboard />
-          <ApolloTestingPanel />
-        </div>
-      </TabsContent>
+      <TestingTabContent />
 
-      <TabsContent value="status">
-        <IntegrationsStatusPanel 
-          integrationLogs={integrationLogs}
-          integrationConfigs={integrationConfigs}
-          onUpdateConfig={updateIntegrationConfig}
-        />
-      </TabsContent>
+      <StatusTabContent 
+        integrationLogs={integrationLogs}
+        integrationConfigs={integrationConfigs}
+        onUpdateConfig={updateIntegrationConfig}
+      />
     </>
   );
 };
