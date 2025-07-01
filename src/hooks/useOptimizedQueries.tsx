@@ -85,47 +85,6 @@ export const useOptimizedQueries = () => {
     }
   }, [getFromCache, setToCache]);
 
-  const executeOptimizedQuery = useCallback(async <T,>(
-    tableName: string,
-    selectQuery: string = '*',
-    filters: Record<string, any> = {},
-    config: QueryConfig = {}
-  ): Promise<T[] | null> => {
-    const { cacheKey, cacheTtl = 300000 } = config;
-    
-    // Verificar caché
-    if (cacheKey) {
-      const cached = getFromCache<T[]>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
-
-    return handleAsyncError(async () => {
-      let query = supabase.from(tableName).select(selectQuery);
-      
-      // Aplicar filtros
-      Object.entries(filters).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          query = query.in(key, value);
-        } else if (value !== undefined && value !== null) {
-          query = query.eq(key, value);
-        }
-      });
-
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
-      // Guardar en caché
-      if (cacheKey && cacheTtl > 0 && data) {
-        setToCache(cacheKey, data, cacheTtl);
-      }
-      
-      return data as T[];
-    }, { component: 'useOptimizedQueries', action: `query_${tableName}` });
-  }, [handleAsyncError, getFromCache, setToCache]);
-
   const clearCache = useCallback((pattern?: string) => {
     if (pattern) {
       const keysToDelete = Array.from(cacheRef.current.keys())
@@ -138,7 +97,6 @@ export const useOptimizedQueries = () => {
 
   return {
     executeParallelQueries,
-    executeOptimizedQuery,
     clearCache,
     isLoading
   };

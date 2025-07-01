@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useOptimizedQueries } from './useOptimizedQueries';
 import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
@@ -47,7 +48,7 @@ export const useIntegrationsData = () => {
 
   const { calculateMetrics } = useIntegrationsMetrics();
 
-  const { executeOptimizedQuery, executeParallelQueries, clearCache } = useOptimizedQueries();
+  const { executeParallelQueries, clearCache } = useOptimizedQueries();
   const { handleAsyncError } = useCentralizedErrorHandler();
   const { executeWithRateLimit } = useRateLimit({ 
     maxRequests: 10, 
@@ -95,36 +96,18 @@ export const useIntegrationsData = () => {
     setIntegrationConfigs(configs);
   };
 
-  // Optimized data fetching
+  // Optimized data fetching using direct fetcher functions
   const fetchAllData = async () => {
     setIsLoading(true);
     
     try {
       const results = await executeParallelQueries([
-        () => executeOptimizedQuery<ApolloCompany>('apollo_companies', '*', {}, { 
-          cacheKey: 'apollo_companies',
-          cacheTtl: 300000 // 5 minutes
-        }),
-        () => executeOptimizedQuery<ApolloContact>('apollo_contacts', '*', {}, { 
-          cacheKey: 'apollo_contacts',
-          cacheTtl: 300000
-        }),
-        () => executeOptimizedQuery<AdConversion>('ad_conversions', '*', {}, { 
-          cacheKey: 'ad_conversions',
-          cacheTtl: 180000 // 3 minutes
-        }),
-        () => executeOptimizedQuery<LinkedinPost>('linkedin_posts', '*', {}, { 
-          cacheKey: 'linkedin_posts',
-          cacheTtl: 300000
-        }),
-        () => executeOptimizedQuery<IntegrationLog>('integration_logs', '*', {}, { 
-          cacheKey: 'integration_logs',
-          cacheTtl: 60000 // 1 minute
-        }),
-        () => executeOptimizedQuery<IntegrationConfig>('integration_configs', '*', {}, { 
-          cacheKey: 'integration_configs',
-          cacheTtl: 600000 // 10 minutes
-        })
+        () => fetchApolloCompanies(),
+        () => fetchApolloContacts(),
+        () => fetchAdConversions(),
+        () => fetchLinkedinData(),
+        () => fetchIntegrationLogs(),
+        () => fetchIntegrationConfigs()
       ], {
         cacheKey: 'integrations_all_data',
         cacheTtl: 180000 // 3 minutes
