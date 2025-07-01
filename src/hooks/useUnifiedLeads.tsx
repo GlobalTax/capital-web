@@ -134,32 +134,32 @@ export const useUnifiedLeads = () => {
 
   const updateLeadStatus = async (leadId: string, origin: string, newStatus: string) => {
     try {
-      let tableName = '';
-      switch (origin) {
-        case 'contact':
-          tableName = 'contact_leads';
-          break;
-        case 'valuation':
-          // Las valoraciones no tienen status editable
-          toast({
-            title: "Información",
-            description: "Las valoraciones no tienen estado editable",
-            variant: "default",
-          });
-          return;
-        case 'collaborator':
-          tableName = 'collaborator_applications';
-          break;
-        default:
-          throw new Error('Origen de lead no válido');
+      // Handle each origin type with specific table queries
+      if (origin === 'contact') {
+        const { error } = await supabase
+          .from('contact_leads')
+          .update({ status: newStatus })
+          .eq('id', leadId);
+
+        if (error) throw error;
+      } else if (origin === 'collaborator') {
+        const { error } = await supabase
+          .from('collaborator_applications')
+          .update({ status: newStatus })
+          .eq('id', leadId);
+
+        if (error) throw error;
+      } else if (origin === 'valuation') {
+        // Las valoraciones no tienen status editable
+        toast({
+          title: "Información",
+          description: "Las valoraciones no tienen estado editable",
+          variant: "default",
+        });
+        return;
+      } else {
+        throw new Error('Origen de lead no válido');
       }
-
-      const { error } = await supabase
-        .from(tableName)
-        .update({ status: newStatus })
-        .eq('id', leadId);
-
-      if (error) throw error;
 
       // Refetch data to update the UI
       await fetchUnifiedLeads();
