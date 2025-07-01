@@ -1,88 +1,18 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
-
-interface ValidationResult {
-  isValid: boolean;
-  message?: string;
-  sanitizedValue?: any;
-}
-
-interface SecurityConfig {
-  allowHTML?: boolean;
-  maxLength?: number;
-  allowedDomains?: string[];
-  requireHttps?: boolean;
-}
-
-type ValidationRule<T> = (value: T, config?: SecurityConfig) => ValidationResult;
-
-interface ValidationRules<T extends Record<string, any>> {
-  [K in keyof T]?: ValidationRule<T[K]>;
-}
-
-// Funciones de sanitización
-const sanitizeInput = (input: string, config: SecurityConfig = {}): string => {
-  if (!input || typeof input !== 'string') return '';
-  
-  let sanitized = input.trim();
-  
-  // Remover HTML si no está permitido
-  if (!config.allowHTML) {
-    sanitized = sanitized.replace(/<[^>]*>/g, '');
-  }
-  
-  // Limitar longitud
-  if (config.maxLength) {
-    sanitized = sanitized.substring(0, config.maxLength);
-  }
-  
-  // Escapar caracteres especiales para prevenir XSS
-  sanitized = sanitized
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
-  
-  return sanitized;
-};
-
-const validateEmail = (email: string): ValidationResult => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const sanitizedEmail = sanitizeInput(email, { maxLength: 254 });
-  
-  if (!emailRegex.test(sanitizedEmail)) {
-    return { isValid: false, message: 'Email inválido' };
-  }
-  
-  return { isValid: true, sanitizedValue: sanitizedEmail };
-};
-
-const validateURL = (url: string, config: SecurityConfig = {}): ValidationResult => {
-  try {
-    const urlObj = new URL(url);
-    
-    if (config.requireHttps && urlObj.protocol !== 'https:') {
-      return { isValid: false, message: 'Se requiere HTTPS' };
-    }
-    
-    if (config.allowedDomains && !config.allowedDomains.includes(urlObj.hostname)) {
-      return { isValid: false, message: 'Dominio no permitido' };
-    }
-    
-    return { isValid: true, sanitizedValue: url };
-  } catch {
-    return { isValid: false, message: 'URL inválida' };
-  }
-};
-
-const validateRequired = (value: any): ValidationResult => {
-  if (value === null || value === undefined || value === '') {
-    return { isValid: false, message: 'Campo requerido' };
-  }
-  return { isValid: true };
-};
+import { 
+  ValidationResult, 
+  SecurityConfig, 
+  ValidationRules 
+} from './validation/types';
+import { 
+  validateRequired, 
+  validateEmail, 
+  validateURL, 
+  validateNumber, 
+  validateText 
+} from './validation/validators';
 
 export const useSecureFormValidation = <T extends Record<string, any>>(
   initialData: T,
@@ -99,17 +29,8 @@ export const useSecureFormValidation = <T extends Record<string, any>>(
     required: validateRequired,
     email: validateEmail,
     url: (value: string) => validateURL(value, securityConfig),
-    text: (value: string) => ({ 
-      isValid: true, 
-      sanitizedValue: sanitizeInput(value, securityConfig) 
-    }),
-    number: (value: any) => {
-      const num = Number(value);
-      if (isNaN(num)) {
-        return { isValid: false, message: 'Debe ser un número válido' };
-      }
-      return { isValid: true, sanitizedValue: num };
-    }
+    text: (value: string) => validateText(value, securityConfig),
+    number: validateNumber
   }), [securityConfig]);
 
   const validateField = useCallback((field: keyof T, value: any): ValidationResult => {
