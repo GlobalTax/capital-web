@@ -23,6 +23,9 @@ export const useAdminLayout = () => {
       const section = segments[1];
       const sectionTitles: Record<string, string> = {
         'dashboard': 'Dashboard',
+        'cms-dashboard': 'Dashboard CMS',
+        'leads-dashboard': 'Dashboard Leads & Workflows',
+        'analytics-dashboard': 'Dashboard Analytics & Intelligence',
         'marketing-intelligence': 'Marketing Intelligence',
         'lead-scoring': 'Lead Scoring',
         'marketing-automation': 'Marketing Automation',
