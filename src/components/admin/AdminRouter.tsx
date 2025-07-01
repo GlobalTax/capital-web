@@ -21,6 +21,7 @@ import LeadMagnetsManager from './LeadMagnetsManager';
 import IntegrationsManager from './IntegrationsManager';
 import LeadsWorkflowDashboard from './dashboards/LeadsWorkflowDashboard';
 import FormsControlDashboard from './forms/FormsControlDashboard';
+import UnifiedLeadsManager from './UnifiedLeadsManager';
 
 // Componentes placeholder para las rutas que faltan
 const AlertsDashboard = () => (
@@ -56,6 +57,7 @@ const AdminRouter = () => {
       <Route path="multiples" element={<MultiplesManager />} />
       <Route path="statistics" element={<StatisticsManager />} />
       <Route path="contact-leads" element={<ContactLeadsManager />} />
+      <Route path="all-leads" element={<UnifiedLeadsManager />} />
       <Route path="collaborator-applications" element={<CollaboratorApplicationsManager />} />
       <Route path="team" element={<TeamMembersManager />} />
       <Route path="testimonials" element={<TestimonialsManager />} />
