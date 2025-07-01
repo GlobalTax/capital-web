@@ -23,13 +23,6 @@ import IntegrationsManager from './IntegrationsManager';
 import LeadsWorkflowDashboard from './dashboards/LeadsWorkflowDashboard';
 
 // Componentes placeholder para las rutas que faltan
-const CRMDashboard = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">CRM Dashboard</h1>
-    <p>Sistema de gestión de relaciones con clientes - Próximamente</p>
-  </div>
-);
-
 const AlertsDashboard = () => (
   <div className="p-6">
     <h1 className="text-2xl font-bold mb-4">Centro de Alertas</h1>
@@ -53,7 +46,6 @@ const AdminRouter = () => {
       <Route path="lead-scoring" element={<LeadScoringIntelligenceDashboard />} />
       <Route path="marketing-automation" element={<MarketingAutomationDashboard />} />
       <Route path="marketing-hub" element={<MarketingHubDashboard />} />
-      <Route path="crm" element={<CRMDashboard />} />
       <Route path="alerts" element={<AlertsDashboard />} />
       <Route path="integrations" element={<IntegrationsManager />} />
       <Route path="case-studies" element={<CaseStudiesManager />} />

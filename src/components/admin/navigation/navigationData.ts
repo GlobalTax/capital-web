@@ -1,4 +1,3 @@
-
 import {
   Home,
   Users,
@@ -50,13 +49,6 @@ export const navigationGroups: NavigationGroup[] = [
         description: "Priorización de leads y alertas urgentes",
         badge: "URGENTE" as const,
         keywords: ["leads", "scoring", "puntuación", "alertas", "urgente"]
-      },
-      {
-        title: "CRM",
-        icon: Users,
-        id: "crm",
-        description: "Gestión de clientes y contactos",
-        keywords: ["crm", "clientes", "contactos", "gestión"]
       },
       {
         title: "Marketing Automation",
