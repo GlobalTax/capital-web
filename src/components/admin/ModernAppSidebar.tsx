@@ -345,9 +345,9 @@ export function ModernAppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Grupos principales */}
+        {/* Grupos principales - sin defaultOpen */}
         {navigationGroups.map((group, groupIndex) => (
-          <SidebarGroup key={groupIndex} defaultOpen={groupIndex === 0}>
+          <SidebarGroup key={groupIndex}>
             <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               {group.title}
             </SidebarGroupLabel>
