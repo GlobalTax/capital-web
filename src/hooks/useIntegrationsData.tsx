@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { useOptimizedQueries } from './useOptimizedQueries';
 import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
 import { useRateLimit } from './useRateLimit';
 import { 
@@ -48,12 +47,23 @@ export const useIntegrationsData = () => {
 
   const { calculateMetrics } = useIntegrationsMetrics();
 
-  const { executeParallelQueries, clearCache } = useOptimizedQueries();
   const { handleAsyncError } = useCentralizedErrorHandler();
   const { executeWithRateLimit } = useRateLimit({ 
     maxRequests: 10, 
     windowMs: 60000 // 10 requests per minute
   });
+
+  // Cache simple
+  const cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+
+  const clearCache = (pattern?: string) => {
+    if (pattern) {
+      const keysToDelete = Array.from(cache.keys()).filter(key => key.includes(pattern));
+      keysToDelete.forEach(key => cache.delete(key));
+    } else {
+      cache.clear();
+    }
+  };
 
   // Wrapper functions that also refresh data
   const enrichCompanyWithApollo = async (domain: string) => {
@@ -96,23 +106,11 @@ export const useIntegrationsData = () => {
     setIntegrationConfigs(configs);
   };
 
-  // Optimized data fetching using direct fetcher functions
+  // Simplified data fetching using Promise.all directly
   const fetchAllData = async () => {
     setIsLoading(true);
     
     try {
-      const results = await executeParallelQueries([
-        () => fetchApolloCompanies(),
-        () => fetchApolloContacts(),
-        () => fetchAdConversions(),
-        () => fetchLinkedinData(),
-        () => fetchIntegrationLogs(),
-        () => fetchIntegrationConfigs()
-      ], {
-        cacheKey: 'integrations_all_data',
-        cacheTtl: 180000 // 3 minutes
-      });
-
       const [
         apolloCompaniesData,
         apolloContactsData,
@@ -120,14 +118,21 @@ export const useIntegrationsData = () => {
         linkedinDataResult,
         integrationLogsData,
         integrationConfigsData
-      ] = results;
+      ] = await Promise.all([
+        fetchApolloCompanies(),
+        fetchApolloContacts(),
+        fetchAdConversions(),
+        fetchLinkedinData(),
+        fetchIntegrationLogs(),
+        fetchIntegrationConfigs()
+      ]);
 
-      if (apolloCompaniesData) setApolloCompanies(apolloCompaniesData);
-      if (apolloContactsData) setApolloContacts(apolloContactsData);
-      if (adConversionsData) setAdConversions(adConversionsData);
-      if (linkedinDataResult) setLinkedinData(linkedinDataResult);
-      if (integrationLogsData) setIntegrationLogs(integrationLogsData);
-      if (integrationConfigsData) setIntegrationConfigs(integrationConfigsData);
+      setApolloCompanies(apolloCompaniesData);
+      setApolloContacts(apolloContactsData);
+      setAdConversions(adConversionsData);
+      setLinkedinData(linkedinDataResult);
+      setIntegrationLogs(integrationLogsData);
+      setIntegrationConfigs(integrationConfigsData);
 
     } catch (error) {
       console.error('Error fetching integrations data:', error);
