@@ -200,7 +200,7 @@ const ApolloContactsTab = ({
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold">{contact.full_name}</h3>
                       {contact.is_decision_maker && (
-                        <Crown className="h-4 w-4 text-purple-600" title="Decision Maker" />
+                        <Crown className="h-4 w-4 text-purple-600" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{contact.title}</p>
