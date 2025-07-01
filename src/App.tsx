@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,7 +25,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Import all service pages
 const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones'));
-const VentaEmpresasService = lazy(() => import('@/pages/servicios/VentaEmpresas'));
+const VentaEmpresasService = lazy(() => import('@/pages/VentaEmpresas'));
 const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence'));
 const AsesoramientoLegal = lazy(() => import('@/pages/servicios/AsesoramientoLegal'));
 const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuraciones'));
