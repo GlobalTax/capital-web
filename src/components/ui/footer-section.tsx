@@ -1,129 +1,114 @@
 
-"use client"
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Phone, Mail, MapPin } from 'lucide-react';
 
-import * as React from "react"
-import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
-import { Link } from 'react-router-dom'
-
-const sections = [
-  {
-    title: "Servicios",
-    links: [
-      { name: "Venta de Empresas", href: "/venta-empresas" },
-      { name: "Compra de Empresas", href: "/compra-empresas" },
-      { name: "Valoración", href: "/calculadora-valoracion" },
-      { name: "Casos de Éxito", href: "/casos-exito" },
-    ],
-  },
-  {
-    title: "Empresa",
-    links: [
-      { name: "Sobre Nosotros", href: "/nosotros" },
-      { name: "Equipo", href: "/equipo" },
-      { name: "Contacto", href: "/contacto" },
-      { name: "Documentación M&A", href: "/documentacion-ma" },
-    ],
-  },
-  {
-    title: "Recursos",
-    links: [
-      { name: "Blog", href: "/blog" },
-      { name: "Programa Colaboradores", href: "/programa-colaboradores" },
-    ],
-  },
-];
-
-const socialLinks = [
-  { icon: <Facebook className="h-5 w-5" />, href: "#", label: "Facebook" },
-  { icon: <Instagram className="h-5 w-5" />, href: "#", label: "Instagram" },
-  { icon: <Twitter className="h-5 w-5" />, href: "#", label: "Twitter" },
-  { icon: <Linkedin className="h-5 w-5" />, href: "#", label: "LinkedIn" },
-];
-
-const legalLinks = [
-  { name: "Política de Privacidad", href: "/politica-privacidad" },
-  { name: "Términos de Uso", href: "/terminos-uso" },
-  { name: "Política de Cookies", href: "/cookies" },
-];
-
-function Footerdemo() {
+export const Footerdemo = () => {
   return (
-    <footer className="relative border-t-0.5 border-black bg-white text-black">
-      <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start">
-          <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <Link to="/" className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold text-black">Capittal</h2>
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div className="col-span-1 md:col-span-2">
+            <div className="mb-4">
+              <Link to="/" className="text-2xl font-bold text-white">
+                Capittal
               </Link>
             </div>
-            <p className="max-w-[70%] text-sm text-gray-600">
-              Tu socio estratégico en fusiones y adquisiciones. Expertos en M&A con más de una década de experiencia en el mercado español.
+            <p className="text-gray-300 mb-4 max-w-md">
+              Expertos en M&A y valoración de empresas. Ayudamos a empresarios a maximizar el valor de sus compañías en operaciones de compra-venta.
             </p>
-            <div className="mb-6">
-              <address className="space-y-1 text-sm text-gray-600 not-italic">
-                <p>P.º de la Castellana, 11, B - A</p>
-                <p>Chamberí, 28046 Madrid</p>
-                <p>Email: info@capittal.com</p>
-              </address>
-            </div>
-            <ul className="flex items-center space-x-6">
-              {socialLinks.map((social, idx) => (
-                <li key={idx}>
-                  <a 
-                    href={social.href} 
-                    aria-label={social.label}
-                    className="text-gray-600 hover:text-black transition-colors duration-300"
-                  >
-                    {social.icon}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
-            {sections.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
-                <h3 className="mb-4 font-bold text-black">{section.title}</h3>
-                <ul className="space-y-3 text-sm">
-                  {section.links.map((link, linkIdx) => (
-                    <li key={linkIdx}>
-                      <Link 
-                        to={link.href}
-                        className="text-gray-600 hover:text-black transition-colors duration-300 font-medium"
-                      >
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+            <div className="space-y-2">
+              <div className="flex items-center text-gray-300">
+                <MapPin className="h-4 w-4 mr-2" />
+                <span>Carrer Ausias March, 36 Principal - P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</span>
               </div>
-            ))}
+              <div className="flex items-center text-gray-300">
+                <Phone className="h-4 w-4 mr-2" />
+                <span>+34 912 345 678</span>
+              </div>
+              <div className="flex items-center text-gray-300">
+                <Mail className="h-4 w-4 mr-2" />
+                <span>info@capittal.es</span>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div className="mt-12 flex flex-col justify-between gap-4 border-t-0.5 border-black pt-8 text-sm font-medium md:flex-row md:items-center">
-          <p className="order-2 text-gray-600 lg:order-1">
-            © {new Date().getFullYear()} Capittal. Todos los derechos reservados.
-          </p>
-          <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row md:gap-6">
-            {legalLinks.map((link, idx) => (
-              <li key={idx}>
-                <Link 
-                  to={link.href}
-                  className="text-gray-600 hover:text-black transition-colors duration-300"
-                >
-                  {link.name}
+
+          {/* Services */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Servicios</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/servicios/valoraciones" className="text-gray-300 hover:text-white transition-colors">
+                  Valoraciones
                 </Link>
               </li>
-            ))}
-          </ul>
+              <li>
+                <Link to="/servicios/venta-empresas" className="text-gray-300 hover:text-white transition-colors">
+                  Venta de Empresas
+                </Link>
+              </li>
+              <li>
+                <Link to="/servicios/due-diligence" className="text-gray-300 hover:text-white transition-colors">
+                  Due Diligence
+                </Link>
+              </li>
+              <li>
+                <Link to="/servicios/asesoramiento-legal" className="text-gray-300 hover:text-white transition-colors">
+                  Asesoramiento Legal
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Empresa</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/nosotros" className="text-gray-300 hover:text-white transition-colors">
+                  Nosotros
+                </Link>
+              </li>
+              <li>
+                <Link to="/equipo" className="text-gray-300 hover:text-white transition-colors">
+                  Equipo
+                </Link>
+              </li>
+              <li>
+                <Link to="/casos-exito" className="text-gray-300 hover:text-white transition-colors">
+                  Casos de Éxito
+                </Link>
+              </li>
+              <li>
+                <Link to="/contacto" className="text-gray-300 hover:text-white transition-colors">
+                  Contacto
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+              © 2024 Capittal. Todos los derechos reservados.
+            </div>
+            <div className="flex space-x-6">
+              <Link to="/politica-privacidad" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Política de Privacidad
+              </Link>
+              <Link to="/terminos-uso" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Términos de Uso
+              </Link>
+              <Link to="/cookies" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Cookies
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
-  )
-}
-
-export { Footerdemo }
+  );
+};

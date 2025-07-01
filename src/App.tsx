@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-// Lazy loading components
+// Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
@@ -23,55 +23,124 @@ const Equipo = lazy(() => import('@/pages/Equipo'));
 const DocumentacionMA = lazy(() => import('@/pages/DocumentacionMA'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
-// Import all service pages
-const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones'));
-const VentaEmpresasService = lazy(() => import('@/pages/VentaEmpresas'));
-const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence'));
-const AsesoramientoLegal = lazy(() => import('@/pages/servicios/AsesoramientoLegal'));
-const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuraciones'));
-const PlanificacionFiscal = lazy(() => import('@/pages/servicios/PlanificacionFiscal'));
+// Service pages - Create placeholder components for missing ones
+const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones').catch(() => 
+  import('@/pages/VentaEmpresas') // Fallback to existing page
+));
+const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const AsesoramientoLegal = lazy(() => import('@/pages/servicios/AsesoramientoLegal').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuraciones').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const PlanificacionFiscal = lazy(() => import('@/pages/servicios/PlanificacionFiscal').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
-// Import all sector pages
-const Tecnologia = lazy(() => import('@/pages/sectores/Tecnologia'));
-const Healthcare = lazy(() => import('@/pages/sectores/Healthcare'));
-const FinancialServices = lazy(() => import('@/pages/sectores/FinancialServices'));
-const Industrial = lazy(() => import('@/pages/sectores/Industrial'));
-const RetailConsumer = lazy(() => import('@/pages/sectores/RetailConsumer'));
-const Energia = lazy(() => import('@/pages/sectores/Energia'));
-const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario'));
+// Sector pages - Create placeholder components for missing ones
+const Tecnologia = lazy(() => import('@/pages/sectores/Tecnologia').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Healthcare = lazy(() => import('@/pages/sectores/Healthcare').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const FinancialServices = lazy(() => import('@/pages/sectores/FinancialServices').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Industrial = lazy(() => import('@/pages/sectores/Industrial').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const RetailConsumer = lazy(() => import('@/pages/sectores/RetailConsumer').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Energia = lazy(() => import('@/pages/sectores/Energia').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
-// Import resource pages
-const Blog = lazy(() => import('@/pages/recursos/Blog'));
-const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies'));
-const MarketReports = lazy(() => import('@/pages/recursos/MarketReports'));
-const Newsletter = lazy(() => import('@/pages/recursos/Newsletter'));
-const Webinars = lazy(() => import('@/pages/recursos/Webinars'));
+// Resource pages - Create placeholder components for missing ones
+const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const MarketReports = lazy(() => import('@/pages/recursos/MarketReports').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
-// Por que elegirnos pages
-const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos/index'));
-const Experiencia = lazy(() => import('@/pages/por-que-elegirnos/experiencia'));
-const Metodologia = lazy(() => import('@/pages/por-que-elegirnos/metodologia'));
-const Resultados = lazy(() => import('@/pages/por-que-elegirnos/resultados'));
+// Por que elegirnos pages - Create placeholder components for missing ones
+const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos/index').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Experiencia = lazy(() => import('@/pages/por-que-elegirnos/experiencia').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Metodologia = lazy(() => import('@/pages/por-que-elegirnos/metodologia').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Resultados = lazy(() => import('@/pages/por-que-elegirnos/resultados').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
-// Legal pages
-const PoliticaPrivacidad = lazy(() => import('@/pages/PoliticaPrivacidad'));
-const TerminosUso = lazy(() => import('@/pages/TerminosUso'));
-const Cookies = lazy(() => import('@/pages/Cookies'));
+// Legal pages - Create placeholder components for missing ones
+const PoliticaPrivacidad = lazy(() => import('@/pages/PoliticaPrivacidad').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const TerminosUso = lazy(() => import('@/pages/TerminosUso').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Cookies = lazy(() => import('@/pages/Cookies').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
-// Dynamic blog post component
-const BlogPost = lazy(() => import('@/pages/blog/BlogPost'));
+// Dynamic blog post component - Create placeholder for missing one
+const BlogPost = lazy(() => import('@/pages/blog/BlogPost').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
-// Documentacion MA pages
-const NuestroMetodo = lazy(() => import('@/pages/documentacion-ma/NuestroMetodo'));
-const Fase1 = lazy(() => import('@/pages/documentacion-ma/Fase1'));
-const Fase2Lucha = lazy(() => import('@/pages/documentacion-ma/Fase2Lucha'));
-const Resultados2 = lazy(() => import('@/pages/documentacion-ma/Resultados'));
-const ConoceEquipo = lazy(() => import('@/pages/documentacion-ma/ConoceEquipo'));
-const Typography = lazy(() => import('@/pages/documentacion-ma/Typography'));
-const Spacing = lazy(() => import('@/pages/documentacion-ma/Spacing'));
-const Variables = lazy(() => import('@/pages/documentacion-ma/Variables'));
-const Customization = lazy(() => import('@/pages/documentacion-ma/Customization'));
-const DynamicComponents = lazy(() => import('@/pages/documentacion-ma/DynamicComponents'));
+// Documentacion MA pages - Create placeholder components for missing ones
+const NuestroMetodo = lazy(() => import('@/pages/documentacion-ma/NuestroMetodo').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Fase1 = lazy(() => import('@/pages/documentacion-ma/Fase1').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Fase2Lucha = lazy(() => import('@/pages/documentacion-ma/Fase2Lucha').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Resultados2 = lazy(() => import('@/pages/documentacion-ma/Resultados').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const ConoceEquipo = lazy(() => import('@/pages/documentacion-ma/ConoceEquipo').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Typography = lazy(() => import('@/pages/documentacion-ma/Typography').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Spacing = lazy(() => import('@/pages/documentacion-ma/Spacing').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Variables = lazy(() => import('@/pages/documentacion-ma/Variables').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const Customization = lazy(() => import('@/pages/documentacion-ma/Customization').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
+const DynamicComponents = lazy(() => import('@/pages/documentacion-ma/DynamicComponents').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -112,7 +181,7 @@ function App() {
                     
                     {/* Service routes */}
                     <Route path="/servicios/valoraciones" element={<Valoraciones />} />
-                    <Route path="/servicios/venta-empresas" element={<VentaEmpresasService />} />
+                    <Route path="/servicios/venta-empresas" element={<VentaEmpresas />} />
                     <Route path="/servicios/due-diligence" element={<DueDiligence />} />
                     <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
                     <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
