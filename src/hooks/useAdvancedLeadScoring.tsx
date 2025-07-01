@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -69,7 +69,6 @@ export const useAdvancedLeadScoring = () => {
   const queryClient = useQueryClient();
   const [currentSession] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [visitorId] = useState(() => {
-    // Generar visitor ID basado en IP y user agent (simulado)
     const stored = localStorage.getItem('visitor_id');
     if (stored) return stored;
     
@@ -78,7 +77,43 @@ export const useAdvancedLeadScoring = () => {
     return newId;
   });
 
-  // Obtener reglas de scoring
+  // Rate limiting y debouncing
+  const lastTrackingTime = useRef(0);
+  const trackingCooldown = 5000; // 5 segundos entre trackings
+  const requestCount = useRef(0);
+  const maxRequestsPerMinute = 10;
+  const requestWindow = useRef(Date.now());
+
+  // Rate limiter
+  const isRateLimited = useCallback(() => {
+    const now = Date.now();
+    
+    // Reset window si han pasado más de 60 segundos
+    if (now - requestWindow.current > 60000) {
+      requestCount.current = 0;
+      requestWindow.current = now;
+    }
+    
+    if (requestCount.current >= maxRequestsPerMinute) {
+      console.warn('Rate limit exceeded for lead tracking');
+      return true;
+    }
+    
+    requestCount.current++;
+    return false;
+  }, []);
+
+  // Debounce tracking calls
+  const canTrack = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTrackingTime.current < trackingCooldown) {
+      return false;
+    }
+    lastTrackingTime.current = now;
+    return true;
+  }, []);
+
+  // Obtener reglas de scoring (con stale time para evitar re-fetches constantes)
   const { data: scoringRules } = useQuery({
     queryKey: ['leadScoringRules'],
     queryFn: async () => {
@@ -91,9 +126,11 @@ export const useAdvancedLeadScoring = () => {
       if (error) throw error;
       return data as LeadScoringRule[];
     },
+    staleTime: 300000, // 5 minutos
+    refetchOnWindowFocus: false,
   });
 
-  // Obtener leads calientes
+  // Obtener leads calientes (con stale time)
   const { data: hotLeads, isLoading: isLoadingHotLeads } = useQuery({
     queryKey: ['hotLeads'],
     queryFn: async () => {
@@ -108,9 +145,11 @@ export const useAdvancedLeadScoring = () => {
       if (error) throw error;
       return data as LeadScore[];
     },
+    staleTime: 120000, // 2 minutos
+    refetchOnWindowFocus: false,
   });
 
-  // Obtener todas las puntuaciones de leads
+  // Obtener todas las puntuaciones de leads (con stale time)
   const { data: allLeads, isLoading: isLoadingAllLeads } = useQuery({
     queryKey: ['allLeads'],
     queryFn: async () => {
@@ -123,9 +162,11 @@ export const useAdvancedLeadScoring = () => {
       if (error) throw error;
       return data as LeadScore[];
     },
+    staleTime: 180000, // 3 minutos
+    refetchOnWindowFocus: false,
   });
 
-  // Obtener alertas no leídas
+  // Obtener alertas no leídas (con stale time)
   const { data: unreadAlerts } = useQuery({
     queryKey: ['leadAlerts'],
     queryFn: async () => {
@@ -142,9 +183,11 @@ export const useAdvancedLeadScoring = () => {
       if (error) throw error;
       return data as LeadAlert[];
     },
+    staleTime: 60000, // 1 minuto
+    refetchOnWindowFocus: false,
   });
 
-  // Registrar evento de comportamiento
+  // Registrar evento de comportamiento (con rate limiting)
   const trackBehaviorEvent = useMutation({
     mutationFn: async ({
       eventType,
@@ -157,6 +200,11 @@ export const useAdvancedLeadScoring = () => {
       eventData?: Record<string, any>;
       companyDomain?: string;
     }) => {
+      // Rate limiting check
+      if (isRateLimited()) {
+        throw new Error('Rate limited');
+      }
+
       // Encontrar regla aplicable
       const applicableRule = scoringRules?.find(rule => {
         if (rule.trigger_type !== eventType) return false;
@@ -196,10 +244,17 @@ export const useAdvancedLeadScoring = () => {
       return data;
     },
     onSuccess: () => {
-      // Actualizar queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['hotLeads'] });
-      queryClient.invalidateQueries({ queryKey: ['allLeads'] });
-      queryClient.invalidateQueries({ queryKey: ['leadAlerts'] });
+      // Invalidar queries de manera más específica y con delay
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['hotLeads'] });
+        queryClient.invalidateQueries({ queryKey: ['allLeads'] });
+        queryClient.invalidateQueries({ queryKey: ['leadAlerts'] });
+      }, 2000); // Delay de 2 segundos
+    },
+    onError: (error) => {
+      if (error.message !== 'Rate limited') {
+        console.error('Error tracking behavior:', error);
+      }
     },
   });
 
@@ -247,41 +302,53 @@ export const useAdvancedLeadScoring = () => {
     },
   });
 
-  // Funciones de tracking automático
+  // Funciones de tracking con rate limiting
   const trackPageView = useCallback((path?: string) => {
+    if (!canTrack()) return;
+    
     const currentPath = path || window.location.pathname;
+    console.log('Tracking page view:', currentPath);
+    
     trackBehaviorEvent.mutate({
       eventType: 'page_view',
       pagePath: currentPath,
       eventData: { timestamp: new Date().toISOString() }
     });
-  }, [trackBehaviorEvent]);
+  }, [trackBehaviorEvent, canTrack]);
 
   const trackCalculatorUse = useCallback((calculatorData: Record<string, any>) => {
+    if (!canTrack()) return;
+    
     trackBehaviorEvent.mutate({
       eventType: 'calculator_use',
       pagePath: '/calculadora-valoracion',
       eventData: calculatorData
     });
-  }, [trackBehaviorEvent]);
+  }, [trackBehaviorEvent, canTrack]);
 
   const trackFormFill = useCallback((formData: Record<string, any>) => {
+    if (!canTrack()) return;
+    
     trackBehaviorEvent.mutate({
       eventType: 'form_fill',
       pagePath: window.location.pathname,
       eventData: formData
     });
-  }, [trackBehaviorEvent]);
+  }, [trackBehaviorEvent, canTrack]);
 
   const trackDownload = useCallback((downloadData: Record<string, any>) => {
+    if (!canTrack()) return;
+    
     trackBehaviorEvent.mutate({
       eventType: 'download',
       pagePath: window.location.pathname,
       eventData: downloadData
     });
-  }, [trackBehaviorEvent]);
+  }, [trackBehaviorEvent, canTrack]);
 
   const trackTimeOnSite = useCallback((timeInMinutes: number) => {
+    if (!canTrack()) return;
+    
     // Solo trackear cada minuto completo
     if (timeInMinutes > 0 && timeInMinutes % 1 === 0) {
       trackBehaviorEvent.mutate({
@@ -290,7 +357,7 @@ export const useAdvancedLeadScoring = () => {
         eventData: { timeInMinutes }
       });
     }
-  }, [trackBehaviorEvent]);
+  }, [trackBehaviorEvent, canTrack]);
 
   // Estadísticas agregadas
   const getLeadStats = useCallback(() => {
@@ -326,7 +393,8 @@ export const useAdvancedLeadScoring = () => {
     };
   }, [allLeads]);
 
-  // Auto-tracking de tiempo en sitio
+  // Auto-tracking de tiempo en sitio (DESHABILITADO para evitar bucles)
+  /*
   useEffect(() => {
     let timeCounter = 0;
     const interval = setInterval(() => {
@@ -338,8 +406,10 @@ export const useAdvancedLeadScoring = () => {
 
     return () => clearInterval(interval);
   }, [trackTimeOnSite]);
+  */
 
-  // Auto-tracking de page views
+  // Auto-tracking de page views (DESHABILITADO para evitar bucles)
+  /*
   useEffect(() => {
     trackPageView();
     
@@ -351,6 +421,7 @@ export const useAdvancedLeadScoring = () => {
     window.addEventListener('popstate', handleRouteChange);
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, [trackPageView]);
+  */
 
   return {
     // Data
