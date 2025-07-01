@@ -1,4 +1,5 @@
 
+
 export interface ValidationResult {
   isValid: boolean;
   message?: string;
@@ -17,3 +18,4 @@ export type ValidationRule<T> = (value: T, config?: SecurityConfig) => Validatio
 export interface ValidationRules<T extends Record<string, any>> {
   [K in keyof T]?: ValidationRule<T[K]>;
 }
+
