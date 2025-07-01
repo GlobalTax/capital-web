@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ApolloCompany, 
+  ApolloContact,
   AdConversion, 
   LinkedInIntelligence, 
   AttributionTouchpoint,
@@ -13,6 +14,7 @@ import {
 
 export const useIntegrationsData = () => {
   const [apolloCompanies, setApolloCompanies] = useState<ApolloCompany[]>([]);
+  const [apolloContacts, setApolloContacts] = useState<ApolloContact[]>([]);
   const [adConversions, setAdConversions] = useState<AdConversion[]>([]);
   const [linkedinData, setLinkedinData] = useState<LinkedInIntelligence[]>([]);
   const [touchpoints, setTouchpoints] = useState<AttributionTouchpoint[]>([]);
@@ -34,6 +36,21 @@ export const useIntegrationsData = () => {
       setApolloCompanies(data || []);
     } catch (error) {
       console.error('Error fetching Apollo companies:', error);
+    }
+  };
+
+  const fetchApolloContacts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('apollo_contacts')
+        .select('*')
+        .order('last_enriched', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setApolloContacts(data || []);
+    } catch (error) {
+      console.error('Error fetching Apollo contacts:', error);
     }
   };
 
@@ -139,6 +156,7 @@ export const useIntegrationsData = () => {
 
     setMetrics({
       apolloEnrichments: apolloCompanies.length,
+      apolloContacts: apolloContacts.length,
       adConversions: adConversions.length,
       linkedinSignals: linkedinData.length,
       totalTouchpoints: touchpoints.length,
@@ -163,12 +181,43 @@ export const useIntegrationsData = () => {
       });
 
       await fetchApolloCompanies();
+      await fetchApolloContacts();
       return data;
     } catch (error) {
       console.error('Error enriching company:', error);
       toast({
         title: "Error en enriquecimiento",
         description: "No se pudo enriquecer la empresa con datos de Apollo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const enrichContactsForCompany = async (companyDomain: string) => {
+    try {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase.functions.invoke('apollo-contacts-enrichment', {
+        body: { company_domain: companyDomain }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Contactos enriquecidos",
+        description: `Contactos de ${companyDomain} actualizados`,
+      });
+
+      await fetchApolloContacts();
+      await fetchApolloCompanies();
+      return data;
+    } catch (error) {
+      console.error('Error enriching contacts:', error);
+      toast({
+        title: "Error en enriquecimiento de contactos",
+        description: "No se pudieron enriquecer los contactos",
         variant: "destructive",
       });
     } finally {
@@ -254,6 +303,7 @@ export const useIntegrationsData = () => {
       setIsLoading(true);
       await Promise.all([
         fetchApolloCompanies(),
+        fetchApolloContacts(),
         fetchAdConversions(),
         fetchLinkedinData(),
         fetchTouchpoints(),
@@ -268,11 +318,12 @@ export const useIntegrationsData = () => {
 
   useEffect(() => {
     calculateMetrics();
-  }, [apolloCompanies, adConversions, linkedinData, touchpoints, integrationLogs]);
+  }, [apolloCompanies, apolloContacts, adConversions, linkedinData, touchpoints, integrationLogs]);
 
   return {
     // Data
     apolloCompanies,
+    apolloContacts,
     adConversions,
     linkedinData,
     touchpoints,
@@ -283,12 +334,14 @@ export const useIntegrationsData = () => {
     
     // Actions
     enrichCompanyWithApollo,
+    enrichContactsForCompany,
     trackAdConversion,
     syncLinkedInIntelligence,
     updateIntegrationConfig,
     
     // Refresh functions
     fetchApolloCompanies,
+    fetchApolloContacts,
     fetchAdConversions,
     fetchLinkedinData,
     fetchTouchpoints,

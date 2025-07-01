@@ -14,6 +14,30 @@ export interface ApolloCompany {
   last_enriched: string;
   created_at: string;
   updated_at: string;
+  contacts_count?: number;
+  decision_makers_count?: number;
+}
+
+export interface ApolloContact {
+  id: string;
+  apollo_person_id?: string;
+  company_id?: string;
+  company_domain?: string;
+  first_name: string;
+  last_name: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  linkedin_url?: string;
+  title?: string;
+  seniority?: string;
+  department?: string;
+  is_decision_maker: boolean;
+  contact_score: number;
+  apollo_data: any;
+  last_enriched: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AdConversion {
@@ -90,6 +114,7 @@ export interface IntegrationConfig {
 
 export interface IntegrationsMetrics {
   apolloEnrichments: number;
+  apolloContacts: number;
   adConversions: number;
   linkedinSignals: number;
   totalTouchpoints: number;

@@ -11,17 +11,62 @@ interface ApolloEnrichmentRequest {
   company_domain: string;
 }
 
-interface ApolloCompanyData {
-  name: string;
-  domain: string;
-  employee_count?: number;
-  industry?: string;
-  revenue_range?: string;
-  location?: string;
-  founded_year?: number;
-  technologies?: string[];
-  apollo_id?: string;
-  is_target_account?: boolean;
+interface ApolloAPIResponse {
+  organizations?: Array<{
+    id: string;
+    name: string;
+    website_url: string;
+    primary_domain: string;
+    industry: string;
+    keywords: string[];
+    estimated_num_employees: number;
+    founded_year: number;
+    phone: string;
+    linkedin_url: string;
+    facebook_url: string;
+    twitter_url: string;
+    primary_phone: {
+      number: string;
+    };
+    languages: string[];
+    alexa_ranking: number;
+    phone: string;
+    linkedin_url: string;
+    publicly_traded_symbol: string;
+    publicly_traded_exchange: string;
+    logo_url: string;
+    crunchbase_url: string;
+    primary_phone: {
+      number: string;
+    };
+    owned_by_organization_id: string;
+    suborganizations: Array<any>;
+    num_suborganizations: number;
+    seo_description: string;
+    short_description: string;
+    annual_revenue: number;
+    total_funding: number;
+    latest_funding_round_date: string;
+    latest_funding_stage: string;
+    funding_events: Array<any>;
+    technology_names: string[];
+    current_technologies: Array<{
+      uid: string;
+      name: string;
+      category: string;
+    }>;
+    account_id: string;
+    organization_raw_address: string;
+    organization_city: string;
+    organization_state: string;
+    organization_country: string;
+    organization_street_address: string;
+    hubspot_id: string;
+    salesforce_id: string;
+    crm_owner_id: string;
+    crm_record_url: string;
+    num_contacts: number;
+  }>;
 }
 
 serve(async (req) => {
@@ -53,32 +98,63 @@ serve(async (req) => {
       data_payload: { domain: company_domain }
     })
 
-    // Simulate Apollo API call - Replace with actual Apollo API integration
-    const apolloData = await mockApolloEnrichment(company_domain)
-
-    if (!apolloData) {
-      throw new Error('No data found for this company')
+    // Get Apollo API Key
+    const apolloApiKey = Deno.env.get('APOLLO_API_KEY')
+    if (!apolloApiKey) {
+      throw new Error('Apollo API key not configured')
     }
 
-    // Determine if it's a target account based on criteria
-    const isTargetAccount = determineTargetAccount(apolloData)
+    // Call Apollo API
+    const apolloResponse = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'X-Api-Key': apolloApiKey
+      },
+      body: JSON.stringify({
+        q_organization_domains: company_domain,
+        page: 1,
+        per_page: 1
+      })
+    })
+
+    if (!apolloResponse.ok) {
+      const errorText = await apolloResponse.text()
+      console.error('Apollo API Error:', errorText)
+      throw new Error(`Apollo API error: ${apolloResponse.status} - ${errorText}`)
+    }
+
+    const apolloData: ApolloAPIResponse = await apolloResponse.json()
+    console.log('Apollo API Response:', JSON.stringify(apolloData, null, 2))
+
+    if (!apolloData.organizations || apolloData.organizations.length === 0) {
+      throw new Error('No company data found in Apollo')
+    }
+
+    const orgData = apolloData.organizations[0]
+
+    // Transform Apollo data to our format
+    const companyData = {
+      company_domain,
+      company_name: orgData.name,
+      employee_count: orgData.estimated_num_employees,
+      industry: orgData.industry,
+      revenue_range: orgData.annual_revenue ? `$${(orgData.annual_revenue / 1000000).toFixed(1)}M` : null,
+      location: [orgData.organization_city, orgData.organization_state, orgData.organization_country]
+        .filter(Boolean).join(', '),
+      founded_year: orgData.founded_year,
+      technologies: orgData.technology_names || [],
+      apollo_id: orgData.id,
+      is_target_account: determineTargetAccount(orgData),
+      last_enriched: new Date().toISOString(),
+      contacts_count: orgData.num_contacts || 0
+    }
 
     // Upsert company data
-    const { data: companyData, error: companyError } = await supabaseClient
+    const { data: savedCompany, error: companyError } = await supabaseClient
       .from('apollo_companies')
-      .upsert({
-        company_domain,
-        company_name: apolloData.name,
-        employee_count: apolloData.employee_count,
-        industry: apolloData.industry,
-        revenue_range: apolloData.revenue_range,
-        location: apolloData.location,
-        founded_year: apolloData.founded_year,
-        technologies: apolloData.technologies,
-        apollo_id: apolloData.apollo_id,
-        is_target_account: isTargetAccount,
-        last_enriched: new Date().toISOString()
-      }, {
+      .upsert(companyData, {
         onConflict: 'company_domain'
       })
       .select()
@@ -97,26 +173,27 @@ serve(async (req) => {
       status: 'success',
       data_payload: { 
         domain: company_domain,
-        enriched_data: apolloData,
-        is_target_account: isTargetAccount
+        enriched_data: companyData,
+        is_target_account: companyData.is_target_account,
+        apollo_org_id: orgData.id
       },
       execution_time_ms: executionTime
     })
 
-    // If it's a target account with high potential, trigger notifications
-    if (isTargetAccount && apolloData.employee_count && apolloData.employee_count > 100) {
-      console.log(`High-value target account detected: ${apolloData.name}`)
-      
-      // Could integrate with Slack notifications here
-      EdgeRuntime.waitUntil(
-        notifyHighValueProspect(apolloData)
-      )
+    // If it's a target account with high potential, log for notifications
+    if (companyData.is_target_account && orgData.estimated_num_employees && orgData.estimated_num_employees > 100) {
+      console.log(`🔥 HIGH VALUE TARGET ACCOUNT: ${orgData.name}`)
+      console.log(`   Industry: ${orgData.industry}`)
+      console.log(`   Employees: ${orgData.estimated_num_employees}`)
+      console.log(`   Revenue: ${companyData.revenue_range}`)
+      console.log(`   Technologies: ${orgData.technology_names?.join(', ')}`)
     }
 
     return new Response(JSON.stringify({
       success: true,
-      data: companyData,
-      is_target_account: isTargetAccount
+      data: savedCompany,
+      is_target_account: companyData.is_target_account,
+      apollo_org_id: orgData.id
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
@@ -131,17 +208,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
     await supabaseClient.from('integration_logs').insert({
       integration_type: 'apollo',
       operation: 'enrich_company',
+      company_domain: '',
       status: 'error',
-      error_message: error.message,
-      data_payload: { error: error.message }
+      error_message: errorMessage,
+      data_payload: { error: errorMessage }
     })
 
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: errorMessage
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
@@ -149,92 +229,44 @@ serve(async (req) => {
   }
 })
 
-async function mockApolloEnrichment(domain: string): Promise<ApolloCompanyData | null> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
-
-  // Mock enrichment data - Replace with actual Apollo API calls
-  const mockData: Record<string, ApolloCompanyData> = {
-    'tecnologia.com': {
-      name: 'Tecnología Avanzada S.L.',
-      domain: 'tecnologia.com',
-      employee_count: 150,
-      industry: 'Technology',
-      revenue_range: '€10M - €50M',
-      location: 'Madrid, España',
-      founded_year: 2015,
-      technologies: ['React', 'Node.js', 'AWS', 'PostgreSQL', 'Docker'],
-      apollo_id: 'apollo_12345',
-      is_target_account: true
-    },
-    'startup.com': {
-      name: 'Startup Innovadora',
-      domain: 'startup.com',
-      employee_count: 25,
-      industry: 'FinTech',
-      revenue_range: '€1M - €5M',
-      location: 'Barcelona, España',
-      founded_year: 2020,
-      technologies: ['Vue.js', 'Python', 'GCP', 'MongoDB'],
-      apollo_id: 'apollo_67890'
-    }
-  }
-
-  // Return mock data or generate generic data
-  return mockData[domain] || {
-    name: `Empresa ${domain}`,
-    domain: domain,
-    employee_count: Math.floor(Math.random() * 500) + 10,
-    industry: ['Technology', 'Finance', 'Healthcare', 'Manufacturing'][Math.floor(Math.random() * 4)],
-    revenue_range: ['€1M - €5M', '€5M - €10M', '€10M - €50M'][Math.floor(Math.random() * 3)],
-    location: ['Madrid, España', 'Barcelona, España', 'Valencia, España'][Math.floor(Math.random() * 3)],
-    founded_year: 2000 + Math.floor(Math.random() * 24),
-    technologies: ['JavaScript', 'Python', 'Java', 'AWS', 'Azure'],
-    apollo_id: `apollo_${Math.random().toString(36).substr(2, 9)}`
-  }
-}
-
-function determineTargetAccount(data: ApolloCompanyData): boolean {
+function determineTargetAccount(orgData: any): boolean {
   let score = 0
 
   // Industry scoring
-  const targetIndustries = ['Technology', 'FinTech', 'SaaS', 'Healthcare']
-  if (data.industry && targetIndustries.includes(data.industry)) {
+  const targetIndustries = ['Technology', 'Software', 'FinTech', 'SaaS', 'Healthcare', 'Financial Services']
+  if (orgData.industry && targetIndustries.some(industry => 
+    orgData.industry.toLowerCase().includes(industry.toLowerCase())
+  )) {
     score += 30
   }
 
   // Employee count scoring
-  if (data.employee_count) {
-    if (data.employee_count >= 100) score += 40
-    else if (data.employee_count >= 50) score += 25
-    else if (data.employee_count >= 20) score += 15
+  if (orgData.estimated_num_employees) {
+    if (orgData.estimated_num_employees >= 100) score += 40
+    else if (orgData.estimated_num_employees >= 50) score += 25
+    else if (orgData.estimated_num_employees >= 20) score += 15
   }
 
-  // Revenue range scoring
-  if (data.revenue_range) {
-    if (data.revenue_range.includes('50M')) score += 30
-    else if (data.revenue_range.includes('10M')) score += 20
-    else if (data.revenue_range.includes('5M')) score += 10
+  // Revenue scoring
+  if (orgData.annual_revenue) {
+    if (orgData.annual_revenue >= 50000000) score += 30 // $50M+
+    else if (orgData.annual_revenue >= 10000000) score += 20 // $10M+
+    else if (orgData.annual_revenue >= 5000000) score += 10 // $5M+
   }
 
   // Technology stack scoring
-  if (data.technologies) {
-    const modernTech = ['React', 'Node.js', 'AWS', 'Docker', 'Kubernetes', 'PostgreSQL']
-    const techMatches = data.technologies.filter(tech => modernTech.includes(tech)).length
+  if (orgData.technology_names && orgData.technology_names.length > 0) {
+    const modernTech = ['React', 'Node.js', 'AWS', 'Docker', 'Kubernetes', 'PostgreSQL', 'MongoDB', 'Salesforce', 'HubSpot']
+    const techMatches = orgData.technology_names.filter((tech: string) => 
+      modernTech.some(modern => tech.toLowerCase().includes(modern.toLowerCase()))
+    ).length
     score += techMatches * 5
   }
 
-  return score >= 60 // Target account if score >= 60
-}
+  // Funding indicators
+  if (orgData.total_funding && orgData.total_funding > 1000000) {
+    score += 20 // Has received significant funding
+  }
 
-async function notifyHighValueProspect(data: ApolloCompanyData) {
-  // This would integrate with Slack API or other notification systems
-  console.log(`🔥 HIGH VALUE PROSPECT ALERT: ${data.name}`)
-  console.log(`   Industry: ${data.industry}`)
-  console.log(`   Employees: ${data.employee_count}`)
-  console.log(`   Revenue: ${data.revenue_range}`)
-  console.log(`   Should be added to hot prospects sequence!`)
-  
-  // TODO: Integrate with Slack/Teams notifications
-  // TODO: Auto-add to email sequences if conditions met
+  return score >= 60 // Target account if score >= 60
 }

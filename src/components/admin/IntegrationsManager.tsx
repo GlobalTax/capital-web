@@ -3,15 +3,17 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Building2, Target, Users, TrendingUp } from 'lucide-react';
+import { Zap, Building2, Target, Users, TrendingUp, UserCheck } from 'lucide-react';
 import IntegrationsOverviewTab from './integrations/IntegrationsOverviewTab';
 import ApolloIntelligenceTab from './integrations/ApolloIntelligenceTab';
+import ApolloContactsTab from './integrations/ApolloContactsTab';
 import GoogleAdsAttributionTab from './integrations/GoogleAdsAttributionTab';
 import IntegrationsStatusPanel from './integrations/IntegrationsStatusPanel';
 
 const IntegrationsManager = () => {
   const {
     apolloCompanies,
+    apolloContacts,
     adConversions,
     linkedinData,
     touchpoints,
@@ -20,6 +22,7 @@ const IntegrationsManager = () => {
     metrics,
     isLoading,
     enrichCompanyWithApollo,
+    enrichContactsForCompany,
     updateIntegrationConfig
   } = useIntegrationsData();
 
@@ -75,15 +78,26 @@ const IntegrationsManager = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Apollo Intelligence</CardTitle>
+            <CardTitle className="text-sm font-medium">Apollo Companies</CardTitle>
             <Building2 className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{apolloCompanies.length}</div>
             <p className="text-xs text-gray-600">Empresas enriquecidas</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Apollo Contacts</CardTitle>
+            <UserCheck className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{apolloContacts.length}</div>
+            <p className="text-xs text-gray-600">Contactos identificados</p>
           </CardContent>
         </Card>
 
@@ -101,7 +115,7 @@ const IntegrationsManager = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">LinkedIn Intel</CardTitle>
-            <Users className="h-4 w-4 text-purple-600" />
+            <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{linkedinData.length}</div>
@@ -143,7 +157,17 @@ const IntegrationsManager = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              🚀 Apollo Intelligence
+              🚀 Apollo Companies
+            </button>
+            <button
+              onClick={() => setActiveTab('contacts')}
+              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'contacts'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              👥 Apollo Contacts
             </button>
             <button
               onClick={() => setActiveTab('ads')}
@@ -179,6 +203,15 @@ const IntegrationsManager = () => {
           <ApolloIntelligenceTab 
             apolloCompanies={apolloCompanies}
             onEnrichCompany={enrichCompanyWithApollo}
+            isLoading={isLoading}
+          />
+        </TabsContent>
+
+        <TabsContent value="contacts">
+          <ApolloContactsTab 
+            apolloContacts={apolloContacts}
+            apolloCompanies={apolloCompanies}
+            onEnrichContacts={enrichContactsForCompany}
             isLoading={isLoading}
           />
         </TabsContent>

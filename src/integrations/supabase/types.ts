@@ -86,7 +86,9 @@ export type Database = {
           apollo_id: string | null
           company_domain: string
           company_name: string
+          contacts_count: number | null
           created_at: string
+          decision_makers_count: number | null
           employee_count: number | null
           founded_year: number | null
           id: string
@@ -102,7 +104,9 @@ export type Database = {
           apollo_id?: string | null
           company_domain: string
           company_name: string
+          contacts_count?: number | null
           created_at?: string
+          decision_makers_count?: number | null
           employee_count?: number | null
           founded_year?: number | null
           id?: string
@@ -118,7 +122,9 @@ export type Database = {
           apollo_id?: string | null
           company_domain?: string
           company_name?: string
+          contacts_count?: number | null
           created_at?: string
+          decision_makers_count?: number | null
           employee_count?: number | null
           founded_year?: number | null
           id?: string
@@ -131,6 +137,80 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      apollo_contacts: {
+        Row: {
+          apollo_data: Json | null
+          apollo_person_id: string | null
+          company_domain: string | null
+          company_id: string | null
+          contact_score: number | null
+          created_at: string
+          department: string | null
+          email: string | null
+          first_name: string
+          full_name: string | null
+          id: string
+          is_decision_maker: boolean | null
+          last_enriched: string | null
+          last_name: string
+          linkedin_url: string | null
+          phone: string | null
+          seniority: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          apollo_data?: Json | null
+          apollo_person_id?: string | null
+          company_domain?: string | null
+          company_id?: string | null
+          contact_score?: number | null
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          first_name: string
+          full_name?: string | null
+          id?: string
+          is_decision_maker?: boolean | null
+          last_enriched?: string | null
+          last_name: string
+          linkedin_url?: string | null
+          phone?: string | null
+          seniority?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          apollo_data?: Json | null
+          apollo_person_id?: string | null
+          company_domain?: string | null
+          company_id?: string | null
+          contact_score?: number | null
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          first_name?: string
+          full_name?: string | null
+          id?: string
+          is_decision_maker?: boolean | null
+          last_enriched?: string | null
+          last_name?: string
+          linkedin_url?: string | null
+          phone?: string | null
+          seniority?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apollo_contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "apollo_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       attribution_touchpoints: {
         Row: {
