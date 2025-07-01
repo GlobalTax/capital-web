@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Home,
@@ -18,11 +17,7 @@ import {
   Image,
   UserPlus,
   Award,
-  Mail,
-  Target,
-  Zap,
-  Activity,
-  Cog
+  Mail
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -31,194 +26,140 @@ interface SidebarItem {
   icon: React.ComponentType<any>;
   id: string;
   description: string;
-  badge?: string;
 }
 
-interface SidebarGroup {
-  title: string;
-  items: SidebarItem[];
-}
-
-const sidebarGroups: SidebarGroup[] = [
+const sidebarItems: SidebarItem[] = [
   {
-    title: "Panel Principal",
-    items: [
-      {
-        title: "Dashboard",
-        icon: LayoutDashboard,
-        id: "dashboard",
-        description: "Vista general de la plataforma"
-      }
-    ]
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    id: "dashboard",
+    description: "Vista general de la plataforma"
   },
   {
-    title: "CMS - Contenido Web",
-    items: [
-      {
-        title: "Dashboard CMS",
-        icon: Building2,
-        id: "cms-dashboard",
-        description: "Vista general del CMS"
-      },
-      {
-        title: "Casos de Éxito",
-        icon: Award,
-        id: "case-studies",
-        description: "Gestión de casos de éxito"
-      },
-      {
-        title: "Operaciones",
-        icon: Building2,
-        id: "operations",
-        description: "Gestión de operaciones"
-      },
-      {
-        title: "AI Content Studio Pro",
-        icon: FileText,
-        id: "blog-v2",
-        description: "Generación de contenido con IA",
-        badge: "AI"
-      },
-      {
-        title: "Reports Sectoriales IA",
-        icon: Database,
-        id: "sector-reports",
-        description: "Generación de reportes sectoriales",
-        badge: "AI"
-      },
-      {
-        title: "Múltiplos",
-        icon: TrendingUp,
-        id: "multiples",
-        description: "Gestión de múltiplos de valoración"
-      },
-      {
-        title: "Estadísticas",
-        icon: BarChart3,
-        id: "statistics",
-        description: "Métricas y estadísticas"
-      },
-      {
-        title: "Equipo",
-        icon: Users,
-        id: "team",
-        description: "Gestión del equipo"
-      },
-      {
-        title: "Testimonios",
-        icon: MessageSquare,
-        id: "testimonials",
-        description: "Gestión de testimonios"
-      },
-      {
-        title: "Test. Carrusel",
-        icon: TestTube,
-        id: "carousel-testimonials",
-        description: "Testimonios en carrusel"
-      },
-      {
-        title: "Logos Carrusel",
-        icon: Image,
-        id: "carousel-logos",
-        description: "Logos en carrusel"
-      },
-      {
-        title: "Lead Magnets",
-        icon: FileText,
-        id: "lead-magnets",
-        description: "Gestión de lead magnets"
-      }
-    ]
+    title: "Marketing Intelligence",
+    icon: Brain,
+    id: "marketing-intelligence",
+    description: "Análisis predictivo y insights"
   },
   {
-    title: "LEADS & WORKFLOWS",
-    items: [
-      {
-        title: "Dashboard Leads",
-        icon: Target,
-        id: "leads-dashboard",
-        description: "Vista general de leads y workflows"
-      },
-      {
-        title: "Lead Scoring",
-        icon: TrendingUp,
-        id: "lead-scoring",
-        description: "Priorización de leads y alertas",
-        badge: "HOT"
-      },
-      {
-        title: "Marketing Automation",
-        icon: Workflow,
-        id: "marketing-automation",
-        description: "Secuencias, A/B testing y workflows"
-      },
-      {
-        title: "Leads de Contacto",
-        icon: Mail,
-        id: "contact-leads",
-        description: "Gestión de leads de contacto"
-      },
-      {
-        title: "Solicitudes Colaboradores",
-        icon: UserPlus,
-        id: "collaborator-applications",
-        description: "Gestión de solicitudes de colaboradores"
-      },
-      {
-        title: "CRM",
-        icon: Users,
-        id: "crm",
-        description: "Gestión de clientes y contactos"
-      },
-      {
-        title: "Alertas",
-        icon: AlertCircle,
-        id: "alerts",
-        description: "Notificaciones y eventos críticos"
-      }
-    ]
+    title: "Lead Scoring",
+    icon: TrendingUp,
+    id: "lead-scoring",
+    description: "Priorización de leads y alertas"
   },
   {
-    title: "MARKETING INTELLIGENCE & ANALYTICS",
-    items: [
-      {
-        title: "Dashboard Analytics",
-        icon: Activity,
-        id: "analytics-dashboard",
-        description: "Vista general de analytics"
-      },
-      {
-        title: "Marketing Intelligence",
-        icon: Brain,
-        id: "marketing-intelligence",
-        description: "Análisis predictivo y insights",
-        badge: "AI"
-      },
-      {
-        title: "Marketing Hub",
-        icon: BarChart3,
-        id: "marketing-hub",
-        description: "Dashboard completo de métricas"
-      },
-      {
-        title: "Integraciones",
-        icon: Zap,
-        id: "integrations",
-        description: "Apollo, Google Ads, LinkedIn y más",
-        badge: "NEW"
-      }
-    ]
+    title: "Marketing Automation",
+    icon: Workflow,
+    id: "marketing-automation",
+    description: "Secuencias, A/B testing y workflows"
   },
   {
-    title: "CONFIGURACIÓN & SISTEMA",
-    items: [
-      {
-        title: "Configuración",
-        icon: Settings,
-        id: "settings",
-        description: "Ajustes generales de la plataforma"
-      }
-    ]
+    title: "Marketing Hub",
+    icon: BarChart3,
+    id: "marketing-hub",
+    description: "Dashboard completo de métricas"
+  },
+  {
+    title: "CRM",
+    icon: Users,
+    id: "crm",
+    description: "Gestión de clientes y contactos"
+  },
+  {
+    title: "Alertas",
+    icon: AlertCircle,
+    id: "alerts",
+    description: "Notificaciones y eventos críticos"
+  },
+  {
+    title: "Integraciones",
+    icon: Settings,
+    id: "integrations",
+    description: "Apollo, Google Ads, LinkedIn y más"
+  },
+  {
+    title: "Casos de Éxito",
+    icon: Award,
+    id: "case-studies",
+    description: "Gestión de casos de éxito"
+  },
+  {
+    title: "Operaciones",
+    icon: Building2,
+    id: "operations",
+    description: "Gestión de operaciones"
+  },
+  {
+    title: "AI Content Studio Pro",
+    icon: FileText,
+    id: "blog-v2",
+    description: "Generación de contenido con IA"
+  },
+  {
+    title: "Reports Sectoriales IA",
+    icon: Database,
+    id: "sector-reports",
+    description: "Generación de reportes sectoriales"
+  },
+  {
+    title: "Múltiplos",
+    icon: TrendingUp,
+    id: "multiples",
+    description: "Gestión de múltiplos de valoración"
+  },
+  {
+    title: "Estadísticas",
+    icon: BarChart3,
+    id: "statistics",
+    description: "Métricas y estadísticas"
+  },
+  {
+    title: "Leads de Contacto",
+    icon: Mail,
+    id: "contact-leads",
+    description: "Gestión de leads de contacto"
+  },
+  {
+    title: "Solicitudes Colaboradores",
+    icon: UserPlus,
+    id: "collaborator-applications",
+    description: "Gestión de solicitudes de colaboradores"
+  },
+  {
+    title: "Equipo",
+    icon: Users,
+    id: "team",
+    description: "Gestión del equipo"
+  },
+  {
+    title: "Testimonios",
+    icon: MessageSquare,
+    id: "testimonials",
+    description: "Gestión de testimonios"
+  },
+  {
+    title: "Test. Carrusel",
+    icon: TestTube,
+    id: "carousel-testimonials",
+    description: "Testimonios en carrusel"
+  },
+  {
+    title: "Logos Carrusel",
+    icon: Image,
+    id: "carousel-logos",
+    description: "Logos en carrusel"
+  },
+  {
+    title: "Lead Magnets",
+    icon: FileText,
+    id: "lead-magnets",
+    description: "Gestión de lead magnets"
+  },
+  {
+    title: "Configuración",
+    icon: Settings,
+    id: "settings",
+    description: "Ajustes generales de la plataforma"
   }
 ];
 
@@ -239,42 +180,159 @@ const AppSidebar: React.FC = () => {
         />
       </div>
 
-      <nav className="space-y-6">
-        {sidebarGroups.map((group, groupIndex) => (
-          <div key={group.title}>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              {group.title}
-            </div>
-            
-            <div className="space-y-1">
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.id}
-                  to={`/admin/${item.id}`}
-                  className={({ isActive }) =>
-                    `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
-                    ${isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
-                  }
-                >
-                  <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-                  <span className="truncate">{item.title}</span>
-                  {item.badge && (
-                    <span className={`ml-auto text-xs px-2 py-0.5 rounded-full text-white ${
-                      item.badge === 'AI' ? 'bg-blue-500' :
-                      item.badge === 'NEW' ? 'bg-yellow-500' :
-                      item.badge === 'HOT' ? 'bg-red-500' :
-                      'bg-green-500'
-                    }`}>
-                      {item.badge}
-                    </span>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          </div>
+      <nav className="space-y-1">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          Panel Principal
+        </div>
+        
+        {sidebarItems.slice(0, 8).map((item) => (
+          <NavLink
+            key={item.id}
+            to={`/admin/${item.id}`}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+            <span className="truncate">{item.title}</span>
+            {item.id === 'marketing-intelligence' && (
+              <span className="ml-auto bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                AI
+              </span>
+            )}
+            {item.id === 'integrations' && (
+              <span className="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
+                NEW
+              </span>
+            )}
+          </NavLink>
         ))}
+
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-6">
+          Contenido IA
+        </div>
+        
+        {sidebarItems.slice(8, 12).map((item) => (
+          <NavLink
+            key={item.id}
+            to={`/admin/${item.id}`}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+            <span className="truncate">{item.title}</span>
+            {(item.id === 'blog-v2' || item.id === 'sector-reports') && (
+              <span className="ml-auto bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                NE
+              </span>
+            )}
+          </NavLink>
+        ))}
+
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-6">
+          Datos
+        </div>
+        
+        {sidebarItems.slice(12, 14).map((item) => (
+          <NavLink
+            key={item.id}
+            to={`/admin/${item.id}`}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+            <span className="truncate">{item.title}</span>
+          </NavLink>
+        ))}
+
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-6">
+          Leads
+        </div>
+        
+        {sidebarItems.slice(14, 16).map((item) => (
+          <NavLink
+            key={item.id}
+            to={`/admin/${item.id}`}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+            <span className="truncate">{item.title}</span>
+          </NavLink>
+        ))}
+
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-6">
+          Usuarios
+        </div>
+        
+        {sidebarItems.slice(16, 18).map((item) => (
+          <NavLink
+            key={item.id}
+            to={`/admin/${item.id}`}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+            <span className="truncate">{item.title}</span>
+          </NavLink>
+        ))}
+
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-6">
+          Visuales
+        </div>
+        
+        {sidebarItems.slice(18, 21).map((item) => (
+          <NavLink
+            key={item.id}
+            to={`/admin/${item.id}`}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+            <span className="truncate">{item.title}</span>
+          </NavLink>
+        ))}
+
+        <div className="border-t border-gray-200 mt-6 pt-4">
+          {sidebarItems.slice(21).map((item) => (
+            <NavLink
+              key={item.id}
+              to={`/admin/${item.id}`}
+              className={({ isActive }) =>
+                `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+                ${isActive
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`
+              }
+            >
+              <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+              <span className="truncate">{item.title}</span>
+            </NavLink>
+          ))}
+        </div>
       </nav>
     </aside>
   );
