@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
@@ -52,8 +51,11 @@ const ValuationCalculator = () => {
     
     // Track validation errors
     const fieldErrors = errors[field];
-    if (fieldErrors && fieldErrors.length > 0) {
-      trackValidationIssue(field, fieldErrors.join(', '));
+    if (fieldErrors) {
+      const errorMessage = Array.isArray(fieldErrors) 
+        ? fieldErrors.join(', ') 
+        : fieldErrors.toString();
+      trackValidationIssue(field, errorMessage);
     }
   };
 
