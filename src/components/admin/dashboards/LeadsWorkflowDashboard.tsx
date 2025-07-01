@@ -3,8 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Target, Users, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertTriangle, Target, Users, TrendingUp, Clock, CheckCircle, Activity } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import RealTimeLeadsDashboard from '../leads/RealTimeLeadsDashboard';
+import ProspectsDashboard from '../dashboard/ProspectsDashboard';
 
 const LeadsWorkflowDashboard = () => {
   // Mock data - en producción vendría de tus hooks
@@ -44,7 +47,7 @@ const LeadsWorkflowDashboard = () => {
             <NavLink to="/admin/lead-scoring">Ir a Lead Scoring</NavLink>
           </Button>
           <Button asChild>
-            <NavLink to="/admin/crm">Abrir CRM</NavLink>
+            <NavLink to="/admin/marketing-automation">Automatización</NavLink>
           </Button>
         </div>
       </div>
@@ -80,171 +83,155 @@ const LeadsWorkflowDashboard = () => {
         </Card>
       )}
 
-      {/* KPIs Principales */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Leads Calientes</p>
-                <p className="text-2xl font-bold text-red-600">{stats.hotLeads}</p>
-              </div>
-              <Target className="h-8 w-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tabs principales */}
+      <Tabs defaultValue="realtime" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="realtime">🔴 Tiempo Real</TabsTrigger>
+          <TabsTrigger value="prospects">📊 Prospectos</TabsTrigger>
+          <TabsTrigger value="pipeline">📈 Pipeline</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Leads</p>
-                <p className="text-2xl font-bold">{stats.totalLeads}</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="realtime" className="space-y-4">
+          <RealTimeLeadsDashboard />
+        </TabsContent>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Tasa Conversión</p>
-                <p className="text-2xl font-bold text-green-600">{stats.conversionRate}%</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="prospects" className="space-y-4">
+          <ProspectsDashboard />
+        </TabsContent>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Reuniones</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.meetingsScheduled}</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="pipeline" className="space-y-4">
+          {/* KPIs Principales */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Leads Calientes</p>
+                    <p className="text-2xl font-bold text-red-600">{stats.hotLeads}</p>
+                  </div>
+                  <Target className="h-8 w-8 text-red-500" />
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Alertas Activas</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.urgentAlerts}</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Leads</p>
+                    <p className="text-2xl font-bold">{stats.totalLeads}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Tiempo Resp.</p>
-                <p className="text-2xl font-bold text-cyan-600">{stats.responseTime}h</p>
-              </div>
-              <Clock className="h-8 w-8 text-cyan-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Tasa Conversión</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.conversionRate}%</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Pipeline Visual */}
-      <Card>
-        <CardHeader>
-          <CardTitle>🔄 Pipeline de Conversión</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
-              <div className="text-3xl font-bold text-blue-600">156</div>
-              <div className="text-sm text-gray-600">Leads Totales</div>
-              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '100%' }}></div>
-              </div>
-            </div>
-            
-            <div className="text-center p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
-              <div className="text-3xl font-bold text-orange-600">23</div>
-              <div className="text-sm text-gray-600">Leads Calientes</div>
-              <div className="w-full bg-orange-200 rounded-full h-2 mt-2">
-                <div className="bg-orange-600 h-2 rounded-full" style={{ width: '75%' }}></div>
-              </div>
-            </div>
-            
-            <div className="text-center p-4 bg-yellow-50 rounded-lg border-2 border-yellow-200">
-              <div className="text-3xl font-bold text-yellow-600">15</div>
-              <div className="text-sm text-gray-600">Contactados</div>
-              <div className="w-full bg-yellow-200 rounded-full h-2 mt-2">
-                <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '50%' }}></div>
-              </div>
-            </div>
-            
-            <div className="text-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
-              <div className="text-3xl font-bold text-green-600">8</div>
-              <div className="text-sm text-gray-600">Reuniones</div>
-              <div className="w-full bg-green-200 rounded-full h-2 mt-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{ width: '25%' }}></div>
-              </div>
-            </div>
-            
-            <div className="text-center p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
-              <div className="text-3xl font-bold text-purple-600">3</div>
-              <div className="text-sm text-gray-600">Clientes</div>
-              <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
-                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '15%' }}></div>
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Reuniones</p>
+                    <p className="text-2xl font-bold text-purple-600">{stats.meetingsScheduled}</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-purple-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Alertas Activas</p>
+                    <p className="text-2xl font-bold text-orange-600">{stats.urgentAlerts}</p>
+                  </div>
+                  <AlertTriangle className="h-8 w-8 text-orange-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Tiempo Resp.</p>
+                    <p className="text-2xl font-bold text-cyan-600">{stats.responseTime}h</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-cyan-500" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          
-          <div className="mt-6 text-center">
-            <Badge variant="outline" className="text-lg px-4 py-2">
-              Tasa de Conversión General: {stats.conversionRate}%
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Acciones Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <NavLink to="/admin/lead-scoring">
-            <CardContent className="p-6 text-center">
-              <Target className="h-12 w-12 text-red-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-lg mb-2">Lead Scoring</h3>
-              <p className="text-gray-600 text-sm">Priorizar leads con IA</p>
-              <Badge className="mt-2 bg-red-500">URGENTE</Badge>
+          {/* Pipeline Visual */}
+          <Card>
+            <CardHeader>
+              <CardTitle>🔄 Pipeline de Conversión</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                  <div className="text-3xl font-bold text-blue-600">156</div>
+                  <div className="text-sm text-gray-600">Leads Totales</div>
+                  <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '100%' }}></div>
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
+                  <div className="text-3xl font-bold text-orange-600">23</div>
+                  <div className="text-sm text-gray-600">Leads Calientes</div>
+                  <div className="w-full bg-orange-200 rounded-full h-2 mt-2">
+                    <div className="bg-orange-600 h-2 rounded-full" style={{ width: '75%' }}></div>
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-yellow-50 rounded-lg border-2 border-yellow-200">
+                  <div className="text-3xl font-bold text-yellow-600">15</div>
+                  <div className="text-sm text-gray-600">Contactados</div>
+                  <div className="w-full bg-yellow-200 rounded-full h-2 mt-2">
+                    <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '50%' }}></div>
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                  <div className="text-3xl font-bold text-green-600">8</div>
+                  <div className="text-sm text-gray-600">Reuniones</div>
+                  <div className="w-full bg-green-200 rounded-full h-2 mt-2">
+                    <div className="bg-green-600 h-2 rounded-full" style={{ width: '25%' }}></div>
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+                  <div className="text-3xl font-bold text-purple-600">3</div>
+                  <div className="text-sm text-gray-600">Clientes</div>
+                  <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
+                    <div className="bg-purple-600 h-2 rounded-full" style={{ width: '15%' }}></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <Badge variant="outline" className="text-lg px-4 py-2">
+                  Tasa de Conversión General: {stats.conversionRate}%
+                </Badge>
+              </div>
             </CardContent>
-          </NavLink>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <NavLink to="/admin/crm">
-            <CardContent className="p-6 text-center">
-              <Users className="h-12 w-12 text-blue-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-lg mb-2">CRM Dashboard</h3>
-              <p className="text-gray-600 text-sm">Gestionar contactos</p>
-            </CardContent>
-          </NavLink>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <NavLink to="/admin/alerts">
-            <CardContent className="p-6 text-center">
-              <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-lg mb-2">Alertas</h3>
-              <p className="text-gray-600 text-sm">Notificaciones críticas</p>
-              <Badge className="mt-2 bg-red-500 animate-pulse">URGENTE</Badge>
-            </CardContent>
-          </NavLink>
-        </Card>
-      </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
