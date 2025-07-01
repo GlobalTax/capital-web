@@ -11,12 +11,17 @@ export const useAdminAuth = () => {
   useEffect(() => {
     // Check for existing session
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await checkAdminStatus(session.user.id);
-      } else {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await checkAdminStatus(session.user.id);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
         setIsAdmin(false);
       }
       
@@ -28,6 +33,7 @@ export const useAdminAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         setUser(session?.user ?? null);
         
         if (session?.user) {
@@ -47,12 +53,12 @@ export const useAdminAuth = () => {
     try {
       const { data, error } = await supabase
         .from('admin_users')
-        .select('id')
+        .select('id, is_active')
         .eq('user_id', userId)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
       } else {
