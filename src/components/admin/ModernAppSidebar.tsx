@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import {
   Sidebar,
   SidebarContent,
@@ -102,6 +103,7 @@ const menuSections = [
 
 export function ModernAppSidebar() {
   const location = useLocation();
+  const { getMenuVisibility, userRole } = useRoleBasedPermissions();
 
   const getBadgeStyles = (badge?: string) => {
     switch (badge) {

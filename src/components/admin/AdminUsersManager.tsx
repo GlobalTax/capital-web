@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock } from 'lucide-react';
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { useForm } from 'react-hook-form';
 
 const ROLE_LABELS = {
@@ -22,6 +23,7 @@ const ROLE_LABELS = {
 
 const AdminUsersManager = () => {
   const { users, isLoading, error, createUser, updateUser, deleteUser, toggleUserStatus } = useAdminUsers();
+  const { hasPermission, userRole, isLoading: permissionsLoading } = useRoleBasedPermissions();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -89,12 +91,27 @@ const AdminUsersManager = () => {
     return ROLE_LABELS[role as keyof typeof ROLE_LABELS] || ROLE_LABELS.viewer;
   };
 
-  if (isLoading) {
+  if (isLoading || permissionsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p>Cargando usuarios...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Verificar permisos para acceder a esta página
+  if (!hasPermission('canManageUsers')) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Lock className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Acceso Restringido</h2>
+          <p className="text-gray-600">No tienes permisos para gestionar usuarios.</p>
+          <p className="text-sm text-gray-500 mt-2">Tu rol actual: <Badge variant="outline">{userRole}</Badge></p>
+          <p className="text-xs text-gray-400 mt-1">Solo los Super Admins pueden gestionar usuarios</p>
         </div>
       </div>
     );

@@ -3,6 +3,9 @@ import { useAdminAuth } from './useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
+// IMPORTANTE: Este archivo está llegando a ser muy largo (349 líneas).
+// Considera refactorizar en archivos separados después de completar la implementación.
+
 type AdminRole = 'super_admin' | 'admin' | 'editor' | 'viewer' | 'none';
 
 interface RolePermissions {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { useAdminAuth } from './useAdminAuth';
 
 export interface AdminUser {
   id: string;
@@ -27,6 +28,31 @@ export const useAdminUsers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user: currentUser } = useAdminAuth();
+
+  const sendNotification = useCallback(async (
+    type: 'welcome' | 'role_changed' | 'account_deactivated' | 'account_activated',
+    recipientEmail: string,
+    recipientName: string,
+    data?: { role?: string; changedBy?: string }
+  ) => {
+    try {
+      await supabase.functions.invoke('send-admin-notifications', {
+        body: {
+          type,
+          recipientEmail,
+          recipientName,
+          data: {
+            ...data,
+            changedBy: currentUser?.email || 'Sistema'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      // No hacer throw aquí para no bloquear la operación principal
+    }
+  }, [currentUser]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -98,6 +124,14 @@ export const useAdminUsers = () => {
 
       await fetchUsers();
       
+      // Enviar notificación de bienvenida
+      await sendNotification(
+        'welcome',
+        userData.email,
+        userData.full_name,
+        { role: userData.role }
+      );
+      
       toast({
         title: "Usuario creado exitosamente",
         description: `${userData.full_name} ha sido añadido como ${userData.role}`,
@@ -128,6 +162,9 @@ export const useAdminUsers = () => {
 
   const updateUser = useCallback(async (userId: string, updates: Partial<AdminUser>): Promise<void> => {
     try {
+      // Obtener datos del usuario antes de actualizar para notificaciones
+      const oldUser = users.find(u => u.id === userId);
+      
       const { error } = await supabase
         .from('admin_users')
         .update(updates)
@@ -138,6 +175,26 @@ export const useAdminUsers = () => {
       }
 
       await fetchUsers();
+      
+      // Enviar notificaciones según el tipo de cambio
+      if (oldUser && updates.role && oldUser.role !== updates.role) {
+        await sendNotification(
+          'role_changed',
+          oldUser.email!,
+          oldUser.full_name!,
+          { role: updates.role, changedBy: currentUser?.email }
+        );
+      }
+      
+      if (oldUser && updates.is_active !== undefined && oldUser.is_active !== updates.is_active) {
+        const notificationType = updates.is_active ? 'account_activated' : 'account_deactivated';
+        await sendNotification(
+          notificationType,
+          oldUser.email!,
+          oldUser.full_name!,
+          { role: oldUser.role, changedBy: currentUser?.email }
+        );
+      }
       
       toast({
         title: "Usuario actualizado",
