@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useOptimizedQuery } from './useOptimizedQueries';
 
 interface LeadScore {
   id: string;
@@ -34,7 +35,7 @@ export const useLeadScoringCore = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Obtener leads calientes
+  // Obtener leads calientes optimizados
   const { data: hotLeads, isLoading: isLoadingHotLeads } = useQuery({
     queryKey: ['hotLeads'],
     queryFn: async () => {
@@ -55,8 +56,8 @@ export const useLeadScoringCore = () => {
       }
       return data as LeadScore[];
     },
-    staleTime: 60000, // 1 minuto
-    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 segundos - crítico
+    refetchOnWindowFocus: true,
   });
 
   // Obtener todos los leads

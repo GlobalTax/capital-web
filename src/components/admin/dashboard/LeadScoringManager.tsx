@@ -38,7 +38,7 @@ const LeadScoringManager = () => {
 
       {/* Hot Leads Section */}
       <HotLeadsSection 
-        hotLeads={hotLeads}
+        hotLeads={hotLeads || []}
         isLoading={isLoadingHotLeads}
       />
 

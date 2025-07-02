@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRateLimit } from './useRateLimit';
+import { useOptimizedQuery, useSmartInvalidation } from './useOptimizedQueries';
+import { usePerformanceMonitoring } from './usePerformanceMonitoring';
 
 interface LeadScoringRule {
   id: string;
@@ -66,6 +69,8 @@ interface LeadAlert {
 export const useAdvancedLeadScoring = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { invalidateRelatedQueries } = useSmartInvalidation();
+  const { recordQueryPerformance, recordRateLimitHit } = usePerformanceMonitoring();
   const [currentSession] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [visitorId] = useState(() => {
     const stored = localStorage.getItem('visitor_id');
@@ -76,31 +81,15 @@ export const useAdvancedLeadScoring = () => {
     return newId;
   });
 
-  // Rate limiting y debouncing
+  // Rate limiting optimizado y debouncing
   const lastTrackingTime = useRef(0);
   const trackingCooldown = 5000; // 5 segundos entre trackings
-  const requestCount = useRef(0);
-  const maxRequestsPerMinute = 10;
-  const requestWindow = useRef(Date.now());
-
-  // Rate limiter
-  const isRateLimited = useCallback(() => {
-    const now = Date.now();
-    
-    // Reset window si han pasado más de 60 segundos
-    if (now - requestWindow.current > 60000) {
-      requestCount.current = 0;
-      requestWindow.current = now;
-    }
-    
-    if (requestCount.current >= maxRequestsPerMinute) {
-      console.warn('Rate limit exceeded for lead tracking');
-      return true;
-    }
-    
-    requestCount.current++;
-    return false;
-  }, []);
+  
+  const { executeWithRateLimit, isRateLimited: checkRateLimit } = useRateLimit({
+    maxRequests: 10,
+    windowMs: 60000, // 1 minuto
+    blockDurationMs: 30000, // 30 segundos de bloqueo
+  });
 
   // Debounce tracking calls
   const canTrack = useCallback(() => {
@@ -112,18 +101,21 @@ export const useAdvancedLeadScoring = () => {
     return true;
   }, []);
 
-  // Obtener reglas de scoring (con stale time para evitar re-fetches constantes)
-  const { data: scoringRules } = useQuery({
-    queryKey: ['leadScoringRules'],
-    queryFn: async () => {
+  // Obtener reglas de scoring optimizadas
+  const { data: scoringRules } = useOptimizedQuery(
+    ['leadScoringRules'],
+    async () => {
+      const startTime = performance.now();
       const { data, error } = await supabase
         .from('lead_scoring_rules')
         .select('*')
         .eq('is_active', true)
         .order('points', { ascending: false });
 
+      const executionTime = performance.now() - startTime;
+      recordQueryPerformance('leadScoringRules', executionTime, false, !!error);
+
       if (error) {
-        // Si no es admin, devolver array vacío en lugar de error
         if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
           console.warn('No admin access to scoring rules, using public rules only');
           return [];
@@ -132,9 +124,8 @@ export const useAdvancedLeadScoring = () => {
       }
       return data as LeadScoringRule[];
     },
-    staleTime: 300000, // 5 minutos
-    refetchOnWindowFocus: false,
-  });
+    'persistent' // Reglas cambian raramente
+  );
 
   // Obtener leads calientes (con stale time)
   const { data: hotLeads, isLoading: isLoadingHotLeads } = useQuery({
@@ -225,12 +216,12 @@ export const useAdvancedLeadScoring = () => {
       companyDomain?: string;
     }) => {
       // Rate limiting check
-      if (isRateLimited()) {
+      if (checkRateLimit('tracking')) {
         throw new Error('Rate limited');
       }
 
       // Encontrar regla aplicable con fallback si no hay acceso admin
-      const applicableRule = scoringRules?.find(rule => {
+      const applicableRule = (scoringRules as LeadScoringRule[] || []).find(rule => {
         if (rule.trigger_type !== eventType) return false;
         
         if (rule.page_pattern && pagePath) {
@@ -268,15 +259,13 @@ export const useAdvancedLeadScoring = () => {
       return data;
     },
     onSuccess: () => {
-      // Invalidar queries de manera más específica y con delay
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['hotLeads'] });
-        queryClient.invalidateQueries({ queryKey: ['allLeads'] });
-        queryClient.invalidateQueries({ queryKey: ['leadAlerts'] });
-      }, 2000); // Delay de 2 segundos
+      // Invalidación inteligente optimizada
+      invalidateRelatedQueries('leads', 1500);
     },
     onError: (error) => {
-      if (error.message !== 'Rate limited') {
+      if (error.message === 'Rate limited') {
+        recordRateLimitHit('tracking');
+      } else {
         console.error('Error tracking behavior:', error);
       }
     },
