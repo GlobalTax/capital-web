@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +12,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  checkAdminStatus: () => Promise<boolean>;
+  checkAdminStatus: (userId?: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,8 +24,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
-  const checkAdminStatus = async (): Promise<boolean> => {
-    if (!user) {
+  const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
+    const targetUserId = userId || user?.id;
+    if (!targetUserId) {
       setIsAdmin(false);
       return false;
     }
@@ -35,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, is_active')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .maybeSingle();
 
       if (error) {
@@ -44,7 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { error: insertError } = await supabase
           .from('admin_users')
           .insert({
-            user_id: user.id,
+            user_id: targetUserId,
             role: 'super_admin',
             is_active: true
           });
@@ -65,21 +66,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(false);
       return false;
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin status after setting user
-          setTimeout(async () => {
-            await checkAdminStatus();
-          }, 100);
+          // Check admin status directly with user ID
+          checkAdminStatus(session.user.id);
         } else {
           setIsAdmin(false);
         }
@@ -94,16 +93,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setTimeout(async () => {
-          await checkAdminStatus();
-        }, 100);
+        checkAdminStatus(session.user.id);
       }
       
       setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [checkAdminStatus]);
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
