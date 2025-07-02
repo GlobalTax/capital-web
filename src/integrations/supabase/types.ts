@@ -57,6 +57,78 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          target_user_email: string | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          target_user_email?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          target_user_email?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      admin_notifications_log: {
+        Row: {
+          created_at: string
+          email_id: string | null
+          error_message: string | null
+          id: string
+          notification_type: string
+          recipient_email: string
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email_id?: string | null
+          error_message?: string | null
+          id?: string
+          notification_type: string
+          recipient_email: string
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email_id?: string | null
+          error_message?: string | null
+          id?: string
+          notification_type?: string
+          recipient_email?: string
+          sent_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string
