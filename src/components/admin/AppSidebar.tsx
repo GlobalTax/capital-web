@@ -22,7 +22,8 @@ import {
   Target,
   Zap,
   PieChart,
-  Globe
+  Globe,
+  List
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -53,6 +54,12 @@ const sidebarGroups = [
         id: "contacts",
         description: "Vista unificada de todos los contactos",
         badge: "NEW" as const
+      },
+      {
+        title: "Listas y Segmentación",
+        icon: List,
+        id: "contact-lists",
+        description: "Organiza y segmenta contactos"
       },
       {
         title: "Marketing Automation",

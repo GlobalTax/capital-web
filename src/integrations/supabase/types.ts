@@ -970,6 +970,187 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_list_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          contact_id: string
+          contact_source: string
+          id: string
+          list_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          contact_id: string
+          contact_source: string
+          id?: string
+          list_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          contact_id?: string
+          contact_source?: string
+          id?: string
+          list_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_list_assignments_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "contact_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_lists: {
+        Row: {
+          contact_count: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          list_type: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          list_type?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          list_type?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contact_segments: {
+        Row: {
+          auto_update: boolean | null
+          contact_count: number | null
+          created_at: string
+          created_by: string | null
+          criteria: Json
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          auto_update?: boolean | null
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          auto_update?: boolean | null
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contact_tag_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          contact_id: string
+          contact_source: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          contact_id: string
+          contact_source: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          contact_id?: string
+          contact_source?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "contact_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       content_analytics: {
         Row: {
           avg_time_on_page: number

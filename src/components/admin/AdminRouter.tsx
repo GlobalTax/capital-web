@@ -27,6 +27,7 @@ import SectorReportsGenerator from './SectorReportsGenerator';
 import AdminUsersManager from './AdminUsersManager';
 import ProposalsManager from './ProposalsManager';
 import ContactsManager from './ContactsManager';
+import { ContactListsManager } from './ContactListsManager';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -60,6 +61,7 @@ const AdminRouter = () => {
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsManager />} />
+      <Route path="/contact-lists" element={<ContactListsManager />} />
       
       {/* Marketing & Analytics */}
       <Route path="/marketing-automation" element={<MarketingAutomationDashboard />} />
