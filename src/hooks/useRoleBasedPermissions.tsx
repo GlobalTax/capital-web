@@ -312,8 +312,14 @@ export const useRoleBasedPermissions = () => {
       leadScoring: userRole !== 'none',
       leadScoringRules: isAdminLevel,
       contactLeads: userRole !== 'none',
+      contacts: userRole !== 'none',
+      contactLists: userRole !== 'none',
       collaboratorApplications: userRole !== 'none',
       alerts: userRole !== 'none',
+      proposals: userRole !== 'none',
+      
+      // Email Marketing - Visible para admins y editors
+      emailMarketing: userRole !== 'none' && userRole !== 'viewer',
       
       // Content management - Visible para admins y editors
       blogV2: userRole !== 'none' && userRole !== 'viewer',
