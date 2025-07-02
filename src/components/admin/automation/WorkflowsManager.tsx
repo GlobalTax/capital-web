@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMarketingAutomation } from '@/hooks/useMarketingAutomation';
+import { getWorkflowConditions, getWorkflowActions } from '@/utils/typeUtils';
 import { Plus, Workflow, Play, Pause, Zap, ArrowRight } from 'lucide-react';
 
 const WorkflowsManager = () => {
@@ -209,13 +210,16 @@ const WorkflowsManager = () => {
                   
                   <div className="flex-1">
                     <div className="text-sm">
-                      {workflow.trigger_conditions?.conditions?.map((condition: any, index: number) => (
-                        <span key={index} className="bg-white px-2 py-1 rounded text-xs mr-1">
-                          {condition.field} {condition.operator} {
-                            typeof condition.value === 'string' ? `"${condition.value}"` : condition.value
-                          }
-                        </span>
-                      ))}
+                      {(() => {
+                        const conditions = getWorkflowConditions(workflow);
+                        return conditions.map((condition: any, index: number) => (
+                          <span key={index} className="bg-white px-2 py-1 rounded text-xs mr-1">
+                            {condition.field} {condition.operator} {
+                              typeof condition.value === 'string' ? `"${condition.value}"` : condition.value
+                            }
+                          </span>
+                        ));
+                      })()}
                     </div>
                   </div>
                   
@@ -231,11 +235,14 @@ const WorkflowsManager = () => {
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Acciones configuradas:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {workflow.actions?.actions?.map((action: any, index: number) => (
-                      <Badge key={index} variant="outline">
-                        {actionTypes[action.type as keyof typeof actionTypes] || action.type}
-                      </Badge>
-                    ))}
+                    {(() => {
+                      const actions = getWorkflowActions(workflow);
+                      return actions.map((action: any, index: number) => (
+                        <Badge key={index} variant="outline">
+                          {actionTypes[action.type as keyof typeof actionTypes] || action.type}
+                        </Badge>
+                      ));
+                    })()}
                   </div>
                 </div>
                 

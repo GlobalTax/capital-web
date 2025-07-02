@@ -60,17 +60,20 @@ class Logger {
     return this.getLevelPriority(level) >= this.getLevelPriority(this.config.minLevel);
   }
 
-  private sanitizeData(data: unknown): unknown {
+  private sanitizeData(data: unknown): any {
     if (!data || typeof data !== 'object') return data;
 
-    const sanitized = JSON.parse(JSON.stringify(data));
-    this.config.sensitiveKeys.forEach(key => {
-      if (sanitized[key]) {
-        sanitized[key] = '[REDACTED]';
-      }
-    });
-
-    return sanitized;
+    try {
+      const sanitized = JSON.parse(JSON.stringify(data)) as Record<string, any>;
+      this.config.sensitiveKeys.forEach(key => {
+        if (sanitized[key]) {
+          sanitized[key] = '[REDACTED]';
+        }
+      });
+      return sanitized;
+    } catch {
+      return null;
+    }
   }
 
   private formatMessage(entry: LogEntry): string {
@@ -85,18 +88,19 @@ class Logger {
     if (!this.config.enablePersistence) return;
 
     try {
+      const logData = entry.data ? this.sanitizeData(entry.data) : null;
       await supabase.from('system_logs').insert({
         level: entry.level,
         message: entry.message,
-        context: entry.context,
-        component: entry.component,
-        user_id: entry.userId,
-        session_id: entry.sessionId,
-        log_data: entry.data,
-        error_stack: entry.error?.stack,
-        environment: entry.environment,
-        user_agent: entry.userAgent,
-        url: entry.url,
+        context: entry.context || null,
+        component: entry.component || null,
+        user_id: entry.userId || null,
+        session_id: entry.sessionId || null,
+        log_data: logData,
+        error_stack: entry.error?.stack || null,
+        environment: entry.environment || null,
+        user_agent: entry.userAgent || null,
+        url: entry.url || null,
         created_at: entry.timestamp
       });
     } catch (error) {
