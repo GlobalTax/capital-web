@@ -4,6 +4,9 @@ import { startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import type { AdvancedDashboardStats, DateRange } from '@/types/dashboard';
 import type { DashboardFilters } from '@/types/filters';
+import type { RevenueDataPoint, ContentDataPoint } from '@/types/dashboardTypes';
+import { logger } from '@/utils/logger';
+import { DatabaseError, NetworkError } from '@/types/errorTypes';
 import { 
   fetchRevenueMetrics, 
   fetchContentMetrics, 
@@ -28,19 +31,19 @@ export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
   const effectiveDateRange = filters?.dateRange || dateRange;
 
   // Datos adicionales para gráficos
-  const [historicalRevenueData, setHistoricalRevenueData] = useState<any[]>([]);
-  const [historicalContentData, setHistoricalContentData] = useState<any[]>([]);
+  const [historicalRevenueData, setHistoricalRevenueData] = useState<unknown[]>([]);
+  const [historicalContentData, setHistoricalContentData] = useState<unknown[]>([]);
 
   const fetchAdvancedStats = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('Fetching advanced dashboard stats with filters:', {
+      logger.debug('Starting dashboard stats fetch', {
         dateRange: effectiveDateRange,
         sectors: filters?.sectors,
         searchQuery: filters?.searchQuery
-      });
+      }, { context: 'system', component: 'useAdvancedDashboardStats' });
 
       // Fetch parallel data con filtros aplicados
       const [
@@ -59,14 +62,12 @@ export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
         fetchHistoricalContentMetrics(filters?.searchQuery)
       ]);
 
-      console.log('Fetched data with filters:', { 
-        revenueData, 
-        contentData, 
-        systemData, 
-        topPosts,
-        historicalRevenue,
-        historicalContent
-      });
+      logger.debug('Dashboard data fetched successfully', { 
+        revenueCount: revenueData.length,
+        contentCount: contentData.length,
+        systemMetrics: Object.keys(systemData).length,
+        topPostsCount: topPosts.length
+      }, { context: 'system', component: 'useAdvancedDashboardStats' });
 
       // Set historical data for charts
       setHistoricalRevenueData(historicalRevenue);
@@ -93,11 +94,23 @@ export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
       const { count: leadsCount } = await leadsQuery;
       calculatedStats.totalLeads = leadsCount || 0;
 
-      console.log('Final calculated stats with filters:', calculatedStats);
+      logger.info('Dashboard stats calculated successfully', {
+        totalLeads: calculatedStats.totalLeads,
+        metricsCount: Object.keys(calculatedStats).length
+      }, { context: 'system', component: 'useAdvancedDashboardStats' });
       setStats(calculatedStats);
     } catch (err) {
-      console.error('Error fetching advanced dashboard stats:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      const error = err instanceof Error ? err : new Error('Error desconocido');
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        const networkError = new NetworkError('Failed to fetch dashboard data', undefined, { filters });
+        logger.error('Network error in dashboard fetch', networkError, { context: 'system', component: 'useAdvancedDashboardStats' });
+      } else if (error.message.includes('database') || error.message.includes('supabase')) {
+        const dbError = new DatabaseError('Database error in dashboard fetch', 'SELECT', { filters });
+        logger.error('Database error in dashboard fetch', dbError, { context: 'system', component: 'useAdvancedDashboardStats' });
+      } else {
+        logger.error('Unknown error in dashboard fetch', error, { context: 'system', component: 'useAdvancedDashboardStats' });
+      }
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +121,8 @@ export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
       await generateSampleMetrics();
       await fetchAdvancedStats();
     } catch (err) {
-      console.error('Error generating sample data:', err);
+      const error = err instanceof Error ? err : new Error('Error generando datos de ejemplo');
+      logger.error('Failed to generate sample data', error, { context: 'system', component: 'useAdvancedDashboardStats' });
       setError('Error generando datos de ejemplo');
     }
   }, [fetchAdvancedStats]);

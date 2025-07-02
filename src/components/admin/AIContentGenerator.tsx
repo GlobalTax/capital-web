@@ -8,6 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, RefreshCw } from 'lucide-react';
 import { useAIContentGeneration } from '@/hooks/useAIContentGeneration';
+import { logger } from '@/utils/logger';
+import { NetworkError, ValidationError } from '@/types/errorTypes';
+import { useToast } from '@/hooks/use-toast';
 
 interface AIContentGeneratorProps {
   isOpen: boolean;
@@ -31,6 +34,7 @@ const AIContentGenerator = ({
   const [prompt, setPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
   const { isGenerating, generateTitle, generateFullContent, generateExcerpt, generateSEO, generateTags } = useAIContentGeneration();
+  const { toast } = useToast();
 
   const getModalTitle = () => {
     switch (type) {
@@ -77,8 +81,43 @@ const AIContentGenerator = ({
       }
       
       setGeneratedContent(result);
+      logger.info('AI content generated successfully', { type, promptLength: prompt.length }, { 
+        context: 'ai', 
+        component: 'AIContentGenerator' 
+      });
     } catch (error) {
-      console.error('Error generating content:', error);
+      if (error instanceof NetworkError) {
+        logger.error('Network error during AI content generation', error, { 
+          context: 'ai', 
+          component: 'AIContentGenerator',
+          data: { type, promptLength: prompt.length }
+        });
+        toast({
+          title: "Error de conexión",
+          description: "No se pudo conectar con el servicio de IA. Verifica tu conexión.",
+          variant: "destructive",
+        });
+      } else if (error instanceof ValidationError) {
+        logger.warn('Validation error in AI content generation', error, { 
+          context: 'ai', 
+          component: 'AIContentGenerator' 
+        });
+        toast({
+          title: "Error de validación",
+          description: "Los datos proporcionados no son válidos.",
+          variant: "destructive",
+        });
+      } else {
+        logger.error('Unknown error in AI content generation', error as Error, { 
+          context: 'ai', 
+          component: 'AIContentGenerator' 
+        });
+        toast({
+          title: "Error",
+          description: "Ocurrió un error inesperado. Inténtalo de nuevo.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
+import { NetworkError, ValidationError, RateLimitError } from '@/types/errorTypes';
 
 interface GenerationOptions {
   type: 'title' | 'content' | 'excerpt' | 'seo' | 'tags';
@@ -40,15 +42,53 @@ export const useAIContentGeneration = () => {
         description: "El contenido ha sido generado exitosamente con IA.",
       });
 
+      logger.debug('AI content generation successful', { type: options.type }, { 
+        context: 'ai', 
+        component: 'useAIContentGeneration' 
+      });
       return result.content;
     } catch (error) {
-      console.error('Error generating content:', error);
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as any).code;
+        if (errorCode === 'FUNCTION_RATE_LIMIT_EXCEEDED') {
+          const rateLimitError = new RateLimitError('AI service rate limit exceeded');
+          logger.warn('AI service rate limited', rateLimitError, { 
+            context: 'ai', 
+            component: 'useAIContentGeneration' 
+          });
+          toast({
+            title: "Límite alcanzado",
+            description: "Has alcanzado el límite de generación de contenido. Inténtalo en unos minutos.",
+            variant: "destructive",
+          });
+          throw rateLimitError;
+        } else if (errorCode === 'FUNCTION_NETWORK_ERROR') {
+          const networkError = new NetworkError('AI service network error');
+          logger.error('AI service network error', networkError, { 
+            context: 'ai', 
+            component: 'useAIContentGeneration' 
+          });
+          toast({
+            title: "Error de conexión",
+            description: "Error de conexión con el servicio de IA. Inténtalo de nuevo.",
+            variant: "destructive",
+          });
+          throw networkError;
+        }
+      }
+      
+      const unknownError = error instanceof Error ? error : new Error('Unknown AI generation error');
+      logger.error('AI content generation failed', unknownError, { 
+        context: 'ai', 
+        component: 'useAIContentGeneration',
+        data: { type: options.type, promptLength: options.prompt.length }
+      });
       toast({
         title: "Error",
         description: "Error al generar contenido con IA. Inténtalo de nuevo.",
         variant: "destructive",
       });
-      throw error;
+      throw unknownError;
     } finally {
       setIsGenerating(false);
     }

@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
+import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking admin status:', error);
+        logger.warn('Admin user not found, attempting to create', { userId: targetUserId }, { context: 'auth', component: 'AuthContext' });
         // Si no existe, intentar crear uno
         const { error: insertError } = await supabase
           .from('admin_users')
@@ -62,7 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(adminStatus);
       return adminStatus;
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      logger.error('Failed to check admin status', error as Error, { 
+        context: 'auth', 
+        component: 'AuthContext',
+        userId: targetUserId 
+      });
       setIsAdmin(false);
       return false;
     }
@@ -72,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        logger.info('Auth state changed', { event, hasUser: !!session?.user }, { context: 'auth', component: 'AuthContext' });
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -110,12 +116,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (error) {
+      const authError = new AuthenticationError('Sign in failed', { email, error: error.message });
+      logger.error('Sign in failed', authError, { context: 'auth', component: 'AuthContext' });
       toast({
         title: "Error de inicio de sesión",
         description: error.message,
         variant: "destructive",
       });
     } else {
+      logger.info('User signed in successfully', undefined, { context: 'auth', component: 'AuthContext' });
       toast({
         title: "¡Bienvenido!",
         description: "Has iniciado sesión correctamente.",
@@ -139,12 +148,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (error) {
+      const authError = new AuthenticationError('Sign up failed', { email, error: error.message });
+      logger.error('Sign up failed', authError, { context: 'auth', component: 'AuthContext' });
       toast({
         title: "Error de registro",
         description: error.message,
         variant: "destructive",
       });
     } else {
+      logger.info('User signed up successfully', undefined, { context: 'auth', component: 'AuthContext' });
       toast({
         title: "¡Registro exitoso!",
         description: "Revisa tu email para confirmar tu cuenta.",

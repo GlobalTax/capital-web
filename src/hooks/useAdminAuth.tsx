@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { logger } from '@/utils/logger';
+import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
 
 export const useAdminAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -21,7 +23,7 @@ export const useAdminAuth = () => {
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        logger.error('Failed to check session', error as Error, { context: 'auth', component: 'useAdminAuth' });
         setIsAdmin(false);
       }
       
@@ -33,7 +35,7 @@ export const useAdminAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        logger.info('Auth state changed', { event }, { context: 'auth', component: 'useAdminAuth' });
         setUser(session?.user ?? null);
         
         if (session?.user) {
@@ -59,13 +61,14 @@ export const useAdminAuth = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking admin status:', error);
+        const dbError = new DatabaseError('Failed to check admin status', 'SELECT', { userId, error: error.message });
+        logger.error('Admin status check failed', dbError, { context: 'auth', component: 'useAdminAuth' });
         setIsAdmin(false);
       } else {
         setIsAdmin(!!data);
       }
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      logger.error('Admin status check error', error as Error, { context: 'auth', component: 'useAdminAuth', userId });
       setIsAdmin(false);
     }
   };

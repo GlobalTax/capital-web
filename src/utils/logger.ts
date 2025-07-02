@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LogContext = 'auth' | 'marketing' | 'api' | 'ui' | 'system' | 'performance';
+export type LogContext = 'auth' | 'marketing' | 'api' | 'ui' | 'system' | 'performance' | 'ai';
 
 interface LogEntry {
   level: LogLevel;
