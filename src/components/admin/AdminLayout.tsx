@@ -2,7 +2,7 @@
 import React from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
-import { ModernAppSidebar } from './ModernAppSidebar';
+import { RoleBasedSidebar } from './RoleBasedSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
 
@@ -17,7 +17,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-gray-50">
-        <ModernAppSidebar />
+        <RoleBasedSidebar />
         
         <SidebarInset className="flex-1">
           {/* Header global con trigger siempre visible */}

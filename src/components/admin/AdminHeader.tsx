@@ -3,6 +3,7 @@ import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { RoleIndicator } from './RoleIndicator';
 import UserDropdown from './header/UserDropdown';
 import NotificationCenter from './header/NotificationCenter';
 
@@ -14,9 +15,9 @@ const AdminHeader = ({ onLogout }: AdminHeaderProps) => {
   return (
     <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <SidebarTrigger />
-        <div>
+        <div className="flex items-center gap-4">
           <h1 className="text-lg font-light text-gray-900">Panel de Administración</h1>
+          <RoleIndicator size="sm" />
         </div>
       </div>
 
