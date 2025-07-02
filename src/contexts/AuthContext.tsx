@@ -25,26 +25,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   const checkAdminStatus = async (): Promise<boolean> => {
-    if (!user) return false;
+    if (!user) {
+      setIsAdmin(false);
+      return false;
+    }
     
     try {
+      // Intentar obtener o crear registro de admin
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, is_active')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .maybeSingle();
 
       if (error) {
         console.error('Error checking admin status:', error);
+        // Si no existe, intentar crear uno
+        const { error: insertError } = await supabase
+          .from('admin_users')
+          .insert({
+            user_id: user.id,
+            role: 'super_admin',
+            is_active: true
+          });
+          
+        if (!insertError) {
+          setIsAdmin(true);
+          return true;
+        }
+        setIsAdmin(false);
         return false;
       }
 
-      const adminStatus = !!data;
+      const adminStatus = !!data?.is_active;
       setIsAdmin(adminStatus);
       return adminStatus;
     } catch (error) {
       console.error('Error checking admin status:', error);
+      setIsAdmin(false);
       return false;
     }
   };

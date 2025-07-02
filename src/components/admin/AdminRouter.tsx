@@ -6,6 +6,7 @@ import AdminDashboard from './dashboard/AdminDashboard';
 import LeadScoringManager from './dashboard/LeadScoringManager';
 import LeadScoringRulesManager from './dashboard/LeadScoringRulesManager';
 import AdminSettings from './AdminSettings';
+import AlertsManager from './leads/AlertsManager';
 import BlogPostsManagerV2 from './BlogPostsManagerV2';
 import CaseStudiesManager from './CaseStudiesManager';
 import ContactLeadsManager from './ContactLeadsManager';
@@ -53,6 +54,7 @@ const AdminRouter = () => {
       <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
       <Route path="/contact-leads" element={<ContactLeadsManager />} />
       <Route path="/collaborator-applications" element={<CollaboratorApplicationsManager />} />
+      <Route path="/alerts" element={<AlertsManager />} />
       
       {/* Marketing & Analytics */}
       <Route path="/marketing-automation" element={<MarketingAutomationDashboard />} />
