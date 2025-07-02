@@ -2007,6 +2007,54 @@ export type Database = {
         }
         Relationships: []
       }
+      system_logs: {
+        Row: {
+          component: string | null
+          context: string | null
+          created_at: string
+          environment: string | null
+          error_stack: string | null
+          id: string
+          level: string
+          log_data: Json | null
+          message: string
+          session_id: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component?: string | null
+          context?: string | null
+          created_at?: string
+          environment?: string | null
+          error_stack?: string | null
+          id?: string
+          level: string
+          log_data?: Json | null
+          message: string
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component?: string | null
+          context?: string | null
+          created_at?: string
+          environment?: string | null
+          error_stack?: string | null
+          id?: string
+          level?: string
+          log_data?: Json | null
+          message?: string
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       system_metrics: {
         Row: {
           active_users: number
