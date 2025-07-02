@@ -2459,9 +2459,9 @@ export type Database = {
         Args: { p_visitor_id: string }
         Returns: number
       }
-      check_is_admin: {
+      check_user_admin_role: {
         Args: { check_user_id: string }
-        Returns: boolean
+        Returns: string
       }
       cleanup_old_lead_data: {
         Args: Record<PropertyKey, never>
@@ -2469,6 +2469,14 @@ export type Database = {
       }
       current_user_is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_user_admin: {
+        Args: { check_user_id: string }
+        Returns: boolean
+      }
+      is_user_super_admin: {
+        Args: { check_user_id: string }
         Returns: boolean
       }
       process_automation_workflows: {
