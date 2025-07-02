@@ -266,7 +266,7 @@ export function RoleBasedSidebar() {
   }
 
   return (
-    <Sidebar className="border-r border-sidebar-border bg-sidebar-background">
+    <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-sidebar-primary rounded-md flex items-center justify-center">
