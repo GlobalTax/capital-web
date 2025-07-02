@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdvancedLeadScoring } from './useAdvancedLeadScoring';
+import { logger } from '@/utils/logger';
+import { NetworkError, DatabaseError } from '@/types/errorTypes';
 
 interface RealTimeLeadUpdate {
   type: 'new_lead' | 'hot_lead' | 'score_update' | 'conversion';
@@ -48,7 +50,12 @@ export const useRealTimeLeads = () => {
           table: 'lead_scores'
         },
         (payload) => {
-          console.log('Nuevo lead detectado:', payload);
+          logger.info('New lead detected via realtime', {
+            leadId: payload.new?.id,
+            companyDomain: payload.new?.company_domain,
+            score: payload.new?.total_score
+          }, { context: 'marketing', component: 'useRealTimeLeads' });
+          
           const newUpdate: RealTimeLeadUpdate = {
             type: 'new_lead',
             leadData: payload.new,
@@ -66,8 +73,15 @@ export const useRealTimeLeads = () => {
           table: 'lead_scores'
         },
         (payload) => {
-          console.log('Lead actualizado:', payload);
           const isNowHot = payload.new.is_hot_lead && !payload.old.is_hot_lead;
+          
+          logger.info('Lead score updated via realtime', {
+            leadId: payload.new?.id,
+            companyDomain: payload.new?.company_domain,
+            oldScore: payload.old?.total_score,
+            newScore: payload.new?.total_score,
+            becameHot: isNowHot
+          }, { context: 'marketing', component: 'useRealTimeLeads' });
           
           const updateType = isNowHot ? 'hot_lead' : 'score_update';
           const newUpdate: RealTimeLeadUpdate = {
@@ -91,7 +105,12 @@ export const useRealTimeLeads = () => {
           table: 'lead_alerts'
         },
         (payload) => {
-          console.log('Nueva alerta de lead:', payload);
+          logger.info('New lead alert created', {
+            alertId: payload.new?.id,
+            priority: payload.new?.priority,
+            alertType: payload.new?.alert_type
+          }, { context: 'marketing', component: 'useRealTimeLeads' });
+          
           if (payload.new.priority === 'high' || payload.new.priority === 'critical') {
             toast({
               title: "🚨 ALERTA DE LEAD",
@@ -103,8 +122,19 @@ export const useRealTimeLeads = () => {
         }
       )
       .subscribe((status) => {
-        console.log('Realtime status:', status);
+        logger.debug('Realtime connection status changed', { status }, { 
+          context: 'system', 
+          component: 'useRealTimeLeads' 
+        });
+        
         setIsConnected(status === 'SUBSCRIBED');
+        
+        if (status === 'CHANNEL_ERROR') {
+          logger.error('Realtime channel error detected', new NetworkError('Realtime connection failed'), {
+            context: 'system',
+            component: 'useRealTimeLeads'
+          });
+        }
       });
 
     return () => {

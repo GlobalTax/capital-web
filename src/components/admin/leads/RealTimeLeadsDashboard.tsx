@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,9 @@ import { useAdvancedLeadScoring } from '@/hooks/useAdvancedLeadScoring';
 import { useRealTimeLeads } from '@/hooks/useRealTimeLeads';
 import CriticalLeadsPanel from './CriticalLeadsPanel';
 import LeadActivityFeed from './LeadActivityFeed';
+import LeadScoringErrorBoundary from './ErrorBoundary';
 
-const RealTimeLeadsDashboard = () => {
+const RealTimeLeadsDashboard = memo(() => {
   const { getLeadStats, hotLeads, isLoadingHotLeads } = useAdvancedLeadScoring();
   const { 
     recentUpdates, 
@@ -38,7 +39,8 @@ const RealTimeLeadsDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <LeadScoringErrorBoundary fallbackTitle="Dashboard de Leads en Tiempo Real" onRetry={handleRefresh}>
+      <div className="space-y-6">
       {/* Header con estado de conexión */}
       <div className="flex items-center justify-between">
         <div>
@@ -164,8 +166,11 @@ const RealTimeLeadsDashboard = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </LeadScoringErrorBoundary>
   );
-};
+});
+
+RealTimeLeadsDashboard.displayName = 'RealTimeLeadsDashboard';
 
 export default RealTimeLeadsDashboard;
