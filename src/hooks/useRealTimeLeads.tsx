@@ -38,8 +38,20 @@ export const useRealTimeLeads = () => {
     }
   }, [toast]);
 
-  // Configurar realtime subscription
+  // Flag para deshabilitar real-time temporalmente
+  const REALTIME_ENABLED = false;
+
+  // Configurar realtime subscription (temporalmente deshabilitado)
   useEffect(() => {
+    if (!REALTIME_ENABLED) {
+      logger.info('Real-time connections disabled for stability', {}, { 
+        context: 'system', 
+        component: 'useRealTimeLeads' 
+      });
+      setIsConnected(false);
+      return;
+    }
+
     const channel = supabase
       .channel('leads-realtime')
       .on(

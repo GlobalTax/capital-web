@@ -8,7 +8,7 @@ import { useAdvancedLeadScoring } from '@/hooks/useAdvancedLeadScoring';
 import { useRealTimeLeads } from '@/hooks/useRealTimeLeads';
 import CriticalLeadsPanel from './CriticalLeadsPanel';
 import LeadActivityFeed from './LeadActivityFeed';
-import LeadScoringErrorBoundary from './ErrorBoundary';
+import SimplifiedErrorBoundary from './SimplifiedErrorBoundary';
 
 const RealTimeLeadsDashboard = memo(() => {
   const { getLeadStats, hotLeads, isLoadingHotLeads } = useAdvancedLeadScoring();
@@ -39,7 +39,7 @@ const RealTimeLeadsDashboard = memo(() => {
   }
 
   return (
-    <LeadScoringErrorBoundary fallbackTitle="Dashboard de Leads en Tiempo Real" onRetry={handleRefresh}>
+    <SimplifiedErrorBoundary fallbackTitle="Dashboard de Leads en Tiempo Real" onRetry={handleRefresh}>
       <div className="space-y-6">
       {/* Header con estado de conexión */}
       <div className="flex items-center justify-between">
@@ -167,7 +167,7 @@ const RealTimeLeadsDashboard = memo(() => {
         </CardContent>
       </Card>
       </div>
-    </LeadScoringErrorBoundary>
+    </SimplifiedErrorBoundary>
   );
 });
 

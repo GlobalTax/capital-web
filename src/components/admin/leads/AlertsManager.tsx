@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Bell, Target, TrendingUp, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useOptimizedAlerts } from '@/hooks/useOptimizedAlerts';
-import LeadScoringErrorBoundary from './ErrorBoundary';
-import { FixedSizeList as List } from 'react-window';
+import SimplifiedErrorBoundary from './SimplifiedErrorBoundary';
 
 // Memoized Alert Item Component for performance
 const AlertItem = memo(({ alert, onMarkAsRead }: { alert: any; onMarkAsRead: (id: string) => void }) => (
@@ -71,7 +70,7 @@ const AlertsManager = memo(() => {
   const metrics = getPerformanceMetrics();
   const totalPages = Math.ceil(totalCount / 20);
   return (
-    <LeadScoringErrorBoundary fallbackTitle="Sistema de Alertas" onRetry={refetch}>
+    <SimplifiedErrorBoundary fallbackTitle="Sistema de Alertas" onRetry={refetch}>
       <div className="space-y-6">
         {/* Header con métricas de rendimiento */}
         <div className="flex items-center justify-between">
@@ -235,7 +234,7 @@ const AlertsManager = memo(() => {
           </CardContent>
         </Card>
       </div>
-    </LeadScoringErrorBoundary>
+    </SimplifiedErrorBoundary>
   );
 });
 

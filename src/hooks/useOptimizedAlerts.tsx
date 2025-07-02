@@ -129,7 +129,7 @@ export const useOptimizedAlerts = (params: AlertsParams = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, priority, unreadOnly, cacheKey, lastFetch]);
+  }, [page, pageSize, priority, unreadOnly, cacheKey]);
 
   const markAsRead = useCallback(async (alertId: string) => {
     try {
