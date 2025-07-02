@@ -2,6 +2,7 @@
 import React from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
+import { useAdminDebug } from '@/hooks/useAdminDebug';
 import { RoleBasedSidebar } from './RoleBasedSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
@@ -13,6 +14,7 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   const { breadcrumbs } = useAdminLayout();
+  const { debugInfo } = useAdminDebug();
 
   return (
     <SidebarProvider defaultOpen={true}>

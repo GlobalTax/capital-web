@@ -301,43 +301,46 @@ export const useRoleBasedPermissions = () => {
   };
 
   const getMenuVisibility = () => {
+    // Para admins y super_admins, mostrar todo
+    const isAdminLevel = userRole === 'admin' || userRole === 'super_admin';
+    
     return {
       // Dashboard always visible
       dashboard: true,
       
-      // Lead management
-      leadScoring: permissions.canViewLeads,
-      leadScoringRules: permissions.canManageLeads,
-      contactLeads: permissions.canViewLeads,
-      collaboratorApplications: permissions.canViewLeads,
-      alerts: permissions.canViewLeads,
+      // Lead management - Visible para admins, editors, y viewers
+      leadScoring: userRole !== 'none',
+      leadScoringRules: isAdminLevel,
+      contactLeads: userRole !== 'none',
+      collaboratorApplications: userRole !== 'none',
+      alerts: userRole !== 'none',
       
-      // Content management
-      blogV2: permissions.canManageContent,
-      sectorReports: permissions.canManageContent,
-      caseStudies: permissions.canManageContent,
-      leadMagnets: permissions.canManageContent,
+      // Content management - Visible para admins y editors
+      blogV2: userRole !== 'none' && userRole !== 'viewer',
+      sectorReports: userRole !== 'none' && userRole !== 'viewer',
+      caseStudies: userRole !== 'none' && userRole !== 'viewer',
+      leadMagnets: userRole !== 'none' && userRole !== 'viewer',
       
-      // Company data
-      operations: permissions.canManageOperations,
-      multiples: permissions.canManageOperations,
-      statistics: permissions.canViewAnalytics,
+      // Company data - Visible para todos excepto 'none'
+      operations: userRole !== 'none',
+      multiples: userRole !== 'none',
+      statistics: userRole !== 'none',
       
-      // Team & testimonials
-      team: permissions.canManageTeam,
-      testimonials: permissions.canManageContent,
-      carouselTestimonials: permissions.canManageContent,
-      carouselLogos: permissions.canManageContent,
+      // Team & testimonials - Visible para admins y editors
+      team: userRole !== 'none' && userRole !== 'viewer',
+      testimonials: userRole !== 'none' && userRole !== 'viewer',
+      carouselTestimonials: userRole !== 'none' && userRole !== 'viewer',
+      carouselLogos: userRole !== 'none' && userRole !== 'viewer',
       
-      // Marketing & Analytics
-      marketingAutomation: permissions.canManageMarketing,
-      marketingIntelligence: permissions.canViewMarketingIntelligence,
-      marketingHub: permissions.canViewAnalytics,
-      integrations: permissions.canManageIntegrations,
+      // Marketing & Analytics - Visible para todos excepto 'none'
+      marketingAutomation: isAdminLevel,
+      marketingIntelligence: userRole !== 'none',
+      marketingHub: userRole !== 'none',
+      integrations: isAdminLevel,
       
-      // Configuration
-      adminUsers: permissions.canManageUsers,
-      settings: permissions.canManageSettings,
+      // Configuration - Solo para super admins y admins respectivamente
+      adminUsers: userRole === 'super_admin',
+      settings: isAdminLevel,
     };
   };
 
