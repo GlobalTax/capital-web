@@ -319,7 +319,7 @@ export const useRoleBasedPermissions = () => {
       proposals: userRole !== 'none',
       
       // Email Marketing - Visible para admins y editors
-      emailMarketing: userRole !== 'none' && userRole !== 'viewer',
+      emailMarketing: isAdminLevel,
       
       // Content management - Visible para admins y editors
       blogV2: userRole !== 'none' && userRole !== 'viewer',

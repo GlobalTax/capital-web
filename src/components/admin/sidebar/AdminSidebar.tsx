@@ -32,13 +32,17 @@ export const AdminSidebar: React.FC = () => {
     // Dashboard siempre visible
     if (url === '/admin') return true;
     
-    // Mapear rutas a permisos
+    // Mapear rutas a permisos - SINCRONIZADO con AdminRouter y useRoleBasedPermissions
     const routePermissionMap: Record<string, keyof typeof menuVisibility> = {
       'lead-scoring': 'leadScoring',
       'lead-scoring-rules': 'leadScoringRules',
       'contact-leads': 'contactLeads',
+      'contacts': 'contacts',
+      'contact-lists': 'contactLists',
       'collaborator-applications': 'collaboratorApplications',
       'alerts': 'alerts',
+      'proposals': 'proposals',
+      'email-marketing': 'emailMarketing',
       'marketing-automation': 'marketingAutomation',
       'blog-v2': 'blogV2',
       'sector-reports': 'sectorReports',
@@ -59,7 +63,7 @@ export const AdminSidebar: React.FC = () => {
     };
 
     const permissionKey = routePermissionMap[route];
-    return permissionKey ? menuVisibility[permissionKey] : true;
+    return permissionKey ? menuVisibility[permissionKey] : false; // Cambio a false para ser más restrictivo
   };
 
   return (
