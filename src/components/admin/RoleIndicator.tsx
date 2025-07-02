@@ -85,7 +85,7 @@ export const RoleIndicator: React.FC<RoleIndicatorProps> = ({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger>
           {badge}
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
