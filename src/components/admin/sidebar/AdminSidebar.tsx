@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { sidebarSections } from './SidebarConfig';
@@ -7,7 +8,43 @@ import { SidebarFooter } from './SidebarFooter';
 import { SidebarSection } from './SidebarSection';
 
 export const AdminSidebar: React.FC = () => {
+  const location = useLocation();
   const { getMenuVisibility, userRole, isLoading } = useRoleBasedPermissions();
+  
+  // Estado para controlar secciones expandidas
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  
+  // Función para encontrar qué sección contiene la ruta activa
+  const getActiveSectionTitle = (): string | null => {
+    const currentPath = location.pathname;
+    
+    for (const section of sidebarSections) {
+      const hasActiveItem = section.items.some(item => item.url === currentPath);
+      if (hasActiveItem) {
+        return section.title;
+      }
+    }
+    return null;
+  };
+  
+  // Expandir automáticamente la sección que contiene la ruta activa
+  useEffect(() => {
+    const activeSection = getActiveSectionTitle();
+    if (activeSection) {
+      setExpandedSections(prev => ({
+        ...prev,
+        [activeSection]: true
+      }));
+    }
+  }, [location.pathname]);
+  
+  // Función para toggle de secciones
+  const toggleSection = (sectionTitle: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionTitle]: !prev[sectionTitle]
+    }));
+  };
 
   if (isLoading) {
     return (
@@ -80,6 +117,8 @@ export const AdminSidebar: React.FC = () => {
               key={section.title} 
               section={section} 
               visibleItems={visibleItems} 
+              isExpanded={expandedSections[section.title] || false}
+              onToggle={() => toggleSection(section.title)}
             />
           );
         })}
