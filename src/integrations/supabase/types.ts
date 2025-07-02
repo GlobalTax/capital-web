@@ -1127,6 +1127,166 @@ export type Database = {
         }
         Relationships: []
       }
+      fee_proposals: {
+        Row: {
+          approved_at: string | null
+          base_fee_percentage: number | null
+          client_company: string | null
+          client_email: string
+          client_name: string
+          client_phone: string | null
+          company_valuation_id: string | null
+          contact_lead_id: string | null
+          created_at: string
+          created_by: string
+          estimated_fee: number | null
+          id: string
+          minimum_fee: number | null
+          proposal_content: Json | null
+          proposal_number: string
+          proposal_title: string
+          rejected_at: string | null
+          sections: Json | null
+          sent_at: string | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          status: Database["public"]["Enums"]["proposal_status"] | null
+          success_fee_percentage: number | null
+          template_id: string | null
+          terms_and_conditions: string | null
+          transaction_value: number | null
+          unique_url: string | null
+          updated_at: string
+          valid_until: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          base_fee_percentage?: number | null
+          client_company?: string | null
+          client_email: string
+          client_name: string
+          client_phone?: string | null
+          company_valuation_id?: string | null
+          contact_lead_id?: string | null
+          created_at?: string
+          created_by: string
+          estimated_fee?: number | null
+          id?: string
+          minimum_fee?: number | null
+          proposal_content?: Json | null
+          proposal_number: string
+          proposal_title: string
+          rejected_at?: string | null
+          sections?: Json | null
+          sent_at?: string | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          status?: Database["public"]["Enums"]["proposal_status"] | null
+          success_fee_percentage?: number | null
+          template_id?: string | null
+          terms_and_conditions?: string | null
+          transaction_value?: number | null
+          unique_url?: string | null
+          updated_at?: string
+          valid_until?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          base_fee_percentage?: number | null
+          client_company?: string | null
+          client_email?: string
+          client_name?: string
+          client_phone?: string | null
+          company_valuation_id?: string | null
+          contact_lead_id?: string | null
+          created_at?: string
+          created_by?: string
+          estimated_fee?: number | null
+          id?: string
+          minimum_fee?: number | null
+          proposal_content?: Json | null
+          proposal_number?: string
+          proposal_title?: string
+          rejected_at?: string | null
+          sections?: Json | null
+          sent_at?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"]
+          status?: Database["public"]["Enums"]["proposal_status"] | null
+          success_fee_percentage?: number | null
+          template_id?: string | null
+          terms_and_conditions?: string | null
+          transaction_value?: number | null
+          unique_url?: string | null
+          updated_at?: string
+          valid_until?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_proposals_company_valuation_id_fkey"
+            columns: ["company_valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_proposals_contact_lead_id_fkey"
+            columns: ["contact_lead_id"]
+            isOneToOne: false
+            referencedRelation: "contact_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_proposals_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "fee_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_templates: {
+        Row: {
+          base_fee_percentage: number | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          minimum_fee: number | null
+          name: string
+          service_type: Database["public"]["Enums"]["service_type"]
+          success_fee_percentage: number | null
+          template_sections: Json | null
+          updated_at: string
+        }
+        Insert: {
+          base_fee_percentage?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          minimum_fee?: number | null
+          name: string
+          service_type: Database["public"]["Enums"]["service_type"]
+          success_fee_percentage?: number | null
+          template_sections?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          base_fee_percentage?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          minimum_fee?: number | null
+          name?: string
+          service_type?: Database["public"]["Enums"]["service_type"]
+          success_fee_percentage?: number | null
+          template_sections?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       form_ab_tests: {
         Row: {
           created_at: string | null
@@ -1913,6 +2073,80 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_activities: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          proposal_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          proposal_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          proposal_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_activities_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "fee_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposal_sections: {
+        Row: {
+          content_template: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          name: string
+          section_type: string | null
+          service_type: Database["public"]["Enums"]["service_type"] | null
+        }
+        Insert: {
+          content_template?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          name: string
+          section_type?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+        }
+        Update: {
+          content_template?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          name?: string
+          section_type?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+        }
+        Relationships: []
+      }
       report_configs: {
         Row: {
           created_at: string
@@ -2543,6 +2777,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      generate_proposal_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_unique_proposal_url: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_user_admin: {
         Args: { check_user_id: string }
         Returns: boolean
@@ -2558,6 +2800,20 @@ export type Database = {
     }
     Enums: {
       admin_role: "super_admin" | "admin" | "editor" | "viewer"
+      proposal_status:
+        | "draft"
+        | "sent"
+        | "viewed"
+        | "approved"
+        | "rejected"
+        | "expired"
+      service_type:
+        | "venta_empresas"
+        | "due_diligence"
+        | "valoraciones"
+        | "asesoramiento_legal"
+        | "planificacion_fiscal"
+        | "reestructuraciones"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2674,6 +2930,22 @@ export const Constants = {
   public: {
     Enums: {
       admin_role: ["super_admin", "admin", "editor", "viewer"],
+      proposal_status: [
+        "draft",
+        "sent",
+        "viewed",
+        "approved",
+        "rejected",
+        "expired",
+      ],
+      service_type: [
+        "venta_empresas",
+        "due_diligence",
+        "valoraciones",
+        "asesoramiento_legal",
+        "planificacion_fiscal",
+        "reestructuraciones",
+      ],
     },
   },
 } as const

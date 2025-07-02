@@ -100,6 +100,13 @@ export function RoleBasedSidebar() {
           badge: "URGENTE",
           visible: menuVisibility.alerts
         },
+        { 
+          title: "Propuestas Honorarios", 
+          url: "/admin/proposals", 
+          icon: FileText, 
+          badge: "NEW",
+          visible: true
+        },
       ]
     },
     {
