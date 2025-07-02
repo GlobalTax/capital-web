@@ -265,19 +265,34 @@ const ROLE_PERMISSIONS: Record<AdminRole, RolePermissions> = {
 export const useRoleBasedPermissions = () => {
   const { user, isAdmin } = useAdminAuth();
   
-  // Fetch user role from database
-  const { data: userRole } = useQuery({
+  // Fetch user role from database with circuit breaker
+  const { data: userRole, error, isLoading: queryLoading } = useQuery({
     queryKey: ['user-role', user?.id],
     queryFn: async (): Promise<AdminRole> => {
       if (!user?.id) return 'none';
       
-      const { data } = await supabase
-        .rpc('check_user_admin_role', { check_user_id: user.id });
-      
-      return (data as AdminRole) || 'none';
+      try {
+        const { data, error } = await supabase
+          .rpc('check_user_admin_role', { check_user_id: user.id });
+        
+        if (error) {
+          console.error('RPC error:', error);
+          return 'none'; // Fallback seguro
+        }
+        
+        return (data as AdminRole) || 'none';
+      } catch (error) {
+        console.error('Role check failed:', error);
+        return 'none'; // Fallback seguro
+      }
     },
     enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - más cache
+    gcTime: 15 * 60 * 1000, // 15 minutes (nuevo nombre para cacheTime)
+    retry: 2, // Solo 2 reintentos
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false, // Evitar refetch automático
+    refetchOnMount: false, // Evitar refetch en mount
   });
 
   const permissions = useMemo(() => {
@@ -356,6 +371,7 @@ export const useRoleBasedPermissions = () => {
     hasPermission,
     requirePermission,
     getMenuVisibility,
-    isLoading: !userRole && !!user?.id,
+    isLoading: queryLoading && !!user?.id,
+    error,
   };
 };

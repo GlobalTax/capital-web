@@ -9,7 +9,7 @@ import { SidebarSection } from './SidebarSection';
 
 export const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  const { getMenuVisibility, userRole, isLoading } = useRoleBasedPermissions();
+  const { getMenuVisibility, userRole, isLoading, error } = useRoleBasedPermissions();
   
   // Estado para controlar secciones expandidas
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -46,6 +46,21 @@ export const AdminSidebar: React.FC = () => {
     }));
   };
 
+  // Modo degradado en caso de error crítico
+  if (error) {
+    return (
+      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
+        <SidebarHeader userRole="Error" />
+        <SidebarContent>
+          <div className="p-4 text-center">
+            <p className="text-sm text-red-500 mb-2">Error de permisos</p>
+            <p className="text-xs text-gray-500">Modo básico activo</p>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
   if (isLoading) {
     return (
       <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
@@ -60,7 +75,43 @@ export const AdminSidebar: React.FC = () => {
     );
   }
 
-  const menuVisibility = getMenuVisibility();
+  const menuVisibility = React.useMemo(() => {
+    try {
+      return getMenuVisibility();
+    } catch (error) {
+      console.error('Error getting menu visibility:', error);
+      // Fallback básico - solo dashboard visible
+      return {
+        dashboard: true,
+        leadScoring: false,
+        leadScoringRules: false,
+        contactLeads: false,
+        contacts: false,
+        contactLists: false,
+        collaboratorApplications: false,
+        alerts: false,
+        proposals: false,
+        emailMarketing: false,
+        blogV2: false,
+        sectorReports: false,
+        caseStudies: false,
+        leadMagnets: false,
+        operations: false,
+        multiples: false,
+        statistics: false,
+        team: false,
+        testimonials: false,
+        carouselTestimonials: false,
+        carouselLogos: false,
+        marketingAutomation: false,
+        marketingIntelligence: false,
+        marketingHub: false,
+        integrations: false,
+        adminUsers: false,
+        settings: false,
+      };
+    }
+  }, [getMenuVisibility]);
 
   // Mapear visibilidad de permisos a los items del sidebar
   const getItemVisibility = (url: string): boolean => {

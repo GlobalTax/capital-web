@@ -6,6 +6,7 @@ import { useAdminDebug } from '@/hooks/useAdminDebug';
 import { AdminSidebar } from './sidebar/AdminSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
+import { ErrorBoundaryProvider } from './ErrorBoundaryProvider';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -17,33 +18,39 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   const { debugInfo } = useAdminDebug();
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-background">
-        <AdminSidebar />
-        
-        <SidebarInset className="flex-1">
-          {/* Header global con trigger siempre visible */}
-          <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex-1">
-              <AdminHeader onLogout={onLogout} />
-            </div>
-          </header>
+    <ErrorBoundaryProvider>
+      <SidebarProvider defaultOpen={true}>
+        <div className="min-h-screen flex w-full bg-background">
+          <ErrorBoundaryProvider>
+            <AdminSidebar />
+          </ErrorBoundaryProvider>
+          
+          <SidebarInset className="flex-1">
+            {/* Header global con trigger siempre visible */}
+            <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm">
+              <SidebarTrigger className="-ml-1" />
+              <div className="flex-1">
+                <AdminHeader onLogout={onLogout} />
+              </div>
+            </header>
 
-          {/* Breadcrumbs */}
-          <div className="px-6 py-3 bg-card border-b border-border/50">
-            <AdminBreadcrumbs items={breadcrumbs} />
-          </div>
-
-          {/* Contenido principal */}
-          <main className="flex-1 p-6 overflow-auto bg-background">
-            <div className="max-w-7xl mx-auto">
-              {children}
+            {/* Breadcrumbs */}
+            <div className="px-6 py-3 bg-card border-b border-border/50">
+              <AdminBreadcrumbs items={breadcrumbs} />
             </div>
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+
+            {/* Contenido principal */}
+            <main className="flex-1 p-6 overflow-auto bg-background">
+              <div className="max-w-7xl mx-auto">
+                <ErrorBoundaryProvider>
+                  {children}
+                </ErrorBoundaryProvider>
+              </div>
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </ErrorBoundaryProvider>
   );
 };
 
