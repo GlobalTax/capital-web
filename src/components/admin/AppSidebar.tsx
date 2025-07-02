@@ -48,10 +48,11 @@ const sidebarGroups = [
         badge: "URGENTE" as const
       },
       {
-        title: "CRM",
+        title: "Contactos",
         icon: Users,
-        id: "crm",
-        description: "Gestión de clientes y contactos"
+        id: "contacts",
+        description: "Vista unificada de todos los contactos",
+        badge: "NEW" as const
       },
       {
         title: "Marketing Automation",
