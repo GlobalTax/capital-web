@@ -266,15 +266,17 @@ export function RoleBasedSidebar() {
   }
 
   return (
-    <Sidebar className="border-r">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-blue-600" />
+    <Sidebar className="border-r border-sidebar-border bg-sidebar-background">
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-sidebar-primary rounded-md flex items-center justify-center">
+            <Shield className="h-4 w-4 text-sidebar-primary-foreground" />
+          </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">Admin Panel</h2>
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-gray-500">Capittal</p>
-              <Badge variant="outline" className="text-xs">
+            <h2 className="text-sm font-semibold text-sidebar-foreground">Capittal Admin</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-sidebar-foreground/60">Panel de Control</p>
+              <Badge variant="outline" className="text-xs border-sidebar-border text-sidebar-foreground/80">
                 {userRole}
               </Badge>
             </div>
@@ -291,22 +293,23 @@ export function RoleBasedSidebar() {
           if (visibleItems.length === 0) return null;
 
           return (
-            <SidebarGroup key={section.title}>
-              <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <SidebarGroup key={section.title} className="px-3">
+              <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider mb-2 px-2">
                 {section.title}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="space-y-1">
                    {visibleItems.map((item) => (
                      <SidebarMenuItem key={item.title}>
                        <SidebarMenuButton 
                          asChild
                          isActive={location.pathname === item.url}
+                         className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors rounded-md"
                        >
-                         <Link to={item.url} className="flex items-center justify-between w-full">
-                           <div className="flex items-center gap-2">
-                             <item.icon className="h-4 w-4" />
-                             <span>{item.title}</span>
+                         <Link to={item.url} className="flex items-center justify-between w-full px-2 py-2">
+                           <div className="flex items-center gap-3">
+                             <item.icon className="h-4 w-4 text-sidebar-foreground/70" />
+                             <span className="text-sm font-medium text-sidebar-foreground">{item.title}</span>
                            </div>
                            {item.badge && (
                              <span className={getBadgeStyles(item.badge)}>
@@ -324,10 +327,10 @@ export function RoleBasedSidebar() {
         })}
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
         <Link 
           to="/" 
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-3 text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors px-2 py-2 rounded-md hover:bg-sidebar-accent/50"
         >
           <Home className="h-4 w-4" />
           Volver al sitio web

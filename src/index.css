@@ -7,44 +7,61 @@
 
 @layer base {
   :root {
+    /* ActiveCampaign inspired color scheme */
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 215 25% 27%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 215 25% 27%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 215 25% 27%;
 
-    --primary: 0 0% 0%;
+    /* ActiveCampaign blue primary */
+    --primary: 213 93% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 9% 46%;
+    /* Subtle grays */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 215 16% 47%;
 
-    --muted: 220 14% 96%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 210 40% 98%;
+    --accent-foreground: 215 25% 27%;
 
+    /* Warning/danger states */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 0 0% 0%;
+    /* Borders and inputs */
+    --border: 214 31% 91%;
+    --input: 214 31% 91%;
+    --ring: 213 93% 67%;
 
-    --radius: 10px;
+    --radius: 6px;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5% 26%;
-    --sidebar-primary: 240 6% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 5% 96%;
-    --sidebar-accent-foreground: 240 6% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    /* Modern sidebar colors */
+    --sidebar-background: 220 13% 18%;
+    --sidebar-foreground: 220 9% 89%;
+    --sidebar-primary: 213 93% 67%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 22%;
+    --sidebar-accent-foreground: 220 9% 89%;
+    --sidebar-border: 220 13% 22%;
+    --sidebar-ring: 213 93% 67%;
+
+    /* Custom admin panel colors */
+    --admin-header-bg: 0 0% 100%;
+    --admin-content-bg: 210 40% 98%;
+    --admin-nav-hover: 210 40% 96%;
+    --admin-border: 214 31% 91%;
+    --admin-text-primary: 215 25% 27%;
+    --admin-text-secondary: 215 16% 47%;
+    --admin-success: 142 76% 36%;
+    --admin-warning: 38 92% 50%;
+    --admin-info: 213 93% 67%;
   }
 }
 
@@ -54,24 +71,47 @@
   }
 
   body {
-    @apply bg-white text-black font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
   html {
     scroll-behavior: smooth;
-    @apply bg-white;
+    @apply bg-background;
   }
 }
 
 @layer components {
+  /* Modern admin components */
+  .admin-card {
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm 
+           transition-all duration-200 ease-out hover:shadow-md;
+  }
+
+  .admin-input {
+    @apply bg-background border border-input rounded-md px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+           placeholder:text-muted-foreground;
+  }
+
+  .admin-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 
+           rounded-md px-4 py-2 text-sm font-medium transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .admin-button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80
+           border border-border rounded-md px-4 py-2 text-sm font-medium 
+           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  /* Legacy components for backward compatibility */
   .capittal-card {
-    @apply bg-white rounded-lg p-6 shadow-sm 
-           transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1;
+    @apply admin-card;
   }
 
   .capittal-input {
-    @apply bg-white rounded-lg px-4 py-3 
-           focus:outline-none focus:ring-2 focus:ring-black/20;
+    @apply admin-input;
   }
 
   @keyframes fadeInUp {
