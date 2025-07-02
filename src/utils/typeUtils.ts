@@ -11,7 +11,7 @@ import {
 } from '@/types/marketingAutomation';
 
 // Safe property access for database JSON objects
-export function getProperty<T = any>(obj: DatabaseJson, path: string): T | null {
+export function getProperty<T = unknown>(obj: DatabaseJson, path: string): T | null {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
     return null;
   }
@@ -31,19 +31,19 @@ export function getProperty<T = any>(obj: DatabaseJson, path: string): T | null 
 }
 
 // Safe array access for database JSON
-export function getArrayProperty<T = any>(obj: DatabaseJson, path: string): T[] | null {
+export function getArrayProperty<T = unknown>(obj: DatabaseJson, path: string): T[] | null {
   const value = getProperty(obj, path);
   return Array.isArray(value) ? value as T[] : null;
 }
 
 // Type-safe workflow condition access
-export function getWorkflowConditions(workflow: { trigger_conditions: DatabaseJson }): any[] {
+export function getWorkflowConditions(workflow: { trigger_conditions: DatabaseJson }): unknown[] {
   const conditions = getArrayProperty(workflow.trigger_conditions, 'conditions');
   return conditions || [];
 }
 
 // Type-safe workflow actions access
-export function getWorkflowActions(workflow: { actions: DatabaseJson }): any[] {
+export function getWorkflowActions(workflow: { actions: DatabaseJson }): unknown[] {
   const actions = getArrayProperty(workflow.actions, 'actions');
   return actions || [];
 }
@@ -69,18 +69,18 @@ export function isValidUrl(url: string): boolean {
 }
 
 // Safe number conversion
-export function safeNumber(value: any, defaultValue: number = 0): number {
+export function safeNumber(value: unknown, defaultValue: number = 0): number {
   const num = Number(value);
   return isNaN(num) ? defaultValue : num;
 }
 
 // Safe string conversion
-export function safeString(value: any, defaultValue: string = ''): string {
+export function safeString(value: unknown, defaultValue: string = ''): string {
   return value != null ? String(value) : defaultValue;
 }
 
 // Safe boolean conversion
-export function safeBoolean(value: any, defaultValue: boolean = false): boolean {
+export function safeBoolean(value: unknown, defaultValue: boolean = false): boolean {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
     return value.toLowerCase() === 'true' || value === '1';
@@ -98,12 +98,12 @@ export function isValidDate(date: string): boolean {
 }
 
 // Form field validation
-export interface ValidationRule<T = any> {
+export interface ValidationRule<T = unknown> {
   validate: (value: T) => boolean;
   message: string;
 }
 
-export function createValidator<T = any>(
+export function createValidator<T = unknown>(
   rules: ValidationRule<T>[]
 ): (value: T) => { isValid: boolean; errors: string[] } {
   return (value: T) => {

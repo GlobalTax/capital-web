@@ -5,6 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRateLimit } from './useRateLimit';
 import { useOptimizedQuery, useSmartInvalidation } from './useOptimizedQueries';
 import { usePerformanceMonitoring } from './usePerformanceMonitoring';
+import { LeadEventData } from '@/types/leadEvents';
+import { DatabaseError, NetworkError, RateLimitError } from '@/types/errorTypes';
+import { logger } from '@/utils/logger';
 
 interface LeadScoringRule {
   id: string;
@@ -26,7 +29,7 @@ interface LeadBehaviorEvent {
   company_domain?: string;
   event_type: string;
   page_path?: string;
-  event_data: Record<string, any>;
+  event_data: Record<string, unknown>;
   points_awarded: number;
   created_at: string;
 }
@@ -207,17 +210,17 @@ export const useAdvancedLeadScoring = () => {
     mutationFn: async ({
       eventType,
       pagePath,
-      eventData = {},
+      eventData = { timestamp: new Date().toISOString() },
       companyDomain
     }: {
       eventType: string;
       pagePath?: string;
-      eventData?: Record<string, any>;
+      eventData?: Record<string, unknown>;
       companyDomain?: string;
     }) => {
       // Rate limiting check
       if (checkRateLimit('tracking')) {
-        throw new Error('Rate limited');
+        throw new RateLimitError('Rate limited for tracking operations');
       }
 
       // Encontrar regla aplicable con fallback si no hay acceso admin
@@ -243,7 +246,7 @@ export const useAdvancedLeadScoring = () => {
           company_domain: companyDomain,
           event_type: eventType,
           page_path: pagePath,
-          event_data: eventData,
+          event_data: eventData as any,
           points_awarded: pointsAwarded,
           rule_id: applicableRule?.id,
           user_agent: navigator.userAgent,
@@ -255,7 +258,9 @@ export const useAdvancedLeadScoring = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw new DatabaseError('Failed to insert behavior event', 'INSERT', { eventType, error: error.message });
+      }
       return data;
     },
     onSuccess: () => {
@@ -263,10 +268,13 @@ export const useAdvancedLeadScoring = () => {
       invalidateRelatedQueries('leads', 1500);
     },
     onError: (error) => {
-      if (error.message === 'Rate limited') {
+      if (error instanceof RateLimitError) {
         recordRateLimitHit('tracking');
+        logger.warn('Rate limit hit for tracking', { operation: 'tracking' });
+      } else if (error instanceof DatabaseError) {
+        logger.error('Database error in tracking');
       } else {
-        console.error('Error tracking behavior:', error);
+        logger.error('Unknown error in tracking');
       }
     },
   });
@@ -334,46 +342,61 @@ export const useAdvancedLeadScoring = () => {
     if (!canTrack()) return;
     
     const currentPath = path || window.location.pathname;
-    console.log('Tracking page view:', currentPath);
+    logger.debug('Tracking page view', { path: currentPath });
     
     trackBehaviorEvent.mutate({
       eventType: 'page_view',
       pagePath: currentPath,
-      eventData: { timestamp: new Date().toISOString() }
+      eventData: { 
+        timestamp: new Date().toISOString(),
+        referrer: document.referrer || undefined,
+        utm_source: new URLSearchParams(window.location.search).get('utm_source') || undefined,
+        utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || undefined,
+        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || undefined
+      }
     });
   }, [trackBehaviorEvent, canTrack]);
 
-  const trackCalculatorUse = useCallback((calculatorData: Record<string, any>) => {
+  const trackCalculatorUse = useCallback((calculatorData: Record<string, unknown>) => {
     if (!canTrack()) return;
     
     trackBehaviorEvent.mutate({
       eventType: 'calculator_use',
       pagePath: '/calculadora-valoracion',
-      eventData: calculatorData
+      eventData: {
+        timestamp: new Date().toISOString(),
+        ...calculatorData
+      }
     });
   }, [trackBehaviorEvent, canTrack]);
 
-  const trackFormFill = useCallback((formData: Record<string, any>) => {
+  const trackFormFill = useCallback((formData: Record<string, unknown>) => {
     if (!canTrack()) return;
     
     trackBehaviorEvent.mutate({
       eventType: 'form_fill',
       pagePath: window.location.pathname,
-      eventData: formData
+      eventData: {
+        timestamp: new Date().toISOString(),
+        ...formData
+      }
     });
   }, [trackBehaviorEvent, canTrack]);
 
-  const trackDownload = useCallback((downloadData: Record<string, any>) => {
+  const trackDownload = useCallback((downloadData: Record<string, unknown>) => {
     if (!canTrack()) return;
     
     trackBehaviorEvent.mutate({
       eventType: 'download',
       pagePath: window.location.pathname,
-      eventData: downloadData
+      eventData: {
+        timestamp: new Date().toISOString(),
+        ...downloadData
+      }
     });
   }, [trackBehaviorEvent, canTrack]);
 
-  const trackTimeOnSite = useCallback((timeInMinutes: number) => {
+  const trackTimeOnSite = useCallback((timeInMinutes: number, pagesVisited?: number) => {
     if (!canTrack()) return;
     
     // Solo trackear cada minuto completo
@@ -381,7 +404,11 @@ export const useAdvancedLeadScoring = () => {
       trackBehaviorEvent.mutate({
         eventType: 'time_on_site',
         pagePath: window.location.pathname,
-        eventData: { timeInMinutes }
+        eventData: { 
+          timestamp: new Date().toISOString(),
+          time_minutes: timeInMinutes,
+          pages_visited: pagesVisited || 1
+        }
       });
     }
   }, [trackBehaviorEvent, canTrack]);

@@ -21,7 +21,7 @@ export interface LeadBehaviorEvent {
   company_domain?: string;
   event_type: string;
   page_path?: string;
-  event_data: Record<string, any>;
+  event_data: Record<string, unknown>;
   points_awarded: number;
   rule_id?: string;
   user_agent?: string;
@@ -90,7 +90,7 @@ export interface WorkflowExecution {
   id: string;
   workflow_id: string;
   lead_score_id: string;
-  trigger_data: Record<string, any>;
+  trigger_data: Record<string, unknown>;
   execution_status: 'pending' | 'running' | 'completed' | 'failed';
   actions_completed: number;
   total_actions: number;
