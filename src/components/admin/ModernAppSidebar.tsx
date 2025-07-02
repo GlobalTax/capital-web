@@ -94,6 +94,7 @@ const menuSections = [
   {
     title: "⚙️ Configuración",
     items: [
+      { title: "Usuarios Admin", url: "/admin/admin-users", icon: Users, badge: "NEW" },
       { title: "Ajustes", url: "/admin/settings", icon: Settings },
     ]
   }

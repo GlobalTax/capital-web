@@ -24,6 +24,7 @@ import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
 import MarketingHubDashboard from './MarketingHubDashboard';
 import IntegrationsManager from './IntegrationsManager';
 import SectorReportsGenerator from './SectorReportsGenerator';
+import AdminUsersManager from './AdminUsersManager';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -80,6 +81,7 @@ const AdminRouter = () => {
       <Route path="/carousel-logos" element={<CarouselLogosManager />} />
       
       {/* Settings */}
+      <Route path="/admin-users" element={<AdminUsersManager />} />
       <Route path="/settings" element={<AdminSettings />} />
       
       {/* Catch all */}
