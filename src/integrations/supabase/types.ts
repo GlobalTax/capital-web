@@ -1225,6 +1225,89 @@ export type Database = {
         }
         Relationships: []
       }
+      email_campaigns: {
+        Row: {
+          bounce_rate: number | null
+          bounced_count: number | null
+          click_rate: number | null
+          clicked_count: number | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          open_rate: number | null
+          opened_count: number | null
+          recipients_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_count: number | null
+          status: string
+          subject: string
+          target_lists: Json | null
+          target_segments: Json | null
+          template_id: string | null
+          unsubscribed_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          bounce_rate?: number | null
+          bounced_count?: number | null
+          click_rate?: number | null
+          clicked_count?: number | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          open_rate?: number | null
+          opened_count?: number | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject: string
+          target_lists?: Json | null
+          target_segments?: Json | null
+          template_id?: string | null
+          unsubscribed_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bounce_rate?: number | null
+          bounced_count?: number | null
+          click_rate?: number | null
+          clicked_count?: number | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          open_rate?: number | null
+          opened_count?: number | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject?: string
+          target_lists?: Json | null
+          target_segments?: Json | null
+          template_id?: string | null
+          unsubscribed_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_sequence_steps: {
         Row: {
           attachment_type: string | null
@@ -1307,6 +1390,98 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      email_templates: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          template_type?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          template_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_tracking: {
+        Row: {
+          bounced_at: string | null
+          campaign_id: string
+          clicked_at: string | null
+          contact_id: string
+          contact_source: string
+          created_at: string
+          email_address: string
+          id: string
+          ip_address: unknown | null
+          opened_at: string | null
+          status: string
+          unsubscribed_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          bounced_at?: string | null
+          campaign_id: string
+          clicked_at?: string | null
+          contact_id: string
+          contact_source: string
+          created_at?: string
+          email_address: string
+          id?: string
+          ip_address?: unknown | null
+          opened_at?: string | null
+          status?: string
+          unsubscribed_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          bounced_at?: string | null
+          campaign_id?: string
+          clicked_at?: string | null
+          contact_id?: string
+          contact_source?: string
+          created_at?: string
+          email_address?: string
+          id?: string
+          ip_address?: unknown | null
+          opened_at?: string | null
+          status?: string
+          unsubscribed_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_tracking_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fee_proposals: {
         Row: {

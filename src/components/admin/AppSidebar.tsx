@@ -62,12 +62,6 @@ const sidebarGroups = [
         description: "Organiza y segmenta contactos"
       },
       {
-        title: "Marketing Automation",
-        icon: Workflow,
-        id: "marketing-automation",
-        description: "Secuencias y workflows automatizados"
-      },
-      {
         title: "Alertas",
         icon: AlertCircle,
         id: "alerts",
@@ -85,6 +79,24 @@ const sidebarGroups = [
         icon: UserPlus,
         id: "collaborator-applications",
         description: "Gestión de solicitudes de colaboradores"
+      }
+    ]
+  },
+  {
+    title: "✉️ EMAIL MARKETING",
+    description: "Campañas y automatizaciones de email",
+    items: [
+      {
+        title: "Campañas de Email",
+        icon: Mail,
+        id: "email-marketing",
+        description: "Gestión de campañas de email"
+      },
+      {
+        title: "Marketing Automation",
+        icon: Workflow,
+        id: "marketing-automation",
+        description: "Secuencias y workflows automatizados"
       }
     ]
   },
