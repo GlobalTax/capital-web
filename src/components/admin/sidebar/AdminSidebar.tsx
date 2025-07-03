@@ -58,35 +58,7 @@ export const AdminSidebar: React.FC = () => {
     }));
   };
 
-  // Modo degradado en caso de error crítico
-  if (error) {
-    return (
-      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
-        <SidebarHeader userRole="Error" />
-        <SidebarContent>
-          <div className="p-4 text-center">
-            <p className="text-sm text-red-500 mb-2">Error de permisos</p>
-            <p className="text-xs text-gray-500">Modo básico activo</p>
-          </div>
-        </SidebarContent>
-      </Sidebar>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
-        <SidebarHeader userRole="Cargando..." />
-        <SidebarContent>
-          <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-            <p className="text-sm text-gray-500">Cargando permisos...</p>
-          </div>
-        </SidebarContent>
-      </Sidebar>
-    );
-  }
-
+  // TODOS LOS HOOKS DEBEN EJECUTARSE SIEMPRE - NUNCA EARLY RETURNS
   const menuVisibility = React.useMemo(() => {
     try {
       return getMenuVisibility();
@@ -124,6 +96,37 @@ export const AdminSidebar: React.FC = () => {
       };
     }
   }, [getMenuVisibility]);
+
+
+  // RENDERIZADO CONDICIONAL - NUNCA EARLY RETURNS
+  // Modo degradado en caso de error crítico
+  if (error) {
+    return (
+      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
+        <SidebarHeader userRole="Error" />
+        <SidebarContent>
+          <div className="p-4 text-center">
+            <p className="text-sm text-red-500 mb-2">Error de permisos</p>
+            <p className="text-xs text-gray-500">Modo básico activo</p>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
+        <SidebarHeader userRole="Cargando..." />
+        <SidebarContent>
+          <div className="p-4 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+            <p className="text-sm text-gray-500">Cargando permisos...</p>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
   // Mapear visibilidad de permisos a los items del sidebar
   const getItemVisibility = (url: string): boolean => {
