@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
@@ -10,9 +10,17 @@ import { SidebarSection } from './SidebarSection';
 export const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const { getMenuVisibility, userRole, isLoading, error } = useRoleBasedPermissions();
+  const mountedRef = useRef(true);
   
   // Estado para controlar secciones expandidas
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  
+  // Cleanup on unmount to prevent React #300 error
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   
   // Función para encontrar qué sección contiene la ruta activa
   const getActiveSectionTitle = (): string | null => {
@@ -29,8 +37,10 @@ export const AdminSidebar: React.FC = () => {
   
   // Expandir automáticamente la sección que contiene la ruta activa
   useEffect(() => {
+    if (!mountedRef.current) return;
+    
     const activeSection = getActiveSectionTitle();
-    if (activeSection) {
+    if (activeSection && mountedRef.current) {
       setExpandedSections(prev => ({
         ...prev,
         [activeSection]: true
@@ -40,6 +50,8 @@ export const AdminSidebar: React.FC = () => {
   
   // Función para toggle de secciones
   const toggleSection = (sectionTitle: string) => {
+    if (!mountedRef.current) return;
+    
     setExpandedSections(prev => ({
       ...prev,
       [sectionTitle]: !prev[sectionTitle]

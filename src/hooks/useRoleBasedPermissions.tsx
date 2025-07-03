@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useAdminAuth } from './useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -264,6 +264,14 @@ const ROLE_PERMISSIONS: Record<AdminRole, RolePermissions> = {
 
 export const useRoleBasedPermissions = () => {
   const { user, isAdmin } = useAdminAuth();
+  const mountedRef = useRef(true);
+  
+  // Cleanup on unmount to prevent React #300 error
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   
   // Fetch user role from database with circuit breaker
   const { data: userRole, error, isLoading: queryLoading } = useQuery({
@@ -316,6 +324,9 @@ export const useRoleBasedPermissions = () => {
   };
 
   const getMenuVisibility = () => {
+    // Prevent updates after unmount
+    if (!mountedRef.current) return {};
+    
     // Para admins y super_admins, mostrar todo
     const isAdminLevel = userRole === 'admin' || userRole === 'super_admin';
     

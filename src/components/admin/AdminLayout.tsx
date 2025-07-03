@@ -21,9 +21,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
     <ErrorBoundaryProvider>
       <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full bg-background">
-          <ErrorBoundaryProvider>
-            <AdminSidebar />
-          </ErrorBoundaryProvider>
+          <AdminSidebar />
           
           <SidebarInset className="flex-1">
             {/* Header global con trigger siempre visible */}
@@ -42,9 +40,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             {/* Contenido principal */}
             <main className="flex-1 p-6 overflow-auto bg-background">
               <div className="max-w-7xl mx-auto">
-                <ErrorBoundaryProvider>
-                  {children}
-                </ErrorBoundaryProvider>
+                {children}
               </div>
             </main>
           </SidebarInset>
