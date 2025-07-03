@@ -3,33 +3,31 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { useContactNavigation } from '@/hooks/useContactNavigation';
-import { AdminBreadcrumbs } from '@/components/admin/shared/AdminBreadcrumbs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  ArrowLeft, 
-  ArrowRight,
-  Mail, 
-  Phone, 
-  Building, 
-  MapPin, 
-  Calendar,
-  Edit,
-  MoreHorizontal,
-  MessageSquare,
-  FileText,
-  Settings,
-  Activity,
-  User,
-  Briefcase,
-  Globe,
-  Linkedin,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  Plus,
+  Tag,
+  List,
+  Zap,
+  CheckSquare,
+  StickyNote,
+  Paperclip,
+  Mail,
+  MessageSquare,
+  Phone,
+  Building,
+  MapPin,
+  User,
+  Calendar,
+  Activity,
+  CircleUser
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -189,365 +187,294 @@ export const ContactPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Breadcrumbs */}
-      <AdminBreadcrumbs 
-        items={[
-          { label: 'Contactos', path: '/admin/contacts' }
-        ]}
-        currentTitle={contact?.name}
-      />
-
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm"
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <button 
             onClick={() => navigate('/admin/contacts')}
-            className="flex items-center gap-2"
+            className="hover:text-gray-900"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Volver a Contactos
-          </Button>
-          <Separator orientation="vertical" className="h-6" />
-          <div>
-            <h1 className="text-2xl font-bold text-admin-text-primary">
-              {contact.name}
-            </h1>
-            <p className="text-admin-text-secondary">{contact.email}</p>
-          </div>
+            Contactos
+          </button>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-gray-900 font-medium">{contact.name}</span>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {getStatusBadge(contact.status)}
-          
-          {/* Navegación entre contactos */}
-          <div className="flex items-center gap-1 border-r pr-2 mr-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={goToPrevious}
-              disabled={!hasPrevious}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-admin-text-secondary px-2">
-              {currentIndex + 1} de {totalContacts}
-            </span>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={goToNext}
-              disabled={!hasNext}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+
+        {/* Header con email y navegación */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              {contact.email}
+            </h1>
           </div>
           
-          <Button variant="outline" size="sm">
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button variant="outline" size="sm">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Navegación entre contactos */}
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={goToPrevious}
+                disabled={!hasPrevious}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-gray-500 px-2">
+                {currentIndex + 1} de {totalContacts}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={goToNext}
+                disabled={!hasNext}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              + Crear trato
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar - Información Básica */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-4 w-4" />
-                Información Personal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-admin-text-secondary">Nombre completo</label>
-                <p className="text-admin-text-primary font-medium">{contact.name}</p>
-              </div>
-              
-              {contact.email && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">Email</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Mail className="h-4 w-4 text-admin-text-secondary" />
-                    <a href={`mailto:${contact.email}`} className="text-primary hover:underline">
-                      {contact.email}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {contact.phone && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">Teléfono</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Phone className="h-4 w-4 text-admin-text-secondary" />
-                    <a href={`tel:${contact.phone}`} className="text-primary hover:underline">
-                      {contact.phone}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {contact.company && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">Empresa</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Building className="h-4 w-4 text-admin-text-secondary" />
-                    <span>{contact.company}</span>
-                  </div>
-                </div>
-              )}
-
-              {contact.title && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">Cargo</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Briefcase className="h-4 w-4 text-admin-text-secondary" />
-                    <span>{contact.title}</span>
-                  </div>
-                </div>
-              )}
-
-              {contact.location && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">Ubicación</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <MapPin className="h-4 w-4 text-admin-text-secondary" />
-                    <span>{contact.location}</span>
-                  </div>
-                </div>
-              )}
-
-              {contact.linkedin_url && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">LinkedIn</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Linkedin className="h-4 w-4 text-admin-text-secondary" />
-                    <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                      Ver perfil
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              <Separator />
-
-              <div>
-                <label className="text-sm font-medium text-admin-text-secondary">Fecha de creación</label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Calendar className="h-4 w-4 text-admin-text-secondary" />
-                  <span className="text-sm">{formatDate(contact.created_at)}</span>
-                </div>
-              </div>
-
-              {contact.score !== undefined && (
-                <div>
-                  <label className="text-sm font-medium text-admin-text-secondary">Puntuación</label>
-                  <div className="mt-1">
-                    <Badge variant={contact.score > 70 ? 'default' : 'secondary'}>
-                      {contact.score} puntos
-                    </Badge>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Acciones Rápidas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Acciones Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full">
-                <Mail className="h-4 w-4 mr-2" />
-                Enviar Email
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                <Phone className="h-4 w-4 mr-2" />
-                Llamar
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                WhatsApp
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                <Calendar className="h-4 w-4 mr-2" />
-                Agendar Reunión
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          <Tabs defaultValue="activity" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="activity">Actividad</TabsTrigger>
-              <TabsTrigger value="communications">Comunicaciones</TabsTrigger>
-              <TabsTrigger value="documents">Documentos</TabsTrigger>
-              <TabsTrigger value="notes">Notas</TabsTrigger>
+      {/* Main Layout */}
+      <div className="flex">
+        {/* Left Column - Contact Info */}
+        <div className="w-1/2 bg-white border-r border-gray-200 p-6">
+          {/* Tabs */}
+          <Tabs defaultValue="personal" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="personal">Información personal</TabsTrigger>
+              <TabsTrigger value="deals">Todos los tratos</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="activity">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-4 w-4" />
-                    Timeline de Actividad
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {/* Timeline items */}
-                    <div className="relative border-l border-border pl-6 pb-6">
-                      <div className="absolute w-3 h-3 bg-primary rounded-full -left-1.5 top-1"></div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">Contacto creado</h4>
-                        <span className="text-sm text-admin-text-secondary">
-                          {formatDate(contact.created_at)}
-                        </span>
-                      </div>
-                      <p className="text-admin-text-secondary text-sm">
-                        El contacto fue añadido al sistema desde {contact.source === 'contact_lead' ? 'formulario web' : 'Apollo'}
-                      </p>
-                    </div>
-
-                    {contact.updated_at && contact.updated_at !== contact.created_at && (
-                      <div className="relative border-l border-border pl-6 pb-6">
-                        <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-1.5 top-1"></div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium">Información actualizada</h4>
-                          <span className="text-sm text-admin-text-secondary">
-                            {formatDate(contact.updated_at)}
-                          </span>
-                        </div>
-                        <p className="text-admin-text-secondary text-sm">
-                          Los datos del contacto fueron actualizados
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="text-center py-8 text-admin-text-secondary">
-                      <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No hay más actividades registradas</p>
-                    </div>
+            <TabsContent value="personal" className="space-y-6">
+              {/* Contact Form */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-gray-600">Nombre</label>
+                    <Input 
+                      value={contact.name?.split(' ')[0] || ''} 
+                      placeholder="Nombre" 
+                      className="mt-1"
+                    />
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <label className="text-sm text-gray-600">Apellidos</label>
+                    <Input 
+                      value={contact.name?.split(' ').slice(1).join(' ') || ''} 
+                      placeholder="Apellidos" 
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600">Email</label>
+                  <Input value={contact.email} placeholder="Email" className="mt-1" />
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600">Teléfono</label>
+                  <Input value={contact.phone || ''} placeholder="Teléfono" className="mt-1" />
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600">Empresa</label>
+                  <Input value={contact.company || ''} placeholder="Empresa" className="mt-1" />
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600">Cargo</label>
+                  <Input value={contact.title || ''} placeholder="Cargo" className="mt-1" />
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600">Ubicación</label>
+                  <Input value={contact.location || ''} placeholder="Ciudad, País" className="mt-1" />
+                </div>
+              </div>
+
+              {/* Tags Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Etiquetas
+                  </label>
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-500">Sin etiquetas</div>
+              </div>
+
+              {/* Lists Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    <List className="h-4 w-4" />
+                    Listas
+                  </label>
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-500">Sin listas</div>
+              </div>
+
+              {/* Automations Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Automatizaciones
+                  </label>
+                </div>
+                <div className="text-sm text-gray-500">Sin automatizaciones activas</div>
+              </div>
+
+              {/* Tasks Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    <CheckSquare className="h-4 w-4" />
+                    Tareas
+                  </label>
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-500">Sin tareas</div>
+              </div>
+
+              {/* Bottom Tabs */}
+              <div className="border-t pt-6">
+                <Tabs defaultValue="notes" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="notes" className="flex items-center gap-1">
+                      <StickyNote className="h-4 w-4" />
+                      Notas
+                    </TabsTrigger>
+                    <TabsTrigger value="files" className="flex items-center gap-1">
+                      <Paperclip className="h-4 w-4" />
+                      Archivos
+                    </TabsTrigger>
+                    <TabsTrigger value="emails" className="flex items-center gap-1">
+                      <Mail className="h-4 w-4" />
+                      Emails
+                    </TabsTrigger>
+                    <TabsTrigger value="sms" className="flex items-center gap-1">
+                      <MessageSquare className="h-4 w-4" />
+                      SMS
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="notes" className="mt-4">
+                    <div className="text-center py-8 text-gray-500">
+                      <StickyNote className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No hay notas</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="files" className="mt-4">
+                    <div className="text-center py-8 text-gray-500">
+                      <Paperclip className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No hay archivos</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="emails" className="mt-4">
+                    <div className="text-center py-8 text-gray-500">
+                      <Mail className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No hay emails</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="sms" className="mt-4">
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No hay mensajes SMS</p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </TabsContent>
 
-            <TabsContent value="communications">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Historial de Comunicaciones
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-admin-text-secondary">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No hay comunicaciones registradas</p>
-                    <Button variant="outline" className="mt-4">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Enviar primer email
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="documents">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Documentos y Propuestas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-admin-text-secondary">
-                    <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No hay documentos asociados</p>
-                    <Button variant="outline" className="mt-4">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Crear propuesta
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="notes">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Notas del Contacto
-                    </CardTitle>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setIsEditingNotes(!isEditingNotes)}
-                    >
-                      {isEditingNotes ? 'Cancelar' : 'Editar'}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {isEditingNotes ? (
-                    <div className="space-y-4">
-                      <Textarea
-                        placeholder="Añadir notas sobre este contacto..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        rows={8}
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm">
-                          Guardar Notas
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setIsEditingNotes(false)}
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="min-h-32">
-                      {notes ? (
-                        <div className="whitespace-pre-wrap">{notes}</div>
-                      ) : (
-                        <div className="text-center py-8 text-admin-text-secondary">
-                          <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No hay notas para este contacto</p>
-                          <Button 
-                            variant="outline" 
-                            className="mt-4"
-                            onClick={() => setIsEditingNotes(true)}
-                          >
-                            Añadir primera nota
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+            <TabsContent value="deals" className="space-y-4">
+              <div className="text-center py-8 text-gray-500">
+                <Building className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No hay tratos asociados</p>
+                <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+                  Crear primer trato
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
+        </div>
+
+        {/* Right Column - Activity Timeline */}
+        <div className="w-1/2 bg-white p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-medium text-gray-900">Actividades recientes</h2>
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              Todo
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Activity Timeline */}
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <CircleUser className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="w-px h-8 bg-gray-200 mt-2"></div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-gray-900">Contacto creado</p>
+                  <span className="text-xs text-gray-500">{formatDate(contact.created_at)}</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  El contacto fue añadido al sistema desde {contact.source === 'contact_lead' ? 'formulario web' : 'Apollo'}
+                </p>
+              </div>
+            </div>
+
+            {contact.updated_at && contact.updated_at !== contact.created_at && (
+              <div className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Activity className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="w-px h-8 bg-gray-200 mt-2"></div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium text-gray-900">Información actualizada</p>
+                    <span className="text-xs text-gray-500">{formatDate(contact.updated_at)}</span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Los datos del contacto fueron actualizados
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="text-center py-8 text-gray-500">
+              <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No hay más actividades registradas</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
