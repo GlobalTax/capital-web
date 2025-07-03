@@ -20,14 +20,18 @@ export const useContactLeads = () => {
   const { createContact } = useHubSpotIntegration();
 
   const submitContactLead = async (leadData: ContactLead) => {
+    console.log('💼 [ContactLeads] Iniciando envío de lead:', leadData);
     setIsSubmitting(true);
     
     try {
       // Obtener información adicional del navegador
+      console.log('🌐 [ContactLeads] Obteniendo IP del usuario...');
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
+      console.log('📍 [ContactLeads] IP obtenida:', ipData?.ip);
       
       // Insertar en Supabase principal
+      console.log('💾 [ContactLeads] Insertando en Supabase...');
       const { data, error } = await supabase
         .from('contact_leads')
         .insert({
@@ -45,11 +49,15 @@ export const useContactLeads = () => {
         .single();
 
       if (error) {
+        console.error('❌ [ContactLeads] Error insertando en Supabase:', error);
         throw error;
       }
+      
+      console.log('✅ [ContactLeads] Lead insertado exitosamente:', data.id);
 
       // Enviar a HubSpot en segundo plano
       try {
+        console.log('📧 [ContactLeads] Enviando a HubSpot...');
         await createContact({
           email: leadData.email,
           firstName: leadData.fullName.split(' ')[0],
@@ -67,8 +75,9 @@ export const useContactLeads = () => {
           })
           .eq('id', data.id);
           
+        console.log('✅ [ContactLeads] Enviado a HubSpot exitosamente');
       } catch (hubspotError) {
-        console.error('Error enviando a HubSpot:', hubspotError);
+        console.error('⚠️ [ContactLeads] Error enviando a HubSpot:', hubspotError);
       }
 
       // Enviar a segunda base de datos
@@ -93,6 +102,7 @@ export const useContactLeads = () => {
         console.error('Error enviando a segunda DB:', secondaryDbError);
       }
 
+      console.log('🎉 [ContactLeads] Proceso completado exitosamente');
       toast({
         title: "Solicitud enviada",
         description: "Nos pondremos en contacto contigo en las próximas 24 horas para programar tu consulta gratuita.",
@@ -100,12 +110,22 @@ export const useContactLeads = () => {
 
       return data;
     } catch (error) {
-      console.error('Error enviando lead de contacto:', error);
-      toast({
-        title: "Error",
-        description: "Hubo un problema enviando tu solicitud. Por favor intenta de nuevo.",
-        variant: "destructive",
-      });
+      console.error('❌ [ContactLeads] Error enviando lead de contacto:', error);
+      
+      // Mostrar error más específico si es de permisos
+      if (error.message?.includes('permission denied')) {
+        toast({
+          title: "Error de configuración",
+          description: "Error interno del servidor. Por favor, contacta con soporte.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Hubo un problema enviando tu solicitud. Por favor intenta de nuevo.",
+          variant: "destructive",
+        });
+      }
       throw error;
     } finally {
       setIsSubmitting(false);

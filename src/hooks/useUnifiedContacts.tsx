@@ -49,31 +49,50 @@ export const useUnifiedContacts = () => {
   // Fetch and unify all contacts from different sources
   const fetchUnifiedContacts = async () => {
     try {
+      console.log('🔄 [UnifiedContacts] Iniciando carga de contactos...');
       setIsLoading(true);
       
       // Fetch contact leads
+      console.log('💼 [UnifiedContacts] Obteniendo contact leads...');
       const { data: contactLeads, error: contactLeadsError } = await supabase
         .from('contact_leads')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (contactLeadsError) throw contactLeadsError;
+      if (contactLeadsError) {
+        console.error('❌ [UnifiedContacts] Error fetching contact leads:', contactLeadsError);
+        throw contactLeadsError;
+      }
+      
+      console.log(`✅ [UnifiedContacts] Contact leads obtenidos: ${contactLeads?.length || 0}`);
 
       // Fetch Apollo contacts
+      console.log('🚀 [UnifiedContacts] Obteniendo Apollo contacts...');
       const { data: apolloContacts, error: apolloError } = await supabase
         .from('apollo_contacts')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (apolloError) throw apolloError;
+      if (apolloError) {
+        console.error('❌ [UnifiedContacts] Error fetching Apollo contacts:', apolloError);
+        throw apolloError;
+      }
+      
+      console.log(`✅ [UnifiedContacts] Apollo contacts obtenidos: ${apolloContacts?.length || 0}`);
 
       // Fetch lead scores
+      console.log('📊 [UnifiedContacts] Obteniendo lead scores...');
       const { data: leadScores, error: leadScoresError } = await supabase
         .from('lead_scores')
         .select('*')
         .order('last_activity', { ascending: false });
 
-      if (leadScoresError) throw leadScoresError;
+      if (leadScoresError) {
+        console.error('❌ [UnifiedContacts] Error fetching lead scores:', leadScoresError);
+        throw leadScoresError;
+      }
+      
+      console.log(`✅ [UnifiedContacts] Lead scores obtenidos: ${leadScores?.length || 0}`);
 
       // Unify contact data
       const unifiedData: UnifiedContact[] = [];
@@ -139,17 +158,19 @@ export const useUnifiedContacts = () => {
       });
 
       // Remove duplicates based on email
+      console.log(`📝 [UnifiedContacts] Unificando datos... Total: ${unifiedData.length}`);
       const uniqueContacts = unifiedData.filter((contact, index, self) => 
         contact.email && index === self.findIndex(c => c.email === contact.email)
       );
 
+      console.log(`✨ [UnifiedContacts] Contactos únicos: ${uniqueContacts.length}`);
       setContacts(uniqueContacts);
       setFilteredContacts(uniqueContacts);
     } catch (error) {
-      console.error('Error fetching unified contacts:', error);
+      console.error('❌ [UnifiedContacts] Error fetching unified contacts:', error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar los contactos",
+        description: "No se pudieron cargar los contactos. Revisa la conexión y permisos.",
         variant: "destructive"
       });
     } finally {
