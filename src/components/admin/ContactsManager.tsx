@@ -22,6 +22,7 @@ import { ContactDetailModal } from './contacts/ContactDetailModal';
 import { ContactFiltersPanel } from './contacts/ContactFiltersPanel';
 import { ContactStats } from './contacts/ContactStats';
 import { ContactsDashboard } from './contacts/ContactsDashboard';
+import { CRMPipeline } from './contacts/CRMPipeline';
 
 export const ContactsManager = () => {
   const { 
@@ -36,7 +37,7 @@ export const ContactsManager = () => {
     refetch 
   } = useUnifiedContacts();
 
-  const [selectedTab, setSelectedTab] = useState('dashboard');
+  const [selectedTab, setSelectedTab] = useState('pipeline');
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -202,7 +203,8 @@ export const ContactsManager = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="pipeline">Pipeline CRM</TabsTrigger>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="contacts">
@@ -213,6 +215,14 @@ export const ContactsManager = () => {
           </TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="pipeline" className="space-y-6">
+          <CRMPipeline 
+            contacts={allContacts}
+            onStatusUpdate={updateContactStatus}
+            onContactSelect={setSelectedContact}
+          />
+        </TabsContent>
 
         <TabsContent value="dashboard" className="space-y-6">
           <ContactsDashboard contacts={allContacts} />
