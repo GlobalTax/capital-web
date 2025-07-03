@@ -13,7 +13,6 @@ import {
   Search
 } from 'lucide-react';
 import { ContactsTable } from './contacts/ContactsTable';
-import { ContactDetailModal } from './contacts/ContactDetailModal';
 import { ContactFiltersPanel } from './contacts/ContactFiltersPanel';
 
 export const ContactsManager = () => {
@@ -28,7 +27,7 @@ export const ContactsManager = () => {
     exportContacts
   } = useUnifiedContacts();
 
-  const [selectedContact, setSelectedContact] = useState<string | null>(null);
+  
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -126,20 +125,9 @@ export const ContactsManager = () => {
       {/* Contacts Table */}
       <ContactsTable 
         contacts={contacts}
-        onContactSelect={setSelectedContact}
         onStatusUpdate={updateContactStatus}
         onBulkUpdate={bulkUpdateStatus}
       />
-
-      {/* Contact Detail Modal */}
-      {selectedContact && (
-        <ContactDetailModal
-          contactId={selectedContact}
-          isOpen={!!selectedContact}
-          onClose={() => setSelectedContact(null)}
-          onStatusUpdate={updateContactStatus}
-        />
-      )}
     </div>
   );
 };

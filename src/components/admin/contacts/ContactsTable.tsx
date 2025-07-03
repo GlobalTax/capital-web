@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,17 +37,16 @@ import {
 
 interface ContactsTableProps {
   contacts: UnifiedContact[];
-  onContactSelect: (contactId: string) => void;
   onStatusUpdate: (contactId: string, status: string, source: string) => void;
   onBulkUpdate: (contactIds: string[], status: string) => void;
 }
 
 export const ContactsTable: React.FC<ContactsTableProps> = ({
   contacts,
-  onContactSelect,
   onStatusUpdate,
   onBulkUpdate
 }) => {
+  const navigate = useNavigate();
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<string>('');
 
@@ -166,9 +166,9 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                       onCheckedChange={() => toggleSelectContact(contact.id)}
                     />
                   </TableCell>
-                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     <div>
-                      <p className="font-medium text-admin-text-primary">
+                      <p className="font-medium text-admin-text-primary hover:text-primary cursor-pointer">
                         {contact.name}
                       </p>
                       <div className="flex items-center gap-1 text-sm text-admin-text-secondary">
@@ -177,7 +177,7 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     {contact.phone && (
                       <div className="flex items-center gap-1">
                         <Phone className="h-3 w-3 text-admin-text-secondary" />
@@ -185,7 +185,7 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                       </div>
                     )}
                   </TableCell>
-                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     {contact.company && (
                       <div className="flex items-center gap-1">
                         <Building className="h-3 w-3 text-admin-text-secondary" />
@@ -193,10 +193,10 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                       </div>
                     )}
                   </TableCell>
-                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     {getStatusBadge(contact.status)}
                   </TableCell>
-                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     <div className="text-sm text-admin-text-secondary">
                       {formatDate(contact.created_at)}
                     </div>
@@ -209,7 +209,7 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onContactSelect(contact.id)}>
+                        <DropdownMenuItem onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                           <Eye className="h-4 w-4 mr-2" />
                           Ver Detalles
                         </DropdownMenuItem>

@@ -29,6 +29,7 @@ import ProposalsManager from './ProposalsManager';
 import ContactsManager from './ContactsManager';
 import { ContactListsManager } from './ContactListsManager';
 import { EmailMarketingManager } from './EmailMarketingManager';
+import { ContactPage } from '@/pages/admin/ContactPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -62,6 +63,7 @@ const AdminRouter = () => {
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsManager />} />
+      <Route path="/contacts/:id" element={<ContactPage />} />
       <Route path="/contact-lists" element={<ContactListsManager />} />
       
       {/* Marketing & Analytics */}
