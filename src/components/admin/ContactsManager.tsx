@@ -21,6 +21,7 @@ import { ContactsTable } from './contacts/ContactsTable';
 import { ContactDetailModal } from './contacts/ContactDetailModal';
 import { ContactFiltersPanel } from './contacts/ContactFiltersPanel';
 import { ContactStats } from './contacts/ContactStats';
+import { ContactsDashboard } from './contacts/ContactsDashboard';
 
 export const ContactsManager = () => {
   const { 
@@ -35,7 +36,7 @@ export const ContactsManager = () => {
     refetch 
   } = useUnifiedContacts();
 
-  const [selectedTab, setSelectedTab] = useState('overview');
+  const [selectedTab, setSelectedTab] = useState('dashboard');
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -201,7 +202,8 @@ export const ContactsManager = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="contacts">
             Contactos
@@ -211,6 +213,10 @@ export const ContactsManager = () => {
           </TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-6">
+          <ContactsDashboard contacts={allContacts} />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-6">
           <ContactStats contacts={allContacts} />
