@@ -31,10 +31,7 @@ import {
   Edit, 
   Mail, 
   Phone, 
-  Star,
-  Building,
-  MapPin,
-  Globe
+  Building
 } from 'lucide-react';
 
 interface ContactsTableProps {
@@ -87,23 +84,18 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
       lost: 'destructive'
     };
     
-    return (
-      <Badge variant={variants[status] || 'secondary'}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
-  const getSourceBadge = (source: string) => {
     const labels: Record<string, string> = {
-      contact_lead: 'Formulario',
-      apollo: 'Apollo',
-      lead_score: 'Web Tracking'
+      new: 'Nuevo',
+      contacted: 'Contactado',
+      qualified: 'Calificado',
+      opportunity: 'Oportunidad',
+      customer: 'Cliente',
+      lost: 'Perdido'
     };
     
     return (
-      <Badge variant="outline" className="text-xs">
-        {labels[source] || source}
+      <Badge variant={variants[status] || 'secondary'}>
+        {labels[status] || status}
       </Badge>
     );
   };
@@ -120,7 +112,7 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Lista de Contactos</CardTitle>
+          <CardTitle>Contactos ({contacts.length})</CardTitle>
           
           {selectedContacts.length > 0 && (
             <div className="flex items-center gap-2">
@@ -157,102 +149,56 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                     onCheckedChange={toggleSelectAll}
                   />
                 </TableHead>
-                <TableHead>Contacto</TableHead>
+                <TableHead>Nombre / Email</TableHead>
+                <TableHead>Teléfono</TableHead>
                 <TableHead>Empresa</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Fuente</TableHead>
-                <TableHead>Puntuación</TableHead>
-                <TableHead>Última Actividad</TableHead>
+                <TableHead>Fecha creación</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {contacts.map((contact) => (
-                <TableRow key={contact.id}>
+                <TableRow key={contact.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell>
                     <Checkbox
                       checked={selectedContacts.includes(contact.id)}
                       onCheckedChange={() => toggleSelectContact(contact.id)}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        {contact.is_hot_lead || (contact.score || 0) >= 80 ? (
-                          <Star className="h-4 w-4 text-orange-500 fill-current" />
-                        ) : (
-                          <div className="h-4 w-4" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-admin-text-primary">
-                          {contact.name}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-admin-text-secondary">
-                          {contact.email && (
-                            <div className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              {contact.email}
-                            </div>
-                          )}
-                          {contact.phone && (
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {contact.phone}
-                            </div>
-                          )}
-                        </div>
+                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                    <div>
+                      <p className="font-medium text-admin-text-primary">
+                        {contact.name}
+                      </p>
+                      <div className="flex items-center gap-1 text-sm text-admin-text-secondary">
+                        <Mail className="h-3 w-3" />
+                        {contact.email}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      {contact.company && (
-                        <div className="flex items-center gap-1">
-                          <Building className="h-3 w-3 text-admin-text-secondary" />
-                          <span className="text-sm">{contact.company}</span>
-                        </div>
-                      )}
-                      {contact.title && (
-                        <div className="text-xs text-admin-text-secondary">
-                          {contact.title}
-                        </div>
-                      )}
-                      {contact.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-admin-text-secondary" />
-                          <span className="text-xs text-admin-text-secondary">
-                            {contact.location}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                    {contact.phone && (
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3 text-admin-text-secondary" />
+                        <span className="text-sm">{contact.phone}</span>
+                      </div>
+                    )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                    {contact.company && (
+                      <div className="flex items-center gap-1">
+                        <Building className="h-3 w-3 text-admin-text-secondary" />
+                        <span className="text-sm">{contact.company}</span>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell onClick={() => onContactSelect(contact.id)}>
                     {getStatusBadge(contact.status)}
                   </TableCell>
-                  <TableCell>
-                    {getSourceBadge(contact.source)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium">
-                        {contact.score || 0}
-                      </div>
-                      <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary rounded-full"
-                          style={{ width: `${Math.min((contact.score || 0), 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {contact.last_activity ? 
-                        formatDate(contact.last_activity) : 
-                        formatDate(contact.created_at)
-                      }
+                  <TableCell onClick={() => onContactSelect(contact.id)}>
+                    <div className="text-sm text-admin-text-secondary">
+                      {formatDate(contact.created_at)}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -274,18 +220,6 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                         <DropdownMenuItem>
                           <Mail className="h-4 w-4 mr-2" />
                           Enviar Email
-                        </DropdownMenuItem>
-                        {contact.linkedin_url && (
-                          <DropdownMenuItem>
-                            <Globe className="h-4 w-4 mr-2" />
-                            Ver LinkedIn
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem 
-                          onClick={() => onStatusUpdate(contact.id, 'qualified', contact.source)}
-                        >
-                          <Star className="h-4 w-4 mr-2" />
-                          Marcar como Calificado
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

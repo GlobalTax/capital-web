@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useUnifiedContacts, ContactFilters } from '@/hooks/useUnifiedContacts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUnifiedContacts } from '@/hooks/useUnifiedContacts';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -11,18 +10,11 @@ import {
   Download, 
   Upload, 
   Filter,
-  Search,
-  Star,
-  TrendingUp,
-  Mail,
-  Phone
+  Search
 } from 'lucide-react';
 import { ContactsTable } from './contacts/ContactsTable';
 import { ContactDetailModal } from './contacts/ContactDetailModal';
 import { ContactFiltersPanel } from './contacts/ContactFiltersPanel';
-import { ContactStats } from './contacts/ContactStats';
-import { ContactsDashboard } from './contacts/ContactsDashboard';
-import { CRMPipeline } from './contacts/CRMPipeline';
 
 export const ContactsManager = () => {
   const { 
@@ -33,11 +25,9 @@ export const ContactsManager = () => {
     applyFilters, 
     updateContactStatus,
     bulkUpdateStatus,
-    exportContacts,
-    refetch 
+    exportContacts
   } = useUnifiedContacts();
 
-  const [selectedTab, setSelectedTab] = useState('pipeline');
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,10 +56,10 @@ export const ContactsManager = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-admin-text-primary">
-            Gestión de Contactos
+            Contactos
           </h1>
           <p className="text-admin-text-secondary">
-            Vista unificada de todos tus contactos y leads
+            {allContacts.length} contactos en total
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -86,74 +76,6 @@ export const ContactsManager = () => {
             Nuevo Contacto
           </Button>
         </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-admin-text-secondary">
-                  Total Contactos
-                </p>
-                <p className="text-2xl font-bold text-admin-text-primary">
-                  {allContacts.length}
-                </p>
-              </div>
-              <Users className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-admin-text-secondary">
-                  Leads Calientes
-                </p>
-                <p className="text-2xl font-bold text-admin-text-primary">
-                  {allContacts.filter(c => c.is_hot_lead || (c.score || 0) >= 80).length}
-                </p>
-              </div>
-              <Star className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-admin-text-secondary">
-                  Oportunidades
-                </p>
-                <p className="text-2xl font-bold text-admin-text-primary">
-                  {allContacts.filter(c => c.status === 'opportunity').length}
-                </p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-admin-text-secondary">
-                  Conversión
-                </p>
-                <p className="text-2xl font-bold text-admin-text-primary">
-                  {allContacts.length > 0 ? 
-                    ((allContacts.filter(c => c.status === 'customer').length / allContacts.length) * 100).toFixed(1) : 0}%
-                </p>
-              </div>
-              <Mail className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Search and Filters */}
@@ -201,50 +123,13 @@ export const ContactsManager = () => {
         </CardContent>
       </Card>
 
-      {/* Main Content Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="pipeline">Pipeline CRM</TabsTrigger>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="overview">Resumen</TabsTrigger>
-          <TabsTrigger value="contacts">
-            Contactos
-            <Badge variant="secondary" className="ml-2">
-              {contacts.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pipeline" className="space-y-6">
-          <CRMPipeline 
-            contacts={allContacts}
-            onStatusUpdate={updateContactStatus}
-            onContactSelect={setSelectedContact}
-          />
-        </TabsContent>
-
-        <TabsContent value="dashboard" className="space-y-6">
-          <ContactsDashboard contacts={allContacts} />
-        </TabsContent>
-
-        <TabsContent value="overview" className="space-y-6">
-          <ContactStats contacts={allContacts} />
-        </TabsContent>
-
-        <TabsContent value="contacts">
-          <ContactsTable 
-            contacts={contacts}
-            onContactSelect={setSelectedContact}
-            onStatusUpdate={updateContactStatus}
-            onBulkUpdate={bulkUpdateStatus}
-          />
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <ContactStats contacts={allContacts} />
-        </TabsContent>
-      </Tabs>
+      {/* Contacts Table */}
+      <ContactsTable 
+        contacts={contacts}
+        onContactSelect={setSelectedContact}
+        onStatusUpdate={updateContactStatus}
+        onBulkUpdate={bulkUpdateStatus}
+      />
 
       {/* Contact Detail Modal */}
       {selectedContact && (
