@@ -1,38 +1,41 @@
 import { 
   LayoutDashboard, 
-  Target, 
-  Settings, 
-  Users, 
-  BarChart3,
-  FileText,
+  Sparkles,
+  FileText, 
   Award,
+  Zap,
+  BarChart3,
   Building2,
   TrendingUp,
-  Zap,
+  Users,
   MessageSquare,
-  Sparkles
+  Settings,
+  Target,
+  Eye
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
-export interface SidebarItem {
+export interface OptimizedSidebarItem {
   title: string;
   icon: LucideIcon;
   url: string;
-  badge?: 'URGENTE' | 'AI' | 'NEW';
+  badge?: 'NEW' | 'AI' | 'HOT';
   description?: string;
   visible?: boolean;
 }
 
-export interface SidebarSection {
+export interface OptimizedSidebarSection {
   title: string;
   description: string;
-  items: SidebarItem[];
+  items: OptimizedSidebarItem[];
+  workflow?: 'create' | 'manage' | 'analyze';
 }
 
-export const sidebarSections: SidebarSection[] = [
+export const optimizedSidebarSections: OptimizedSidebarSection[] = [
   {
     title: "📊 DASHBOARD",
     description: "Panel principal",
+    workflow: 'analyze',
     items: [
       { 
         title: "Vista General", 
@@ -52,6 +55,7 @@ export const sidebarSections: SidebarSection[] = [
   {
     title: "✨ CREAR CONTENIDO",
     description: "Herramientas de creación",
+    workflow: 'create',
     items: [
       { 
         title: "Content Studio", 
@@ -83,6 +87,7 @@ export const sidebarSections: SidebarSection[] = [
   {
     title: "🏢 GESTIONAR DATOS",
     description: "Información corporativa",
+    workflow: 'manage',
     items: [
       { 
         title: "Operaciones", 
@@ -113,12 +118,13 @@ export const sidebarSections: SidebarSection[] = [
   {
     title: "📈 ANALIZAR LEADS",
     description: "Gestión de prospectos",
+    workflow: 'analyze',
     items: [
       { 
         title: "Lead Scoring", 
         url: "/admin/lead-scoring", 
         icon: Target,
-        badge: "URGENTE",
+        badge: "HOT",
         description: "Calificación de leads"
       },
       { 
@@ -131,7 +137,8 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "⚙️ CONFIGURACIÓN",
-    description: "Configuración del sistema",
+    description: "Ajustes del sistema",
+    workflow: 'manage',
     items: [
       { 
         title: "Usuarios Admin", 
@@ -148,3 +155,43 @@ export const sidebarSections: SidebarSection[] = [
     ]
   }
 ];
+
+// Quick actions for dashboard
+export const quickActions: OptimizedSidebarItem[] = [
+  {
+    title: "Nuevo Lead Magnet",
+    url: "/admin/lead-magnets",
+    icon: Zap,
+    badge: "AI"
+  },
+  {
+    title: "Crear Contenido",
+    url: "/admin/content-studio", 
+    icon: Sparkles,
+    badge: "NEW"
+  },
+  {
+    title: "Ver Performance",
+    url: "/admin/content-performance",
+    icon: Eye
+  }
+];
+
+// Workflow-based navigation
+export const workflowSections = {
+  create: {
+    title: "Crear Recursos",
+    color: "text-green-600",
+    items: optimizedSidebarSections.filter(s => s.workflow === 'create').flatMap(s => s.items)
+  },
+  manage: {
+    title: "Gestionar Datos", 
+    color: "text-blue-600",
+    items: optimizedSidebarSections.filter(s => s.workflow === 'manage').flatMap(s => s.items)
+  },
+  analyze: {
+    title: "Analizar Results",
+    color: "text-purple-600", 
+    items: optimizedSidebarSections.filter(s => s.workflow === 'analyze').flatMap(s => s.items)
+  }
+};
