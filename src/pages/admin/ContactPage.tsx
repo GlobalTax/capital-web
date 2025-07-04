@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { EditableField } from '@/components/admin/contacts/EditableField';
 import { 
   ChevronLeft,
   ChevronRight,
@@ -39,6 +40,7 @@ export const ContactPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState('');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const { 
     hasPrevious, 
@@ -128,6 +130,102 @@ export const ContactPage = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateContactField = async (field: string, value: string) => {
+    if (!contact) return;
+
+    setIsSaving(true);
+    try {
+      if (contact.source === 'contact_lead') {
+        const updateData: any = {};
+        
+        if (field === 'firstName' || field === 'lastName') {
+          const firstName = field === 'firstName' ? value : contact.name?.split(' ')[0] || '';
+          const lastName = field === 'lastName' ? value : contact.name?.split(' ').slice(1).join(' ') || '';
+          updateData.full_name = `${firstName} ${lastName}`.trim();
+        } else if (field === 'email') {
+          updateData.email = value;
+        } else if (field === 'phone') {
+          updateData.phone = value;
+        } else if (field === 'company') {
+          updateData.company = value;
+        } else if (field === 'location') {
+          updateData.country = value;
+        }
+
+        const { error } = await supabase
+          .from('contact_leads')
+          .update(updateData)
+          .eq('id', contact.id);
+
+        if (error) throw error;
+
+        // Update local state
+        setContact(prev => prev ? {
+          ...prev,
+          name: updateData.full_name || prev.name,
+          email: updateData.email || prev.email,
+          phone: updateData.phone || prev.phone,
+          company: updateData.company || prev.company,
+          location: updateData.country || prev.location,
+          updated_at: new Date().toISOString()
+        } : null);
+
+      } else if (contact.source === 'apollo') {
+        const updateData: any = {};
+        
+        if (field === 'firstName') {
+          updateData.first_name = value;
+          updateData.full_name = `${value} ${contact.name?.split(' ').slice(1).join(' ') || ''}`.trim();
+        } else if (field === 'lastName') {
+          updateData.last_name = value;
+          updateData.full_name = `${contact.name?.split(' ')[0] || ''} ${value}`.trim();
+        } else if (field === 'email') {
+          updateData.email = value;
+        } else if (field === 'phone') {
+          updateData.phone = value;
+        } else if (field === 'company') {
+          updateData.company_domain = value;
+        } else if (field === 'title') {
+          updateData.title = value;
+        }
+
+        const { error } = await supabase
+          .from('apollo_contacts')
+          .update(updateData)
+          .eq('id', contact.id);
+
+        if (error) throw error;
+
+        // Update local state
+        setContact(prev => prev ? {
+          ...prev,
+          name: updateData.full_name || prev.name,
+          email: updateData.email || prev.email,
+          phone: updateData.phone || prev.phone,
+          company: updateData.company_domain || prev.company,
+          title: updateData.title || prev.title,
+          updated_at: new Date().toISOString()
+        } : null);
+      }
+
+      toast({
+        title: "Guardado",
+        description: "Los cambios se han guardado correctamente",
+      });
+
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar los cambios",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -258,48 +356,61 @@ export const ContactPage = () => {
               {/* Contact Form */}
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-gray-600">Nombre</label>
-                    <Input 
-                      value={contact.name?.split(' ')[0] || ''} 
-                      placeholder="Nombre" 
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600">Apellidos</label>
-                    <Input 
-                      value={contact.name?.split(' ').slice(1).join(' ') || ''} 
-                      placeholder="Apellidos" 
-                      className="mt-1"
-                    />
-                  </div>
+                  <EditableField
+                    value={contact.name?.split(' ')[0] || ''}
+                    placeholder="Nombre"
+                    label="Nombre"
+                    onSave={(value) => updateContactField('firstName', value)}
+                    disabled={isSaving}
+                  />
+                  <EditableField
+                    value={contact.name?.split(' ').slice(1).join(' ') || ''}
+                    placeholder="Apellidos"
+                    label="Apellidos"
+                    onSave={(value) => updateContactField('lastName', value)}
+                    disabled={isSaving}
+                  />
                 </div>
 
-                <div>
-                  <label className="text-sm text-gray-600">Email</label>
-                  <Input value={contact.email} placeholder="Email" className="mt-1" />
-                </div>
+                <EditableField
+                  value={contact.email}
+                  placeholder="Email"
+                  label="Email"
+                  onSave={(value) => updateContactField('email', value)}
+                  disabled={isSaving}
+                />
 
-                <div>
-                  <label className="text-sm text-gray-600">Teléfono</label>
-                  <Input value={contact.phone || ''} placeholder="Teléfono" className="mt-1" />
-                </div>
+                <EditableField
+                  value={contact.phone || ''}
+                  placeholder="Teléfono"
+                  label="Teléfono"
+                  onSave={(value) => updateContactField('phone', value)}
+                  disabled={isSaving}
+                />
 
-                <div>
-                  <label className="text-sm text-gray-600">Empresa</label>
-                  <Input value={contact.company || ''} placeholder="Empresa" className="mt-1" />
-                </div>
+                <EditableField
+                  value={contact.company || ''}
+                  placeholder="Empresa"
+                  label="Empresa"
+                  onSave={(value) => updateContactField('company', value)}
+                  disabled={isSaving}
+                />
 
-                <div>
-                  <label className="text-sm text-gray-600">Cargo</label>
-                  <Input value={contact.title || ''} placeholder="Cargo" className="mt-1" />
-                </div>
+                <EditableField
+                  value={contact.title || ''}
+                  placeholder="Cargo"
+                  label="Cargo"
+                  onSave={(value) => updateContactField('title', value)}
+                  disabled={isSaving}
+                />
 
-                <div>
-                  <label className="text-sm text-gray-600">Ubicación</label>
-                  <Input value={contact.location || ''} placeholder="Ciudad, País" className="mt-1" />
-                </div>
+                <EditableField
+                  value={contact.location || ''}
+                  placeholder="Ciudad, País"
+                  label="Ubicación"
+                  onSave={(value) => updateContactField('location', value)}
+                  disabled={isSaving}
+                />
               </div>
 
               {/* Tags Section */}
