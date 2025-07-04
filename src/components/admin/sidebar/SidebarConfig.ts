@@ -76,6 +76,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Recursos descargables"
       },
       { 
+        title: "Landing Pages", 
+        url: "/admin/landing-pages", 
+        icon: LayoutDashboard,
+        badge: "NEW",
+        description: "Páginas de conversión"
+      },
+      { 
         title: "Blog & Contenido", 
         url: "/admin/blog-v2", 
         icon: FileText,

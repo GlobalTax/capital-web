@@ -36,6 +36,7 @@ import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 import UnifiedTrackingPage from '@/pages/admin/UnifiedTrackingPage';
+import LandingPagesManager from '@/components/admin/LandingPagesManager';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -92,6 +93,7 @@ const AdminRouter = () => {
       <Route path="/sector-reports" element={<SectorReportsGenerator />} />
       <Route path="/case-studies" element={<CaseStudiesManager />} />
       <Route path="/lead-magnets" element={<LeadMagnetsManager />} />
+      <Route path="/landing-pages" element={<LandingPagesManager />} />
       
       {/* Company Data */}
       <Route path="/operations" element={<OperationsManager />} />
