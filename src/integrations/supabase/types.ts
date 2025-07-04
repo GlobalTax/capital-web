@@ -1974,12 +1974,71 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_conversions: {
+        Row: {
+          attribution_data: Json | null
+          conversion_type: string
+          conversion_value: number | null
+          created_at: string
+          form_data: Json | null
+          id: string
+          ip_address: unknown | null
+          landing_page_id: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          visitor_data: Json | null
+          visitor_id: string | null
+        }
+        Insert: {
+          attribution_data?: Json | null
+          conversion_type: string
+          conversion_value?: number | null
+          created_at?: string
+          form_data?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          landing_page_id: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_data?: Json | null
+          visitor_id?: string | null
+        }
+        Update: {
+          attribution_data?: Json | null
+          conversion_type?: string
+          conversion_value?: number | null
+          created_at?: string
+          form_data?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          landing_page_id?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_data?: Json | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_conversions_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_page_templates: {
         Row: {
           created_at: string
+          description: string | null
+          display_order: number | null
           id: string
           is_active: boolean
           name: string
+          preview_image_url: string | null
           template_config: Json | null
           template_html: string
           type: string
@@ -1987,9 +2046,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
+          display_order?: number | null
           id?: string
           is_active?: boolean
           name: string
+          preview_image_url?: string | null
           template_config?: Json | null
           template_html: string
           type: string
@@ -1997,15 +2059,130 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
+          display_order?: number | null
           id?: string
           is_active?: boolean
           name?: string
+          preview_image_url?: string | null
           template_config?: Json | null
           template_html?: string
           type?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      landing_page_variants: {
+        Row: {
+          content_config: Json
+          conversion_rate: number | null
+          created_at: string
+          id: string
+          is_active: boolean
+          landing_page_id: string
+          traffic_percentage: number
+          updated_at: string
+          variant_name: string
+        }
+        Insert: {
+          content_config?: Json
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          landing_page_id: string
+          traffic_percentage?: number
+          updated_at?: string
+          variant_name: string
+        }
+        Update: {
+          content_config?: Json
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          landing_page_id?: string
+          traffic_percentage?: number
+          updated_at?: string
+          variant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_variants_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_pages: {
+        Row: {
+          analytics_config: Json
+          content_config: Json
+          conversion_goals: Json
+          created_at: string
+          created_by: string | null
+          custom_css: string | null
+          custom_js: string | null
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_keywords: string[] | null
+          meta_title: string | null
+          published_at: string | null
+          slug: string
+          template_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          analytics_config?: Json
+          content_config?: Json
+          conversion_goals?: Json
+          created_at?: string
+          created_by?: string | null
+          custom_css?: string | null
+          custom_js?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug: string
+          template_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          analytics_config?: Json
+          content_config?: Json
+          conversion_goals?: Json
+          created_at?: string
+          created_by?: string | null
+          custom_css?: string | null
+          custom_js?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug?: string
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_pages_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lead_alerts: {
         Row: {
