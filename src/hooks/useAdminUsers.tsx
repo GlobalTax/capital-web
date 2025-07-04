@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
-import { useAdminAuth } from './useAdminAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface AdminUser {
   id: string;
@@ -28,7 +28,7 @@ export const useAdminUsers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { user: currentUser } = useAdminAuth();
+  const { user: currentUser } = useAuth();
 
   const sendNotification = useCallback(async (
     type: 'welcome' | 'role_changed' | 'account_deactivated' | 'account_activated',
