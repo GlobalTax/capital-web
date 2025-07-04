@@ -17,7 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Plus,
   Tag,
   List,
   Zap,
@@ -26,11 +25,6 @@ import {
   Paperclip,
   Mail,
   MessageSquare,
-  Phone,
-  Building,
-  MapPin,
-  User,
-  Calendar,
   Activity,
   CircleUser
 } from 'lucide-react';
@@ -338,9 +332,6 @@ export const ContactPage = () => {
               </Button>
             </div>
             
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              + Crear trato
-            </Button>
           </div>
         </div>
       </div>
@@ -349,14 +340,8 @@ export const ContactPage = () => {
       <div className="flex">
         {/* Left Column - Contact Info */}
         <div className="w-1/2 bg-white border-r border-gray-200 p-6">
-          {/* Tabs */}
-          <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="personal">Información personal</TabsTrigger>
-              <TabsTrigger value="deals">Todos los tratos</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="personal" className="space-y-6">
+          {/* Contact Information */}
+          <div className="space-y-6">
               {/* Contact Form */}
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -525,18 +510,7 @@ export const ContactPage = () => {
                   </TabsContent>
                 </Tabs>
               </div>
-            </TabsContent>
-
-            <TabsContent value="deals" className="space-y-4">
-              <div className="text-center py-8 text-gray-500">
-                <Building className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No hay tratos asociados</p>
-                <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
-                  Crear primer trato
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+            </div>
         </div>
 
         {/* Right Column - Activity Timeline */}
