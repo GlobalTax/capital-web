@@ -288,7 +288,7 @@ export const useLandingPageBySlug = (slug: string) => {
   const { data: landingPage, isLoading, error } = useQuery({
     queryKey: ['landingPage', slug],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_pages')
         .select(`
           *,
@@ -323,7 +323,7 @@ export const useLandingPageConversions = () => {
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_page_conversions')
         .insert({
           ...conversionData,

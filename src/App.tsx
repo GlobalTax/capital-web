@@ -77,6 +77,9 @@ const MarketReports = lazy(() => import('@/pages/recursos/MarketReports').catch(
 const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
+const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => 
+  import('@/pages/NotFound')
+));
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
@@ -204,6 +207,9 @@ function App() {
                       <Route path="/recursos/market-reports" element={<MarketReports />} />
                       <Route path="/recursos/newsletter" element={<Newsletter />} />
                       <Route path="/recursos/webinars" element={<Webinars />} />
+                      
+                      {/* Landing Pages */}
+                      <Route path="/landing/:slug" element={<LandingPageView />} />
                       
                       {/* Por que elegirnos routes */}
                       <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />

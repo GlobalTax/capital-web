@@ -97,6 +97,7 @@ export const AdminSidebar: React.FC = () => {
         contentPerformance: false,
         contentStudio: false,
         designResources: false,
+        landingPages: false,
         trackingDashboard: false,
         trackingConfig: false,
       };
@@ -161,6 +162,7 @@ export const AdminSidebar: React.FC = () => {
       'case-studies': 'caseStudies',
       'design-resources': 'designResources',
       'lead-magnets': 'leadMagnets',
+      'landing-pages': 'landingPages',
       'operations': 'operations',
       'multiples': 'multiples',
       'statistics': 'statistics',

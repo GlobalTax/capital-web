@@ -56,15 +56,15 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({ pageId, 
       const loadPage = async () => {
         setIsLoading(true);
         try {
-          const { data, error } = await supabase
-            .from('landing_pages')
-            .select('*')
-            .eq('id', pageId)
-            .single();
+        const { data, error } = await (supabase as any)
+          .from('landing_pages')
+          .select('*')
+          .eq('id', pageId)
+          .single();
 
-          if (error) throw error;
-          setCurrentPage(data);
-          setSelectedTemplate(data.template_id || '');
+        if (error) throw error;
+        setCurrentPage(data);
+        setSelectedTemplate((data as any).template_id || '');
         } catch (error) {
           console.error('Error loading page:', error);
         } finally {
