@@ -9,7 +9,7 @@ export interface UnifiedContact {
   phone?: string;
   company?: string;
   status: 'new' | 'contacted' | 'qualified' | 'opportunity' | 'customer' | 'lost';
-  source: 'contact_lead' | 'apollo' | 'lead_score';
+  source: 'apollo' | 'lead_score';
   score?: number;
   industry?: string;
   location?: string;
@@ -52,19 +52,7 @@ export const useUnifiedContacts = () => {
       console.log('🔄 [UnifiedContacts] Iniciando carga de contactos...');
       setIsLoading(true);
       
-      // Fetch contact leads
-      console.log('💼 [UnifiedContacts] Obteniendo contact leads...');
-      const { data: contactLeads, error: contactLeadsError } = await supabase
-        .from('contact_leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (contactLeadsError) {
-        console.error('❌ [UnifiedContacts] Error fetching contact leads:', contactLeadsError);
-        throw contactLeadsError;
-      }
-      
-      console.log(`✅ [UnifiedContacts] Contact leads obtenidos: ${contactLeads?.length || 0}`);
+      // Note: Contact leads module has been removed
 
       // Fetch Apollo contacts
       console.log('🚀 [UnifiedContacts] Obteniendo Apollo contacts...');
@@ -97,22 +85,7 @@ export const useUnifiedContacts = () => {
       // Unify contact data
       const unifiedData: UnifiedContact[] = [];
 
-      // Process contact leads
-      contactLeads?.forEach(lead => {
-        unifiedData.push({
-          id: lead.id,
-          name: lead.full_name,
-          email: lead.email,
-          phone: lead.phone,
-          company: lead.company,
-          status: lead.status as any || 'new',
-          source: 'contact_lead',
-          location: lead.country,
-          created_at: lead.created_at,
-          updated_at: lead.updated_at,
-          company_domain: extractDomainFromEmail(lead.email)
-        });
-      });
+      // Contact leads processing removed
 
       // Process Apollo contacts
       apolloContacts?.forEach(contact => {
@@ -242,13 +215,7 @@ export const useUnifiedContacts = () => {
     try {
       let error = null;
       
-      if (source === 'contact_lead') {
-        const { error: updateError } = await supabase
-          .from('contact_leads')
-          .update({ status, updated_at: new Date().toISOString() })
-          .eq('id', contactId);
-        error = updateError;
-      } else if (source === 'lead_score') {
+      if (source === 'lead_score') {
         const { error: updateError } = await supabase
           .from('lead_scores')
           .update({ 

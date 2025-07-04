@@ -57,29 +57,7 @@ export const ContactPage = () => {
     try {
       setIsLoading(true);
       
-      // Intentar encontrar en contact_leads primero
-      const { data: contactData, error } = await supabase
-        .from('contact_leads')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (!error && contactData) {
-        const unifiedContact: UnifiedContact = {
-          id: contactData.id,
-          name: contactData.full_name,
-          email: contactData.email,
-          phone: contactData.phone,
-          company: contactData.company,
-          status: contactData.status as any,
-          source: 'contact_lead',
-          location: contactData.country,
-          created_at: contactData.created_at,
-          updated_at: contactData.updated_at
-        };
-        setContact(unifiedContact);
-        return;
-      }
+      // Contact leads module removed - only Apollo and lead_score supported
 
       // Si no se encuentra, buscar en apollo_contacts
       const { data: apolloData, error: apolloError } = await supabase
@@ -134,7 +112,7 @@ export const ContactPage = () => {
 
     setIsSaving(true);
     try {
-      if (contact.source === 'contact_lead') {
+      if (contact.source === 'apollo') {
         const updateData: any = {};
         
         if (field === 'firstName' || field === 'lastName') {
@@ -152,7 +130,7 @@ export const ContactPage = () => {
         }
 
         const { error } = await supabase
-          .from('contact_leads')
+          .from('apollo_contacts')
           .update(updateData)
           .eq('id', contact.id);
 
@@ -169,7 +147,7 @@ export const ContactPage = () => {
           updated_at: new Date().toISOString()
         } : null);
 
-      } else if (contact.source === 'apollo') {
+      } else if (contact.source === 'lead_score') {
         const updateData: any = {};
         
         if (field === 'firstName') {
@@ -189,7 +167,7 @@ export const ContactPage = () => {
         }
 
         const { error } = await supabase
-          .from('apollo_contacts')
+          .from('lead_scores')
           .update(updateData)
           .eq('id', contact.id);
 
@@ -410,7 +388,7 @@ export const ContactPage = () => {
                 </div>
                 <ContactTagsManager
                   contactId={contact.id}
-                  contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                  contactSource={contact.source}
                   onTagsChange={() => {}}
                 />
               </div>
@@ -425,7 +403,7 @@ export const ContactPage = () => {
                 </div>
                 <ContactListsManager
                   contactId={contact.id}
-                  contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                  contactSource={contact.source}
                   onListsChange={() => {}}
                 />
               </div>
@@ -451,7 +429,7 @@ export const ContactPage = () => {
                 </div>
                 <ContactTasksManager
                   contactId={contact.id}
-                  contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                  contactSource={contact.source}
                   onTasksChange={() => {}}
                 />
               </div>
@@ -481,7 +459,7 @@ export const ContactPage = () => {
                   <TabsContent value="notes" className="mt-4">
                     <ContactNotesManager
                       contactId={contact.id}
-                      contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                      contactSource={contact.source}
                       onNotesChange={() => {}}
                     />
                   </TabsContent>
@@ -536,7 +514,7 @@ export const ContactPage = () => {
                   <span className="text-xs text-gray-500">{formatDate(contact.created_at)}</span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  El contacto fue añadido al sistema desde {contact.source === 'contact_lead' ? 'formulario web' : 'Apollo'}
+                  El contacto fue añadido al sistema desde {contact.source === 'apollo' ? 'Apollo' : 'Web Tracking'}
                 </p>
               </div>
             </div>

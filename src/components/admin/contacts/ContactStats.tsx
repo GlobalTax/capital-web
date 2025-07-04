@@ -27,7 +27,6 @@ export const ContactStats: React.FC<ContactStatsProps> = ({ contacts }) => {
   
   // Source distribution
   const sourceStats = {
-    contact_lead: contacts.filter(c => c.source === 'contact_lead').length,
     apollo: contacts.filter(c => c.source === 'apollo').length,
     lead_score: contacts.filter(c => c.source === 'lead_score').length
   };
@@ -189,19 +188,6 @@ export const ContactStats: React.FC<ContactStatsProps> = ({ contacts }) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Formulario Web</span>
-                <span className="text-sm text-admin-text-secondary">
-                  {sourceStats.contact_lead} ({totalContacts > 0 ? ((sourceStats.contact_lead / totalContacts) * 100).toFixed(1) : 0}%)
-                </span>
-              </div>
-              <Progress 
-                value={totalContacts > 0 ? (sourceStats.contact_lead / totalContacts) * 100 : 0} 
-                className="h-2" 
-              />
-            </div>
-            
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Apollo</span>

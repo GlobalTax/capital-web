@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatSpanishPhone } from '@/utils/validationUtils';
-import { useContactLeads } from '@/hooks/useContactLeads';
+import { useContactForm } from '@/hooks/useContactForm';
 import { useFormTracking } from '@/hooks/useFormTracking';
 
 const Contact = () => {
@@ -25,7 +25,7 @@ const Contact = () => {
     referral: '',
   });
 
-  const { submitContactLead, isSubmitting } = useContactLeads();
+  const { submitContactForm, isSubmitting } = useContactForm();
   
   // Integrar tracking de formulario
   const {
@@ -49,7 +49,7 @@ const Contact = () => {
     trackSubmit();
     
     try {
-      await submitContactLead(formData);
+      await submitContactForm(formData);
       
       // Track successful completion
       trackComplete();

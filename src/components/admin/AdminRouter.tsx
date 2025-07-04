@@ -9,7 +9,7 @@ import AdminSettings from './AdminSettings';
 import AlertsManager from './leads/AlertsManager';
 import BlogPostsManagerV2 from './BlogPostsManagerV2';
 import CaseStudiesManager from './CaseStudiesManager';
-import ContactLeadsManager from './ContactLeadsManager';
+
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
 import TestimonialsManager from './TestimonialsManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
@@ -58,7 +58,7 @@ const AdminRouter = () => {
       {/* Lead Management */}
       <Route path="/lead-scoring" element={<LeadScoringManager />} />
       <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
-      <Route path="/contact-leads" element={<ContactLeadsManager />} />
+      
       <Route path="/collaborator-applications" element={<CollaboratorApplicationsManager />} />
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />

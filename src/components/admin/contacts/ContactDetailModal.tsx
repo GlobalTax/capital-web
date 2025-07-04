@@ -50,22 +50,18 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
     try {
       setIsLoading(true);
       
-      // Get contact details from the appropriate table
-      const { data: contactData, error } = await supabase
-        .from('contact_leads')
+      // Get contact details from Apollo (contact_leads module removed)
+      let contactFound = false;
+      
+      // Try Apollo contacts first
+      const { data: apolloData, error: apolloError } = await supabase
+        .from('apollo_contacts')
         .select('*')
         .eq('id', contactId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        // Try Apollo contacts if not found in contact_leads
-        const { data: apolloData, error: apolloError } = await supabase
-          .from('apollo_contacts')
-          .select('*')
-          .eq('id', contactId)
-          .single();
-
-        if (!apolloError && apolloData) {
+      if (!apolloError && apolloData) {
+        contactFound = true;
           setContact({
             id: apolloData.id,
             name: apolloData.full_name || `${apolloData.first_name} ${apolloData.last_name}`,
@@ -83,19 +79,32 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
             company_domain: apolloData.company_domain
           });
         }
-      } else if (contactData) {
-        setContact({
-          id: contactData.id,
-          name: contactData.full_name,
-          email: contactData.email,
-          phone: contactData.phone,
-          company: contactData.company,
-          status: contactData.status as any,
-          source: 'contact_lead',
-          created_at: contactData.created_at,
-          updated_at: contactData.updated_at,
-          location: contactData.country
-        });
+      
+      // Try lead_scores if not found in Apollo
+      if (!contactFound) {
+        const { data: leadScoreData, error: leadScoreError } = await supabase
+          .from('lead_scores')
+          .select('*')
+          .eq('id', contactId)
+          .single();
+
+        if (!leadScoreError && leadScoreData) {
+          setContact({
+            id: leadScoreData.id,
+            name: leadScoreData.contact_name || 'Visitante Anónimo',
+            email: leadScoreData.email || '',
+            phone: '',
+            company: leadScoreData.company_name || leadScoreData.company_domain,
+            status: leadScoreData.lead_status === 'hot' ? 'qualified' : 'new',
+            source: 'lead_score',
+            score: leadScoreData.total_score || 0,
+            created_at: leadScoreData.updated_at || new Date().toISOString(),
+            updated_at: leadScoreData.updated_at,
+            location: leadScoreData.location,
+            is_hot_lead: leadScoreData.is_hot_lead,
+            company_domain: leadScoreData.company_domain
+          });
+        }
       }
       
     } catch (error) {
@@ -322,7 +331,7 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
                           </span>
                         </div>
                         <p className="text-admin-text-secondary text-sm">
-                          El contacto fue añadido al sistema desde {contact.source === 'contact_lead' ? 'formulario web' : 'Apollo'}
+                          El contacto fue añadido al sistema desde {contact.source === 'apollo' ? 'Apollo' : 'Web Tracking'}
                         </p>
                       </div>
                       
@@ -335,7 +344,7 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
                             </span>
                           </div>
                           <p className="text-admin-text-secondary text-sm">
-                            Estado cambiado a: {getStatusBadge(contact.status)}
+                            Estado cambiado a: {contact.status}
                           </p>
                         </div>
                       )}

@@ -19,7 +19,7 @@ interface ContactList {
 
 interface ContactListsManagerProps {
   contactId: string;
-  contactSource: 'contact_lead' | 'apollo';
+  contactSource: 'apollo' | 'lead_score';
   onListsChange?: () => void;
 }
 

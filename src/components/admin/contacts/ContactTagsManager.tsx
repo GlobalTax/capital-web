@@ -17,7 +17,7 @@ interface ContactTag {
 
 interface ContactTagsManagerProps {
   contactId: string;
-  contactSource: 'contact_lead' | 'apollo';
+  contactSource: 'apollo' | 'lead_score';
   onTagsChange?: () => void;
 }
 

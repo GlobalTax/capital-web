@@ -71,12 +71,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Configuración de reglas de puntuación"
       },
       { 
-        title: "Leads de Contacto", 
-        url: "/admin/contact-leads", 
-        icon: Mail,
-        description: "Gestión de leads de contacto"
-      },
-      { 
         title: "Contactos", 
         url: "/admin/contacts", 
         icon: Contact,

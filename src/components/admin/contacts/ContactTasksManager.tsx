@@ -28,7 +28,7 @@ interface ContactTask {
 
 interface ContactTasksManagerProps {
   contactId: string;
-  contactSource: 'contact_lead' | 'apollo';
+  contactSource: 'apollo' | 'lead_score';
   onTasksChange?: () => void;
 }
 

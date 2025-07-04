@@ -255,8 +255,7 @@ export const CRMPipeline: React.FC<CRMPipelineProps> = ({
                 </Badge>
               )}
               <Badge variant="outline" className="text-xs">
-                {contact.source === 'contact_lead' ? 'Web' : 
-                 contact.source === 'apollo' ? 'Apollo' : 'Tracking'}
+                {contact.source === 'apollo' ? 'Apollo' : 'Web Tracking'}
               </Badge>
             </div>
             <div className="flex items-center gap-1 text-xs text-admin-text-secondary">

@@ -18,7 +18,7 @@ interface ContactNote {
 
 interface ContactNotesManagerProps {
   contactId: string;
-  contactSource: 'contact_lead' | 'apollo';
+  contactSource: 'apollo' | 'lead_score';
   onNotesChange?: () => void;
 }
 

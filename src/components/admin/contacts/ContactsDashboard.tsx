@@ -101,7 +101,7 @@ export const ContactsDashboard: React.FC<ContactsDashboardProps> = ({ contacts }
 
     // Distribución por fuentes
     const sourceData = [
-      { name: 'Formulario Web', value: contacts.filter(c => c.source === 'contact_lead').length, color: '#3B82F6' },
+      { name: 'Web Tracking', value: contacts.filter(c => c.source === 'lead_score').length, color: '#3B82F6' },
       { name: 'Apollo', value: contacts.filter(c => c.source === 'apollo').length, color: '#10B981' },
       { name: 'Web Tracking', value: contacts.filter(c => c.source === 'lead_score').length, color: '#F59E0B' }
     ];
