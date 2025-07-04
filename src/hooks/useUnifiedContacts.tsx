@@ -44,48 +44,54 @@ export const useUnifiedContacts = () => {
   const [filteredContacts, setFilteredContacts] = useState<UnifiedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<ContactFilters>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalContacts, setTotalContacts] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
 
-  // Fetch and unify all contacts from different sources
-  const fetchUnifiedContacts = async () => {
-    try {
-      console.log('🔄 [UnifiedContacts] Iniciando carga de contactos...');
-      setIsLoading(true);
-      
-      // Note: Contact leads module has been removed
+  const CONTACTS_PER_PAGE = 50;
 
-      // Fetch Apollo contacts
+  // Fetch with pagination
+  const fetchUnifiedContacts = async (page: number = 1, resetData: boolean = true) => {
+    try {
+      console.log(`🔄 [UnifiedContacts] Cargando página ${page}...`);
+      if (resetData) {
+        setIsLoading(true);
+      }
+      
+      const startIndex = (page - 1) * CONTACTS_PER_PAGE;
+      const endIndex = startIndex + CONTACTS_PER_PAGE - 1;
+
+      // Fetch Apollo contacts with pagination
       console.log('🚀 [UnifiedContacts] Obteniendo Apollo contacts...');
-      const { data: apolloContacts, error: apolloError } = await supabase
+      const { data: apolloContacts, error: apolloError, count: apolloCount } = await supabase
         .from('apollo_contacts')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(startIndex, endIndex);
 
       if (apolloError) {
         console.error('❌ [UnifiedContacts] Error fetching Apollo contacts:', apolloError);
         throw apolloError;
       }
-      
-      console.log(`✅ [UnifiedContacts] Apollo contacts obtenidos: ${apolloContacts?.length || 0}`);
 
-      // Fetch lead scores
+      // Fetch lead scores with pagination
       console.log('📊 [UnifiedContacts] Obteniendo lead scores...');
-      const { data: leadScores, error: leadScoresError } = await supabase
+      const { data: leadScores, error: leadScoresError, count: leadScoresCount } = await supabase
         .from('lead_scores')
-        .select('*')
-        .order('last_activity', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('last_activity', { ascending: false })
+        .range(startIndex, endIndex);
 
       if (leadScoresError) {
         console.error('❌ [UnifiedContacts] Error fetching lead scores:', leadScoresError);
         throw leadScoresError;
       }
       
-      console.log(`✅ [UnifiedContacts] Lead scores obtenidos: ${leadScores?.length || 0}`);
+      console.log(`✅ [UnifiedContacts] Apollo: ${apolloContacts?.length || 0}, Lead Scores: ${leadScores?.length || 0}`);
 
       // Unify contact data
       const unifiedData: UnifiedContact[] = [];
-
-      // Contact leads processing removed
 
       // Process Apollo contacts
       apolloContacts?.forEach(contact => {
@@ -131,16 +137,25 @@ export const useUnifiedContacts = () => {
       });
 
       // Remove duplicates based on email
-      console.log(`📝 [UnifiedContacts] Unificando datos... Total: ${unifiedData.length}`);
       const uniqueContacts = unifiedData.filter((contact, index, self) => 
         contact.email && index === self.findIndex(c => c.email === contact.email)
       );
 
-      console.log(`✨ [UnifiedContacts] Contactos únicos: ${uniqueContacts.length}`);
-      setContacts(uniqueContacts);
-      setFilteredContacts(uniqueContacts);
+      const totalCount = (apolloCount || 0) + (leadScoresCount || 0);
+      setTotalContacts(totalCount);
+      setHasMore(endIndex < totalCount);
+
+      if (resetData || page === 1) {
+        setContacts(uniqueContacts);
+        setFilteredContacts(uniqueContacts);
+      } else {
+        setContacts(prev => [...prev, ...uniqueContacts]);
+        setFilteredContacts(prev => [...prev, ...uniqueContacts]);
+      }
+
+      console.log(`✨ [UnifiedContacts] Página ${page} cargada: ${uniqueContacts.length} contactos`);
     } catch (error) {
-      console.error('❌ [UnifiedContacts] Error fetching unified contacts:', error);
+      console.error('❌ [UnifiedContacts] Error fetching contacts:', error);
       toast({
         title: "Error",
         description: "No se pudieron cargar los contactos. Revisa la conexión y permisos.",
@@ -149,6 +164,35 @@ export const useUnifiedContacts = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Pagination functions
+  const nextPage = () => {
+    if (hasMore && !isLoading) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      fetchUnifiedContacts(newPage, false);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1 && !isLoading) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      fetchUnifiedContacts(newPage, true);
+    }
+  };
+
+  const goToPage = (page: number) => {
+    if (page !== currentPage && page > 0 && !isLoading) {
+      setCurrentPage(page);
+      fetchUnifiedContacts(page, true);
+    }
+  };
+
+  const refreshContacts = () => {
+    setCurrentPage(1);
+    fetchUnifiedContacts(1, true);
   };
 
   // Apply filters
@@ -282,7 +326,7 @@ export const useUnifiedContacts = () => {
 
   // Initial load
   useEffect(() => {
-    fetchUnifiedContacts();
+    fetchUnifiedContacts(1, true);
   }, []);
 
   return {
@@ -290,11 +334,18 @@ export const useUnifiedContacts = () => {
     allContacts: contacts,
     isLoading,
     filters,
+    currentPage,
+    totalContacts,
+    hasMore,
     applyFilters,
     updateContactStatus,
     bulkUpdateStatus,
     exportContacts,
-    refetch: fetchUnifiedContacts
+    nextPage,
+    prevPage,
+    goToPage,
+    refreshContacts,
+    refetch: refreshContacts
   };
 };
 

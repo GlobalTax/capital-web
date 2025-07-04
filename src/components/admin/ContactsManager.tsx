@@ -13,6 +13,8 @@ import {
   Search
 } from 'lucide-react';
 import { ContactsTable } from './contacts/ContactsTable';
+import { ContactsPagination } from './contacts/ContactsPagination';
+import { ContactsLoadingSkeleton } from './contacts/ContactsLoadingSkeleton';
 import { ContactFiltersPanel } from './contacts/ContactFiltersPanel';
 
 export const ContactsManager = () => {
@@ -21,10 +23,16 @@ export const ContactsManager = () => {
     allContacts, 
     isLoading, 
     filters, 
+    currentPage,
+    totalContacts,
+    hasMore,
     applyFilters, 
     updateContactStatus,
     bulkUpdateStatus,
-    exportContacts
+    exportContacts,
+    nextPage,
+    prevPage,
+    goToPage
   } = useUnifiedContacts();
 
   
@@ -41,10 +49,36 @@ export const ContactsManager = () => {
     setSearchTerm('');
   };
 
-  if (isLoading) {
+  if (isLoading && currentPage === 1) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-admin-text-primary">
+              Contactos
+            </h1>
+            <p className="text-admin-text-secondary">
+              Cargando contactos...
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" disabled>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+            <Button variant="outline" disabled>
+              <Upload className="h-4 w-4 mr-2" />
+              Importar
+            </Button>
+            <Button disabled>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Nuevo Contacto
+            </Button>
+          </div>
+        </div>
+        
+        <ContactsLoadingSkeleton />
       </div>
     );
   }
@@ -127,6 +161,18 @@ export const ContactsManager = () => {
         contacts={contacts}
         onStatusUpdate={updateContactStatus}
         onBulkUpdate={bulkUpdateStatus}
+      />
+
+      {/* Pagination */}
+      <ContactsPagination
+        currentPage={currentPage}
+        totalContacts={totalContacts}
+        contactsPerPage={50}
+        hasMore={hasMore}
+        isLoading={isLoading}
+        onPrevPage={prevPage}
+        onNextPage={nextPage}
+        onGoToPage={goToPage}
       />
     </div>
   );
