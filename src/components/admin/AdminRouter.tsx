@@ -32,6 +32,9 @@ import { EmailMarketingManager } from './EmailMarketingManager';
 import { ContactPage } from '@/pages/admin/ContactPage';
 import EnhancedLeadsDashboard from './leads/EnhancedLeadsDashboard';
 import TrackingConfigPage from '@/pages/admin/TrackingConfigPage';
+import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
+import ContentStudioPage from '@/pages/admin/ContentStudioPage';
+import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 import UnifiedTrackingPage from '@/pages/admin/UnifiedTrackingPage';
 
 const AdminRouter = () => {
@@ -82,6 +85,9 @@ const AdminRouter = () => {
       <Route path="/tracking-config" element={<TrackingConfigPage />} />
       
       {/* Content Management */}
+      <Route path="/content-performance" element={<ContentPerformancePage />} />
+      <Route path="/content-studio" element={<ContentStudioPage />} />
+      <Route path="/design-resources" element={<DesignResourcesPage />} />
       <Route path="/blog-v2" element={<BlogPostsManagerV2 />} />
       <Route path="/sector-reports" element={<SectorReportsGenerator />} />
       <Route path="/case-studies" element={<CaseStudiesManager />} />

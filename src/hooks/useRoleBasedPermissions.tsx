@@ -352,6 +352,7 @@ export const useRoleBasedPermissions = () => {
       sectorReports: userRole !== 'none' && userRole !== 'viewer',
       caseStudies: userRole !== 'none' && userRole !== 'viewer',
       leadMagnets: userRole !== 'none' && userRole !== 'viewer',
+      designResources: userRole !== 'none' && userRole !== 'viewer',
       
       // Company data - Visible para todos excepto 'none'
       operations: userRole !== 'none',

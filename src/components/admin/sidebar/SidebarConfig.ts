@@ -12,7 +12,8 @@ import {
   MessageSquare,
   Sparkles,
   Activity,
-  Eye
+  Eye,
+  Palette
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -61,6 +62,12 @@ export const sidebarSections: SidebarSection[] = [
         icon: Sparkles, 
         badge: "AI",
         description: "Creación con IA"
+      },
+      { 
+        title: "Recursos de Diseño", 
+        url: "/admin/design-resources", 
+        icon: Palette,
+        description: "Materiales y assets web"
       },
       { 
         title: "Lead Magnets", 

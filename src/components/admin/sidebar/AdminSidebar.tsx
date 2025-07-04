@@ -93,9 +93,10 @@ export const AdminSidebar: React.FC = () => {
         integrations: false,
         adminUsers: false,
         settings: false,
-        // Nuevas funcionalidades de tracking
+        // Nuevas funcionalidades de tracking y contenido
         contentPerformance: false,
         contentStudio: false,
+        designResources: false,
         trackingDashboard: false,
         trackingConfig: false,
       };
@@ -158,6 +159,7 @@ export const AdminSidebar: React.FC = () => {
       'blog-v2': 'blogV2',
       'sector-reports': 'sectorReports',
       'case-studies': 'caseStudies',
+      'design-resources': 'designResources',
       'lead-magnets': 'leadMagnets',
       'operations': 'operations',
       'multiples': 'multiples',

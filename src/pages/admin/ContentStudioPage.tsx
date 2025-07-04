@@ -1,8 +1,8 @@
 import React from 'react';
-import ContentCreationStudio from '@/components/admin/content/ContentCreationStudio';
+import AIContentStudioWrapper from '@/components/admin/AIContentStudioWrapper';
 
 const ContentStudioPage = () => {
-  return <ContentCreationStudio />;
+  return <AIContentStudioWrapper />;
 };
 
 export default ContentStudioPage;
