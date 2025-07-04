@@ -9,6 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { EditableField } from '@/components/admin/contacts/EditableField';
+import { ContactTagsManager } from '@/components/admin/contacts/ContactTagsManager';
+import { ContactListsManager } from '@/components/admin/contacts/ContactListsManager';
+import { ContactNotesManager } from '@/components/admin/contacts/ContactNotesManager';
+import { ContactTasksManager } from '@/components/admin/contacts/ContactTasksManager';
 import { 
   ChevronLeft,
   ChevronRight,
@@ -420,11 +424,12 @@ export const ContactPage = () => {
                     <Tag className="h-4 w-4" />
                     Etiquetas
                   </label>
-                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
-                <div className="text-sm text-gray-500">Sin etiquetas</div>
+                <ContactTagsManager
+                  contactId={contact.id}
+                  contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                  onTagsChange={() => {}}
+                />
               </div>
 
               {/* Lists Section */}
@@ -434,11 +439,12 @@ export const ContactPage = () => {
                     <List className="h-4 w-4" />
                     Listas
                   </label>
-                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
-                <div className="text-sm text-gray-500">Sin listas</div>
+                <ContactListsManager
+                  contactId={contact.id}
+                  contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                  onListsChange={() => {}}
+                />
               </div>
 
               {/* Automations Section */}
@@ -459,11 +465,12 @@ export const ContactPage = () => {
                     <CheckSquare className="h-4 w-4" />
                     Tareas
                   </label>
-                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0">
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
-                <div className="text-sm text-gray-500">Sin tareas</div>
+                <ContactTasksManager
+                  contactId={contact.id}
+                  contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                  onTasksChange={() => {}}
+                />
               </div>
 
               {/* Bottom Tabs */}
@@ -489,10 +496,11 @@ export const ContactPage = () => {
                   </TabsList>
 
                   <TabsContent value="notes" className="mt-4">
-                    <div className="text-center py-8 text-gray-500">
-                      <StickyNote className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No hay notas</p>
-                    </div>
+                    <ContactNotesManager
+                      contactId={contact.id}
+                      contactSource={contact.source === 'lead_score' ? 'contact_lead' : contact.source}
+                      onNotesChange={() => {}}
+                    />
                   </TabsContent>
 
                   <TabsContent value="files" className="mt-4">
