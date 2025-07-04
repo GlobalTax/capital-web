@@ -84,24 +84,35 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       const utmMedium = urlParams.get('utm_medium');
       const utmCampaign = urlParams.get('utm_campaign');
 
-      await supabase.from('lead_behavior_events').insert({
+      const insertData = {
         session_id: sessionId,
         visitor_id: visitorId,
         company_domain: companyDomain,
         event_type: eventType,
         page_path: pagePath,
-        event_data: eventData,
-        points_awarded: pointsAwarded,
-        user_agent: navigator.userAgent,
-        referrer: document.referrer,
+        event_data: eventData || {},
+        points_awarded: pointsAwarded || 0,
+        user_agent: navigator.userAgent || null,
+        referrer: document.referrer || null,
         utm_source: utmSource,
         utm_medium: utmMedium,
         utm_campaign: utmCampaign
-      });
+      };
+
+      console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId);
+      
+      const { error } = await supabase.from('lead_behavior_events').insert(insertData);
+      
+      if (error) {
+        console.error('❌ Lead tracking failed:', error);
+        throw error;
+      }
+      
+      console.debug('✅ Event tracked successfully:', eventType);
 
     } catch (error) {
-      console.debug('Lead tracking error:', error);
-      // Fallar silenciosamente para no afectar UX
+      console.error('❌ Lead tracking error:', error);
+      // Fallar silenciosamente para no afectar UX pero logear el error
     }
   }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain]);
 
