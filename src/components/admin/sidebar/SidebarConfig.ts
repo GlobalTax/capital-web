@@ -54,67 +54,6 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🎯 LEADS & CONTACTOS",
-    description: "Gestión completa de leads y contactos",
-    items: [
-      { 
-        title: "Dashboard de Leads", 
-        url: "/admin/leads-dashboard", 
-        icon: Target, 
-        badge: "NEW",
-        description: "Dashboard mejorado de leads con visualización completa"
-      },
-      { 
-        title: "Lead Scoring", 
-        url: "/admin/lead-scoring", 
-        icon: BarChart3,
-        description: "Puntuación y análisis de leads"
-      },
-      { 
-        title: "Contactos", 
-        url: "/admin/contacts", 
-        icon: Contact,
-        description: "Vista unificada de todos los contactos"
-      },
-      { 
-        title: "Listas y Segmentación", 
-        url: "/admin/contact-lists", 
-        icon: List,
-        description: "Organiza y segmenta contactos"
-      },
-      { 
-        title: "Propuestas de Honorarios", 
-        url: "/admin/proposals", 
-        icon: FileText,
-        description: "Gestión de propuestas comerciales"
-      },
-    ]
-  },
-  {
-    title: "📧 MARKETING",
-    description: "Campañas y automatización",
-    items: [
-      {
-        title: "Campañas de Email",
-        url: "/admin/email-marketing",
-        icon: Mail,
-        description: "Gestión de campañas de email"
-      },
-      {
-        title: "Marketing Automation",
-        url: "/admin/marketing-automation",
-        icon: Workflow,
-        description: "Secuencias y workflows automatizados"
-      },
-      { 
-        title: "Marketing Hub", 
-        url: "/admin/marketing-hub", 
-        icon: PieChart,
-        description: "Dashboard completo de métricas"
-      },
-    ]
-  },
-  {
     title: "📝 CONTENIDO",
     description: "Gestión de contenido",
     items: [
