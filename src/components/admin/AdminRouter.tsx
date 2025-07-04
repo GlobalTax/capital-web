@@ -31,6 +31,8 @@ import { ContactListsManager } from './ContactListsManager';
 import { EmailMarketingManager } from './EmailMarketingManager';
 import { ContactPage } from '@/pages/admin/ContactPage';
 import EnhancedLeadsDashboard from './leads/EnhancedLeadsDashboard';
+import TrackingConfigPage from '@/pages/admin/TrackingConfigPage';
+import UnifiedTrackingPage from '@/pages/admin/UnifiedTrackingPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -74,6 +76,10 @@ const AdminRouter = () => {
       <Route path="/marketing-intelligence" element={<MarketingIntelligenceDashboard />} />
       <Route path="/marketing-hub" element={<MarketingHubDashboard />} />
       <Route path="/integrations" element={<IntegrationsManager />} />
+      
+      {/* Tracking & Analytics */}
+      <Route path="/tracking-dashboard" element={<UnifiedTrackingPage />} />
+      <Route path="/tracking-config" element={<TrackingConfigPage />} />
       
       {/* Content Management */}
       <Route path="/blog-v2" element={<BlogPostsManagerV2 />} />

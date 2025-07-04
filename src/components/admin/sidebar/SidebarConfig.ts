@@ -10,7 +10,9 @@ import {
   TrendingUp,
   Zap,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  Activity,
+  Eye
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -126,6 +128,25 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/contacts", 
         icon: Users,
         description: "Base de contactos"
+      },
+    ]
+  },
+  {
+    title: "📊 SEGUIMIENTO",
+    description: "Analytics y tracking",
+    items: [
+      { 
+        title: "Dashboard Tracking", 
+        url: "/admin/tracking-dashboard", 
+        icon: Activity,
+        badge: "NEW",
+        description: "Métricas unificadas"
+      },
+      { 
+        title: "Configuración", 
+        url: "/admin/tracking-config", 
+        icon: Eye,
+        description: "Config de seguimiento"
       },
     ]
   },
