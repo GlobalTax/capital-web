@@ -93,6 +93,11 @@ export const AdminSidebar: React.FC = () => {
         integrations: false,
         adminUsers: false,
         settings: false,
+        // Nuevas funcionalidades de tracking
+        contentPerformance: false,
+        contentStudio: false,
+        trackingDashboard: false,
+        trackingConfig: false,
       };
     }
   }, [getMenuVisibility]);
@@ -135,6 +140,9 @@ export const AdminSidebar: React.FC = () => {
     // Dashboard siempre visible
     if (url === '/admin') return true;
     
+    // Super admin siempre tiene acceso a todo
+    if (userRole === 'super_admin') return true;
+    
     // Mapear rutas a permisos - SINCRONIZADO con AdminRouter y useRoleBasedPermissions
     const routePermissionMap: Record<string, keyof typeof menuVisibility> = {
       'lead-scoring': 'leadScoring',
@@ -162,11 +170,16 @@ export const AdminSidebar: React.FC = () => {
       'marketing-hub': 'marketingHub',
       'integrations': 'integrations',
       'admin-users': 'adminUsers',
-      'settings': 'settings'
+      'settings': 'settings',
+      // Nuevas rutas de tracking
+      'content-performance': 'contentPerformance',
+      'content-studio': 'contentStudio',
+      'tracking-dashboard': 'trackingDashboard',
+      'tracking-config': 'trackingConfig'
     };
 
     const permissionKey = routePermissionMap[route];
-    return permissionKey ? menuVisibility[permissionKey] : false; // Cambio a false para ser más restrictivo
+    return permissionKey ? menuVisibility[permissionKey] : false;
   };
 
   return (

@@ -370,6 +370,12 @@ export const useRoleBasedPermissions = () => {
       marketingHub: userRole !== 'none',
       integrations: isAdminLevel,
       
+      // Tracking & Performance - Nuevas funcionalidades
+      contentPerformance: userRole !== 'none',
+      contentStudio: userRole !== 'none' && userRole !== 'viewer',
+      trackingDashboard: userRole !== 'none',
+      trackingConfig: isAdminLevel,
+      
       // Configuration - Solo para super admins y admins respectivamente
       adminUsers: userRole === 'super_admin',
       settings: isAdminLevel,
