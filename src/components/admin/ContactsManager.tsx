@@ -15,7 +15,8 @@ import {
 import { ContactsTable } from './contacts/ContactsTable';
 import { ContactsPagination } from './contacts/ContactsPagination';
 import { ContactsLoadingSkeleton } from './contacts/ContactsLoadingSkeleton';
-import { ContactFiltersPanel } from './contacts/ContactFiltersPanel';
+import { AdvancedSearchBar } from './contacts/AdvancedSearchBar';
+import { useContactSearch } from '@/hooks/useContactSearch';
 
 export const ContactsManager = () => {
   const { 
@@ -146,11 +147,9 @@ export const ContactsManager = () => {
           
           {showFilters && (
             <div className="mt-4 border-t pt-4">
-              <ContactFiltersPanel 
-                filters={filters}
-                onFiltersChange={applyFilters}
-                contacts={allContacts}
-              />
+              <p className="text-sm text-muted-foreground">
+                Filtros avanzados próximamente...
+              </p>
             </div>
           )}
         </CardContent>
