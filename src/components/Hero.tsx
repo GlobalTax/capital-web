@@ -1,9 +1,7 @@
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-
 const Hero = () => {
-  return (
-    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
+  return <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Left Column - Content */}
@@ -12,9 +10,7 @@ const Hero = () => {
               Líderes en M&A desde 2008
             </div>
             
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-8 leading-tight">
-              Especialista en compraventa de empresas
-            </h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-8 leading-tight">Especialistas en compraventa de empresas</h1>
             
             <p className="text-lg text-gray-600 mb-12 leading-relaxed max-w-2xl">
               Especialistas en compraventa de empresas con más de 15 años de experiencia. 
@@ -38,17 +34,9 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <InteractiveHoverButton 
-                text="Valorar mi empresa"
-                variant="primary"
-                size="lg"
-              />
+              <InteractiveHoverButton text="Valorar mi empresa" variant="primary" size="lg" />
               
-              <InteractiveHoverButton 
-                text="Ver Casos de Éxito"
-                variant="secondary"
-                size="lg"
-              />
+              <InteractiveHoverButton text="Ver Casos de Éxito" variant="secondary" size="lg" />
             </div>
           </div>
 
@@ -130,8 +118,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
