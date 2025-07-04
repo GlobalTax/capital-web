@@ -30,6 +30,7 @@ import ContactsManager from './ContactsManager';
 import { ContactListsManager } from './ContactListsManager';
 import { EmailMarketingManager } from './EmailMarketingManager';
 import { ContactPage } from '@/pages/admin/ContactPage';
+import EnhancedLeadsDashboard from './leads/EnhancedLeadsDashboard';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -56,6 +57,7 @@ const AdminRouter = () => {
       <Route path="/dashboard" element={<AdminDashboard />} />
       
       {/* Lead Management */}
+      <Route path="/leads-dashboard" element={<EnhancedLeadsDashboard />} />
       <Route path="/lead-scoring" element={<LeadScoringManager />} />
       <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
       

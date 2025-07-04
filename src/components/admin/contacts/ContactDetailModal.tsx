@@ -20,8 +20,11 @@ import {
   User,
   Activity,
   FileText,
-  Edit
+  Edit,
+  TrendingUp
 } from 'lucide-react';
+import { useLeadActivity } from '@/hooks/useLeadActivity';
+import LeadActivityTimeline from '@/components/admin/leads/LeadActivityTimeline';
 
 interface ContactDetailModalProps {
   contactId: string;
@@ -39,6 +42,15 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
   const [contact, setContact] = useState<UnifiedContact | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState('');
+  
+  // Hook para actividad del lead
+  const { 
+    activities, 
+    leadScore, 
+    isLoading: isLoadingActivity,
+    fetchLeadActivity,
+    getActivityMetrics 
+  } = useLeadActivity();
 
   useEffect(() => {
     if (isOpen && contactId) {
@@ -104,6 +116,11 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
             is_hot_lead: leadScoreData.is_hot_lead,
             company_domain: leadScoreData.company_domain
           });
+          
+          // Cargar actividad si es de lead_score
+          if (leadScoreData.visitor_id) {
+            fetchLeadActivity(leadScoreData.visitor_id);
+          }
         }
       }
       
@@ -308,52 +325,86 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
           {/* Panel Derecho - Actividades y Notas */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="activity" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="activity">Actividades Recientes</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="activity">Timeline</TabsTrigger>
+                <TabsTrigger value="metrics">Métricas</TabsTrigger>
                 <TabsTrigger value="notes">Notas</TabsTrigger>
               </TabsList>
 
               <TabsContent value="activity">
+                <LeadActivityTimeline 
+                  activities={activities}
+                  isLoading={isLoadingActivity}
+                  onRefresh={() => leadScore?.visitor_id && fetchLeadActivity(leadScore.visitor_id)}
+                />
+              </TabsContent>
+
+              <TabsContent value="metrics">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-4 w-4" />
-                      Historial de Actividad
+                      <TrendingUp className="h-4 w-4" />
+                      Métricas de Actividad
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="border-l-2 border-primary pl-4 pb-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium">Contacto creado</h4>
-                          <span className="text-sm text-admin-text-secondary">
-                            {formatDate(contact.created_at)}
-                          </span>
-                        </div>
-                        <p className="text-admin-text-secondary text-sm">
-                          El contacto fue añadido al sistema desde {contact.source === 'apollo' ? 'Apollo' : 'Web Tracking'}
-                        </p>
-                      </div>
-                      
-                      {contact.status !== 'new' && (
-                        <div className="border-l-2 border-blue-500 pl-4 pb-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium">Estado actualizado</h4>
-                            <span className="text-sm text-admin-text-secondary">
-                              {contact.updated_at ? formatDate(contact.updated_at) : 'Fecha no disponible'}
-                            </span>
+                    {activities.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 bg-muted/50 rounded-lg">
+                          <div className="text-2xl font-bold text-primary">
+                            {getActivityMetrics().totalPoints}
                           </div>
-                          <p className="text-admin-text-secondary text-sm">
-                            Estado cambiado a: {contact.status}
-                          </p>
+                          <div className="text-sm text-muted-foreground">Puntos totales</div>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Placeholder para más actividades */}
-                    <div className="text-center py-4 text-admin-text-secondary text-sm">
-                      No hay más actividades registradas
-                    </div>
+                        <div className="text-center p-4 bg-muted/50 rounded-lg">
+                          <div className="text-2xl font-bold text-orange-600">
+                            {activities.length}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Eventos</div>
+                        </div>
+                        <div className="text-center p-4 bg-muted/50 rounded-lg">
+                          <div className="text-2xl font-bold text-green-600">
+                            {getActivityMetrics().todayCount}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Hoy</div>
+                        </div>
+                        <div className="text-center p-4 bg-muted/50 rounded-lg">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {getActivityMetrics().avgPointsPerEvent}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Pts/evento</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No hay métricas disponibles</p>
+                      </div>
+                    )}
+                    
+                    {leadScore && (
+                      <div className="mt-6 p-4 border rounded-lg">
+                        <h4 className="font-semibold mb-2">Información del Lead</h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Score total:</span>
+                            <span className="ml-2 font-semibold">{leadScore.total_score}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Visitas:</span>
+                            <span className="ml-2 font-semibold">{leadScore.visit_count}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Primera visita:</span>
+                            <span className="ml-2">{formatDate(leadScore.first_visit)}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Última actividad:</span>
+                            <span className="ml-2">{formatDate(leadScore.last_activity)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

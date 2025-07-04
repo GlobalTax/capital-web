@@ -150,10 +150,10 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                   />
                 </TableHead>
                 <TableHead>Nombre / Email</TableHead>
-                <TableHead>Teléfono</TableHead>
                 <TableHead>Empresa</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Fecha creación</TableHead>
+                <TableHead>Score / Estado</TableHead>
+                <TableHead>Última actividad</TableHead>
+                <TableHead>Fuente</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -178,28 +178,39 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                     </div>
                   </TableCell>
                   <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
-                    {contact.phone && (
-                      <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 text-admin-text-secondary" />
-                        <span className="text-sm">{contact.phone}</span>
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     {contact.company && (
                       <div className="flex items-center gap-1">
                         <Building className="h-3 w-3 text-admin-text-secondary" />
-                        <span className="text-sm">{contact.company}</span>
+                        <span className="text-sm truncate max-w-[150px]">{contact.company}</span>
                       </div>
                     )}
                   </TableCell>
                   <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
-                    {getStatusBadge(contact.status)}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        {contact.score !== undefined && (
+                          <Badge variant={contact.score >= 70 ? "destructive" : contact.score >= 50 ? "default" : "secondary"} className="text-xs">
+                            {contact.score} pts
+                          </Badge>
+                        )}
+                        {contact.is_hot_lead && (
+                          <Badge variant="destructive" className="text-xs animate-pulse">
+                            🔥 HOT
+                          </Badge>
+                        )}
+                      </div>
+                      {getStatusBadge(contact.status)}
+                    </div>
                   </TableCell>
                   <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
                     <div className="text-sm text-admin-text-secondary">
-                      {formatDate(contact.created_at)}
+                      {contact.last_activity ? formatDate(contact.last_activity) : formatDate(contact.created_at)}
                     </div>
+                  </TableCell>
+                  <TableCell onClick={() => navigate(`/admin/contacts/${contact.id}`)}>
+                    <Badge variant="outline" className="text-xs">
+                      {contact.source === 'apollo' ? 'Apollo' : 'Web'}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
