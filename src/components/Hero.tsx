@@ -1,7 +1,13 @@
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 const Hero = () => {
-  return <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
+  const { isOnline } = useNetworkStatus();
+  
+  return (
+    <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
+      <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Left Column - Content */}
@@ -34,9 +40,19 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <InteractiveHoverButton text="Valorar mi empresa" variant="primary" size="lg" />
+              <InteractiveHoverButton 
+                text="Valorar mi empresa" 
+                variant="primary" 
+                size="lg" 
+                disabled={!isOnline}
+              />
               
-              <InteractiveHoverButton text="Ver Casos de Éxito" variant="secondary" size="lg" />
+              <InteractiveHoverButton 
+                text="Ver Casos de Éxito" 
+                variant="secondary" 
+                size="lg"
+                disabled={!isOnline}
+              />
             </div>
           </div>
 
@@ -118,6 +134,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+    </ErrorBoundary>
+  );
 };
 export default Hero;

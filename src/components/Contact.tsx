@@ -13,6 +13,9 @@ import {
 import { formatSpanishPhone } from '@/utils/validationUtils';
 import { useContactForm } from '@/hooks/useContactForm';
 import { useFormTracking } from '@/hooks/useFormTracking';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { LoadingButton } from '@/components/LoadingButton';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +29,7 @@ const Contact = () => {
   });
 
   const { submitContactForm, isSubmitting } = useContactForm();
+  const { isOnline } = useNetworkStatus();
   
   // Integrar tracking de formulario
   const {
@@ -114,7 +118,8 @@ const Contact = () => {
   };
 
   return (
-    <section id="contacto" className="relative py-32 bg-white">
+    <ErrorBoundary fallback={<div className="py-32 bg-background text-center">Error cargando el formulario de contacto</div>}>
+      <section id="contacto" className="relative py-32 bg-white">
       {/* Background gradients */}
       <div className="pointer-events-none absolute inset-x-0 -top-20 -bottom-20 bg-[radial-gradient(ellipse_35%_15%_at_40%_55%,hsl(var(--accent))_0%,transparent_100%)] lg:bg-[radial-gradient(ellipse_12%_20%_at_60%_45%,hsl(var(--accent))_0%,transparent_100%)]"></div>
       <div className="pointer-events-none absolute inset-x-0 -top-20 -bottom-20 bg-[radial-gradient(ellipse_35%_20%_at_70%_75%,hsl(var(--accent))_0%,transparent_80%)] lg:bg-[radial-gradient(ellipse_15%_30%_at_70%_65%,hsl(var(--accent))_0%,transparent_80%)]"></div>
@@ -319,14 +324,15 @@ const Contact = () => {
                 </div>
                 
                 <div className="flex w-full flex-col justify-end space-y-3 pt-2">
-                  <InteractiveHoverButton
-                    text={isSubmitting ? "Enviando..." : "Solicitar Consulta"}
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
+                  <LoadingButton
+                    loading={isSubmitting}
+                    loadingText="Enviando..."
+                    disabled={isSubmitting || !isOnline}
                     type="submit"
-                    disabled={isSubmitting}
-                  />
+                    className="w-full bg-black text-white hover:bg-gray-800 py-3"
+                  >
+                    Solicitar Consulta
+                  </LoadingButton>
                   <div className="text-xs text-gray-500">
                     Al enviar este formulario, aceptas que nos pongamos en contacto contigo.
                     Para más información sobre cómo manejamos tu información personal, visita nuestra{" "}
@@ -341,6 +347,7 @@ const Contact = () => {
         </div>
       </div>
     </section>
+    </ErrorBoundary>
   );
 };
 

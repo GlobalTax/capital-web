@@ -2,8 +2,20 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { ServicesSkeleton } from '@/components/LoadingStates';
 
 const Services = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <ServicesSkeleton />;
+  }
   const coreServices = [
     {
       title: 'Vender Empresa',
@@ -46,7 +58,8 @@ const Services = () => {
   ];
 
   return (
-    <section id="servicios" className="py-20 bg-white">
+    <ErrorBoundary fallback={<ServicesSkeleton />}>
+      <section id="servicios" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
@@ -115,6 +128,7 @@ const Services = () => {
         </div>
       </div>
     </section>
+    </ErrorBoundary>
   );
 };
 
