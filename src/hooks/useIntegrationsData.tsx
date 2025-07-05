@@ -106,9 +106,10 @@ export const useIntegrationsData = () => {
     setIntegrationConfigs(configs);
   };
 
-  // Simplified data fetching using Promise.all directly
+  // Simplified data fetching with better error handling
   const fetchAllData = async () => {
     setIsLoading(true);
+    console.log('🔄 Iniciando carga de datos de integraciones...');
     
     try {
       const [
@@ -119,13 +120,38 @@ export const useIntegrationsData = () => {
         integrationLogsData,
         integrationConfigsData
       ] = await Promise.all([
-        fetchApolloCompanies(),
-        fetchApolloContacts(),
-        fetchAdConversions(),
-        fetchLinkedinData(),
-        fetchIntegrationLogs(),
-        fetchIntegrationConfigs()
+        fetchApolloCompanies().catch(err => {
+          console.warn('Error fetching Apollo companies:', err);
+          return [];
+        }),
+        fetchApolloContacts().catch(err => {
+          console.warn('Error fetching Apollo contacts:', err);
+          return [];
+        }),
+        fetchAdConversions().catch(err => {
+          console.warn('Error fetching ad conversions:', err);
+          return [];
+        }),
+        fetchLinkedinData().catch(err => {
+          console.warn('Error fetching LinkedIn data:', err);
+          return [];
+        }),
+        fetchIntegrationLogs().catch(err => {
+          console.warn('Error fetching integration logs:', err);
+          return [];
+        }),
+        fetchIntegrationConfigs().catch(err => {
+          console.error('Error fetching integration configs:', err);
+          return [];
+        })
       ]);
+
+      console.log('✅ Datos cargados:', {
+        companies: apolloCompaniesData.length,
+        contacts: apolloContactsData.length,
+        conversions: adConversionsData.length,
+        configs: integrationConfigsData.length
+      });
 
       setApolloCompanies(apolloCompaniesData);
       setApolloContacts(apolloContactsData);
@@ -135,9 +161,14 @@ export const useIntegrationsData = () => {
       setIntegrationConfigs(integrationConfigsData);
 
     } catch (error) {
-      console.error('Error fetching integrations data:', error);
+      console.error('❌ Error crítico cargando datos de integraciones:', error);
+      handleAsyncError(async () => { throw error }, { 
+        component: 'useIntegrationsData', 
+        action: 'fetchAllData' 
+      });
     } finally {
       setIsLoading(false);
+      console.log('🏁 Carga de integraciones completada');
     }
   };
 
