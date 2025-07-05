@@ -77,42 +77,49 @@ const IntegrationsStatusList = ({
     }
   };
 
-  // Integraciones predefinidas que siempre mostramos
-  const defaultIntegrations = [
+  // Usar datos de la base de datos o fallback si están vacíos
+  const allIntegrations = integrationConfigs.length > 0 ? integrationConfigs : [
     {
-      id: 'resend',
+      id: 'fallback-resend',
       integration_name: 'resend',
       is_active: false,
       last_sync: null,
-      sync_frequency_minutes: 60
+      sync_frequency_minutes: 0,
+      config_data: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
-      id: 'apollo',
+      id: 'fallback-apollo', 
       integration_name: 'apollo',
       is_active: true,
       last_sync: new Date().toISOString(),
-      sync_frequency_minutes: 30
+      sync_frequency_minutes: 30,
+      config_data: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
-      id: 'google_ads',
-      integration_name: 'google_ads',
+      id: 'fallback-google_ads',
+      integration_name: 'google_ads', 
       is_active: true,
       last_sync: new Date(Date.now() - 3600000).toISOString(),
-      sync_frequency_minutes: 60
+      sync_frequency_minutes: 60,
+      config_data: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
-      id: 'webhooks',
+      id: 'fallback-webhooks',
       integration_name: 'webhooks',
       is_active: false,
       last_sync: null,
-      sync_frequency_minutes: 0
+      sync_frequency_minutes: 0,
+      config_data: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
   ];
-
-  // Combinar integraciones por defecto con las de la base de datos
-  const allIntegrations = [...defaultIntegrations, ...integrationConfigs.filter(
-    config => !defaultIntegrations.some(def => def.integration_name === config.integration_name)
-  )];
 
   return (
     <div className="space-y-[var(--space-md)] animate-fade-in">
