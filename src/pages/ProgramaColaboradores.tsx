@@ -2,7 +2,13 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CollaboratorApplicationForm from '@/components/CollaboratorApplicationForm';
+import { EnhancedHeroSection } from '@/components/collaborators/EnhancedHeroSection';
+import { EnhancedBenefitsSection } from '@/components/collaborators/EnhancedBenefitsSection';
+import { ProcessTimeline } from '@/components/collaborators/ProcessTimeline';
+import { TestimonialsSection } from '@/components/collaborators/TestimonialsSection';
+import { FAQSection } from '@/components/collaborators/FAQSection';
+import { EnhancedCollaboratorForm } from '@/components/collaborators/EnhancedCollaboratorForm';
+import { FinalCTASection } from '@/components/collaborators/FinalCTASection';
 
 const ProgramaColaboradores = () => {
   return (
