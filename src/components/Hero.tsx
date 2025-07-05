@@ -1,155 +1,176 @@
 "use client";
 
 import NumberFlow from "@number-flow/react";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
+import { ArrowRight, RefreshCcw } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 const Hero = () => {
   const { isOnline } = useNetworkStatus();
+  const [showMonthlyStats, setShowMonthlyStats] = useState(false);
+  const [stats, setStats] = useState({
+    monthly: {
+      TotalRevenue: 0,
+      TotalOperations: 0,
+      ClientSatisfaction: 0,
+      YearsExperience: 0,
+      MarketShare: 0,
+    },
+    yearly: {
+      TotalRevenue: 0,
+      TotalOperations: 0,
+      ClientSatisfaction: 0,
+      YearsExperience: 0,
+      MarketShare: 0,
+    },
+  });
+
   const ref = useRef(null);
-  const IllustrationRef = useRef(null);
-  const [selectedYear, setSelectedYear] = useState(2021);
+  const isInView = useInView(ref);
 
-  const Stats = {
-    2021: {
-      TotalOperations: 5,
-      TotalValue: 45,
-      ClientSatisfaction: 88,
-      MarketShare: 15,
-      PathHeight: 0,
-    },
-    2022: {
-      TotalOperations: 12,
-      TotalValue: 120,
-      ClientSatisfaction: 92,
-      MarketShare: 25,
-      PathHeight: 55,
-    },
-    2023: {
-      TotalOperations: 18,
-      TotalValue: 240,
-      MarketShare: 35,
-      ClientSatisfaction: 94,
-      PathHeight: 105,
-    },
-    2024: {
-      TotalOperations: 25,
-      TotalValue: 380,
-      ClientSatisfaction: 96,
-      MarketShare: 45,
-      PathHeight: 160,
-    },
-  };
+  const finalStats = useMemo(
+    () => ({
+      monthly: {
+        TotalRevenue: 45,
+        TotalOperations: 2,
+        ClientSatisfaction: 98,
+        YearsExperience: 16,
+        MarketShare: 25,
+      },
+      yearly: {
+        TotalRevenue: 380,
+        TotalOperations: 25,
+        ClientSatisfaction: 96,
+        YearsExperience: 16,
+        MarketShare: 45,
+      },
+    }),
+    [],
+  );
 
-  const years = Object.keys(Stats).map(Number);
+  useEffect(() => {
+    if (isInView) {
+      setStats(finalStats);
+    }
+  }, [isInView, finalStats]);
 
   return (
     <ErrorBoundary fallback={<div className="min-h-[65vh] flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
       <section className="py-32 bg-background">
-        <div className="container flex flex-col md:flex-row">
-          <div className="z-10 md:flex-1">
-            <div className="inline-flex items-center px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium mb-8">
-              Líderes en M&A desde 2008
-            </div>
-            
-            <h1 className="font-bold max-w-xl text-5xl font-medium tracking-tighter md:text-6xl text-foreground">
-              Asesórate para vender tu empresa con el máximo valor
-            </h1>
-            <p className="mt-4 max-w-xl text-muted-foreground">
-              Maximizamos el valor de tu empresa con estrategias probadas en más de 20 operaciones exitosas. 
-              Nuestro enfoque personalizado garantiza los mejores resultados en cada transacción.
-            </p>
-            <div className="my-10 flex gap-4">
+        <div className="container flex justify-center">
+          <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
+            <div className="w-full lg:w-1/3">
+              <div className="inline-flex items-center px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium mb-8">
+                Líderes en M&A desde 2008
+              </div>
+              
+              <h1 className="w-full font-bold text-5xl font-medium tracking-tighter md:text-6xl text-foreground">
+                No solo hablamos, entregamos resultados
+              </h1>
+              
+              <p className="my-4 text-lg tracking-tight text-muted-foreground">
+                Maximizamos el valor de tu empresa con estrategias probadas y un enfoque personalizado 
+                que garantiza los mejores resultados en cada transacción M&A.
+              </p>
+              
               <Button
                 variant="secondary"
-                className="group text-md flex w-fit items-center justify-center gap-2 rounded-full px-6 py-3 tracking-tight"
-              >
-                <span>Ver Casos de Éxito</span>
-                <ArrowRight className="size-4 -rotate-45 transition-all ease-out group-hover:ml-3 group-hover:rotate-0" />
-              </Button>
-              <Button
-                variant="default"
-                className="group text-md flex w-fit items-center justify-center gap-2 rounded-full px-6 py-3 tracking-tight bg-[#ff6b00] hover:bg-[#e55a00]"
+                className="group text-md mt-10 flex w-fit items-center justify-center gap-2 rounded-full px-6 py-3 tracking-tight shadow-none"
               >
                 <span>Solicita Consultoría Gratuita</span>
                 <ArrowRight className="size-4 -rotate-45 transition-all ease-out group-hover:ml-3 group-hover:rotate-0" />
               </Button>
+              
+              <div className="mt-10 lg:w-[115%]">
+                <Graph />
+              </div>
             </div>
-            <div
-              ref={ref}
-              className="mt-12 flex max-w-3xl flex-col items-end bg-background md:mt-32 xl:bg-transparent"
-            >
-              <div className="mt-auto mb-10 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-                <div className="w-full text-left">
-                  <h2 className="text-4xl font-medium lg:text-5xl text-foreground">
+            
+            <div ref={ref} className="flex w-full flex-col items-end lg:w-1/2">
+              <h1 className="font-bold text-6xl leading-tight lg:text-8xl text-foreground">
+                <NumberFlow
+                  value={
+                    showMonthlyStats
+                      ? stats.monthly.TotalRevenue
+                      : stats.yearly.TotalRevenue
+                  }
+                  suffix="M€"
+                  className="font-bold"
+                />
+              </h1>
+              
+              <div className="mb-6 flex flex-col items-center justify-center gap-6 lg:flex-row lg:gap-17">
+                <p className="text-muted-foreground">Valor gestionado este año</p>
+                <Button
+                  variant="secondary"
+                  className="group text-md flex w-fit items-center justify-center gap-2 rounded-full px-6 py-3 tracking-tight shadow-none transition-all duration-300 ease-out active:scale-95"
+                  onClick={() => setShowMonthlyStats(!showMonthlyStats)}
+                >
+                  <span>Ver Stats {showMonthlyStats ? 'Anuales' : 'Mensuales'}</span>
+                  <RefreshCcw className="size-4 transition-all ease-out group-hover:rotate-180" />
+                </Button>
+              </div>
+              
+              <div className="mt-auto mb-10 grid w-full grid-cols-2 gap-14">
+                <div className="text-left">
+                  <h2 className="text-4xl font-medium lg:text-6xl text-foreground">
                     <NumberFlow
-                      value={Stats[selectedYear as keyof typeof Stats].TotalOperations}
+                      value={
+                        showMonthlyStats
+                          ? stats.monthly.TotalOperations
+                          : stats.yearly.TotalOperations
+                      }
                       suffix="+"
                     />
                   </h2>
-                  <p className="text-sm whitespace-pre text-muted-foreground">
-                    Operaciones Cerradas
-                  </p>
+                  <p className="text-muted-foreground"> Operaciones Completadas </p>
                 </div>
-                <div className="w-full text-left">
-                  <h2 className="text-4xl font-medium lg:text-5xl text-foreground">
+                
+                <div className="text-right">
+                  <h2 className="text-4xl font-medium lg:text-6xl text-foreground">
                     <NumberFlow
-                      value={Stats[selectedYear as keyof typeof Stats].TotalValue}
-                      suffix="M€"
-                    />
-                  </h2>
-                  <p className="text-sm whitespace-pre text-muted-foreground">
-                    Valor Agregado
-                  </p>
-                </div>
-                <div className="w-full text-left">
-                  <h2 className="text-4xl font-medium lg:text-5xl text-foreground">
-                    <NumberFlow
-                      value={Stats[selectedYear as keyof typeof Stats].ClientSatisfaction}
+                      value={
+                        showMonthlyStats
+                          ? stats.monthly.ClientSatisfaction
+                          : stats.yearly.ClientSatisfaction
+                      }
                       suffix="%"
                     />
                   </h2>
-                  <p className="text-sm whitespace-pre text-muted-foreground">
-                    Satisfacción Cliente
-                  </p>
+                  <p className="text-muted-foreground"> Satisfacción Cliente </p>
                 </div>
-                <div ref={IllustrationRef} className="w-full text-left">
-                  <h2 className="text-4xl font-medium lg:text-5xl text-foreground">
+                
+                <div className="text-left">
+                  <h2 className="text-4xl font-medium lg:text-6xl text-foreground">
                     <NumberFlow
-                      value={Stats[selectedYear as keyof typeof Stats].MarketShare}
+                      value={
+                        showMonthlyStats
+                          ? stats.monthly.YearsExperience
+                          : stats.yearly.YearsExperience
+                      }
+                    />
+                  </h2>
+                  <p className="text-muted-foreground"> Años de Experiencia </p>
+                </div>
+                
+                <div className="text-right">
+                  <h2 className="text-4xl font-medium lg:text-6xl text-foreground">
+                    <NumberFlow
+                      value={
+                        showMonthlyStats
+                          ? stats.monthly.MarketShare
+                          : stats.yearly.MarketShare
+                      }
                       suffix="%"
                     />
                   </h2>
-                  <p className="text-sm whitespace-pre text-muted-foreground">
-                    Cuota de Mercado
-                  </p>
+                  <p className="text-muted-foreground"> Cuota de Mercado </p>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="relative flex w-fit flex-row flex-wrap gap-2 md:mt-42 md:flex-col">
-            {years.map((year) => (
-              <div key={year} className="group">
-                <button
-                  onClick={() => setSelectedYear(year)}
-                  className={`relative rounded-full px-4 py-1 text-sm transition-all ease-out ${
-                    selectedYear === year
-                      ? "bg-primary text-primary-foreground md:-translate-x-8"
-                      : "bg-muted/70 group-hover:-translate-x-4 group-hover:bg-muted"
-                  }`}
-                >
-                  {year}
-                </button>
-              </div>
-            ))}
-            <LinkIllustration
-              className="absolute bottom-9 -left-14 hidden -translate-x-full -translate-y-full text-[#ff6b00] md:block"
-              PathHeight={Stats[selectedYear as keyof typeof Stats].PathHeight}
-            />
           </div>
         </div>
       </section>
@@ -157,35 +178,52 @@ const Hero = () => {
   );
 };
 
-const LinkIllustration = ({ className = "", PathHeight = 0 }) => {
+function Graph() {
   return (
-    <svg
-      width="280"
-      height="124"
-      viewBox="0 0 412 178"
-      overflow="visible"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <motion.path
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1 }}
-        key={PathHeight}
-        d={`M408.308 ${PathHeight}H294L114.965 274H1`}
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <motion.path
-        d={`M408.308 ${PathHeight}H294L114.965 274H1`}
-        stroke="black"
-        strokeWidth="1.5"
-        opacity="0.1"
-      />
-      <circle cx="408.309" cy={PathHeight} r="5" fill="currentColor" />
-      <circle cx="2" cy="274" r="5" fill="currentColor" />
-    </svg>
+    <div className="wrapper">
+      <motion.svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 644 388"
+        initial={{
+          clipPath: "inset(0px 100% 0px 0px)",
+        }}
+        animate={{
+          clipPath: "inset(0px 0% 0px 0px)",
+        }}
+        transition={{
+          duration: 1,
+          type: "spring",
+          damping: 18,
+        }}
+      >
+        <g clipPath="url(#grad)">
+          <path
+            d="M1 118.5C1 118.5 83.308 102.999 114.735 89.4998C146.162 76.0008 189.504 87.7868 235.952 77.4998C273.548 69.1718 294.469 62.4938 329.733 46.9998C409.879 11.7848 452.946 30.9998 483.874 22.4998C514.802 13.9998 635.97 0.84884 644 1.49984"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2"
+          />
+          <path
+            d="M113.912 89.4888C82.437 102.988 1 118.487 1 118.487V438.477H644V1.49977C635.957 0.849773 514.601 13.9988 483.625 22.4978C452.649 30.9958 409.515 11.7838 329.245 46.9938C293.926 62.4868 272.973 69.1638 235.318 77.4908C188.798 87.7768 145.388 75.9908 113.912 89.4888Z"
+            fill="url(#grad)"
+          />
+        </g>
+        <defs>
+          <linearGradient
+            id="grad"
+            x1="321.5"
+            y1="0.476773"
+            x2="321.5"
+            y2="387.477"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="hsl(var(--primary))" stopOpacity="0.4" />
+            <stop offset="1" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      </motion.svg>
+    </div>
   );
-};
+}
+
 export default Hero;
