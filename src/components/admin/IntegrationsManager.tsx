@@ -1,64 +1,47 @@
 
-import React, { useState } from 'react';
-import { Tabs } from '@/components/ui/tabs';
+import React from 'react';
 import { useIntegrationsData } from '@/hooks/useIntegrationsData';
+import { useToast } from '@/hooks/use-toast';
 import IntegrationsHeader from './integrations/IntegrationsHeader';
-import IntegrationsQuickStats from './integrations/IntegrationsQuickStats';
-import IntegrationsTabsNavigation from './integrations/IntegrationsTabsNavigation';
-import IntegrationsTabsContent from './integrations/IntegrationsTabsContent';
+import IntegrationsSimpleTabs from './integrations/IntegrationsSimpleTabs';
+import IntegrationsStatusList from './integrations/IntegrationsStatusList';
 
 const IntegrationsManager = () => {
   const {
-    apolloCompanies,
-    apolloContacts,
-    adConversions,
-    linkedinData,
-    touchpoints,
-    integrationLogs,
     integrationConfigs,
     metrics,
     isLoading,
-    enrichCompanyWithApollo,
-    enrichContactsForCompany,
     updateIntegrationConfig
   } = useIntegrationsData();
+  
+  const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const handleTestConnection = async (configId: string) => {
+    toast({
+      title: "Test de Conexión",
+      description: "Probando conexión... Esta funcionalidad estará disponible próximamente.",
+    });
+  };
+
+  const handleConfigure = async (configId: string) => {
+    toast({
+      title: "Configuración",
+      description: "Panel de configuración próximamente disponible.",
+    });
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <IntegrationsHeader isLoading={isLoading} />
 
-      <IntegrationsQuickStats
-        apolloCompanies={apolloCompanies}
-        apolloContacts={apolloContacts}
-        adConversions={adConversions}
-        linkedinData={linkedinData}
-        metrics={metrics}
-        isLoading={isLoading}
-      />
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <IntegrationsTabsNavigation 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
-
-        <IntegrationsTabsContent
-          activeTab={activeTab}
-          apolloCompanies={apolloCompanies}
-          apolloContacts={apolloContacts}
-          adConversions={adConversions}
-          touchpoints={touchpoints}
-          integrationLogs={integrationLogs}
+      <IntegrationsSimpleTabs>
+        <IntegrationsStatusList
           integrationConfigs={integrationConfigs}
           metrics={metrics}
-          isLoading={isLoading}
-          enrichCompanyWithApollo={enrichCompanyWithApollo}
-          enrichContactsForCompany={enrichContactsForCompany}
-          updateIntegrationConfig={updateIntegrationConfig}
+          onTestConnection={handleTestConnection}
+          onConfigure={handleConfigure}
         />
-      </Tabs>
+      </IntegrationsSimpleTabs>
     </div>
   );
 };
