@@ -7,40 +7,71 @@
 
 @layer base {
   :root {
-    /* ActiveCampaign inspired color scheme */
+    /* Modern professional color scheme */
     --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    --foreground: 215 27% 23%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 215 27% 23%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 215 27% 23%;
 
-    /* ActiveCampaign blue primary */
-    --primary: 213 93% 67%;
+    /* Modern primary blue with better contrast */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 221 83% 48%;
 
-    /* Subtle grays */
-    --secondary: 210 40% 98%;
-    --secondary-foreground: 215 16% 47%;
+    /* Enhanced gray scale */
+    --secondary: 210 16% 98%;
+    --secondary-foreground: 215 20% 45%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 15% 96%;
+    --muted-foreground: 215 16% 50%;
 
-    --accent: 210 40% 98%;
-    --accent-foreground: 215 25% 27%;
+    --accent: 210 16% 98%;
+    --accent-foreground: 215 27% 23%;
 
-    /* Warning/danger states */
-    --destructive: 0 84% 60%;
+    /* Status colors */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
+    
+    --success: 142 69% 44%;
+    --success-foreground: 0 0% 98%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
 
-    /* Borders and inputs */
-    --border: 214 31% 91%;
-    --input: 214 31% 91%;
-    --ring: 213 93% 67%;
+    /* Enhanced borders and inputs */
+    --border: 214 20% 89%;
+    --input: 214 20% 89%;
+    --ring: 221 83% 53%;
 
-    --radius: 6px;
+    /* Modern radius system */
+    --radius: 8px;
+    --radius-sm: 6px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 48%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(210 16% 98%) 0%, hsl(210 15% 96%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(221 83% 53% / 0.1) 0%, hsl(221 83% 48% / 0.05) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(215 27% 23% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(215 27% 23% / 0.1), 0 2px 4px -1px hsl(215 27% 23% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(215 27% 23% / 0.1), 0 4px 6px -2px hsl(215 27% 23% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(215 27% 23% / 0.1), 0 10px 10px -5px hsl(215 27% 23% / 0.04);
+
+    /* Spacing system */
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
 
     /* Modern sidebar colors - Clean White theme */
     --sidebar-background: 0 0% 100%;
@@ -81,28 +112,45 @@
 }
 
 @layer components {
-  /* Modern admin components */
+  /* Enhanced admin components */
   .admin-card {
-    @apply bg-card border border-border rounded-lg p-6 shadow-sm 
-           transition-all duration-200 ease-out hover:shadow-md;
+    @apply bg-card border border-border rounded-lg p-6 
+           shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1),0_1px_2px_0_hsl(215_27%_23%_/_0.06)]
+           transition-all duration-300 ease-out 
+           hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1),0_2px_4px_-1px_hsl(215_27%_23%_/_0.06)]
+           hover:-translate-y-1;
   }
 
   .admin-input {
-    @apply bg-background border border-input rounded-md px-3 py-2 text-sm
+    @apply bg-background border border-input rounded-lg px-4 py-3 text-sm
+           transition-all duration-200 ease-out
            focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+           focus:shadow-[0_0_0_3px_hsl(221_83%_53%_/_0.1)]
            placeholder:text-muted-foreground;
   }
 
   .admin-button-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 
-           rounded-md px-4 py-2 text-sm font-medium transition-colors
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    @apply bg-primary text-primary-foreground 
+           hover:bg-[hsl(var(--primary-hover))]
+           rounded-lg px-6 py-3 text-sm font-semibold 
+           transition-all duration-200 ease-out
+           shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1)]
+           hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1)]
+           hover:-translate-y-0.5
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:ring-offset-2;
   }
 
   .admin-button-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80
-           border border-border rounded-md px-4 py-2 text-sm font-medium 
-           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    @apply bg-secondary text-secondary-foreground 
+           hover:bg-secondary/80
+           border border-border rounded-lg px-6 py-3 text-sm font-medium 
+           transition-all duration-200 ease-out
+           shadow-[0_1px_2px_0_hsl(215_27%_23%_/_0.05)]
+           hover:shadow-[0_2px_4px_0_hsl(215_27%_23%_/_0.1)]
+           hover:-translate-y-0.5
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:ring-offset-2;
   }
 
   /* Legacy components for backward compatibility */
