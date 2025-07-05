@@ -12,167 +12,150 @@ export const EnhancedHeroSection = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-24 bg-gradient-to-br from-background via-muted/30 to-primary/5 overflow-hidden">
-      {/* Enhanced background elements */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSJoc2woMjE1IDI3JSAyMyUgLyAwLjA1KSIvPgo8L3N2Zz4=')] opacity-30"></div>
-      <div className="absolute top-20 right-20 w-80 h-80 bg-primary/8 rounded-full blur-3xl animate-bounce-gentle"></div>
-      <div className="absolute bottom-20 left-20 w-96 h-96 bg-accent/8 rounded-full blur-3xl animate-bounce-gentle delay-1000"></div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+    <section className="pt-32 pb-20 bg-white min-h-screen flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             {/* Content */}
-            <div className="lg:col-span-7 animate-fade-in-up">
-              <Badge variant="outline" className="mb-8 text-sm flex items-center gap-2 w-fit border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
-                <Star className="w-4 h-4 fill-primary text-primary" />
+            <div className="lg:col-span-7">
+              <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-8">
+                <Star className="w-4 h-4 mr-2" />
                 Programa Exclusivo
-              </Badge>
+              </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-10 leading-[1.1] tracking-tight">
-                Únete al equipo de
-                <span className="text-primary block mt-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                  expertos en M&A
-                </span>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-8 leading-tight">
+                Únete al equipo de expertos en M&A
               </h1>
               
-              <p className="text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl font-medium">
+              <p className="text-lg text-gray-600 mb-12 leading-relaxed max-w-2xl">
                 Forma parte de nuestra red de profesionales especializados. 
                 Trabaja en transacciones de alto nivel con la flexibilidad 
                 que buscas y el respaldo de 15 años de experiencia.
               </p>
 
-              {/* Key benefits */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-14">
-                <div className="flex items-start space-x-4 group">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-300">
-                    <Trophy className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2 text-lg">Proyectos Premium</h3>
-                    <p className="text-muted-foreground leading-relaxed">Transacciones de €5M-€100M+</p>
-                  </div>
+              {/* Stats Row */}
+              <div className="grid grid-cols-3 gap-8 mb-12 py-8">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-black mb-2">€5M-€100M+</div>
+                  <div className="text-sm text-gray-600">Proyectos Premium</div>
                 </div>
-                
-                <div className="flex items-start space-x-4 group">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-300">
-                    <TrendingUp className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2 text-lg">Crecimiento Profesional</h3>
-                    <p className="text-muted-foreground leading-relaxed">Mentoría y desarrollo continuo</p>
-                  </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-black mb-2">50+</div>
+                  <div className="text-sm text-gray-600">Colaboradores</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-black mb-2">95%</div>
+                  <div className="text-sm text-gray-600">Satisfacción</div>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-6">
                 <Button 
-                  size="lg"
-                  className="text-lg px-10 py-4 h-auto shadow-lg hover:shadow-xl group"
+                  className="bg-black text-white hover:bg-gray-900 px-8 py-3 rounded-lg font-medium"
                   onClick={scrollToForm}
                 >
                   Aplicar Ahora
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 
                 <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="text-lg px-10 py-4 h-auto border-primary/20 text-primary hover:bg-primary/5"
+                  className="bg-white text-black border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out px-8 py-3"
                 >
                   Ver Requisitos
                 </Button>
               </div>
             </div>
 
-            {/* Enhanced Stats Dashboard */}
-            <div className="lg:col-span-5 animate-scale-in delay-300">
+            {/* Stats Dashboard */}
+            <div className="lg:col-span-5">
               <div className="relative">
                 {/* Main dashboard card */}
-                <div className="bg-card border border-border rounded-2xl shadow-[0_20px_25px_-5px_hsl(215_27%_23%_/_0.1)] overflow-hidden backdrop-blur-sm hover:shadow-[0_25px_30px_-5px_hsl(215_27%_23%_/_0.15)] transition-all duration-300">
-                  <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-8">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="bg-gray-900 text-white p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-xl font-bold mb-2">Capittal Collaborators</h3>
-                        <p className="text-primary-foreground/90 text-sm font-medium">Network Dashboard</p>
+                        <h3 className="text-lg font-semibold mb-2">Capittal Collaborators</h3>
+                        <p className="text-gray-300 text-sm">Network Dashboard</p>
                       </div>
-                      <div className="w-12 h-12 bg-primary-foreground/10 rounded-xl flex items-center justify-center">
-                        <Users className="w-6 h-6 text-primary-foreground" />
+                      <div className="flex items-center space-x-2">
+                        <Users className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
                   
-                  {/* Enhanced stats grid */}
-                  <div className="p-8">
-                    <div className="grid grid-cols-2 gap-8 mb-8">
-                      <div className="text-center group">
-                        <div className="text-4xl font-bold text-foreground mb-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent group-hover:scale-110 transition-transform">50+</div>
-                        <div className="text-sm text-muted-foreground font-medium">Colaboradores Activos</div>
+                  {/* Stats grid */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-black mb-2">50+</div>
+                        <div className="text-sm text-gray-600">Colaboradores Activos</div>
                       </div>
-                      <div className="text-center group">
-                        <div className="text-4xl font-bold text-foreground mb-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent group-hover:scale-110 transition-transform">€1.2B</div>
-                        <div className="text-sm text-muted-foreground font-medium">Valor Gestionado</div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-black mb-2">€1.2B</div>
+                        <div className="text-sm text-gray-600">Valor Gestionado</div>
                       </div>
                     </div>
 
-                    {/* Enhanced recent activity */}
-                    <div className="space-y-5">
-                      <h4 className="font-semibold text-foreground mb-4">Actividad Reciente</h4>
+                    {/* Recent activity */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900 mb-4">Actividad Reciente</h4>
                       
-                      <div className="flex items-center justify-between py-4 px-5 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors group">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-3 h-3 bg-success rounded-full shadow-sm"></div>
-                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">TechCorp Valuation</span>
+                      <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="font-medium text-gray-900">TechCorp Valuation</span>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-bold text-foreground">€25M</div>
-                          <div className="text-xs text-success font-medium">Completado</div>
+                          <div className="font-bold text-gray-900">€25M</div>
+                          <div className="text-sm text-green-600">Completado</div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between py-4 px-5 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors group">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-sm"></div>
-                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Industrial M&A</span>
+                      <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="font-medium text-gray-900">Industrial M&A</span>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-bold text-foreground">€45M</div>
-                          <div className="text-xs text-primary font-medium">En Progreso</div>
+                          <div className="font-bold text-gray-900">€45M</div>
+                          <div className="text-sm text-blue-600">En Progreso</div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between py-4 px-5 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors group">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-3 h-3 bg-warning rounded-full shadow-sm"></div>
-                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Retail DD</span>
+                      <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-black rounded-full"></div>
+                          <span className="font-medium text-gray-900">Retail DD</span>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-bold text-foreground">€18M</div>
-                          <div className="text-xs text-warning font-medium">Iniciado</div>
+                          <div className="font-bold text-gray-900">€18M</div>
+                          <div className="text-sm text-black">Iniciado</div>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="mt-6 pt-4 border-t border-border">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Proyectos Q4 2024</span>
-                        <span className="font-bold text-foreground">23 activos</span>
+                    <div className="mt-6 pt-6">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Proyectos Q4 2024</span>
+                        <span className="font-bold text-gray-900">23 activos</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                {/* Floating badges */}
-                <div className="absolute -top-4 -right-4 bg-accent border border-border rounded-xl p-3 shadow-lg animate-pulse">
+                {/* Floating Stats */}
+                <div className="absolute -top-4 -right-4 bg-black text-white rounded-lg p-4 shadow-lg">
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <div className="text-sm font-semibold text-foreground">+12 nuevos</div>
+                    <div>
+                      <div className="font-bold">+12</div>
+                      <div className="text-xs text-gray-300">Nuevos</div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-xl p-3 shadow-lg">
+                <div className="absolute -bottom-4 -left-4 bg-white rounded-lg p-4 shadow-lg">
                   <div className="text-center">
-                    <div className="text-lg font-bold text-primary">95%</div>
-                    <div className="text-xs text-muted-foreground">Satisfacción</div>
+                    <div className="text-lg font-bold text-gray-900">95%</div>
+                    <div className="text-xs text-gray-500">Satisfacción</div>
                   </div>
                 </div>
               </div>

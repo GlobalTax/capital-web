@@ -42,97 +42,91 @@ const testimonials = [
 
 export const TestimonialsSection = () => {
   return (
-    <section className="py-20 bg-muted/30">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4">
-              Testimonios
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Lo que dicen nuestros colaboradores
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Profesionales de primer nivel que han encontrado en Capittal la plataforma 
-              perfecta para desarrollar su carrera en M&A.
-            </p>
-          </div>
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+            Lo que dicen nuestros colaboradores
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Profesionales de primer nivel que han encontrado en Capittal la plataforma 
+            perfecta para desarrollar su carrera en M&A.
+          </p>
+        </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial) => (
-              <Card key={testimonial.id} className="admin-card group hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-8">
-                  {/* Rating */}
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className="w-4 h-4 fill-yellow-400 text-yellow-400" 
-                      />
-                    ))}
-                  </div>
+              <div key={testimonial.id} className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                {/* Rating */}
+                <div className="flex items-center mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className="w-4 h-4 fill-yellow-400 text-yellow-400" 
+                    />
+                  ))}
+                </div>
 
-                  {/* Quote */}
-                  <div className="relative mb-6">
-                    <Quote className="w-8 h-8 text-primary/20 absolute -top-2 -left-1" />
-                    <p className="text-muted-foreground leading-relaxed pl-6">
-                      "{testimonial.content}"
+                {/* Quote */}
+                <div className="relative mb-6">
+                  <Quote className="w-6 h-6 text-gray-300 absolute -top-1 -left-1" />
+                  <p className="text-gray-600 leading-relaxed pl-4">
+                    "{testimonial.content}"
+                  </p>
+                </div>
+
+                {/* Author */}
+                <div className="flex items-center space-x-4">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                    <AvatarFallback className="bg-black text-white">
+                      {testimonial.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-black">
+                      {testimonial.name}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {testimonial.role}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {testimonial.company}
                     </p>
                   </div>
+                </div>
 
-                  {/* Author */}
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {testimonial.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground">
-                        {testimonial.name}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {testimonial.role}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {testimonial.company}
-                      </p>
-                    </div>
+                {/* Badges */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-300">
+                  <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    {testimonial.sector}
                   </div>
-
-                  {/* Badges */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                    <Badge variant="secondary" className="text-xs">
-                      {testimonial.sector}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Desde {testimonial.joinedYear}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                  <span className="text-xs text-gray-500">
+                    Desde {testimonial.joinedYear}
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-border">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-gray-300">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">50+</div>
-              <div className="text-sm text-muted-foreground">Colaboradores Activos</div>
+              <div className="text-3xl font-bold text-black mb-2">50+</div>
+              <div className="text-gray-600 font-medium text-base">Colaboradores Activos</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">95%</div>
-              <div className="text-sm text-muted-foreground">Satisfacción</div>
+              <div className="text-3xl font-bold text-black mb-2">95%</div>
+              <div className="text-gray-600 font-medium text-base">Satisfacción</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">€500M+</div>
-              <div className="text-sm text-muted-foreground">Valor Gestionado</div>
+              <div className="text-3xl font-bold text-black mb-2">€500M+</div>
+              <div className="text-gray-600 font-medium text-base">Valor Gestionado</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">15</div>
-              <div className="text-sm text-muted-foreground">Años Experiencia</div>
+              <div className="text-3xl font-bold text-black mb-2">15</div>
+              <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
             </div>
           </div>
         </div>
