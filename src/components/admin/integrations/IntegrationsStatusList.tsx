@@ -55,7 +55,7 @@ const IntegrationsStatusList = ({
 
   const getStatusBadge = (isActive: boolean, hasError?: boolean) => {
     if (hasError) return <Badge variant="destructive">Error</Badge>;
-    if (isActive) return <Badge variant="success">Activo</Badge>;
+    if (isActive) return <Badge className="bg-success text-success-foreground">Activo</Badge>;
     return <Badge variant="secondary">Inactivo</Badge>;
   };
 
@@ -77,72 +77,61 @@ const IntegrationsStatusList = ({
     }
   };
 
-  // Usar datos de la base de datos o fallback si están vacíos
-  const allIntegrations = integrationConfigs.length > 0 ? integrationConfigs : [
+  // Integraciones predefinidas que siempre mostramos
+  const defaultIntegrations = [
     {
-      id: 'fallback-resend',
+      id: 'resend',
       integration_name: 'resend',
       is_active: false,
       last_sync: null,
-      sync_frequency_minutes: 0,
-      config_data: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      sync_frequency_minutes: 60
     },
     {
-      id: 'fallback-apollo', 
+      id: 'apollo',
       integration_name: 'apollo',
       is_active: true,
       last_sync: new Date().toISOString(),
-      sync_frequency_minutes: 30,
-      config_data: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      sync_frequency_minutes: 30
     },
     {
-      id: 'fallback-google_ads',
-      integration_name: 'google_ads', 
+      id: 'google_ads',
+      integration_name: 'google_ads',
       is_active: true,
       last_sync: new Date(Date.now() - 3600000).toISOString(),
-      sync_frequency_minutes: 60,
-      config_data: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      sync_frequency_minutes: 60
     },
     {
-      id: 'fallback-webhooks',
+      id: 'webhooks',
       integration_name: 'webhooks',
       is_active: false,
       last_sync: null,
-      sync_frequency_minutes: 0,
-      config_data: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      sync_frequency_minutes: 0
     }
   ];
 
+  // Combinar integraciones por defecto con las de la base de datos
+  const allIntegrations = [...defaultIntegrations, ...integrationConfigs.filter(
+    config => !defaultIntegrations.some(def => def.integration_name === config.integration_name)
+  )];
+
   return (
-    <div className="space-y-[var(--space-md)] animate-fade-in">
-      {allIntegrations.map((integration, index) => {
+    <div className="space-y-4">
+      {allIntegrations.map((integration) => {
         const IconComponent = getIntegrationIcon(integration.integration_name);
         const hasError = false; // TODO: Implement error detection
         
         return (
-          <Card 
-            key={integration.id} 
-            className="border border-border rounded-lg transition-all duration-300 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <CardContent className="p-[var(--space-lg)]">
+          <Card key={integration.id} className="border border-border">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-[var(--space-md)]">
-                  <div className="flex items-center space-x-[var(--space-sm)]">
-                    <div className="p-[var(--space-sm)] rounded-lg bg-accent transition-colors duration-200 hover:bg-accent/80">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-accent">
                       <IconComponent className="w-6 h-6 text-accent-foreground" />
                     </div>
                     <div>
                       <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-semibold text-foreground capitalize">
+                        <h3 className="font-medium text-foreground capitalize">
                           {integration.integration_name.replace('_', ' ')}
                         </h3>
                         {getStatusIcon(integration.is_active, hasError)}
@@ -159,13 +148,12 @@ const IntegrationsStatusList = ({
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-[var(--space-sm)]">
+                <div className="flex items-center space-x-3">
                   {getStatusBadge(integration.is_active, hasError)}
                   <div className="flex space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5"
                       onClick={() => onTestConnection(integration.id)}
                     >
                       Test Connection
@@ -173,7 +161,6 @@ const IntegrationsStatusList = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5"
                       onClick={() => onConfigure(integration.id)}
                     >
                       <Settings className="w-4 h-4" />

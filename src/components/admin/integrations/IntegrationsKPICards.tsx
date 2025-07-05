@@ -72,51 +72,43 @@ export const IntegrationsKPICards = ({ metrics, isLoading }: IntegrationsKPICard
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'bg-success/10 text-success border-success/20';
+        return 'bg-green-100 text-green-700';
       case 'warning':
-        return 'bg-warning/10 text-warning border-warning/20';
+        return 'bg-yellow-100 text-yellow-700';
       case 'error':
-        return 'bg-destructive/10 text-destructive border-destructive/20';
+        return 'bg-red-100 text-red-700';
       default:
-        return 'bg-primary/10 text-primary border-primary/20';
+        return 'bg-blue-100 text-blue-700';
     }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[var(--space-md)] animate-fade-in">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {cards.map((card, index) => {
         const IconComponent = card.icon;
         
         return (
-          <Card 
-            key={index} 
-            className="border border-border rounded-lg transition-all duration-300 hover:shadow-[var(--shadow-md)] hover:-translate-y-1"
-            style={{ animationDelay: `${index * 150}ms` }}
-          >
+          <Card key={index} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {card.title}
                 </CardTitle>
-                <div className="p-2 rounded-md bg-accent/50 transition-colors duration-200">
-                  <IconComponent className="w-4 h-4 text-accent-foreground" />
-                </div>
+                <IconComponent className="w-4 h-4 text-muted-foreground" />
               </div>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-foreground transition-colors duration-200">
-                    {card.value}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <div className="text-2xl font-bold">{card.value}</div>
+                  <p className="text-xs text-muted-foreground">
                     {card.description}
                   </p>
                 </div>
                 <div className="text-right">
                   <Badge 
-                    variant="outline" 
-                    className={`border ${getStatusColor(card.status)} transition-all duration-200 hover:shadow-sm`}
+                    variant="secondary" 
+                    className={getStatusColor(card.status)}
                   >
                     {card.trend}
                   </Badge>
