@@ -7,45 +7,62 @@
 
 @layer base {
   :root {
-    /* Modern professional color scheme */
-    --background: 0 0% 100%;
-    --foreground: 215 27% 23%;
+    /* Capittal Corporate Color System */
+    --color-primary: 210 100% 19%; /* #002D62 */
+    --color-bg-light: 214 100% 95%; /* #E6F1FE */
+    --color-bg-white: 0 0% 100%; /* #FFFFFF */
+    --color-accent: 25 100% 50%; /* #FF6B00 */
+    --color-accent-hover: 25 100% 40%; /* #CC5600 */
+    --color-success: 165 100% 35%; /* #00B28F */
+    --color-error: 353 77% 70%; /* #E84855 */
+    --color-text: 0 0% 20%; /* #333333 */
+    --color-text-muted: 0 0% 40%; /* #666666 */
+    --color-border: 213 20% 85%; /* #D8DEE9 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 27% 23%;
+    /* Typography System */
+    --font-size-h1: clamp(2.25rem, 4vw, 3rem);
+    --font-size-h2: 2rem;
+    --font-size-h3: 1.5rem;
+    --font-size-body: 1.125rem;
+    --line-height: 1.55;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 27% 23%;
+    /* Spacing System */
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 3rem;
+    --space-xl: 6rem;
 
-    /* Modern primary blue with better contrast */
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 221 83% 48%;
-
-    /* Enhanced gray scale */
-    --secondary: 210 16% 98%;
-    --secondary-foreground: 215 20% 45%;
-
-    --muted: 210 15% 96%;
-    --muted-foreground: 215 16% 50%;
-
-    --accent: 210 16% 98%;
-    --accent-foreground: 215 27% 23%;
-
-    /* Status colors */
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    
-    --success: 142 69% 44%;
-    --success-foreground: 0 0% 98%;
-    
+    /* Shadcn Compatible Variables */
+    --background: var(--color-bg-white);
+    --foreground: var(--color-text);
+    --card: var(--color-bg-white);
+    --card-foreground: var(--color-text);
+    --popover: var(--color-bg-white);
+    --popover-foreground: var(--color-text);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-bg-white);
+    --secondary: var(--color-bg-light);
+    --secondary-foreground: var(--color-text);
+    --muted: var(--color-bg-light);
+    --muted-foreground: var(--color-text-muted);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-bg-white);
+    --destructive: var(--color-error);
+    --destructive-foreground: var(--color-bg-white);
+    --success: var(--color-success);
+    --success-foreground: var(--color-bg-white);
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 98%;
+    --warning-foreground: var(--color-bg-white);
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--color-primary);
 
-    /* Enhanced borders and inputs */
-    --border: 214 20% 89%;
-    --input: 214 20% 89%;
-    --ring: 221 83% 53%;
+    /* Shadows System */
+    --shadow-sm: 0 1px 2px 0 hsl(var(--color-text) / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(var(--color-text) / 0.1), 0 2px 4px -1px hsl(var(--color-text) / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--color-text) / 0.1), 0 4px 6px -2px hsl(var(--color-text) / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(var(--color-text) / 0.1), 0 10px 10px -5px hsl(var(--color-text) / 0.04);
 
     /* Modern radius system */
     --radius: 8px;
@@ -53,46 +70,31 @@
     --radius-lg: 12px;
     --radius-xl: 16px;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 48%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(210 16% 98%) 0%, hsl(210 15% 96%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(221 83% 53% / 0.1) 0%, hsl(221 83% 48% / 0.05) 100%);
+    /* Gradients adapted to Capittal colors */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--color-primary)) 0%, hsl(var(--color-primary) / 0.8) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--color-bg-light)) 0%, hsl(var(--color-bg-white)) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--color-accent) / 0.1) 0%, hsl(var(--color-accent) / 0.05) 100%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 27% 23% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 27% 23% / 0.1), 0 2px 4px -1px hsl(215 27% 23% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(215 27% 23% / 0.1), 0 4px 6px -2px hsl(215 27% 23% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(215 27% 23% / 0.1), 0 10px 10px -5px hsl(215 27% 23% / 0.04);
+    /* Sidebar colors adapted to Capittal theme */
+    --sidebar-background: var(--color-bg-white);
+    --sidebar-foreground: var(--color-text);
+    --sidebar-primary: var(--color-primary);
+    --sidebar-primary-foreground: var(--color-bg-white);
+    --sidebar-accent: var(--color-bg-light);
+    --sidebar-accent-foreground: var(--color-text);
+    --sidebar-border: var(--color-border);
+    --sidebar-ring: var(--color-primary);
 
-    /* Spacing system */
-    --space-xs: 0.5rem;
-    --space-sm: 0.75rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
-    --space-3xl: 4rem;
-
-    /* Modern sidebar colors - Clean White theme */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 25% 27%;
-    --sidebar-primary: 213 93% 67%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 98%;
-    --sidebar-accent-foreground: 215 25% 27%;
-    --sidebar-border: 214 31% 91%;
-    --sidebar-ring: 213 93% 67%;
-
-    /* Custom admin panel colors */
-    --admin-header-bg: 0 0% 100%;
-    --admin-content-bg: 210 40% 98%;
-    --admin-nav-hover: 210 40% 96%;
-    --admin-border: 214 31% 91%;
-    --admin-text-primary: 215 25% 27%;
-    --admin-text-secondary: 215 16% 47%;
-    --admin-success: 142 76% 36%;
-    --admin-warning: 38 92% 50%;
-    --admin-info: 213 93% 67%;
+    /* Admin panel colors using Capittal system */
+    --admin-header-bg: var(--color-bg-white);
+    --admin-content-bg: var(--color-bg-light);
+    --admin-nav-hover: var(--color-bg-light);
+    --admin-border: var(--color-border);
+    --admin-text-primary: var(--color-text);
+    --admin-text-secondary: var(--color-text-muted);
+    --admin-success: var(--color-success);
+    --admin-warning: var(--warning);
+    --admin-info: var(--color-primary);
   }
 }
 
@@ -114,42 +116,42 @@
 @layer components {
   /* Enhanced admin components */
   .admin-card {
-    @apply bg-card border border-border rounded-lg p-6 
-           shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1),0_1px_2px_0_hsl(215_27%_23%_/_0.06)]
+    @apply bg-[hsl(var(--color-bg-white))] border border-[hsl(var(--color-border))] rounded-lg p-6 
+           shadow-[var(--shadow-md)]
            transition-all duration-300 ease-out 
-           hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1),0_2px_4px_-1px_hsl(215_27%_23%_/_0.06)]
+           hover:shadow-[var(--shadow-lg)]
            hover:-translate-y-1;
   }
 
   .admin-input {
-    @apply bg-background border border-input rounded-lg px-4 py-3 text-sm
+    @apply bg-[hsl(var(--color-bg-white))] border border-[hsl(var(--color-border))] rounded-[var(--radius-sm)] px-3 py-[0.75rem] text-sm
            transition-all duration-200 ease-out
-           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
-           focus:shadow-[0_0_0_3px_hsl(221_83%_53%_/_0.1)]
-           placeholder:text-muted-foreground;
+           focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:border-transparent
+           focus:shadow-[0_0_0_3px_hsl(var(--color-primary)/0.1)]
+           placeholder:text-[hsl(var(--color-text-muted))];
   }
 
   .admin-button-primary {
-    @apply bg-primary text-primary-foreground 
-           hover:bg-[hsl(var(--primary-hover))]
-           rounded-lg px-6 py-3 text-sm font-semibold 
+    @apply bg-[hsl(var(--color-accent))] text-white 
+           hover:bg-[hsl(var(--color-accent-hover))]
+           rounded-[var(--radius)] px-6 py-3 text-sm font-semibold 
            transition-all duration-200 ease-out
-           shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1)]
-           hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1)]
+           shadow-[var(--shadow-sm)]
+           hover:shadow-[var(--shadow-md)]
            hover:-translate-y-0.5
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-primary))]
            focus-visible:ring-offset-2;
   }
 
   .admin-button-secondary {
-    @apply bg-secondary text-secondary-foreground 
-           hover:bg-secondary/80
-           border border-border rounded-lg px-6 py-3 text-sm font-medium 
+    @apply bg-[hsl(var(--color-bg-light))] text-[hsl(var(--color-text))] 
+           hover:bg-[hsl(var(--color-bg-light))/80]
+           border border-[hsl(var(--color-border))] rounded-[var(--radius)] px-6 py-3 text-sm font-medium 
            transition-all duration-200 ease-out
-           shadow-[0_1px_2px_0_hsl(215_27%_23%_/_0.05)]
-           hover:shadow-[0_2px_4px_0_hsl(215_27%_23%_/_0.1)]
+           shadow-[var(--shadow-sm)]
+           hover:shadow-[var(--shadow-md)]
            hover:-translate-y-0.5
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-primary))]
            focus-visible:ring-offset-2;
   }
 
