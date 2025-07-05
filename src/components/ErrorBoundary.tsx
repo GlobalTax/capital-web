@@ -60,7 +60,43 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = '/admin';
+    window.location.href = '/';
+  };
+
+  getErrorType = (error: Error | null) => {
+    if (!error) return 'unknown';
+    
+    const message = error.message.toLowerCase();
+    if (message.includes('network') || message.includes('fetch')) return 'network';
+    if (message.includes('chunk') || message.includes('loading')) return 'loading';
+    if (message.includes('permission') || message.includes('unauthorized')) return 'permission';
+    return 'application';
+  };
+
+  getErrorTitle = (errorType: string) => {
+    switch (errorType) {
+      case 'network':
+        return 'Problema de Conexión';
+      case 'loading':
+        return 'Error de Carga';
+      case 'permission':
+        return 'Sin Permisos';
+      default:
+        return '¡Ups! Algo salió mal';
+    }
+  };
+
+  getErrorDescription = (errorType: string) => {
+    switch (errorType) {
+      case 'network':
+        return 'No se pudo conectar con el servidor. Verifica tu conexión a internet e inténtalo de nuevo.';
+      case 'loading':
+        return 'Hubo un problema al cargar algunos recursos. Esto puede deberse a una conexión lenta.';
+      case 'permission':
+        return 'No tienes los permisos necesarios para acceder a esta sección.';
+      default:
+        return 'Se ha producido un error inesperado en la aplicación. Nuestro equipo ha sido notificado automáticamente.';
+    }
   };
 
   render() {
@@ -70,32 +106,34 @@ class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      // Renderizar la UI de error por defecto
+      // Detectar tipo de error para mostrar fallback específico
+      const errorType = this.getErrorType(this.state.error);
+      
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
+        <div className="min-h-screen bg-background flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-card rounded-lg shadow-lg border p-8 text-center">
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
             
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              ¡Ups! Algo salió mal
+            <h1 className="text-2xl font-bold text-foreground mb-4">
+              {this.getErrorTitle(errorType)}
             </h1>
             
-            <p className="text-gray-600 mb-6">
-              Se ha producido un error inesperado en la aplicación. 
-              Nuestro equipo ha sido notificado automáticamente.
+            <p className="text-muted-foreground mb-6">
+              {this.getErrorDescription(errorType)}
             </p>
             
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 mb-6 text-left">
-                <h3 className="font-semibold text-gray-900 mb-2">Detalles del Error (Solo en desarrollo):</h3>
-                <pre className="text-xs text-gray-700 overflow-auto max-h-32">
+              <div className="bg-muted border rounded-lg p-4 mb-6 text-left">
+                <h3 className="font-semibold text-foreground mb-2">Detalles del Error (Solo en desarrollo):</h3>
+                <pre className="text-xs text-muted-foreground overflow-auto max-h-32">
                   {this.state.error.message}
-                  {this.state.errorInfo?.componentStack && (
+                  {this.state.error.stack && (
                     <div className="mt-2">
-                      <strong>Component Stack:</strong>
-                      {this.state.errorInfo.componentStack}
+                      <strong>Stack:</strong>
+                      <br />
+                      {this.state.error.stack.split('\n').slice(0, 5).join('\n')}
                     </div>
                   )}
                 </pre>
@@ -121,8 +159,8 @@ class ErrorBoundary extends Component<Props, State> {
               </Button>
             </div>
             
-            <p className="text-xs text-gray-500 mt-6">
-              ID del Error: {Date.now().toString(36)}
+            <p className="text-xs text-muted-foreground mt-6">
+              ID del Error: {Date.now().toString(36).toUpperCase()}
             </p>
           </div>
         </div>

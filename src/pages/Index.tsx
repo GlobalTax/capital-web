@@ -13,23 +13,39 @@ import Team from '@/components/Team';
 import BlogSection from '@/components/BlogSection';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import AccessibilityTools from '@/components/AccessibilityTools';
+import NotificationCenter from '@/components/NotificationCenter';
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <Hero />
-      <LogoCarousel />
-      <MarketInsights />
-      <WhyChooseCapittal />
-      <Services />
-      <CompaniesForSale />
-      <About />
-      <CaseStudies />
-      <Team />
-      <BlogSection />
-      <Contact />
+      <main role="main">
+        <Hero />
+        <LogoCarousel />
+        <MarketInsights />
+        <WhyChooseCapittal />
+        <Services />
+        <CompaniesForSale />
+        <About />
+        <CaseStudies />
+        <Team />
+        <BlogSection />
+        <Contact />
+      </main>
       <Footer />
+      
+      {/* Herramientas de accesibilidad flotantes */}
+      <AccessibilityTools />
+      <NotificationCenter className="mr-16" />
+      
+      {/* Live region para anuncios de accesibilidad */}
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        className="sr-only"
+        id="accessibility-announcements"
+      />
     </div>
   );
 };

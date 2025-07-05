@@ -7,6 +7,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
+import { PageLoadingSkeleton } from '@/components/LoadingStates';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { OfflineState } from '@/components/EmptyStates';
+import { useAccessibility } from '@/hooks/useAccessibility';
 
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
@@ -150,10 +154,106 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,
+      retry: (failureCount, error: any) => {
+        // No reintentar errores de red específicos
+        if (error?.status === 404 || error?.status === 403) return false;
+        return failureCount < 2;
+      },
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+    mutations: {
       retry: 1,
     },
   },
 });
+
+// Componente principal con manejo de red
+function AppContent() {
+  const { isOnline } = useNetworkStatus();
+  const { preferences } = useAccessibility();
+
+  if (!isOnline) {
+    return <OfflineState onRetry={() => window.location.reload()} />;
+  }
+
+  return (
+    <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
+      <Suspense fallback={<PageLoadingSkeleton />}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/admin/*" element={<Admin />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/venta-empresas" element={<VentaEmpresas />} />
+          <Route path="/compra-empresas" element={<CompraEmpresas />} />
+          <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
+          <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
+          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
+          <Route path="/casos-exito" element={<CasosExito />} />
+          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/equipo" element={<Equipo />} />
+          <Route path="/documentacion-ma" element={<DocumentacionMA />} />
+          
+          {/* Service routes */}
+          <Route path="/servicios/valoraciones" element={<Valoraciones />} />
+          <Route path="/servicios/venta-empresas" element={<VentaEmpresas />} />
+          <Route path="/servicios/due-diligence" element={<DueDiligence />} />
+          <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
+          <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
+          <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
+          
+          {/* Sector routes */}
+          <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+          <Route path="/sectores/healthcare" element={<Healthcare />} />
+          <Route path="/sectores/financial-services" element={<FinancialServices />} />
+          <Route path="/sectores/industrial" element={<Industrial />} />
+          <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
+          <Route path="/sectores/energia" element={<Energia />} />
+          <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
+          
+          {/* Resource routes */}
+          <Route path="/recursos/blog" element={<Blog />} />
+          <Route path="/recursos/case-studies" element={<CaseStudies />} />
+          <Route path="/recursos/market-reports" element={<MarketReports />} />
+          <Route path="/recursos/newsletter" element={<Newsletter />} />
+          <Route path="/recursos/webinars" element={<Webinars />} />
+          
+          {/* Landing Pages */}
+          <Route path="/landing/:slug" element={<LandingPageView />} />
+          
+          {/* Por que elegirnos routes */}
+          <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
+          <Route path="/por-que-elegirnos/experiencia" element={<Experiencia />} />
+          <Route path="/por-que-elegirnos/metodologia" element={<Metodologia />} />
+          <Route path="/por-que-elegirnos/resultados" element={<Resultados />} />
+          
+          {/* Legal routes */}
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+          <Route path="/terminos-uso" element={<TerminosUso />} />
+          <Route path="/cookies" element={<Cookies />} />
+          
+          {/* Blog post route */}
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          
+          {/* Documentacion MA routes */}
+          <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
+          <Route path="/documentacion-ma/fase1" element={<Fase1 />} />
+          <Route path="/documentacion-ma/fase2-lucha" element={<Fase2Lucha />} />
+          <Route path="/documentacion-ma/resultados" element={<Resultados2 />} />
+          <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
+          <Route path="/documentacion-ma/typography" element={<Typography />} />
+          <Route path="/documentacion-ma/spacing" element={<Spacing />} />
+          <Route path="/documentacion-ma/variables" element={<Variables />} />
+          <Route path="/documentacion-ma/customization" element={<Customization />} />
+          <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
+          
+          {/* 404 route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -163,85 +263,7 @@ function App() {
           <TooltipProvider>
             <Router>
               <LeadTrackingProvider>
-                <div className="min-h-screen bg-background font-sans antialiased">
-                  <Suspense fallback={
-                    <div className="flex items-center justify-center min-h-screen">
-                      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-                    </div>
-                  }>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/admin/*" element={<Admin />} />
-                      <Route path="/perfil" element={<Perfil />} />
-                      <Route path="/venta-empresas" element={<VentaEmpresas />} />
-                      <Route path="/compra-empresas" element={<CompraEmpresas />} />
-                      <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
-                      <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
-                      <Route path="/contacto" element={<Contacto />} />
-                      <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
-                      <Route path="/casos-exito" element={<CasosExito />} />
-                      <Route path="/nosotros" element={<Nosotros />} />
-                      <Route path="/equipo" element={<Equipo />} />
-                      <Route path="/documentacion-ma" element={<DocumentacionMA />} />
-                      
-                      {/* Service routes */}
-                      <Route path="/servicios/valoraciones" element={<Valoraciones />} />
-                      <Route path="/servicios/venta-empresas" element={<VentaEmpresas />} />
-                      <Route path="/servicios/due-diligence" element={<DueDiligence />} />
-                      <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
-                      <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
-                      <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
-                      
-                      {/* Sector routes */}
-                      <Route path="/sectores/tecnologia" element={<Tecnologia />} />
-                      <Route path="/sectores/healthcare" element={<Healthcare />} />
-                      <Route path="/sectores/financial-services" element={<FinancialServices />} />
-                      <Route path="/sectores/industrial" element={<Industrial />} />
-                      <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
-                      <Route path="/sectores/energia" element={<Energia />} />
-                      <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
-                      
-                      {/* Resource routes */}
-                      <Route path="/recursos/blog" element={<Blog />} />
-                      <Route path="/recursos/case-studies" element={<CaseStudies />} />
-                      <Route path="/recursos/market-reports" element={<MarketReports />} />
-                      <Route path="/recursos/newsletter" element={<Newsletter />} />
-                      <Route path="/recursos/webinars" element={<Webinars />} />
-                      
-                      {/* Landing Pages */}
-                      <Route path="/landing/:slug" element={<LandingPageView />} />
-                      
-                      {/* Por que elegirnos routes */}
-                      <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
-                      <Route path="/por-que-elegirnos/experiencia" element={<Experiencia />} />
-                      <Route path="/por-que-elegirnos/metodologia" element={<Metodologia />} />
-                      <Route path="/por-que-elegirnos/resultados" element={<Resultados />} />
-                      
-                      {/* Legal routes */}
-                      <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-                      <Route path="/terminos-uso" element={<TerminosUso />} />
-                      <Route path="/cookies" element={<Cookies />} />
-                      
-                      {/* Blog post route */}
-                      <Route path="/blog/:slug" element={<BlogPost />} />
-                      
-                      {/* Documentacion MA routes */}
-                      <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
-                      <Route path="/documentacion-ma/fase1" element={<Fase1 />} />
-                      <Route path="/documentacion-ma/fase2-lucha" element={<Fase2Lucha />} />
-                      <Route path="/documentacion-ma/resultados" element={<Resultados2 />} />
-                      <Route path="/documentacion-ma/conoce-equipo" element={<ConoceEquipo />} />
-                      <Route path="/documentacion-ma/typography" element={<Typography />} />
-                      <Route path="/documentacion-ma/spacing" element={<Spacing />} />
-                      <Route path="/documentacion-ma/variables" element={<Variables />} />
-                      <Route path="/documentacion-ma/customization" element={<Customization />} />
-                      <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
-                      
-                      {/* 404 route */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </div>
+                <AppContent />
                 <Toaster />
               </LeadTrackingProvider>
             </Router>
