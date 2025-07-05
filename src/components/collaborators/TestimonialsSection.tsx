@@ -54,80 +54,79 @@ export const TestimonialsSection = () => {
           </p>
         </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-                {/* Rating */}
-                <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400" 
-                    />
-                  ))}
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {testimonials.map((testimonial) => (
+            <div key={testimonial.id} className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              {/* Rating */}
+              <div className="flex items-center mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className="w-4 h-4 fill-yellow-400 text-yellow-400" 
+                  />
+                ))}
+              </div>
 
-                {/* Quote */}
-                <div className="relative mb-6">
-                  <Quote className="w-6 h-6 text-gray-300 absolute -top-1 -left-1" />
-                  <p className="text-gray-600 leading-relaxed pl-4">
-                    "{testimonial.content}"
+              {/* Quote */}
+              <div className="relative mb-6">
+                <Quote className="w-6 h-6 text-gray-300 absolute -top-1 -left-1" />
+                <p className="text-gray-600 leading-relaxed pl-4">
+                  "{testimonial.content}"
+                </p>
+              </div>
+
+              {/* Author */}
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                  <AvatarFallback className="bg-black text-white">
+                    {testimonial.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1">
+                  <h4 className="font-semibold text-black">
+                    {testimonial.name}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {testimonial.role}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {testimonial.company}
                   </p>
                 </div>
-
-                {/* Author */}
-                <div className="flex items-center space-x-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                    <AvatarFallback className="bg-black text-white">
-                      {testimonial.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-black">
-                      {testimonial.name}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {testimonial.role}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {testimonial.company}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Badges */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-300">
-                  <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {testimonial.sector}
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    Desde {testimonial.joinedYear}
-                  </span>
-                </div>
               </div>
-            ))}
-          </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-gray-300">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black mb-2">50+</div>
-              <div className="text-gray-600 font-medium text-base">Colaboradores Activos</div>
+              {/* Badges */}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-300">
+                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  {testimonial.sector}
+                </div>
+                <span className="text-xs text-gray-500">
+                  Desde {testimonial.joinedYear}
+                </span>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black mb-2">95%</div>
-              <div className="text-gray-600 font-medium text-base">Satisfacción</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black mb-2">€500M+</div>
-              <div className="text-gray-600 font-medium text-base">Valor Gestionado</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black mb-2">15</div>
-              <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
-            </div>
+          ))}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-gray-300">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-black mb-2">50+</div>
+            <div className="text-gray-600 font-medium text-base">Colaboradores Activos</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-black mb-2">95%</div>
+            <div className="text-gray-600 font-medium text-base">Satisfacción</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-black mb-2">€500M+</div>
+            <div className="text-gray-600 font-medium text-base">Valor Gestionado</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-black mb-2">15</div>
+            <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
           </div>
         </div>
       </div>

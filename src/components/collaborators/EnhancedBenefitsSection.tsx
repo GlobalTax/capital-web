@@ -102,69 +102,68 @@ export const EnhancedBenefitsSection = () => {
           </p>
         </div>
 
-          {/* Benefits Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {benefits.map((benefit, index) => {
-              const BenefitIcon = benefit.icon;
-              
-              return (
-                <div key={benefit.id} className="group">
-                  <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full flex flex-col">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <BenefitIcon className="w-6 h-6 text-black" />
-                      </div>
-                      <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {benefit.category}
-                      </div>
+        {/* Benefits Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {benefits.map((benefit, index) => {
+            const BenefitIcon = benefit.icon;
+            
+            return (
+              <div key={benefit.id} className="group">
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full flex flex-col">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <BenefitIcon className="w-6 h-6 text-black" />
                     </div>
-
-                    {/* Content */}
-                    <h3 className="text-lg font-bold text-black mb-4">
-                      {benefit.title}
-                    </h3>
-                    
-                    <p className="text-gray-600 leading-relaxed mb-6 flex-1">
-                      {benefit.description}
-                    </p>
-
-                    {/* Highlights */}
-                    <div className="space-y-3">
-                      {benefit.highlights.map((highlight, idx) => (
-                        <div key={idx} className="flex items-center text-sm text-gray-700">
-                          <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
-                          <span>{highlight}</span>
-                        </div>
-                      ))}
+                    <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {benefit.category}
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-gray-300 text-center">
-            <div>
-              <div className="text-3xl font-bold text-black mb-2">200+</div>
-              <div className="text-gray-600 font-medium text-base">Proyectos Completados</div>
-            </div>
-            
-            <div>
-              <div className="text-3xl font-bold text-black mb-2">€1.5B+</div>
-              <div className="text-gray-600 font-medium text-base">Valor Total Gestionado</div>
-            </div>
-            
-            <div>
-              <div className="text-3xl font-bold text-black mb-2">98%</div>
-              <div className="text-gray-600 font-medium text-base">Tasa de Satisfacción</div>
-            </div>
-            
-            <div>
-              <div className="text-3xl font-bold text-black mb-2">15</div>
-              <div className="text-gray-600 font-medium text-base">Años de Experiencia</div>
-            </div>
+                  {/* Content */}
+                  <h3 className="text-lg font-bold text-black mb-4">
+                    {benefit.title}
+                  </h3>
+                  
+                  <p className="text-gray-600 leading-relaxed mb-6 flex-1">
+                    {benefit.description}
+                  </p>
+
+                  {/* Highlights */}
+                  <div className="space-y-3">
+                    {benefit.highlights.map((highlight, idx) => (
+                      <div key={idx} className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
+                        <span>{highlight}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-gray-300 text-center">
+          <div>
+            <div className="text-3xl font-bold text-black mb-2">200+</div>
+            <div className="text-gray-600 font-medium text-base">Proyectos Completados</div>
+          </div>
+          
+          <div>
+            <div className="text-3xl font-bold text-black mb-2">€1.5B+</div>
+            <div className="text-gray-600 font-medium text-base">Valor Total Gestionado</div>
+          </div>
+          
+          <div>
+            <div className="text-3xl font-bold text-black mb-2">98%</div>
+            <div className="text-gray-600 font-medium text-base">Tasa de Satisfacción</div>
+          </div>
+          
+          <div>
+            <div className="text-3xl font-bold text-black mb-2">15</div>
+            <div className="text-gray-600 font-medium text-base">Años de Experiencia</div>
           </div>
         </div>
       </div>
