@@ -7,7 +7,7 @@ import LeadScoringManager from './dashboard/LeadScoringManager';
 import LeadScoringRulesManager from './dashboard/LeadScoringRulesManager';
 import AdminSettings from './AdminSettings';
 import AlertsManager from './leads/AlertsManager';
-import BlogPostsManagerV2 from './BlogPostsManagerV2';
+import BlogPostsManagerSimplified from './BlogPostsManagerSimplified';
 import CaseStudiesManager from './CaseStudiesManager';
 
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
@@ -89,7 +89,7 @@ const AdminRouter = () => {
       <Route path="/content-performance" element={<ContentPerformancePage />} />
       <Route path="/content-studio" element={<ContentStudioPage />} />
       <Route path="/design-resources" element={<DesignResourcesPage />} />
-      <Route path="/blog-v2" element={<BlogPostsManagerV2 />} />
+      <Route path="/blog-v2" element={<BlogPostsManagerSimplified />} />
       <Route path="/sector-reports" element={<SectorReportsGenerator />} />
       <Route path="/case-studies" element={<CaseStudiesManager />} />
       <Route path="/lead-magnets" element={<LeadMagnetsManager />} />
