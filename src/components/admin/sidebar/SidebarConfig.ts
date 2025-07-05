@@ -165,6 +165,19 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "🔗 INTEGRACIONES",
+    description: "Conexiones y APIs externas",
+    items: [
+      { 
+        title: "Panel Integraciones", 
+        url: "/admin/integrations", 
+        icon: Activity,
+        badge: "NEW",
+        description: "Apollo, Google Ads, LinkedIn"
+      },
+    ]
+  },
+  {
     title: "⚙️ CONFIGURACIÓN",
     description: "Configuración del sistema",
     items: [

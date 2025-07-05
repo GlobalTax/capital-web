@@ -9,13 +9,12 @@ interface IntegrationsTabsNavigationProps {
 const IntegrationsTabsNavigation = ({ activeTab, onTabChange }: IntegrationsTabsNavigationProps) => {
   const tabs = [
     { id: 'overview', label: '📊 Overview General' },
-    { id: 'apollo', label: '🚀 Apollo Companies' },
-    { id: 'contacts', label: '👥 Apollo Contacts' },
-    { id: 'ads', label: '📈 Google Ads Attribution' },
+    { id: 'apollo', label: '🤖 Apollo Intelligence' },
+    { id: 'marketing', label: '📈 Marketing Attribution' },
     { id: 'analytics', label: '📊 Analytics Avanzados' },
-    { id: 'performance', label: '⚡ Monitor Rendimiento' },
-    { id: 'testing', label: '🧪 Testing & Health' },
-    { id: 'status', label: '⚙️ Status & Logs' }
+    { id: 'automation', label: '⚡ Automatización' },
+    { id: 'config', label: '⚙️ Configuración' },
+    { id: 'logs', label: '📋 Logs & Testing' }
   ];
 
   return (
