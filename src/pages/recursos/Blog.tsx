@@ -5,15 +5,26 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { useBlogFilters } from '@/hooks/useBlogFilters';
+import BlogFilters from '@/components/blog/BlogFilters';
 import { Link } from 'react-router-dom';
 
 const Blog = () => {
   const { posts, isLoading } = useBlogPosts();
+  const {
+    filters,
+    featuredPosts,
+    regularPosts,
+    categories,
+    tags,
+    updateFilter,
+    updateSort,
+    clearFilters,
+    hasActiveFilters,
+    totalResults
+  } = useBlogFilters(posts);
   
-  // Filtrar solo posts publicados
-  const publishedPosts = posts.filter(post => post.is_published);
-  const featuredArticle = publishedPosts.find(post => post.is_featured);
-  const regularArticles = publishedPosts.filter(post => !post.is_featured);
+  const featuredArticle = featuredPosts[0] || null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -51,7 +62,7 @@ const Blog = () => {
       
       <section className="pt-32 pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
               Blog Capittal
             </h1>
@@ -60,6 +71,26 @@ const Blog = () => {
               por nuestros expertos en M&A.
             </p>
           </div>
+
+          {/* Filtros de búsqueda */}
+          <BlogFilters
+            search={filters.search}
+            category={filters.category}
+            tag={filters.tag}
+            sortBy={filters.sortBy}
+            sortOrder={filters.sortOrder}
+            categories={categories}
+            tags={tags}
+            totalResults={totalResults}
+            hasActiveFilters={hasActiveFilters}
+            onSearchChange={(search) => updateFilter('search', search)}
+            onCategoryChange={(category) => updateFilter('category', category)}
+            onTagChange={(tag) => updateFilter('tag', tag)}
+            onSortChange={(sortBy, sortOrder) => {
+              updateSort(sortBy, sortOrder);
+            }}
+            onClearFilters={clearFilters}
+          />
 
           {/* Artículo Destacado */}
           {featuredArticle && (
@@ -110,9 +141,9 @@ const Blog = () => {
           )}
 
           {/* Grid de Artículos */}
-          {regularArticles.length > 0 && (
+          {regularPosts.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {regularArticles.map((article) => (
+              {regularPosts.map((article) => (
                 <Link key={article.id} to={`/blog/${article.slug}`}>
                   <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer">
                     <div className="flex flex-col h-full">
@@ -168,12 +199,26 @@ const Blog = () => {
             </div>
           )}
 
-          {publishedPosts.length === 0 && (
+          {totalResults === 0 && !isLoading && (
             <div className="text-center py-16">
-              <h3 className="text-2xl font-bold text-black mb-4">Próximamente</h3>
-              <p className="text-gray-600 mb-8">
-                Estamos preparando contenido de valor para ti.
-              </p>
+              {hasActiveFilters ? (
+                <>
+                  <h3 className="text-2xl font-bold text-black mb-4">No se encontraron resultados</h3>
+                  <p className="text-gray-600 mb-8">
+                    Intenta ajustar los filtros de búsqueda o explorar otras categorías.
+                  </p>
+                  <Button onClick={clearFilters} variant="outline">
+                    Limpiar filtros
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-bold text-black mb-4">Próximamente</h3>
+                  <p className="text-gray-600 mb-8">
+                    Estamos preparando contenido de valor para ti.
+                  </p>
+                </>
+              )}
             </div>
           )}
 

@@ -4,15 +4,25 @@ import { useParams, Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogPostContent from '@/components/blog/BlogPostContent';
+import BlogNavigation from '@/components/blog/BlogNavigation';
+import RelatedPosts from '@/components/blog/RelatedPosts';
+import BlogBreadcrumbs from '@/components/blog/BlogBreadcrumbs';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { useBlogNavigation } from '@/hooks/useBlogNavigation';
 import { BlogPost as BlogPostType } from '@/types/blog';
 
 const BlogPost = () => {
   const { slug } = useParams();
-  const { getPostBySlug } = useBlogPosts();
+  const { posts, getPostBySlug } = useBlogPosts();
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  
+  // Navegación y posts relacionados
+  const { previousPost, nextPost, relatedPosts } = useBlogNavigation(
+    posts, 
+    slug || ''
+  );
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -78,7 +88,26 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <BlogPostContent post={post} />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32">
+        {/* Breadcrumbs */}
+        <BlogBreadcrumbs 
+          currentPage={{
+            title: post.title,
+            category: post.category
+          }} 
+        />
+        
+        <BlogPostContent post={post} />
+        
+        {/* Navegación entre posts */}
+        <BlogNavigation 
+          previousPost={previousPost} 
+          nextPost={nextPost} 
+        />
+        
+        {/* Posts relacionados */}
+        <RelatedPosts posts={relatedPosts} />
+      </div>
       <Footer />
     </div>
   );
