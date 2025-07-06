@@ -12,6 +12,7 @@ import { useBlogValidation } from '@/hooks/useBlogValidation';
 import BlogEditorContent from '@/components/admin/blog/BlogEditorContent';
 import BlogEditorSidebar from '@/components/admin/blog/BlogEditorSidebar';
 import BlogAIAssistant from '@/components/admin/blog/BlogAIAssistant';
+import ReactMarkdown from 'react-markdown';
 
 const BlogEditorPage = () => {
   const { id } = useParams();
@@ -245,10 +246,62 @@ const BlogEditorPage = () => {
             </TabsContent>
 
             <TabsContent value="preview">
-              <div className="prose prose-lg max-w-none">
-                <h1>{post.title}</h1>
-                <div className="whitespace-pre-wrap">{post.content}</div>
-              </div>
+              <article className="prose prose-lg max-w-none dark:prose-invert">
+                {/* Featured Image */}
+                {post.featured_image_url && (
+                  <div className="mb-8">
+                    <img
+                      src={post.featured_image_url}
+                      alt={post.title}
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+                
+                {/* Title and Meta */}
+                <header className="mb-8">
+                  <h1 className="mb-4">{post.title}</h1>
+                  
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                    <span>Por {post.author_name}</span>
+                    <span>•</span>
+                    <span>{post.reading_time} min de lectura</span>
+                    <span>•</span>
+                    <span className="bg-primary/10 text-primary px-2 py-1 rounded">
+                      {post.category}
+                    </span>
+                  </div>
+                  
+                  {post.excerpt && (
+                    <p className="text-lg text-muted-foreground italic border-l-4 border-primary pl-4">
+                      {post.excerpt}
+                    </p>
+                  )}
+                </header>
+
+                {/* Content */}
+                <div className="prose-content">
+                  <ReactMarkdown
+                    components={{
+                      img: ({alt, src, title}) => (
+                        <img
+                          src={src}
+                          alt={alt}
+                          title={title}
+                          className="rounded-lg shadow-md"
+                        />
+                      ),
+                      blockquote: ({children}) => (
+                        <blockquote className="border-l-4 border-primary pl-4 italic">
+                          {children}
+                        </blockquote>
+                      ),
+                    }}
+                  >
+                    {post.content}
+                  </ReactMarkdown>
+                </div>
+              </article>
             </TabsContent>
 
             <TabsContent value="seo">

@@ -4,7 +4,8 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { BlogPost } from '@/types/blog';
-import { Book, Settings, Globe } from 'lucide-react';
+import { Book, Settings, Globe, Image } from 'lucide-react';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 
 interface BlogEditorSidebarProps {
   post: BlogPost;
@@ -84,6 +85,25 @@ const BlogEditorSidebar = ({ post, updatePost, errors = {} }: BlogEditorSidebarP
               className="mt-1"
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Featured Image */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            Imagen Destacada
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ImageUploadField
+            label=""
+            value={post.featured_image_url}
+            onChange={(url) => updatePost({ featured_image_url: url })}
+            folder="blog"
+            placeholder="URL de la imagen destacada"
+          />
         </CardContent>
       </Card>
 
