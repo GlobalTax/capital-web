@@ -9,6 +9,8 @@ import RelatedPosts from '@/components/blog/RelatedPosts';
 import BlogBreadcrumbs from '@/components/blog/BlogBreadcrumbs';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogNavigation } from '@/hooks/useBlogNavigation';
+import { useBlogAnalytics } from '@/hooks/useBlogAnalytics';
+import { useBlogRSS } from '@/hooks/useBlogRSS';
 import { BlogPost as BlogPostType } from '@/types/blog';
 
 const BlogPost = () => {
@@ -23,6 +25,17 @@ const BlogPost = () => {
     posts, 
     slug || ''
   );
+
+  // Analytics y tracking
+  const { trackPostView, useScrollTracking } = useBlogAnalytics();
+  
+  // RSS y Open Graph
+  const { applyOpenGraphTags } = useBlogRSS();
+
+  // Activar tracking de scroll para este post
+  if (post) {
+    useScrollTracking(post.id, post.slug);
+  }
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -50,6 +63,12 @@ const BlogPost = () => {
               metaDescription.setAttribute('content', fetchedPost.meta_description);
             }
           }
+
+          // Aplicar Open Graph tags
+          applyOpenGraphTags(fetchedPost);
+
+          // Trackear vista del post
+          trackPostView(fetchedPost.id, fetchedPost.slug);
         } else {
           setNotFound(true);
         }

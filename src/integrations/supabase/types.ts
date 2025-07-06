@@ -392,6 +392,87 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_analytics: {
+        Row: {
+          id: string
+          ip_address: unknown | null
+          post_id: string
+          post_slug: string
+          reading_time: number | null
+          referrer: string | null
+          scroll_percentage: number | null
+          session_id: string | null
+          user_agent: string | null
+          viewed_at: string
+          visitor_id: string | null
+        }
+        Insert: {
+          id?: string
+          ip_address?: unknown | null
+          post_id: string
+          post_slug: string
+          reading_time?: number | null
+          referrer?: string | null
+          scroll_percentage?: number | null
+          session_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+          visitor_id?: string | null
+        }
+        Update: {
+          id?: string
+          ip_address?: unknown | null
+          post_id?: string
+          post_slug?: string
+          reading_time?: number | null
+          referrer?: string | null
+          scroll_percentage?: number | null
+          session_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      blog_post_metrics: {
+        Row: {
+          avg_reading_time: number | null
+          avg_scroll_percentage: number | null
+          created_at: string
+          id: string
+          last_viewed: string | null
+          post_id: string
+          post_slug: string
+          total_views: number | null
+          unique_views: number | null
+          updated_at: string
+        }
+        Insert: {
+          avg_reading_time?: number | null
+          avg_scroll_percentage?: number | null
+          created_at?: string
+          id?: string
+          last_viewed?: string | null
+          post_id: string
+          post_slug: string
+          total_views?: number | null
+          unique_views?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avg_reading_time?: number | null
+          avg_scroll_percentage?: number | null
+          created_at?: string
+          id?: string
+          last_viewed?: string | null
+          post_id?: string
+          post_slug?: string
+          total_views?: number | null
+          unique_views?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author_avatar_url: string | null
