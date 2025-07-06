@@ -8,6 +8,7 @@ import { ArrowLeft, Save, Eye, Sparkles, Loader2 } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useToast } from '@/hooks/use-toast';
+import { useBlogValidation } from '@/hooks/useBlogValidation';
 import BlogEditorContent from '@/components/admin/blog/BlogEditorContent';
 import BlogEditorSidebar from '@/components/admin/blog/BlogEditorSidebar';
 import BlogAIAssistant from '@/components/admin/blog/BlogAIAssistant';
@@ -17,6 +18,7 @@ const BlogEditorPage = () => {
   const navigate = useNavigate();
   const { posts, createPost, updatePost: updatePostHook, isLoading } = useBlogPosts();
   const { toast } = useToast();
+  const { errors, validatePost, clearErrors } = useBlogValidation();
   
   const [post, setPost] = useState<BlogPost | null>(null);
   const [saving, setSaving] = useState(false);
@@ -72,6 +74,16 @@ const BlogEditorPage = () => {
   const handleSave = async (isAutoSave = false) => {
     if (!post) return;
     
+    // Validar solo en guardado manual, no en auto-save
+    if (!isAutoSave && !validatePost(post)) {
+      toast({
+        title: "Campos requeridos",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSaving(true);
     try {
       const postData = {
@@ -89,6 +101,7 @@ const BlogEditorPage = () => {
       }
 
       setHasUnsavedChanges(false);
+      clearErrors();
       
       if (!isAutoSave) {
         toast({
@@ -219,11 +232,16 @@ const BlogEditorPage = () => {
                     meta_title: post.meta_title || e.target.value
                   })}
                   placeholder="Título del post..."
-                  className="text-3xl font-bold border-none p-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground"
+                  className={`text-3xl font-bold border-none p-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground ${
+                    errors.title ? 'border-destructive' : ''
+                  }`}
                 />
+                {errors.title && (
+                  <p className="text-sm text-destructive mt-1">{errors.title}</p>
+                )}
               </div>
 
-              <BlogEditorContent post={post} updatePost={updatePostData} />
+              <BlogEditorContent post={post} updatePost={updatePostData} errors={errors} />
             </TabsContent>
 
             <TabsContent value="preview">
@@ -260,7 +278,7 @@ const BlogEditorPage = () => {
 
         {/* Sidebar */}
         <aside className="w-80 border-l border-border bg-background">
-          <BlogEditorSidebar post={post} updatePost={updatePostData} />
+          <BlogEditorSidebar post={post} updatePost={updatePostData} errors={errors} />
         </aside>
       </div>
 

@@ -9,9 +9,13 @@ import { Book, Settings, Globe } from 'lucide-react';
 interface BlogEditorSidebarProps {
   post: BlogPost;
   updatePost: (updates: Partial<BlogPost>) => void;
+  errors?: {
+    category?: string;
+    slug?: string;
+  };
 }
 
-const BlogEditorSidebar = ({ post, updatePost }: BlogEditorSidebarProps) => {
+const BlogEditorSidebar = ({ post, updatePost, errors = {} }: BlogEditorSidebarProps) => {
   const categories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal'];
   
   const handleTagsChange = (tagsString: string) => {
@@ -31,12 +35,12 @@ const BlogEditorSidebar = ({ post, updatePost }: BlogEditorSidebarProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Categoría</label>
+            <label className="text-xs font-medium text-muted-foreground">Categoría *</label>
             <Select 
               value={post.category} 
               onValueChange={(value) => updatePost({ category: value })}
             >
-              <SelectTrigger className="mt-1">
+              <SelectTrigger className={`mt-1 ${errors.category ? 'border-destructive' : ''}`}>
                 <SelectValue placeholder="Selecciona..." />
               </SelectTrigger>
               <SelectContent>
@@ -47,6 +51,9 @@ const BlogEditorSidebar = ({ post, updatePost }: BlogEditorSidebarProps) => {
                 ))}
               </SelectContent>
             </Select>
+            {errors.category && (
+              <p className="text-xs text-destructive mt-1">{errors.category}</p>
+            )}
           </div>
 
           <div>
@@ -117,13 +124,16 @@ const BlogEditorSidebar = ({ post, updatePost }: BlogEditorSidebarProps) => {
         </CardHeader>
         <CardContent>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Slug</label>
+            <label className="text-xs font-medium text-muted-foreground">Slug *</label>
             <Input
               value={post.slug}
               onChange={(e) => updatePost({ slug: e.target.value })}
               placeholder="url-del-post"
-              className="mt-1 font-mono text-xs"
+              className={`mt-1 font-mono text-xs ${errors.slug ? 'border-destructive' : ''}`}
             />
+            {errors.slug && (
+              <p className="text-xs text-destructive mt-1">{errors.slug}</p>
+            )}
           </div>
         </CardContent>
       </Card>
