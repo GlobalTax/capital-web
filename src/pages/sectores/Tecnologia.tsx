@@ -2,6 +2,8 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AccessibilityTools from '@/components/AccessibilityTools';
+import NotificationCenter from '@/components/NotificationCenter';
 import PremiumSectorHero from '@/components/sector/PremiumSectorHero';
 import PremiumSectorStats from '@/components/sector/PremiumSectorStats';
 import PremiumSectorServices from '@/components/sector/PremiumSectorServices';
@@ -106,55 +108,67 @@ const Tecnologia = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
-      <PremiumSectorHero
-        sector="Tecnología"
-        title="Sector Tecnología"
-        description="Especialistas en M&A para empresas tecnológicas, desde startups innovadoras hasta corporaciones tech establecidas. Entendemos los modelos de negocio tecnológicos y las métricas SaaS que impulsan el valor."
-        primaryButtonText="Explorar Oportunidades Tech"
-        secondaryButtonText="Ver Casos Tech"
-        metrics={heroMetrics}
-      />
+      <main role="main">
+        <PremiumSectorHero
+          sector="Tecnología"
+          title="Sector Tecnología"
+          description="Especialistas en M&A para empresas tecnológicas, desde startups innovadoras hasta corporaciones tech establecidas. Entendemos los modelos de negocio tecnológicos y las métricas SaaS que impulsan el valor."
+          primaryButtonText="Explorar Oportunidades Tech"
+          secondaryButtonText="Ver Casos Tech"
+          metrics={heroMetrics}
+        />
 
-      <PremiumSectorStats stats={stats} />
+        <PremiumSectorStats stats={stats} />
 
-      <PremiumSectorServices
-        title="Servicios Especializados en Tech"
-        subtitle="Ofrecemos servicios específicamente diseñados para el ecosistema tecnológico, combinando expertise financiero con conocimiento técnico profundo para maximizar el valor de cada transacción."
-        services={services}
-      />
+        <PremiumSectorServices
+          title="Servicios Especializados en Tech"
+          subtitle="Ofrecemos servicios específicamente diseñados para el ecosistema tecnológico, combinando expertise financiero con conocimiento técnico profundo para maximizar el valor de cada transacción."
+          services={services}
+        />
 
-      <SectorExpertise
-        title="Experiencia en Tecnología"
-        description="Entendemos los modelos de negocio tecnológicos, métricas SaaS, escalabilidad y los desafíos únicos del sector tech. Nuestro equipo combina experiencia financiera con conocimiento técnico profundo."
-        expertiseAreas={expertiseAreas}
-        achievementTitle="Líderes en Tech M&A"
-        achievementDescription="Reconocidos como 'Top Tech M&A Advisor' por TechCrunch y Forbes por nuestro trabajo con unicornios europeos."
-        achievementDetails="Hemos asesorado más de 60 transacciones tech, incluyendo 12 exits superiores a €100M en los últimos 3 años."
-      />
+        <SectorExpertise
+          title="Experiencia en Tecnología"
+          description="Entendemos los modelos de negocio tecnológicos, métricas SaaS, escalabilidad y los desafíos únicos del sector tech. Nuestro equipo combina experiencia financiera con conocimiento técnico profundo."
+          expertiseAreas={expertiseAreas}
+          achievementTitle="Líderes en Tech M&A"
+          achievementDescription="Reconocidos como 'Top Tech M&A Advisor' por TechCrunch y Forbes por nuestro trabajo con unicornios europeos."
+          achievementDetails="Hemos asesorado más de 60 transacciones tech, incluyendo 12 exits superiores a €100M en los últimos 3 años."
+        />
 
-      <PremiumSectorCaseStudy
-        title="Transformación Digital Exitosa"
-        description="Asesoramos la venta de una plataforma SaaS española de gestión empresarial a un grupo tecnológico europeo, logrando un múltiplo excepcional y maximizando el valor para todos los stakeholders."
-        metrics={caseStudyMetrics}
-        buttonText="Ver Más Casos Tech"
-        companyName="TechCorp España"
-        sector="SaaS B2B"
-        timeline="6 meses"
-      />
+        <PremiumSectorCaseStudy
+          title="Transformación Digital Exitosa"
+          description="Asesoramos la venta de una plataforma SaaS española de gestión empresarial a un grupo tecnológico europeo, logrando un múltiplo excepcional y maximizando el valor para todos los stakeholders."
+          metrics={caseStudyMetrics}
+          buttonText="Ver Más Casos Tech"
+          companyName="TechCorp España"
+          sector="SaaS B2B"
+          timeline="6 meses"
+        />
 
-      <PremiumSectorCTA
-        title="¿Tiene una empresa tecnológica?"
-        description="Nuestros expertos en tech están listos para analizar su empresa y maximizar su valoración en el mercado tecnológico actual. Comience con una consulta gratuita."
-        primaryButtonText="Valoración Tech Gratuita"
-        secondaryButtonText="Descargar Tech Report"
-        contactInfo={{
-          phone: "+34 91 123 45 67",
-          email: "tech@capittal.com"
-        }}
-      />
-
+        <PremiumSectorCTA
+          title="¿Tiene una empresa tecnológica?"
+          description="Nuestros expertos en tech están listos para analizar su empresa y maximizar su valoración en el mercado tecnológico actual. Comience con una consulta gratuita."
+          primaryButtonText="Valoración Tech Gratuita"
+          secondaryButtonText="Descargar Tech Report"
+          contactInfo={{
+            phone: "+34 91 123 45 67",
+            email: "tech@capittal.com"
+          }}
+        />
+      </main>
       <Footer />
+      
+      {/* Herramientas de accesibilidad flotantes */}
+      <AccessibilityTools />
+      <NotificationCenter className="mr-16" />
+      
+      {/* Live region para anuncios de accesibilidad */}
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        className="sr-only"
+        id="accessibility-announcements"
+      />
     </div>
   );
 };

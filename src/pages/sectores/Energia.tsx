@@ -2,6 +2,8 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AccessibilityTools from '@/components/AccessibilityTools';
+import NotificationCenter from '@/components/NotificationCenter';
 import SectorHero from '@/components/SectorHero';
 import SectorStats from '@/components/sector/SectorStats';
 import SectorServices from '@/components/sector/SectorServices';
@@ -59,47 +61,59 @@ const Energia = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
-      <SectorHero
-        sector="Energía y Renovables"
-        title="Energía y Renovables"
-        description="Especialistas en M&A para el sector energético y renovables con profundo conocimiento técnico y regulatorio de la transición energética. Navegamos la complejidad de los mercados energéticos."
-        primaryButtonText="Explorar Oportunidades Energéticas"
-        secondaryButtonText="Ver Casos Energéticos"
-      />
+      <main role="main">
+        <SectorHero
+          sector="Energía y Renovables"
+          title="Energía y Renovables"
+          description="Especialistas en M&A para el sector energético y renovables con profundo conocimiento técnico y regulatorio de la transición energética. Navegamos la complejidad de los mercados energéticos."
+          primaryButtonText="Explorar Oportunidades Energéticas"
+          secondaryButtonText="Ver Casos Energéticos"
+        />
 
-      <SectorStats stats={stats} />
+        <SectorStats stats={stats} />
 
-      <SectorServices
-        title="Servicios Especializados"
-        subtitle="Servicios adaptados a la complejidad técnica y regulatoria del sector energético"
-        services={services}
-      />
+        <SectorServices
+          title="Servicios Especializados"
+          subtitle="Servicios adaptados a la complejidad técnica y regulatoria del sector energético"
+          services={services}
+        />
 
-      <SectorExpertise
-        title="Expertise en Energía"
-        description="Comprendemos las complejidades técnicas, los marcos regulatorios, y las dinámicas de financiación del sector energético. Nuestro equipo incluye ingenieros energéticos y especialistas en regulación."
-        expertiseAreas={expertiseAreas}
-        achievementTitle="Líderes en Energía"
-        achievementDescription="Reconocidos como 'Energy M&A Advisor of the Year' por Energy Finance Magazine por nuestro trabajo en transición energética."
-        achievementDetails="Hemos participado en más de €1.4B en transacciones de energías renovables, representando más de 850MW de capacidad instalada."
-      />
+        <SectorExpertise
+          title="Expertise en Energía"
+          description="Comprendemos las complejidades técnicas, los marcos regulatorios, y las dinámicas de financiación del sector energético. Nuestro equipo incluye ingenieros energéticos y especialistas en regulación."
+          expertiseAreas={expertiseAreas}
+          achievementTitle="Líderes en Energía"
+          achievementDescription="Reconocidos como 'Energy M&A Advisor of the Year' por Energy Finance Magazine por nuestro trabajo en transición energética."
+          achievementDetails="Hemos participado en más de €1.4B en transacciones de energías renovables, representando más de 850MW de capacidad instalada."
+        />
 
-      <SectorCaseStudy
-        title="Caso de Éxito Destacado"
-        description="Asesoramos la venta de un portfolio de parques solares españoles de 200MW a un fondo de infraestructura europeo por €380M, incluyendo PPA a 20 años."
-        metrics={caseStudyMetrics}
-        buttonText="Ver Casos Energéticos"
-      />
+        <SectorCaseStudy
+          title="Caso de Éxito Destacado"
+          description="Asesoramos la venta de un portfolio de parques solares españoles de 200MW a un fondo de infraestructura europeo por €380M, incluyendo PPA a 20 años."
+          metrics={caseStudyMetrics}
+          buttonText="Ver Casos Energéticos"
+        />
 
-      <SectorCTA
-        title="¿Tiene un proyecto energético?"
-        description="Nuestros especialistas en energía están preparados para analizar su proyecto y maximizar su valor en el mercado."
-        primaryButtonText="Consulta Energética"
-        secondaryButtonText="Descargar Energy Report"
-      />
-
+        <SectorCTA
+          title="¿Tiene un proyecto energético?"
+          description="Nuestros especialistas en energía están preparados para analizar su proyecto y maximizar su valor en el mercado."
+          primaryButtonText="Consulta Energética"
+          secondaryButtonText="Descargar Energy Report"
+        />
+      </main>
       <Footer />
+      
+      {/* Herramientas de accesibilidad flotantes */}
+      <AccessibilityTools />
+      <NotificationCenter className="mr-16" />
+      
+      {/* Live region para anuncios de accesibilidad */}
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        className="sr-only"
+        id="accessibility-announcements"
+      />
     </div>
   );
 };
