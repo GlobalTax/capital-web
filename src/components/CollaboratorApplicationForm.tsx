@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useCollaboratorApplications } from '@/hooks/useCollaboratorApplications';
-import { useFormTracking } from '@/hooks/useFormTracking';
+import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,15 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const CollaboratorApplicationForm = () => {
   const { submitApplication, isSubmitting } = useCollaboratorApplications();
   
-  // Integrar tracking de formulario
-  const {
-    trackStart,
-    trackFieldChange,
-    trackValidationError,
-    trackSubmit,
-    trackComplete,
-    trackAbandon
-  } = useFormTracking('collaborator_application');
+  const { trackFormSubmission } = useSimpleFormTracking();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -31,16 +23,8 @@ const CollaboratorApplicationForm = () => {
     motivation: '',
   });
 
-  React.useEffect(() => {
-    // Track form start cuando se monta el componente
-    trackStart();
-  }, [trackStart]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    // Track field changes
-    trackFieldChange(name, value);
     
     setFormData(prev => ({
       ...prev,
@@ -48,30 +32,12 @@ const CollaboratorApplicationForm = () => {
     }));
   };
 
-  const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    
-    // Basic validation tracking
-    if (name === 'email' && value && !value.includes('@')) {
-      trackValidationError(name, 'Email inválido');
-    }
-    
-    if ((name === 'fullName' || name === 'profession') && !value) {
-      trackValidationError(name, 'Campo requerido');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Track submit attempt
-    trackSubmit();
-    
     try {
       await submitApplication(formData);
-      
-      // Track successful completion
-      trackComplete();
+      trackFormSubmission('collaborator_application', formData);
       
       // Resetear formulario
       setFormData({
@@ -84,8 +50,6 @@ const CollaboratorApplicationForm = () => {
         motivation: '',
       });
     } catch (error) {
-      // Track abandon si hay error
-      trackAbandon();
       console.error('Error enviando solicitud:', error);
     }
   };
@@ -110,7 +74,6 @@ const CollaboratorApplicationForm = () => {
                 required
                 value={formData.fullName}
                 onChange={handleInputChange}
-                onBlur={handleFieldBlur}
                 placeholder="Tu nombre completo"
               />
             </div>
@@ -124,7 +87,6 @@ const CollaboratorApplicationForm = () => {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                onBlur={handleFieldBlur}
                 placeholder="tu@email.com"
               />
             </div>
@@ -140,7 +102,6 @@ const CollaboratorApplicationForm = () => {
                 required
                 value={formData.phone}
                 onChange={handleInputChange}
-                onBlur={handleFieldBlur}
                 placeholder="+34 123 456 789"
               />
             </div>
@@ -153,7 +114,6 @@ const CollaboratorApplicationForm = () => {
                 type="text"
                 value={formData.company}
                 onChange={handleInputChange}
-                onBlur={handleFieldBlur}
                 placeholder="Nombre de tu empresa"
               />
             </div>
@@ -168,7 +128,6 @@ const CollaboratorApplicationForm = () => {
               required
               value={formData.profession}
               onChange={handleInputChange}
-              onBlur={handleFieldBlur}
               placeholder="Tu profesión o área de especialización"
             />
           </div>
@@ -180,7 +139,6 @@ const CollaboratorApplicationForm = () => {
               name="experience"
               value={formData.experience}
               onChange={handleInputChange}
-              onBlur={handleFieldBlur}
               placeholder="Describe tu experiencia relevante en M&A, valoraciones, finanzas corporativas, etc."
               rows={3}
             />
@@ -193,7 +151,6 @@ const CollaboratorApplicationForm = () => {
               name="motivation"
               value={formData.motivation}
               onChange={handleInputChange}
-              onBlur={handleFieldBlur}
               placeholder="¿Por qué te interesa unirte a nuestro programa de colaboradores?"
               rows={3}
             />
