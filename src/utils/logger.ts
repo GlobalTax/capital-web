@@ -87,25 +87,8 @@ class Logger {
   private async persistLog(entry: LogEntry): Promise<void> {
     if (!this.config.enablePersistence) return;
 
-    try {
-      const logData = entry.data ? this.sanitizeData(entry.data) : null;
-      await supabase.from('system_logs').insert({
-        level: entry.level,
-        message: entry.message,
-        context: entry.context || null,
-        component: entry.component || null,
-        user_id: entry.userId || null,
-        session_id: entry.sessionId || null,
-        log_data: logData,
-        error_stack: entry.error?.stack || null,
-        environment: entry.environment || null,
-        user_agent: entry.userAgent || null,
-        url: entry.url || null,
-        created_at: entry.timestamp
-      });
-    } catch (error) {
-      console.error('Failed to persist log:', error);
-    }
+    // Log persistence disabled after cleanup
+    console.log('Log persistence disabled after cleanup:', entry.message);
   }
 
   private setupGlobalErrorHandler(): void {

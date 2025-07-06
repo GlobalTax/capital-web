@@ -8,8 +8,13 @@ export const useSimpleFormTracking = () => {
     console.log(`Form interaction tracked: ${formType} - ${field}`);
   };
 
+  const trackEvent = (eventName: string, eventData?: any) => {
+    console.log(`Event tracked: ${eventName}`, eventData);
+  };
+
   return {
     trackFormSubmission,
-    trackFormInteraction
+    trackFormInteraction,
+    trackEvent
   };
 };

@@ -57,18 +57,6 @@ export const generateSampleMetrics = async () => {
     }
   }
 
-  // Generar métricas del sistema
-  const { error: systemError } = await supabase
-    .from('system_metrics')
-    .insert({
-      api_response_time: Math.random() * 400 + 150,
-      error_rate: Math.random() * 3,
-      uptime_percentage: 99.5 + Math.random() * 0.4,
-      active_users: Math.floor(Math.random() * 80) + 20,
-      server_load: Math.random() * 70 + 20
-    });
-
-  if (systemError) {
-    console.error('Error generating system metrics:', systemError);
-  }
+  // System metrics generation disabled after cleanup
+  console.log('System metrics generation disabled after cleanup');
 };
