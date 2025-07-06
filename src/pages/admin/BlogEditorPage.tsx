@@ -12,6 +12,7 @@ import { useBlogValidation } from '@/hooks/useBlogValidation';
 import BlogEditorContent from '@/components/admin/blog/BlogEditorContent';
 import BlogEditorSidebar from '@/components/admin/blog/BlogEditorSidebar';
 import BlogAIAssistant from '@/components/admin/blog/BlogAIAssistant';
+import BlogSEOPanel from '@/components/admin/blog/BlogSEOPanel';
 import ReactMarkdown from 'react-markdown';
 
 const BlogEditorPage = () => {
@@ -305,26 +306,7 @@ const BlogEditorPage = () => {
             </TabsContent>
 
             <TabsContent value="seo">
-              <div className="space-y-6">
-                <div>
-                  <label className="text-sm font-medium">Meta Título</label>
-                  <Input
-                    value={post.meta_title || ''}
-                    onChange={(e) => updatePostData({ meta_title: e.target.value })}
-                    placeholder="Título para SEO..."
-                    className="mt-2"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Meta Descripción</label>
-                  <Input
-                    value={post.meta_description || ''}
-                    onChange={(e) => updatePostData({ meta_description: e.target.value })}
-                    placeholder="Descripción para SEO..."
-                    className="mt-2"
-                  />
-                </div>
-              </div>
+              <BlogSEOPanel post={post} updatePost={updatePostData} />
             </TabsContent>
           </Tabs>
         </main>
