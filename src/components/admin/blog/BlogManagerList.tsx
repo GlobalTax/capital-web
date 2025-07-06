@@ -24,8 +24,8 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || post.category === categoryFilter;
-    const matchesStatus = !statusFilter || 
+    const matchesCategory = !categoryFilter || categoryFilter === 'all' || post.category === categoryFilter;
+    const matchesStatus = !statusFilter || statusFilter === 'all' || 
                          (statusFilter === 'published' && post.is_published) ||
                          (statusFilter === 'draft' && !post.is_published) ||
                          (statusFilter === 'featured' && post.is_featured);
@@ -86,7 +86,7 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
                 <SelectValue placeholder="Todas las categorías" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las categorías</SelectItem>
+                <SelectItem value="all">Todas las categorías</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -100,7 +100,7 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="published">Publicados</SelectItem>
                 <SelectItem value="draft">Borradores</SelectItem>
                 <SelectItem value="featured">Destacados</SelectItem>
