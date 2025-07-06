@@ -10,7 +10,6 @@ import AlertsManager from './leads/AlertsManager';
 import ModernBlogManager from './ModernBlogManager';
 import BlogEditorPage from '@/pages/admin/BlogEditorPage';
 import CaseStudiesManager from './CaseStudiesManager';
-
 import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
 import TestimonialsManager from './TestimonialsManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
@@ -19,7 +18,6 @@ import TeamMembersManager from './TeamMembersManager';
 import OperationsManager from './OperationsManager';
 import MultiplesManager from './MultiplesManager';
 import StatisticsManager from './StatisticsManager';
-import LeadMagnetsManager from './LeadMagnetsManager';
 import SectorReportsGenerator from './SectorReportsGenerator';
 import AdminUsersManager from './AdminUsersManager';
 import ProposalsManager from './ProposalsManager';
@@ -62,20 +60,6 @@ const AdminRouter = () => {
       <Route path="/collaborator-applications" element={<CollaboratorApplicationsManager />} />
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
-      <Route path="/contacts" element={<ContactsManager />} />
-      <Route path="/contacts/:id" element={<ContactPage />} />
-      <Route path="/contact-lists" element={<ContactListsManager />} />
-      
-      {/* Marketing & Analytics */}
-      <Route path="/email-marketing" element={<EmailMarketingManager />} />
-      <Route path="/marketing-automation" element={<MarketingAutomationDashboard />} />
-      <Route path="/marketing-intelligence" element={<MarketingIntelligenceDashboard />} />
-      <Route path="/marketing-hub" element={<MarketingHubDashboard />} />
-      <Route path="/integrations" element={<IntegrationsManager />} />
-      
-      {/* Tracking & Analytics */}
-      <Route path="/tracking-dashboard" element={<UnifiedTrackingPage />} />
-      <Route path="/tracking-config" element={<TrackingConfigPage />} />
       
       {/* Content Management */}
       <Route path="/content-performance" element={<ContentPerformancePage />} />
@@ -86,7 +70,6 @@ const AdminRouter = () => {
       <Route path="/blog/edit/:id" element={<BlogEditorPage />} />
       <Route path="/sector-reports" element={<SectorReportsGenerator />} />
       <Route path="/case-studies" element={<CaseStudiesManager />} />
-      <Route path="/lead-magnets" element={<LeadMagnetsManager />} />
       <Route path="/landing-pages" element={<LandingPagesPage />} />
       
       {/* Company Data */}

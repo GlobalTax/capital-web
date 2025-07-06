@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import AdminDashboardHome from './AdminDashboardHome';
 import LeadScoringIntelligenceDashboard from './LeadScoringIntelligenceDashboard';
-import MarketingIntelligenceDashboard from './MarketingIntelligenceDashboard';
-import MarketingAutomationDashboard from './MarketingAutomationDashboard';
 import MarketingHubDashboard from './MarketingHubDashboard';
 
 const AdminDashboard = () => {
@@ -39,10 +37,6 @@ const AdminDashboard = () => {
         return <AdminDashboardHome />;
       case 'lead-scoring':
         return <LeadScoringIntelligenceDashboard />;
-      case 'marketing-intelligence':
-        return <MarketingIntelligenceDashboard />;
-      case 'marketing-automation':
-        return <MarketingAutomationDashboard />;
       case 'marketing-hub':
         return <MarketingHubDashboard />;
       default:
@@ -70,12 +64,6 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('lead-scoring')}>
               Lead Scoring
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-intelligence')}>
-              Marketing Intelligence
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-automation')}>
-              Marketing Automation
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-hub')}>
               🚀 Marketing Hub

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { formatSpanishPhone } from '@/utils/validationUtils';
 import { useContactForm } from '@/hooks/useContactForm';
-import { useFormTracking } from '@/hooks/useFormTracking';
+import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { LoadingButton } from '@/components/LoadingButton';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
@@ -31,32 +31,19 @@ const Contact = () => {
   const { submitContactForm, isSubmitting } = useContactForm();
   const { isOnline } = useNetworkStatus();
   
-  // Integrar tracking de formulario
-  const {
-    trackStart,
-    trackFieldChange,
-    trackValidationError,
-    trackSubmit,
-    trackComplete,
-    trackAbandon
-  } = useFormTracking('contact');
+  // Integrar tracking simple de formulario
+  const { trackFormSubmission, trackFormInteraction } = useSimpleFormTracking();
 
-  React.useEffect(() => {
-    // Track form start cuando se monta el componente
-    trackStart();
-  }, [trackStart]);
+  // Tracking simplificado - no necesita useEffect
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Track submit attempt
-    trackSubmit();
     
     try {
       await submitContactForm(formData);
       
       // Track successful completion
-      trackComplete();
+      trackFormSubmission('contact', formData);
       
       // Limpiar formulario después del envío exitoso
       setFormData({
@@ -69,8 +56,6 @@ const Contact = () => {
         referral: '',
       });
     } catch (error) {
-      // Track abandon si hay error
-      trackAbandon();
       console.error('Error en el formulario:', error);
     }
   };
@@ -79,7 +64,7 @@ const Contact = () => {
     const { name, value } = e.target;
     
     // Track field changes
-    trackFieldChange(name, value);
+    trackFormInteraction('contact', name);
     
     if (name === 'phone') {
       setFormData({
@@ -96,7 +81,7 @@ const Contact = () => {
 
   const handleSelectChange = (name: string, value: string) => {
     // Track select field changes
-    trackFieldChange(name, value);
+    trackFormInteraction('contact', name);
     
     setFormData({
       ...formData,
@@ -104,17 +89,9 @@ const Contact = () => {
     });
   };
 
+  // Simplified blur handler - no validation tracking
   const handleFieldBlur = (fieldName: string) => {
-    const value = formData[fieldName as keyof typeof formData];
-    
-    // Basic validation tracking
-    if (fieldName === 'email' && value && !value.includes('@')) {
-      trackValidationError(fieldName, 'Email inválido');
-    }
-    
-    if ((fieldName === 'fullName' || fieldName === 'company') && !value) {
-      trackValidationError(fieldName, 'Campo requerido');
-    }
+    // Basic client-side validation could go here if needed
   };
 
   return (
