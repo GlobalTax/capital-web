@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Book, Download, Share2, Sparkles, Save, X } from 'lucide-react';
+import { Book, Download, Share2, Sparkles, Save, X, Wand2 } from 'lucide-react';
 import { BlogPost, BlogPostFormData } from '@/types/blog';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useRealAI } from '@/hooks/useRealAI';
@@ -37,6 +37,12 @@ const ModernBlogEditor: React.FC<ModernBlogEditorProps> = ({ post, onClose, onSa
     is_featured: false,
     meta_title: '',
     meta_description: '',
+  });
+
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiOptions, setAiOptions] = useState({
+    length: 'medio' as 'corto' | 'medio' | 'largo',
+    tone: 'profesional' as 'profesional' | 'técnico' | 'divulgativo'
   });
 
   const { isGenerating, generateTitle, generateContent, optimizeForSEO } = useRealAI({
@@ -226,34 +232,115 @@ const ModernBlogEditor: React.FC<ModernBlogEditorProps> = ({ post, onClose, onSa
                 Asistente IA
               </h3>
             </div>
-            <div className="p-4 space-y-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => generateTitle(formData.category)}
-                disabled={isGenerating}
-              >
-                {isGenerating ? 'Generando...' : 'Generar título'}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => generateContent(formData.title || 'Artículo sobre M&A', formData.category)}
-                disabled={isGenerating || !formData.title}
-              >
-                {isGenerating ? 'Creando...' : 'Crear contenido'}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => optimizeForSEO(formData.title, formData.content)}
-                disabled={isGenerating || !formData.title}
-              >
-                {isGenerating ? 'Optimizando...' : 'Optimizar SEO'}
-              </Button>
+            <div className="p-4 space-y-4">
+              <div>
+                <Label htmlFor="ai-prompt" className="text-sm">Prompt Personalizado</Label>
+                <Textarea
+                  id="ai-prompt"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="Escribe exactamente lo que quieres que genere la IA... 
+Ejemplo: 'Crea un artículo sobre tendencias M&A en el sector fintech español para 2024'"
+                  rows={3}
+                  className="mt-1 text-sm"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Longitud</Label>
+                  <Select 
+                    value={aiOptions.length} 
+                    onValueChange={(value: 'corto' | 'medio' | 'largo') => 
+                      setAiOptions(prev => ({ ...prev, length: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="corto">Corto</SelectItem>
+                      <SelectItem value="medio">Medio</SelectItem>
+                      <SelectItem value="largo">Largo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-xs">Tono</Label>
+                  <Select 
+                    value={aiOptions.tone} 
+                    onValueChange={(value: 'profesional' | 'técnico' | 'divulgativo') => 
+                      setAiOptions(prev => ({ ...prev, tone: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="profesional">Profesional</SelectItem>
+                      <SelectItem value="técnico">Técnico</SelectItem>
+                      <SelectItem value="divulgativo">Divulgativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => {
+                    if (!aiPrompt) {
+                      toast({
+                        title: "Prompt requerido",
+                        description: "Escribe lo que quieres generar",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    generateContent(aiPrompt, {
+                      category: formData.category,
+                      length: aiOptions.length,
+                      tone: aiOptions.tone
+                    });
+                  }}
+                  disabled={isGenerating || !aiPrompt}
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  {isGenerating ? 'Generando...' : 'Generar Contenido'}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => generateTitle(formData.category, aiPrompt)}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? 'Generando...' : 'Solo Título'}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => optimizeForSEO(formData.title, formData.content)}
+                  disabled={isGenerating || !formData.title}
+                >
+                  {isGenerating ? 'Optimizando...' : 'Optimizar SEO'}
+                </Button>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                <p><strong>Ejemplos de prompts:</strong></p>
+                <ul className="mt-1 space-y-1">
+                  <li>• "Análisis del mercado M&A español en 2024"</li>
+                  <li>• "Guía práctica de due diligence comercial"</li>
+                  <li>• "Tendencias valoración empresarial post-COVID"</li>
+                </ul>
+              </div>
             </div>
           </div>
 
