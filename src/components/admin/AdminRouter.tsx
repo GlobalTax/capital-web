@@ -56,8 +56,6 @@ const AdminRouter = () => {
       <Route path="/leads-dashboard" element={<EnhancedLeadsDashboard />} />
       <Route path="/lead-scoring" element={<LeadScoringManager />} />
       <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
-      
-      <Route path="/collaborator-applications" element={<CollaboratorApplicationsManager />} />
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       

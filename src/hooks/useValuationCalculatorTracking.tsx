@@ -1,52 +1,18 @@
-
-import { useFormTracking } from './useFormTracking';
-import { useCallback, useEffect } from 'react';
+import { useSimpleFormTracking } from './useSimpleFormTracking';
 
 export const useValuationCalculatorTracking = () => {
-  const {
-    trackStart,
-    trackFieldChange,
-    trackValidationError,
-    trackSubmit,
-    trackComplete,
-    trackAbandon
-  } = useFormTracking('valuation_calculator');
+  const { trackEvent } = useSimpleFormTracking();
 
-  useEffect(() => {
-    // Track form start cuando se monta
-    trackStart();
-  }, [trackStart]);
+  const trackStepCompletion = (step: number, data: any) => {
+    trackEvent('step_completed', { step, data });
+  };
 
-  const trackStepChange = useCallback((step: number) => {
-    trackFieldChange('current_step', step.toString());
-  }, [trackFieldChange]);
-
-  const trackFieldUpdate = useCallback((fieldName: string, value: any) => {
-    trackFieldChange(fieldName, typeof value === 'string' ? value : JSON.stringify(value));
-  }, [trackFieldChange]);
-
-  const trackValidationIssue = useCallback((fieldName: string, error: string) => {
-    trackValidationError(fieldName, error);
-  }, [trackValidationError]);
-
-  const trackCalculationStart = useCallback(() => {
-    trackSubmit();
-  }, [trackSubmit]);
-
-  const trackCalculationComplete = useCallback(() => {
-    trackComplete();
-  }, [trackComplete]);
-
-  const trackCalculationAbandon = useCallback((step?: number) => {
-    trackAbandon(step ? `step_${step}` : undefined);
-  }, [trackAbandon]);
+  const trackCalculationComplete = (valuation: any) => {
+    trackEvent('calculation_complete', { valuation });
+  };
 
   return {
-    trackStepChange,
-    trackFieldUpdate,
-    trackValidationIssue,
-    trackCalculationStart,
-    trackCalculationComplete,
-    trackCalculationAbandon
+    trackStepCompletion,
+    trackCalculationComplete
   };
 };
