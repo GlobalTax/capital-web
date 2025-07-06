@@ -10,9 +10,8 @@ import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useToast } from '@/hooks/use-toast';
 import { useBlogValidation } from '@/hooks/useBlogValidation';
 import BlogEditorContent from '@/components/admin/blog/BlogEditorContent';
-import BlogEditorSidebar from '@/components/admin/blog/BlogEditorSidebar';
-import BlogAIAssistant from '@/components/admin/blog/BlogAIAssistant';
-import BlogSEOPanel from '@/components/admin/blog/BlogSEOPanel';
+import SimpleBlogEditorSidebar from '@/components/admin/blog/SimpleBlogEditorSidebar';
+import SimpleBlogSEOPanel from '@/components/admin/blog/SimpleBlogSEOPanel';
 import ReactMarkdown from 'react-markdown';
 
 const BlogEditorPage = () => {
@@ -27,16 +26,18 @@ const BlogEditorPage = () => {
   const [showAI, setShowAI] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Auto-save functionality
+  // Auto-save functionality - SIMPLIFICADO
   useEffect(() => {
     if (!hasUnsavedChanges || !post) return;
     
     const autoSave = setTimeout(() => {
-      handleSave(true);
-    }, 30000); // Auto-save every 30 seconds
+      if (post.title && post.content) { // Solo auto-guardar si hay contenido básico
+        handleSave(true);
+      }
+    }, 300000); // Auto-save cada 5 minutos en lugar de 30 segundos
 
     return () => clearTimeout(autoSave);
-  }, [post, hasUnsavedChanges]);
+  }, [post?.title, post?.content]); // Solo vigilar cambios críticos
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -166,15 +167,18 @@ const BlogEditorPage = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* IA DESACTIVADA TEMPORALMENTE
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowAI(!showAI)}
               className="flex items-center gap-2"
+              disabled
             >
               <Sparkles className="h-4 w-4" />
-              IA
+              IA (Próximamente)
             </Button>
+            */}
             
             {post.is_published && post.slug && (
               <Button
@@ -306,25 +310,18 @@ const BlogEditorPage = () => {
             </TabsContent>
 
             <TabsContent value="seo">
-              <BlogSEOPanel post={post} updatePost={updatePostData} />
+              <SimpleBlogSEOPanel post={post} updatePost={updatePostData} />
             </TabsContent>
           </Tabs>
         </main>
 
         {/* Sidebar */}
         <aside className="w-80 border-l border-border bg-background">
-          <BlogEditorSidebar post={post} updatePost={updatePostData} errors={errors} />
+          <SimpleBlogEditorSidebar post={post} updatePost={updatePostData} errors={errors} />
         </aside>
       </div>
 
-      {/* AI Assistant */}
-      {showAI && (
-        <BlogAIAssistant
-          post={post}
-          updatePost={updatePostData}
-          onClose={() => setShowAI(false)}
-        />
-      )}
+      {/* AI Assistant - DESACTIVADO TEMPORALMENTE */}
     </div>
   );
 };

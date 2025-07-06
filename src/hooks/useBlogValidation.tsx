@@ -40,9 +40,14 @@ export const useBlogValidation = () => {
       newErrors.slug = 'El slug solo puede contener letras minúsculas, números y guiones';
     }
 
-    // Combinar con errores SEO
-    const seoValidationErrors = validateSEO(post);
-    Object.assign(newErrors, seoValidationErrors);
+    // Combinar con errores SEO - SIMPLIFICADO
+    try {
+      const seoValidationErrors = validateSEO(post);
+      Object.assign(newErrors, seoValidationErrors);
+    } catch (error) {
+      console.warn('SEO validation error:', error);
+      // Continuar sin validación SEO si falla
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -51,9 +56,9 @@ export const useBlogValidation = () => {
   const clearErrors = () => setErrors({});
 
   return {
-    errors: { ...errors, ...seoErrors },
+    errors: { ...errors, ...(seoErrors || {}) },
     validatePost,
     clearErrors,
-    hasErrors: Object.keys({ ...errors, ...seoErrors }).length > 0
+    hasErrors: Object.keys({ ...errors, ...(seoErrors || {}) }).length > 0
   };
 };

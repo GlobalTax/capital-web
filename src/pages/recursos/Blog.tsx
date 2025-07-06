@@ -7,7 +7,7 @@ import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogFilters } from '@/hooks/useBlogFilters';
 import BlogFilters from '@/components/blog/BlogFilters';
-import BlogPopularPosts from '@/components/blog/BlogPopularPosts';
+import SimpleBlogPopularPosts from '@/components/blog/SimpleBlogPopularPosts';
 import { Link } from 'react-router-dom';
 
 const Blog = () => {
@@ -242,7 +242,7 @@ const Blog = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-32 space-y-8">
                 {/* Posts populares */}
-                <BlogPopularPosts limit={5} />
+                <SimpleBlogPopularPosts limit={5} />
               </div>
             </div>
           </div>

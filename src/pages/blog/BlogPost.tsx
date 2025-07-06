@@ -9,7 +9,7 @@ import RelatedPosts from '@/components/blog/RelatedPosts';
 import BlogBreadcrumbs from '@/components/blog/BlogBreadcrumbs';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogNavigation } from '@/hooks/useBlogNavigation';
-import { useBlogAnalytics } from '@/hooks/useBlogAnalytics';
+import { useSimpleBlogAnalytics } from '@/hooks/useSimpleBlogAnalytics';
 import { useBlogRSS } from '@/hooks/useBlogRSS';
 import { BlogPost as BlogPostType } from '@/types/blog';
 
@@ -26,8 +26,8 @@ const BlogPost = () => {
     slug || ''
   );
 
-  // Analytics y tracking
-  const { trackPostView, useScrollTracking } = useBlogAnalytics();
+  // Analytics y tracking - SIMPLIFICADO
+  const { trackPostView, useScrollTracking } = useSimpleBlogAnalytics();
   
   // RSS y Open Graph
   const { applyOpenGraphTags } = useBlogRSS();
