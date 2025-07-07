@@ -37,20 +37,27 @@ export const useCentralizedErrorHandler = (): UseErrorHandlerReturn => {
     // como Sentry, LogRocket, etc.
   }, []);
 
-  const handleError = useCallback((error: Error, context?: ErrorContext) => {
-    logError(error, context);
+  const handleError = (error: Error, context?: ErrorContext) => {
+    // Solo logear en desarrollo para evitar spam en consola
+    if (process.env.NODE_ENV === 'development') {
+      logError(error, context);
+    }
     
-    const contextMessage = context?.component 
-      ? ` en ${context.component}` 
-      : '';
-    
-    toast({
-      title: "Error",
-      description: `Error${contextMessage}: ${error.message}`,
-      variant: "destructive",
-      duration: 5000,
-    });
-  }, [toast, logError]);
+    // Solo mostrar toast para errores críticos, no de tracking
+    if (!error.message.toLowerCase().includes('tracking') && 
+        !error.message.toLowerCase().includes('404')) {
+      const contextMessage = context?.component 
+        ? ` en ${context.component}` 
+        : '';
+      
+      toast({
+        title: "Error",
+        description: `Error${contextMessage}: ${error.message}`,
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
 
   const handleAsyncError = useCallback(async <T,>(
     asyncFn: () => Promise<T>, 

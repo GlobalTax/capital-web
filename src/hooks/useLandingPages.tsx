@@ -53,15 +53,22 @@ export const useLandingPageTemplates = () => {
   const { data: templates, isLoading } = useQuery({
     queryKey: ['landingPageTemplates'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('landing_page_templates')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      try {
+        const { data, error } = await (supabase as any)
+          .from('landing_page_templates')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      return data as LandingPageTemplate[];
+        if (error) throw error;
+        return data as LandingPageTemplate[];
+      } catch (error) {
+        // Si la tabla no existe, devolver array vacío en lugar de error
+        console.debug('Landing page templates table not available');
+        return [] as LandingPageTemplate[];
+      }
     },
+    retry: false, // No reintentar para evitar spam de errores
   });
 
   return { templates, isLoading };
@@ -75,17 +82,24 @@ export const useLandingPages = () => {
   const { data: landingPages, isLoading } = useQuery({
     queryKey: ['landingPages'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('landing_pages')
-        .select(`
-          *,
-          template:landing_page_templates(name, type)
-        `)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await (supabase as any)
+          .from('landing_pages')
+          .select(`
+            *,
+            template:landing_page_templates(name, type)
+          `)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as (LandingPage & { template?: { name: string; type: string } })[];
+        if (error) throw error;
+        return data as (LandingPage & { template?: { name: string; type: string } })[];
+      } catch (error) {
+        // Si las tablas no existen, devolver array vacío
+        console.debug('Landing pages tables not available');
+        return [] as (LandingPage & { template?: { name: string; type: string } })[];
+      }
     },
+    retry: false, // No reintentar para evitar spam de errores
   });
 
   // Crear landing page
@@ -288,20 +302,27 @@ export const useLandingPageBySlug = (slug: string) => {
   const { data: landingPage, isLoading, error } = useQuery({
     queryKey: ['landingPage', slug],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('landing_pages')
-        .select(`
-          *,
-          template:landing_page_templates(*)
-        `)
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .single();
+      try {
+        const { data, error } = await (supabase as any)
+          .from('landing_pages')
+          .select(`
+            *,
+            template:landing_page_templates(*)
+          `)
+          .eq('slug', slug)
+          .eq('is_published', true)
+          .single();
 
-      if (error) throw error;
-      return data as LandingPage & { template?: LandingPageTemplate };
+        if (error) throw error;
+        return data as LandingPage & { template?: LandingPageTemplate };
+      } catch (error) {
+        // Si las tablas no existen, devolver null
+        console.debug('Landing pages tables not available');
+        return null;
+      }
     },
     enabled: !!slug,
+    retry: false, // No reintentar para evitar spam de errores
   });
 
   return { landingPage, isLoading, error };
