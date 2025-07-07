@@ -128,7 +128,98 @@ export const ContactSkeleton = () => (
   </section>
 );
 
+// Loading genérico mejorado
 export const PageLoadingSkeleton = () => (
+  <div className="min-h-screen bg-background animate-fade-in">
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <Skeleton className="h-12 w-3/4 mx-auto" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="admin-card animate-scale-in" style={{ animationDelay: `${i * 100}ms` }}>
+            <div className="p-6">
+              <Skeleton className="h-6 w-3/4 mb-4" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-8 w-1/3" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// Blog loading específico
+export const BlogLoadingSkeleton = () => (
+  <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-1/2" />
+      <Skeleton className="h-4 w-3/4" />
+    </div>
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {[...Array(9)].map((_, i) => (
+        <div key={i} className="admin-card overflow-hidden">
+          <Skeleton className="h-48 w-full" />
+          <div className="p-6">
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-1/3" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Admin dashboard loading
+export const AdminLoadingSkeleton = () => (
+  <div className="p-6 space-y-6">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="admin-card">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-4" />
+          </div>
+          <div>
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-3 w-3/4 mt-2" />
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="grid gap-6 md:grid-cols-2">
+      <div className="admin-card">
+        <Skeleton className="h-6 w-1/3 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+      <div className="admin-card">
+        <Skeleton className="h-6 w-1/3 mb-4" />
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Loading mejorado para páginas completas
+export const FullPageLoadingSkeleton = () => (
   <div className="min-h-screen">
     <HeroSkeleton />
     <ServicesSkeleton />

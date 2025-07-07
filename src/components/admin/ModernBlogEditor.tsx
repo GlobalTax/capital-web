@@ -45,24 +45,26 @@ const ModernBlogEditor: React.FC<ModernBlogEditorProps> = ({ post, onClose, onSa
     tone: 'profesional' as 'profesional' | 'técnico' | 'divulgativo'
   });
 
-  const { isGenerating, generateTitle, generateContent, optimizeForSEO } = useRealAI({
-    onContentGenerated: (content: string, type: 'title' | 'content' | 'seo') => {
-      if (type === 'title') {
-        handleTitleChange(content);
-      } else if (type === 'content') {
-        setFormData(prev => ({ ...prev, content }));
-      } else if (type === 'seo') {
-        const lines = content.split('\n');
-        const metaTitle = lines.find(line => line.includes('Meta título'))?.split(':')[1]?.trim() || '';
-        const metaDescription = lines.find(line => line.includes('Meta descripción'))?.split(':')[1]?.trim() || '';
-        setFormData(prev => ({
-          ...prev,
-          meta_title: metaTitle || prev.meta_title,
-          meta_description: metaDescription || prev.meta_description
-        }));
+  // IA temporalmente deshabilitada para optimizar rendimiento
+  const isGenerating = false;
+  const generateTitle = () => {};
+  const generateContent = () => {};
+  const optimizeForSEO = () => {};
+  
+  // Auto-save optimizado (cada 3 minutos en lugar de constante)
+  useEffect(() => {
+    if (!post) return; // Solo auto-save en edición, no en creación
+    
+    const autoSaveInterval = setInterval(() => {
+      if (formData.title && formData.content) {
+        handleSave();
       }
-    }
-  });
+    }, 180000); // 3 minutos en lugar de cada cambio
+
+    return () => clearInterval(autoSaveInterval);
+  }, [formData.title, formData.content]);
+
+  // Sistema IA temporalmente deshabilitado - se reactivará en próxima versión
 
   const categories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal'];
 
@@ -300,13 +302,13 @@ Ejemplo: 'Crea un artículo sobre tendencias M&A en el sector fintech español p
                       });
                       return;
                     }
-                    generateContent(aiPrompt, {
-                      category: formData.category,
-                      length: aiOptions.length,
-                      tone: aiOptions.tone
-                    });
+                     toast({
+                       title: "IA temporalmente deshabilitada",
+                       description: "La función de IA se reactivará en la próxima versión",
+                       variant: "default"
+                     });
                   }}
-                  disabled={isGenerating || !aiPrompt}
+                  disabled={true} // IA deshabilitada temporalmente
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
                   {isGenerating ? 'Generando...' : 'Generar Contenido'}
@@ -316,8 +318,11 @@ Ejemplo: 'Crea un artículo sobre tendencias M&A en el sector fintech español p
                   variant="outline" 
                   size="sm" 
                   className="w-full"
-                  onClick={() => generateTitle(formData.category, aiPrompt)}
-                  disabled={isGenerating}
+                   onClick={() => toast({
+                     title: "IA temporalmente deshabilitada",
+                     description: "Se reactivará en la próxima versión"
+                   })}
+                  disabled={true} // IA deshabilitada temporalmente
                 >
                   {isGenerating ? 'Generando...' : 'Solo Título'}
                 </Button>
@@ -326,8 +331,11 @@ Ejemplo: 'Crea un artículo sobre tendencias M&A en el sector fintech español p
                   variant="outline" 
                   size="sm" 
                   className="w-full"
-                  onClick={() => optimizeForSEO(formData.title, formData.content)}
-                  disabled={isGenerating || !formData.title}
+                   onClick={() => toast({
+                     title: "IA temporalmente deshabilitada", 
+                     description: "Se reactivará en la próxima versión"
+                   })}
+                  disabled={true} // IA deshabilitada temporalmente
                 >
                   {isGenerating ? 'Optimizando...' : 'Optimizar SEO'}
                 </Button>
