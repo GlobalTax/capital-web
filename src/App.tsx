@@ -20,6 +20,7 @@ const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
 const CalculadoraValoracion = lazy(() => import('@/pages/CalculadoraValoracion'));
 const CalculadoraValoracionV2 = lazy(() => import('@/pages/CalculadoraValoracionV2'));
+const CalculadoraValoracionV3 = lazy(() => import('@/pages/CalculadoraValoracionV3'));
 const Contacto = lazy(() => import('@/pages/Contacto'));
 const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
 const CasosExito = lazy(() => import('@/pages/CasosExito'));
@@ -187,6 +188,7 @@ function AppContent() {
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
           <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
+          <Route path="/simulador-venta/:clientId" element={<CalculadoraValoracionV3 />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           <Route path="/casos-exito" element={<CasosExito />} />
