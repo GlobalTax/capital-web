@@ -1,5 +1,6 @@
 // Tipos para la Calculadora de Valoración V4 - Ultra-Rápida
 export interface CompanyDataV4 {
+  id?: string;
   contactName: string;
   companyName: string;
   email: string;

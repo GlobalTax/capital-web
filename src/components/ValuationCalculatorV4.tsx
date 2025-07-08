@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useValuationCalculatorV4 } from '@/hooks/useValuationCalculatorV4';
+import { useV4Tracking } from '@/hooks/useV4Tracking';
 import { CompanyDataV4 } from '@/types/valuationV4';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,13 @@ const ValuationCalculatorV4 = ({ companyData }: ValuationCalculatorV4Props) => {
     toggleVitalicia
   } = useValuationCalculatorV4(companyData);
 
+  const { 
+    trackScenarioChange, 
+    trackControlChange, 
+    trackContactClick, 
+    trackTimeSpent 
+  } = useV4Tracking(companyData.id);
+
   const formatCurrency = (amount: number) => 
     new Intl.NumberFormat('es-ES', { 
       style: 'currency', 
@@ -36,7 +44,24 @@ const ValuationCalculatorV4 = ({ companyData }: ValuationCalculatorV4Props) => {
       maximumFractionDigits: 0
     }).format(amount);
 
+  // Tracking de tiempo
+  useEffect(() => {
+    const startTime = Date.now();
+    
+    const interval = setInterval(() => {
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+      trackTimeSpent(timeSpent);
+    }, 30000); // Update every 30 seconds
+
+    return () => {
+      clearInterval(interval);
+      const totalTime = Math.floor((Date.now() - startTime) / 1000);
+      trackTimeSpent(totalTime);
+    };
+  }, [trackTimeSpent]);
+
   const handleWhatsAppContact = () => {
+    trackContactClick('whatsapp');
     const message = `Hola, he analizado los escenarios de venta para ${companyData.companyName}. El mejor escenario genera ${formatCurrency(bestScenario.netReturn)} netos. ¿Podemos agendar una consulta?`;
     const whatsappUrl = `https://wa.me/34${companyData.phone.replace(/\s+/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');

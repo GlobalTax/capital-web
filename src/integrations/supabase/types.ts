@@ -651,7 +651,15 @@ export type Database = {
           ownership_participation: string | null
           phone: string | null
           revenue: number | null
+          unique_token: string | null
           user_agent: string | null
+          v4_accessed: boolean | null
+          v4_accessed_at: string | null
+          v4_engagement_score: number | null
+          v4_link_sent: boolean | null
+          v4_link_sent_at: string | null
+          v4_scenarios_viewed: Json | null
+          v4_time_spent: number | null
           valuation_range_max: number | null
           valuation_range_min: number | null
           whatsapp_sent: boolean | null
@@ -682,7 +690,15 @@ export type Database = {
           ownership_participation?: string | null
           phone?: string | null
           revenue?: number | null
+          unique_token?: string | null
           user_agent?: string | null
+          v4_accessed?: boolean | null
+          v4_accessed_at?: string | null
+          v4_engagement_score?: number | null
+          v4_link_sent?: boolean | null
+          v4_link_sent_at?: string | null
+          v4_scenarios_viewed?: Json | null
+          v4_time_spent?: number | null
           valuation_range_max?: number | null
           valuation_range_min?: number | null
           whatsapp_sent?: boolean | null
@@ -713,7 +729,15 @@ export type Database = {
           ownership_participation?: string | null
           phone?: string | null
           revenue?: number | null
+          unique_token?: string | null
           user_agent?: string | null
+          v4_accessed?: boolean | null
+          v4_accessed_at?: string | null
+          v4_engagement_score?: number | null
+          v4_link_sent?: boolean | null
+          v4_link_sent_at?: string | null
+          v4_scenarios_viewed?: Json | null
+          v4_time_spent?: number | null
           valuation_range_max?: number | null
           valuation_range_min?: number | null
           whatsapp_sent?: boolean | null
@@ -1733,6 +1757,38 @@ export type Database = {
         }
         Relationships: []
       }
+      v4_interactions: {
+        Row: {
+          company_valuation_id: string | null
+          created_at: string | null
+          id: string
+          interaction_data: Json | null
+          interaction_type: string
+        }
+        Insert: {
+          company_valuation_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_data?: Json | null
+          interaction_type: string
+        }
+        Update: {
+          company_valuation_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_data?: Json | null
+          interaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "v4_interactions_company_valuation_id_fkey"
+            columns: ["company_valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1759,6 +1815,10 @@ export type Database = {
         Returns: string
       }
       generate_unique_proposal_url: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_unique_v4_token: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
