@@ -7,7 +7,7 @@ import { Check } from 'lucide-react';
 
 interface BasicInfoFormProps {
   companyData: any;
-  updateField: (field: string, value: string | number) => void;
+  updateField: (field: string, value: string | number | boolean) => void;
   showValidation?: boolean;
   getFieldState?: (field: string) => {
     isTouched: boolean;
@@ -257,29 +257,27 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           )}
         </div>
 
-        {/* Años de operación */}
+        {/* Descripción de actividad */}
         <div className="relative">
-          <Label htmlFor="yearsOfOperation" className="block text-sm font-medium text-gray-700 mb-2">
-            Años de operación *
+          <Label htmlFor="activityDescription" className="block text-sm font-medium text-gray-700 mb-2">
+            Descripción de actividad *
           </Label>
           <Input
-            id="yearsOfOperation"
-            name="yearsOfOperation"
-            type="number"
-            min="0"
-            max="100"
-            value={companyData.yearsOfOperation || ''}
-            onChange={(e) => updateField('yearsOfOperation', parseInt(e.target.value) || 0)}
-            onBlur={() => handleBlur('yearsOfOperation')}
-            placeholder="5"
-            className={getFieldClassName('yearsOfOperation')}
+            id="activityDescription"
+            name="activityDescription"
+            type="text"
+            value={companyData.activityDescription}
+            onChange={(e) => updateField('activityDescription', e.target.value)}
+            onBlur={() => handleBlur('activityDescription')}
+            placeholder="ej. Distribución HORECA, Consultoría IT, etc."
+            className={getFieldClassName('activityDescription')}
           />
-          {shouldShowCheckIcon('yearsOfOperation') && (
+          {shouldShowCheckIcon('activityDescription') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          <p className="text-sm text-gray-500 mt-1">Años desde la fundación de la empresa</p>
-          {showValidation && errors?.yearsOfOperation && (
-            <p className="text-red-500 text-sm mt-1">{errors.yearsOfOperation}</p>
+          <p className="text-sm text-gray-500 mt-1">Describe brevemente la actividad principal de tu empresa</p>
+          {showValidation && errors?.activityDescription && (
+            <p className="text-red-500 text-sm mt-1">{errors.activityDescription}</p>
           )}
         </div>
 

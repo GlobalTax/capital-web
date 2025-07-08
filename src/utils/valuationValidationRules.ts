@@ -34,9 +34,9 @@ export const createValidationRules = (): ValidationRules => ({
     message: value ? undefined : 'El sector es obligatorio'
   }),
   
-  yearsOfOperation: (value: number) => ({
-    isValid: value > 0,
-    message: value > 0 ? undefined : 'Los años de funcionamiento son obligatorios'
+  activityDescription: (value: string) => ({
+    isValid: Boolean(value),
+    message: value ? undefined : 'La descripción de actividad es obligatoria'
   }),
   
   employeeRange: (value: string) => ({
@@ -54,12 +54,12 @@ export const createValidationRules = (): ValidationRules => ({
     message: value > 0 ? undefined : 'El EBITDA debe ser mayor a 0'
   }),
   
-  netProfitMargin: (value: number) => ({
-    isValid: true, // Campo opcional
+  hasAdjustments: (value: boolean) => ({
+    isValid: true, // Campo siempre válido
     message: undefined
   }),
   
-  growthRate: (value: number) => ({
+  adjustmentAmount: (value: number) => ({
     isValid: true, // Campo opcional
     message: undefined
   }),
@@ -95,7 +95,7 @@ export const validateStepFields = (step: number, data: CompanyData, validationRu
 export const getStepFields = (step: number): string[] => {
   switch (step) {
     case 1:
-      return ['contactName', 'companyName', 'email', 'phone', 'industry', 'employeeRange'];
+      return ['contactName', 'companyName', 'email', 'phone', 'industry', 'activityDescription', 'employeeRange'];
     case 2:
       return ['revenue', 'ebitda'];
     case 3:

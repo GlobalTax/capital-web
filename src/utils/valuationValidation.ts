@@ -49,9 +49,12 @@ export const createValidationState = (companyData: CompanyData): ValidationState
     phone: validateSpanishPhone(companyData.phone),
     cif: companyData.cif ? { isValid: validateCIF(companyData.cif), message: validateCIF(companyData.cif) ? undefined : 'El CIF no es válido' } : { isValid: true },
     industry: { isValid: Boolean(companyData.industry), message: companyData.industry ? undefined : 'El sector es obligatorio' },
+    activityDescription: { isValid: Boolean(companyData.activityDescription), message: companyData.activityDescription ? undefined : 'La descripción de actividad es obligatoria' },
     employeeRange: { isValid: Boolean(companyData.employeeRange), message: companyData.employeeRange ? undefined : 'El rango de empleados es obligatorio' },
     revenue: { isValid: companyData.revenue > 0, message: companyData.revenue > 0 ? undefined : 'Los ingresos deben ser mayores a 0' },
     ebitda: { isValid: companyData.ebitda > 0, message: companyData.ebitda > 0 ? undefined : 'El EBITDA debe ser mayor a 0' },
+    hasAdjustments: { isValid: true, message: undefined },
+    adjustmentAmount: { isValid: true, message: undefined },
     location: { isValid: Boolean(companyData.location), message: companyData.location ? undefined : 'La ubicación es obligatoria' },
     ownershipParticipation: { isValid: Boolean(companyData.ownershipParticipation), message: companyData.ownershipParticipation ? undefined : 'El porcentaje de participación es obligatorio' },
     competitiveAdvantage: { isValid: Boolean(companyData.competitiveAdvantage), message: companyData.competitiveAdvantage ? undefined : 'La ventaja competitiva es obligatoria' }
@@ -66,6 +69,7 @@ export const validateStepData = (step: number, validationState: ValidationState)
              validationState.email.isValid &&
              validationState.phone.isValid &&
              validationState.industry.isValid &&
+             validationState.activityDescription.isValid &&
              validationState.employeeRange.isValid;
     case 2:
       return validationState.revenue.isValid && 

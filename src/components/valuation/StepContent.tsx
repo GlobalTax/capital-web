@@ -8,7 +8,7 @@ import Step4Results from './Step4Results';
 interface StepContentProps {
   currentStep: number;
   companyData: any;
-  updateField: (field: string, value: string | number) => void;
+  updateField: (field: string, value: string | number | boolean) => void;
   result: any;
   isCalculating: boolean;
   resetCalculator: () => void;

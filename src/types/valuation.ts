@@ -7,14 +7,14 @@ export interface CompanyData {
   email: string;
   phone: string;
   industry: string;
-  yearsOfOperation: number;
+  activityDescription: string;
   employeeRange: string;
   
   // Paso 2: Datos financieros
   revenue: number;
   ebitda: number;
-  netProfitMargin: number;
-  growthRate: number;
+  hasAdjustments: boolean;
+  adjustmentAmount: number;
   
   // Paso 3: Características
   location: string;
@@ -54,9 +54,12 @@ export interface ValidationState {
   phone: ValidationResult;
   cif: ValidationResult;
   industry: ValidationResult;
+  activityDescription: ValidationResult;
   employeeRange: ValidationResult;
   revenue: ValidationResult;
   ebitda: ValidationResult;
+  hasAdjustments: ValidationResult;
+  adjustmentAmount: ValidationResult;
   location: ValidationResult;
   ownershipParticipation: ValidationResult;
   competitiveAdvantage: ValidationResult;

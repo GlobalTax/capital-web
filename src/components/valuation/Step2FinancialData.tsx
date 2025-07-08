@@ -4,7 +4,7 @@ import FinancialDataForm from './forms/FinancialDataForm';
 
 interface Step2Props {
   companyData: any;
-  updateField: (field: string, value: string | number) => void;
+  updateField: (field: string, value: string | number | boolean) => void;
   showValidation?: boolean;
 }
 

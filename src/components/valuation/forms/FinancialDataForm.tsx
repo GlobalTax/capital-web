@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 
 interface FinancialDataFormProps {
   companyData: any;
-  updateField: (field: string, value: string | number) => void;
+  updateField: (field: string, value: string | number | boolean) => void;
   showValidation?: boolean;
 }
 
@@ -124,61 +124,66 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
           )}
         </div>
 
-        {/* Margen de beneficio neto */}
-        <div className="relative">
-          <Label htmlFor="netProfitMargin" className="block text-sm font-medium text-gray-700 mb-2">
-            Margen de beneficio neto (%) *
+        {/* ¿Tienes ajustes? */}
+        <div className="col-span-1 md:col-span-2">
+          <Label className="block text-sm font-medium text-gray-700 mb-3">
+            ¿Tienes ajustes al EBITDA?
           </Label>
-          <Input
-            id="netProfitMargin"
-            name="netProfitMargin"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            value={companyData.netProfitMargin || ''}
-            onChange={(e) => updateField('netProfitMargin', parseFloat(e.target.value) || 0)}
-            onBlur={() => handleBlur('netProfitMargin')}
-            placeholder="15.5"
-            className={getFieldClassName('netProfitMargin', true, 0)}
-          />
-          {shouldShowCheckIcon('netProfitMargin', 0) && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          <p className="text-sm text-gray-500 mt-1">
-            Porcentaje del beneficio neto sobre las ventas
-          </p>
-          {showValidation && !isFieldValid('netProfitMargin', 0) && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
-          )}
-        </div>
-
-        {/* Tasa de crecimiento */}
-        <div className="relative">
-          <Label htmlFor="growthRate" className="block text-sm font-medium text-gray-700 mb-2">
-            Tasa de crecimiento anual (%) *
-          </Label>
-          <Input
-            id="growthRate"
-            name="growthRate"
-            type="number"
-            min="-100"
-            max="1000"
-            step="0.1"
-            value={companyData.growthRate || ''}
-            onChange={(e) => updateField('growthRate', parseFloat(e.target.value) || 0)}
-            onBlur={() => handleBlur('growthRate')}
-            placeholder="10.0"
-            className={getFieldClassName('growthRate', true, -100)}
-          />
-          {shouldShowCheckIcon('growthRate', -100) && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          <p className="text-sm text-gray-500 mt-1">
-            Crecimiento de facturación respecto al año anterior
-          </p>
-          {showValidation && !isFieldValid('growthRate', -100) && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          <div className="flex gap-4 mb-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="hasAdjustments"
+                value="false"
+                checked={!companyData.hasAdjustments}
+                onChange={() => {
+                  updateField('hasAdjustments', false);
+                  updateField('adjustmentAmount', 0);
+                  handleBlur('hasAdjustments');
+                }}
+                className="mr-2"
+              />
+              No
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="hasAdjustments"
+                value="true"
+                checked={companyData.hasAdjustments}
+                onChange={() => {
+                  updateField('hasAdjustments', true);
+                  handleBlur('hasAdjustments');
+                }}
+                className="mr-2"
+              />
+              Sí
+            </label>
+          </div>
+          
+          {companyData.hasAdjustments && (
+            <div className="relative">
+              <Label htmlFor="adjustmentAmount" className="block text-sm font-medium text-gray-700 mb-2">
+                Importe del ajuste (€)
+              </Label>
+              <Input
+                id="adjustmentAmount"
+                name="adjustmentAmount"
+                type="number"
+                step="1000"
+                value={companyData.adjustmentAmount || ''}
+                onChange={(e) => updateField('adjustmentAmount', parseFloat(e.target.value) || 0)}
+                onBlur={() => handleBlur('adjustmentAmount')}
+                placeholder="50000"
+                className={getFieldClassName('adjustmentAmount', false)}
+              />
+              {shouldShowCheckIcon('adjustmentAmount') && (
+                <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+              )}
+              <p className="text-sm text-gray-500 mt-1">
+                {companyData.adjustmentAmount ? `Aprox. ${formatCurrency(companyData.adjustmentAmount)}` : 'Importe a añadir o sustraer del EBITDA'}
+              </p>
+            </div>
           )}
         </div>
       </div>

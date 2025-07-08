@@ -14,14 +14,14 @@ const initialCompanyData: CompanyData = {
   email: '',
   phone: '',
   industry: '',
-  yearsOfOperation: 0,
+  activityDescription: '',
   employeeRange: '',
   
   // Paso 2
   revenue: 0,
   ebitda: 0,
-  netProfitMargin: 0,
-  growthRate: 0,
+  hasAdjustments: false,
+  adjustmentAmount: 0,
   
   // Paso 3
   location: '',
@@ -80,7 +80,7 @@ export const useValuationCalculator = () => {
   }, [currentStep, companyData, validationRules]);
 
   // Wrapper para updateField que mantiene compatibilidad
-  const updateField = useCallback((field: keyof CompanyData, value: string | number) => {
+  const updateField = useCallback((field: keyof CompanyData, value: string | number | boolean) => {
     updateFormField(field, value);
   }, [updateFormField]);
 
@@ -143,11 +143,31 @@ export const useValuationCalculator = () => {
   }, [companyData, sectorMultiples]);
 
   const resetCalculator = useCallback(() => {
+    // Reset más inteligente: mantener datos básicos de contacto y empresa
+    const resetData: CompanyData = {
+      ...initialCompanyData,
+      contactName: companyData.contactName,
+      companyName: companyData.companyName,
+      email: companyData.email,
+      phone: companyData.phone,
+      industry: companyData.industry,
+      activityDescription: companyData.activityDescription,
+      employeeRange: companyData.employeeRange
+    };
+    
     resetForm();
+    updateFormField('contactName', resetData.contactName);
+    updateFormField('companyName', resetData.companyName);
+    updateFormField('email', resetData.email);
+    updateFormField('phone', resetData.phone);
+    updateFormField('industry', resetData.industry);
+    updateFormField('activityDescription', resetData.activityDescription);
+    updateFormField('employeeRange', resetData.employeeRange);
+    
     setResult(null);
     setCurrentStep(1);
     setShowValidation(false);
-  }, [resetForm]);
+  }, [companyData, resetForm, updateFormField]);
 
   return {
     currentStep,

@@ -221,8 +221,8 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
                 <span className="ml-2 font-medium capitalize">{companyData.industry}</span>
               </div>
               <div>
-                <span className="text-gray-600">Años operando:</span>
-                <span className="ml-2 font-medium">{companyData.yearsOfOperation} años</span>
+                <span className="text-gray-600">Descripción actividad:</span>
+                <span className="ml-2 font-medium">{companyData.activityDescription}</span>
               </div>
               <div>
                 <span className="text-gray-600">Empleados:</span>
@@ -247,14 +247,10 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
                 <span className="text-gray-600">EBITDA:</span>
                 <span className="ml-2 font-medium">{formatCurrency(companyData.ebitda)}</span>
               </div>
-              <div>
-                <span className="text-gray-600">Margen beneficio neto:</span>
-                <span className="ml-2 font-medium">{companyData.netProfitMargin}%</span>
-              </div>
-              {companyData.growthRate > 0 && (
+              {companyData.hasAdjustments && companyData.adjustmentAmount !== 0 && (
                 <div>
-                  <span className="text-gray-600">Tasa crecimiento:</span>
-                  <span className="ml-2 font-medium">{companyData.growthRate}%</span>
+                  <span className="text-gray-600">Ajustes EBITDA:</span>
+                  <span className="ml-2 font-medium">{formatCurrency(companyData.adjustmentAmount)}</span>
                 </div>
               )}
             </div>
