@@ -37,184 +37,177 @@ interface SidebarItem {
 
 const sidebarGroups = [
   {
-    title: "🎯 LEADS & WORKFLOWS",
-    description: "Gestión completa del proceso desde lead hasta reunión",
+    title: "📊 DASHBOARD",
+    description: "Visión general y métricas principales",
+    priority: "high",
+    items: [
+      {
+        title: "Dashboard Principal",
+        icon: LayoutDashboard,
+        id: "dashboard",
+        description: "Resumen ejecutivo y KPIs"
+      },
+      {
+        title: "Marketing Hub",
+        icon: PieChart,
+        id: "marketing-hub",
+        description: "Analytics completo de marketing"
+      },
+      {
+        title: "Performance Contenido",
+        icon: BarChart3,
+        id: "content-performance",
+        description: "Análisis de rendimiento de contenido"
+      }
+    ]
+  },
+  {
+    title: "🎯 LEADS & CRM",
+    description: "Gestión de leads y proceso comercial",
     priority: "high",
     items: [
       {
         title: "Lead Scoring",
         icon: Target,
         id: "lead-scoring",
-        description: "Priorización de leads y alertas urgentes",
+        description: "Priorización inteligente de leads",
         badge: "URGENTE" as const
       },
       {
         title: "Contactos",
         icon: Users,
         id: "contacts",
-        description: "Vista unificada de todos los contactos",
+        description: "Base de datos de contactos",
         badge: "NEW" as const
       },
       {
-        title: "Listas y Segmentación",
-        icon: List,
-        id: "contact-lists",
-        description: "Organiza y segmenta contactos"
-      },
-      {
-        title: "Alertas",
-        icon: AlertCircle,
-        id: "alerts",
-        description: "Notificaciones y eventos críticos",
-        badge: "URGENTE" as const
+        title: "Valoraciones",
+        icon: TrendingUp,
+        id: "company-valuations",
+        description: "Solicitudes de valoración"
       },
       {
         title: "Leads de Contacto",
         icon: Mail,
         id: "contact-leads",
-        description: "Gestión de leads de contacto"
+        description: "Formularios de contacto"
       },
       {
-        title: "Solicitudes Colaboradores",
-        icon: UserPlus,
-        id: "collaborator-applications",
-        description: "Gestión de solicitudes de colaboradores"
+        title: "Alertas",
+        icon: AlertCircle,
+        id: "alerts",
+        description: "Notificaciones críticas",
+        badge: "URGENTE" as const
       }
     ]
   },
   {
-    title: "✉️ EMAIL MARKETING",
-    description: "Campañas y automatizaciones de email",
+    title: "🎨 CONTENIDO & CMS",
+    description: "Gestión de contenido web",
     items: [
       {
-        title: "Campañas de Email",
-        icon: Mail,
-        id: "email-marketing",
-        description: "Gestión de campañas de email"
-      },
-      {
-        title: "Marketing Automation",
-        icon: Workflow,
-        id: "marketing-automation",
-        description: "Secuencias y workflows automatizados"
-      }
-    ]
-  },
-  {
-    title: "🎨 CMS - CONTENIDO WEB",
-    description: "Gestión de todo el contenido web",
-    items: [
-      {
-        title: "AI Content Studio Pro",
-        icon: FileText,
+        title: "AI Content Studio",
+        icon: Brain,
         id: "blog-v2",
-        description: "Generación de contenido con IA",
-        badge: "AI" as const
-      },
-      {
-        title: "Reports Sectoriales IA",
-        icon: Database,
-        id: "sector-reports",
-        description: "Generación de reportes sectoriales",
+        description: "Generación de contenido IA",
         badge: "AI" as const
       },
       {
         title: "Casos de Éxito",
         icon: Award,
         id: "case-studies",
-        description: "Gestión de casos de éxito"
+        description: "Portfolio de casos"
       },
       {
         title: "Operaciones",
         icon: Building2,
         id: "operations",
-        description: "Gestión de operaciones"
-      },
-      {
-        title: "Múltiplos",
-        icon: TrendingUp,
-        id: "multiples",
-        description: "Gestión de múltiplos de valoración"
-      },
-      {
-        title: "Estadísticas",
-        icon: BarChart3,
-        id: "statistics",
-        description: "Métricas y estadísticas"
-      },
-      {
-        title: "Equipo",
-        icon: Users,
-        id: "team",
-        description: "Gestión del equipo"
-      },
-      {
-        title: "Testimonios",
-        icon: MessageSquare,
-        id: "testimonials",
-        description: "Gestión de testimonios"
-      },
-      {
-        title: "Test. Carrusel",
-        icon: TestTube,
-        id: "carousel-testimonials",
-        description: "Testimonios en carrusel"
-      },
-      {
-        title: "Logos Carrusel",
-        icon: Image,
-        id: "carousel-logos",
-        description: "Logos en carrusel"
+        description: "Historial de operaciones"
       },
       {
         title: "Lead Magnets",
         icon: Zap,
         id: "lead-magnets",
-        description: "Gestión de lead magnets"
+        description: "Recursos descargables"
       }
     ]
   },
   {
-    title: "📊 MARKETING INTELLIGENCE & ANALYTICS",
-    description: "Análisis avanzado e insights con IA",
+    title: "✉️ MARKETING",
+    description: "Campañas y automatización",
     items: [
       {
-        title: "Marketing Intelligence",
-        icon: Brain,
-        id: "marketing-intelligence",
-        description: "Análisis predictivo y insights",
-        badge: "AI" as const
+        title: "Email Marketing",
+        icon: Mail,
+        id: "email-marketing",
+        description: "Campañas de email"
       },
       {
-        title: "Marketing Hub",
-        icon: PieChart,
-        id: "marketing-hub",
-        description: "Dashboard completo de métricas"
+        title: "Automation",
+        icon: Workflow,
+        id: "marketing-automation",
+        description: "Workflows automatizados"
       },
+      {
+        title: "Segmentación",
+        icon: List,
+        id: "contact-lists",
+        description: "Listas y segmentos"
+      }
+    ]
+  },
+  {
+    title: "🌐 WEB & MARCA",
+    description: "Elementos web y corporativos",
+    items: [
+      {
+        title: "Equipo",
+        icon: Users,
+        id: "team",
+        description: "Miembros del equipo"
+      },
+      {
+        title: "Testimonios",
+        icon: MessageSquare,
+        id: "testimonials",
+        description: "Reseñas de clientes"
+      },
+      {
+        title: "Múltiplos",
+        icon: Database,
+        id: "multiples",
+        description: "Ratios de valoración"
+      },
+      {
+        title: "Estadísticas",
+        icon: BarChart3,
+        id: "statistics",
+        description: "Métricas del sector"
+      }
+    ]
+  },
+  {
+    title: "⚙️ SISTEMA",
+    description: "Configuración y herramientas",
+    items: [
       {
         title: "Integraciones",
         icon: Globe,
         id: "integrations",
-        description: "Apollo, Google Ads, LinkedIn y más",
+        description: "Conexiones externas",
         badge: "NEW" as const
-      }
-    ]
-  },
-  {
-    title: "⚙️ CONFIGURACIÓN & SISTEMA",
-    description: "Configuración general",
-    items: [
+      },
       {
-        title: "Dashboard",
-        icon: LayoutDashboard,
-        id: "dashboard",
-        description: "Vista general de la plataforma"
+        title: "Colaboradores",
+        icon: UserPlus,
+        id: "collaborator-applications",
+        description: "Solicitudes de trabajo"
       },
       {
         title: "Configuración",
         icon: Settings,
         id: "settings",
-        description: "Ajustes generales de la plataforma"
+        description: "Ajustes del sistema"
       }
     ]
   }
