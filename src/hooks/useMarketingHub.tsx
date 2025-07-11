@@ -18,7 +18,12 @@ export const useMarketingHub = () => {
     hotProspects: 0,
     emailOpenRate: 0,
     emailClickRate: 0,
-    sequenceCompletionRate: 0
+    sequenceCompletionRate: 0,
+    totalBlogPosts: 0,
+    publishedPosts: 0,
+    averageReadingTime: 0,
+    totalViews: 0,
+    totalRevenue: 0
   });
 
   const [contentPerformance, setContentPerformance] = useState<any[]>([]);
@@ -96,7 +101,12 @@ export const useMarketingHub = () => {
         hotProspects,
         emailOpenRate: 78.5, // Datos que mantendremos simulados por ahora
         emailClickRate: 12.3,
-        sequenceCompletionRate: 65.4
+        sequenceCompletionRate: 65.4,
+        totalBlogPosts: blogPosts?.length || 0,
+        publishedPosts: blogPosts?.filter(post => post.is_published).length || 0,
+        averageReadingTime: blogPosts?.length > 0 ? Math.round(blogPosts.reduce((sum, post) => sum + (post.reading_time || 0), 0) / blogPosts.length) : 0,
+        totalViews: blogAnalytics?.reduce((sum, analytics) => sum + (analytics.scroll_percentage || 0), 0) || 0,
+        totalRevenue: Math.round(totalLeads * 2500) // Estimación: €2,500 por lead
       });
 
     } catch (error) {

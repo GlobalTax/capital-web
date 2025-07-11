@@ -14,6 +14,11 @@ export interface MarketingMetrics {
   downloadCount: number;
   topPerformingContent: string[];
   contentToLeadRate: number;
+  totalBlogPosts: number;
+  publishedPosts: number;
+  averageReadingTime: number;
+  totalViews: number;
+  totalRevenue: number;
   
   // Lead Scoring
   averageLeadScore: number;

@@ -5,10 +5,24 @@ import { Progress } from '@/components/ui/progress';
 import { TrendingUp, TrendingDown, AlertTriangle, Target, Zap, Users } from 'lucide-react';
 import { MarketingMetrics } from '@/types/marketingHub';
 
+interface ContentStats {
+  totalBlogPosts: number;
+  publishedPosts: number;
+  averageReadingTime: number;
+  totalViews: number;
+}
+
+interface BusinessStats {
+  totalLeads: number;
+  qualifiedLeads: number;
+  conversionRate: number;
+  revenue: number;
+}
+
 interface QuickInsightsProps {
   marketingMetrics?: MarketingMetrics;
-  contentStats: any[];
-  businessStats: any[];
+  contentStats: ContentStats;
+  businessStats: BusinessStats;
   dateRange: { from: Date; to: Date };
 }
 

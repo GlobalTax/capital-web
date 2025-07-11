@@ -387,7 +387,7 @@ export function useRoleBasedLayouts() {
     if (!defaultLayout) return null;
 
     const allowedWidgets = defaultLayout.widgets.filter(widget => 
-      widget.permissions.every(permission => hasPermission(permission))
+      widget.permissions.every(permission => hasPermission(permission as keyof RolePermissions))
     );
 
     return {

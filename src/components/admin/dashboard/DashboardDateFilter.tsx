@@ -12,11 +12,14 @@ interface DateRange {
 }
 
 interface DashboardDateFilterProps {
-  dateRange: DateRange;
-  onDateRangeChange: (range: DateRange) => void;
+  dateRange?: DateRange;
+  onDateRangeChange?: (range: DateRange) => void;
 }
 
-const DashboardDateFilter = ({ dateRange, onDateRangeChange }: DashboardDateFilterProps) => {
+const DashboardDateFilter = ({ 
+  dateRange = { from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), to: new Date() }, 
+  onDateRangeChange = () => {} 
+}: DashboardDateFilterProps) => {
   const presetRanges = [
     {
       label: 'Últimos 7 días',

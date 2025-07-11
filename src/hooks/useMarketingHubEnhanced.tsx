@@ -88,7 +88,13 @@ export const useMarketingHubEnhanced = () => {
         companyVisitors: identifiedCompanies,
         topPerformingContent: blogPostMetrics.slice(0,3).map(p => p.post_slug || 'N/A'),
         contentToLeadRate: downloadCount > 0 ? (totalLeads / downloadCount) * 100 : 0,
-        hotProspects: qualifiedLeads
+        hotProspects: qualifiedLeads,
+        totalBlogPosts: blogPostMetrics.length,
+        publishedPosts: blogPostMetrics.length, // Asumimos que todos están publicados
+        averageReadingTime: blogPostMetrics.length > 0 ? 
+          Math.round(blogPostMetrics.reduce((sum, post) => sum + (post.avg_reading_time || 0), 0) / blogPostMetrics.length) : 0,
+        totalViews: blogPostMetrics.reduce((sum, post) => sum + (post.total_views || 0), 0),
+        totalRevenue: Math.round(totalLeads * 2500) // Estimación: €2,500 por lead
       };
     },
     staleTime: 2 * 60 * 1000, // 2 minutos

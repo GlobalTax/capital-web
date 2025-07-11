@@ -1,5 +1,5 @@
 import React from 'react';
-import UnifiedDashboard from '../UnifiedDashboard';
+import { UnifiedDashboard } from '../UnifiedDashboard';
 
 const AdminDashboard = () => {
   return <UnifiedDashboard />;

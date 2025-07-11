@@ -33,17 +33,16 @@ interface Notification {
 }
 
 export function UnifiedDashboard() {
-  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [dateRange, setDateRange] = useState({
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    to: new Date()
+  });
   const [activeView, setActiveView] = useState<'overview' | 'personalized' | 'predictive'>('overview');
   const { marketingMetrics: marketingData, isLoading } = useMarketingHubEnhanced();
   const { activeLayout, userRole, hasPermission } = useRoleBasedLayouts();
   
   // Prefetch datos relacionados
-  usePrefetch([
-    'lead_scores',
-    'blog_analytics', 
-    'landing_page_conversions'
-  ]);
+  usePrefetch();
 
   useEffect(() => {
     // Auto-prefetch data when component mounts
@@ -108,7 +107,6 @@ export function UnifiedDashboard() {
                 Personalizar
               </Button>
             ) : null}
-            )}
             {userRole === 'admin' || userRole === 'super_admin' ? (
               <Button
                 variant={activeView === 'predictive' ? 'default' : 'ghost'}
@@ -118,21 +116,18 @@ export function UnifiedDashboard() {
                 IA
               </Button>
             ) : null}
-            {userRole === 'admin' || userRole === 'super_admin' ? (
-              <Button
-                variant={activeView === 'predictive' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('predictive')}
-              >
-                IA
-              </Button>
-            )}
           </div>
           
           {activeView === 'overview' && (
             <>
-              <DashboardDateFilter />
-              <DashboardNotifications />
+              <DashboardDateFilter 
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+              />
+              <DashboardNotifications 
+                notifications={[]}
+                onMarkAsRead={() => {}}
+              />
               <DashboardExportMenu />
             </>
           )}
@@ -211,7 +206,21 @@ export function UnifiedDashboard() {
             </TabsList>
 
             <TabsContent value="insights" className="space-y-4">
-              <QuickInsights />
+              <QuickInsights 
+                contentStats={{
+                  totalBlogPosts: marketingData?.totalBlogPosts || 0,
+                  publishedPosts: marketingData?.publishedPosts || 0,
+                  averageReadingTime: marketingData?.averageReadingTime || 0,
+                  totalViews: marketingData?.totalViews || 0
+                }}
+                businessStats={{
+                  totalLeads: marketingData?.totalLeads || 0,
+                  qualifiedLeads: marketingData?.qualifiedLeads || 0,
+                  conversionRate: marketingData?.leadConversionRate || 0,
+                  revenue: marketingData?.totalRevenue || 0
+                }}
+                dateRange={dateRange}
+              />
             </TabsContent>
 
             <TabsContent value="marketing" className="space-y-4">
