@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Bell, AlertTriangle, TrendingUp, Users, X } from 'lucide-react';
+import { Bell, AlertTriangle, TrendingUp, Users, X, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
 
 interface RealTimeNotification {
   id: string;
@@ -17,117 +16,14 @@ interface RealTimeNotification {
 }
 
 export function RealTimeNotifications() {
-  const [notifications, setNotifications] = useState<RealTimeNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    dismissNotification, 
+    isConnected 
+  } = useRealTimeNotifications();
 
-  useEffect(() => {
-    // Cargar notificaciones iniciales
-    loadNotifications();
-
-    // Configurar subscripción en tiempo real
-    const channel = supabase
-      .channel('dashboard-notifications')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'lead_alerts' },
-        (payload) => handleNewNotification(payload.new)
-      )
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'company_valuations' },
-        (payload) => handleNewValuation(payload.new)
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const loadNotifications = async () => {
-    try {
-      // Simular carga de notificaciones recientes
-      const mockNotifications: RealTimeNotification[] = [
-        {
-          id: '1',
-          type: 'hot_lead',
-          title: 'Nuevo Lead Caliente',
-          message: 'Empresa tecnológica con score 92 requiere atención inmediata',
-          priority: 'high',
-          timestamp: new Date(Date.now() - 10 * 60 * 1000),
-          isRead: false
-        },
-        {
-          id: '2',
-          type: 'new_valuation',
-          title: 'Nueva Valoración',
-          message: 'Valoración completada para empresa del sector retail',
-          priority: 'medium',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000),
-          isRead: false
-        },
-        {
-          id: '3',
-          type: 'content_performance',
-          title: 'Contenido Viral',
-          message: 'El blog post "M&A en 2024" ha superado 1000 visualizaciones',
-          priority: 'low',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          isRead: true
-        }
-      ];
-
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    }
-  };
-
-  const handleNewNotification = (alertData: any) => {
-    const notification: RealTimeNotification = {
-      id: alertData.id,
-      type: alertData.alert_type as any,
-      title: 'Nueva Alerta',
-      message: alertData.message,
-      priority: alertData.priority as any,
-      timestamp: new Date(alertData.created_at),
-      isRead: false,
-      data: alertData
-    };
-
-    setNotifications(prev => [notification, ...prev]);
-    setUnreadCount(prev => prev + 1);
-  };
-
-  const handleNewValuation = (valuationData: any) => {
-    const notification: RealTimeNotification = {
-      id: `val_${valuationData.id}`,
-      type: 'new_valuation',
-      title: 'Nueva Valoración Completada',
-      message: `${valuationData.company_name} - ${valuationData.industry}`,
-      priority: 'medium',
-      timestamp: new Date(valuationData.created_at),
-      isRead: false,
-      data: valuationData
-    };
-
-    setNotifications(prev => [notification, ...prev]);
-    setUnreadCount(prev => prev + 1);
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
-
-  const dismissNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    const notification = notifications.find(n => n.id === id);
-    if (notification && !notification.isRead) {
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    }
-  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -164,6 +60,11 @@ export function RealTimeNotifications() {
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
             Notificaciones en Tiempo Real
+            {isConnected ? (
+              <Wifi className="h-4 w-4 text-green-500" />
+            ) : (
+              <WifiOff className="h-4 w-4 text-red-500" />
+            )}
           </div>
           {unreadCount > 0 && (
             <Badge variant="destructive">{unreadCount}</Badge>
