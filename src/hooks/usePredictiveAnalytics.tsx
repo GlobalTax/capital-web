@@ -86,41 +86,91 @@ export const usePredictiveAnalytics = () => {
     return predictionEngine.analyzeMarketTrends(sectorData);
   }, [companies, predictionEngine]);
 
-  // Generar insights con IA
+  // Generar insights con IA REAL usando OpenAI
   const generateAIInsights = useCallback(async () => {
     setIsGeneratingInsights(true);
     
-    const predictions = generatePredictions();
-    const marketTrends = generateMarketTrends();
-    
-    // Preparar datos para el análisis
-    const analyticsData = {
-      hotLeads: predictions.filter(p => p.conversionProbability > 70),
-      churningLeads: predictions.filter(p => 
-        p.conversionProbability < 30 && p.predictedTimeToConversion > 30
-      ),
-      conversionRate: summary?.attribution?.conversionRate || 0,
-      historicalConversionRate: 15, // Mock historical data
-      sectorTrends: marketTrends.map(trend => ({
-        name: trend.sector,
-        growth: trend.trendDirection === 'up' ? 50 : 
-                trend.trendDirection === 'down' ? -30 : 0
-      })),
-      calculatorUsage: {
-        trend: 'increasing',
-        increase: 25,
-        data: [] // Mock data
-      },
-      highBouncePages: [
-        { page: '/servicios', bounceRate: 85 },
-        { page: '/venta-empresas', bounceRate: 82 }
-      ]
-    };
+    try {
+      const predictions = generatePredictions();
+      const marketTrends = generateMarketTrends();
+      
+      // Preparar datos reales para análisis con IA
+      const analyticsData = {
+        companies: companies.slice(0, 20), // Top 20 companies
+        leads: companies.map(c => ({
+          company_domain: c.domain,
+          company_name: c.name,
+          industry: c.industry,
+          company_size: c.size,
+          visit_count: c.visitCount,
+          engagement_score: c.engagementScore,
+          last_visit: c.lastVisit,
+          is_hot_lead: c.engagementScore > 70
+        })),
+        events: events.slice(0, 100), // Recent events
+        conversions: predictions.filter(p => p.conversionProbability > 60),
+        timeframe: 'last_30_days'
+      };
 
-    const insights = insightsGenerator.generateInsights(analyticsData);
-    
-    setIsGeneratingInsights(false);
-    return insights;
+      // Llamar a la función edge de IA
+      const response = await fetch('https://fwhqtzkkvnjkazhaficj.functions.supabase.co/functions/v1/ai-predictive-analytics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I'}`
+        },
+        body: JSON.stringify({ analyticsData })
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.insights) {
+        // Convertir insights de OpenAI al formato esperado
+        const aiInsights = result.insights.map((insight: any) => ({
+          id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: insight.type,
+          priority: insight.priority,
+          title: insight.title,
+          description: insight.description,
+          confidence: insight.confidence,
+          impact: insight.impact,
+          actionable: true,
+          actions: insight.actionable_steps || [],
+          affectedCompanies: insight.affected_companies || [],
+          predictedValue: insight.predicted_value,
+          timeHorizon: insight.time_horizon,
+          source: 'openai_ai',
+          timestamp: new Date().toISOString()
+        }));
+
+        console.log('AI Insights generated:', aiInsights);
+        setIsGeneratingInsights(false);
+        return aiInsights;
+      } else {
+        throw new Error('Invalid AI response format');
+      }
+    } catch (error) {
+      console.error('Error generating AI insights:', error);
+      
+      // Fallback a insights simulados mejorados
+      const marketTrends = generateMarketTrends();
+      const fallbackInsights = insightsGenerator.generateInsights({
+        hotLeads: companies.filter(c => c.engagementScore > 70),
+        conversionRate: summary?.attribution?.conversionRate || 0,
+        sectorTrends: marketTrends.map(trend => ({
+          name: trend.sector,
+          growth: trend.trendDirection === 'up' ? 50 : 
+                  trend.trendDirection === 'down' ? -30 : 0
+        }))
+      });
+      
+      setIsGeneratingInsights(false);
+      return fallbackInsights;
+    }
   }, [generatePredictions, generateMarketTrends, insightsGenerator, summary]);
 
   // Generar insights contextuales por empresa
