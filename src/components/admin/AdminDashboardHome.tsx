@@ -1,9 +1,9 @@
 
 import React from 'react';
-import MinimalistAdminDashboard from './MinimalistAdminDashboard';
+import UnifiedDashboard from './UnifiedDashboard';
 
 const AdminDashboardHome = () => {
-  return <MinimalistAdminDashboard />;
+  return <UnifiedDashboard />;
 };
 
 export default AdminDashboardHome;
