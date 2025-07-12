@@ -964,6 +964,42 @@ export type Database = {
           },
         ]
       }
+      custom_widgets: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          permissions: string[]
+          updated_at: string
+          user_id: string
+          widget_config: Json
+          widget_name: string
+          widget_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          permissions?: string[]
+          updated_at?: string
+          user_id: string
+          widget_config?: Json
+          widget_name: string
+          widget_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          permissions?: string[]
+          updated_at?: string
+          user_id?: string
+          widget_config?: Json
+          widget_name?: string
+          widget_type?: string
+        }
+        Relationships: []
+      }
       design_resources: {
         Row: {
           category: string
@@ -1754,6 +1790,42 @@ export type Database = {
           result_accuracy?: number
           user_agent?: string | null
           user_email?: string | null
+        }
+        Relationships: []
+      }
+      user_dashboard_layouts: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          is_shared: boolean
+          layout_data: Json
+          layout_name: string
+          shared_with: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_shared?: boolean
+          layout_data?: Json
+          layout_name: string
+          shared_with?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_shared?: boolean
+          layout_data?: Json
+          layout_name?: string
+          shared_with?: string[] | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
