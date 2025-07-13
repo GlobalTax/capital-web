@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
-// import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
+import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
@@ -266,8 +266,9 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <Router>
-              {/* LeadTrackingProvider temporalmente deshabilitado para resolver errores 404 */}
-              <AppContent />
+              <LeadTrackingProvider enabled={true}>
+                <AppContent />
+              </LeadTrackingProvider>
               <Toaster />
             </Router>
           </TooltipProvider>
