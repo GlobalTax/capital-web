@@ -20,7 +20,7 @@ import {
   Monitor,
   Tablet
 } from 'lucide-react';
-import { useLandingPages, useLandingPageTemplates, type LandingPage } from '@/hooks/useLandingPages';
+import { useLandingPages, useLandingPageTemplates, type LandingPage, type LandingPageFormData } from '@/hooks/useLandingPages';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -95,6 +95,11 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({ pageId, 
 
   // Guardar página
   const handleSave = async (publish = false) => {
+    if (!currentPage.title || !currentPage.slug) {
+      console.error('Título y slug son requeridos');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const pageData = {
@@ -106,7 +111,18 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({ pageId, 
       if (pageId) {
         await updateLandingPage.mutateAsync({ id: pageId, updates: pageData });
       } else {
-        await createLandingPage.mutateAsync(pageData as any);
+        const formData: LandingPageFormData = {
+          title: currentPage.title,
+          slug: currentPage.slug,
+          template_id: selectedTemplate || undefined,
+          content_config: currentPage.content_config || {},
+          meta_title: currentPage.meta_title,
+          meta_description: currentPage.meta_description,
+          meta_keywords: currentPage.meta_keywords,
+          custom_css: currentPage.custom_css,
+          custom_js: currentPage.custom_js,
+        };
+        await createLandingPage.mutateAsync(formData);
       }
 
       if (publish) {
