@@ -1,0 +1,120 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Mail, Check } from 'lucide-react';
+
+const Newsletter = () => {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Por favor, introduce tu email.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Guardar suscripción en contact_leads
+      const { error } = await supabase.from('contact_leads').insert({
+        email: email,
+        full_name: 'Suscriptor Newsletter',
+        company: 'Newsletter',
+        status: 'newsletter',
+        referral: 'newsletter_signup'
+      });
+
+      if (error) throw error;
+
+      setIsSubscribed(true);
+      setEmail('');
+      
+      toast({
+        title: "¡Suscripción exitosa!",
+        description: "Te has suscrito correctamente a nuestro newsletter.",
+      });
+    } catch (error) {
+      console.error('Error al suscribirse:', error);
+      toast({
+        title: "Error",
+        description: "Error al procesar la suscripción. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSubscribed) {
+    return (
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <Check className="w-6 h-6 text-green-600" />
+          </div>
+        </div>
+        <h3 className="text-xl font-semibold text-center text-gray-900 mb-2">
+          ¡Bienvenido a nuestra comunidad!
+        </h3>
+        <p className="text-center text-gray-600">
+          Recibirás insights exclusivos sobre M&A y valoración empresarial.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+      <div className="flex items-center justify-center mb-4">
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+          <Mail className="w-6 h-6 text-blue-600" />
+        </div>
+      </div>
+      
+      <h3 className="text-xl font-semibold text-center text-gray-900 mb-2">
+        Insights M&A Exclusivos
+      </h3>
+      
+      <p className="text-center text-gray-600 mb-6">
+        Recibe análisis de mercado, tendencias de valoración y oportunidades de inversión directamente en tu bandeja de entrada.
+      </p>
+      
+      <form onSubmit={handleSubscribe} className="space-y-4">
+        <div className="flex gap-3">
+          <Input
+            type="email"
+            placeholder="tu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-1"
+            disabled={isLoading}
+          />
+          <Button 
+            type="submit" 
+            disabled={isLoading || !email}
+            className="capittal-button whitespace-nowrap"
+          >
+            {isLoading ? 'Suscribiendo...' : 'Suscribirse'}
+          </Button>
+        </div>
+      </form>
+      
+      <p className="text-xs text-gray-500 text-center mt-3">
+        Sin spam. Cancela cuando quieras. Lee nuestra política de privacidad.
+      </p>
+    </div>
+  );
+};
+
+export default Newsletter;
