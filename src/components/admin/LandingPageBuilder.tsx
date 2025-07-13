@@ -13,6 +13,7 @@ import {
   Globe, 
   Settings, 
   Layout, 
+  LayoutTemplate,
   Palette,
   Code,
   BarChart3,
@@ -289,19 +290,31 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({ pageId, 
                       <Label htmlFor="template">Template Base</Label>
                       <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un template" />
+                          <SelectValue placeholder={
+                            templates && templates.length > 0 
+                              ? "Selecciona un template..." 
+                              : "Cargando templates..."
+                          } />
                         </SelectTrigger>
                         <SelectContent>
-                          {templates?.map((template) => (
-                            <SelectItem key={template.id} value={template.id}>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="text-xs">
-                                  {template.type}
-                                </Badge>
-                                {template.name}
-                              </div>
-                            </SelectItem>
-                          ))}
+                          {templates && templates.length > 0 ? (
+                            templates.map((template) => (
+                              <SelectItem key={template.id} value={template.id}>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {template.type}
+                                  </Badge>
+                                  {template.name}
+                                </div>
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="p-4 text-center text-muted-foreground">
+                              <LayoutTemplate className="h-8 w-8 mx-auto mb-2" />
+                              <p className="text-sm">No hay templates disponibles</p>
+                              <p className="text-xs">Contacta al administrador del sistema</p>
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
