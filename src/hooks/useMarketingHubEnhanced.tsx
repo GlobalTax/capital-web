@@ -105,38 +105,48 @@ export const useMarketingHubEnhanced = () => {
   // Content Performance con agregaciones optimizadas
   const {
     data: contentPerformance,
-    isLoading: isLoadingContent
+    isLoading: isLoadingContent,
+    error: contentError
   } = useQuery({
     queryKey: ['content_performance_enhanced'],
     queryFn: async () => {
-      const [postsRes, metricsRes, analyticsRes] = await Promise.all([
-        supabase.from('blog_posts').select('*'),
-        supabase.from('blog_post_metrics').select('*'),
-        supabase.from('blog_analytics').select('*')
-      ]);
+      try {
+        const [postsRes, metricsRes, analyticsRes] = await Promise.all([
+          supabase.from('blog_posts').select('*'),
+          supabase.from('blog_post_metrics').select('*'),
+          supabase.from('blog_analytics').select('*')
+        ]);
 
-      const posts = postsRes.data || [];
-      const metrics = metricsRes.data || [];
-      const analytics = analyticsRes.data || [];
+        if (postsRes.error) throw postsRes.error;
+        if (metricsRes.error) throw metricsRes.error;
+        if (analyticsRes.error) throw analyticsRes.error;
 
-      return posts.map(post => {
-        const postMetrics = metrics.find(m => m.post_id === post.id);
-        const postAnalytics = analytics.filter(a => a.post_id === post.id);
+        const posts = postsRes.data || [];
+        const metrics = metricsRes.data || [];
+        const analytics = analyticsRes.data || [];
 
-        return {
-          id: post.id,
-          title: post.title,
-          type: 'blog_post',
-          views: postMetrics?.total_views || 0,
-          uniqueViews: postMetrics?.unique_views || 0,
-          downloads: postAnalytics.length, // Aproximación
-          engagement: postMetrics?.avg_scroll_percentage || 0,
-          leads: 0, // Se calcularía con datos adicionales
-          category: post.category,
-          publishedAt: post.published_at,
-          readingTime: postMetrics?.avg_reading_time || 0
-        };
-      });
+        return posts.map(post => {
+          const postMetrics = metrics.find(m => m.post_id === post.id);
+          const postAnalytics = analytics.filter(a => a.post_id === post.id);
+
+          return {
+            id: post.id,
+            title: post.title,
+            type: 'blog_post',
+            views: postMetrics?.total_views || 0,
+            uniqueViews: postMetrics?.unique_views || 0,
+            downloads: postAnalytics.length, // Aproximación
+            engagement: postMetrics?.avg_scroll_percentage || 0,
+            leads: 0, // Se calcularía con datos adicionales
+            category: post.category,
+            publishedAt: post.published_at,
+            readingTime: postMetrics?.avg_reading_time || 0
+          };
+        });
+      } catch (error) {
+        console.error('Error fetching content data:', error);
+        throw error;
+      }
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
