@@ -1,174 +1,144 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import AccessibilityTools from '@/components/AccessibilityTools';
-import NotificationCenter from '@/components/NotificationCenter';
-import PremiumSectorHero from '@/components/sector/PremiumSectorHero';
-import PremiumSectorStats from '@/components/sector/PremiumSectorStats';
-import PremiumSectorServices from '@/components/sector/PremiumSectorServices';
-import SectorExpertise from '@/components/sector/SectorExpertise';
-import PremiumSectorCaseStudy from '@/components/sector/PremiumSectorCaseStudy';
-import PremiumSectorCTA from '@/components/sector/PremiumSectorCTA';
-import { Laptop, Code, Smartphone, Database, TrendingUp, Users, Building, Zap } from 'lucide-react';
+import SectorHero from '@/components/SectorHero';
+import SectorStats from '@/components/sector/SectorStats';
+import { Computer, TrendingUp, Users, Award } from 'lucide-react';
 
 const Tecnologia = () => {
-  const heroMetrics = [
-    { value: "60+", label: "Transacciones Tech", icon: Building, change: "+12%" },
-    { value: "€2.1B", label: "Valor Total", icon: TrendingUp, change: "+28%" },
-    { value: "18", label: "Países", icon: Users },
-    { value: "92%", label: "Éxito Startups", icon: Zap, change: "+5%" }
-  ];
-
   const stats = [
-    { 
-      number: "60+", 
-      label: "Transacciones Tech",
-      description: "Fusiones y adquisiciones completadas",
-      trend: "+25% vs año anterior"
+    { number: "85%", label: "Crecimiento anual promedio" },
+    { number: "12x", label: "Múltiplo EBITDA promedio" },
+    { number: "150+", label: "Transacciones completadas" },
+    { number: "95%", label: "Tasa de éxito en deals" }
+  ];
+
+  const expertise = [
+    {
+      icon: Computer,
+      title: "Software & SaaS",
+      description: "Especialistas en valoración de empresas de software, SaaS y plataformas digitales con modelos de suscripción."
     },
-    { 
-      number: "€2.1B", 
-      label: "Valor Transaccional",
-      description: "Volumen total gestionado",
-      trend: "+40% crecimiento"
+    {
+      icon: TrendingUp,
+      title: "FinTech & PropTech",
+      description: "Experiencia en startups tecnológicas disruptivas en servicios financieros e inmobiliarios."
     },
-    { 
-      number: "18", 
-      label: "Países de Operación",
-      description: "Presencia internacional",
-      trend: "Expansión continua"
+    {
+      icon: Users,
+      title: "E-commerce & MarTech",
+      description: "Conocimiento profundo en plataformas de comercio electrónico y tecnologías de marketing."
     },
-    { 
-      number: "92%", 
-      label: "Éxito en Startups",
-      description: "Tasa de cierre exitoso",
-      trend: "Liderando el mercado"
+    {
+      icon: Award,
+      title: "Deep Tech & AI",
+      description: "Valoración especializada en inteligencia artificial, blockchain y tecnologías emergentes."
     }
-  ];
-
-  const services = [
-    {
-      icon: Laptop,
-      title: "M&A Tech Empresarial",
-      description: "Asesoramiento especializado en fusiones y adquisiciones para empresas de software, SaaS y servicios tecnológicos con enfoque en maximización de valor.",
-      features: [
-        "Valoración de activos digitales",
-        "Due diligence técnica especializada",
-        "Estructuración financiera optimizada"
-      ]
-    },
-    {
-      icon: Code,
-      title: "Valoración de Startups",
-      description: "Evaluación integral de startups tecnológicas, incluyendo análisis de modelos de negocio escalables, propiedad intelectual y potencial de crecimiento.",
-      features: [
-        "Análisis de métricas SaaS",
-        "Valoración de IP y patentes",
-        "Modelado financiero predictivo"
-      ]
-    },
-    {
-      icon: Smartphone,
-      title: "Mobile & Apps",
-      description: "Especialización en transacciones de aplicaciones móviles, plataformas digitales y ecosistemas de desarrollo tecnológico con enfoque en user engagement.",
-      features: [
-        "Análisis de user acquisition",
-        "Monetización y retention",
-        "Tecnología y arquitectura"
-      ]
-    },
-    {
-      icon: Database,
-      title: "Due Diligence Técnica",
-      description: "Revisión exhaustiva de arquitectura tecnológica, seguridad, escalabilidad y stack tecnológico para garantizar la viabilidad técnica de las transacciones.",
-      features: [
-        "Auditoría de código y arquitectura",
-        "Análisis de seguridad y compliance",
-        "Evaluación de escalabilidad"
-      ]
-    }
-  ];
-
-  const expertiseAreas = [
-    "Software y SaaS",
-    "Fintech y Medtech",
-    "E-commerce y Marketplaces",
-    "Inteligencia Artificial",
-    "Ciberseguridad",
-    "Cloud Computing"
-  ];
-
-  const caseStudyMetrics = [
-    { value: "€180M", label: "Valor de Transacción", icon: TrendingUp },
-    { value: "8x ARR", label: "Múltiplo Alcanzado", icon: Building },
-    { value: "50K+", label: "Usuarios Activos", icon: Users }
   ];
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main role="main">
-        <PremiumSectorHero
+      <div className="pt-16">
+        <SectorHero
           sector="Tecnología"
-          title="Sector Tecnología"
-          description="Especialistas en M&A para empresas tecnológicas, desde startups innovadoras hasta corporaciones tech establecidas. Entendemos los modelos de negocio tecnológicos y las métricas SaaS que impulsan el valor."
-          primaryButtonText="Explorar Oportunidades Tech"
-          secondaryButtonText="Ver Casos Tech"
-          metrics={heroMetrics}
+          title="Expertos en Valoración de Empresas Tecnológicas"
+          description="Especialistas en la valoración de empresas tecnológicas, desde startups hasta scale-ups. Entendemos las métricas específicas del sector tech y aplicamos metodologías de valoración adaptadas a modelos de negocio digitales."
+          primaryButtonText="Solicitar Valoración Tech"
+          secondaryButtonText="Casos de Éxito"
+          gradientFrom="from-blue-600"
+          gradientTo="to-purple-600"
         />
+        
+        <SectorStats stats={stats} />
+        
+        {/* Expertise Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                Nuestra Especialización Tech
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Profundo conocimiento en todos los subsectores tecnológicos
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {expertise.map((item, index) => (
+                <div key={index} className="bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <item.icon className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-black mb-2">{item.title}</h3>
+                  <p className="text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-        <PremiumSectorStats stats={stats} />
+        {/* Methodologies Section */}
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                Metodologías Especializadas
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Aplicamos métodos de valoración específicos para empresas tecnológicas
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">1</span>
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Múltiplos de Ingresos</h3>
+                <p className="text-gray-600">Aplicamos múltiplos específicos de ARR (Annual Recurring Revenue) y MRR (Monthly Recurring Revenue) para modelos SaaS.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">2</span>
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Análisis de Cohorts</h3>
+                <p className="text-gray-600">Evaluamos la retención de usuarios, LTV (Lifetime Value) y CAC (Customer Acquisition Cost) para proyecciones precisas.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">3</span>
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Valoración de Activos Digitales</h3>
+                <p className="text-gray-600">Incluimos propiedad intelectual, datos, algoritmos y posicionamiento digital en nuestras valoraciones.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <PremiumSectorServices
-          title="Servicios Especializados en Tech"
-          subtitle="Ofrecemos servicios específicamente diseñados para el ecosistema tecnológico, combinando expertise financiero con conocimiento técnico profundo para maximizar el valor de cada transacción."
-          services={services}
-        />
-
-        <SectorExpertise
-          title="Experiencia en Tecnología"
-          description="Entendemos los modelos de negocio tecnológicos, métricas SaaS, escalabilidad y los desafíos únicos del sector tech. Nuestro equipo combina experiencia financiera con conocimiento técnico profundo."
-          expertiseAreas={expertiseAreas}
-          achievementTitle="Líderes en Tech M&A"
-          achievementDescription="Reconocidos como 'Top Tech M&A Advisor' por TechCrunch y Forbes por nuestro trabajo con unicornios europeos."
-          achievementDetails="Hemos asesorado más de 60 transacciones tech, incluyendo 12 exits superiores a €100M en los últimos 3 años."
-        />
-
-        <PremiumSectorCaseStudy
-          title="Transformación Digital Exitosa"
-          description="Asesoramos la venta de una plataforma SaaS española de gestión empresarial a un grupo tecnológico europeo, logrando un múltiplo excepcional y maximizando el valor para todos los stakeholders."
-          metrics={caseStudyMetrics}
-          buttonText="Ver Más Casos Tech"
-          companyName="TechCorp España"
-          sector="SaaS B2B"
-          timeline="6 meses"
-        />
-
-        <PremiumSectorCTA
-          title="¿Tiene una empresa tecnológica?"
-          description="Nuestros expertos en tech están listos para analizar su empresa y maximizar su valoración en el mercado tecnológico actual. Comience con una consulta gratuita."
-          primaryButtonText="Valoración Tech Gratuita"
-          secondaryButtonText="Descargar Tech Report"
-          contactInfo={{
-            phone: "+34 91 123 45 67",
-            email: "tech@capittal.com"
-          }}
-        />
-      </main>
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              ¿Necesitas valorar tu empresa tecnológica?
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Nuestros expertos en tech te ayudarán a obtener una valoración precisa y estratégica
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Solicitar Consulta Gratuita
+              </button>
+              <button className="border border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+                Descargar Caso de Éxito
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
       <Footer />
-      
-      {/* Herramientas de accesibilidad flotantes */}
-      <AccessibilityTools />
-      <NotificationCenter className="mr-16" />
-      
-      {/* Live region para anuncios de accesibilidad */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-        id="accessibility-announcements"
-      />
     </div>
   );
 };

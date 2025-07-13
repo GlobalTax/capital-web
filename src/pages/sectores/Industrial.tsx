@@ -1,104 +1,143 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SectorHero from '@/components/SectorHero';
 import SectorStats from '@/components/sector/SectorStats';
-import SectorServices from '@/components/sector/SectorServices';
-import SectorExpertise from '@/components/sector/SectorExpertise';
-import SectorCaseStudy from '@/components/sector/SectorCaseStudy';
-import SectorCTA from '@/components/sector/SectorCTA';
-import { Factory, Cog, TrendingUp, Users } from 'lucide-react';
+import { Factory, Cog, Truck, Zap } from 'lucide-react';
 
 const Industrial = () => {
   const stats = [
-    { number: "50+", label: "Transacciones Industriales" },
-    { number: "€2.5B", label: "Valor Transaccional" },
-    { number: "15", label: "Países de Operación" },
-    { number: "95%", label: "Éxito en Cierres" }
+    { number: "18%", label: "Crecimiento industrial anual" },
+    { number: "7.2x", label: "Múltiplo EBITDA promedio" },
+    { number: "200+", label: "Empresas industriales valoradas" },
+    { number: "92%", label: "Precisión en valoraciones" }
   ];
 
-  const services = [
+  const expertise = [
     {
       icon: Factory,
-      title: "M&A Industrial",
-      description: "Asesoramiento en fusiones y adquisiciones para empresas manufactureras, químicas y de ingeniería."
+      title: "Manufactura & Producción",
+      description: "Valoración de empresas manufactureras, plantas de producción y cadenas de montaje con análisis de eficiencia operativa."
     },
     {
       icon: Cog,
-      title: "Valoración de Activos",
-      description: "Evaluación especializada de maquinaria, plantas industriales y activos técnicos complejos."
+      title: "Maquinaria & Equipos",
+      description: "Expertise en fabricantes de maquinaria industrial, equipos especializados y soluciones de automatización."
     },
     {
-      icon: TrendingUp,
-      title: "Optimización Operativa",
-      description: "Análisis de eficiencia y oportunidades de mejora en procesos industriales."
+      icon: Truck,
+      title: "Logística & Distribución",
+      description: "Especialistas en empresas de transporte, almacenamiento y gestión de cadena de suministro."
     },
     {
-      icon: Users,
-      title: "Due Diligence Técnica",
-      description: "Revisión exhaustiva de procesos, tecnología y capacidades operativas."
+      icon: Zap,
+      title: "Energía & Utilities",
+      description: "Valoración de empresas energéticas, utilities, renovables y proyectos de infraestructura energética."
     }
-  ];
-
-  const expertiseAreas = [
-    "Industria Química y Petroquímica",
-    "Manufactura y Automoción",
-    "Ingeniería y Construcción",
-    "Energía y Utilities",
-    "Minería y Materiales",
-    "Equipamiento Industrial"
-  ];
-
-  const caseStudyMetrics = [
-    { value: "€450M", label: "Valor de Transacción" },
-    { value: "6 meses", label: "Tiempo de Ejecución" },
-    { value: "12", label: "Plantas Evaluadas" }
   ];
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
-      <SectorHero
-        sector="Industrial"
-        title="Sector Industrial"
-        description="Especialistas en M&A para empresas industriales, manufactureras y de ingeniería con experiencia probada en transacciones complejas. Comprendemos las dinámicas operativas del sector."
-        primaryButtonText="Analizar Oportunidad"
-        secondaryButtonText="Ver Casos Industriales"
-      />
+      <div className="pt-16">
+        <SectorHero
+          sector="Industrial"
+          title="Especialistas en Valoración del Sector Industrial"
+          description="Profundo conocimiento del sector industrial con expertise en análisis de activos físicos, eficiencia operativa y cadenas de valor. Aplicamos metodologías específicas para empresas manufactureras y de infraestructura."
+          primaryButtonText="Valoración Industrial"
+          secondaryButtonText="Casos Industriales"
+          gradientFrom="from-slate-700"
+          gradientTo="to-gray-600"
+        />
+        
+        <SectorStats stats={stats} />
+        
+        {/* Expertise Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                Nuestra Experiencia Industrial
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Cobertura completa de todos los subsectores industriales
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {expertise.map((item, index) => (
+                <div key={index} className="bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+                    <item.icon className="w-6 h-6 text-slate-700" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-black mb-2">{item.title}</h3>
+                  <p className="text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      <SectorStats stats={stats} />
+        {/* Asset Valuation Section */}
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                Valoración de Activos Industriales
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Expertise especializado en activos físicos y operaciones complejas
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-slate-600 to-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Factory className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Plantas & Instalaciones</h3>
+                <p className="text-gray-600">Valoración técnica de plantas industriales, maquinaria especializada y equipos de producción.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-slate-600 to-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Cog className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Tecnología & I+D</h3>
+                <p className="text-gray-600">Evaluación de patentes industriales, procesos propietarios y desarrollos tecnológicos.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-slate-600 to-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Truck className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Cadena de Suministro</h3>
+                <p className="text-gray-600">Análisis de eficiencia logística, contratos de suministro y optimización operativa.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <SectorServices
-        title="Servicios Especializados"
-        subtitle="Ofrecemos servicios adaptados a las particularidades del sector industrial"
-        services={services}
-      />
-
-      <SectorExpertise
-        title="Nuestra Experiencia Industrial"
-        description="Comprendemos las complejidades operativas, regulatorias y técnicas del sector industrial. Nuestro equipo combina experiencia financiera con conocimiento sectorial profundo."
-        expertiseAreas={expertiseAreas}
-        achievementTitle="Reconocimiento Sectorial"
-        achievementDescription="Premiados como 'Mejor Asesor M&A Industrial' por tres años consecutivos por la Asociación Europea de Investment Banking."
-        achievementDetails="Nuestro expertise en due diligence técnica y valoración de activos industriales es reconocido a nivel internacional."
-      />
-
-      <SectorCaseStudy
-        title="Caso de Éxito Reciente"
-        description="Asesoramos la adquisición de una empresa química europea por un grupo industrial asiático por €450M, incluyendo due diligence técnica completa y estructuración financiera optimizada."
-        metrics={caseStudyMetrics}
-        buttonText="Ver Casos Completos"
-      />
-
-      <SectorCTA
-        title="¿Tiene un proyecto industrial?"
-        description="Nuestros especialistas están listos para analizar su oportunidad y proporcionar el asesoramiento que necesita."
-        primaryButtonText="Consulta Gratuita"
-        secondaryButtonText="Descargar Sector Report"
-      />
-
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-slate-700 to-gray-600">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              ¿Tu empresa industrial necesita valoración?
+            </h2>
+            <p className="text-xl text-slate-200 mb-8">
+              Expertos en valoración industrial con conocimiento técnico especializado
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-white text-slate-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Consulta Especializada
+              </button>
+              <button className="border border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-slate-700 transition-colors">
+                Casos Industriales
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
       <Footer />
     </div>
   );

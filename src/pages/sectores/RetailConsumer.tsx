@@ -1,104 +1,143 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SectorHero from '@/components/SectorHero';
 import SectorStats from '@/components/sector/SectorStats';
-import SectorServices from '@/components/sector/SectorServices';
-import SectorExpertise from '@/components/sector/SectorExpertise';
-import SectorCaseStudy from '@/components/sector/SectorCaseStudy';
-import SectorCTA from '@/components/sector/SectorCTA';
-import { Store, ShoppingBag, Truck, Users } from 'lucide-react';
+import { ShoppingBag, Store, Users, TrendingUp } from 'lucide-react';
 
 const RetailConsumer = () => {
   const stats = [
-    { number: "40+", label: "Transacciones Retail" },
-    { number: "€1.6B", label: "Valor Transaccional" },
-    { number: "22", label: "Países Europeos" },
-    { number: "88%", label: "Integración Exitosa" }
+    { number: "35%", label: "Crecimiento e-commerce anual" },
+    { number: "6.8x", label: "Múltiplo EBITDA promedio" },
+    { number: "180+", label: "Retailers valorados" },
+    { number: "89%", label: "Precisión en proyecciones" }
   ];
 
-  const services = [
-    {
-      icon: Store,
-      title: "M&A Retail",
-      description: "Asesoramiento en fusiones y adquisiciones para cadenas retail, franquicias y comercio especializado."
-    },
+  const expertise = [
     {
       icon: ShoppingBag,
-      title: "E-commerce M&A",
-      description: "Especialización en plataformas de comercio electrónico, marketplaces y retail digital."
+      title: "E-commerce & Retail Digital",
+      description: "Valoración de plataformas digitales, marketplaces y empresas de comercio electrónico con modelos omnicanal."
     },
     {
-      icon: Truck,
-      title: "Supply Chain",
-      description: "Análisis de cadenas de suministro, logística y optimización de operaciones retail."
+      icon: Store,
+      title: "Retail Tradicional",
+      description: "Expertise en cadenas de tiendas, centros comerciales y formatos retail con análisis de ubicaciones y tráfico."
     },
     {
       icon: Users,
-      title: "Consumer Brands",
-      description: "Valoración de marcas de consumo, análisis de market share y posicionamiento competitivo."
+      title: "Marcas de Consumo",
+      description: "Especialistas en valoración de marcas, productos de gran consumo y empresas de bienes de consumo duradero."
+    },
+    {
+      icon: TrendingUp,
+      title: "Distribución & Wholesale",
+      description: "Valoración de distribuidoras, mayoristas y empresas de la cadena de suministro retail."
     }
-  ];
-
-  const expertiseAreas = [
-    "Retail Tradicional y Moderno",
-    "E-commerce y Marketplaces",
-    "Moda y Lifestyle",
-    "Alimentación y Bebidas",
-    "Electrodomésticos y Electrónica",
-    "Franquicias y Licencias"
-  ];
-
-  const caseStudyMetrics = [
-    { value: "€250M", label: "Valor de Transacción" },
-    { value: "120", label: "Tiendas Integradas" },
-    { value: "85%", label: "Digitalización Lograda" }
   ];
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
-      <SectorHero
-        sector="Retail & Consumer"
-        title="Retail & Consumer"
-        description="Especialistas en transacciones para empresas de retail, bienes de consumo y marcas con experiencia en transformación digital y omnicanalidad. Comprendemos las dinámicas del consumo moderno."
-        primaryButtonText="Explorar Retail M&A"
-        secondaryButtonText="Ver Casos Retail"
-      />
+      <div className="pt-16">
+        <SectorHero
+          sector="Retail & Consumer"
+          title="Expertos en Valoración del Sector Retail"
+          description="Especialización en retail y bienes de consumo con profundo conocimiento de tendencias digitales. Analizamos métricas específicas como same-store sales, customer lifetime value y eficiencia por canal."
+          primaryButtonText="Valoración Retail"
+          secondaryButtonText="Casos Retail"
+          gradientFrom="from-pink-600"
+          gradientTo="to-rose-600"
+        />
+        
+        <SectorStats stats={stats} />
+        
+        {/* Expertise Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                Nuestra Experiencia Retail
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Cobertura completa del ecosistema retail y consumo
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {expertise.map((item, index) => (
+                <div key={index} className="bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
+                    <item.icon className="w-6 h-6 text-pink-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-black mb-2">{item.title}</h3>
+                  <p className="text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      <SectorStats stats={stats} />
+        {/* Retail Metrics Section */}
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                Métricas Especializadas Retail
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                KPIs específicos que utilizamos en nuestras valoraciones
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-sm">SSS</span>
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Same-Store Sales</h3>
+                <p className="text-gray-600">Análisis de crecimiento orgánico y performance por tienda para valoraciones precisas.</p>
+              </div>
+              
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-sm">LTV</span>
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Customer Lifetime Value</h3>
+                <p className="text-gray-600">Valoración basada en valor de vida del cliente y análisis de cohortes de consumo.</p>
+              </div>
+              
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-sm">CAC</span>
+                </div>
+                <h3 className="text-xl font-semibold text-black mb-2">Customer Acquisition Cost</h3>
+                <p className="text-gray-600">Optimización de costes de adquisición y efficiency ratio marketing/ventas.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <SectorServices
-        title="Servicios Especializados"
-        subtitle="Servicios adaptados al ecosistema retail y consumer en constante evolución"
-        services={services}
-      />
-
-      <SectorExpertise
-        title="Expertise en Retail & Consumer"
-        description="Comprendemos las dinámicas del consumo, la transformación digital del retail, y los desafíos de la omnicanalidad. Nuestro equipo tiene experiencia directa en operaciones retail y marcas de consumo."
-        expertiseAreas={expertiseAreas}
-        achievementTitle="Líderes en Retail M&A"
-        achievementDescription="Reconocidos como 'Best Retail M&A Advisor' por Retail Week y premiados por nuestro trabajo en transformación digital retail."
-        achievementDetails="Hemos asesorado la integración exitosa de más de 40 transacciones retail, incluyendo procesos de digitalización post-fusión."
-      />
-
-      <SectorCaseStudy
-        title="Caso de Éxito Destacado"
-        description="Asesoramos la adquisición de una cadena de moda española con 120 tiendas por un grupo retail europeo por €250M, incluyendo plan de digitalización integral."
-        metrics={caseStudyMetrics}
-        buttonText="Ver Casos Retail"
-      />
-
-      <SectorCTA
-        title="¿Tiene una empresa retail o consumer?"
-        description="Nuestros especialistas están preparados para analizar su negocio y maximizar el valor en su proceso de M&A."
-        primaryButtonText="Consulta Retail Gratuita"
-        secondaryButtonText="Descargar Retail Report"
-      />
-
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-pink-600 to-rose-600">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              ¿Tu empresa retail necesita valoración?
+            </h2>
+            <p className="text-xl text-pink-100 mb-8">
+              Expertos en retail con conocimiento de tendencias digitales y consumer behavior
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-white text-pink-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Consulta Especializada
+              </button>
+              <button className="border border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-pink-600 transition-colors">
+                Casos Retail
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
       <Footer />
     </div>
   );
