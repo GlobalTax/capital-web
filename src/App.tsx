@@ -71,7 +71,7 @@ const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(()
 ));
 
 // Resource pages - Create placeholder components for missing ones
-const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => 
+const Blog = lazy(() => import('@/pages/Blog').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => 

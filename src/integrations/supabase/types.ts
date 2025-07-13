@@ -1869,6 +1869,69 @@ export type Database = {
           },
         ]
       }
+      workflow_executions: {
+        Row: {
+          completed_actions: number | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          execution_result: Json | null
+          execution_status: string
+          id: string
+          lead_score_id: string | null
+          started_at: string
+          total_actions: number | null
+          trigger_data: Json | null
+          updated_at: string
+          workflow_id: string
+        }
+        Insert: {
+          completed_actions?: number | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          execution_result?: Json | null
+          execution_status?: string
+          id?: string
+          lead_score_id?: string | null
+          started_at?: string
+          total_actions?: number | null
+          trigger_data?: Json | null
+          updated_at?: string
+          workflow_id: string
+        }
+        Update: {
+          completed_actions?: number | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          execution_result?: Json | null
+          execution_status?: string
+          id?: string
+          lead_score_id?: string | null
+          started_at?: string
+          total_actions?: number | null
+          trigger_data?: Json | null
+          updated_at?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_workflow_executions_lead_score_id"
+            columns: ["lead_score_id"]
+            isOneToOne: false
+            referencedRelation: "lead_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_workflow_executions_workflow_id"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "automation_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
