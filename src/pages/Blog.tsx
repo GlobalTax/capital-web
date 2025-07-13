@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Search, Calendar, User, Tag, TrendingUp } from 'lucide-react';
+import { useBlogPosts } from '@/hooks/useBlogPosts';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todos');
+  const { posts, isLoading, fetchPosts } = useBlogPosts();
+
+  useEffect(() => {
+    fetchPosts(true); // Only fetch published posts
+  }, []);
 
   const blogPosts = [
     {
