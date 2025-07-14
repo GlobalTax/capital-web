@@ -3,6 +3,7 @@ import React from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import LogoCarousel from '@/components/LogoCarousel';
+import TestimonialsCarousel from '@/components/TestimonialsCarousel';
 import MarketInsights from '@/components/MarketInsights';
 import WhyChooseCapittal from '@/components/WhyChooseCapittal';
 import Services from '@/components/Services';
@@ -23,6 +24,7 @@ const Index = () => {
       <main role="main">
         <Hero />
         <LogoCarousel />
+        <TestimonialsCarousel />
         <MarketInsights />
         <WhyChooseCapittal />
         <Services />
