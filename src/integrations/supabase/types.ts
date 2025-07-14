@@ -1600,6 +1600,54 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          interests: string[] | null
+          ip_address: unknown | null
+          is_active: boolean
+          source: string | null
+          subscribed_at: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          interests?: string[] | null
+          ip_address?: unknown | null
+          is_active?: boolean
+          source?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          interests?: string[] | null
+          ip_address?: unknown | null
+          is_active?: boolean
+          source?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       sector_multiples: {
         Row: {
           description: string | null

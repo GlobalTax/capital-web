@@ -26,13 +26,10 @@ const Newsletter = () => {
     setIsLoading(true);
 
     try {
-      // Guardar suscripción en contact_leads
-      const { error } = await supabase.from('contact_leads').insert({
+      // Guardar suscripción en newsletter_subscribers
+      const { error } = await supabase.from('newsletter_subscribers').insert({
         email: email,
-        full_name: 'Suscriptor Newsletter',
-        company: 'Newsletter',
-        status: 'newsletter',
-        referral: 'newsletter_signup'
+        source: 'website'
       });
 
       if (error) throw error;
