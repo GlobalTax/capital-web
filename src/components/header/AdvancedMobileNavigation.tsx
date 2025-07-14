@@ -89,6 +89,7 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
 
         {/* Botones de acción */}
         <div className="border-t border-gray-200 pt-4 space-y-3">
+          {/* Temporarily hidden - admin access
           {user && (
             <Link to="/admin" onClick={closeMenu}>
               <Button variant="outline" className="w-full justify-start">
@@ -97,6 +98,7 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
               </Button>
             </Link>
           )}
+          */}
           
           <Link to="/contacto" onClick={closeMenu}>
             <Button className="capittal-button w-full">

@@ -27,6 +27,7 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
+            {/* Temporarily hidden - admin access
             <Link to="/admin">
               <InteractiveHoverButton 
                 text="Admin"
@@ -35,6 +36,7 @@ const Header = () => {
                 className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
               />
             </Link>
+            */}
             <Link to="/contacto">
               <InteractiveHoverButton 
                 text="Contacto"
