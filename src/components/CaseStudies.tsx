@@ -11,8 +11,8 @@ import { useCaseStudies } from '@/hooks/useCaseStudies';
 const CaseStudies = () => {
   const { filteredCases, isLoading, filterCaseStudies, getUniqueSectors, getUniqueYears } = useCaseStudies();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedYear, setSelectedYear] = useState<string>('all');
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
   const handleSearch = (value: string) => {
@@ -39,16 +39,16 @@ const CaseStudies = () => {
   const applyFilters = (search: string, sector: string, year: string, featured: boolean) => {
     filterCaseStudies({
       search: search || undefined,
-      sector: sector || undefined,
-      year: year ? parseInt(year) : undefined,
+      sector: sector && sector !== 'all' ? sector : undefined,
+      year: year && year !== 'all' ? parseInt(year) : undefined,
       featured: featured || undefined,
     });
   };
 
   const clearFilters = () => {
     setSearchTerm('');
-    setSelectedSector('');
-    setSelectedYear('');
+    setSelectedSector('all');
+    setSelectedYear('all');
     setShowFeaturedOnly(false);
     filterCaseStudies({});
   };
@@ -107,7 +107,7 @@ const CaseStudies = () => {
                 <SelectValue placeholder="Filtrar por sector" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los sectores</SelectItem>
+                <SelectItem value="all">Todos los sectores</SelectItem>
                 {sectors.map((sector) => (
                   <SelectItem key={sector} value={sector}>
                     {sector}
@@ -121,7 +121,7 @@ const CaseStudies = () => {
                 <SelectValue placeholder="Año" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {years.map((year) => (
                   <SelectItem key={year} value={year!.toString()}>
                     {year}
