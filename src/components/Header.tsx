@@ -27,16 +27,17 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Temporarily hidden - admin access
-            <Link to="/admin">
-              <InteractiveHoverButton 
-                text="Admin"
-                variant="secondary"
-                size="sm"
-                className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
-              />
-            </Link>
-            */}
+            {/* DEV ONLY - Admin access button for development */}
+            {process.env.NODE_ENV === 'development' && (
+              <Link to="/admin">
+                <InteractiveHoverButton 
+                  text="🔧"
+                  variant="secondary"
+                  size="sm"
+                  className="bg-gray-50 text-gray-500 hover:bg-gray-100 border-gray-200 opacity-50 hover:opacity-100"
+                />
+              </Link>
+            )}
             <Link to="/contacto">
               <InteractiveHoverButton 
                 text="Contacto"

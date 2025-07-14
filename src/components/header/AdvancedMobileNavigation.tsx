@@ -89,16 +89,15 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
 
         {/* Botones de acción */}
         <div className="border-t border-gray-200 pt-4 space-y-3">
-          {/* Temporarily hidden - admin access
-          {user && (
+          {/* DEV ONLY - Admin access for development */}
+          {process.env.NODE_ENV === 'development' && user && (
             <Link to="/admin" onClick={closeMenu}>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start opacity-50 hover:opacity-100">
                 <Shield className="h-4 w-4 mr-2" />
-                Panel de Administración
+                🔧 Admin (Dev)
               </Button>
             </Link>
           )}
-          */}
           
           <Link to="/contacto" onClick={closeMenu}>
             <Button className="capittal-button w-full">
