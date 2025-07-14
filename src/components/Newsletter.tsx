@@ -55,16 +55,16 @@ const Newsletter = () => {
 
   if (isSubscribed) {
     return (
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+      <div className="bg-muted/30 p-6 rounded-lg border border-border">
         <div className="flex items-center justify-center mb-4">
-          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-            <Check className="w-6 h-6 text-green-600" />
+          <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
+            <Check className="w-6 h-6" />
           </div>
         </div>
-        <h3 className="text-xl font-semibold text-center text-gray-900 mb-2">
+        <h3 className="text-xl font-semibold text-center text-foreground mb-2">
           ¡Bienvenido a nuestra comunidad!
         </h3>
-        <p className="text-center text-gray-600">
+        <p className="text-center text-muted-foreground">
           Recibirás insights exclusivos sobre M&A y valoración empresarial.
         </p>
       </div>
@@ -72,18 +72,18 @@ const Newsletter = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+    <div className="bg-muted/30 p-6 rounded-lg border border-border">
       <div className="flex items-center justify-center mb-4">
-        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-          <Mail className="w-6 h-6 text-blue-600" />
+        <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
+          <Mail className="w-6 h-6" />
         </div>
       </div>
       
-      <h3 className="text-xl font-semibold text-center text-gray-900 mb-2">
+      <h3 className="text-xl font-semibold text-center text-foreground mb-2">
         Insights M&A Exclusivos
       </h3>
       
-      <p className="text-center text-gray-600 mb-6">
+      <p className="text-center text-muted-foreground mb-6">
         Recibe análisis de mercado, tendencias de valoración y oportunidades de inversión directamente en tu bandeja de entrada.
       </p>
       
@@ -100,14 +100,14 @@ const Newsletter = () => {
           <Button 
             type="submit" 
             disabled={isLoading || !email}
-            className="capittal-button whitespace-nowrap"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
           >
             {isLoading ? 'Suscribiendo...' : 'Suscribirse'}
           </Button>
         </div>
       </form>
       
-      <p className="text-xs text-gray-500 text-center mt-3">
+      <p className="text-xs text-muted-foreground text-center mt-3">
         Sin spam. Cancela cuando quieras. Lee nuestra política de privacidad.
       </p>
     </div>
