@@ -31,7 +31,6 @@ const StandaloneCalculator = ({ companyData, onReset }: StandaloneCalculatorProp
   const [activeTab, setActiveTab] = useState('results');
   
   const {
-    scenarios,
     scenarioResults,
     bestScenario,
     distributionData,
@@ -42,8 +41,8 @@ const StandaloneCalculator = ({ companyData, onReset }: StandaloneCalculatorProp
     updateCustomMultiplier,
     updateTaxpayerType,
     updateSalePercentage,
-    toggleReinvestmentPlan,
-    toggleVitaliciaPlan
+    toggleReinvestment,
+    toggleVitalicia
   } = useValuationCalculatorV4(companyData);
 
   const formatCurrency = (amount: number): string => {
@@ -135,7 +134,7 @@ const StandaloneCalculator = ({ companyData, onReset }: StandaloneCalculatorProp
   };
 
   const handleTaxpayerTypeChange = (value: string) => {
-    updateTaxpayerType(value);
+    updateTaxpayerType(value as 'individual' | 'company');
   };
 
   const handleSalePercentageChange = (value: number) => {
@@ -143,11 +142,11 @@ const StandaloneCalculator = ({ companyData, onReset }: StandaloneCalculatorProp
   };
 
   const handleReinvestmentPlanToggle = (checked: boolean) => {
-    toggleReinvestmentPlan(checked);
+    toggleReinvestment(checked);
   };
 
   const handleVitaliciaPlanToggle = (checked: boolean) => {
-    toggleVitaliciaPlan(checked);
+    toggleVitalicia(checked);
   };
 
   return (
