@@ -171,7 +171,7 @@ Calculado con la herramienta de valoración standalone.`;
         </Card>
 
         {/* Escenarios Grid con animación */}
-        <div className="mb-6 animate-slide-up">
+        <div className="mb-6 animate-fade-in">
           <div className="flex items-center gap-3 mb-6">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Escenarios de Venta
@@ -190,7 +190,7 @@ Calculado con la herramienta de valoración standalone.`;
 
         {/* Controles y Gráfico con efectos visuales */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="animate-slide-in">
+          <div className="animate-fade-in">
             <QuickControlsPanel
               acquisitionValue={acquisitionValue}
               onAcquisitionValueChange={updateAcquisitionValue}
@@ -214,7 +214,7 @@ Calculado con la herramienta de valoración standalone.`;
         </div>
 
         {/* Resultado destacado con diseño premium */}
-        <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-success/5 shadow-xl hover:shadow-2xl transition-all duration-500 animate-bounce-gentle">
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-success/5 shadow-xl hover:shadow-2xl transition-all duration-500 animate-scale-in">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start justify-between gap-6">
               <div className="flex-1">
