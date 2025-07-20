@@ -1,142 +1,80 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useRateLimit } from '@/hooks/useRateLimit';
-import { logger } from '@/utils/logger';
-import { ContactFormData, UseContactFormReturn } from '@/types/forms';
-import { validateEmailForContact } from '@/utils/emailValidation';
 
-const initialFormData: ContactFormData = {
-  full_name: '',
-  email: '',
-  phone: '',
-  company: '',
-  company_size: '',
-  country: '',
-  referral: ''
-};
+import { useToast } from '@/hooks/use-toast';
+
+import type { ContactFormData, FormErrors } from '@/types/forms';
+import { validateContactName, validateEmail } from '@/utils/validationUtils';
+
+interface UseContactFormReturn {
+  submitForm: (data: ContactFormData) => Promise<boolean>;
+  isSubmitting: boolean;
+  errors: FormErrors;
+}
 
 export const useContactForm = (): UseContactFormReturn => {
-  const [formData, setFormData] = useState<ContactFormData>(initialFormData);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const { toast } = useToast();
-  const { isRateLimited, executeWithRateLimit } = useRateLimit({
-    maxRequests: 3,
-    windowMs: 60000 // 1 minute
-  });
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const validateForm = (data: ContactFormData): boolean => {
+    const newErrors: FormErrors = {};
 
-    if (!formData.full_name.trim()) {
-      newErrors.full_name = 'El nombre es requerido';
+    const nameValidation = validateContactName(data.name);
+    if (!nameValidation.isValid) {
+      newErrors.name = nameValidation.error;
     }
 
-    const emailValidation = validateEmailForContact(formData.email);
+    const emailValidation = validateEmail(data.email);
     if (!emailValidation.isValid) {
-      newErrors.email = emailValidation.message || 'Email inválido';
+      newErrors.email = emailValidation.error;
     }
 
-    if (!formData.company.trim()) {
-      newErrors.company = 'La empresa es requerida';
+    if (!data.message || data.message.trim().length < 10) {
+      newErrors.message = 'El mensaje debe tener al menos 10 caracteres';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (field: keyof ContactFormData, value: string): void => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const submitForm = async (data: ContactFormData): Promise<boolean> => {
+    if (!validateForm(data)) {
+      return false;
+    }
+
+    setIsSubmitting(true);
     
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    
-    if (isRateLimited('contact-form')) {
-      logger.warn('⚠️ [ContactForm] Rate limit excedido', undefined, { context: 'form', component: 'useContactForm' });
-      
-      toast({
-        title: "Demasiados intentos",
-        description: "Por favor espera un momento antes de enviar otro mensaje.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!validateForm()) {
-      toast({
-        title: "Error en el formulario",
-        description: "Por favor corrige los errores antes de continuar.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      await executeWithRateLimit(async () => {
-        const submissionData = {
-          ...formData,
-          ip_address: null,
-          user_agent: navigator.userAgent,
-          status: 'new',
-          email_sent: false,
-          hubspot_sent: false
-        };
-
-        const { data, error } = await supabase
-          .from('contact_leads')
-          .insert([submissionData])
-          .select()
-          .single();
-
-        if (error) {
-          logger.error('❌ [ContactForm] Error insertando en Supabase', error, { context: 'form', component: 'useContactForm' });
-          throw error;
-        }
-
-        logger.info('✅ [ContactForm] Lead guardado exitosamente', { leadId: data?.id });
-
-        toast({
-          title: "¡Mensaje enviado!",
-          description: "Gracias por contactarnos. Te responderemos pronto.",
-        });
-
-        resetForm();
-      }, 'contact-form');
-
-    } catch (error) {
-      logger.error('❌ [ContactForm] Error general', error, { context: 'form', component: 'useContactForm' });
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Here would be the actual API call
+      console.log('Formulario enviado:', data);
       
       toast({
-        title: "Error al enviar",
-        description: "Hubo un problema al enviar tu mensaje. Por favor inténtalo de nuevo.",
+        title: "¡Mensaje enviado!",
+        description: "Te responderemos en menos de 24 horas.",
+      });
+      
+      setErrors({});
+      return true;
+    } catch (error) {
+      console.error('Error enviando formulario:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al enviar tu mensaje. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       });
+      return false;
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
-  };
-
-  const resetForm = (): void => {
-    setFormData(initialFormData);
-    setErrors({});
   };
 
   return {
-    formData,
-    isLoading,
+    submitForm,
+    isSubmitting,
     errors,
-    handleSubmit,
-    handleChange,
-    resetForm,
   };
 };

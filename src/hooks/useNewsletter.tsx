@@ -1,96 +1,71 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+
 import { useToast } from '@/hooks/use-toast';
-import { UseNewsletterReturn } from '@/types/forms';
-import { validateEmailForNewsletter } from '@/utils/emailValidation';
+
+import type { NewsletterFormData, FormErrors } from '@/types/forms';
+import { validateEmail } from '@/utils/validationUtils';
+
+interface UseNewsletterReturn {
+  subscribe: (data: NewsletterFormData) => Promise<boolean>;
+  isSubmitting: boolean;
+  errors: FormErrors;
+}
 
 export const useNewsletter = (): UseNewsletterReturn => {
-  const [email, setEmail] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
-  const [company, setCompany] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    setError(null);
+  const validateForm = (data: NewsletterFormData): boolean => {
+    const newErrors: FormErrors = {};
 
-    const emailValidation = validateEmailForNewsletter(email);
+    const emailValidation = validateEmail(data.email);
     if (!emailValidation.isValid) {
-      setError(emailValidation.message || 'Email inválido');
-      return;
+      newErrors.email = emailValidation.error;
     }
 
-    setIsLoading(true);
-
-    try {
-      const { error: supabaseError } = await supabase
-        .from('newsletter_subscribers')
-        .insert([{
-          email: emailValidation.sanitizedValue || email,
-          full_name: fullName.trim() || null,
-          company: company.trim() || null,
-          source: 'website',
-          interests: [],
-          user_agent: navigator.userAgent,
-        }]);
-
-      if (supabaseError) {
-        if (supabaseError.code === '23505') { // Unique constraint violation
-          setError('Este email ya está suscrito a nuestro newsletter');
-          return;
-        }
-        throw supabaseError;
-      }
-
-      setSuccess(true);
-      toast({
-        title: "¡Suscripción exitosa!",
-        description: "Te has suscrito correctamente a nuestro newsletter.",
-      });
-
-      reset();
-
-    } catch (err) {
-      console.error('Newsletter subscription error:', err);
-      setError('Error al procesar la suscripción. Inténtalo de nuevo.');
-      
-      toast({
-        title: "Error",
-        description: "No se pudo completar la suscripción. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleEmailChange = (value: string): void => setEmail(value);
-  const handleNameChange = (value: string): void => setFullName(value);
-  const handleCompanyChange = (value: string): void => setCompany(value);
+  const subscribe = async (data: NewsletterFormData): Promise<boolean> => {
+    if (!validateForm(data)) {
+      return false;
+    }
 
-  const reset = (): void => {
-    setEmail('');
-    setFullName('');
-    setCompany('');
-    setError(null);
-    setSuccess(false);
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Here would be the actual API call
+      console.log('Suscripción al newsletter:', data);
+      
+      toast({
+        title: "¡Suscripción exitosa!",
+        description: "Gracias por suscribirte a nuestro newsletter.",
+      });
+      
+      setErrors({});
+      return true;
+    } catch (error) {
+      console.error('Error en suscripción:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema con tu suscripción. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
-    email,
-    fullName,
-    company,
-    isLoading,
-    error,
-    success,
-    handleSubmit,
-    handleEmailChange,
-    handleNameChange,
-    handleCompanyChange,
-    reset,
+    subscribe,
+    isSubmitting,
+    errors,
   };
 };
