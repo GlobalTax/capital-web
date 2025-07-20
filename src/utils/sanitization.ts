@@ -4,24 +4,24 @@ import DOMPurify from 'dompurify';
 // Configuraciones de sanitización por contexto
 export const SANITIZATION_PROFILES = {
   STRICT: {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
+    ALLOWED_TAGS: [] as string[],
+    ALLOWED_ATTR: [] as string[],
     KEEP_CONTENT: true,
     RETURN_DOM_FRAGMENT: false
   },
   MODERATE: {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
-    ALLOWED_ATTR: [],
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'] as string[],
+    ALLOWED_ATTR: [] as string[],
     KEEP_CONTENT: true,
     RETURN_DOM_FRAGMENT: false
   },
   PERMISSIVE: {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'ul', 'ol', 'li'],
-    ALLOWED_ATTR: ['href', 'target'],
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'ul', 'ol', 'li'] as string[],
+    ALLOWED_ATTR: ['href', 'target'] as string[],
     KEEP_CONTENT: true,
     RETURN_DOM_FRAGMENT: false
   }
-} as const;
+};
 
 export type SanitizationProfile = keyof typeof SANITIZATION_PROFILES;
 
