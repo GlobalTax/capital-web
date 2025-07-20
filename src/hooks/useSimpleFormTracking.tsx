@@ -1,15 +1,17 @@
-// Hook simplificado para tracking básico de formularios
+
+import { logger } from '@/utils/logger';
+
 export const useSimpleFormTracking = () => {
   const trackFormSubmission = (formType: string, formData?: any) => {
-    console.log(`Form submission tracked: ${formType}`, formData);
+    logger.info('Form submission tracked', { formType, formData }, { context: 'form', component: 'useSimpleFormTracking' });
   };
 
   const trackFormInteraction = (formType: string, field: string) => {
-    console.log(`Form interaction tracked: ${formType} - ${field}`);
+    logger.debug('Form interaction tracked', { formType, field }, { context: 'form', component: 'useSimpleFormTracking' });
   };
 
   const trackEvent = (eventName: string, eventData?: any) => {
-    console.log(`Event tracked: ${eventName}`, eventData);
+    logger.info('Event tracked', { eventName, eventData }, { context: 'marketing', component: 'useSimpleFormTracking' });
   };
 
   return {

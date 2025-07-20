@@ -16,6 +16,7 @@ import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { LoadingButton } from '@/components/LoadingButton';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { logger } from '@/utils/logger';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -31,18 +32,16 @@ const Contact = () => {
   const { submitContactForm, isSubmitting } = useContactForm();
   const { isOnline } = useNetworkStatus();
   
-  // Integrar tracking simple de formulario
   const { trackFormSubmission, trackFormInteraction } = useSimpleFormTracking();
-
-  // Tracking simplificado - no necesita useEffect
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      logger.info('Contact form submission started', { formData: { ...formData, email: '[REDACTED]' } }, { context: 'form', component: 'Contact' });
+      
       await submitContactForm(formData);
       
-      // Track successful completion
       trackFormSubmission('contact', formData);
       
       // Limpiar formulario después del envío exitoso
@@ -55,15 +54,16 @@ const Contact = () => {
         companySize: '',
         referral: '',
       });
+      
+      logger.info('Contact form submitted successfully', undefined, { context: 'form', component: 'Contact' });
     } catch (error) {
-      console.error('Error en el formulario:', error);
+      logger.error('Error in contact form submission', error as Error, { context: 'form', component: 'Contact' });
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    // Track field changes
     trackFormInteraction('contact', name);
     
     if (name === 'phone') {
@@ -80,7 +80,6 @@ const Contact = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    // Track select field changes
     trackFormInteraction('contact', name);
     
     setFormData({
@@ -89,9 +88,8 @@ const Contact = () => {
     });
   };
 
-  // Simplified blur handler - no validation tracking
   const handleFieldBlur = (fieldName: string) => {
-    // Basic client-side validation could go here if needed
+    logger.debug('Field blur event', { fieldName }, { context: 'form', component: 'Contact' });
   };
 
   return (

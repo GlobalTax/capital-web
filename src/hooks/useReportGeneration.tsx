@@ -1,5 +1,6 @@
 
-// Hook simplificado para mantener compatibilidad
+import { logger } from '@/utils/logger';
+
 export const useReportGeneration = () => {
   return {
     reportConfigs: [],
@@ -7,16 +8,16 @@ export const useReportGeneration = () => {
     isLoading: false,
     isGenerating: false,
     generateReport: (config: any) => {
-      console.log('Report generation disabled after cleanup:', config);
+      logger.info('Report generation disabled after cleanup', config, { context: 'system', component: 'useReportGeneration' });
     },
     createConfig: (config: any) => {
-      console.log('Report config creation disabled after cleanup:', config);
+      logger.info('Report config creation disabled after cleanup', config, { context: 'system', component: 'useReportGeneration' });
     },
     updateConfig: (config: any) => {
-      console.log('Report config update disabled after cleanup:', config);
+      logger.info('Report config update disabled after cleanup', config, { context: 'system', component: 'useReportGeneration' });
     },
     deleteConfig: (id: string) => {
-      console.log('Report config deletion disabled after cleanup:', id);
+      logger.info('Report config deletion disabled after cleanup', { id }, { context: 'system', component: 'useReportGeneration' });
     },
     isCreatingConfig: false,
     isUpdatingConfig: false,

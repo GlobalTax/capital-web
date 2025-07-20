@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ensureCurrentUserIsAdmin, debugAdminStatus } from '@/utils/adminSetup';
+import { logger } from '@/utils/logger';
 
 export const useAdminSetup = () => {
   const [isAdminSetup, setIsAdminSetup] = useState(false);
@@ -18,9 +19,8 @@ export const useAdminSetup = () => {
     setDebugInfo('Iniciando configuración de admin...');
     
     try {
-      console.log('=== INICIANDO DEBUG DE ADMIN ===');
+      logger.debug('Iniciando configuración de admin', undefined, { context: 'admin', component: 'useAdminSetup' });
       await debugAdminStatus();
-      console.log('=== FIN DEBUG ===');
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -29,6 +29,7 @@ export const useAdminSetup = () => {
       if (isAdmin) {
         setIsAdminSetup(true);
         setDebugInfo('Éxito: Usuario configurado como administrador');
+        logger.info('Usuario configurado como administrador exitosamente', undefined, { context: 'admin', component: 'useAdminSetup' });
         toast({
           title: "Acceso autorizado",
           description: "Bienvenido al panel de administración.",
@@ -36,6 +37,7 @@ export const useAdminSetup = () => {
       } else {
         setIsAdminSetup(false);
         setDebugInfo('Error: No se pudo configurar como administrador');
+        logger.warn('No se pudo configurar como administrador', undefined, { context: 'admin', component: 'useAdminSetup' });
         toast({
           title: "Error de configuración",
           description: "No se pudo configurar el usuario como administrador.",
@@ -43,7 +45,7 @@ export const useAdminSetup = () => {
         });
       }
     } catch (error) {
-      console.error('Error configurando admin:', error);
+      logger.error('Error configurando admin', error as Error, { context: 'admin', component: 'useAdminSetup' });
       setDebugInfo(`Error: ${error}`);
       toast({
         title: "Error",

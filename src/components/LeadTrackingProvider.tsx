@@ -1,6 +1,8 @@
+
 import React, { useEffect } from 'react';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
 import { useLocation } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 
 interface LeadTrackingProviderProps {
   children: React.ReactNode;
@@ -23,6 +25,8 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
   useEffect(() => {
     if (!enabled) return;
     
+    logger.debug('Route change tracked', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
+    
     // Track page view on route change
     trackPageView(location.pathname);
     
@@ -38,7 +42,7 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
     if (location.pathname.includes('/venta-empresas') || 
         location.pathname.includes('/servicios/valoraciones') ||
         location.pathname.includes('/servicios/due-diligence')) {
-      // High-intent pages
+      logger.info('High-intent page visited', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
       trackPageView(location.pathname + '_high_intent');
     }
     

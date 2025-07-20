@@ -1,6 +1,7 @@
 
 import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface ErrorContext {
   component?: string;
@@ -22,26 +23,19 @@ export const useCentralizedErrorHandler = (): UseErrorHandlerReturn => {
   const { toast } = useToast();
 
   const logError = useCallback((error: Error, context?: ErrorContext) => {
-    const errorData = {
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-      context: context || {},
-      userAgent: navigator.userAgent,
-      url: window.location.href
-    };
-
-    console.error('[ERROR]', errorData);
-
-    // En producción, aquí enviarías los errores a un servicio de logging
-    // como Sentry, LogRocket, etc.
+    logger.error('Application error', error, {
+      context: 'system',
+      component: context?.component || 'unknown',
+      data: {
+        action: context?.action,
+        userId: context?.userId,
+        metadata: context?.metadata
+      }
+    });
   }, []);
 
   const handleError = (error: Error, context?: ErrorContext) => {
-    // Solo logear en desarrollo para evitar spam en consola
-    if (process.env.NODE_ENV === 'development') {
-      logError(error, context);
-    }
+    logError(error, context);
     
     // Solo mostrar toast para errores críticos, no de tracking
     if (!error.message.toLowerCase().includes('tracking') && 

@@ -1,6 +1,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { logger } from '@/utils/logger';
 
 interface CacheEntry<T> {
   data: T;
@@ -30,6 +31,7 @@ export const useRLSOptimizedQueries = () => {
       return null;
     }
     
+    logger.debug('Cache hit', { key }, { context: 'performance', component: 'useRLSOptimizedQueries' });
     return entry.data;
   }, []);
 
@@ -39,6 +41,7 @@ export const useRLSOptimizedQueries = () => {
       timestamp: Date.now(),
       ttl
     });
+    logger.debug('Data cached', { key, ttl }, { context: 'performance', component: 'useRLSOptimizedQueries' });
   }, []);
 
   const executeQueryWithRLS = useCallback(async <T,>(
@@ -52,7 +55,7 @@ export const useRLSOptimizedQueries = () => {
     } catch (error: any) {
       // Manejo específico de errores RLS
       if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
-        console.warn('RLS access denied, using fallback data:', error.message);
+        logger.warn('RLS access denied, using fallback', { error: error.message, cacheKey }, { context: 'system', component: 'useRLSOptimizedQueries' });
         
         if (fallbackData !== undefined) {
           return fallbackData;
@@ -81,8 +84,10 @@ export const useRLSOptimizedQueries = () => {
       const keysToDelete = Array.from(cacheRef.current.keys())
         .filter(key => key.includes(pattern));
       keysToDelete.forEach(key => cacheRef.current.delete(key));
+      logger.debug('Cache cleared with pattern', { pattern, deletedCount: keysToDelete.length }, { context: 'performance', component: 'useRLSOptimizedQueries' });
     } else {
       cacheRef.current.clear();
+      logger.debug('All cache cleared', undefined, { context: 'performance', component: 'useRLSOptimizedQueries' });
     }
   }, []);
 

@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LogContext = 'auth' | 'marketing' | 'api' | 'ui' | 'system' | 'performance' | 'ai';
+export type LogContext = 'auth' | 'marketing' | 'api' | 'ui' | 'system' | 'performance' | 'ai' | 'admin' | 'form' | 'valuation';
 
 interface LogEntry {
   level: LogLevel;
@@ -27,23 +28,43 @@ interface LoggerConfig {
   sensitiveKeys: string[];
 }
 
+const getEnvironment = (): string => {
+  // Usar NODE_ENV como fuente principal
+  return process.env.NODE_ENV || 'development';
+};
+
+const getMinLogLevel = (): LogLevel => {
+  const env = getEnvironment();
+  
+  // En desarrollo: mostrar todos los logs
+  if (env === 'development') return 'debug';
+  
+  // En test: solo warnings y errores
+  if (env === 'test') return 'warn';
+  
+  // En producción: solo errores
+  return 'error';
+};
+
 const defaultConfig: LoggerConfig = {
   enableConsole: true,
   enablePersistence: false,
   enableRemote: false,
-  minLevel: 'debug',
+  minLevel: getMinLogLevel(),
   maxEntries: 1000,
-  sensitiveKeys: ['password', 'token', 'apiKey', 'secret', 'authorization']
+  sensitiveKeys: ['password', 'token', 'apiKey', 'secret', 'authorization', 'key']
 };
 
 class Logger {
   private config: LoggerConfig;
   private entries: LogEntry[] = [];
   private sessionId: string;
+  private originalConsole: typeof console;
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = { ...defaultConfig, ...config };
     this.sessionId = this.generateSessionId();
+    this.originalConsole = { ...console };
     this.setupGlobalErrorHandler();
   }
 
@@ -85,10 +106,10 @@ class Logger {
   }
 
   private async persistLog(entry: LogEntry): Promise<void> {
-    if (!this.config.enablePersistence) return;
-
-    // Log persistence disabled after cleanup
-    console.log('Log persistence disabled after cleanup:', entry.message);
+    // Solo persistir errores en producción
+    if (!this.config.enablePersistence || entry.level !== 'error') return;
+    
+    // Deshabilitado después de limpieza
   }
 
   private setupGlobalErrorHandler(): void {
@@ -124,15 +145,15 @@ class Logger {
       data: this.sanitizeData(options.data),
       error,
       timestamp: new Date().toISOString(),
-      environment: import.meta.env.MODE || 'development',
+      environment: getEnvironment(),
       userAgent: navigator.userAgent,
       url: window.location.href
     };
 
-    // Console logging
+    // Console logging solo si está habilitado
     if (this.config.enableConsole) {
       const consoleMethod = level === 'debug' ? 'log' : level;
-      console[consoleMethod](this.formatMessage(entry), entry.data, error);
+      this.originalConsole[consoleMethod](this.formatMessage(entry), entry.data, error);
     }
 
     // Store in memory
@@ -163,13 +184,42 @@ class Logger {
 
   // Performance logging
   time(label: string, context?: LogContext, component?: string): void {
-    console.time(label);
+    if (getEnvironment() === 'development') {
+      this.originalConsole.time(label);
+    }
     this.debug(`Timer started: ${label}`, { label }, { context, component });
   }
 
   timeEnd(label: string, context?: LogContext, component?: string): void {
-    console.timeEnd(label);
+    if (getEnvironment() === 'development') {
+      this.originalConsole.timeEnd(label);
+    }
     this.debug(`Timer ended: ${label}`, { label }, { context, component });
+  }
+
+  // Modo desarrollo - logging temporal
+  devMode(enabled: boolean = true): void {
+    if (enabled && getEnvironment() === 'development') {
+      this.config.minLevel = 'debug';
+      this.config.enableConsole = true;
+    } else {
+      this.config.minLevel = getMinLogLevel();
+    }
+  }
+
+  // Reemplazar console nativo (solo en desarrollo)
+  replaceConsole(): void {
+    if (getEnvironment() !== 'development') return;
+    
+    console.log = (...args) => this.debug(args.join(' '), undefined, { context: 'system' });
+    console.info = (...args) => this.info(args.join(' '), undefined, { context: 'system' });
+    console.warn = (...args) => this.warn(args.join(' '), undefined, { context: 'system' });
+    // Mantener console.error nativo para errores críticos
+  }
+
+  // Restaurar console nativo
+  restoreConsole(): void {
+    Object.assign(console, this.originalConsole);
   }
 
   // Get stored logs
@@ -200,8 +250,8 @@ class Logger {
 // Create singleton instance
 const loggerInstance = new Logger({
   enableConsole: true,
-  enablePersistence: import.meta.env.MODE === 'production',
-  minLevel: import.meta.env.MODE === 'development' ? 'debug' : 'info'
+  enablePersistence: getEnvironment() === 'production',
+  minLevel: getMinLogLevel()
 });
 
 export { Logger, loggerInstance as logger };

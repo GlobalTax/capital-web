@@ -1,6 +1,7 @@
-// Hook simplificado para mantener compatibilidad con componentes existentes
+
+import { logger } from '@/utils/logger';
+
 export const useProposals = () => {
-  // Datos mock simplificados
   const mockStats = {
     total_proposals: 0,
     sent_proposals: 0,
@@ -18,23 +19,23 @@ export const useProposals = () => {
     stats: mockStats,
     isLoading: false,
     createProposal: async (data: any) => {
-      console.log('Proposals system disabled after cleanup:', data);
+      logger.info('Proposals system disabled after cleanup', data, { context: 'system', component: 'useProposals' });
       return null;
     },
     updateProposal: async (id: string, data: any) => {
-      console.log('Proposals system disabled after cleanup:', { id, data });
+      logger.info('Proposals system disabled after cleanup', { id, data }, { context: 'system', component: 'useProposals' });
       return false;
     },
     sendProposal: async (id: string) => {
-      console.log('Proposals system disabled after cleanup:', id);
+      logger.info('Proposals system disabled after cleanup', { id }, { context: 'system', component: 'useProposals' });
       return false;
     },
     deleteProposal: async (id: string) => {
-      console.log('Proposals system disabled after cleanup:', id);
+      logger.info('Proposals system disabled after cleanup', { id }, { context: 'system', component: 'useProposals' });
       return false;
     },
     refetch: () => {
-      console.log('Proposals system disabled after cleanup');
+      logger.debug('Proposals system disabled after cleanup', undefined, { context: 'system', component: 'useProposals' });
     }
   };
 };

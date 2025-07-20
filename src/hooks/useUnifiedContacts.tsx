@@ -1,3 +1,6 @@
+
+import { logger } from '@/utils/logger';
+
 export interface UnifiedContact {
   id: string;
   name: string;
@@ -21,7 +24,6 @@ export interface UnifiedContact {
   linkedin_url?: string;
 }
 
-// Hook simplificado para mantener compatibilidad
 export const useUnifiedContacts = () => {
   return {
     contacts: [],
@@ -32,31 +34,31 @@ export const useUnifiedContacts = () => {
     totalContacts: 0,
     hasMore: false,
     applyFilters: (filters: any) => {
-      console.log('Unified contacts filtering disabled after cleanup:', filters);
+      logger.info('Unified contacts filtering disabled after cleanup', filters, { context: 'system', component: 'useUnifiedContacts' });
     },
     updateContactStatus: async (id: string, status: string, source: string) => {
-      console.log('Contact status update disabled after cleanup:', { id, status, source });
+      logger.info('Contact status update disabled after cleanup', { id, status, source }, { context: 'system', component: 'useUnifiedContacts' });
     },
     bulkUpdateStatus: async (ids: string[], status: string) => {
-      console.log('Bulk contact update disabled after cleanup:', { ids, status });
+      logger.info('Bulk contact update disabled after cleanup', { ids, status }, { context: 'system', component: 'useUnifiedContacts' });
     },
     exportContacts: (format: any) => {
-      console.log('Contact export disabled after cleanup:', format);
+      logger.info('Contact export disabled after cleanup', { format }, { context: 'system', component: 'useUnifiedContacts' });
     },
     nextPage: () => {
-      console.log('Contact pagination disabled after cleanup');
+      logger.debug('Contact pagination disabled after cleanup', undefined, { context: 'system', component: 'useUnifiedContacts' });
     },
     prevPage: () => {
-      console.log('Contact pagination disabled after cleanup');
+      logger.debug('Contact pagination disabled after cleanup', undefined, { context: 'system', component: 'useUnifiedContacts' });
     },
     goToPage: (page: number) => {
-      console.log('Contact pagination disabled after cleanup:', page);
+      logger.debug('Contact pagination disabled after cleanup', { page }, { context: 'system', component: 'useUnifiedContacts' });
     },
     refreshContacts: () => {
-      console.log('Contact refresh disabled after cleanup');
+      logger.debug('Contact refresh disabled after cleanup', undefined, { context: 'system', component: 'useUnifiedContacts' });
     },
     refetch: () => {
-      console.log('Contact refetch disabled after cleanup');
+      logger.debug('Contact refetch disabled after cleanup', undefined, { context: 'system', component: 'useUnifiedContacts' });
     }
   };
 };

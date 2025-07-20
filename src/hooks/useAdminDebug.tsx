@@ -1,6 +1,8 @@
+
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRoleBasedPermissions } from './useRoleBasedPermissions';
+import { logger } from '@/utils/logger';
 
 export const useAdminDebug = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
@@ -8,7 +10,7 @@ export const useAdminDebug = () => {
 
   useEffect(() => {
     if (!authLoading && !permissionsLoading) {
-      console.log('🔍 Admin Debug Info:', {
+      logger.debug('Admin debug info', {
         user: {
           id: user?.id,
           email: user?.email,
@@ -25,7 +27,7 @@ export const useAdminDebug = () => {
           canManageContent: permissions.canManageContent,
           canManageUsers: permissions.canManageUsers
         }
-      });
+      }, { context: 'admin', component: 'useAdminDebug' });
     }
   }, [user, isAdmin, authLoading, userRole, permissions, permissionsLoading]);
 

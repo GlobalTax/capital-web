@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { sectorMultiplesCache } from '@/utils/cache';
+import { logger } from '@/utils/logger';
 
 interface ValuationMultiple {
   id: string;
@@ -34,6 +35,7 @@ export const useValuationMultiples = () => {
         setMultiples(cachedData);
         setError(null);
         setIsLoading(false);
+        logger.debug('Valuation multiples loaded from cache', undefined, { context: 'valuation', component: 'useValuationMultiples' });
         return;
       }
 
@@ -44,7 +46,7 @@ export const useValuationMultiples = () => {
         .order('display_order');
 
       if (error) {
-        console.error('Error fetching multiples:', error);
+        logger.error('Error fetching valuation multiples', error, { context: 'valuation', component: 'useValuationMultiples' });
         setError('Error al cargar los múltiplos');
         return;
       }
@@ -56,8 +58,10 @@ export const useValuationMultiples = () => {
       
       setMultiples(multiplesData);
       setError(null);
+      
+      logger.info('Valuation multiples loaded successfully', { count: multiplesData.length }, { context: 'valuation', component: 'useValuationMultiples' });
     } catch (err) {
-      console.error('Error:', err);
+      logger.error('Error loading valuation multiples', err as Error, { context: 'valuation', component: 'useValuationMultiples' });
       setError('Error al cargar los múltiplos');
     } finally {
       setIsLoading(false);
@@ -65,9 +69,15 @@ export const useValuationMultiples = () => {
   };
 
   const getMultipleBySector = (sector: string): ValuationMultiple | null => {
-    return multiples.find(
+    const multiple = multiples.find(
       m => m.sector_name.toLowerCase() === sector.toLowerCase()
     ) || null;
+    
+    if (multiple) {
+      logger.debug('Multiple found for sector', { sector, multiple: multiple.sector_name }, { context: 'valuation', component: 'useValuationMultiples' });
+    }
+    
+    return multiple;
   };
 
   const getDefaultMultiple = (): number => {
@@ -77,7 +87,10 @@ export const useValuationMultiples = () => {
     // Intentar extraer el número de la mediana del primer múltiplo
     const firstMultiple = multiples[0];
     const medianValue = parseFloat(firstMultiple.median_multiple.replace(/[^\d.]/g, ''));
-    return isNaN(medianValue) ? 5.0 : medianValue;
+    const defaultValue = isNaN(medianValue) ? 5.0 : medianValue;
+    
+    logger.debug('Default multiple calculated', { defaultValue }, { context: 'valuation', component: 'useValuationMultiples' });
+    return defaultValue;
   };
 
   return {
