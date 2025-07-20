@@ -1,6 +1,15 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  validateEmail, 
+  validateCompanyName, 
+  validateContactName, 
+  validateSpanishPhone,
+  sanitizeAndValidateText 
+} from '@/utils/validationUtils';
+import { sanitizeObject } from '@/utils/sanitization';
 
 interface ContactFormData {
   fullName: string;
@@ -21,6 +30,72 @@ export const useContactForm = () => {
     setIsSubmitting(true);
     
     try {
+      // Sanitizar todos los campos antes de validar
+      const sanitizedData = sanitizeObject(formData, {
+        fullName: 'STRICT',
+        company: 'STRICT',
+        phone: 'STRICT',
+        email: 'STRICT',
+        country: 'STRICT',
+        companySize: 'STRICT',
+        referral: 'STRICT'
+      });
+
+      // Validaciones específicas con sanitización
+      const nameValidation = validateContactName(sanitizedData.fullName);
+      if (!nameValidation.isValid) {
+        toast({
+          title: "Error de validación",
+          description: nameValidation.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const companyValidation = validateCompanyName(sanitizedData.company);
+      if (!companyValidation.isValid) {
+        toast({
+          title: "Error de validación",
+          description: companyValidation.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const emailValidation = validateEmail(sanitizedData.email);
+      if (!emailValidation.isValid) {
+        toast({
+          title: "Error de validación",
+          description: emailValidation.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validar teléfono si se proporciona
+      if (sanitizedData.phone) {
+        const phoneValidation = validateSpanishPhone(sanitizedData.phone);
+        if (!phoneValidation.isValid) {
+          toast({
+            title: "Error de validación",
+            description: phoneValidation.message,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Usar valores sanitizados para el envío
+      const finalData = {
+        full_name: nameValidation.sanitizedValue || sanitizedData.fullName,
+        company: companyValidation.sanitizedValue || sanitizedData.company,
+        phone: sanitizedData.phone ? (validateSpanishPhone(sanitizedData.phone).sanitizedValue || sanitizedData.phone) : undefined,
+        email: emailValidation.sanitizedValue || sanitizedData.email,
+        country: sanitizedData.country,
+        company_size: sanitizedData.companySize,
+        referral: sanitizedData.referral,
+      };
+
       // Obtener información adicional del navegador
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
@@ -29,13 +104,7 @@ export const useContactForm = () => {
       const { data, error } = await supabase
         .from('contact_leads')
         .insert({
-          full_name: formData.fullName,
-          company: formData.company,
-          phone: formData.phone,
-          email: formData.email,
-          country: formData.country,
-          company_size: formData.companySize,
-          referral: formData.referral,
+          ...finalData,
           ip_address: ipData?.ip,
           user_agent: navigator.userAgent,
         })

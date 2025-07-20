@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CompanyDataV4 } from '@/types/valuationV4';
 import { Building2, Calculator, TrendingUp } from 'lucide-react';
+import { 
+  validateEmail, 
+  validateCompanyName, 
+  validateContactName, 
+  validateSpanishPhone,
+  formatSpanishPhone 
+} from '@/utils/validationUtils';
+import { sanitizeObject } from '@/utils/sanitization';
 
 interface StandaloneCompanyFormProps {
   onSubmit: (data: CompanyDataV4) => void;
@@ -22,6 +31,8 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
     ebitda: '',
     baseValuation: ''
   });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const industries = [
     'Tecnología',
@@ -41,24 +52,98 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
     'Otros'
   ];
 
+  const validateField = (name: string, value: string): string | null => {
+    switch (name) {
+      case 'contactName':
+        const nameValidation = validateContactName(value);
+        return nameValidation.isValid ? null : nameValidation.message || 'Nombre inválido';
+      
+      case 'companyName':
+        const companyValidation = validateCompanyName(value);
+        return companyValidation.isValid ? null : companyValidation.message || 'Nombre de empresa inválido';
+      
+      case 'email':
+        if (!value) return null; // Email es opcional en este formulario
+        const emailValidation = validateEmail(value);
+        return emailValidation.isValid ? null : emailValidation.message || 'Email inválido';
+      
+      case 'phone':
+        if (!value) return null; // Teléfono es opcional
+        const phoneValidation = validateSpanishPhone(value);
+        return phoneValidation.isValid ? null : phoneValidation.message || 'Teléfono inválido';
+      
+      default:
+        return null;
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const revenue = parseFloat(formData.revenue) || 0;
-    const ebitda = parseFloat(formData.ebitda) || 0;
-    let baseValuation = parseFloat(formData.baseValuation) || 0;
+    // Sanitizar todos los campos antes de procesar
+    const sanitizedData = sanitizeObject(formData, {
+      contactName: 'STRICT',
+      companyName: 'STRICT',
+      email: 'STRICT',
+      phone: 'STRICT',
+      industry: 'STRICT',
+      revenue: 'STRICT',
+      ebitda: 'STRICT',
+      baseValuation: 'STRICT'
+    });
+
+    // Validar campos requeridos
+    const newErrors: Record<string, string> = {};
+    
+    if (!sanitizedData.contactName) {
+      newErrors.contactName = 'El nombre es requerido';
+    } else {
+      const error = validateField('contactName', sanitizedData.contactName);
+      if (error) newErrors.contactName = error;
+    }
+
+    if (!sanitizedData.companyName) {
+      newErrors.companyName = 'El nombre de la empresa es requerido';
+    } else {
+      const error = validateField('companyName', sanitizedData.companyName);
+      if (error) newErrors.companyName = error;
+    }
+
+    // Validar campos opcionales si están presentes
+    if (sanitizedData.email) {
+      const error = validateField('email', sanitizedData.email);
+      if (error) newErrors.email = error;
+    }
+
+    if (sanitizedData.phone) {
+      const error = validateField('phone', sanitizedData.phone);
+      if (error) newErrors.phone = error;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Limpiar errores
+    setErrors({});
+    
+    const revenue = parseFloat(sanitizedData.revenue) || 0;
+    const ebitda = parseFloat(sanitizedData.ebitda) || 0;
+    let baseValuation = parseFloat(sanitizedData.baseValuation) || 0;
     
     // Si no hay valoración base, calcular una aproximada (4x EBITDA)
     if (baseValuation === 0 && ebitda > 0) {
       baseValuation = ebitda * 4;
     }
 
+    // Usar valores sanitizados y validados
     const companyData: CompanyDataV4 = {
-      contactName: formData.contactName || 'Usuario',
-      companyName: formData.companyName || 'Mi Empresa',
-      email: formData.email || 'contacto@empresa.com',
-      phone: formData.phone || '+34 000 000 000',
-      industry: formData.industry || 'Otros',
+      contactName: validateContactName(sanitizedData.contactName).sanitizedValue || sanitizedData.contactName || 'Usuario',
+      companyName: validateCompanyName(sanitizedData.companyName).sanitizedValue || sanitizedData.companyName || 'Mi Empresa',
+      email: sanitizedData.email ? (validateEmail(sanitizedData.email).sanitizedValue || sanitizedData.email) : 'contacto@empresa.com',
+      phone: sanitizedData.phone ? (validateSpanishPhone(sanitizedData.phone).sanitizedValue || sanitizedData.phone) : '+34 000 000 000',
+      industry: sanitizedData.industry || 'Otros',
       revenue,
       ebitda,
       baseValuation
@@ -68,7 +153,28 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Aplicar sanitización en tiempo real para campos de texto
+    let sanitizedValue = value;
+    
+    if (field === 'phone') {
+      sanitizedValue = formatSpanishPhone(value);
+    }
+    
+    // Limpiar error del campo si existe
+    if (errors[field]) {
+      const newErrors = { ...errors };
+      delete newErrors[field];
+      setErrors(newErrors);
+    }
+
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+  };
+
+  const handleBlur = (field: string, value: string) => {
+    const error = validateField(field, value);
+    if (error) {
+      setErrors(prev => ({ ...prev, [field]: error }));
+    }
   };
 
   return (
@@ -105,22 +211,32 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
               {/* Información básica */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="contactName">Nombre de contacto</Label>
+                  <Label htmlFor="contactName">Nombre de contacto *</Label>
                   <Input
                     id="contactName"
                     value={formData.contactName}
                     onChange={(e) => handleInputChange('contactName', e.target.value)}
+                    onBlur={(e) => handleBlur('contactName', e.target.value)}
                     placeholder="Tu nombre"
+                    className={errors.contactName ? 'border-destructive' : ''}
                   />
+                  {errors.contactName && (
+                    <p className="text-sm text-destructive mt-1">{errors.contactName}</p>
+                  )}
                 </div>
                 <div>
-                  <Label htmlFor="companyName">Nombre de la empresa</Label>
+                  <Label htmlFor="companyName">Nombre de la empresa *</Label>
                   <Input
                     id="companyName"
                     value={formData.companyName}
                     onChange={(e) => handleInputChange('companyName', e.target.value)}
+                    onBlur={(e) => handleBlur('companyName', e.target.value)}
                     placeholder="Nombre de tu empresa"
+                    className={errors.companyName ? 'border-destructive' : ''}
                   />
+                  {errors.companyName && (
+                    <p className="text-sm text-destructive mt-1">{errors.companyName}</p>
+                  )}
                 </div>
               </div>
 
@@ -133,8 +249,13 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
+                    onBlur={(e) => handleBlur('email', e.target.value)}
                     placeholder="contacto@empresa.com"
+                    className={errors.email ? 'border-destructive' : ''}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-destructive mt-1">{errors.email}</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="phone">Teléfono</Label>
@@ -142,12 +263,17 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onBlur={(e) => handleBlur('phone', e.target.value)}
                     placeholder="+34 000 000 000"
+                    className={errors.phone ? 'border-destructive' : ''}
                   />
+                  {errors.phone && (
+                    <p className="text-sm text-destructive mt-1">{errors.phone}</p>
+                  )}
                 </div>
               </div>
 
-              {/* Sector */}
+              {/* Resto del formulario permanece igual */}
               <div>
                 <Label htmlFor="industry">Sector</Label>
                 <Select 

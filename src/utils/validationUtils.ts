@@ -1,3 +1,4 @@
+import { sanitizeText, sanitizeEmail, sanitizePhone, sanitizeCompanyName, sanitizePerson, detectXSSAttempt, logSecurityEvent } from './sanitization';
 
 // Validation utilities for forms and data
 export const validationUtils = {
@@ -72,48 +73,132 @@ export const validationUtils = {
 interface ValidationResult {
   isValid: boolean;
   message?: string;
+  sanitizedValue?: string;
 }
 
-// Email validation function
+// Email validation function with sanitization
 export const validateEmail = (email: string): ValidationResult => {
-  const isValid = validationUtils.isValidEmail(email);
+  // Detectar intentos de XSS
+  if (detectXSSAttempt(email)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: email, context: 'email_validation' });
+    return {
+      isValid: false,
+      message: 'El email contiene caracteres no válidos'
+    };
+  }
+
+  const sanitizedEmail = sanitizeEmail(email);
+  const isValid = validationUtils.isValidEmail(sanitizedEmail);
+  
+  if (sanitizedEmail !== email) {
+    logSecurityEvent('SANITIZATION_APPLIED', { 
+      input: email, 
+      sanitized: sanitizedEmail, 
+      context: 'email_validation' 
+    });
+  }
+
   return {
     isValid,
-    message: isValid ? undefined : 'El email no es válido'
+    message: isValid ? undefined : 'El email no es válido',
+    sanitizedValue: sanitizedEmail
   };
 };
 
-// Company name validation function
+// Company name validation function with sanitization
 export const validateCompanyName = (name: string): ValidationResult => {
-  const isValid = validationUtils.isValidCompanyName(name);
+  // Detectar intentos de XSS
+  if (detectXSSAttempt(name)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: name, context: 'company_name_validation' });
+    return {
+      isValid: false,
+      message: 'El nombre de la empresa contiene caracteres no válidos'
+    };
+  }
+
+  const sanitizedName = sanitizeCompanyName(name);
+  const isValid = validationUtils.isValidCompanyName(sanitizedName);
+  
+  if (sanitizedName !== name) {
+    logSecurityEvent('SANITIZATION_APPLIED', { 
+      input: name, 
+      sanitized: sanitizedName, 
+      context: 'company_name_validation' 
+    });
+  }
+
   return {
     isValid,
-    message: isValid ? undefined : 'El nombre de la empresa debe tener entre 2 y 100 caracteres'
+    message: isValid ? undefined : 'El nombre de la empresa debe tener entre 2 y 100 caracteres',
+    sanitizedValue: sanitizedName
   };
 };
 
-// Contact name validation function
+// Contact name validation function with sanitization
 export const validateContactName = (name: string): ValidationResult => {
-  const isValid = validationUtils.isRequired(name);
+  // Detectar intentos de XSS
+  if (detectXSSAttempt(name)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: name, context: 'contact_name_validation' });
+    return {
+      isValid: false,
+      message: 'El nombre contiene caracteres no válidos'
+    };
+  }
+
+  const sanitizedName = sanitizePerson(name);
+  const isValid = validationUtils.isRequired(sanitizedName);
+  
+  if (sanitizedName !== name) {
+    logSecurityEvent('SANITIZATION_APPLIED', { 
+      input: name, 
+      sanitized: sanitizedName, 
+      context: 'contact_name_validation' 
+    });
+  }
+
   return {
     isValid,
-    message: isValid ? undefined : 'El nombre de contacto es obligatorio'
+    message: isValid ? undefined : 'El nombre de contacto es obligatorio',
+    sanitizedValue: sanitizedName
   };
 };
 
-// Spanish phone validation function
+// Spanish phone validation function with sanitization
 export const validateSpanishPhone = (phone: string): ValidationResult => {
-  const isValid = validationUtils.isValidPhone(phone);
+  // Detectar intentos de XSS
+  if (detectXSSAttempt(phone)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: phone, context: 'phone_validation' });
+    return {
+      isValid: false,
+      message: 'El teléfono contiene caracteres no válidos'
+    };
+  }
+
+  const sanitizedPhone = sanitizePhone(phone);
+  const isValid = validationUtils.isValidPhone(sanitizedPhone);
+  
+  if (sanitizedPhone !== phone) {
+    logSecurityEvent('SANITIZATION_APPLIED', { 
+      input: phone, 
+      sanitized: sanitizedPhone, 
+      context: 'phone_validation' 
+    });
+  }
+
   return {
     isValid,
-    message: isValid ? undefined : 'El teléfono debe ser un número español válido (9 dígitos empezando por 6, 7, 8 o 9)'
+    message: isValid ? undefined : 'El teléfono debe ser un número español válido (9 dígitos empezando por 6, 7, 8 o 9)',
+    sanitizedValue: sanitizedPhone
   };
 };
 
-// Spanish phone formatter function
+// Spanish phone formatter function with sanitization
 export const formatSpanishPhone = (phone: string): string => {
+  // Primero sanitizar
+  const sanitizedPhone = sanitizePhone(phone);
+  
   // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, '');
+  const digits = sanitizedPhone.replace(/\D/g, '');
   
   // If it starts with +34, remove it
   const cleanDigits = digits.startsWith('34') ? digits.slice(2) : digits;
@@ -133,4 +218,34 @@ export const formatSpanishPhone = (phone: string): string => {
   }
   
   return cleanDigits;
+};
+
+// Nueva función para sanitizar cualquier campo de texto
+export const sanitizeAndValidateText = (
+  text: string, 
+  context: string = 'generic'
+): ValidationResult => {
+  // Detectar intentos de XSS
+  if (detectXSSAttempt(text)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: text, context });
+    return {
+      isValid: false,
+      message: 'El campo contiene caracteres no válidos'
+    };
+  }
+
+  const sanitizedText = sanitizeText(text, 'STRICT');
+  
+  if (sanitizedText !== text) {
+    logSecurityEvent('SANITIZATION_APPLIED', { 
+      input: text, 
+      sanitized: sanitizedText, 
+      context 
+    });
+  }
+
+  return {
+    isValid: true,
+    sanitizedValue: sanitizedText
+  };
 };

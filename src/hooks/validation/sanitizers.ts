@@ -1,14 +1,24 @@
 
 import { SecurityConfig } from './types';
+import { sanitizeText, detectXSSAttempt, logSecurityEvent } from '@/utils/sanitization';
 
 export const sanitizeInput = (input: string, config: SecurityConfig = {}): string => {
   if (!input || typeof input !== 'string') return '';
   
+  // Detectar intentos de XSS antes de procesar
+  if (detectXSSAttempt(input)) {
+    logSecurityEvent('XSS_ATTEMPT', { input, context: 'input_sanitization' });
+    // Para compatibilidad con el código existente, continuamos con la sanitización
+  }
+  
   let sanitized = input.trim();
   
-  // Remover HTML si no está permitido
+  // Usar DOMPurify como sanitizador principal
   if (!config.allowHTML) {
-    sanitized = sanitized.replace(/<[^>]*>/g, '');
+    sanitized = sanitizeText(sanitized, 'STRICT');
+  } else {
+    // Si se permite HTML, usar perfil moderado
+    sanitized = sanitizeText(sanitized, 'MODERATE');
   }
   
   // Limitar longitud
@@ -16,13 +26,14 @@ export const sanitizeInput = (input: string, config: SecurityConfig = {}): strin
     sanitized = sanitized.substring(0, config.maxLength);
   }
   
-  // Escapar caracteres especiales para prevenir XSS
-  sanitized = sanitized
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+  // Log si se aplicó sanitización
+  if (sanitized !== input.trim()) {
+    logSecurityEvent('SANITIZATION_APPLIED', { 
+      input, 
+      sanitized, 
+      context: 'input_sanitization' 
+    });
+  }
   
   return sanitized;
 };
