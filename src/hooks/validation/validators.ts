@@ -1,16 +1,16 @@
 
 import { ValidationResult, SecurityConfig } from './types';
 import { sanitizeInput } from './sanitizers';
+import { validateEmailRobust, validateEmailForContact } from '@/utils/emailValidation';
 
 export const validateEmail = (email: string): ValidationResult => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const sanitizedEmail = sanitizeInput(email, { maxLength: 254 });
+  const result = validateEmailForContact(email);
   
-  if (!emailRegex.test(sanitizedEmail)) {
-    return { isValid: false, message: 'Email inválido' };
-  }
-  
-  return { isValid: true, sanitizedValue: sanitizedEmail };
+  return {
+    isValid: result.isValid,
+    message: result.message,
+    sanitizedValue: result.sanitizedValue
+  };
 };
 
 export const validateURL = (url: string, config: SecurityConfig = {}): ValidationResult => {

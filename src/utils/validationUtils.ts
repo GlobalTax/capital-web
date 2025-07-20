@@ -1,11 +1,13 @@
+
 import { sanitizeText, sanitizeEmail, sanitizePhone, sanitizeCompanyName, sanitizePerson, detectXSSAttempt, logSecurityEvent } from './sanitization';
+import { validateEmailRobust, validateEmailForContact, EmailValidationResult } from './emailValidation';
 
 // Validation utilities for forms and data
 export const validationUtils = {
-  // Email validation
+  // Email validation - DEPRECATED: Use validateEmailRobust instead
   isValidEmail: (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    console.warn('validationUtils.isValidEmail is deprecated. Use validateEmailRobust from emailValidation.ts');
+    return validateEmailRobust(email).isValid;
   },
 
   // Phone validation (Spanish format)
@@ -76,32 +78,14 @@ interface ValidationResult {
   sanitizedValue?: string;
 }
 
-// Email validation function with sanitization
+// Email validation function with robust validation and sanitization
 export const validateEmail = (email: string): ValidationResult => {
-  // Detectar intentos de XSS
-  if (detectXSSAttempt(email)) {
-    logSecurityEvent('XSS_ATTEMPT', { input: email, context: 'email_validation' });
-    return {
-      isValid: false,
-      message: 'El email contiene caracteres no válidos'
-    };
-  }
-
-  const sanitizedEmail = sanitizeEmail(email);
-  const isValid = validationUtils.isValidEmail(sanitizedEmail);
+  const result = validateEmailForContact(email);
   
-  if (sanitizedEmail !== email) {
-    logSecurityEvent('SANITIZATION_APPLIED', { 
-      input: email, 
-      sanitized: sanitizedEmail, 
-      context: 'email_validation' 
-    });
-  }
-
   return {
-    isValid,
-    message: isValid ? undefined : 'El email no es válido',
-    sanitizedValue: sanitizedEmail
+    isValid: result.isValid,
+    message: result.message,
+    sanitizedValue: result.sanitizedValue
   };
 };
 
