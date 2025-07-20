@@ -17,6 +17,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { LoadingButton } from '@/components/LoadingButton';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { logger } from '@/utils/logger';
+import RateLimitFeedback from '@/components/ui/RateLimitFeedback';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -29,7 +30,12 @@ const Contact = () => {
     referral: '',
   });
 
-  const { submitContactForm, isSubmitting } = useContactForm();
+  const [rateLimitState, setRateLimitState] = useState({
+    isRateLimited: false,
+    remainingRequests: 5
+  });
+
+  const { submitContactForm, isSubmitting, getRemainingRequests, isRateLimited, clearRateLimit } = useContactForm();
   const { isOnline } = useNetworkStatus();
   
   const { trackFormSubmission, trackFormInteraction } = useSimpleFormTracking();
@@ -40,7 +46,23 @@ const Contact = () => {
     try {
       logger.info('Contact form submission started', { formData: { ...formData, email: '[REDACTED]' } }, { context: 'form', component: 'Contact' });
       
-      await submitContactForm(formData);
+      const result = await submitContactForm(formData);
+      
+      // Actualizar estado de rate limiting
+      setRateLimitState({
+        isRateLimited: result.isRateLimited || false,
+        remainingRequests: result.remainingRequests || getRemainingRequests()
+      });
+
+      if (result.isRateLimited) {
+        logger.warn('Contact form submission blocked by rate limit', undefined, { context: 'security', component: 'Contact' });
+        return;
+      }
+
+      if (result.error) {
+        logger.error('Contact form submission failed', result.error, { context: 'form', component: 'Contact' });
+        return;
+      }
       
       trackFormSubmission('contact', formData);
       
@@ -54,6 +76,12 @@ const Contact = () => {
         companySize: '',
         referral: '',
       });
+      
+      // Actualizar remaining requests después de envío exitoso
+      setRateLimitState(prev => ({
+        ...prev,
+        remainingRequests: getRemainingRequests()
+      }));
       
       logger.info('Contact form submitted successfully', undefined, { context: 'form', component: 'Contact' });
     } catch (error) {
@@ -90,6 +118,22 @@ const Contact = () => {
 
   const handleFieldBlur = (fieldName: string) => {
     logger.debug('Field blur event', { fieldName }, { context: 'form', component: 'Contact' });
+  };
+
+  const handleRetry = () => {
+    // Actualizar estado para mostrar remaining requests actuales
+    setRateLimitState({
+      isRateLimited: isRateLimited(),
+      remainingRequests: getRemainingRequests()
+    });
+  };
+
+  const handleClearRateLimit = () => {
+    clearRateLimit();
+    setRateLimitState({
+      isRateLimited: false,
+      remainingRequests: 5
+    });
   };
 
   return (
@@ -164,6 +208,18 @@ const Contact = () => {
           <div className="relative flex w-full max-w-[30rem] min-w-[20rem] flex-col items-center overflow-visible md:min-w-[24rem]">
             <form onSubmit={handleSubmit} className="z-10 space-y-6 w-full">
               <div className="w-full space-y-6 rounded-xl border-0.5 border-black bg-white px-6 py-10 shadow-sm">
+                
+                {/* Rate Limit Feedback */}
+                <RateLimitFeedback
+                  isRateLimited={rateLimitState.isRateLimited}
+                  remainingRequests={rateLimitState.remainingRequests}
+                  maxRequests={5}
+                  onRetry={handleRetry}
+                  onClearLimit={handleClearRateLimit}
+                  title="Límite de envíos alcanzado"
+                  message="Has alcanzado el máximo de envíos permitidos para prevenir spam."
+                />
+
                 <div>
                   <div className="mb-2.5 text-sm font-medium text-black">
                     <label htmlFor="fullName">Nombre completo *</label>
@@ -302,7 +358,7 @@ const Contact = () => {
                   <LoadingButton
                     loading={isSubmitting}
                     loadingText="Enviando..."
-                    disabled={isSubmitting || !isOnline}
+                    disabled={isSubmitting || !isOnline || rateLimitState.isRateLimited}
                     type="submit"
                     className="w-full bg-black text-white hover:bg-gray-800 py-3"
                   >
