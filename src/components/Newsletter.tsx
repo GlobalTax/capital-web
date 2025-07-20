@@ -73,8 +73,11 @@ const Newsletter: React.FC<NewsletterFormProps> = ({
           onChange={(e) => handleEmailChange(e.target.value)}
           placeholder={placeholder}
           required
-          error={error || undefined}
+          className={error ? 'border-destructive' : ''}
         />
+        {error && (
+          <p className="text-sm text-destructive mt-1">{error}</p>
+        )}
       </div>
 
       <Button

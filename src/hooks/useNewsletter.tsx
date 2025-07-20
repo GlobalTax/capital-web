@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UseNewsletterReturn } from '@/types/forms';
-import { validateEmail } from '@/utils/emailValidation';
+import { validateEmailForNewsletter } from '@/utils/emailValidation';
 
 export const useNewsletter = (): UseNewsletterReturn => {
   const [email, setEmail] = useState<string>('');
@@ -18,7 +18,7 @@ export const useNewsletter = (): UseNewsletterReturn => {
     e.preventDefault();
     setError(null);
 
-    const emailValidation = validateEmail(email);
+    const emailValidation = validateEmailForNewsletter(email);
     if (!emailValidation.isValid) {
       setError(emailValidation.message || 'Email inválido');
       return;

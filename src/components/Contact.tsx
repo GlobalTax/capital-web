@@ -8,8 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContactForm } from '@/hooks/useContactForm';
 import { ContactFormProps } from '@/types/forms';
-import { validateContactForm } from '@/utils/validationUtils';
-import { rateLimit } from '@/utils/rateLimit';
+import { validateContactName } from '@/utils/validationUtils';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/hooks/use-toast';
 
@@ -31,19 +30,6 @@ const Contact: React.FC<ContactFormProps> = ({
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-
-    // Rate limiting check
-    const result = validateContactForm({
-      email: formData.email,
-      phone: formData.phone || '',
-      full_name: formData.full_name,
-      company: formData.company
-    });
-
-    if (result.isRateLimited) {
-      logger.warn('Contact form submission blocked by rate limit', undefined, { context: 'form', component: 'Contact' });
-      return;
-    }
 
     try {
       await handleSubmit(e);
@@ -70,9 +56,12 @@ const Contact: React.FC<ContactFormProps> = ({
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => handleChange('full_name', e.target.value)}
-                  error={errors.full_name}
                   required
+                  className={errors.full_name ? 'border-destructive' : ''}
                 />
+                {errors.full_name && (
+                  <p className="text-sm text-destructive mt-1">{errors.full_name}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -82,9 +71,12 @@ const Contact: React.FC<ContactFormProps> = ({
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  error={errors.email}
                   required
+                  className={errors.email ? 'border-destructive' : ''}
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
 
@@ -106,9 +98,12 @@ const Contact: React.FC<ContactFormProps> = ({
                   type="text"
                   value={formData.company}
                   onChange={(e) => handleChange('company', e.target.value)}
-                  error={errors.company}
                   required
+                  className={errors.company ? 'border-destructive' : ''}
                 />
+                {errors.company && (
+                  <p className="text-sm text-destructive mt-1">{errors.company}</p>
+                )}
               </div>
             </div>
 

@@ -27,7 +27,7 @@ const CompraEmpresas = () => {
     message: ''
   });
 
-  const { submitContactForm, isSubmitting } = useContactForm();
+  const { handleSubmit: submitContactForm, isLoading: isSubmitting } = useContactForm();
   const { toast } = useToast();
 
   const benefits = [
@@ -81,18 +81,15 @@ const CompraEmpresas = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Create a fake event to pass to the contact form
+    const fakeEvent = new Event('submit') as any;
+    fakeEvent.preventDefault = () => {};
+    
     try {
-      await submitContactForm({
-        fullName: formData.fullName,
-        company: formData.company,
-        email: formData.email,
-        phone: formData.phone,
-        referral: `Compra de Empresas - ${formData.acquisitionType}`,
-        companySize: formData.investmentRange
-      });
+      await submitContactForm(fakeEvent);
 
       setFormData({
         fullName: '',
@@ -264,7 +261,7 @@ const CompraEmpresas = () => {
 
             <Card>
               <CardContent className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleFormSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
