@@ -55,7 +55,7 @@ const Contact = () => {
       });
 
       if (result.isRateLimited) {
-        logger.warn('Contact form submission blocked by rate limit', undefined, { context: 'security', component: 'Contact' });
+        logger.warn('Contact form submission blocked by rate limit', undefined, { context: 'form', component: 'Contact' });
         return;
       }
 

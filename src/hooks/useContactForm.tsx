@@ -41,7 +41,7 @@ export const useContactForm = () => {
     if (rateLimit.isRateLimited('contact-form')) {
       logger.warn('⚠️ [ContactForm] Rate limit excedido', { 
         remainingRequests: rateLimit.getRemainingRequests('contact-form')
-      }, { context: 'security', component: 'useContactForm' });
+      }, { context: 'form', component: 'useContactForm' });
       
       toast({
         title: "Demasiados intentos",
@@ -118,7 +118,7 @@ export const useContactForm = () => {
           .single();
 
         if (error) {
-          logger.error('❌ [ContactForm] Error insertando en Supabase', error, { context: 'database', component: 'useContactForm' });
+          logger.error('❌ [ContactForm] Error insertando en Supabase', error, { context: 'form', component: 'useContactForm' });
           throw error;
         }
         
