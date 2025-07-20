@@ -45,15 +45,24 @@ export interface CollaboratorFormProps {
   className?: string;
 }
 
-// Contact form data interface
+// Form data interfaces
 export interface ContactFormData {
-  full_name: string;
+  name: string;
   email: string;
-  phone: string;
-  company: string;
-  company_size: string;
-  country: string;
-  referral: string;
+  phone?: string;
+  company?: string;
+  message: string;
+  service?: string;
+}
+
+export interface NewsletterFormData {
+  email: string;
+  name?: string;
+  interests: string[];
+}
+
+export interface FormErrors {
+  [key: string]: string;
 }
 
 // Form hooks return types

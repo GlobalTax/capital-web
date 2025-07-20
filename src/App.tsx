@@ -1,33 +1,13 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 import { Toaster } from '@/components/ui/toaster';
 
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import Home from '@/pages/Home';
-import VentaEmpresas from '@/pages/VentaEmpresas';
-import CompraEmpresas from '@/pages/CompraEmpresas';
-import ValoracionEmpresas from '@/pages/ValoracionEmpresas';
-import DueDiligence from '@/pages/DueDiligence';
-import SectorTecnologia from '@/pages/sectors/SectorTecnologia';
-import SectorSalud from '@/pages/sectors/SectorSalud';
-import SectorIndustrial from '@/pages/sectors/SectorIndustrial';
-import SectorLogistica from '@/pages/sectors/SectorLogistica';
-import SectorEducacion from '@/pages/sectors/SectorEducacion';
-import SectorEnergia from '@/pages/sectors/SectorEnergia';
-import ContactPage from '@/pages/ContactPage';
-import BlogPage from '@/pages/BlogPage';
-import AdminPage from '@/pages/admin/AdminPage';
+// Existing components
+import Contact from '@/components/Contact';
+import Newsletter from '@/components/Newsletter';
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
-import LandingPageView from '@/pages/LandingPageView';
-import NotFound from '@/pages/NotFound';
-import ScrollToTop from '@/components/ScrollToTop';
-import AccessibilityTools from '@/components/AccessibilityTools';
-import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
-import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
-import { AuthProvider } from '@/contexts/AuthContext';
 
 import './App.css';
 
@@ -43,42 +23,33 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <ErrorBoundaryProvider>
-            <LeadTrackingProvider>
-              <div className="min-h-screen bg-background text-foreground">
-                <ScrollToTop />
-                <Header />
-                <main>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/venta-empresas" element={<VentaEmpresas />} />
-                    <Route path="/compra-empresas" element={<CompraEmpresas />} />
-                    <Route path="/servicios/valoraciones" element={<ValoracionEmpresas />} />
-                    <Route path="/servicios/due-diligence" element={<DueDiligence />} />
-                    <Route path="/sectores/tecnologia" element={<SectorTecnologia />} />
-                    <Route path="/sectores/salud" element={<SectorSalud />} />
-                    <Route path="/sectores/industrial" element={<SectorIndustrial />} />
-                    <Route path="/sectores/logistica" element={<SectorLogistica />} />
-                    <Route path="/sectores/educacion" element={<SectorEducacion />} />
-                    <Route path="/sectores/energia" element={<SectorEnergia />} />
-                    <Route path="/contacto" element={<ContactPage />} />
-                    <Route path="/blog" element={<BlogPage />} />
-                    <Route path="/admin" element={<AdminPage />} />
-                    <Route path="/admin/landing-pages" element={<LandingPagesPage />} />
-                    <Route path="/landing/:slug" element={<LandingPageView />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-                <Footer />
-                <AccessibilityTools />
-              </div>
-            </LeadTrackingProvider>
-          </ErrorBoundaryProvider>
+      <Router>
+        <div className="min-h-screen bg-background text-foreground">
+          <main className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={
+                <div className="space-y-20">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold mb-4">Capittal - M&A Specialists</h1>
+                    <p className="text-xl text-muted-foreground">Expertos en fusiones y adquisiciones</p>
+                  </div>
+                  <Contact />
+                  <Newsletter />
+                </div>
+              } />
+              <Route path="/admin/landing-pages" element={<LandingPagesPage />} />
+              <Route path="/contacto" element={<Contact />} />
+              <Route path="*" element={
+                <div className="text-center py-20">
+                  <h2 className="text-2xl font-bold mb-4">Página no encontrada</h2>
+                  <p className="text-muted-foreground">La página que buscas no existe.</p>
+                </div>
+              } />
+            </Routes>
+          </main>
           <Toaster />
-        </Router>
-      </AuthProvider>
+        </div>
+      </Router>
     </QueryClientProvider>
   );
 }
