@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Phone, ChevronDown, ChevronRight, Shield } from 'lucide-react';
@@ -15,15 +15,15 @@ interface AdvancedMobileNavigationProps {
   setIsMenuOpen: (open: boolean) => void;
 }
 
-const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileNavigationProps) => {
+const AdvancedMobileNavigation = React.memo<AdvancedMobileNavigationProps>(({ isMenuOpen, setIsMenuOpen }) => {
   const { user } = useAuth();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  const toggleSection = (section: string) => {
+  const toggleSection = useCallback((section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
-  };
+  }, [expandedSection]);
 
-  const closeMenu = () => setIsMenuOpen(false);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), [setIsMenuOpen]);
 
   if (!isMenuOpen) return null;
 
@@ -116,6 +116,10 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
       </nav>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.isMenuOpen === nextProps.isMenuOpen;
+});
+
+AdvancedMobileNavigation.displayName = 'AdvancedMobileNavigation';
 
 export default AdvancedMobileNavigation;

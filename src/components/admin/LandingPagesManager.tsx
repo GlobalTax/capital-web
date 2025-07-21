@@ -58,9 +58,9 @@ const TABS_CONFIG = {
   DRAFT: 'draft'
 } as const;
 
-const LandingPagesManager = () => {
+const LandingPagesManager = React.memo(() => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTab, setSelectedTab] = useState(TABS_CONFIG.ALL);
+  const [selectedTab, setSelectedTab] = useState<string>(TABS_CONFIG.ALL);
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
 
@@ -392,6 +392,8 @@ const LandingPagesManager = () => {
       </Tabs>
     </div>
   );
-};
+});
+
+LandingPagesManager.displayName = 'LandingPagesManager';
 
 export default LandingPagesManager;
