@@ -12,7 +12,8 @@ import Autoplay from "embla-carousel-autoplay";
 import { supabase } from '@/integrations/supabase/client';
 import { useLazyLoad } from '@/hooks/useLazyLoad';
 import { useCache } from '@/hooks/useCache';
-import LazyImage from '@/components/LazyImage';
+import OptimizedImage from '@/components/OptimizedImage';
+import { useCriticalImagesPreloader } from '@/hooks/useImagePreloader';
 import { globalCache } from '@/utils/cache';
 
 interface TeamMember {
@@ -51,6 +52,14 @@ const Team = () => {
     globalCache,
     15 * 60 * 1000 // 15 minutos de cache
   );
+
+  // Prefetch critical team images
+  const teamImageUrls = React.useMemo(() => 
+    teamMembers?.filter(member => member.image_url).map(member => member.image_url!) || [],
+    [teamMembers]
+  );
+
+  useCriticalImagesPreloader(teamImageUrls);
 
   return (
     <section ref={ref} id="equipo" className="py-20 bg-white">
@@ -93,11 +102,14 @@ const Team = () => {
                   <CarouselItem key={member.id} className="pl-2 basis-auto">
                     <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-border">
                       {member.image_url ? (
-                        <LazyImage
+                        <OptimizedImage
                           src={member.image_url}
                           alt={member.name}
                           className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
                           placeholderClassName="w-full h-full"
+                          responsive={true}
+                          quality={85}
+                          onLoad={() => console.log(`Team image loaded: ${member.name}`)}
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">

@@ -2,6 +2,7 @@
 import React from 'react';
 import { useLazyImage, useResponsiveImage } from '@/hooks/useLazyImage';
 import { cn } from '@/lib/utils';
+import { useImagePerformanceTracking } from '@/utils/imagePerformanceMonitor';
 
 interface OptimizedImageProps {
   src: string;
@@ -32,14 +33,33 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   threshold = 0.1,
   rootMargin = '50px'
 }) => {
+  const { trackImageLoad } = useImagePerformanceTracking();
+  const loadStartTime = React.useRef<number>(0);
+
   // Use responsive image if enabled
   const { optimizedSrc } = useResponsiveImage(src, {
-    mobile: { width: 360 },
-    tablet: { width: 768 },
-    desktop: { width: 1200 }
+    mobile: { width: 360, quality },
+    tablet: { width: 768, quality },
+    desktop: { width: 1200, quality }
   });
 
   const finalSrc = responsive ? optimizedSrc : src;
+
+  // Enhanced onLoad callback with performance tracking
+  const handleLoad = React.useCallback(() => {
+    if (loadStartTime.current > 0) {
+      trackImageLoad(finalSrc, loadStartTime.current);
+    }
+    onLoad?.();
+  }, [finalSrc, trackImageLoad, onLoad]);
+
+  // Enhanced onError callback
+  const handleError = React.useCallback((error: string) => {
+    if (loadStartTime.current > 0) {
+      trackImageLoad(finalSrc, loadStartTime.current);
+    }
+    onError?.(error);
+  }, [finalSrc, trackImageLoad, onError]);
 
   // Use lazy loading
   const {
@@ -52,10 +72,17 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     threshold,
     rootMargin,
     placeholder,
-    onLoad,
-    onError,
+    onLoad: handleLoad,
+    onError: handleError,
     retryAttempts
   });
+
+  // Track load start time
+  React.useEffect(() => {
+    if (loadedSrc && !hasLoaded) {
+      loadStartTime.current = performance.now();
+    }
+  }, [loadedSrc, hasLoaded]);
 
   return (
     <div ref={ref} className={cn('relative overflow-hidden', className)}>
