@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Bell, CheckCircle, AlertCircle } from 'lucide-react';
 
-const NotificationCenter = () => {
-  const notifications = [
+const NotificationCenter = React.memo(() => {
+  const notifications = React.useMemo(() => [
     {
       id: '1',
       type: 'success',
@@ -27,9 +27,9 @@ const NotificationCenter = () => {
       message: 'Se han agregado 3 nuevos casos de éxito',
       time: 'Hace 1 hora'
     }
-  ];
+  ], []);
 
-  const getIcon = (type: string) => {
+  const getIcon = React.useCallback((type: string) => {
     switch (type) {
       case 'success':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -38,7 +38,7 @@ const NotificationCenter = () => {
       default:
         return <AlertCircle className="h-4 w-4 text-blue-500" />;
     }
-  };
+  }, []);
 
   return (
     <DropdownMenu>
@@ -76,6 +76,8 @@ const NotificationCenter = () => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});
+
+NotificationCenter.displayName = 'NotificationCenter';
 
 export default NotificationCenter;
