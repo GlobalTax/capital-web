@@ -13,7 +13,6 @@ interface OptimizedImageProps {
   onLoad?: () => void;
   onError?: (error: string) => void;
   responsive?: boolean;
-  quality?: number;
   retryAttempts?: number;
   threshold?: number;
   rootMargin?: string;
@@ -28,7 +27,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onLoad,
   onError,
   responsive = true,
-  quality = 80,
   retryAttempts = 3,
   threshold = 0.1,
   rootMargin = '50px'

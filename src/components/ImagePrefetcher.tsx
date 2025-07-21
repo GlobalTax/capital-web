@@ -137,25 +137,47 @@ export const useIntelligentPrefetch = () => {
   useEffect(() => {
     // Prefetch al hacer hover sobre enlaces de navegación
     const handleLinkHover = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target || typeof target.closest !== 'function') return;
-      const link = target.closest('a[href]') as HTMLAnchorElement;
-      
-      if (link && link.href) {
-        const href = new URL(link.href).pathname;
+      try {
+        console.log('Hover event detected:', event.target);
         
-        // Prefetch images for the target page
-        switch (href) {
-          case '/equipo':
-            preloadImages(['/api/placeholder/team-1.jpg'], { priority: 'low' });
-            break;
-          case '/casos-exito':
-            preloadImages(['/api/placeholder/case-study-1.jpg'], { priority: 'low' });
-            break;
-          case '/testimonios':
-            preloadImages(['/api/placeholder/testimonial-1.jpg'], { priority: 'low' });
-            break;
+        const target = event.target;
+        
+        // Verificar que el target es un elemento válido
+        if (!target || typeof target !== 'object') {
+          console.log('Invalid target, skipping');
+          return;
         }
+        
+        // Verificar que el target es un HTMLElement y tiene el método closest
+        if (!(target instanceof HTMLElement) || typeof target.closest !== 'function') {
+          console.log('Target is not HTMLElement or missing closest method');
+          return;
+        }
+        
+        const link = target.closest('a[href]') as HTMLAnchorElement;
+        
+        if (link && link.href) {
+          console.log('Found link:', link.href);
+          const href = new URL(link.href).pathname;
+          
+          // Prefetch images for the target page
+          switch (href) {
+            case '/equipo':
+              preloadImages(['/api/placeholder/team-1.jpg'], { priority: 'low' });
+              console.log('Prefetching team images on hover');
+              break;
+            case '/casos-exito':
+              preloadImages(['/api/placeholder/case-study-1.jpg'], { priority: 'low' });
+              console.log('Prefetching case study images on hover');
+              break;
+            case '/testimonios':
+              preloadImages(['/api/placeholder/testimonial-1.jpg'], { priority: 'low' });
+              console.log('Prefetching testimonial images on hover');
+              break;
+          }
+        }
+      } catch (error) {
+        console.error('Error in handleLinkHover:', error);
       }
     };
     

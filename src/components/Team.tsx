@@ -26,19 +26,27 @@ interface TeamMember {
 }
 
 const Team = () => {
+  console.log('Team component mounting...');
+  
   const { ref, isVisible } = useLazyLoad<HTMLElement>({ 
     threshold: 0.1,
     rootMargin: '100px'
   });
 
   const fetchTeamMembers = React.useCallback(async (): Promise<TeamMember[]> => {
+    console.log('Fetching team members from Supabase...');
     const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching team members:', error);
+      throw error;
+    }
+    
+    console.log('Team members fetched successfully:', data?.length || 0);
     return data || [];
   }, []);
 
@@ -54,12 +62,15 @@ const Team = () => {
   );
 
   // Prefetch critical team images
-  const teamImageUrls = React.useMemo(() => 
-    teamMembers?.filter(member => member.image_url).map(member => member.image_url!) || [],
-    [teamMembers]
-  );
+  const teamImageUrls = React.useMemo(() => {
+    const urls = teamMembers?.filter(member => member.image_url).map(member => member.image_url!) || [];
+    console.log('Team image URLs for prefetching:', urls);
+    return urls;
+  }, [teamMembers]);
 
   useCriticalImagesPreloader(teamImageUrls);
+
+  console.log('Team component state:', { isLoading, error, teamMembersCount: teamMembers?.length, isVisible });
 
   return (
     <section ref={ref} id="equipo" className="py-20 bg-white">
@@ -108,8 +119,8 @@ const Team = () => {
                           className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
                           placeholderClassName="w-full h-full"
                           responsive={true}
-                          quality={85}
                           onLoad={() => console.log(`Team image loaded: ${member.name}`)}
+                          onError={(error) => console.error(`Error loading image for ${member.name}:`, error)}
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
