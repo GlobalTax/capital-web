@@ -8,14 +8,13 @@ import OptimizedImage from './OptimizedImage';
 
 interface Testimonial {
   id: string;
-  name: string;
-  company: string;
-  position: string;
-  content: string;
-  rating: number;
-  image_url?: string;
-  is_featured: boolean;
-  is_published: boolean;
+  client_name: string;
+  client_company: string;
+  client_position?: string;
+  quote: string;
+  logo_url?: string;
+  is_active: boolean;
+  display_order: number;
 }
 
 const TestimonialsCarousel = () => {
@@ -29,11 +28,10 @@ const TestimonialsCarousel = () => {
   const fetchTestimonials = async () => {
     try {
       const { data, error } = await supabase
-        .from('testimonials')
+        .from('carousel_testimonials')
         .select('*')
-        .eq('is_published', true)
-        .order('is_featured', { ascending: false })
-        .order('created_at', { ascending: false })
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
         .limit(6);
 
       if (error) {
@@ -48,16 +46,6 @@ const TestimonialsCarousel = () => {
     }
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-        }`}
-      />
-    ));
-  };
 
   if (isLoading) {
     return (
@@ -107,30 +95,25 @@ const TestimonialsCarousel = () => {
               <CarouselItem key={testimonial.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                 <Card className="h-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <CardContent className="p-6 flex flex-col h-full">
-                    <div className="flex items-center mb-4">
-                      {renderStars(testimonial.rating)}
-                    </div>
-                    
-                    <blockquote className="text-gray-700 mb-6 flex-grow italic">
-                      "{testimonial.content}"
+                    <blockquote className="text-gray-700 mb-6 flex-grow italic text-lg">
+                      "{testimonial.quote}"
                     </blockquote>
                     
                     <div className="flex items-center mt-auto">
-                      {testimonial.image_url && (
+                      {testimonial.logo_url && (
                         <OptimizedImage
-                          src={testimonial.image_url}
-                          alt={testimonial.name}
+                          src={testimonial.logo_url}
+                          alt={testimonial.client_company}
                           className="w-12 h-12 rounded-full object-cover mr-4"
                           placeholderClassName="w-12 h-12 rounded-full bg-gray-200"
-                          quality={85}
                           threshold={0.1}
                           rootMargin="50px"
                         />
                       )}
                       <div>
-                        <h4 className="font-semibold text-black">{testimonial.name}</h4>
+                        <h4 className="font-semibold text-black">{testimonial.client_name}</h4>
                         <p className="text-sm text-gray-600">
-                          {testimonial.position} en {testimonial.company}
+                          {testimonial.client_position} en {testimonial.client_company}
                         </p>
                       </div>
                     </div>

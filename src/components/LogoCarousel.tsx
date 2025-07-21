@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import { supabase } from '@/integrations/supabase/client';
 import OptimizedImage from './OptimizedImage';
+import { useCriticalImagesPreloader } from '@/hooks/useImagePreloader';
 
 interface CarouselLogo {
   id: string;
@@ -21,6 +22,10 @@ interface CarouselLogo {
 const LogoCarousel = () => {
   const [logos, setLogos] = useState<CarouselLogo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Preload critical logo images
+  const logoUrls = logos.map(logo => logo.logo_url).filter(Boolean) as string[];
+  useCriticalImagesPreloader(logoUrls);
 
   useEffect(() => {
     fetchLogos();
