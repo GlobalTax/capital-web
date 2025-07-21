@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +44,7 @@ const AdminUsersManager = () => {
     formState: { errors: editErrors }
   } = useForm<Partial<AdminUser>>();
 
-  const onCreateUser = async (data: CreateAdminUserData) => {
+  const onCreateUser = useCallback(async (data: CreateAdminUserData) => {
     try {
       setIsSubmitting(true);
       await createUser(data);
@@ -55,9 +55,9 @@ const AdminUsersManager = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [createUser, resetCreate]);
 
-  const onEditUser = async (data: Partial<AdminUser>) => {
+  const onEditUser = useCallback(async (data: Partial<AdminUser>) => {
     if (!editingUser) return;
     
     try {
@@ -71,25 +71,25 @@ const AdminUsersManager = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [editingUser, updateUser, resetEdit]);
 
-  const handleEdit = (user: AdminUser) => {
+  const handleEdit = useCallback((user: AdminUser) => {
     setEditingUser(user);
     setEditValue('full_name', user.full_name || '');
     setEditValue('email', user.email || '');
     setEditValue('role', user.role);
     setIsEditDialogOpen(true);
-  };
+  }, [setEditValue]);
 
-  const handleDelete = async (userId: string) => {
+  const handleDelete = useCallback(async (userId: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
       await deleteUser(userId);
     }
-  };
+  }, [deleteUser]);
 
-  const getRoleInfo = (role: string) => {
+  const getRoleInfo = useCallback((role: string) => {
     return ROLE_LABELS[role as keyof typeof ROLE_LABELS] || ROLE_LABELS.viewer;
-  };
+  }, []);
 
   if (isLoading || permissionsLoading) {
     return (
@@ -250,7 +250,7 @@ const AdminUsersManager = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => {
+              {useMemo(() => users.map((user) => {
                 const roleInfo = getRoleInfo(user.role);
                 const RoleIcon = roleInfo.icon;
                 
@@ -307,7 +307,7 @@ const AdminUsersManager = () => {
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              }), [users, getRoleInfo, handleEdit, handleDelete, toggleUserStatus])}
             </TableBody>
           </Table>
 
