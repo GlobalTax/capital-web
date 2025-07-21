@@ -9,28 +9,25 @@ export const useValuationCalculatorTracking = () => {
   const { handleValuationError, createValuationError } = useMAErrorHandler();
 
   const trackStepChange = (step: number, companyData?: { sector?: string; companyName?: string }) => {
-    logger.debug('Valuation calculator step change', { step }, { 
+    logger.debug('Valuation calculator step change', { step, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { step, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_step_change', { step, ...companyData });
   };
 
   const trackFieldUpdate = (field: string, value: any, companyData?: { sector?: string; companyName?: string }) => {
-    logger.debug('Valuation calculator field update', { field, value }, { 
+    logger.debug('Valuation calculator field update', { field, value, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { field, value, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_field_update', { field, value, ...companyData });
   };
 
   const trackValidationIssue = (field: string, error: string, companyData?: { sector?: string; companyName?: string }) => {
-    logger.warn('Valuation calculator validation issue', { field, error }, { 
+    logger.warn('Valuation calculator validation issue', { field, error, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { field, error, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     
     // Crear error de validación específico
@@ -42,26 +39,23 @@ export const useValuationCalculatorTracking = () => {
   const trackCalculationStart = (companyData?: { sector?: string; companyName?: string; dealSize?: number }) => {
     logger.info('Valuation calculation started', companyData, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: companyData
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_calculation_start', companyData);
   };
 
   const trackStepCompletion = (step: number, data: any, companyData?: { sector?: string; companyName?: string }) => {
-    logger.info('Valuation step completed', { step, data }, { 
+    logger.info('Valuation step completed', { step, completionData: data, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { step, completionData: data, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_step_completed', { step, data, ...companyData });
   };
 
   const trackCalculationComplete = (valuation?: any, companyData?: { sector?: string; companyName?: string; dealSize?: number }) => {
-    logger.info('Valuation calculation completed', { valuation }, { 
+    logger.info('Valuation calculation completed', { valuation, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { valuation, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_calculation_complete', { valuation, ...companyData });
   };
@@ -92,28 +86,25 @@ export const useValuationCalculatorTracking = () => {
   };
 
   const trackCalculationAbandon = (step: number, companyData?: { sector?: string; companyName?: string; timeSpent?: number }) => {
-    logger.info('Valuation calculation abandoned', { step }, { 
+    logger.info('Valuation calculation abandoned', { step, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { step, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_calculation_abandon', { step, ...companyData });
   };
 
   const trackSectorMultipleUsage = (sector: string, multiple: number, companyData?: { companyName?: string; employeeRange?: string }) => {
-    logger.info('Sector multiple used in valuation', { sector, multiple }, { 
+    logger.info('Sector multiple used in valuation', { sector, multiple, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { sector, multiple, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_sector_multiple_used', { sector, multiple, ...companyData });
   };
 
   const trackBusinessRuleApplied = (rule: string, impact: number, companyData?: { sector?: string; companyName?: string }) => {
-    logger.info('Business rule applied in valuation', { rule, impact }, { 
+    logger.info('Business rule applied in valuation', { rule, impact, ...companyData }, { 
       context: 'valuation', 
-      component: 'useValuationCalculatorTracking',
-      data: { rule, impact, ...companyData }
+      component: 'useValuationCalculatorTracking'
     });
     trackEvent('valuation_business_rule_applied', { rule, impact, ...companyData });
   };

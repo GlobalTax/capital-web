@@ -12,20 +12,39 @@ import { useToast } from '@/hooks/use-toast';
 
 interface ContactFormData {
   fullName: string;
+  name?: string;
   email: string;
   phone: string;
   company: string;
+  message?: string;
+  service?: string;
   referral?: string;
 }
 
+// Adapter function for component compatibility  
+const adaptFormData = (formData: any): ContactFormData => {
+  return {
+    fullName: formData.name || formData.fullName || '',
+    name: formData.name,
+    email: formData.email || '',
+    phone: formData.phone || '',
+    company: formData.company || '',
+    message: formData.message,
+    service: formData.service,
+    referral: formData.referral
+  };
+};
+
 interface UseContactFormReturn {
-  isLoading: boolean;
-  submitContact: (data: ContactFormData) => Promise<boolean>;
+  isSubmitting: boolean;
+  submitForm: (data: any) => Promise<boolean>;
   validateForm: (data: ContactFormData) => Promise<void>;
+  errors: Record<string, string>;
 }
 
 export const useContactForm = (): UseContactFormReturn => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const { 
     handleHubSpotError, 
@@ -57,10 +76,14 @@ export const useContactForm = (): UseContactFormReturn => {
     }
   }, []);
 
-  const submitContact = useCallback(async (data: ContactFormData): Promise<boolean> => {
-    setIsLoading(true);
+  const submitForm = useCallback(async (rawData: any): Promise<boolean> => {
+    setIsSubmitting(true);
+    setErrors({});
     
     try {
+      // Adapt data to internal format
+      const data = adaptFormData(rawData);
+      
       // Validar datos antes de enviar
       await validateForm(data);
 
@@ -117,6 +140,8 @@ export const useContactForm = (): UseContactFormReturn => {
 
     } catch (error) {
       if (error instanceof ValidationError) {
+        const field = error.context?.field as string || 'general';
+        setErrors({ [field]: error.message });
         toast({
           title: "Error de validación",
           description: error.message,
@@ -124,9 +149,11 @@ export const useContactForm = (): UseContactFormReturn => {
           duration: 4000,
         });
       } else if (error instanceof CompanyDataError) {
+        const field = error.context?.dataField as string || 'company';
+        setErrors({ [field]: error.message });
         handleCompanyDataError(error, { 
           component: 'ContactForm',
-          companyId: data.company 
+          companyId: rawData.company || 'unknown'
         });
       } else if (error instanceof NetworkError) {
         toast({
@@ -146,14 +173,15 @@ export const useContactForm = (): UseContactFormReturn => {
 
       return false;
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   }, [validateForm, handleHubSpotError, handleCompanyDataError, toast]);
 
   return {
-    isLoading,
-    submitContact,
-    validateForm
+    isSubmitting,
+    submitForm,
+    validateForm,
+    errors
   };
 };
 
