@@ -37,12 +37,20 @@ const CaseStudies = () => {
   }, [searchTerm, selectedSector, selectedYear]);
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+    // Normalizar códigos de divisa comunes para evitar problemas de codificación
+    const normalizedCurrency = currency === '€' || currency === 'â¬' ? 'EUR' : currency;
+    
+    try {
+      return new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: normalizedCurrency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (error) {
+      // Fallback si hay problemas con el código de divisa
+      return `${currency}${amount.toLocaleString('es-ES')}`;
+    }
   };
 
   if (isLoading) {
