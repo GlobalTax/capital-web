@@ -1,28 +1,31 @@
+
 import React, { useState, useEffect, useRef } from 'react';
+
 import { useLocation } from 'react-router-dom';
-import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
+
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
-import { sidebarSections } from './SidebarConfig';
+
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarFooter } from './SidebarFooter';
 import { SidebarSection } from './SidebarSection';
+
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
+
+import { sidebarSections } from './SidebarConfig';
 
 export const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const { getMenuVisibility, userRole, isLoading, error } = useRoleBasedPermissions();
   const mountedRef = useRef(true);
   
-  // Estado para controlar secciones expandidas
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   
-  // Cleanup on unmount to prevent React #300 error
   useEffect(() => {
     return () => {
       mountedRef.current = false;
     };
   }, []);
   
-  // Función para encontrar qué sección contiene la ruta activa
   const getActiveSectionTitle = (): string | null => {
     const currentPath = location.pathname;
     
@@ -35,7 +38,6 @@ export const AdminSidebar: React.FC = () => {
     return null;
   };
   
-  // Expandir automáticamente la sección que contiene la ruta activa
   useEffect(() => {
     if (!mountedRef.current) return;
     
@@ -48,7 +50,6 @@ export const AdminSidebar: React.FC = () => {
     }
   }, [location.pathname]);
   
-  // Función para toggle de secciones
   const toggleSection = (sectionTitle: string) => {
     if (!mountedRef.current) return;
     
@@ -58,13 +59,11 @@ export const AdminSidebar: React.FC = () => {
     }));
   };
 
-  // TODOS LOS HOOKS DEBEN EJECUTARSE SIEMPRE - NUNCA EARLY RETURNS
   const menuVisibility = React.useMemo(() => {
     try {
       return getMenuVisibility();
     } catch (error) {
       console.error('Error getting menu visibility:', error);
-      // Fallback básico - solo dashboard visible
       return {
         dashboard: true,
         leadScoring: false,
@@ -93,7 +92,6 @@ export const AdminSidebar: React.FC = () => {
         integrations: false,
         adminUsers: false,
         settings: false,
-        // Nuevas funcionalidades de tracking y contenido
         contentPerformance: false,
         contentStudio: false,
         designResources: false,
@@ -104,9 +102,6 @@ export const AdminSidebar: React.FC = () => {
     }
   }, [getMenuVisibility]);
 
-
-  // RENDERIZADO CONDICIONAL - NUNCA EARLY RETURNS
-  // Modo degradado en caso de error crítico
   if (error) {
     return (
       <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
@@ -135,17 +130,13 @@ export const AdminSidebar: React.FC = () => {
     );
   }
 
-  // Mapear visibilidad de permisos a los items del sidebar
   const getItemVisibility = (url: string): boolean => {
     const route = url.split('/').pop() || '';
     
-    // Dashboard siempre visible
     if (url === '/admin') return true;
     
-    // Super admin siempre tiene acceso a todo
     if (userRole === 'super_admin') return true;
     
-    // Mapear rutas a permisos - SINCRONIZADO con AdminRouter y useRoleBasedPermissions
     const routePermissionMap: Record<string, keyof typeof menuVisibility> = {
       'lead-scoring': 'leadScoring',
       'lead-scoring-rules': 'leadScoringRules',
@@ -175,7 +166,6 @@ export const AdminSidebar: React.FC = () => {
       'integrations': 'integrations',
       'admin-users': 'adminUsers',
       'settings': 'settings',
-      // Nuevas rutas de tracking
       'content-performance': 'contentPerformance',
       'content-studio': 'contentStudio',
       'tracking-dashboard': 'trackingDashboard',
@@ -192,7 +182,6 @@ export const AdminSidebar: React.FC = () => {
       
       <SidebarContent>
         {sidebarSections.map((section) => {
-          // Filtrar items visibles según permisos
           const visibleItems = section.items.filter(item => getItemVisibility(item.url));
           
           return (

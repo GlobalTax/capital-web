@@ -14,9 +14,7 @@ import {
   Copy, 
   Trash2,
   Globe,
-  Globe as GlobeOff,
   ExternalLink,
-  BarChart3,
   Calendar,
   Users,
   MousePointer
@@ -44,7 +42,6 @@ const LandingPagesManager = () => {
   const { landingPages, isLoading, togglePublish, deleteLandingPage, duplicateLandingPage } = useLandingPages();
   const { templates } = useLandingPageTemplates();
 
-  // Filtrar landing pages
   const filteredPages = landingPages?.filter(page => {
     const matchesSearch = page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          page.slug.toLowerCase().includes(searchTerm.toLowerCase());
@@ -54,7 +51,6 @@ const LandingPagesManager = () => {
     return matchesSearch;
   }) || [];
 
-  // Estadísticas rápidas
   const stats = {
     total: landingPages?.length || 0,
     published: landingPages?.filter(p => p.is_published).length || 0,

@@ -1,12 +1,14 @@
+
 import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { Toaster } from '@/components/ui/toaster';
 
-// Existing components
 import Contact from '@/components/Contact';
 import Newsletter from '@/components/Newsletter';
+
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 
 import './App.css';
@@ -14,7 +16,7 @@ import './App.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     },
   },

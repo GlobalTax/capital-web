@@ -1,28 +1,26 @@
-
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, Minus, RotateCcw, Eye, Moon, Sun } from 'lucide-react';
+
+import { Eye, EyeOff, Type, Palette, MousePointer } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface AccessibilitySettings {
-  fontSize: number;
   highContrast: boolean;
-  darkMode: boolean;
+  largeText: boolean;
   reducedMotion: boolean;
+  screenReader: boolean;
 }
 
 const AccessibilityTools = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<AccessibilitySettings>({
-    fontSize: 100,
     highContrast: false,
-    darkMode: false,
+    largeText: false,
     reducedMotion: false,
+    screenReader: false,
   });
 
-  // Load settings from localStorage on mount
   useEffect(() => {
     const savedSettings = localStorage.getItem('accessibility-settings');
     if (savedSettings) {
@@ -32,204 +30,125 @@ const AccessibilityTools = () => {
     }
   }, []);
 
-  // Save settings to localStorage and apply them
-  const updateSettings = (newSettings: Partial<AccessibilitySettings>) => {
-    const updated = { ...settings, ...newSettings };
-    setSettings(updated);
-    localStorage.setItem('accessibility-settings', JSON.stringify(updated));
-    applySettings(updated);
-  };
-
-  // Apply settings to the DOM
-  const applySettings = (settingsToApply: AccessibilitySettings) => {
+  const applySettings = (newSettings: AccessibilitySettings) => {
     const root = document.documentElement;
     
-    // Font size
-    root.style.fontSize = `${settingsToApply.fontSize}%`;
-    
-    // High contrast
-    if (settingsToApply.highContrast) {
+    if (newSettings.highContrast) {
       root.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
     }
-    
-    // Dark mode
-    if (settingsToApply.darkMode) {
-      root.classList.add('dark');
+
+    if (newSettings.largeText) {
+      root.classList.add('large-text');
     } else {
-      root.classList.remove('dark');
+      root.classList.remove('large-text');
     }
-    
-    // Reduced motion
-    if (settingsToApply.reducedMotion) {
-      root.classList.add('reduce-motion');
+
+    if (newSettings.reducedMotion) {
+      root.classList.add('reduced-motion');
     } else {
-      root.classList.remove('reduce-motion');
+      root.classList.remove('reduced-motion');
     }
   };
 
-  const increaseFontSize = () => {
-    const newSize = Math.min(settings.fontSize + 10, 150);
-    updateSettings({ fontSize: newSize });
-  };
-
-  const decreaseFontSize = () => {
-    const newSize = Math.max(settings.fontSize - 10, 80);
-    updateSettings({ fontSize: newSize });
+  const updateSetting = (key: keyof AccessibilitySettings) => {
+    const newSettings = {
+      ...settings,
+      [key]: !settings[key]
+    };
+    
+    setSettings(newSettings);
+    applySettings(newSettings);
+    localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
   };
 
   const resetSettings = () => {
     const defaultSettings: AccessibilitySettings = {
-      fontSize: 100,
       highContrast: false,
-      darkMode: false,
+      largeText: false,
       reducedMotion: false,
+      screenReader: false,
     };
-    updateSettings(defaultSettings);
-  };
-
-  const toggleHighContrast = () => {
-    updateSettings({ highContrast: !settings.highContrast });
-  };
-
-  const toggleDarkMode = () => {
-    updateSettings({ darkMode: !settings.darkMode });
-  };
-
-  const toggleReducedMotion = () => {
-    updateSettings({ reducedMotion: !settings.reducedMotion });
+    
+    setSettings(defaultSettings);
+    applySettings(defaultSettings);
+    localStorage.setItem('accessibility-settings', JSON.stringify(defaultSettings));
   };
 
   return (
-    <>
-      {/* Accessibility Button */}
+    <div className="fixed bottom-4 right-4 z-50">
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 z-50 rounded-full w-12 h-12 shadow-lg"
-        size="sm"
-        aria-label="Abrir herramientas de accesibilidad"
+        className="rounded-full w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+        aria-label="Herramientas de accesibilidad"
       >
-        <Settings className="h-5 w-5" />
+        <Eye className="h-5 w-5" />
       </Button>
 
-      {/* Accessibility Panel */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 z-50 w-80">
-          <Card className="shadow-xl border-2">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Eye className="h-5 w-5" />
-                Herramientas de Accesibilidad
-              </CardTitle>
-            </CardHeader>
+        <Card className="absolute bottom-16 right-0 w-80 shadow-xl">
+          <CardContent className="p-4">
+            <h3 className="font-semibold text-lg mb-4">Herramientas de Accesibilidad</h3>
             
-            <CardContent className="space-y-4">
-              {/* Font Size Controls */}
-              <div>
-                <h3 className="font-medium mb-2">Tamaño de Texto</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={decreaseFontSize}
-                    disabled={settings.fontSize <= 80}
-                    aria-label="Disminuir tamaño de texto"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium min-w-16 text-center">
-                    {settings.fontSize}%
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={increaseFontSize}
-                    disabled={settings.fontSize >= 150}
-                    aria-label="Aumentar tamaño de texto"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <Palette className="h-4 w-4" />
+                  <span className="text-sm">Alto contraste</span>
                 </div>
-              </div>
-
-              <Separator />
-
-              {/* Visual Controls */}
-              <div className="space-y-3">
-                <h3 className="font-medium">Controles Visuales</h3>
-                
                 <Button
                   variant={settings.highContrast ? "default" : "outline"}
                   size="sm"
-                  onClick={toggleHighContrast}
-                  className="w-full justify-start"
+                  onClick={() => updateSetting('highContrast')}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Alto Contraste
-                </Button>
-
-                <Button
-                  variant={settings.darkMode ? "default" : "outline"}
-                  size="sm"
-                  onClick={toggleDarkMode}
-                  className="w-full justify-start"
-                >
-                  {settings.darkMode ? (
-                    <Sun className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Moon className="h-4 w-4 mr-2" />
-                  )}
-                  {settings.darkMode ? 'Modo Claro' : 'Modo Oscuro'}
-                </Button>
-
-                <Button
-                  variant={settings.reducedMotion ? "default" : "outline"}
-                  size="sm"
-                  onClick={toggleReducedMotion}
-                  className="w-full justify-start"
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reducir Animaciones
+                  {settings.highContrast ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 </Button>
               </div>
 
-              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Type className="h-4 w-4" />
+                  <span className="text-sm">Texto grande</span>
+                </div>
+                <Button
+                  variant={settings.largeText ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updateSetting('largeText')}
+                >
+                  {settings.largeText ? 'A+' : 'A'}
+                </Button>
+              </div>
 
-              {/* Reset Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetSettings}
-                className="w-full"
-              >
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Restaurar Configuración
-              </Button>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MousePointer className="h-4 w-4" />
+                  <span className="text-sm">Reducir animaciones</span>
+                </div>
+                <Button
+                  variant={settings.reducedMotion ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updateSetting('reducedMotion')}
+                >
+                  {settings.reducedMotion ? 'ON' : 'OFF'}
+                </Button>
+              </div>
+            </div>
 
-              {/* Close Button */}
+            <div className="mt-4 pt-3 border-t">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsOpen(false)}
-                className="w-full"
+                onClick={resetSettings}
+                className="w-full text-xs"
               >
-                Cerrar
+                Restablecer configuración
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
-
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40"
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-    </>
+    </div>
   );
 };
 

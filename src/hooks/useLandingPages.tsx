@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useToast } from '@/hooks/use-toast';
+
+import { supabase } from '@/integrations/supabase/client';
 
 export interface LandingPageTemplate {
   id: string;
@@ -63,12 +66,11 @@ export const useLandingPageTemplates = () => {
         if (error) throw error;
         return data as LandingPageTemplate[];
       } catch (error) {
-        // Si la tabla no existe, devolver array vacío en lugar de error
         console.debug('Landing page templates table not available');
         return [] as LandingPageTemplate[];
       }
     },
-    retry: false, // No reintentar para evitar spam de errores
+    retry: false,
   });
 
   return { templates, isLoading };
@@ -78,7 +80,6 @@ export const useLandingPages = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Obtener todas las landing pages
   const { data: landingPages, isLoading } = useQuery({
     queryKey: ['landingPages'],
     queryFn: async () => {
@@ -94,18 +95,15 @@ export const useLandingPages = () => {
         if (error) throw error;
         return data as (LandingPage & { template?: { name: string; type: string } })[];
       } catch (error) {
-        // Si las tablas no existen, devolver array vacío
         console.debug('Landing pages tables not available');
         return [] as (LandingPage & { template?: { name: string; type: string } })[];
       }
     },
-    retry: false, // No reintentar para evitar spam de errores
+    retry: false,
   });
 
-  // Crear landing page
   const createLandingPage = useMutation({
     mutationFn: async (formData: LandingPageFormData) => {
-      // Verificar que el slug sea único
       const { data: existing } = await (supabase as any)
         .from('landing_pages')
         .select('id')
@@ -142,7 +140,6 @@ export const useLandingPages = () => {
     },
   });
 
-  // Actualizar landing page
   const updateLandingPage = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<LandingPage> }) => {
       const { data, error } = await (supabase as any)
@@ -172,7 +169,6 @@ export const useLandingPages = () => {
     },
   });
 
-  // Publicar/despublicar landing page
   const togglePublish = useMutation({
     mutationFn: async ({ id, publish }: { id: string; publish: boolean }) => {
       const updates: Partial<LandingPage> = {
@@ -212,7 +208,6 @@ export const useLandingPages = () => {
     },
   });
 
-  // Eliminar landing page
   const deleteLandingPage = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await (supabase as any)
@@ -239,7 +234,6 @@ export const useLandingPages = () => {
     },
   });
 
-  // Duplicar landing page
   const duplicateLandingPage = useMutation({
     mutationFn: async (id: string) => {
       const { data: original, error: fetchError } = await (supabase as any)
@@ -316,13 +310,12 @@ export const useLandingPageBySlug = (slug: string) => {
         if (error) throw error;
         return data as LandingPage & { template?: LandingPageTemplate };
       } catch (error) {
-        // Si las tablas no existen, devolver null
         console.debug('Landing pages tables not available');
         return null;
       }
     },
     enabled: !!slug,
-    retry: false, // No reintentar para evitar spam de errores
+    retry: false,
   });
 
   return { landingPage, isLoading, error };
@@ -340,7 +333,6 @@ export const useLandingPageConversions = () => {
     conversion_value?: number;
   }) => {
     try {
-      // Obtener información adicional del navegador
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
 
