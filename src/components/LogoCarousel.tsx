@@ -98,7 +98,6 @@ const LogoCarousel = () => {
                         alt={logo.company_name}
                         className="h-7 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300"
                         placeholderClassName="h-7 w-20"
-                        quality={90}
                         threshold={0.2}
                         rootMargin="100px"
                       />

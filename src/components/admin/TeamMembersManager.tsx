@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -309,7 +310,6 @@ const TeamMembersManager = () => {
                         className="w-full h-full object-cover"
                         placeholderClassName="w-16 h-16"
                         responsive={false}
-                        quality={90}
                       />
                     </div>
                   )}

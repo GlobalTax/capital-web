@@ -136,7 +136,6 @@ const CaseStudies = () => {
                       alt={caseStudy.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       placeholderClassName="w-full h-48 bg-gray-200"
-                      quality={80}
                       threshold={0.1}
                       rootMargin="100px"
                     />
@@ -158,7 +157,6 @@ const CaseStudies = () => {
                         alt={`Logo de ${caseStudy.title}`}
                         className="h-8 w-auto object-contain"
                         placeholderClassName="h-8 w-16 bg-gray-200 rounded"
-                        quality={90}
                         threshold={0.1}
                       />
                     </div>
