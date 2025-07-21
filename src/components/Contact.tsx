@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,11 +12,45 @@ import LoadingButton from '@/components/LoadingButton';
 import { useContactForm } from '@/hooks/useContactForm';
 import type { ContactFormData } from '@/types/forms';
 
+// Memoized contact info section
+const ContactInfo = memo(() => (
+  <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="text-center">
+      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+        <span className="text-2xl">📞</span>
+      </div>
+      <h3 className="font-semibold mb-2">Teléfono</h3>
+      <p className="text-muted-foreground">+34 912 345 678</p>
+    </div>
+
+    <div className="text-center">
+      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+        <span className="text-2xl">✉️</span>
+      </div>
+      <h3 className="font-semibold mb-2">Email</h3>
+      <p className="text-muted-foreground">info@capittal.es</p>
+    </div>
+
+    <div className="text-center">
+      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+        <span className="text-2xl">📍</span>
+      </div>
+      <h3 className="font-semibold mb-2">Oficina</h3>
+      <p className="text-muted-foreground">
+        P.º de la Castellana, 11, B - A<br />
+        Chamberí, 28046 Madrid
+      </p>
+    </div>
+  </div>
+));
+
+ContactInfo.displayName = 'ContactInfo';
+
 const Contact = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const { submitForm, isSubmitting, errors } = useContactForm();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!acceptTerms) {
@@ -39,7 +73,11 @@ const Contact = () => {
       (e.target as HTMLFormElement).reset();
       setAcceptTerms(false);
     }
-  };
+  }, [acceptTerms, submitForm]);
+
+  const handleTermsChange = useCallback((checked: boolean) => {
+    setAcceptTerms(checked);
+  }, []);
 
   return (
     <section className="py-20 bg-background">
@@ -146,7 +184,7 @@ const Contact = () => {
                 <Checkbox
                   id="terms"
                   checked={acceptTerms}
-                  onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                  onCheckedChange={handleTermsChange}
                 />
                 <Label htmlFor="terms" className="text-sm leading-relaxed">
                   Acepto la política de privacidad y autorizo el tratamiento de mis datos para que Capittal pueda responder a mi consulta. *
@@ -166,34 +204,7 @@ const Contact = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📞</span>
-            </div>
-            <h3 className="font-semibold mb-2">Teléfono</h3>
-            <p className="text-muted-foreground">+34 912 345 678</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">✉️</span>
-            </div>
-            <h3 className="font-semibold mb-2">Email</h3>
-            <p className="text-muted-foreground">info@capittal.es</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📍</span>
-            </div>
-            <h3 className="font-semibold mb-2">Oficina</h3>
-            <p className="text-muted-foreground">
-              P.º de la Castellana, 11, B - A<br />
-              Chamberí, 28046 Madrid
-            </p>
-          </div>
-        </div>
+        <ContactInfo />
       </div>
     </section>
   );

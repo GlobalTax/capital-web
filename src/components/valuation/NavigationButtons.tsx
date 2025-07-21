@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calculator } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface NavigationButtonsProps {
   onNext: () => void;
 }
 
-const NavigationButtons: React.FC<NavigationButtonsProps> = ({
+const NavigationButtons: React.FC<NavigationButtonsProps> = memo(({
   currentStep,
   isNextDisabled,
   onPrev,
@@ -51,6 +51,13 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       </Button>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.currentStep === nextProps.currentStep &&
+    prevProps.isNextDisabled === nextProps.isNextDisabled
+  );
+});
+
+NavigationButtons.displayName = 'NavigationButtons';
 
 export default NavigationButtons;

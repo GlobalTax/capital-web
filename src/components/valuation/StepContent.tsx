@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import Step1BasicInfo from './Step1BasicInfo';
 import Step2FinancialData from './Step2FinancialData';
 import Step3Characteristics from './Step3Characteristics';
@@ -23,7 +23,7 @@ interface StepContentProps {
   errors?: Record<string, string>;
 }
 
-const StepContent: React.FC<StepContentProps> = ({
+const StepContent: React.FC<StepContentProps> = memo(({
   currentStep,
   companyData,
   updateField,
@@ -75,6 +75,17 @@ const StepContent: React.FC<StepContentProps> = ({
     default:
       return null;
   }
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.currentStep === nextProps.currentStep &&
+    JSON.stringify(prevProps.companyData) === JSON.stringify(nextProps.companyData) &&
+    prevProps.showValidation === nextProps.showValidation &&
+    prevProps.isCalculating === nextProps.isCalculating &&
+    JSON.stringify(prevProps.result) === JSON.stringify(nextProps.result) &&
+    JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors)
+  );
+});
+
+StepContent.displayName = 'StepContent';
 
 export default StepContent;
