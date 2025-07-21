@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,14 +28,14 @@ interface NotificationCenterProps {
   className?: string;
 }
 
-export const NotificationCenter = React.memo(({ className }: NotificationCenterProps) => {
+export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { toast } = useToast();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
       ...notification,
       id: Date.now().toString(),
@@ -54,27 +53,27 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
         variant: notification.type === 'error' ? 'destructive' : 'default'
       });
     }
-  }, [toast]);
+  };
 
-  const markAsRead = useCallback((id: string) => {
+  const markAsRead = (id: string) => {
     setNotifications(prev => 
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
-  }, []);
+  };
 
-  const markAllAsRead = useCallback(() => {
+  const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  }, []);
+  };
 
-  const removeNotification = useCallback((id: string) => {
+  const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+  };
 
-  const clearAll = useCallback(() => {
+  const clearAll = () => {
     setNotifications([]);
-  }, []);
+  };
 
-  const getIcon = useCallback((type: Notification['type']) => {
+  const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'success':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -85,9 +84,9 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
       default:
         return <Info className="h-4 w-4 text-blue-500" />;
     }
-  }, []);
+  };
 
-  const formatTime = useCallback((date: Date) => {
+  const formatTime = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -98,15 +97,7 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
     if (minutes < 60) return `${minutes}m`;
     if (hours < 24) return `${hours}h`;
     return `${days}d`;
-  }, []);
-
-  const handleToggleOpen = useCallback(() => {
-    setIsOpen(prev => !prev);
-  }, []);
-
-  const handleClosePanel = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+  };
 
   // Ejemplo de notificaciones automáticas (simuladas)
   useEffect(() => {
@@ -122,7 +113,7 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [notifications.length, addNotification]);
+  }, []);
 
   // Exponer función global para agregar notificaciones
   useEffect(() => {
@@ -130,7 +121,7 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
     return () => {
       delete (window as any).addNotification;
     };
-  }, [addNotification]);
+  }, []);
 
   return (
     <>
@@ -138,7 +129,7 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
       <Button
         variant="ghost"
         size="sm"
-        onClick={handleToggleOpen}
+        onClick={() => setIsOpen(true)}
         className={cn("relative", className)}
         aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} no leídas)` : ''}`}
       >
@@ -181,7 +172,7 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleClosePanel}
+                  onClick={() => setIsOpen(false)}
                   aria-label="Cerrar notificaciones"
                 >
                   <X className="h-4 w-4" />
@@ -270,8 +261,6 @@ export const NotificationCenter = React.memo(({ className }: NotificationCenterP
       )}
     </>
   );
-});
-
-NotificationCenter.displayName = 'NotificationCenter';
+};
 
 export default NotificationCenter;

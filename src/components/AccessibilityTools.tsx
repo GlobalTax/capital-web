@@ -1,154 +1,189 @@
-import React, { useState, useEffect } from 'react';
-
-import { Eye, EyeOff, Type, Palette, MousePointer } from 'lucide-react';
-
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Accessibility, 
+  Type, 
+  Eye, 
+  Volume2, 
+  Keyboard,
+  Settings,
+  X
+} from 'lucide-react';
+import { useAccessibility } from '@/hooks/useAccessibility';
+import { cn } from '@/lib/utils';
 
-interface AccessibilitySettings {
-  highContrast: boolean;
-  largeText: boolean;
-  reducedMotion: boolean;
-  screenReader: boolean;
+interface AccessibilityToolsProps {
+  className?: string;
 }
 
-const AccessibilityTools = () => {
+export const AccessibilityTools = ({ className }: AccessibilityToolsProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [settings, setSettings] = useState<AccessibilitySettings>({
-    highContrast: false,
-    largeText: false,
-    reducedMotion: false,
-    screenReader: false,
-  });
+  const { preferences, setFontSize, announceLiveRegion } = useAccessibility();
 
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('accessibility-settings');
-    if (savedSettings) {
-      const parsed = JSON.parse(savedSettings);
-      setSettings(parsed);
-      applySettings(parsed);
-    }
-  }, []);
+  const handleFontSizeChange = (size: 'small' | 'medium' | 'large') => {
+    setFontSize(size);
+    announceLiveRegion(`Tamaño de fuente cambiado a ${size}`);
+  };
 
-  const applySettings = (newSettings: AccessibilitySettings) => {
-    const root = document.documentElement;
-    
-    if (newSettings.highContrast) {
-      root.classList.add('high-contrast');
-    } else {
-      root.classList.remove('high-contrast');
-    }
-
-    if (newSettings.largeText) {
-      root.classList.add('large-text');
-    } else {
-      root.classList.remove('large-text');
-    }
-
-    if (newSettings.reducedMotion) {
-      root.classList.add('reduced-motion');
-    } else {
-      root.classList.remove('reduced-motion');
+  const handleSkipToMain = () => {
+    const mainContent = document.querySelector('main') || document.querySelector('[role="main"]');
+    if (mainContent) {
+      (mainContent as HTMLElement).focus();
+      mainContent.scrollIntoView({ behavior: 'smooth' });
+      announceLiveRegion('Saltando al contenido principal');
     }
   };
 
-  const updateSetting = (key: keyof AccessibilitySettings) => {
-    const newSettings = {
-      ...settings,
-      [key]: !settings[key]
-    };
-    
-    setSettings(newSettings);
-    applySettings(newSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
+  const handleToggleHighContrast = () => {
+    document.body.classList.toggle('high-contrast');
+    const isEnabled = document.body.classList.contains('high-contrast');
+    announceLiveRegion(`Alto contraste ${isEnabled ? 'activado' : 'desactivado'}`);
   };
 
-  const resetSettings = () => {
-    const defaultSettings: AccessibilitySettings = {
-      highContrast: false,
-      largeText: false,
-      reducedMotion: false,
-      screenReader: false,
-    };
-    
-    setSettings(defaultSettings);
-    applySettings(defaultSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(defaultSettings));
+  const handleReduceMotion = () => {
+    document.body.classList.toggle('reduce-motion');
+    const isEnabled = document.body.classList.contains('reduce-motion');
+    announceLiveRegion(`Movimiento reducido ${isEnabled ? 'activado' : 'desactivado'}`);
   };
+
+  if (!isOpen) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpen(true)}
+        className={cn(
+          "fixed bottom-4 right-4 z-50 shadow-lg bg-background border-2",
+          className
+        )}
+        aria-label="Abrir herramientas de accesibilidad"
+      >
+        <Accessibility className="h-4 w-4" />
+      </Button>
+    );
+  }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="rounded-full w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-        aria-label="Herramientas de accesibilidad"
-      >
-        <Eye className="h-5 w-5" />
-      </Button>
+    <Card className={cn(
+      "fixed bottom-4 right-4 z-50 w-80 shadow-xl",
+      className
+    )}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Accessibility className="h-4 w-4" />
+            Accesibilidad
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(false)}
+            aria-label="Cerrar herramientas de accesibilidad"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {/* Skip Links */}
+        <div>
+          <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Keyboard className="h-4 w-4" />
+            Navegación
+          </h4>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSkipToMain}
+            className="w-full text-xs"
+          >
+            Saltar al contenido principal
+          </Button>
+        </div>
 
-      {isOpen && (
-        <Card className="absolute bottom-16 right-0 w-80 shadow-xl">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-4">Herramientas de Accesibilidad</h3>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  <span className="text-sm">Alto contraste</span>
-                </div>
-                <Button
-                  variant={settings.highContrast ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => updateSetting('highContrast')}
-                >
-                  {settings.highContrast ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </Button>
-              </div>
+        <Separator />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Type className="h-4 w-4" />
-                  <span className="text-sm">Texto grande</span>
-                </div>
-                <Button
-                  variant={settings.largeText ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => updateSetting('largeText')}
-                >
-                  {settings.largeText ? 'A+' : 'A'}
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MousePointer className="h-4 w-4" />
-                  <span className="text-sm">Reducir animaciones</span>
-                </div>
-                <Button
-                  variant={settings.reducedMotion ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => updateSetting('reducedMotion')}
-                >
-                  {settings.reducedMotion ? 'ON' : 'OFF'}
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t">
+        {/* Font Size */}
+        <div>
+          <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Type className="h-4 w-4" />
+            Tamaño de texto
+          </h4>
+          <div className="flex gap-1">
+            {(['small', 'medium', 'large'] as const).map((size) => (
               <Button
-                variant="ghost"
+                key={size}
+                variant={preferences.fontSize === size ? "default" : "outline"}
                 size="sm"
-                onClick={resetSettings}
-                className="w-full text-xs"
+                onClick={() => handleFontSizeChange(size)}
+                className="flex-1 text-xs"
               >
-                Restablecer configuración
+                {size === 'small' ? 'Pequeño' : size === 'medium' ? 'Normal' : 'Grande'}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Visual Adjustments */}
+        <div>
+          <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Ajustes visuales
+          </h4>
+          <div className="space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleHighContrast}
+              className="w-full text-xs"
+            >
+              Alternar alto contraste
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReduceMotion}
+              className="w-full text-xs"
+            >
+              Reducir animaciones
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* System Preferences */}
+        <div>
+          <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Preferencias del sistema
+          </h4>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            {preferences.prefersReducedMotion && (
+              <Badge variant="secondary" className="text-xs">
+                Movimiento reducido detectado
+              </Badge>
+            )}
+            {preferences.prefersHighContrast && (
+              <Badge variant="secondary" className="text-xs">
+                Alto contraste detectado
+              </Badge>
+            )}
+            {preferences.prefersColorScheme !== 'no-preference' && (
+              <Badge variant="secondary" className="text-xs">
+                Tema: {preferences.prefersColorScheme}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

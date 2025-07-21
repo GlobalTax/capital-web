@@ -1,145 +1,116 @@
-
 import React, { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import LoadingButton from '@/components/LoadingButton';
-
-import { useNewsletter } from '@/hooks/useNewsletter';
-import type { NewsletterFormData } from '@/types/forms';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Mail, Check } from 'lucide-react';
 
 const Newsletter = () => {
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const { subscribe, isSubmitting, errors } = useNewsletter();
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!acceptTerms) {
-      alert('Debes aceptar los términos y condiciones');
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Por favor, introduce tu email.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
-    const data: NewsletterFormData = {
-      email: formData.get('email') as string,
-      name: formData.get('name') as string,
-      interests: [],
-    };
+    setIsLoading(true);
 
-    const success = await subscribe(data);
-    if (success) {
-      (e.target as HTMLFormElement).reset();
-      setAcceptTerms(false);
+    try {
+      // Guardar suscripción en newsletter_subscribers
+      const { error } = await supabase.from('newsletter_subscribers').insert({
+        email: email,
+        source: 'website'
+      });
+
+      if (error) throw error;
+
+      setIsSubscribed(true);
+      setEmail('');
+      
+      toast({
+        title: "¡Suscripción exitosa!",
+        description: "Te has suscrito correctamente a nuestro newsletter.",
+      });
+    } catch (error) {
+      console.error('Error al suscribirse:', error);
+      toast({
+        title: "Error",
+        description: "Error al procesar la suscripción. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return (
-    <section className="py-20 bg-muted/50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">
-              Newsletter Especializado M&A
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Recibe análisis exclusivos, tendencias del mercado y casos de éxito directamente en tu email
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-name">Nombre</Label>
-                  <Input
-                    id="newsletter-name"
-                    name="name"
-                    placeholder="Tu nombre"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-email">Email *</Label>
-                  <Input
-                    id="newsletter-email"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder="tu@email.com"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Intereses (opcional):</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    { id: 'ma-trends', label: 'Tendencias M&A' },
-                    { id: 'valuations', label: 'Valoraciones' },
-                    { id: 'sector-analysis', label: 'Análisis Sectoriales' },
-                    { id: 'success-cases', label: 'Casos de Éxito' },
-                    { id: 'market-data', label: 'Datos de Mercado' },
-                    { id: 'regulatory', label: 'Aspectos Regulatorios' },
-                  ].map((interest) => (
-                    <div key={interest.id} className="flex items-center space-x-2">
-                      <Checkbox id={interest.id} name="interests" value={interest.id} />
-                      <Label htmlFor={interest.id} className="text-sm">
-                        {interest.label}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="newsletter-terms"
-                  checked={acceptTerms}
-                  onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                />
-                <Label htmlFor="newsletter-terms" className="text-sm leading-relaxed">
-                  Acepto recibir comunicaciones comerciales de Capittal y autorizo el tratamiento de mis datos según la política de privacidad. *
-                </Label>
-              </div>
-
-              <LoadingButton
-                type="submit"
-                loading={isSubmitting}
-                loadingText="Suscribiendo..."
-                disabled={!acceptTerms}
-                className="w-full"
-              >
-                Suscribirse al Newsletter
-              </LoadingButton>
-            </form>
-
-            <div className="mt-6 pt-6 border-t">
-              <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
-                <span className="flex items-center">
-                  <span className="mr-2">📊</span>
-                  Análisis semanales
-                </span>
-                <span className="flex items-center">
-                  <span className="mr-2">🎯</span>
-                  Contenido exclusivo
-                </span>
-                <span className="flex items-center">
-                  <span className="mr-2">🔒</span>
-                  Sin spam garantizado
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+  if (isSubscribed) {
+    return (
+      <div className="bg-muted/30 p-6 rounded-lg border border-border">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
+            <Check className="w-6 h-6" />
+          </div>
+        </div>
+        <h3 className="text-xl font-semibold text-center text-foreground mb-2">
+          ¡Bienvenido a nuestra comunidad!
+        </h3>
+        <p className="text-center text-muted-foreground">
+          Recibirás insights exclusivos sobre M&A y valoración empresarial.
+        </p>
       </div>
-    </section>
+    );
+  }
+
+  return (
+    <div className="bg-muted/30 p-6 rounded-lg border border-border">
+      <div className="flex items-center justify-center mb-4">
+        <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
+          <Mail className="w-6 h-6" />
+        </div>
+      </div>
+      
+      <h3 className="text-xl font-semibold text-center text-foreground mb-2">
+        Insights M&A Exclusivos
+      </h3>
+      
+      <p className="text-center text-muted-foreground mb-6">
+        Recibe análisis de mercado, tendencias de valoración y oportunidades de inversión directamente en tu bandeja de entrada.
+      </p>
+      
+      <form onSubmit={handleSubscribe} className="space-y-4">
+        <div className="flex gap-3">
+          <Input
+            type="email"
+            placeholder="tu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-1"
+            disabled={isLoading}
+          />
+          <Button 
+            type="submit" 
+            disabled={isLoading || !email}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
+          >
+            {isLoading ? 'Suscribiendo...' : 'Suscribirse'}
+          </Button>
+        </div>
+      </form>
+      
+      <p className="text-xs text-muted-foreground text-center mt-3">
+        Sin spam. Cancela cuando quieras. Lee nuestra política de privacidad.
+      </p>
+    </div>
   );
 };
 

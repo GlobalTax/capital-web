@@ -1,212 +1,384 @@
-
-import React, { useState, useCallback, memo } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import LoadingButton from '@/components/LoadingButton';
-
+import React, { useState } from 'react';
+import { Check } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatSpanishPhone } from '@/utils/validationUtils';
 import { useContactForm } from '@/hooks/useContactForm';
-import type { ContactFormData } from '@/types/forms';
-
-// Memoized contact info section
-const ContactInfo = memo(() => (
-  <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-    <div className="text-center">
-      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-        <span className="text-2xl">📞</span>
-      </div>
-      <h3 className="font-semibold mb-2">Teléfono</h3>
-      <p className="text-muted-foreground">+34 912 345 678</p>
-    </div>
-
-    <div className="text-center">
-      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-        <span className="text-2xl">✉️</span>
-      </div>
-      <h3 className="font-semibold mb-2">Email</h3>
-      <p className="text-muted-foreground">info@capittal.es</p>
-    </div>
-
-    <div className="text-center">
-      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-        <span className="text-2xl">📍</span>
-      </div>
-      <h3 className="font-semibold mb-2">Oficina</h3>
-      <p className="text-muted-foreground">
-        P.º de la Castellana, 11, B - A<br />
-        Chamberí, 28046 Madrid
-      </p>
-    </div>
-  </div>
-));
-
-ContactInfo.displayName = 'ContactInfo';
+import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { LoadingButton } from '@/components/LoadingButton';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { logger } from '@/utils/logger';
+import RateLimitFeedback from '@/components/ui/RateLimitFeedback';
 
 const Contact = () => {
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const { submitForm, isSubmitting, errors } = useContactForm();
+  const [formData, setFormData] = useState({
+    fullName: '',
+    company: '',
+    phone: '',
+    email: '',
+    country: '',
+    companySize: '',
+    referral: '',
+  });
 
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+  const [rateLimitState, setRateLimitState] = useState({
+    isRateLimited: false,
+    remainingRequests: 5
+  });
+
+  const { submitContactForm, isSubmitting, getRemainingRequests, isRateLimited, clearRateLimit } = useContactForm();
+  const { isOnline } = useNetworkStatus();
+  
+  const { trackFormSubmission, trackFormInteraction } = useSimpleFormTracking();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!acceptTerms) {
-      alert('Debes aceptar los términos y condiciones');
-      return;
+    try {
+      logger.info('Contact form submission started', { formData: { ...formData, email: '[REDACTED]' } }, { context: 'form', component: 'Contact' });
+      
+      const result = await submitContactForm(formData);
+      
+      // Actualizar estado de rate limiting
+      setRateLimitState({
+        isRateLimited: result.isRateLimited || false,
+        remainingRequests: result.remainingRequests || getRemainingRequests()
+      });
+
+      if (result.isRateLimited) {
+        logger.warn('Contact form submission blocked by rate limit', undefined, { context: 'security', component: 'Contact' });
+        return;
+      }
+
+      if (result.error) {
+        logger.error('Contact form submission failed', result.error, { context: 'form', component: 'Contact' });
+        return;
+      }
+      
+      trackFormSubmission('contact', formData);
+      
+      // Limpiar formulario después del envío exitoso
+      setFormData({
+        fullName: '',
+        company: '',
+        phone: '',
+        email: '',
+        country: '',
+        companySize: '',
+        referral: '',
+      });
+      
+      // Actualizar remaining requests después de envío exitoso
+      setRateLimitState(prev => ({
+        ...prev,
+        remainingRequests: getRemainingRequests()
+      }));
+      
+      logger.info('Contact form submitted successfully', undefined, { context: 'form', component: 'Contact' });
+    } catch (error) {
+      logger.error('Error in contact form submission', error as Error, { context: 'form', component: 'Contact' });
     }
+  };
 
-    const formData = new FormData(e.currentTarget);
-    const data: ContactFormData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      company: formData.get('company') as string,
-      message: formData.get('message') as string,
-      service: formData.get('service') as string,
-    };
-
-    const success = await submitForm(data);
-    if (success) {
-      (e.target as HTMLFormElement).reset();
-      setAcceptTerms(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    trackFormInteraction('contact', name);
+    
+    if (name === 'phone') {
+      setFormData({
+        ...formData,
+        [name]: formatSpanishPhone(value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
     }
-  }, [acceptTerms, submitForm]);
+  };
 
-  const handleTermsChange = useCallback((checked: boolean) => {
-    setAcceptTerms(checked);
-  }, []);
+  const handleSelectChange = (name: string, value: string) => {
+    trackFormInteraction('contact', name);
+    
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleFieldBlur = (fieldName: string) => {
+    logger.debug('Field blur event', { fieldName }, { context: 'form', component: 'Contact' });
+  };
+
+  const handleRetry = () => {
+    // Actualizar estado para mostrar remaining requests actuales
+    setRateLimitState({
+      isRateLimited: isRateLimited(),
+      remainingRequests: getRemainingRequests()
+    });
+  };
+
+  const handleClearRateLimit = () => {
+    clearRateLimit();
+    setRateLimitState({
+      isRateLimited: false,
+      remainingRequests: 5
+    });
+  };
 
   return (
-    <section className="py-20 bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-            Hablemos de tu Proyecto
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Cuéntanos sobre tu empresa y tus objetivos. Te responderemos en menos de 24 horas con una propuesta personalizada.
-          </p>
-        </div>
-
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle>Solicita tu Consulta Gratuita</CardTitle>
-            <CardDescription>
-              Todos los campos marcados con * son obligatorios
-            </CardDescription>
-          </CardHeader>
+    <ErrorBoundary fallback={<div className="py-32 bg-background text-center">Error cargando el formulario de contacto</div>}>
+      <section id="contacto" className="relative py-32 bg-white">
+      {/* Background gradients */}
+      <div className="pointer-events-none absolute inset-x-0 -top-20 -bottom-20 bg-[radial-gradient(ellipse_35%_15%_at_40%_55%,hsl(var(--accent))_0%,transparent_100%)] lg:bg-[radial-gradient(ellipse_12%_20%_at_60%_45%,hsl(var(--accent))_0%,transparent_100%)]"></div>
+      <div className="pointer-events-none absolute inset-x-0 -top-20 -bottom-20 bg-[radial-gradient(ellipse_35%_20%_at_70%_75%,hsl(var(--accent))_0%,transparent_80%)] lg:bg-[radial-gradient(ellipse_15%_30%_at_70%_65%,hsl(var(--accent))_0%,transparent_80%)]"></div>
+      {/* Background pattern */}
+      <div className="pointer-events-none absolute inset-x-0 -top-20 -bottom-20 bg-[radial-gradient(hsl(var(--accent-foreground)/0.1)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_60%_at_65%_50%,#000_0%,transparent_80%)] [background-size:8px_8px]"></div>
+      
+      <div className="container grid w-full grid-cols-1 gap-x-32 overflow-hidden lg:grid-cols-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full pb-10 md:space-y-10 md:pb-0">
+          <div className="space-y-4 md:max-w-[40rem]">
+            <h1 className="text-4xl font-bold text-black lg:text-5xl">
+              Solicita tu Consulta Gratuita
+            </h1>
+            <div className="text-gray-600 md:text-base lg:text-lg lg:leading-7">
+              ¿Está considerando vender su empresa o necesita una valoración profesional? 
+              Nuestros expertos en M&A están listos para ayudarle a maximizar el valor de su negocio.
+            </div>
+          </div>
           
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nombre completo *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    required
-                    placeholder="Tu nombre completo"
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-destructive">{errors.name}</p>
-                  )}
+          <div className="hidden md:block">
+            <div className="space-y-16 pb-20 lg:pb-0">
+              <div className="space-y-6">
+                <div className="mt-16 flex overflow-hidden">
+                  <Avatar className="size-11 border-0.5 border-black">
+                    <AvatarFallback className="bg-black text-white font-medium">CA</AvatarFallback>
+                  </Avatar>
+                  <Avatar className="-ml-4 size-11 border-0.5 border-black">
+                    <AvatarFallback className="bg-gray-800 text-white font-medium">PI</AvatarFallback>
+                  </Avatar>
+                  <Avatar className="-ml-4 size-11 border-0.5 border-black">
+                    <AvatarFallback className="bg-gray-600 text-white font-medium">TT</AvatarFallback>
+                  </Avatar>
                 </div>
+                
+                <div className="space-y-4">
+                  <p className="text-sm font-semibold text-black">Lo que puedes esperar:</p>
+                  <div className="flex items-center space-x-2.5">
+                    <Check className="size-5 shrink-0 text-black" />
+                    <p className="text-sm text-gray-600">
+                      Valoración preliminar gratuita de tu empresa
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2.5">
+                    <Check className="size-5 shrink-0 text-black" />
+                    <p className="text-sm text-gray-600">
+                      Estrategia personalizada para maximizar valor
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2.5">
+                    <Check className="size-5 shrink-0 text-black" />
+                    <p className="text-sm text-gray-600">
+                      Asesoramiento experto sin compromiso
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-12">
+                <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Confianza de más de 200+ empresas
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex w-full justify-center lg:mt-2.5">
+          <div className="relative flex w-full max-w-[30rem] min-w-[20rem] flex-col items-center overflow-visible md:min-w-[24rem]">
+            <form onSubmit={handleSubmit} className="z-10 space-y-6 w-full">
+              <div className="w-full space-y-6 rounded-xl border-0.5 border-black bg-white px-6 py-10 shadow-sm">
+                
+                {/* Rate Limit Feedback */}
+                <RateLimitFeedback
+                  isRateLimited={rateLimitState.isRateLimited}
+                  remainingRequests={rateLimitState.remainingRequests}
+                  maxRequests={5}
+                  onRetry={handleRetry}
+                  onClearLimit={handleClearRateLimit}
+                  title="Límite de envíos alcanzado"
+                  message="Has alcanzado el máximo de envíos permitidos para prevenir spam."
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="fullName">Nombre completo *</label>
+                  </div>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    onBlur={() => handleFieldBlur('fullName')}
+                    placeholder="Tu nombre completo"
+                    required
+                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                  />
+                </div>
+                
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="company">Empresa *</label>
+                  </div>
+                  <Input
+                    id="company"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleChange}
+                    onBlur={() => handleFieldBlur('company')}
+                    placeholder="Nombre de tu empresa"
+                    required
+                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                  />
+                </div>
+                
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="phone">Teléfono</label>
+                  </div>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onBlur={() => handleFieldBlur('phone')}
+                    placeholder="+34 600 000 000"
+                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                  />
+                </div>
+                
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="email">Email *</label>
+                  </div>
                   <Input
                     id="email"
                     name="email"
                     type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={() => handleFieldBlur('email')}
+                    placeholder="tu@empresa.com"
                     required
-                    placeholder="tu@email.com"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Teléfono</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="+34 600 000 000"
+                    className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company">Empresa</Label>
-                  <Input
-                    id="company"
-                    name="company"
-                    placeholder="Nombre de tu empresa"
-                  />
+                
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="country">País</label>
+                  </div>
+                  <Select onValueChange={(value) => handleSelectChange('country', value)}>
+                    <SelectTrigger 
+                      id="country" 
+                      name="country"
+                      className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    >
+                      <SelectValue placeholder="Selecciona país" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="es">España</SelectItem>
+                      <SelectItem value="pt">Portugal</SelectItem>
+                      <SelectItem value="fr">Francia</SelectItem>
+                      <SelectItem value="de">Alemania</SelectItem>
+                      <SelectItem value="uk">Reino Unido</SelectItem>
+                      <SelectItem value="other">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="companySize">Facturación anual</label>
+                  </div>
+                  <Select onValueChange={(value) => handleSelectChange('companySize', value)}>
+                    <SelectTrigger 
+                      id="companySize" 
+                      name="companySize"
+                      className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    >
+                      <SelectValue placeholder="Selecciona rango" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-5m">1M€ - 5M€</SelectItem>
+                      <SelectItem value="5-10m">5M€ - 10M€</SelectItem>
+                      <SelectItem value="10-25m">10M€ - 25M€</SelectItem>
+                      <SelectItem value="25-50m">25M€ - 50M€</SelectItem>
+                      <SelectItem value="50m+">Más de 50M€</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="referral">
+                      ¿Cómo nos conociste?{" "}
+                      <span className="text-gray-500">(Opcional)</span>
+                    </label>
+                  </div>
+                  <Select onValueChange={(value) => handleSelectChange('referral', value)}>
+                    <SelectTrigger 
+                      id="referral" 
+                      name="referral"
+                      className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                    >
+                      <SelectValue placeholder="Selecciona" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="google">Búsqueda en Google</SelectItem>
+                      <SelectItem value="referral">Recomendación</SelectItem>
+                      <SelectItem value="linkedin">LinkedIn</SelectItem>
+                      <SelectItem value="event">Evento/Conferencia</SelectItem>
+                      <SelectItem value="other">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex w-full flex-col justify-end space-y-3 pt-2">
+                  <LoadingButton
+                    loading={isSubmitting}
+                    loadingText="Enviando..."
+                    disabled={isSubmitting || !isOnline || rateLimitState.isRateLimited}
+                    type="submit"
+                    className="w-full bg-black text-white hover:bg-gray-800 py-3"
+                  >
+                    Solicitar Consulta
+                  </LoadingButton>
+                  <div className="text-xs text-gray-500">
+                    Al enviar este formulario, aceptas que nos pongamos en contacto contigo.
+                    Para más información sobre cómo manejamos tu información personal, visita nuestra{" "}
+                    <a href="/politica-privacidad" className="underline text-black">
+                      política de privacidad
+                    </a>.
+                  </div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="service">Servicio de interés</Label>
-                <select
-                  id="service"
-                  name="service"
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="">Selecciona un servicio</option>
-                  <option value="venta">Venta de empresa</option>
-                  <option value="compra">Compra de empresa</option>
-                  <option value="valoracion">Valoración empresarial</option>
-                  <option value="due-diligence">Due diligence</option>
-                  <option value="consultoria">Consultoría estratégica</option>
-                  <option value="otro">Otro</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="message">Mensaje *</Label>
-                <Textarea
-                  id="message"
-                  name="message"
-                  required
-                  placeholder="Cuéntanos más detalles sobre tu proyecto, situación actual de la empresa, objetivos, timing aproximado..."
-                  className="min-h-[120px]"
-                />
-                {errors.message && (
-                  <p className="text-sm text-destructive">{errors.message}</p>
-                )}
-              </div>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={acceptTerms}
-                  onCheckedChange={handleTermsChange}
-                />
-                <Label htmlFor="terms" className="text-sm leading-relaxed">
-                  Acepto la política de privacidad y autorizo el tratamiento de mis datos para que Capittal pueda responder a mi consulta. *
-                </Label>
-              </div>
-
-              <LoadingButton
-                type="submit"
-                loading={isSubmitting}
-                loadingText="Enviando..."
-                disabled={!acceptTerms}
-                className="w-full capittal-button"
-              >
-                Enviar Consulta Gratuita
-              </LoadingButton>
             </form>
-          </CardContent>
-        </Card>
-
-        <ContactInfo />
+          </div>
+        </div>
       </div>
     </section>
+    </ErrorBoundary>
   );
 };
 

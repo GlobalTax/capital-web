@@ -20,6 +20,7 @@ const ProspectsDashboard = () => {
     unreadAlerts,
     isLoadingHotLeads,
     markAlertAsRead,
+    updateLeadInfo,
     getLeadStats
   } = useAdvancedLeadScoring();
 
@@ -62,6 +63,11 @@ const ProspectsDashboard = () => {
       title: "🔥 Acción registrada",
       description: `Iniciando llamada a ${lead.company_name || lead.company_domain}...`,
     });
+    
+    updateLeadInfo.mutate({
+      visitorId: lead.visitor_id,
+      updates: { lead_status: 'contacted', notes: `Llamada iniciada ${new Date().toLocaleString()}` }
+    });
   };
 
   const handleEmail = (lead: any) => {
@@ -69,12 +75,22 @@ const ProspectsDashboard = () => {
     const body = `Hola ${lead.contact_name || 'equipo'},\n\nNos hemos fijado en su interés en nuestros servicios de M&A...\n\nSaludos,\nEquipo Capittal`;
     
     window.open(`mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    
+    updateLeadInfo.mutate({
+      visitorId: lead.visitor_id,
+      updates: { lead_status: 'contacted' }
+    });
   };
 
   const handleExportToCRM = (lead: any) => {
     toast({
       title: "🔄 Exportando a CRM",
       description: `${lead.company_name || lead.company_domain} será sincronizado con HubSpot...`,
+    });
+    
+    updateLeadInfo.mutate({
+      visitorId: lead.visitor_id,
+      updates: { crm_synced: true }
     });
   };
 
@@ -185,7 +201,15 @@ const ProspectsDashboard = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>Estado del Lead</Label>
-                        <Select defaultValue={selectedLead.lead_status}>
+                        <Select 
+                          defaultValue={selectedLead.lead_status}
+                          onValueChange={(value) => {
+                            updateLeadInfo.mutate({
+                              visitorId: selectedLead.visitor_id,
+                              updates: { lead_status: value }
+                            });
+                          }}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -211,6 +235,14 @@ const ProspectsDashboard = () => {
                       <Textarea
                         placeholder="Añadir notas sobre este prospecto..."
                         defaultValue={selectedLead.notes || ''}
+                        onBlur={(e) => {
+                          if (e.target.value !== selectedLead.notes) {
+                            updateLeadInfo.mutate({
+                              visitorId: selectedLead.visitor_id,
+                              updates: { notes: e.target.value }
+                            });
+                          }
+                        }}
                       />
                     </div>
 

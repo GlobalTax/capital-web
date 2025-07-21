@@ -12,8 +12,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { supabase } from '@/integrations/supabase/client';
 import { useLazyLoad } from '@/hooks/useLazyLoad';
 import { useCache } from '@/hooks/useCache';
-import OptimizedImage from '@/components/OptimizedImage';
-import { useCriticalImagesPreloader } from '@/hooks/useImagePreloader';
+import LazyImage from '@/components/LazyImage';
 import { globalCache } from '@/utils/cache';
 
 interface TeamMember {
@@ -26,27 +25,19 @@ interface TeamMember {
 }
 
 const Team = () => {
-  console.log('Team component mounting...');
-  
   const { ref, isVisible } = useLazyLoad<HTMLElement>({ 
     threshold: 0.1,
     rootMargin: '100px'
   });
 
   const fetchTeamMembers = React.useCallback(async (): Promise<TeamMember[]> => {
-    console.log('Fetching team members from Supabase...');
     const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching team members:', error);
-      throw error;
-    }
-    
-    console.log('Team members fetched successfully:', data?.length || 0);
+    if (error) throw error;
     return data || [];
   }, []);
 
@@ -60,17 +51,6 @@ const Team = () => {
     globalCache,
     15 * 60 * 1000 // 15 minutos de cache
   );
-
-  // Prefetch critical team images
-  const teamImageUrls = React.useMemo(() => {
-    const urls = teamMembers?.filter(member => member.image_url).map(member => member.image_url!) || [];
-    console.log('Team image URLs for prefetching:', urls);
-    return urls;
-  }, [teamMembers]);
-
-  useCriticalImagesPreloader(teamImageUrls);
-
-  console.log('Team component state:', { isLoading, error, teamMembersCount: teamMembers?.length, isVisible });
 
   return (
     <section ref={ref} id="equipo" className="py-20 bg-white">
@@ -113,14 +93,11 @@ const Team = () => {
                   <CarouselItem key={member.id} className="pl-2 basis-auto">
                     <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-border">
                       {member.image_url ? (
-                        <OptimizedImage
+                        <LazyImage
                           src={member.image_url}
                           alt={member.name}
                           className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
                           placeholderClassName="w-full h-full"
-                          responsive={true}
-                          onLoad={() => console.log(`Team image loaded: ${member.name}`)}
-                          onError={(error) => console.error(`Error loading image for ${member.name}:`, error)}
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">

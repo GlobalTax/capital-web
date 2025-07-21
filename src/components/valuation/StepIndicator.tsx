@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React from 'react';
 import { Check } from 'lucide-react';
 
 interface StepIndicatorProps {
@@ -15,7 +15,7 @@ const steps = [
   { number: 4, title: 'Resultado' }
 ];
 
-const StepIndicator: React.FC<StepIndicatorProps> = memo(({ currentStep, goToStep, validateStep }) => {
+const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, validateStep }) => {
   return (
     <div className="flex items-center justify-center mb-8">
       {steps.map((step, index) => {
@@ -57,10 +57,6 @@ const StepIndicator: React.FC<StepIndicatorProps> = memo(({ currentStep, goToSte
       })}
     </div>
   );
-}, (prevProps, nextProps) => {
-  return prevProps.currentStep === nextProps.currentStep;
-});
-
-StepIndicator.displayName = 'StepIndicator';
+};
 
 export default StepIndicator;

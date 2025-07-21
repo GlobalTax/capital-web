@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useOptimizedQuery, useSmartInvalidation } from './useOptimizedQuery';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export interface LandingPageTemplate {
   id: string;
@@ -50,53 +49,27 @@ export interface LandingPageFormData {
   custom_js?: string;
 }
 
-// Placeholder data optimizado
-const LANDING_PAGES_PLACEHOLDER = Array.from({ length: 6 }, (_, i) => ({
-  id: `placeholder-${i}`,
-  title: 'Cargando...',
-  slug: `loading-${i}`,
-  content_config: {},
-  is_published: false,
-  analytics_config: {},
-  conversion_goals: [],
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
-}));
-
-const TEMPLATES_PLACEHOLDER = Array.from({ length: 3 }, (_, i) => ({
-  id: `template-placeholder-${i}`,
-  name: 'Plantilla ejemplo',
-  type: 'custom' as const,
-  template_html: '',
-  template_config: {},
-  is_active: true,
-  display_order: i,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
-}));
-
 export const useLandingPageTemplates = () => {
-  const { data: templates, isLoading } = useOptimizedQuery(
-    ['landingPageTemplates'],
-    async () => {
-      const { data, error } = await supabase
-        .from('landing_page_templates')
-        .select('id, name, description, type, preview_image_url, is_active, display_order')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+  const { data: templates, isLoading } = useQuery({
+    queryKey: ['landingPageTemplates'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('landing_page_templates')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-      if (error) {
+        if (error) throw error;
+        return data as LandingPageTemplate[];
+      } catch (error) {
+        // Si la tabla no existe, devolver array vacío en lugar de error
         console.debug('Landing page templates table not available');
         return [] as LandingPageTemplate[];
       }
-      return data as LandingPageTemplate[];
     },
-    'static', // Templates cambian raramente
-    {
-      placeholderData: TEMPLATES_PLACEHOLDER,
-      select: (data) => data?.filter(template => template.is_active) || []
-    }
-  );
+    retry: false, // No reintentar para evitar spam de errores
+  });
 
   return { templates, isLoading };
 };
@@ -104,49 +77,36 @@ export const useLandingPageTemplates = () => {
 export const useLandingPages = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { invalidateRelatedQueries } = useSmartInvalidation();
 
-  const { data: landingPages, isLoading } = useOptimizedQuery(
-    ['landingPages'],
-    async () => {
-      const { data, error } = await supabase
-        .from('landing_pages')
-        .select(`
-          id,
-          title,
-          slug,
-          template_id,
-          is_published,
-          created_at,
-          updated_at,
-          published_at,
-          template:landing_page_templates(name, type)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(100);
+  // Obtener todas las landing pages
+  const { data: landingPages, isLoading } = useQuery({
+    queryKey: ['landingPages'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('landing_pages')
+          .select(`
+            *,
+            template:landing_page_templates(name, type)
+          `)
+          .order('created_at', { ascending: false });
 
-      if (error) {
+        if (error) throw error;
+        return data as (LandingPage & { template?: { name: string; type: string } })[];
+      } catch (error) {
+        // Si las tablas no existen, devolver array vacío
         console.debug('Landing pages tables not available');
         return [] as (LandingPage & { template?: { name: string; type: string } })[];
       }
-      return data as (LandingPage & { template?: { name: string; type: string } })[];
     },
-    'important',
-    {
-      placeholderData: LANDING_PAGES_PLACEHOLDER,
-      select: (data) => data?.map(page => ({
-        ...page,
-        // Transformar datos para optimizar renderizado
-        displayTitle: page.title || 'Sin título',
-        statusBadge: page.is_published ? 'published' : 'draft',
-        templateName: page.template?.name || 'Sin plantilla'
-      })) || []
-    }
-  );
+    retry: false, // No reintentar para evitar spam de errores
+  });
 
+  // Crear landing page
   const createLandingPage = useMutation({
     mutationFn: async (formData: LandingPageFormData) => {
-      const { data: existing } = await supabase
+      // Verificar que el slug sea único
+      const { data: existing } = await (supabase as any)
         .from('landing_pages')
         .select('id')
         .eq('slug', formData.slug)
@@ -156,7 +116,7 @@ export const useLandingPages = () => {
         throw new Error('Ya existe una landing page con este slug');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_pages')
         .insert(formData)
         .select()
@@ -166,7 +126,7 @@ export const useLandingPages = () => {
       return data;
     },
     onSuccess: () => {
-      invalidateRelatedQueries('landingPages', 500);
+      queryClient.invalidateQueries({ queryKey: ['landingPages'] });
       toast({
         title: "Landing Page creada",
         description: "La landing page ha sido creada exitosamente.",
@@ -182,9 +142,10 @@ export const useLandingPages = () => {
     },
   });
 
+  // Actualizar landing page
   const updateLandingPage = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<LandingPage> }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_pages')
         .update(updates)
         .eq('id', id)
@@ -194,12 +155,8 @@ export const useLandingPages = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      // Actualización optimista del cache
-      queryClient.setQueryData(['landingPages'], (old: any) => 
-        old?.map((page: any) => page.id === data.id ? { ...page, ...data } : page)
-      );
-      
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['landingPages'] });
       toast({
         title: "Landing Page actualizada",
         description: "Los cambios han sido guardados exitosamente.",
@@ -215,6 +172,7 @@ export const useLandingPages = () => {
     },
   });
 
+  // Publicar/despublicar landing page
   const togglePublish = useMutation({
     mutationFn: async ({ id, publish }: { id: string; publish: boolean }) => {
       const updates: Partial<LandingPage> = {
@@ -225,7 +183,7 @@ export const useLandingPages = () => {
         updates.published_at = new Date().toISOString();
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_pages')
         .update(updates)
         .eq('id', id)
@@ -235,12 +193,8 @@ export const useLandingPages = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data, { publish }) => {
-      // Actualización optimista
-      queryClient.setQueryData(['landingPages'], (old: any) => 
-        old?.map((page: any) => page.id === data.id ? { ...page, ...data } : page)
-      );
-      
+    onSuccess: (_, { publish }) => {
+      queryClient.invalidateQueries({ queryKey: ['landingPages'] });
       toast({
         title: publish ? "Landing Page publicada" : "Landing Page despublicada",
         description: publish 
@@ -258,21 +212,18 @@ export const useLandingPages = () => {
     },
   });
 
+  // Eliminar landing page
   const deleteLandingPage = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('landing_pages')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
     },
-    onSuccess: (_, deletedId) => {
-      // Actualización optimista
-      queryClient.setQueryData(['landingPages'], (old: any) => 
-        old?.filter((page: any) => page.id !== deletedId)
-      );
-      
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['landingPages'] });
       toast({
         title: "Landing Page eliminada",
         description: "La landing page ha sido eliminada exitosamente.",
@@ -288,9 +239,10 @@ export const useLandingPages = () => {
     },
   });
 
+  // Duplicar landing page
   const duplicateLandingPage = useMutation({
     mutationFn: async (id: string) => {
-      const { data: original, error: fetchError } = await supabase
+      const { data: original, error: fetchError } = await (supabase as any)
         .from('landing_pages')
         .select('*')
         .eq('id', id)
@@ -309,7 +261,7 @@ export const useLandingPages = () => {
         updated_at: undefined,
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_pages')
         .insert(duplicateData)
         .select()
@@ -319,7 +271,7 @@ export const useLandingPages = () => {
       return data;
     },
     onSuccess: () => {
-      invalidateRelatedQueries('landingPages', 500);
+      queryClient.invalidateQueries({ queryKey: ['landingPages'] });
       toast({
         title: "Landing Page duplicada",
         description: "Se ha creado una copia de la landing page.",
@@ -347,34 +299,31 @@ export const useLandingPages = () => {
 };
 
 export const useLandingPageBySlug = (slug: string) => {
-  const { data: landingPage, isLoading, error } = useOptimizedQuery(
-    ['landingPage', slug],
-    async () => {
-      const { data, error } = await supabase
-        .from('landing_pages')
-        .select(`
-          id,
-          title,
-          slug,
-          content_config,
-          meta_title,
-          meta_description,
-          is_published,
-          template:landing_page_templates(*)
-        `)
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .single();
+  const { data: landingPage, isLoading, error } = useQuery({
+    queryKey: ['landingPage', slug],
+    queryFn: async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('landing_pages')
+          .select(`
+            *,
+            template:landing_page_templates(*)
+          `)
+          .eq('slug', slug)
+          .eq('is_published', true)
+          .single();
 
-      if (error) throw error;
-      return data as LandingPage & { template?: LandingPageTemplate };
+        if (error) throw error;
+        return data as LandingPage & { template?: LandingPageTemplate };
+      } catch (error) {
+        // Si las tablas no existen, devolver null
+        console.debug('Landing pages tables not available');
+        return null;
+      }
     },
-    'important',
-    {
-      enabled: !!slug,
-      placeholderData: null
-    }
-  );
+    enabled: !!slug,
+    retry: false, // No reintentar para evitar spam de errores
+  });
 
   return { landingPage, isLoading, error };
 };
@@ -391,10 +340,11 @@ export const useLandingPageConversions = () => {
     conversion_value?: number;
   }) => {
     try {
+      // Obtener información adicional del navegador
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('landing_page_conversions')
         .insert({
           ...conversionData,

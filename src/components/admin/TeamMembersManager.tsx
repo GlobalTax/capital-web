@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import ImageUploadField from './ImageUploadField';
-import OptimizedImage from '@/components/OptimizedImage';
 import { Trash2, Edit, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface TeamMember {
@@ -303,15 +303,11 @@ const TeamMembersManager = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {member.image_url && (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border-0.5 border-gray-300">
-                      <OptimizedImage 
-                        src={member.image_url} 
-                        alt={member.name}
-                        className="w-full h-full object-cover"
-                        placeholderClassName="w-16 h-16"
-                        responsive={false}
-                      />
-                    </div>
+                    <img 
+                      src={member.image_url} 
+                      alt={member.name}
+                      className="w-16 h-16 rounded-lg object-cover border-0.5 border-gray-300"
+                    />
                   )}
                   <div>
                     <h3 className="font-bold text-black">{member.name}</h3>

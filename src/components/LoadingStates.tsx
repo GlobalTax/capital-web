@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export const HeroSkeleton = React.memo(() => (
+export const HeroSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center px-4">
     <div className="max-w-7xl mx-auto text-center">
       <Skeleton className="h-16 w-3/4 mx-auto mb-6" />
@@ -13,11 +12,9 @@ export const HeroSkeleton = React.memo(() => (
       </div>
     </div>
   </div>
-));
+);
 
-HeroSkeleton.displayName = 'HeroSkeleton';
-
-export const ServicesSkeleton = React.memo(() => (
+export const ServicesSkeleton = () => (
   <section className="py-20 bg-background">
     <div className="container mx-auto px-4">
       <div className="text-center mb-16">
@@ -36,11 +33,9 @@ export const ServicesSkeleton = React.memo(() => (
       </div>
     </div>
   </section>
-));
+);
 
-ServicesSkeleton.displayName = 'ServicesSkeleton';
-
-export const TeamSkeleton = React.memo(() => (
+export const TeamSkeleton = () => (
   <section className="py-20 bg-muted/50">
     <div className="container mx-auto px-4">
       <div className="text-center mb-16">
@@ -59,11 +54,9 @@ export const TeamSkeleton = React.memo(() => (
       </div>
     </div>
   </section>
-));
+);
 
-TeamSkeleton.displayName = 'TeamSkeleton';
-
-export const BlogSkeleton = React.memo(() => (
+export const BlogSkeleton = () => (
   <section className="py-20 bg-background">
     <div className="container mx-auto px-4">
       <div className="text-center mb-16">
@@ -92,11 +85,9 @@ export const BlogSkeleton = React.memo(() => (
       </div>
     </div>
   </section>
-));
+);
 
-BlogSkeleton.displayName = 'BlogSkeleton';
-
-export const ContactSkeleton = React.memo(() => (
+export const ContactSkeleton = () => (
   <section className="py-20 bg-muted/50">
     <div className="container mx-auto px-4">
       <div className="max-w-4xl mx-auto">
@@ -135,12 +126,10 @@ export const ContactSkeleton = React.memo(() => (
       </div>
     </div>
   </section>
-));
-
-ContactSkeleton.displayName = 'ContactSkeleton';
+);
 
 // Loading genérico mejorado
-export const PageLoadingSkeleton = React.memo(() => (
+export const PageLoadingSkeleton = () => (
   <div className="min-h-screen bg-background animate-fade-in">
     <div className="container mx-auto px-4 py-8 space-y-8">
       <Skeleton className="h-12 w-3/4 mx-auto" />
@@ -160,12 +149,10 @@ export const PageLoadingSkeleton = React.memo(() => (
       </div>
     </div>
   </div>
-));
-
-PageLoadingSkeleton.displayName = 'PageLoadingSkeleton';
+);
 
 // Blog loading específico
-export const BlogLoadingSkeleton = React.memo(() => (
+export const BlogLoadingSkeleton = () => (
   <div className="container mx-auto px-4 py-8 space-y-8">
     <div className="space-y-4">
       <Skeleton className="h-8 w-1/2" />
@@ -189,12 +176,10 @@ export const BlogLoadingSkeleton = React.memo(() => (
       ))}
     </div>
   </div>
-));
-
-BlogLoadingSkeleton.displayName = 'BlogLoadingSkeleton';
+);
 
 // Admin dashboard loading
-export const AdminLoadingSkeleton = React.memo(() => (
+export const AdminLoadingSkeleton = () => (
   <div className="p-6 space-y-6">
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {[...Array(4)].map((_, i) => (
@@ -231,12 +216,10 @@ export const AdminLoadingSkeleton = React.memo(() => (
       </div>
     </div>
   </div>
-));
-
-AdminLoadingSkeleton.displayName = 'AdminLoadingSkeleton';
+);
 
 // Loading mejorado para páginas completas
-export const FullPageLoadingSkeleton = React.memo(() => (
+export const FullPageLoadingSkeleton = () => (
   <div className="min-h-screen">
     <HeroSkeleton />
     <ServicesSkeleton />
@@ -244,6 +227,4 @@ export const FullPageLoadingSkeleton = React.memo(() => (
     <BlogSkeleton />
     <ContactSkeleton />
   </div>
-));
-
-FullPageLoadingSkeleton.displayName = 'FullPageLoadingSkeleton';
+);

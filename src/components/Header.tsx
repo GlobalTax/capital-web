@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
 
-const Header = React.memo(() => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
 
@@ -69,8 +69,6 @@ const Header = React.memo(() => {
       </div>
     </header>
   );
-});
-
-Header.displayName = 'Header';
+};
 
 export default Header;

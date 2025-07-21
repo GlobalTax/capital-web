@@ -1,4 +1,3 @@
-
 import Fuse, { FuseResult, IFuseOptions } from 'fuse.js';
 import { UnifiedContact } from '@/hooks/useUnifiedContacts';
 
@@ -14,7 +13,7 @@ export interface SearchOptions {
 }
 
 // Configuración de búsqueda fuzzy optimizada para contactos
-const DEFAULT_FUSE_OPTIONS: IFuseOptions<UnifiedContact> = {
+const defaultFuseOptions: IFuseOptions<UnifiedContact> = {
   threshold: 0.3, // 0 = perfect match, 1 = match anything
   location: 0,
   distance: 100,
@@ -32,9 +31,6 @@ const DEFAULT_FUSE_OPTIONS: IFuseOptions<UnifiedContact> = {
   ]
 };
 
-const SEARCH_HISTORY_KEY = 'contactsSearchHistory';
-const MAX_HISTORY_ITEMS = 10;
-
 // Búsqueda fuzzy principal
 export const fuzzySearch = (
   contacts: UnifiedContact[], 
@@ -44,10 +40,10 @@ export const fuzzySearch = (
   if (!query.trim()) return contacts;
 
   const fuseOptions = {
-    ...DEFAULT_FUSE_OPTIONS,
-    threshold: options.threshold || DEFAULT_FUSE_OPTIONS.threshold,
+    ...defaultFuseOptions,
+    threshold: options.threshold || defaultFuseOptions.threshold,
     includeMatches: options.includeMatches !== false,
-    keys: options.keys ? options.keys.map(key => ({ name: key, weight: 1 })) : DEFAULT_FUSE_OPTIONS.keys
+    keys: options.keys ? options.keys.map(key => ({ name: key, weight: 1 })) : defaultFuseOptions.keys
   };
 
   const fuse = new Fuse(contacts, fuseOptions);
@@ -136,6 +132,9 @@ export const generateSuggestions = (contacts: UnifiedContact[], query: string = 
 };
 
 // Historial de búsquedas (localStorage)
+const SEARCH_HISTORY_KEY = 'contactsSearchHistory';
+const MAX_HISTORY_ITEMS = 10;
+
 export const getSearchHistory = (): string[] => {
   try {
     const history = localStorage.getItem(SEARCH_HISTORY_KEY);

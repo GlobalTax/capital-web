@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import AutoScroll from "embla-carousel-auto-scroll";
 import { cn } from "@/lib/utils";
 import {
   Carousel,
@@ -7,8 +8,6 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { supabase } from '@/integrations/supabase/client';
-import OptimizedImage from './OptimizedImage';
-import { useCriticalImagesPreloader } from '@/hooks/useImagePreloader';
 
 interface CarouselLogo {
   id: string;
@@ -21,10 +20,6 @@ interface CarouselLogo {
 const LogoCarousel = () => {
   const [logos, setLogos] = useState<CarouselLogo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Preload critical logo images
-  const logoUrls = logos.map(logo => logo.logo_url).filter(Boolean) as string[];
-  useCriticalImagesPreloader(logoUrls);
 
   useEffect(() => {
     fetchLogos();
@@ -81,6 +76,7 @@ const LogoCarousel = () => {
       <div className="relative mx-auto flex items-center justify-center pt-8 lg:max-w-5xl">
         <Carousel
           opts={{ loop: true }}
+          plugins={[AutoScroll({ playOnInit: true })]}
         >
           <CarouselContent className="ml-0">
             {logos.map((logo) => (
@@ -91,13 +87,10 @@ const LogoCarousel = () => {
                 <div className="flex shrink-0 items-center justify-center lg:mx-10">
                   <div>
                     {logo.logo_url ? (
-                      <OptimizedImage
+                      <img
                         src={logo.logo_url}
                         alt={logo.company_name}
                         className="h-7 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300"
-                        placeholderClassName="h-7 w-20"
-                        threshold={0.2}
-                        rootMargin="100px"
                       />
                     ) : (
                       <div className="h-7 w-20 bg-muted rounded flex items-center justify-center">

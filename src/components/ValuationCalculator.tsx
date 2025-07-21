@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useValuationCalculator } from '@/hooks/useValuationCalculatorOriginal';
+import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import { CompanyData } from '@/types/valuation';
 import StepIndicator from '@/components/valuation/StepIndicator';

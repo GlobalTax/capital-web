@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -8,9 +7,8 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
-import React from "react"
 
-export const Toaster = React.memo(() => {
+export function Toaster() {
   const { toasts } = useToast()
 
   return (
@@ -32,6 +30,4 @@ export const Toaster = React.memo(() => {
       <ToastViewport />
     </ToastProvider>
   )
-})
-
-Toaster.displayName = 'Toaster';
+}
