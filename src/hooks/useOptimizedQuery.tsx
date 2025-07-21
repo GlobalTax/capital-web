@@ -1,5 +1,6 @@
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
+import { useCallback, useRef } from 'react';
 
 // Configuraciones optimizadas por tipo de dato
 export const QUERY_CONFIGS = {

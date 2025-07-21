@@ -8,6 +8,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { supabase } from '@/integrations/supabase/client';
+import OptimizedImage from './OptimizedImage';
 
 interface CarouselLogo {
   id: string;
@@ -87,10 +88,14 @@ const LogoCarousel = () => {
                 <div className="flex shrink-0 items-center justify-center lg:mx-10">
                   <div>
                     {logo.logo_url ? (
-                      <img
+                      <OptimizedImage
                         src={logo.logo_url}
                         alt={logo.company_name}
                         className="h-7 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300"
+                        placeholderClassName="h-7 w-20"
+                        quality={90}
+                        threshold={0.2}
+                        rootMargin="100px"
                       />
                     ) : (
                       <div className="h-7 w-20 bg-muted rounded flex items-center justify-center">

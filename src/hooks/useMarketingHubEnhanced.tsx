@@ -124,10 +124,6 @@ export const useMarketingHubEnhanced = () => {
         averageReadingTime: 0,
         totalViews: 0,
         totalRevenue: 0
-      },
-      // Prefetch automático en background
-      onSuccess: () => {
-        setTimeout(prefetchMarketingData, 1000);
       }
     }
   );
