@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -15,7 +16,7 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
-const actionTypes = {
+const ACTION_TYPES = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
   DISMISS_TOAST: "DISMISS_TOAST",
@@ -24,12 +25,12 @@ const actionTypes = {
 
 let count = 0
 
-function genId() {
+function generateId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
 }
 
-type ActionType = typeof actionTypes
+type ActionType = typeof ACTION_TYPES
 
 type Action =
   | {
@@ -53,22 +54,22 @@ interface State {
   toasts: ToasterToast[]
 }
 
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+const TOAST_TIMEOUTS = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
+  if (TOAST_TIMEOUTS.has(toastId)) {
     return
   }
 
   const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId)
+    TOAST_TIMEOUTS.delete(toastId)
     dispatch({
       type: "REMOVE_TOAST",
       toastId: toastId,
     })
   }, TOAST_REMOVE_DELAY)
 
-  toastTimeouts.set(toastId, timeout)
+  TOAST_TIMEOUTS.set(toastId, timeout)
 }
 
 export const reducer = (state: State, action: Action): State => {
@@ -140,7 +141,7 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  const id = genId()
+  const id = generateId()
 
   const update = (props: ToasterToast) =>
     dispatch({
