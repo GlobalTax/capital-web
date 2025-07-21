@@ -14,6 +14,7 @@ import {
   Copy, 
   Trash2,
   Globe,
+  EyeOff,
   ExternalLink,
   Calendar,
   Users,
@@ -246,7 +247,7 @@ const LandingPagesManager = () => {
                           {page.is_published ? (
                             <Globe className="h-4 w-4 text-green-600" />
                           ) : (
-                            <GlobeOff className="h-4 w-4 text-gray-400" />
+                            <EyeOff className="h-4 w-4 text-gray-400" />
                           )}
                         </div>
                       </div>
@@ -323,7 +324,7 @@ const LandingPagesManager = () => {
                           size="sm"
                           onClick={() => togglePublish.mutate({ id: page.id, publish: !page.is_published })}
                         >
-                          {page.is_published ? <GlobeOff className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+                          {page.is_published ? <EyeOff className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
                         </Button>
 
                         <AlertDialog>
