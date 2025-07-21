@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,14 +19,14 @@ const CaseStudies = () => {
   } = useCaseStudies();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedYear, setSelectedYear] = useState<string>('all');
 
   const handleFilterChange = () => {
     filterCaseStudies({
       search: searchTerm,
-      sector: selectedSector,
-      year: selectedYear ? parseInt(selectedYear) : undefined,
+      sector: selectedSector === 'all' ? undefined : selectedSector,
+      year: selectedYear === 'all' ? undefined : parseInt(selectedYear),
       featured: undefined,
     });
   };
@@ -104,7 +103,7 @@ const CaseStudies = () => {
               <SelectValue placeholder="Sector" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los sectores</SelectItem>
+              <SelectItem value="all">Todos los sectores</SelectItem>
               {getUniqueSectors().map((sector) => (
                 <SelectItem key={sector} value={sector}>
                   {sector}
@@ -118,7 +117,7 @@ const CaseStudies = () => {
               <SelectValue placeholder="Año" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {getUniqueYears().map((year) => (
                 <SelectItem key={year} value={year!.toString()}>
                   {year}
