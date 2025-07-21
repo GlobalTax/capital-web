@@ -60,7 +60,7 @@ const TABS_CONFIG = {
 
 const LandingPagesManager = React.memo(() => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTab, setSelectedTab] = useState<string>(TABS_CONFIG.ALL);
+  const [selectedTab, setSelectedTab] = useState<'all' | 'published' | 'draft'>('all');
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
 
@@ -120,6 +120,12 @@ const LandingPagesManager = React.memo(() => {
 
   const handleOpenPreview = (pageSlug: string) => {
     window.open(`/landing/${pageSlug}`, '_blank');
+  };
+
+  const handleTabChange = (value: string) => {
+    if (value === 'all' || value === 'published' || value === 'draft') {
+      setSelectedTab(value);
+    }
   };
 
   if (showBuilder) {
@@ -226,7 +232,7 @@ const LandingPagesManager = React.memo(() => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+      <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value={TABS_CONFIG.ALL}>Todas ({statisticsData.totalPages})</TabsTrigger>
           <TabsTrigger value={TABS_CONFIG.PUBLISHED}>Publicadas ({statisticsData.publishedPages})</TabsTrigger>
