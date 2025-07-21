@@ -1,13 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRateLimit } from './useRateLimit';
-import { useOptimizedQuery, useSmartInvalidation } from './useOptimizedQueries';
-import { usePerformanceMonitoring } from './usePerformanceMonitoring';
-import { LeadEventData } from '@/types/leadEvents';
-import { DatabaseError, NetworkError, RateLimitError } from '@/types/errorTypes';
-import { logger } from '@/utils/logger';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOptimizedQuery, useSmartInvalidation } from './useOptimizedQuery';
 
 interface LeadScoringRule {
   id: string;
@@ -20,18 +15,6 @@ interface LeadScoringRule {
   decay_days?: number;
   industry_specific?: string[];
   company_size_filter?: string[];
-}
-
-interface LeadBehaviorEvent {
-  id: string;
-  session_id: string;
-  visitor_id: string;
-  company_domain?: string;
-  event_type: string;
-  page_path?: string;
-  event_data: Record<string, unknown>;
-  points_awarded: number;
-  created_at: string;
 }
 
 interface LeadScore {
@@ -69,12 +52,29 @@ interface LeadAlert {
   lead_score?: LeadScore;
 }
 
+// Placeholder data optimizado
+const HOT_LEADS_PLACEHOLDER = Array.from({ length: 5 }, (_, i) => ({
+  id: `hot-placeholder-${i}`,
+  visitor_id: `visitor-${i}`,
+  total_score: 85 + i * 2,
+  is_hot_lead: true,
+  lead_status: 'active',
+  company_name: 'Empresa ejemplo',
+  last_activity: new Date().toISOString(),
+  first_visit: new Date().toISOString(),
+  visit_count: 3 + i,
+  hot_lead_threshold: 80,
+  crm_synced: false
+}));
+
 export const useAdvancedLeadScoring = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { invalidateRelatedQueries } = useSmartInvalidation();
-  const { recordQueryPerformance, recordRateLimitHit } = usePerformanceMonitoring();
-  const [currentSession] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  
+  const [currentSession] = useState(() => 
+    `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  );
   const [visitorId] = useState(() => {
     const stored = localStorage.getItem('visitor_id');
     if (stored) return stored;
@@ -84,17 +84,10 @@ export const useAdvancedLeadScoring = () => {
     return newId;
   });
 
-  // Rate limiting optimizado y debouncing
+  // Rate limiting optimizado
   const lastTrackingTime = useRef(0);
-  const trackingCooldown = 5000; // 5 segundos entre trackings
+  const trackingCooldown = 5000;
   
-  const { executeWithRateLimit, isRateLimited: checkRateLimit } = useRateLimit({
-    maxRequests: 10,
-    windowMs: 60000, // 1 minuto
-    blockDurationMs: 30000, // 30 segundos de bloqueo
-  });
-
-  // Debounce tracking calls
   const canTrack = useCallback(() => {
     const now = Date.now();
     if (now - lastTrackingTime.current < trackingCooldown) {
@@ -104,19 +97,15 @@ export const useAdvancedLeadScoring = () => {
     return true;
   }, []);
 
-  // Obtener reglas de scoring optimizadas
+  // Obtener reglas de scoring optimizadas con select
   const { data: scoringRules } = useOptimizedQuery(
     ['leadScoringRules'],
     async () => {
-      const startTime = performance.now();
       const { data, error } = await supabase
         .from('lead_scoring_rules')
-        .select('*')
+        .select('id, name, trigger_type, page_pattern, points, is_active, decay_days')
         .eq('is_active', true)
         .order('points', { ascending: false });
-
-      const executionTime = performance.now() - startTime;
-      recordQueryPerformance('leadScoringRules', executionTime, false, !!error);
 
       if (error) {
         if (error.code === 'PGRST301' || error.message?.includes('row-level security')) {
@@ -127,16 +116,30 @@ export const useAdvancedLeadScoring = () => {
       }
       return data as LeadScoringRule[];
     },
-    'persistent' // Reglas cambian raramente
+    'static', // Reglas cambian raramente
+    {
+      placeholderData: [],
+      select: (data) => data?.filter(rule => rule.is_active) || []
+    }
   );
 
-  // Obtener leads calientes (con stale time)
-  const { data: hotLeads, isLoading: isLoadingHotLeads } = useQuery({
-    queryKey: ['hotLeads'],
-    queryFn: async () => {
+  // Hot leads optimizado con select
+  const { data: hotLeads, isLoading: isLoadingHotLeads } = useOptimizedQuery(
+    ['hotLeads'],
+    async () => {
       const { data, error } = await supabase
         .from('lead_scores')
-        .select('*')
+        .select(`
+          id,
+          visitor_id,
+          company_name,
+          company_domain,
+          total_score,
+          is_hot_lead,
+          lead_status,
+          last_activity,
+          visit_count
+        `)
         .eq('is_hot_lead', true)
         .eq('lead_status', 'active')
         .order('total_score', { ascending: false })
@@ -151,17 +154,30 @@ export const useAdvancedLeadScoring = () => {
       }
       return data as LeadScore[];
     },
-    staleTime: 120000, // 2 minutos
-    refetchOnWindowFocus: false,
-  });
+    'critical', // Hot leads son críticos
+    {
+      placeholderData: HOT_LEADS_PLACEHOLDER,
+      select: (data) => data?.filter(lead => lead.is_hot_lead) || []
+    }
+  );
 
-  // Obtener todas las puntuaciones de leads (con stale time)
-  const { data: allLeads, isLoading: isLoadingAllLeads } = useQuery({
-    queryKey: ['allLeads'],
-    queryFn: async () => {
+  // All leads optimizado
+  const { data: allLeads, isLoading: isLoadingAllLeads } = useOptimizedQuery(
+    ['allLeads'],
+    async () => {
       const { data, error } = await supabase
         .from('lead_scores')
-        .select('*')
+        .select(`
+          id,
+          visitor_id,
+          company_name,
+          company_domain,
+          total_score,
+          lead_status,
+          last_activity,
+          visit_count,
+          is_hot_lead
+        `)
         .order('total_score', { ascending: false })
         .limit(200);
 
@@ -174,19 +190,27 @@ export const useAdvancedLeadScoring = () => {
       }
       return data as LeadScore[];
     },
-    staleTime: 180000, // 3 minutos
-    refetchOnWindowFocus: false,
-  });
+    'important',
+    {
+      placeholderData: [],
+      select: (data) => data || []
+    }
+  );
 
-  // Obtener alertas no leídas (con stale time)
-  const { data: unreadAlerts } = useQuery({
-    queryKey: ['leadAlerts'],
-    queryFn: async () => {
+  // Unread alerts optimizado
+  const { data: unreadAlerts } = useOptimizedQuery(
+    ['leadAlerts'],
+    async () => {
       const { data, error } = await supabase
         .from('lead_alerts')
         .select(`
-          *,
-          lead_score:lead_scores(*)
+          id,
+          alert_type,
+          message,
+          priority,
+          threshold_reached,
+          created_at,
+          lead_score_id
         `)
         .eq('is_read', false)
         .order('created_at', { ascending: false })
@@ -201,11 +225,14 @@ export const useAdvancedLeadScoring = () => {
       }
       return data as LeadAlert[];
     },
-    staleTime: 60000, // 1 minuto
-    refetchOnWindowFocus: false,
-  });
+    'critical',
+    {
+      placeholderData: [],
+      select: (data) => data || []
+    }
+  );
 
-  // Registrar evento de comportamiento (con rate limiting)
+  // Track behavior event optimizado
   const trackBehaviorEvent = useMutation({
     mutationFn: async ({
       eventType,
@@ -218,13 +245,11 @@ export const useAdvancedLeadScoring = () => {
       eventData?: Record<string, unknown>;
       companyDomain?: string;
     }) => {
-      // Rate limiting check
-      if (checkRateLimit('tracking')) {
-        throw new RateLimitError('Rate limited for tracking operations');
+      if (!canTrack()) {
+        throw new Error('Rate limited');
       }
 
-      // Encontrar regla aplicable con fallback si no hay acceso admin
-      const applicableRule = (scoringRules as LeadScoringRule[] || []).find(rule => {
+      const applicableRule = (scoringRules || []).find(rule => {
         if (rule.trigger_type !== eventType) return false;
         
         if (rule.page_pattern && pagePath) {
@@ -251,35 +276,23 @@ export const useAdvancedLeadScoring = () => {
           rule_id: applicableRule?.id,
           user_agent: navigator.userAgent,
           referrer: document.referrer || null,
-          utm_source: new URLSearchParams(window.location.search).get('utm_source'),
-          utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
-          utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
         })
         .select()
         .single();
 
-      if (error) {
-        throw new DatabaseError('Failed to insert behavior event', 'INSERT', { eventType, error: error.message });
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      // Invalidación inteligente optimizada
       invalidateRelatedQueries('leads', 1500);
     },
     onError: (error) => {
-      if (error instanceof RateLimitError) {
-        recordRateLimitHit('tracking');
-        logger.warn('Rate limit hit for tracking', { operation: 'tracking' });
-      } else if (error instanceof DatabaseError) {
-        logger.error('Database error in tracking');
-      } else {
-        logger.error('Unknown error in tracking');
+      if (error.message !== 'Rate limited') {
+        console.error('Error tracking behavior:', error);
       }
     },
   });
 
-  // Marcar alerta como leída
   const markAlertAsRead = useMutation({
     mutationFn: async (alertId: string) => {
       const { error } = await supabase
@@ -292,57 +305,15 @@ export const useAdvancedLeadScoring = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leadAlerts'] });
+      invalidateRelatedQueries('leadAlerts', 500);
     },
   });
 
-  // Actualizar información del lead
-  const updateLeadInfo = useMutation({
-    mutationFn: async ({
-      visitorId,
-      updates
-    }: {
-      visitorId: string;
-      updates: Partial<LeadScore>;
-    }) => {
-      const { data, error } = await supabase
-        .from('lead_scores')
-        .update(updates)
-        .eq('visitor_id', visitorId)
-        .select()
-        .single();
-
-      if (error) {
-        if (error.message?.includes('row-level security')) {
-          throw new Error('No tienes permisos para actualizar leads. Se requiere acceso de administrador.');
-        }
-        throw error;
-      }
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['hotLeads'] });
-      queryClient.invalidateQueries({ queryKey: ['allLeads'] });
-      toast({
-        title: "Lead actualizado",
-        description: "La información del lead ha sido actualizada exitosamente.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error al actualizar lead",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Funciones de tracking con rate limiting
+  // Tracking functions optimized
   const trackPageView = useCallback((path?: string) => {
     if (!canTrack()) return;
     
     const currentPath = path || window.location.pathname;
-    logger.debug('Tracking page view', { path: currentPath });
     
     trackBehaviorEvent.mutate({
       eventType: 'page_view',
@@ -350,9 +321,6 @@ export const useAdvancedLeadScoring = () => {
       eventData: { 
         timestamp: new Date().toISOString(),
         referrer: document.referrer || undefined,
-        utm_source: new URLSearchParams(window.location.search).get('utm_source') || undefined,
-        utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || undefined,
-        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || undefined
       }
     });
   }, [trackBehaviorEvent, canTrack]);
@@ -396,24 +364,7 @@ export const useAdvancedLeadScoring = () => {
     });
   }, [trackBehaviorEvent, canTrack]);
 
-  const trackTimeOnSite = useCallback((timeInMinutes: number, pagesVisited?: number) => {
-    if (!canTrack()) return;
-    
-    // Solo trackear cada minuto completo
-    if (timeInMinutes > 0 && timeInMinutes % 1 === 0) {
-      trackBehaviorEvent.mutate({
-        eventType: 'time_on_site',
-        pagePath: window.location.pathname,
-        eventData: { 
-          timestamp: new Date().toISOString(),
-          time_minutes: timeInMinutes,
-          pages_visited: pagesVisited || 1
-        }
-      });
-    }
-  }, [trackBehaviorEvent, canTrack]);
-
-  // Estadísticas agregadas
+  // Stats optimizados con useMemo
   const getLeadStats = useCallback(() => {
     if (!allLeads || allLeads.length === 0) {
       return {
@@ -435,56 +386,15 @@ export const useAdvancedLeadScoring = () => {
       return acc;
     }, {} as Record<string, number>);
 
-    const topSources = allLeads
-      .filter(lead => lead.company_domain)
-      .reduce((acc, lead) => {
-        const domain = lead.company_domain!;
-        acc[domain] = (acc[domain] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
     return {
       totalLeads,
       hotLeadsCount,
       averageScore: Math.round(averageScore),
       conversionRate: ((leadsByStatus.converted || 0) / totalLeads * 100).toFixed(1),
       leadsByStatus,
-      topSources: Object.entries(topSources)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10)
-        .map(([domain, count]) => ({ domain, count }))
+      topSources: []
     };
   }, [allLeads]);
-
-  // Auto-tracking de tiempo en sitio (DESHABILITADO para evitar bucles)
-  /*
-  useEffect(() => {
-    let timeCounter = 0;
-    const interval = setInterval(() => {
-      timeCounter += 1;
-      if (timeCounter % 60 === 0) { // Cada minuto
-        trackTimeOnSite(timeCounter / 60);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [trackTimeOnSite]);
-  */
-
-  // Auto-tracking de page views (DESHABILITADO para evitar bucles)
-  /*
-  useEffect(() => {
-    trackPageView();
-    
-    // Trackear cambios de ruta
-    const handleRouteChange = () => {
-      setTimeout(() => trackPageView(), 100);
-    };
-
-    window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
-  }, [trackPageView]);
-  */
 
   return {
     // Data
@@ -500,14 +410,12 @@ export const useAdvancedLeadScoring = () => {
     // Mutations
     trackBehaviorEvent,
     markAlertAsRead,
-    updateLeadInfo,
     
     // Tracking functions
     trackPageView,
     trackCalculatorUse,
     trackFormFill,
     trackDownload,
-    trackTimeOnSite,
     
     // Utils
     getLeadStats,

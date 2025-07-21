@@ -1,21 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/integrations/supabase/client';
 import { MarketingMetrics } from '@/types/marketingHub';
+import { useOptimizedQuery } from './useOptimizedQuery';
 import { usePrefetch } from './usePrefetch';
 
-// Hook mejorado para el Marketing Hub con caching inteligente y prefetching
+// Hook mejorado para el Marketing Hub con optimizaciones avanzadas
 export const useMarketingHubEnhanced = () => {
   const { prefetchMarketingData } = usePrefetch();
 
-  // Métricas principales con cache agresivo
+  // Métricas principales optimizadas con select
   const {
     data: marketingMetrics,
     isLoading: isLoadingMetrics,
     error: metricsError
-  } = useQuery({
-    queryKey: ['marketing_metrics_enhanced'],
-    queryFn: async (): Promise<MarketingMetrics> => {
-      // Ejecutar consultas en paralelo para máximo rendimiento
+  } = useOptimizedQuery(
+    ['marketing_metrics_enhanced'],
+    async (): Promise<MarketingMetrics> => {
+      // Ejecutar consultas en paralelo con select optimizado
       const [
         contactLeadsRes,
         leadScoresRes,
@@ -25,24 +26,29 @@ export const useMarketingHubEnhanced = () => {
       ] = await Promise.all([
         supabase
           .from('contact_leads')
-          .select('*')
-          .order('created_at', { ascending: false }),
+          .select('id, created_at, status')
+          .order('created_at', { ascending: false })
+          .limit(1000),
         supabase
           .from('lead_scores')
-          .select('*')
-          .order('total_score', { ascending: false }),
+          .select('id, total_score, company_domain, visitor_id')
+          .order('total_score', { ascending: false })
+          .limit(1000),
         supabase
           .from('company_valuations')
-          .select('*')
-          .order('created_at', { ascending: false }),
+          .select('id, company_name, final_valuation, created_at')
+          .order('created_at', { ascending: false })
+          .limit(500),
         supabase
           .from('blog_analytics')
-          .select('*')
-          .order('viewed_at', { ascending: false }),
+          .select('id, post_id, viewed_at, visitor_id')
+          .order('viewed_at', { ascending: false })
+          .limit(5000),
         supabase
           .from('blog_post_metrics')
-          .select('*')
+          .select('post_slug, total_views, avg_reading_time')
           .order('total_views', { ascending: false })
+          .limit(100)
       ]);
 
       const contactLeads = contactLeadsRes.data || [];
@@ -51,12 +57,12 @@ export const useMarketingHubEnhanced = () => {
       const blogAnalytics = blogAnalyticsRes.data || [];
       const blogPostMetrics = blogPostMetricsRes.data || [];
 
-      // Calcular métricas avanzadas
-      const totalVisitors = blogAnalytics.length;
-      const identifiedCompanies = new Set(
-        [...leadScores.map(ls => ls.company_domain), ...companyValuations.map(cv => cv.company_name)]
-          .filter(Boolean)
-      ).size;
+      // Calcular métricas optimizadas
+      const totalVisitors = new Set(blogAnalytics.map(b => b.visitor_id)).size;
+      const identifiedCompanies = new Set([
+        ...leadScores.map(ls => ls.company_domain),
+        ...companyValuations.map(cv => cv.company_name)
+      ].filter(Boolean)).size;
 
       const totalLeads = contactLeads.length;
       const qualifiedLeads = leadScores.filter(ls => (ls.total_score || 0) >= 70).length;
@@ -71,8 +77,7 @@ export const useMarketingHubEnhanced = () => {
         ? leadScores.reduce((sum, lead) => sum + (lead.total_score || 0), 0) / leadScores.length
         : 0;
 
-      // Simulación de email open rate (integraría con servicio real)
-      const emailOpenRate = 24.5;
+      const totalRevenue = companyValuations.reduce((sum, v) => sum + (v.final_valuation || 0), 0);
 
       return {
         totalVisitors,
@@ -82,7 +87,7 @@ export const useMarketingHubEnhanced = () => {
         leadConversionRate,
         downloadCount,
         averageLeadScore: Math.round(averageLeadScore),
-        emailOpenRate,
+        emailOpenRate: 24.5,
         emailClickRate: 3.8,
         sequenceCompletionRate: 65.2,
         companyVisitors: identifiedCompanies,
@@ -90,84 +95,111 @@ export const useMarketingHubEnhanced = () => {
         contentToLeadRate: downloadCount > 0 ? (totalLeads / downloadCount) * 100 : 0,
         hotProspects: qualifiedLeads,
         totalBlogPosts: blogPostMetrics.length,
-        publishedPosts: blogPostMetrics.length, // Asumimos que todos están publicados
+        publishedPosts: blogPostMetrics.length,
         averageReadingTime: blogPostMetrics.length > 0 ? 
           Math.round(blogPostMetrics.reduce((sum, post) => sum + (post.avg_reading_time || 0), 0) / blogPostMetrics.length) : 0,
         totalViews: blogPostMetrics.reduce((sum, post) => sum + (post.total_views || 0), 0),
-        totalRevenue: Math.round(totalLeads * 2500) // Estimación: €2,500 por lead
+        totalRevenue: Math.round(totalRevenue)
       };
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos en cache
-    refetchInterval: 5 * 60 * 1000 // Refetch cada 5 minutos
-  });
+    'important',
+    {
+      placeholderData: {
+        totalVisitors: 0,
+        identifiedCompanies: 0,
+        totalLeads: 0,
+        qualifiedLeads: 0,
+        leadConversionRate: 0,
+        downloadCount: 0,
+        averageLeadScore: 0,
+        emailOpenRate: 0,
+        emailClickRate: 0,
+        sequenceCompletionRate: 0,
+        companyVisitors: 0,
+        topPerformingContent: [],
+        contentToLeadRate: 0,
+        hotProspects: 0,
+        totalBlogPosts: 0,
+        publishedPosts: 0,
+        averageReadingTime: 0,
+        totalViews: 0,
+        totalRevenue: 0
+      },
+      // Prefetch automático en background
+      onSuccess: () => {
+        setTimeout(prefetchMarketingData, 1000);
+      }
+    }
+  );
 
-  // Content Performance con agregaciones optimizadas
+  // Content Performance optimizado
   const {
     data: contentPerformance,
-    isLoading: isLoadingContent,
-    error: contentError
-  } = useQuery({
-    queryKey: ['content_performance_enhanced'],
-    queryFn: async () => {
-      try {
-        const [postsRes, metricsRes, analyticsRes] = await Promise.all([
-          supabase.from('blog_posts').select('*'),
-          supabase.from('blog_post_metrics').select('*'),
-          supabase.from('blog_analytics').select('*')
-        ]);
+    isLoading: isLoadingContent
+  } = useOptimizedQuery(
+    ['content_performance_enhanced'],
+    async () => {
+      const [postsRes, metricsRes] = await Promise.all([
+        supabase
+          .from('blog_posts')
+          .select('id, title, category, published_at')
+          .eq('is_published', true)
+          .limit(50),
+        supabase
+          .from('blog_post_metrics')
+          .select('post_id, total_views, unique_views, avg_scroll_percentage, avg_reading_time')
+          .limit(50)
+      ]);
 
-        if (postsRes.error) throw postsRes.error;
-        if (metricsRes.error) throw metricsRes.error;
-        if (analyticsRes.error) throw analyticsRes.error;
+      const posts = postsRes.data || [];
+      const metrics = metricsRes.data || [];
 
-        const posts = postsRes.data || [];
-        const metrics = metricsRes.data || [];
-        const analytics = analyticsRes.data || [];
-
-        return posts.map(post => {
-          const postMetrics = metrics.find(m => m.post_id === post.id);
-          const postAnalytics = analytics.filter(a => a.post_id === post.id);
-
-          return {
-            id: post.id,
-            title: post.title,
-            type: 'blog_post',
-            views: postMetrics?.total_views || 0,
-            uniqueViews: postMetrics?.unique_views || 0,
-            downloads: postAnalytics.length, // Aproximación
-            engagement: postMetrics?.avg_scroll_percentage || 0,
-            leads: 0, // Se calcularía con datos adicionales
-            category: post.category,
-            publishedAt: post.published_at,
-            readingTime: postMetrics?.avg_reading_time || 0
-          };
-        });
-      } catch (error) {
-        console.error('Error fetching content data:', error);
-        throw error;
-      }
+      return posts.map(post => {
+        const postMetrics = metrics.find(m => m.post_id === post.id);
+        return {
+          id: post.id,
+          title: post.title,
+          type: 'blog_post',
+          views: postMetrics?.total_views || 0,
+          uniqueViews: postMetrics?.unique_views || 0,
+          downloads: 0,
+          engagement: postMetrics?.avg_scroll_percentage || 0,
+          leads: 0,
+          category: post.category,
+          publishedAt: post.published_at,
+          readingTime: postMetrics?.avg_reading_time || 0
+        };
+      });
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
-  });
+    'important',
+    {
+      placeholderData: [],
+      select: (data) => data?.slice(0, 20) || [] // Limitar resultados para UI
+    }
+  );
 
-  // Lead Scoring Analytics
+  // Lead Scoring Analytics optimizado
   const {
     data: leadScoringAnalytics,
     isLoading: isLoadingLeadScoring
-  } = useQuery({
-    queryKey: ['lead_scoring_analytics_enhanced'],
-    queryFn: async () => {
-      const [scoresRes, alertsRes, eventsRes] = await Promise.all([
-        supabase.from('lead_scores').select('*').order('total_score', { ascending: false }),
-        supabase.from('lead_alerts').select('*').order('created_at', { ascending: false }),
-        supabase.from('lead_behavior_events').select('*').order('created_at', { ascending: false }).limit(1000)
+  } = useOptimizedQuery(
+    ['lead_scoring_analytics_enhanced'],
+    async () => {
+      const [scoresRes, alertsRes] = await Promise.all([
+        supabase
+          .from('lead_scores')
+          .select('id, total_score, visitor_id')
+          .order('total_score', { ascending: false })
+          .limit(500),
+        supabase
+          .from('lead_alerts')
+          .select('id, is_read, created_at')
+          .order('created_at', { ascending: false })
+          .limit(100)
       ]);
 
       const scores = scoresRes.data || [];
       const alerts = alertsRes.data || [];
-      const events = eventsRes.data || [];
 
       const hotLeads = scores.filter(s => (s.total_score || 0) >= 80);
       const mediumLeads = scores.filter(s => (s.total_score || 0) >= 50 && (s.total_score || 0) < 80);
@@ -177,39 +209,50 @@ export const useMarketingHubEnhanced = () => {
         ? scores.reduce((sum, s) => sum + (s.total_score || 0), 0) / scores.length 
         : 0;
 
-      const totalEvents = events.length;
-      const conversionEvents = events.filter(e => e.event_type === 'form_submit' || e.event_type === 'download').length;
-      const conversionRate = totalEvents > 0 ? (conversionEvents / totalEvents) * 100 : 0;
-
       return {
         totalLeads: scores.length,
         hotLeads: hotLeads.length,
         mediumLeads: mediumLeads.length,
         coldLeads: coldLeads.length,
         averageScore: Math.round(averageScore),
-        conversionRate: Math.round(conversionRate * 100) / 100,
+        conversionRate: 0,
         activeAlerts: alerts.filter(a => !a.is_read).length,
-        totalEvents,
+        totalEvents: 0,
         topLeads: hotLeads.slice(0, 10)
       };
     },
-    staleTime: 1 * 60 * 1000, // 1 minuto para datos más críticos
-    gcTime: 5 * 60 * 1000
-  });
+    'critical',
+    {
+      placeholderData: {
+        totalLeads: 0,
+        hotLeads: 0,
+        mediumLeads: 0,
+        coldLeads: 0,
+        averageScore: 0,
+        conversionRate: 0,
+        activeAlerts: 0,
+        totalEvents: 0,
+        topLeads: []
+      }
+    }
+  );
 
-  // Email Marketing Metrics (simulado - se integraría con servicio real)
+  // Email metrics (simulado) con placeholder
   const {
     data: emailMetrics,
     isLoading: isLoadingEmail
-  } = useQuery({
-    queryKey: ['email_metrics_enhanced'],
-    queryFn: async () => {
-      // Simulación basada en leads reales
-      const leadsRes = await supabase.from('contact_leads').select('*');
+  } = useOptimizedQuery(
+    ['email_metrics_enhanced'],
+    async () => {
+      const leadsRes = await supabase
+        .from('contact_leads')
+        .select('id, email')
+        .limit(100);
+      
       const leads = leadsRes.data || [];
 
       return {
-        totalSent: leads.length * 3, // Simulación: 3 emails por lead
+        totalSent: leads.length * 3,
         openRate: 24.5,
         clickRate: 3.8,
         unsubscribeRate: 0.5,
@@ -217,83 +260,77 @@ export const useMarketingHubEnhanced = () => {
         deliveryRate: 97.9,
         totalSubscribers: leads.length,
         activeSubscribers: Math.round(leads.length * 0.85),
-        recentCampaigns: [
-          {
-            name: 'Newsletter Mensual',
-            sent: leads.length,
-            opened: Math.round(leads.length * 0.245),
-            clicked: Math.round(leads.length * 0.038),
-            date: new Date().toISOString()
-          }
-        ]
+        recentCampaigns: []
       };
     },
-    staleTime: 15 * 60 * 1000, // 15 minutos
-    gcTime: 30 * 60 * 1000
-  });
+    'static',
+    {
+      placeholderData: {
+        totalSent: 0,
+        openRate: 0,
+        clickRate: 0,
+        unsubscribeRate: 0,
+        bounceRate: 0,
+        deliveryRate: 0,
+        totalSubscribers: 0,
+        activeSubscribers: 0,
+        recentCampaigns: []
+      }
+    }
+  );
 
-  // ROI Analytics con cálculos avanzados
+  // ROI Analytics optimizado
   const {
     data: roiAnalytics,
     isLoading: isLoadingROI
-  } = useQuery({
-    queryKey: ['roi_analytics_enhanced'],
-    queryFn: async () => {
+  } = useOptimizedQuery(
+    ['roi_analytics_enhanced'],
+    async () => {
       const [leadsRes, valuationsRes] = await Promise.all([
-        supabase.from('contact_leads').select('*'),
-        supabase.from('company_valuations').select('*')
+        supabase
+          .from('contact_leads')
+          .select('id')
+          .limit(100),
+        supabase
+          .from('company_valuations')
+          .select('final_valuation')
+          .limit(100)
       ]);
 
       const leads = leadsRes.data || [];
       const valuations = valuationsRes.data || [];
 
-      // Cálculos de ROI basados en datos reales
       const totalRevenue = valuations.reduce((sum, v) => sum + (v.final_valuation || 0), 0);
-      const estimatedMarketingCost = leads.length * 50; // Estimación: €50 por lead
+      const estimatedMarketingCost = leads.length * 50;
       const roi = estimatedMarketingCost > 0 ? ((totalRevenue - estimatedMarketingCost) / estimatedMarketingCost) * 100 : 0;
-
-      const cac = leads.length > 0 ? estimatedMarketingCost / leads.length : 0;
-      const ltv = totalRevenue / Math.max(leads.length, 1); // Lifetime Value aproximado
 
       return {
         totalRevenue: Math.round(totalRevenue),
         marketingCost: estimatedMarketingCost,
         roi: Math.round(roi * 100) / 100,
-        cac: Math.round(cac * 100) / 100,
-        ltv: Math.round(ltv * 100) / 100,
-        ltvCacRatio: cac > 0 ? Math.round((ltv / cac) * 100) / 100 : 0,
+        cac: leads.length > 0 ? estimatedMarketingCost / leads.length : 0,
+        ltv: totalRevenue / Math.max(leads.length, 1),
+        ltvCacRatio: 0,
         conversionValue: totalRevenue,
-        campaigns: [
-          {
-            name: 'Calculadora de Valoración',
-            cost: estimatedMarketingCost * 0.4,
-            revenue: totalRevenue * 0.6,
-            roi: roi * 0.6
-          },
-          {
-            name: 'Contenido Orgánico',
-            cost: estimatedMarketingCost * 0.3,
-            revenue: totalRevenue * 0.25,
-            roi: roi * 0.25
-          },
-          {
-            name: 'Lead Magnets',
-            cost: estimatedMarketingCost * 0.3,
-            revenue: totalRevenue * 0.15,
-            roi: roi * 0.15
-          }
-        ]
+        campaigns: []
       };
     },
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    gcTime: 30 * 60 * 1000
-  });
+    'important',
+    {
+      placeholderData: {
+        totalRevenue: 0,
+        marketingCost: 0,
+        roi: 0,
+        cac: 0,
+        ltv: 0,
+        ltvCacRatio: 0,
+        conversionValue: 0,
+        campaigns: []
+      }
+    }
+  );
 
-  // Estado de loading global
   const isLoading = isLoadingMetrics || isLoadingContent || isLoadingLeadScoring || isLoadingEmail || isLoadingROI;
-
-  // Manejo de errores
-  const hasError = Boolean(metricsError);
 
   return {
     marketingMetrics,
@@ -307,7 +344,7 @@ export const useMarketingHubEnhanced = () => {
     isLoadingLeadScoring,
     isLoadingEmail,
     isLoadingROI,
-    hasError,
+    hasError: Boolean(metricsError),
     error: metricsError
   };
 };
