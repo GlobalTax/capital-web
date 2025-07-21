@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AlertCircle, FileX, Users, Mail, Search, Wifi } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ interface EmptyStateProps {
   };
 }
 
-export const EmptyState = ({ title, description, icon, action }: EmptyStateProps) => (
+export const EmptyState = React.memo(({ title, description, icon, action }: EmptyStateProps) => (
   <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
     <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-6">
       {icon || <FileX className="w-8 h-8 text-muted-foreground" />}
@@ -25,9 +26,11 @@ export const EmptyState = ({ title, description, icon, action }: EmptyStateProps
       </Button>
     )}
   </div>
-);
+));
 
-export const NoResultsState = ({ onReset }: { onReset: () => void }) => (
+EmptyState.displayName = 'EmptyState';
+
+export const NoResultsState = React.memo(({ onReset }: { onReset: () => void }) => (
   <EmptyState
     icon={<Search className="w-8 h-8 text-muted-foreground" />}
     title="Sin resultados"
@@ -37,9 +40,11 @@ export const NoResultsState = ({ onReset }: { onReset: () => void }) => (
       onClick: onReset
     }}
   />
-);
+));
 
-export const NoDataState = ({ onRetry }: { onRetry: () => void }) => (
+NoResultsState.displayName = 'NoResultsState';
+
+export const NoDataState = React.memo(({ onRetry }: { onRetry: () => void }) => (
   <EmptyState
     icon={<FileX className="w-8 h-8 text-muted-foreground" />}
     title="No hay datos disponibles"
@@ -49,9 +54,11 @@ export const NoDataState = ({ onRetry }: { onRetry: () => void }) => (
       onClick: onRetry
     }}
   />
-);
+));
 
-export const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
+NoDataState.displayName = 'NoDataState';
+
+export const ErrorState = React.memo(({ onRetry }: { onRetry: () => void }) => (
   <EmptyState
     icon={<AlertCircle className="w-8 h-8 text-destructive" />}
     title="Error al cargar los datos"
@@ -61,9 +68,11 @@ export const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
       onClick: onRetry
     }}
   />
-);
+));
 
-export const OfflineState = ({ onRetry }: { onRetry: () => void }) => (
+ErrorState.displayName = 'ErrorState';
+
+export const OfflineState = React.memo(({ onRetry }: { onRetry: () => void }) => (
   <EmptyState
     icon={<Wifi className="w-8 h-8 text-muted-foreground" />}
     title="Sin conexión"
@@ -73,20 +82,26 @@ export const OfflineState = ({ onRetry }: { onRetry: () => void }) => (
       onClick: onRetry
     }}
   />
-);
+));
 
-export const NoTeamMembersState = () => (
+OfflineState.displayName = 'OfflineState';
+
+export const NoTeamMembersState = React.memo(() => (
   <EmptyState
     icon={<Users className="w-8 h-8 text-muted-foreground" />}
     title="Equipo en construcción"
     description="Estamos trabajando en presentar a nuestro increíble equipo. ¡Pronto tendrás más información!"
   />
-);
+));
 
-export const NoContactsState = () => (
+NoTeamMembersState.displayName = 'NoTeamMembersState';
+
+export const NoContactsState = React.memo(() => (
   <EmptyState
     icon={<Mail className="w-8 h-8 text-muted-foreground" />}
     title="Buzón vacío"
     description="No has recibido ningún mensaje de contacto aún. Cuando lleguen, aparecerán aquí."
   />
-);
+));
+
+NoContactsState.displayName = 'NoContactsState';

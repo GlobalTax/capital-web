@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Circle, Loader2 } from 'lucide-react';
@@ -15,7 +16,7 @@ interface ProgressIndicatorProps {
   className?: string;
 }
 
-export const ProgressIndicator = ({ steps, currentStep, className }: ProgressIndicatorProps) => {
+export const ProgressIndicator = React.memo(({ steps, currentStep, className }: ProgressIndicatorProps) => {
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
@@ -64,7 +65,9 @@ export const ProgressIndicator = ({ steps, currentStep, className }: ProgressInd
       </div>
     </div>
   );
-};
+});
+
+ProgressIndicator.displayName = 'ProgressIndicator';
 
 interface LinearProgressProps {
   value: number;
@@ -73,7 +76,7 @@ interface LinearProgressProps {
   className?: string;
 }
 
-export const LinearProgress = ({ 
+export const LinearProgress = React.memo(({ 
   value, 
   label, 
   showPercentage = true, 
@@ -88,6 +91,8 @@ export const LinearProgress = ({
     )}
     <Progress value={value} className="h-2" />
   </div>
-);
+));
+
+LinearProgress.displayName = 'LinearProgress';
 
 export default ProgressIndicator;

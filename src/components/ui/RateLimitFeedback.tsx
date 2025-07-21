@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ interface RateLimitFeedbackProps {
   className?: string;
 }
 
-export const RateLimitFeedback: React.FC<RateLimitFeedbackProps> = ({
+export const RateLimitFeedback: React.FC<RateLimitFeedbackProps> = React.memo(({
   isRateLimited,
   remainingTime = 0,
   remainingRequests = 0,
@@ -46,17 +46,17 @@ export const RateLimitFeedback: React.FC<RateLimitFeedbackProps> = ({
     }
   }, [countdown]);
 
-  const formatTime = (ms: number): string => {
+  const formatTime = useCallback((ms: number): string => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const getVariant = () => {
+  const getVariant = useCallback(() => {
     if (isRateLimited) return 'destructive';
     if (remainingRequests <= 1) return 'default';
     return 'default';
-  };
+  }, [isRateLimited, remainingRequests]);
 
   if (!isRateLimited && remainingRequests > 1) {
     return null;
@@ -153,6 +153,8 @@ export const RateLimitFeedback: React.FC<RateLimitFeedbackProps> = ({
       )}
     </div>
   );
-};
+});
+
+RateLimitFeedback.displayName = 'RateLimitFeedback';
 
 export default RateLimitFeedback;
