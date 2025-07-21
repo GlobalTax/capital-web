@@ -38,9 +38,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Use responsive image if enabled
   const { optimizedSrc } = useResponsiveImage(src, {
-    mobile: { width: 360, quality },
-    tablet: { width: 768, quality },
-    desktop: { width: 1200, quality }
+    mobile: { width: 360 },
+    tablet: { width: 768 },
+    desktop: { width: 1200 }
   });
 
   const finalSrc = responsive ? optimizedSrc : src;

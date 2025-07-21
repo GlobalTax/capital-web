@@ -56,42 +56,26 @@ export const usePageImagePrefetch = () => {
           break;
           
         case '/casos-exito':
+          // Prefetch placeholder images for case studies
           try {
-            const { data: caseStudies } = await supabase
-              .from('case_studies')
-              .select('image_url, logo_url')
-              .eq('is_published', true)
-              .limit(6);
-            
-            if (caseStudies) {
-              const imageUrls = caseStudies
-                .flatMap(study => [study.image_url, study.logo_url])
-                .filter(Boolean) as string[];
-              
-              await preloadImages(imageUrls, { priority: 'high' });
-              console.log(`Prefetched ${imageUrls.length} case study images`);
-            }
+            await preloadImages([
+              'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&q=80',
+              'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80'
+            ], { priority: 'high' });
+            console.log('Prefetched case study placeholder images');
           } catch (error) {
             console.error('Error prefetching case study images:', error);
           }
           break;
           
         case '/testimonios':
+          // Prefetch placeholder images for testimonials
           try {
-            const { data: testimonials } = await supabase
-              .from('carousel_testimonials')
-              .select('client_photo, company_logo')
-              .eq('is_active', true)
-              .limit(8);
-            
-            if (testimonials) {
-              const imageUrls = testimonials
-                .flatMap(testimonial => [testimonial.client_photo, testimonial.company_logo])
-                .filter(Boolean) as string[];
-              
-              await preloadImages(imageUrls, { priority: 'high' });
-              console.log(`Prefetched ${imageUrls.length} testimonial images`);
-            }
+            await preloadImages([
+              'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=80',
+              'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80'
+            ], { priority: 'high' });
+            console.log('Prefetched testimonial placeholder images');
           } catch (error) {
             console.error('Error prefetching testimonial images:', error);
           }
@@ -100,17 +84,21 @@ export const usePageImagePrefetch = () => {
         case '/':
           // Página de inicio - prefetch imágenes críticas
           try {
-            const [teamData, testimonialsData, logosData] = await Promise.all([
-              supabase.from('team_members').select('image_url').eq('is_active', true).limit(4),
-              supabase.from('carousel_testimonials').select('client_photo, company_logo').eq('is_active', true).limit(3),
-              supabase.from('carousel_logos').select('logo_url').eq('is_active', true).limit(6)
-            ]);
+            const { data: teamData } = await supabase
+              .from('team_members')
+              .select('image_url')
+              .eq('is_active', true)
+              .limit(4);
             
-            const allImageUrls = [
-              ...(teamData.data?.map(member => member.image_url).filter(Boolean) || []),
-              ...(testimonialsData.data?.flatMap(t => [t.client_photo, t.company_logo]).filter(Boolean) || []),
-              ...(logosData.data?.map(logo => logo.logo_url).filter(Boolean) || [])
-            ] as string[];
+            const teamImageUrls = teamData?.map(member => member.image_url).filter(Boolean) || [];
+            
+            // Add some placeholder images for other sections
+            const placeholderImages = [
+              'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=600&q=80',
+              'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80'
+            ];
+            
+            const allImageUrls = [...teamImageUrls, ...placeholderImages] as string[];
             
             if (allImageUrls.length > 0) {
               await preloadImages(allImageUrls, { priority: 'low' });
@@ -150,6 +138,7 @@ export const useIntelligentPrefetch = () => {
     // Prefetch al hacer hover sobre enlaces de navegación
     const handleLinkHover = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+      if (!target || typeof target.closest !== 'function') return;
       const link = target.closest('a[href]') as HTMLAnchorElement;
       
       if (link && link.href) {
