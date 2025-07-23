@@ -29,29 +29,25 @@ interface LoggerConfig {
 }
 
 const getEnvironment = (): string => {
-  // Usar NODE_ENV como fuente principal
   return process.env.NODE_ENV || 'development';
 };
 
 const getMinLogLevel = (): LogLevel => {
   const env = getEnvironment();
   
-  // En desarrollo: mostrar todos los logs
-  if (env === 'development') return 'debug';
+  // En desarrollo: solo errores críticos en consola
+  if (env === 'development') return 'error';
   
-  // En test: solo warnings y errores
-  if (env === 'test') return 'warn';
-  
-  // En producción: solo errores
+  // En producción: solo errores críticos
   return 'error';
 };
 
 const defaultConfig: LoggerConfig = {
-  enableConsole: true,
-  enablePersistence: false,
+  enableConsole: getEnvironment() === 'development',
+  enablePersistence: false, // Deshabilitado para mejor rendimiento
   enableRemote: false,
   minLevel: getMinLogLevel(),
-  maxEntries: 1000,
+  maxEntries: 50, // Reducido significativamente
   sensitiveKeys: ['password', 'token', 'apiKey', 'secret', 'authorization', 'key']
 };
 
@@ -65,7 +61,11 @@ class Logger {
     this.config = { ...defaultConfig, ...config };
     this.sessionId = this.generateSessionId();
     this.originalConsole = { ...console };
-    this.setupGlobalErrorHandler();
+    
+    // Solo configurar error handler en desarrollo
+    if (getEnvironment() === 'development') {
+      this.setupGlobalErrorHandler();
+    }
   }
 
   private generateSessionId(): string {
@@ -105,13 +105,6 @@ class Logger {
     return `${timestamp} ${entry.level.toUpperCase()} ${context}${component} ${entry.message}`;
   }
 
-  private async persistLog(entry: LogEntry): Promise<void> {
-    // Solo persistir errores en producción
-    if (!this.config.enablePersistence || entry.level !== 'error') return;
-    
-    // Deshabilitado después de limpieza
-  }
-
   private setupGlobalErrorHandler(): void {
     window.addEventListener('error', (event) => {
       this.error('Uncaught error', event.error, { context: 'system' });
@@ -133,6 +126,7 @@ class Logger {
       data?: unknown;
     } = {}
   ): void {
+    // Retorno temprano si no debe loggear
     if (!this.shouldLog(level)) return;
 
     const entry: LogEntry = {
@@ -150,80 +144,57 @@ class Logger {
       url: window.location.href
     };
 
-    // Console logging solo si está habilitado
-    if (this.config.enableConsole) {
-      const consoleMethod = level === 'debug' ? 'log' : level;
-      this.originalConsole[consoleMethod](this.formatMessage(entry), entry.data, error);
+    // Console logging solo en desarrollo y solo para errores críticos
+    if (this.config.enableConsole && level === 'error') {
+      this.originalConsole.error(this.formatMessage(entry), entry.data, error);
     }
 
-    // Store in memory
+    // Store in memory (limitado)
     this.entries.push(entry);
     if (this.entries.length > this.config.maxEntries) {
       this.entries.shift();
     }
-
-    // Persist to database
-    this.persistLog(entry);
   }
 
+  // Métodos públicos - solo procesarán en desarrollo o para errores críticos
   debug(message: string, data?: unknown, options: { context?: LogContext; component?: string; userId?: string } = {}): void {
+    // Debug completamente deshabilitado en producción
+    if (getEnvironment() !== 'development') return;
     this.log('debug', message, undefined, { ...options, data });
   }
 
   info(message: string, data?: unknown, options: { context?: LogContext; component?: string; userId?: string } = {}): void {
+    // Info completamente deshabilitado en producción
+    if (getEnvironment() !== 'development') return;
     this.log('info', message, undefined, { ...options, data });
   }
 
   warn(message: string, data?: unknown, options: { context?: LogContext; component?: string; userId?: string } = {}): void {
+    // Warn completamente deshabilitado en producción
+    if (getEnvironment() !== 'development') return;
     this.log('warn', message, undefined, { ...options, data });
   }
 
   error(message: string, error?: Error, options: { context?: LogContext; component?: string; userId?: string; data?: unknown } = {}): void {
+    // Error siempre habilitado pero solo para errores críticos
     this.log('error', message, error, options);
   }
 
-  // Performance logging
+  // Métodos de utilidad deshabilitados en producción
   time(label: string, context?: LogContext, component?: string): void {
-    if (getEnvironment() === 'development') {
-      this.originalConsole.time(label);
-    }
-    this.debug(`Timer started: ${label}`, { label }, { context, component });
+    if (getEnvironment() !== 'development') return;
+    this.originalConsole.time(label);
   }
 
   timeEnd(label: string, context?: LogContext, component?: string): void {
-    if (getEnvironment() === 'development') {
-      this.originalConsole.timeEnd(label);
-    }
-    this.debug(`Timer ended: ${label}`, { label }, { context, component });
-  }
-
-  // Modo desarrollo - logging temporal
-  devMode(enabled: boolean = true): void {
-    if (enabled && getEnvironment() === 'development') {
-      this.config.minLevel = 'debug';
-      this.config.enableConsole = true;
-    } else {
-      this.config.minLevel = getMinLogLevel();
-    }
-  }
-
-  // Reemplazar console nativo (solo en desarrollo)
-  replaceConsole(): void {
     if (getEnvironment() !== 'development') return;
-    
-    console.log = (...args) => this.debug(args.join(' '), undefined, { context: 'system' });
-    console.info = (...args) => this.info(args.join(' '), undefined, { context: 'system' });
-    console.warn = (...args) => this.warn(args.join(' '), undefined, { context: 'system' });
-    // Mantener console.error nativo para errores críticos
+    this.originalConsole.timeEnd(label);
   }
 
-  // Restaurar console nativo
-  restoreConsole(): void {
-    Object.assign(console, this.originalConsole);
-  }
-
-  // Get stored logs
+  // Métodos de gestión
   getLogs(filter?: { level?: LogLevel; context?: LogContext; component?: string }): LogEntry[] {
+    if (getEnvironment() !== 'development') return [];
+    
     if (!filter) return this.entries;
 
     return this.entries.filter(entry => {
@@ -234,24 +205,20 @@ class Logger {
     });
   }
 
-  // Clear logs
   clear(): void {
     this.entries = [];
-    this.debug('Logs cleared', undefined, { context: 'system' });
   }
 
-  // Update configuration
   updateConfig(newConfig: Partial<LoggerConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.debug('Logger configuration updated', newConfig, { context: 'system' });
   }
 }
 
-// Create singleton instance
+// Create singleton instance con configuración optimizada
 const loggerInstance = new Logger({
-  enableConsole: true,
-  enablePersistence: getEnvironment() === 'production',
-  minLevel: getMinLogLevel()
+  enableConsole: false, // Deshabilitado completamente en producción
+  enablePersistence: false,
+  minLevel: 'error' // Solo errores críticos
 });
 
 export { Logger, loggerInstance as logger };
