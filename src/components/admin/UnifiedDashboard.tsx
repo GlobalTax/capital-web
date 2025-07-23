@@ -1,4 +1,3 @@
-
 import React, { memo, useMemo, useCallback, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,10 +17,10 @@ import { useOptimizedMarketingHub } from '@/hooks/useOptimizedMarketingHub';
 import { devLogger } from '@/utils/devLogger';
 
 // Lazy loading para componentes pesados
-const MarketingOverviewTab = React.lazy(() => import('./dashboard/components/MarketingOverviewTab'));
+const MarketingOverviewTab = React.lazy(() => import('./dashboard/components/OptimizedMarketingOverviewTab'));
 const PerformanceDashboard = React.lazy(() => import('./dashboard/PerformanceDashboard'));
-const PredictiveAnalytics = React.lazy(() => import('./analytics/PredictiveAnalytics'));
-const AIInsightsPanel = React.lazy(() => import('./dashboard/AIInsightsPanel'));
+const PredictiveAnalytics = React.lazy(() => import('./analytics/PredictiveAnalytics').then(module => ({ default: module.PredictiveAnalytics })));
+const AIInsightsPanel = React.lazy(() => import('./dashboard/AIInsightsPanel').then(module => ({ default: module.AIInsightsPanel })));
 
 // Componente de KPIs memoizado
 const KPICard = memo(({ 
@@ -87,6 +86,9 @@ const UnifiedDashboard = memo(() => {
   const kpis = useMemo(() => {
     if (!metrics) return [];
     
+    const conversionTrend: 'up' | 'down' | 'neutral' = metrics.leadConversionRate > 2 ? 'up' : 'neutral';
+    const scoreTrend: 'up' | 'down' | 'neutral' = metrics.averageLeadScore > 60 ? 'up' : 'neutral';
+    
     return [
       {
         title: 'Leads Totales',
@@ -106,14 +108,14 @@ const UnifiedDashboard = memo(() => {
         title: 'Conversión',
         value: `${metrics.leadConversionRate.toFixed(1)}%`,
         icon: TrendingUp,
-        trend: metrics.leadConversionRate > 2 ? 'up' : 'neutral',
+        trend: conversionTrend,
         subtitle: `${metrics.totalVisitors} visitantes`
       },
       {
         title: 'Score Promedio',
         value: metrics.averageLeadScore,
         icon: Activity,
-        trend: metrics.averageLeadScore > 60 ? 'up' : 'neutral',
+        trend: scoreTrend,
         subtitle: `${metrics.leadScoring.hotLeads} leads calientes`
       }
     ];
