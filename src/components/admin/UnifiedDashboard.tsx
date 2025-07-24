@@ -2,7 +2,6 @@ import React, { memo, useMemo, useCallback, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -13,11 +12,12 @@ import {
   Brain,
   Settings
 } from 'lucide-react';
-import { useOptimizedMarketingHub } from '@/hooks/useOptimizedMarketingHub';
+import { useMarketingMetrics } from '@/features/dashboard/hooks/useMarketingMetrics';
+import { LoadingSkeleton, ErrorFallback } from '@/shared';
 import { devLogger } from '@/utils/devLogger';
 
 // Lazy loading para componentes pesados
-const MarketingOverviewTab = React.lazy(() => import('./dashboard/components/OptimizedMarketingOverviewTab'));
+const MarketingOverview = React.lazy(() => import('@/features/dashboard/components/MarketingOverview').then(module => ({ default: module.MarketingOverview })));
 const PerformanceDashboard = React.lazy(() => import('./dashboard/PerformanceDashboard'));
 const PredictiveAnalytics = React.lazy(() => import('./analytics/PredictiveAnalytics').then(module => ({ default: module.PredictiveAnalytics })));
 const AIInsightsPanel = React.lazy(() => import('./dashboard/AIInsightsPanel').then(module => ({ default: module.AIInsightsPanel })));
@@ -57,30 +57,11 @@ const KPICard = memo(({
 
 KPICard.displayName = 'KPICard';
 
-// Componente de loading memoizado
-const LoadingSkeleton = memo(() => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader>
-            <Skeleton className="h-4 w-3/4" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-1/2 mb-2" />
-            <Skeleton className="h-3 w-2/3" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  </div>
-));
-
-LoadingSkeleton.displayName = 'LoadingSkeleton';
+// Usar LoadingSkeleton de shared components
 
 // Componente principal memoizado
 const UnifiedDashboard = memo(() => {
-  const { metrics, isLoading, error } = useOptimizedMarketingHub();
+  const { metrics, isLoading, error } = useMarketingMetrics();
 
   // Memoizar los KPIs para evitar recalcular
   const kpis = useMemo(() => {
@@ -132,16 +113,11 @@ const UnifiedDashboard = memo(() => {
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center space-y-2">
-            <AlertTriangle className="h-8 w-8 mx-auto text-destructive" />
-            <p className="text-sm text-muted-foreground">
-              Error al cargar los datos del dashboard
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <ErrorFallback 
+        title="Error al cargar el dashboard"
+        message="Ha ocurrido un error al cargar los datos del dashboard."
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
@@ -184,14 +160,7 @@ const UnifiedDashboard = memo(() => {
 
         <TabsContent value="overview" className="space-y-4">
           <Suspense fallback={<LoadingSkeleton />}>
-            <MarketingOverviewTab 
-              metrics={metrics}
-              companies={[]}
-              events={[]}
-              summary={null}
-              alerts={[]}
-              markAlertAsRead={() => {}}
-            />
+            {metrics && <MarketingOverview metrics={metrics} />}
           </Suspense>
         </TabsContent>
 
