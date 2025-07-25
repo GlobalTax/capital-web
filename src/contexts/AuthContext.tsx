@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     try {
-      // Intentar obtener o crear registro de admin
+      // Only check for existing admin status - NO auto-creation
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, is_active')
@@ -42,20 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (error) {
-        logger.warn('Admin user not found, attempting to create', { userId: targetUserId }, { context: 'auth', component: 'AuthContext' });
-        // Si no existe, intentar crear uno
-        const { error: insertError } = await supabase
-          .from('admin_users')
-          .insert({
-            user_id: targetUserId,
-            role: 'super_admin',
-            is_active: true
-          });
-          
-        if (!insertError) {
-          setIsAdmin(true);
-          return true;
-        }
+        logger.warn('Error checking admin status', { userId: targetUserId, error: error.message }, { context: 'auth', component: 'AuthContext' });
         setIsAdmin(false);
         return false;
       }
