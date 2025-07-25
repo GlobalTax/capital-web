@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SidebarMenuItem as UISidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { SidebarItem } from './SidebarConfig';
+import { SidebarItem } from '@/features/admin/config/sidebar-config';
 import { SidebarBadge } from './SidebarBadge';
 
 interface SidebarMenuItemProps {

@@ -5,34 +5,35 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { supabaseApi } from '@/core/data/api/supabase-client';
 import { marketingMetricsService } from '@/core/services/marketing-metrics.service';
+import { performanceMonitor } from '@/shared/services/performance-monitor.service';
+import { QUERY_KEYS } from '@/shared/constants/query-keys';
+import { APP_CONFIG } from '@/core/constants/app-config';
 import { devLogger } from '@/utils/devLogger';
 import type { MarketingMetrics } from '@/core/types';
 
 export const useMarketingMetrics = () => {
   // Query unificada para obtener todos los datos
   const { data: rawData, isLoading, error } = useQuery({
-    queryKey: ['marketing_metrics_unified'],
-    queryFn: async () => {
-      devLogger.info('Fetching unified marketing data', undefined, 'marketing', 'useMarketingMetrics');
-      
-      const startTime = performance.now();
-      
-      try {
-        const data = await supabaseApi.getUnifiedMarketingData();
+    queryKey: [QUERY_KEYS.MARKETING_METRICS],
+    queryFn: performanceMonitor.measureFunction(
+      async () => {
+        devLogger.info('Fetching unified marketing data', undefined, 'marketing', 'useMarketingMetrics');
         
-        const endTime = performance.now();
-        devLogger.info(`Unified query completed in ${endTime - startTime}ms`, undefined, 'performance', 'useMarketingMetrics');
-        
-        return data;
-      } catch (error) {
-        devLogger.error('Error fetching unified marketing data', error, 'marketing', 'useMarketingMetrics');
-        throw error;
-      }
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+        try {
+          const data = await supabaseApi.getUnifiedMarketingData();
+          return data;
+        } catch (error) {
+          devLogger.error('Error fetching unified marketing data', error, 'marketing', 'useMarketingMetrics');
+          throw error;
+        }
+      },
+      'marketing-metrics-fetch',
+      { component: 'useMarketingMetrics' }
+    ),
+    staleTime: APP_CONFIG.PERFORMANCE.QUERY_STALE_TIME,
+    gcTime: APP_CONFIG.PERFORMANCE.QUERY_GC_TIME,
     refetchOnWindowFocus: false,
-    retry: 2
+    retry: APP_CONFIG.PERFORMANCE.QUERY_RETRY_COUNT
   });
 
   // Memoizar el cálculo de métricas

@@ -1,3 +1,6 @@
+// ============= ADMIN SIDEBAR CONFIGURATION =============
+// Configuración centralizada para la navegación del admin
+
 import { 
   LayoutDashboard, 
   Target, 

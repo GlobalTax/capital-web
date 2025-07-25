@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { SidebarSection as SidebarSectionType } from './SidebarConfig';
+import { SidebarSection as SidebarSectionType } from '@/features/admin/config/sidebar-config';
 import { SidebarMenuItem } from './SidebarMenuItem';
 
 interface SidebarSectionProps {

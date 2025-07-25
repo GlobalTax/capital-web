@@ -2,6 +2,7 @@
 // Servicio para calcular métricas de marketing
 
 import type { MarketingMetrics } from '@/core/types';
+import { APP_CONFIG } from '@/core/constants/app-config';
 
 interface RawMarketingData {
   contactLeads: any[];
@@ -32,7 +33,7 @@ export class MarketingMetricsService {
     ].filter(Boolean)).size;
 
     const totalLeads = contactLeads.length;
-    const qualifiedLeads = leadScores.filter(ls => (ls.total_score || 0) >= 70).length;
+    const qualifiedLeads = leadScores.filter(ls => (ls.total_score || 0) >= APP_CONFIG.LEAD_SCORING.QUALIFIED_LEAD_THRESHOLD).length;
     const leadConversionRate = totalVisitors > 0 ? (totalLeads / totalVisitors) * 100 : 0;
 
     const averageLeadScore = leadScores.length > 0 
@@ -75,9 +76,11 @@ export class MarketingMetricsService {
   }
 
   private calculateLeadScoringMetrics(leadScores: any[], leadBehavior: any[]) {
-    const hotLeads = leadScores.filter(s => (s.total_score || 0) >= 80).length;
-    const mediumLeads = leadScores.filter(s => (s.total_score || 0) >= 50 && (s.total_score || 0) < 80).length;
-    const coldLeads = leadScores.filter(s => (s.total_score || 0) < 50).length;
+    const { HOT_LEAD_THRESHOLD, MEDIUM_LEAD_THRESHOLD } = APP_CONFIG.LEAD_SCORING;
+    
+    const hotLeads = leadScores.filter(s => (s.total_score || 0) >= HOT_LEAD_THRESHOLD).length;
+    const mediumLeads = leadScores.filter(s => (s.total_score || 0) >= MEDIUM_LEAD_THRESHOLD && (s.total_score || 0) < HOT_LEAD_THRESHOLD).length;
+    const coldLeads = leadScores.filter(s => (s.total_score || 0) < MEDIUM_LEAD_THRESHOLD).length;
 
     const totalEvents = leadBehavior.length;
     const conversionEvents = leadBehavior.filter(e => 

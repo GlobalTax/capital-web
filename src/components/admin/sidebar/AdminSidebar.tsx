@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
-import { sidebarSections } from './SidebarConfig';
+import { sidebarSections } from '@/features/admin/config/sidebar-config';
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarFooter } from './SidebarFooter';
 import { SidebarSection } from './SidebarSection';
