@@ -14,7 +14,7 @@ import {
   Wifi
 } from 'lucide-react';
 import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
-import { useCachePersistence } from '@/hooks/useOptimizedQueries';
+import { useCachePersistence } from '@/shared/services/cache-persistence.service';
 
 const PerformanceDashboard = () => {
   const { 

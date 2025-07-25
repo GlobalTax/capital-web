@@ -2,9 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useOptimizedQuery } from './useOptimizedQueries';
+import { useOptimizedQuery } from '@/shared/services/optimized-queries.service';
 
-interface LeadScore {
+export interface LeadScore {
   id: string;
   visitor_id: string;
   company_domain?: string;
@@ -20,7 +20,7 @@ interface LeadScore {
   lead_status: string;
 }
 
-interface LeadAlert {
+export interface LeadAlert {
   id: string;
   lead_score_id: string;
   alert_type: string;

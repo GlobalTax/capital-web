@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRateLimit } from './useRateLimit';
-import { useOptimizedQuery, useSmartInvalidation } from './useOptimizedQueries';
+import { useOptimizedQuery, useSmartInvalidation } from '@/shared/services/optimized-queries.service';
 import { usePerformanceMonitoring } from './usePerformanceMonitoring';
 import { LeadEventData } from '@/types/leadEvents';
 import { DatabaseError, NetworkError, RateLimitError } from '@/types/errorTypes';
