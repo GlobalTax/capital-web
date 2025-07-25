@@ -1985,6 +1985,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bootstrap_first_admin: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
       calculate_lead_score: {
         Args: { p_visitor_id: string }
         Returns: number
