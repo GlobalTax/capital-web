@@ -124,6 +124,28 @@ export const useContactForm = () => {
         
         logger.info('✅ [ContactForm] Formulario enviado exitosamente', { leadId: data.id }, { context: 'form', component: 'useContactForm' });
 
+        // Enviar a segunda base de datos (herramienta externa)
+        try {
+          const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
+            body: {
+              type: 'contact',
+              data: {
+                ...data,
+                ip_address: ipData?.ip,
+                user_agent: navigator.userAgent,
+              }
+            }
+          });
+
+          if (syncError) {
+            logger.error('❌ [ContactForm] Error sincronizando con segunda DB', syncError, { context: 'form', component: 'useContactForm' });
+          } else {
+            logger.info('✅ [ContactForm] Lead sincronizado exitosamente', { syncResult }, { context: 'form', component: 'useContactForm' });
+          }
+        } catch (secondaryDbError) {
+          logger.error('❌ [ContactForm] Error enviando a segunda DB', secondaryDbError as Error, { context: 'form', component: 'useContactForm' });
+        }
+
         return data;
       }, 'contact-form');
 

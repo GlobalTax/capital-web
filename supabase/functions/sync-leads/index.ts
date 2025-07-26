@@ -7,7 +7,7 @@ const corsHeaders = {
 }
 
 interface LeadData {
-  type: 'contact' | 'collaborator' | 'lead_magnet_download';
+  type: 'contact' | 'collaborator' | 'lead_magnet_download' | 'company_valuation';
   data: any;
 }
 
@@ -78,6 +78,34 @@ serve(async (req) => {
         utm_source: data.utm_source,
         utm_medium: data.utm_medium,
         utm_campaign: data.utm_campaign,
+      };
+    } else if (type === 'company_valuation') {
+      leadData = {
+        lead_type: 'company_valuation',
+        full_name: data.contact_name,
+        email: data.email,
+        phone: data.phone,
+        company: data.company_name,
+        cif: data.cif,
+        industry: data.industry,
+        employee_range: data.employee_range,
+        location: data.location,
+        revenue: data.revenue,
+        ebitda: data.ebitda,
+        final_valuation: data.final_valuation,
+        ebitda_multiple_used: data.ebitda_multiple_used,
+        valuation_range_min: data.valuation_range_min,
+        valuation_range_max: data.valuation_range_max,
+        years_of_operation: data.years_of_operation,
+        net_profit_margin: data.net_profit_margin,
+        growth_rate: data.growth_rate,
+        ownership_participation: data.ownership_participation,
+        competitive_advantage: data.competitive_advantage,
+        status: 'new',
+        source: 'capittal_valuations',
+        created_at: new Date().toISOString(),
+        ip_address: data.ip_address,
+        user_agent: data.user_agent,
       };
     }
 

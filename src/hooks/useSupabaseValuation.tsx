@@ -99,6 +99,24 @@ export const useSupabaseValuation = () => {
 
       console.log('✅ Valoración guardada exitosamente en Supabase:', data);
       
+      // Enviar a segunda base de datos (herramienta externa)
+      try {
+        const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
+          body: {
+            type: 'company_valuation',
+            data: insertData
+          }
+        });
+
+        if (syncError) {
+          console.error('Error sincronizando valoración con segunda DB:', syncError);
+        } else {
+          console.log('Valoración sincronizada exitosamente:', syncResult);
+        }
+      } catch (secondaryDbError) {
+        console.error('Error enviando valoración a segunda DB:', secondaryDbError);
+      }
+      
       toast({
         title: "✅ Datos guardados",
         description: "La valoración se ha guardado correctamente en la base de datos.",
