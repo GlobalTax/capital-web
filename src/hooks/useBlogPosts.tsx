@@ -1,17 +1,20 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BlogPost } from '@/types/blog';
 import { useToast } from '@/hooks/use-toast';
+import { QUERY_KEYS } from '@/shared/constants/query-keys';
+import { useOptimizedQuery } from '@/shared/services/optimized-queries.service';
 
-export const useBlogPosts = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const useBlogPosts = (publishedOnly: boolean = false) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchPosts = async (publishedOnly = false) => {
-    try {
-      setIsLoading(true);
+  // Query optimizada para obtener todos los posts
+  const { data: posts = [] as BlogPost[], isLoading, error } = useOptimizedQuery(
+    [QUERY_KEYS.BLOG_POSTS, publishedOnly.toString()],
+    async () => {
       let query = supabase.from('blog_posts').select('*');
       
       if (publishedOnly) {
@@ -22,19 +25,19 @@ export const useBlogPosts = () => {
 
       if (error) throw error;
       
-      setPosts((data as unknown as BlogPost[]) || []);
-    } catch (error) {
-      console.error('Error fetching blog posts:', error);
-      toast({
-        title: "Error",
-        description: "Error al cargar los posts del blog.",
-        variant: "destructive",
-      });
-      setPosts([]);
-    } finally {
-      setIsLoading(false);
+      return (data as unknown as BlogPost[]) || [];
+    },
+    'important',
+    {
+      onError: (error: Error) => {
+        toast({
+          title: "Error",
+          description: "Error al cargar los posts del blog.",
+          variant: "destructive",
+        });
+      }
     }
-  };
+  );
 
   const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     try {
@@ -122,7 +125,7 @@ export const useBlogPosts = () => {
         description: "Post eliminado correctamente.",
       });
 
-      fetchPosts();
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BLOG_POSTS] });
     } catch (error) {
       console.error('Error deleting blog post:', error);
       toast({
@@ -133,17 +136,15 @@ export const useBlogPosts = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
   return {
     posts,
     isLoading,
-    fetchPosts,
+    error,
     getPostBySlug,
     createPost,
     updatePost,
     deletePost,
+    fetchPosts: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BLOG_POSTS] }),
+    refetch: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BLOG_POSTS] })
   };
 };
