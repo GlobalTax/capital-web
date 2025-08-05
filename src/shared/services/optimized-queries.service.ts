@@ -78,6 +78,13 @@ export const useSmartInvalidation = () => {
         await Promise.all([
           queryClient.prefetchQuery({ queryKey: ['hotLeads'] }),
           queryClient.prefetchQuery({ queryKey: ['leadAlerts'] }),
+          queryClient.prefetchQuery({ queryKey: ['blog_posts'] }),
+        ]);
+        break;
+      case 'blog':
+        await Promise.all([
+          queryClient.prefetchQuery({ queryKey: ['blog_analytics'] }),
+          queryClient.prefetchQuery({ queryKey: ['blog_post_metrics'] }),
         ]);
         break;
     }

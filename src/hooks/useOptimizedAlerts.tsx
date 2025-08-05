@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 import { DatabaseError, NetworkError, RateLimitError } from '@/types/errorTypes';
+import { useOptimizedQuery, useSmartInvalidation } from '@/shared/services/optimized-queries.service';
+import { QUERY_KEYS } from '@/shared/constants/query-keys';
 
 interface Alert {
   id: string;
@@ -26,39 +28,26 @@ interface AlertsParams {
   unreadOnly?: boolean;
 }
 
-const CACHE_DURATION = 30000; // 30 seconds
-
 export const useOptimizedAlerts = (params: AlertsParams = {}) => {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastFetch, setLastFetch] = useState<number>(0);
-
+  const { invalidateRelatedQueries } = useSmartInvalidation();
   const { page = 0, pageSize = 20, priority, unreadOnly } = params;
 
-  // Memoized cache key for intelligent caching
-  const cacheKey = useMemo(() => 
-    `alerts_${page}_${pageSize}_${priority || 'all'}_${unreadOnly ? 'unread' : 'all'}`,
-    [page, pageSize, priority, unreadOnly]
-  );
+  // Memoized query key para React Query
+  const queryKey = useMemo(() => [
+    QUERY_KEYS.LEAD_ALERTS,
+    page,
+    pageSize,
+    priority || 'all',
+    unreadOnly ? 'unread' : 'all'
+  ], [page, pageSize, priority, unreadOnly]);
 
-  const fetchAlerts = useCallback(async (forceRefresh = false) => {
-    const now = Date.now();
-    
-    // Intelligent caching - skip if recent data exists
-    if (!forceRefresh && now - lastFetch < CACHE_DURATION) {
-      logger.debug('Using cached alerts data', { cacheKey }, {
-        context: 'performance',
-        component: 'useOptimizedAlerts'
-      });
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
+  // React Query optimizado para fetch de alertas
+  const { data: alertsData, isLoading, error } = useOptimizedQuery<{
+    alerts: Alert[];
+    totalCount: number;
+  }>(
+    queryKey,
+    async () => {
       let query = supabase
         .from('lead_alerts')
         .select(`
@@ -90,46 +79,19 @@ export const useOptimizedAlerts = (params: AlertsParams = {}) => {
         });
       }
 
-      setAlerts(data || []);
-      setTotalCount(count || 0);
-      setLastFetch(now);
-
       logger.info('Alerts fetched successfully', {
         alertCount: data?.length || 0,
         totalCount: count || 0,
-        page,
-        cacheKey
+        page
       }, { context: 'marketing', component: 'useOptimizedAlerts' });
 
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error fetching alerts');
-      
-      if (error.message.includes('network') || error.message.includes('fetch')) {
-        const networkError = new NetworkError('Failed to fetch alerts data', undefined, { cacheKey });
-        logger.error('Network error fetching alerts', networkError, {
-          context: 'marketing',
-          component: 'useOptimizedAlerts'
-        });
-        setError('Error de conexión al cargar alertas');
-      } else if (error.message.includes('rate') || error.message.includes('limit')) {
-        const rateLimitError = new RateLimitError('Alerts API rate limit exceeded');
-        logger.warn('Rate limit hit for alerts API', rateLimitError, {
-          context: 'marketing',
-          component: 'useOptimizedAlerts'
-        });
-        setError('Demasiadas solicitudes. Inténtalo en unos minutos.');
-      } else {
-        logger.error('Error fetching alerts', error, {
-          context: 'marketing',
-          component: 'useOptimizedAlerts',
-          data: { cacheKey }
-        });
-        setError('Error al cargar las alertas');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, pageSize, priority, unreadOnly, cacheKey]);
+      return {
+        alerts: data || [],
+        totalCount: count || 0
+      };
+    },
+    'critical' // Datos críticos que cambian frecuentemente
+  );
 
   const markAsRead = useCallback(async (alertId: string) => {
     try {
@@ -142,10 +104,8 @@ export const useOptimizedAlerts = (params: AlertsParams = {}) => {
         throw new DatabaseError('Failed to mark alert as read', 'UPDATE', { alertId });
       }
 
-      // Optimistic update
-      setAlerts(prev => prev.map(alert => 
-        alert.id === alertId ? { ...alert, is_read: true } : alert
-      ));
+      // Invalidar queries relacionadas después de la actualización
+      invalidateRelatedQueries('alerts');
 
       logger.info('Alert marked as read', { alertId }, {
         context: 'marketing',
@@ -164,7 +124,8 @@ export const useOptimizedAlerts = (params: AlertsParams = {}) => {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const unreadIds = alerts.filter(alert => !alert.is_read).map(alert => alert.id);
+      const currentAlerts = alertsData?.alerts || [];
+      const unreadIds = currentAlerts.filter(alert => !alert.is_read).map(alert => alert.id);
       
       if (unreadIds.length === 0) return;
 
@@ -179,8 +140,8 @@ export const useOptimizedAlerts = (params: AlertsParams = {}) => {
         });
       }
 
-      // Optimistic update
-      setAlerts(prev => prev.map(alert => ({ ...alert, is_read: true })));
+      // Invalidar queries relacionadas después de la actualización
+      invalidateRelatedQueries('alerts');
 
       logger.info('All alerts marked as read', { unreadCount: unreadIds.length }, {
         context: 'marketing',
@@ -194,35 +155,31 @@ export const useOptimizedAlerts = (params: AlertsParams = {}) => {
       });
       throw error;
     }
-  }, [alerts]);
+  }, [alertsData, invalidateRelatedQueries]);
 
   // Performance monitoring
   const getPerformanceMetrics = useCallback(() => {
-    const unreadCount = alerts.filter(alert => !alert.is_read).length;
-    const criticalCount = alerts.filter(alert => alert.priority === 'critical').length;
-    const cacheAge = Date.now() - lastFetch;
+    const currentAlerts = alertsData?.alerts || [];
+    const unreadCount = currentAlerts.filter(alert => !alert.is_read).length;
+    const criticalCount = currentAlerts.filter(alert => alert.priority === 'critical').length;
     
     return {
-      totalAlerts: alerts.length,
+      totalAlerts: currentAlerts.length,
       unreadCount,
       criticalCount,
-      cacheAge,
-      isCached: cacheAge < CACHE_DURATION
+      cacheAge: 0, // React Query maneja el cache automáticamente
+      isCached: true
     };
-  }, [alerts, lastFetch]);
-
-  useEffect(() => {
-    fetchAlerts();
-  }, [fetchAlerts]);
+  }, [alertsData]);
 
   return {
-    alerts,
-    totalCount,
+    alerts: alertsData?.alerts || [],
+    totalCount: alertsData?.totalCount || 0,
     isLoading,
-    error,
+    error: error?.message || null,
     markAsRead,
     markAllAsRead,
-    refetch: () => fetchAlerts(true),
+    refetch: () => invalidateRelatedQueries('alerts'),
     getPerformanceMetrics
   };
 };

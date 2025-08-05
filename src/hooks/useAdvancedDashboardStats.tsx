@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import type { AdvancedDashboardStats, DateRange } from '@/types/dashboard';
@@ -17,28 +17,38 @@ import {
   calculateAdvancedMetrics,
   generateSampleMetrics
 } from '@/utils/analytics';
+import { useOptimizedQuery, useSmartInvalidation, QUERY_CONFIGS } from '@/shared/services/optimized-queries.service';
+import { QUERY_KEYS } from '@/shared/constants/query-keys';
 
 export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
-  const [stats, setStats] = useState<AdvancedDashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({
+  const { invalidateRelatedQueries } = useSmartInvalidation();
+  
+  // Memoized date range
+  const dateRange = useMemo(() => ({
     start: startOfMonth(new Date()),
     end: new Date()
-  });
+  }), []);
 
   // Usar filtros si se proporcionan, sino usar dateRange interno
   const effectiveDateRange = filters?.dateRange || dateRange;
 
-  // Datos adicionales para gráficos
-  const [historicalRevenueData, setHistoricalRevenueData] = useState<unknown[]>([]);
-  const [historicalContentData, setHistoricalContentData] = useState<unknown[]>([]);
+  // Memoized query key para React Query  
+  const queryKey = useMemo(() => [
+    QUERY_KEYS.ADVANCED_DASHBOARD_STATS,
+    effectiveDateRange.start.toISOString(),
+    effectiveDateRange.end.toISOString(),
+    filters?.sectors?.join(',') || 'all',
+    filters?.searchQuery || 'all'
+  ], [effectiveDateRange, filters?.sectors, filters?.searchQuery]);
 
-  const fetchAdvancedStats = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
+  // React Query optimizado para el fetch principal
+  const { data: statsData, isLoading, error } = useOptimizedQuery<{
+    stats: AdvancedDashboardStats;
+    historicalRevenueData: unknown[];
+    historicalContentData: unknown[];
+  }>(
+    queryKey,
+    async () => {
       logger.debug('Starting dashboard stats fetch', {
         dateRange: effectiveDateRange,
         sectors: filters?.sectors,
@@ -69,10 +79,6 @@ export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
         topPostsCount: topPosts.length
       }, { context: 'system', component: 'useAdvancedDashboardStats' });
 
-      // Set historical data for charts
-      setHistoricalRevenueData(historicalRevenue);
-      setHistoricalContentData(historicalContent);
-
       // Calculate advanced metrics
       const calculatedStats = calculateAdvancedMetrics(revenueData, contentData, systemData);
       
@@ -98,56 +104,36 @@ export const useAdvancedDashboardStats = (filters?: DashboardFilters) => {
         totalLeads: calculatedStats.totalLeads,
         metricsCount: Object.keys(calculatedStats).length
       }, { context: 'system', component: 'useAdvancedDashboardStats' });
-      setStats(calculatedStats);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Error desconocido');
-      if (error.message.includes('network') || error.message.includes('fetch')) {
-        const networkError = new NetworkError('Failed to fetch dashboard data', undefined, { filters });
-        logger.error('Network error in dashboard fetch', networkError, { context: 'system', component: 'useAdvancedDashboardStats' });
-      } else if (error.message.includes('database') || error.message.includes('supabase')) {
-        const dbError = new DatabaseError('Database error in dashboard fetch', 'SELECT', { filters });
-        logger.error('Database error in dashboard fetch', dbError, { context: 'system', component: 'useAdvancedDashboardStats' });
-      } else {
-        logger.error('Unknown error in dashboard fetch', error, { context: 'system', component: 'useAdvancedDashboardStats' });
-      }
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [effectiveDateRange, filters]);
+      
+      return {
+        stats: calculatedStats,
+        historicalRevenueData: historicalRevenue,
+        historicalContentData: historicalContent
+      };
+    },
+    'important' // Datos importantes que cambian moderadamente
+  );
 
   const generateSampleData = useCallback(async () => {
     try {
       await generateSampleMetrics();
-      await fetchAdvancedStats();
+      invalidateRelatedQueries('dashboard');
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Error generando datos de ejemplo');
       logger.error('Failed to generate sample data', error, { context: 'system', component: 'useAdvancedDashboardStats' });
-      setError('Error generando datos de ejemplo');
+      throw error;
     }
-  }, [fetchAdvancedStats]);
-
-  const updateDateRange = useCallback((newDateRange: DateRange) => {
-    setDateRange(newDateRange);
-  }, []);
-
-  const refetch = useCallback(() => {
-    fetchAdvancedStats();
-  }, [fetchAdvancedStats]);
-
-  useEffect(() => {
-    fetchAdvancedStats();
-  }, [fetchAdvancedStats]);
+  }, [invalidateRelatedQueries]);
 
   return {
-    stats,
+    stats: statsData?.stats || null,
     isLoading,
-    error,
+    error: error?.message || null,
     dateRange: effectiveDateRange,
-    historicalRevenueData,
-    historicalContentData,
-    updateDateRange,
-    refetch,
+    historicalRevenueData: statsData?.historicalRevenueData || [],
+    historicalContentData: statsData?.historicalContentData || [],
+    updateDateRange: () => {}, // No longer needed with React Query
+    refetch: () => invalidateRelatedQueries('dashboard'),
     generateSampleData
   };
 };

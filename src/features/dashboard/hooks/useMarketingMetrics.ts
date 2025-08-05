@@ -28,6 +28,7 @@ export const useMarketingMetrics = () => {
         }
       },
       'marketing-metrics-fetch',
+      'api',
       { component: 'useMarketingMetrics' }
     ),
     staleTime: APP_CONFIG.PERFORMANCE.QUERY_STALE_TIME,

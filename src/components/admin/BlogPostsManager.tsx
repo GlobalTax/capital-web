@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import { BlogPost, BlogPostFormData } from '@/types/blog';
 import { useToast } from '@/hooks/use-toast';
 import AIContentGenerator from './AIContentGenerator';
 
-const BlogPostsManager = () => {
+const BlogPostsManager = memo(() => {
   const { posts, isLoading, createPost, updatePost, deletePost, fetchPosts } = useBlogPosts();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
@@ -560,6 +560,8 @@ const BlogPostsManager = () => {
       />
     </div>
   );
-};
+});
+
+BlogPostsManager.displayName = 'BlogPostsManager';
 
 export default BlogPostsManager;
