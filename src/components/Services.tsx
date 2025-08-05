@@ -62,10 +62,10 @@ const Services = () => {
       <section id="servicios" className="py-20 bg-background">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-light text-foreground mb-6 tracking-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground mb-6 tracking-tight">
               Nuestros Servicios
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-normal">
               Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
             </p>
           </div>
@@ -77,12 +77,12 @@ const Services = () => {
                 <div key={index} className="group">
                   <div className="bg-card border border-border rounded-lg p-8 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
                     {/* Title */}
-                    <h3 className="text-xl font-light text-foreground mb-4 tracking-tight">
+                    <h3 className="text-xl font-normal text-foreground mb-4 tracking-tight">
                       {service.title}
                     </h3>
                     
                     {/* Description */}
-                    <p className="text-muted-foreground mb-6 leading-relaxed text-base font-light">
+                    <p className="text-muted-foreground mb-6 leading-relaxed text-base font-normal">
                       {service.description}
                     </p>
 
@@ -91,13 +91,13 @@ const Services = () => {
                       {service.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center">
                           <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                          <span className="text-muted-foreground text-sm font-light">{feature}</span>
+                          <span className="text-muted-foreground text-sm font-normal">{feature}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Button */}
-                    <Button variant="outline" className="w-full text-sm py-3 font-light">
+                    <Button variant="outline" className="w-full text-sm py-3 font-normal">
                       Más información
                     </Button>
                   </div>
@@ -108,7 +108,7 @@ const Services = () => {
 
           {/* Complementary Services - Legal Style */}
           <div>
-            <h3 className="text-xl font-light text-foreground text-center mb-8 tracking-tight">
+            <h3 className="text-xl font-normal text-foreground text-center mb-8 tracking-tight">
               Servicios Complementarios
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -118,7 +118,7 @@ const Services = () => {
                     <h3 className="text-base font-medium text-foreground mb-3">
                       {service.title}
                     </h3>
-                    <p className="text-muted-foreground leading-relaxed text-sm font-light">
+                    <p className="text-muted-foreground leading-relaxed text-sm font-normal">
                       {service.description}
                     </p>
                   </CardContent>

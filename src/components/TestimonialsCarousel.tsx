@@ -71,10 +71,10 @@ const TestimonialsCarousel = () => {
     <section className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-light text-foreground mb-6 tracking-tight">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground mb-6 tracking-tight">
             Lo que Dicen Nuestros Clientes
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-normal">
             La confianza de nuestros clientes es nuestro mayor activo. Descubra por qué 
             las empresas más exitosas eligen Capittal como su partner estratégico.
           </p>
@@ -96,7 +96,7 @@ const TestimonialsCarousel = () => {
                       <CardContent className="p-6 flex flex-col justify-between h-full">
                         <div>
                           <Quote className="w-6 h-6 text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground mb-6 leading-relaxed italic text-base font-light">
+                          <p className="text-muted-foreground mb-6 leading-relaxed italic text-base font-normal">
                             "{testimonial.quote}"
                           </p>
                         </div>
@@ -107,7 +107,7 @@ const TestimonialsCarousel = () => {
                               <p className="font-medium text-foreground text-base">
                                 {testimonial.client_name}
                               </p>
-                              <p className="text-sm text-muted-foreground font-light">
+                              <p className="text-sm text-muted-foreground font-normal">
                                 {testimonial.client_company}
                               </p>
                             </div>

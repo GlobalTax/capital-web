@@ -143,10 +143,10 @@ const Contact = () => {
       <div className="container grid w-full grid-cols-1 gap-x-32 overflow-hidden lg:grid-cols-2 max-w-6xl mx-auto px-6 lg:px-8">
         <div className="w-full pb-10 md:space-y-10 md:pb-0">
           <div className="space-y-4 md:max-w-[40rem]">
-            <h1 className="text-4xl font-light text-foreground lg:text-5xl tracking-tight">
+            <h1 className="text-4xl font-normal text-foreground lg:text-5xl tracking-tight">
               Solicita tu Consulta Gratuita
             </h1>
-            <div className="text-muted-foreground md:text-base lg:text-lg lg:leading-7 font-light">
+            <div className="text-muted-foreground md:text-base lg:text-lg lg:leading-7 font-normal">
               ¿Está considerando vender su empresa o necesita una valoración profesional? 
               Nuestros expertos en M&A están listos para ayudarle a maximizar el valor de su negocio.
             </div>
@@ -171,19 +171,19 @@ const Contact = () => {
                   <p className="text-sm font-medium text-foreground">Lo que puedes esperar:</p>
                   <div className="flex items-center space-x-2.5">
                     <Check className="size-5 shrink-0 text-primary" />
-                    <p className="text-sm text-muted-foreground font-light">
+                    <p className="text-sm text-muted-foreground font-normal">
                       Valoración preliminar gratuita de tu empresa
                     </p>
                   </div>
                   <div className="flex items-center space-x-2.5">
                     <Check className="size-5 shrink-0 text-primary" />
-                    <p className="text-sm text-muted-foreground font-light">
+                    <p className="text-sm text-muted-foreground font-normal">
                       Estrategia personalizada para maximizar valor
                     </p>
                   </div>
                   <div className="flex items-center space-x-2.5">
                     <Check className="size-5 shrink-0 text-primary" />
-                    <p className="text-sm text-muted-foreground font-light">
+                    <p className="text-sm text-muted-foreground font-normal">
                       Asesoramiento experto sin compromiso
                     </p>
                   </div>

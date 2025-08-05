@@ -44,11 +44,11 @@ const WhyChooseCapittal = () => {
             La Diferencia Capittal
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-light text-foreground mb-6 tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-normal text-foreground mb-6 tracking-tight">
             Por Qué Elegir Capittal
           </h2>
           
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-normal">
             No somos una consultora generalista. Somos especialistas en M&A que vivimos 
             y respiramos compraventa de empresas todos los días.
           </p>
@@ -68,11 +68,11 @@ const WhyChooseCapittal = () => {
                 </div>
               </div>
               
-              <h3 className="text-xl font-light text-foreground mb-4 tracking-tight">
+              <h3 className="text-xl font-normal text-foreground mb-4 tracking-tight">
                 {reason.title}
               </h3>
               
-              <p className="text-muted-foreground leading-relaxed font-light">
+              <p className="text-muted-foreground leading-relaxed font-normal">
                 {reason.description}
               </p>
             </div>

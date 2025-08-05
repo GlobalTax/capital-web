@@ -83,10 +83,10 @@ const MarketInsights = () => {
   return <section className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-light text-foreground mb-6 tracking-tight">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground mb-6 tracking-tight">
             Capittal Market
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed font-light">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed font-normal">
             Accede a análisis de mercado en tiempo real y datos exclusivos del sector M&A 
             con nuestro sistema propietario de inteligencia de mercado.
           </p>
@@ -106,10 +106,10 @@ const MarketInsights = () => {
                 </CardContent>
               </Card>) : insights.map((insight, index) => <Card key={insight.id} className="bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ease-out text-center">
                 <CardContent className="p-6">
-                  <div className="text-2xl font-light text-foreground mb-1">
+                  <div className="text-2xl font-medium text-foreground mb-1">
                     {insight.metric_value}
                   </div>
-                  <div className="text-muted-foreground text-sm mb-2 font-light">
+                  <div className="text-muted-foreground text-sm mb-2 font-normal">
                     {insight.metric_label}
                   </div>
                   <div className="text-sm font-medium text-success flex items-center justify-center">
@@ -122,16 +122,16 @@ const MarketInsights = () => {
 
         {/* Market Intelligence CTA */}
         <div className="bg-card border border-border rounded-lg shadow-sm p-8 text-center">
-          <h3 className="text-2xl font-light text-foreground mb-4 tracking-tight">
+          <h3 className="text-2xl font-normal text-foreground mb-4 tracking-tight">
             Inteligencia de Mercado Capittal
           </h3>
-          <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto leading-relaxed font-light">
+          <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto leading-relaxed font-normal">
             Nuestro sistema propietario ofrece acceso exclusivo a valoraciones de mercado, 
             análisis de transacciones comparables y datos de inteligencia M&A actualizados en tiempo real.
           </p>
           
           <div className="flex justify-center mb-8">
-            <Button variant="outline" className="px-6 py-3 text-lg font-light" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
+            <Button variant="outline" className="px-6 py-3 text-lg font-normal" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
               Acceder a Capittal Market
             </Button>
           </div>
@@ -142,7 +142,7 @@ const MarketInsights = () => {
               <BarChart3 className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-medium text-foreground mb-2 text-base">Valoraciones en Tiempo Real</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed font-light">
+                <p className="text-muted-foreground text-sm leading-relaxed font-normal">
                   Metodologías DCF, múltiplos y transacciones comparables actualizadas diariamente.
                 </p>
               </div>
@@ -151,7 +151,7 @@ const MarketInsights = () => {
               <Database className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-medium text-foreground mb-2 text-base">Base de Datos M&A</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed font-light">
+                <p className="text-muted-foreground text-sm leading-relaxed font-normal">
                   Acceso a más de 10,000 transacciones históricas con detalles financieros.
                 </p>
               </div>
@@ -160,7 +160,7 @@ const MarketInsights = () => {
               <TrendingUp className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-medium text-foreground mb-2 text-base">Analytics Avanzados</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed font-light">
+                <p className="text-muted-foreground text-sm leading-relaxed font-normal">
                   Dashboards interactivos y reportes personalizados para decisiones informadas.
                 </p>
               </div>

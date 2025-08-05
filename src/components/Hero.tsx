@@ -17,11 +17,11 @@ const Hero = () => {
                   Líderes en M&A desde 2008
                 </div>
                 
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-light text-foreground mb-8 leading-tight tracking-tight">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-foreground mb-8 leading-tight tracking-tight">
                   Especialistas en compraventa de empresas
                 </h1>
                 
-                <p className="text-lg text-muted-foreground mb-12 leading-relaxed font-light max-w-xl">
+                <p className="text-lg text-muted-foreground mb-12 leading-relaxed font-normal max-w-xl">
                   Especialistas en compraventa de empresas con más de 15 años de experiencia. 
                   Te acompañamos en cada paso para lograr el mejor precio.
                 </p>
@@ -30,16 +30,16 @@ const Hero = () => {
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-8 mb-12 py-8 border-t border-b border-border">
                 <div className="text-center">
-                  <div className="text-2xl font-light text-foreground mb-2">€1.0B+</div>
-                  <div className="text-sm text-muted-foreground font-light">Valor Transaccional</div>
+                  <div className="text-2xl font-medium text-foreground mb-2">€1.0B+</div>
+                  <div className="text-sm text-muted-foreground font-normal">Valor Transaccional</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-light text-foreground mb-2">200+</div>
-                  <div className="text-sm text-muted-foreground font-light">Operaciones</div>
+                  <div className="text-2xl font-medium text-foreground mb-2">200+</div>
+                  <div className="text-sm text-muted-foreground font-normal">Operaciones</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-light text-foreground mb-2">95%</div>
-                  <div className="text-sm text-muted-foreground font-light">Éxito</div>
+                  <div className="text-2xl font-medium text-foreground mb-2">95%</div>
+                  <div className="text-sm text-muted-foreground font-normal">Éxito</div>
                 </div>
               </div>
 
@@ -64,8 +64,8 @@ const Hero = () => {
             <div className="lg:col-span-1">
               <div className="bg-card border border-border rounded-lg p-8 shadow-sm">
                 <div className="mb-6">
-                  <h3 className="text-xl font-light text-foreground mb-2">Resumen de Mercado</h3>
-                  <p className="text-muted-foreground text-sm font-light">Análisis profesional actualizado</p>
+                  <h3 className="text-xl font-normal text-foreground mb-2">Resumen de Mercado</h3>
+                  <p className="text-muted-foreground text-sm font-normal">Análisis profesional actualizado</p>
                 </div>
                 
                 {/* Professional Data */}
@@ -73,7 +73,7 @@ const Hero = () => {
                   <div className="flex items-center justify-between py-4 border-b border-border">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      <span className="font-light text-foreground">Tech Startup</span>
+                      <span className="font-normal text-foreground">Tech Startup</span>
                     </div>
                     <div className="text-right">
                       <div className="font-medium text-foreground">€15M</div>
@@ -84,7 +84,7 @@ const Hero = () => {
                   <div className="flex items-center justify-between py-4 border-b border-border">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-legal-accent rounded-full"></div>
-                      <span className="font-light text-foreground">Industrial Co.</span>
+                      <span className="font-normal text-foreground">Industrial Co.</span>
                     </div>
                     <div className="text-right">
                       <div className="font-medium text-foreground">€45M</div>
@@ -95,7 +95,7 @@ const Hero = () => {
                   <div className="flex items-center justify-between py-4 border-b border-border">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      <span className="font-light text-foreground">Retail Chain</span>
+                      <span className="font-normal text-foreground">Retail Chain</span>
                     </div>
                     <div className="text-right">
                       <div className="font-medium text-foreground">€32M</div>
@@ -106,7 +106,7 @@ const Hero = () => {
                 
                 <div className="mt-8 pt-6 border-t border-border">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground font-light">Transacciones Q4</span>
+                    <span className="text-muted-foreground font-normal">Transacciones Q4</span>
                     <span className="font-medium text-foreground">47 activas</span>
                   </div>
                 </div>
