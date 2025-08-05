@@ -13,6 +13,7 @@ import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/utils/bundleAnalysis';
 import { useEffect } from 'react';
+import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
@@ -264,6 +265,13 @@ function AppContent() {
 }
 
 function App() {
+  // Navegación predictiva
+  usePredictiveNavigation({
+    enabled: true,
+    confidenceThreshold: 0.6,
+    maxPredictions: 3
+  });
+
   // Optimizaciones de bundle en desarrollo
   if (process.env.NODE_ENV === 'development') {
     logBundleSize();
@@ -288,6 +296,11 @@ function App() {
         // Initialize performance optimizer
         const { performanceOptimizer } = await import('./utils/performanceOptimizer');
         performanceOptimizer.init();
+
+        // Initialize resource hints
+        const { resourceHints } = await import('./utils/resourceHints');
+        resourceHints.adaptivePreload();
+        resourceHints.setupIntelligentPrefetch();
 
         // Initialize performance analytics
         const { performanceAnalytics } = await import('./utils/performanceAnalytics');
