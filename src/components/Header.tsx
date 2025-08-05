@@ -19,9 +19,6 @@ const Header = () => {
           <div className="flex-shrink-0">
             <Link to="/" className="flex flex-col">
               <span className="text-2xl font-bold text-black">Capittal</span>
-              <span className="text-xs text-muted-foreground tracking-wide hidden sm:block">
-                GRUPO CAPITTAL + NAVARRO
-              </span>
             </Link>
           </div>
 

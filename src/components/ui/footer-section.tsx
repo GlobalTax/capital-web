@@ -14,9 +14,6 @@ export const Footerdemo = () => {
               <Link to="/" className="text-2xl font-bold text-white">
                 Capittal
               </Link>
-              <p className="text-xs text-gray-400 mt-1 tracking-wide">
-                GRUPO CAPITTAL + NAVARRO
-              </p>
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
               Expertos en M&A y valoración de empresas. Junto con Navarro Legal, ofrecemos un servicio integral desde la originación hasta el cierre de la operación.
