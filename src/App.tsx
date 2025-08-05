@@ -177,6 +177,13 @@ const queryClient = new QueryClient({
 function AppContent() {
   const { isOnline } = useNetworkStatus();
   const { preferences } = useAccessibility();
+  
+  // Navegación predictiva (dentro del Router context)
+  usePredictiveNavigation({
+    enabled: true,
+    confidenceThreshold: 0.6,
+    maxPredictions: 3
+  });
 
   if (!isOnline) {
     return <OfflineState onRetry={() => window.location.reload()} />;
@@ -265,13 +272,6 @@ function AppContent() {
 }
 
 function App() {
-  // Navegación predictiva
-  usePredictiveNavigation({
-    enabled: true,
-    confidenceThreshold: 0.6,
-    maxPredictions: 3
-  });
-
   // Optimizaciones de bundle en desarrollo
   if (process.env.NODE_ENV === 'development') {
     logBundleSize();
