@@ -45,11 +45,13 @@ export class SupabaseApi {
       .order('total_score', { ascending: false })
       .limit(limit);
     
-    return await queryOptimizer.executeOptimizedQuery(
+    const result = await queryOptimizer.executeOptimizedQuery(
       queryBuilder,
       'lead_scores',
       'SELECT'
     );
+    
+    return Array.isArray(result) ? result : [];
   }
 
   // ============= COMPANY VALUATIONS =============
@@ -60,11 +62,13 @@ export class SupabaseApi {
       .order('created_at', { ascending: false })
       .limit(limit);
     
-    return await queryOptimizer.executeOptimizedQuery(
+    const result = await queryOptimizer.executeOptimizedQuery(
       queryBuilder,
       'company_valuations',
       'SELECT'
     );
+    
+    return Array.isArray(result) ? result : [];
   }
 
   // ============= BLOG ANALYTICS =============
@@ -75,11 +79,13 @@ export class SupabaseApi {
       .order('viewed_at', { ascending: false })
       .limit(limit);
     
-    return await queryOptimizer.executeOptimizedQuery(
+    const result = await queryOptimizer.executeOptimizedQuery(
       queryBuilder,
       'blog_analytics',
       'SELECT'
     );
+    
+    return Array.isArray(result) ? result : [];
   }
 
   // ============= BLOG POST METRICS =============
@@ -90,11 +96,13 @@ export class SupabaseApi {
       .order('total_views', { ascending: false })
       .limit(limit);
     
-    return await queryOptimizer.executeOptimizedQuery(
+    const result = await queryOptimizer.executeOptimizedQuery(
       queryBuilder,
       'blog_post_metrics',
       'SELECT'
     );
+    
+    return Array.isArray(result) ? result : [];
   }
 
   // ============= LEAD BEHAVIOR EVENTS =============
@@ -105,11 +113,13 @@ export class SupabaseApi {
       .order('created_at', { ascending: false })
       .limit(limit);
     
-    return await queryOptimizer.executeOptimizedQuery(
+    const result = await queryOptimizer.executeOptimizedQuery(
       queryBuilder,
       'lead_behavior_events',
       'SELECT'
     );
+    
+    return Array.isArray(result) ? result : [];
   }
 
   // ============= UNIFIED QUERY =============

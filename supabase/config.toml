@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.database-health-check]
 verify_jwt = false
+
+[functions.security-events]
+verify_jwt = false
