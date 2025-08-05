@@ -14,6 +14,7 @@ import Team from '@/components/Team';
 import BlogSection from '@/components/BlogSection';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import OurGroup from '@/components/OurGroup';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 
@@ -29,6 +30,7 @@ const Index = () => {
         <WhyChooseCapittal />
         <Services />
         <CompaniesForSale />
+        <OurGroup />
         <About />
         <CaseStudies />
         <Team />
