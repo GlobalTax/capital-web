@@ -11,6 +11,7 @@ import { PageLoadingSkeleton } from '@/components/LoadingStates';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
+import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/utils/bundleAnalysis';
 
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
@@ -262,6 +263,15 @@ function AppContent() {
 }
 
 function App() {
+  // Optimizaciones de bundle en desarrollo
+  if (process.env.NODE_ENV === 'development') {
+    logBundleSize();
+    monitorResourceLoading();
+  }
+
+  // Preload de chunks críticos
+  preloadCriticalChunks();
+
   return (
     <ErrorBoundaryProvider>
       <QueryClientProvider client={queryClient}>
