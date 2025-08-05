@@ -509,7 +509,7 @@ const BlogPostsManagerV2 = () => {
 
       {/* Lista de posts - mantenemos la funcionalidad existente */}
       <div className="grid gap-4">
-        {posts.map((post) => (
+        {(posts || []).map((post) => (
           <Card key={post.id} className="border-0.5 border-border hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -589,7 +589,7 @@ const BlogPostsManagerV2 = () => {
         ))}
       </div>
 
-      {posts.length === 0 && (
+      {(posts || []).length === 0 && (
         <Card className="border-0.5 border-border">
           <CardContent className="text-center py-12">
             <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />

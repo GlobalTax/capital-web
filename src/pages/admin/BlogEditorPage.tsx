@@ -41,7 +41,7 @@ const BlogEditorPage = () => {
 
   useEffect(() => {
     if (id && id !== 'new') {
-      const existingPost = posts.find(p => p.id === id);
+      const existingPost = (posts || []).find(p => p.id === id);
       if (existingPost) {
         setPost(existingPost);
       } else {

@@ -177,7 +177,7 @@ const BlogPostsManagerSimplified = () => {
   };
 
   // Filtrar posts
-  const filteredPosts = posts.filter(post => {
+  const filteredPosts = (posts || []).filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.content.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || post.category === filterCategory;

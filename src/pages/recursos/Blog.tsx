@@ -25,7 +25,7 @@ const Blog = () => {
     clearFilters,
     hasActiveFilters,
     totalResults
-  } = useBlogFilters(posts);
+  } = useBlogFilters(posts || []);
   
   const featuredArticle = featuredPosts[0] || null;
 

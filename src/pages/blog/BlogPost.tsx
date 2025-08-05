@@ -22,7 +22,7 @@ const BlogPost = () => {
   
   // Navegación y posts relacionados
   const { previousPost, nextPost, relatedPosts } = useBlogNavigation(
-    posts, 
+    (posts || []) as any[], 
     slug || ''
   );
 

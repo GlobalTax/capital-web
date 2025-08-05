@@ -460,7 +460,7 @@ const BlogPostsManager = () => {
       </div>
 
       <div className="grid gap-4">
-        {posts.map((post) => (
+        {(posts || []).map((post) => (
           <Card key={post.id} className="border-0.5 border-border">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -540,7 +540,7 @@ const BlogPostsManager = () => {
         ))}
       </div>
 
-      {posts.length === 0 && (
+      {(posts || []).length === 0 && (
         <Card className="border-0.5 border-border">
           <CardContent className="text-center py-8">
             <p className="text-gray-500">No hay posts creados aún.</p>

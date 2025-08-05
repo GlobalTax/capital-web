@@ -13,11 +13,7 @@ const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const { posts, isLoading, fetchPosts } = useBlogPosts();
-
-  useEffect(() => {
-    fetchPosts(true); // Only fetch published posts
-  }, []);
+  const { posts, isLoading } = useBlogPosts(true); // Only fetch published posts
 
   // Obtener categorías y tags únicos de los posts
   const { availableCategories, availableTags, filteredPosts } = useMemo(() => {

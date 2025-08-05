@@ -122,8 +122,8 @@ const ContentPerformancePage = () => {
 
   // Memoized calculations for better performance
   const metrics = useMemo(() => {
-    const totalPosts = blogPosts?.length || 0;
-    const publishedPosts = blogPosts?.filter(p => p.is_published).length || 0;
+    const totalPosts = (blogPosts as any[])?.length || 0;
+    const publishedPosts = (blogPosts as any[])?.filter(p => p.is_published).length || 0;
     const totalCaseStudies = caseStudies?.length || 0;
     const totalLeadMagnets = leadMagnets?.length || 0;
     const activeMagnets = leadMagnets?.filter(m => m.status === 'active').length || 0;
@@ -144,7 +144,7 @@ const ContentPerformancePage = () => {
     const searchLower = searchTerm.toLowerCase();
     
     return {
-      blogPosts: blogPosts?.filter(post => 
+      blogPosts: (blogPosts as any[])?.filter(post => 
         post.title?.toLowerCase().includes(searchLower) ||
         post.category?.toLowerCase().includes(searchLower)
       ) || [],

@@ -15,7 +15,7 @@ const ModernBlogManager = () => {
 
   return (
     <div className="container py-8">
-      <BlogManagerList posts={posts} onDelete={deletePost} />
+      <BlogManagerList posts={posts || []} onDelete={deletePost} />
     </div>
   );
 };

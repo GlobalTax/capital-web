@@ -90,7 +90,7 @@ export const useSmartInvalidation = () => {
 };
 
 // Hook para optimizar queries con retry logic inteligente
-export const useOptimizedQuery = <T,>(
+export const useOptimizedQuery = <T = unknown>(
   queryKey: (string | number)[],
   queryFn: () => Promise<T>,
   configType: keyof typeof QUERY_CONFIGS = 'important',
@@ -98,7 +98,7 @@ export const useOptimizedQuery = <T,>(
 ) => {
   const config = QUERY_CONFIGS[configType];
   
-  return useQuery({
+  return useQuery<T>({
     queryKey,
     queryFn,
     ...config,

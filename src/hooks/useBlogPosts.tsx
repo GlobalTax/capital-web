@@ -12,9 +12,9 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
   const queryClient = useQueryClient();
 
   // Query optimizada para obtener todos los posts
-  const { data: posts = [] as BlogPost[], isLoading, error } = useOptimizedQuery(
+  const { data: posts = [], isLoading, error } = useOptimizedQuery<BlogPost[]>(
     [QUERY_KEYS.BLOG_POSTS, publishedOnly.toString()],
-    async () => {
+    async (): Promise<BlogPost[]> => {
       let query = supabase.from('blog_posts').select('*');
       
       if (publishedOnly) {
