@@ -3,3 +3,6 @@ project_id = "fwhqtzkkvnjkazhaficj"
 
 [functions.generate-scheduled-reports]
 verify_jwt = false
+
+[functions.database-health-check]
+verify_jwt = false
