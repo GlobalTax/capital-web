@@ -285,6 +285,21 @@ function App() {
         const { backgroundSync } = await import('./utils/backgroundSync');
         backgroundSync.init();
 
+        // Initialize performance optimizer
+        const { performanceOptimizer } = await import('./utils/performanceOptimizer');
+        performanceOptimizer.init();
+
+        // Initialize performance analytics
+        const { performanceAnalytics } = await import('./utils/performanceAnalytics');
+        
+        // Registrar eventos de navegación
+        const handleRouteChange = () => {
+          performanceAnalytics.recordPageView(window.location.pathname);
+        };
+        
+        window.addEventListener('popstate', handleRouteChange);
+        handleRouteChange(); // Initial page view
+
         // Pre-load critical chunks
         await Promise.all([
           import('./components/admin/lazy'),
@@ -298,6 +313,13 @@ function App() {
           '/api/leads/hot',
           '/api/blog/posts'
         ]);
+
+        // Cleanup function
+        return () => {
+          performanceOptimizer.cleanup();
+          performanceAnalytics.destroy();
+          window.removeEventListener('popstate', handleRouteChange);
+        };
       } catch (error) {
         console.error('Failed to initialize advanced features:', error);
       }
