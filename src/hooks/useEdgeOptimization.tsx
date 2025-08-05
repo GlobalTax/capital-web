@@ -64,13 +64,13 @@ export const useEdgeOptimization = () => {
           serviceWorker: !!swRegistration,
           optimizationLevel 
         }, {
-          context: 'edge',
+          context: 'performance',
           component: 'useEdgeOptimization'
         });
 
       } catch (error) {
         logger.error('Failed to initialize edge optimizations', error as Error, {
-          context: 'edge',
+          context: 'performance',
           component: 'useEdgeOptimization'
         });
       }
@@ -99,9 +99,9 @@ export const useEdgeOptimization = () => {
       return true;
     } catch (error) {
       logger.error('Failed to preload resource', error as Error, {
-        context: 'edge',
+        context: 'performance',
         component: 'useEdgeOptimization',
-        url
+        data: { url }
       });
       return false;
     }
@@ -112,9 +112,9 @@ export const useEdgeOptimization = () => {
       return await edgeOptimizer.optimizeRequest(url, options);
     } catch (error) {
       logger.error('Optimized fetch failed', error as Error, {
-        context: 'edge',
+        context: 'performance',
         component: 'useEdgeOptimization',
-        url
+        data: { url }
       });
       throw error;
     }
@@ -152,7 +152,7 @@ export const useEdgeOptimization = () => {
     updateStats();
     
     logger.info('All caches cleared', undefined, {
-      context: 'edge',
+      context: 'performance',
       component: 'useEdgeOptimization'
     });
   }, [updateStats]);
@@ -161,7 +161,7 @@ export const useEdgeOptimization = () => {
     setOptimizationLevel(level);
     
     logger.info('Optimization level changed', { level }, {
-      context: 'edge',
+      context: 'performance',
       component: 'useEdgeOptimization'
     });
   }, []);

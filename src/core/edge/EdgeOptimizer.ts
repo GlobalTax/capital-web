@@ -107,7 +107,7 @@ export class EdgeOptimizer {
     this.cache.delete(keyToEvict);
     
     logger.debug('Cache evicted', { key: keyToEvict, strategy }, { 
-      context: 'edge', 
+      context: 'performance', 
       component: 'EdgeOptimizer' 
     });
   }
@@ -144,16 +144,16 @@ export class EdgeOptimizer {
       }
 
       link.onload = () => {
-        logger.debug('Resource preloaded', { url, type }, { 
-          context: 'edge', 
-          component: 'EdgeOptimizer' 
-        });
+          logger.debug('Resource preloaded', { url, type }, {
+            context: 'performance',
+            component: 'EdgeOptimizer'
+          });
         resolve();
       };
 
       link.onerror = () => {
         logger.error('Failed to preload resource', new Error(`Failed to preload: ${url}`), { 
-          context: 'edge', 
+          context: 'performance', 
           component: 'EdgeOptimizer' 
         });
         reject(new Error(`Failed to preload: ${url}`));
@@ -186,7 +186,7 @@ export class EdgeOptimizer {
     const optimizedURL = `${url}${url.includes('?') ? '&' : '?'}${params.toString()}`;
     
     logger.debug('Image URL optimized', { original: url, optimized: optimizedURL }, { 
-      context: 'edge', 
+      context: 'performance', 
       component: 'EdgeOptimizer' 
     });
 
@@ -197,7 +197,7 @@ export class EdgeOptimizer {
   async registerServiceWorker(swPath: string = '/sw.js'): Promise<ServiceWorkerRegistration | null> {
     if (!('serviceWorker' in navigator)) {
       logger.warn('Service Worker not supported', undefined, { 
-        context: 'edge', 
+        context: 'performance', 
         component: 'EdgeOptimizer' 
       });
       return null;
@@ -207,14 +207,14 @@ export class EdgeOptimizer {
       const registration = await navigator.serviceWorker.register(swPath);
       
       logger.info('Service Worker registered', { scope: registration.scope }, { 
-        context: 'edge', 
+        context: 'performance', 
         component: 'EdgeOptimizer' 
       });
 
       // Escuchar actualizaciones
       registration.addEventListener('updatefound', () => {
         logger.info('Service Worker update found', undefined, { 
-          context: 'edge', 
+          context: 'performance', 
           component: 'EdgeOptimizer' 
         });
       });
@@ -222,7 +222,7 @@ export class EdgeOptimizer {
       return registration;
     } catch (error) {
       logger.error('Service Worker registration failed', error as Error, { 
-        context: 'edge', 
+        context: 'performance', 
         component: 'EdgeOptimizer' 
       });
       return null;
@@ -237,7 +237,7 @@ export class EdgeOptimizer {
     
     if (cached) {
       logger.debug('Request served from cache', { url }, { 
-        context: 'edge', 
+        context: 'performance', 
         component: 'EdgeOptimizer' 
       });
       return new Response(JSON.stringify(cached), {
@@ -270,14 +270,14 @@ export class EdgeOptimizer {
         status: response.status, 
         cached: false 
       }, { 
-        context: 'edge', 
+        context: 'performance', 
         component: 'EdgeOptimizer' 
       });
 
       return response;
     } catch (error) {
       logger.error('Request failed', error as Error, { 
-        context: 'edge', 
+        context: 'performance', 
         component: 'EdgeOptimizer' 
       });
       throw error;
@@ -300,7 +300,7 @@ export class EdgeOptimizer {
           operation: operationName, 
           duration: `${duration.toFixed(2)}ms` 
         }, { 
-          context: 'edge', 
+          context: 'performance', 
           component: 'EdgeOptimizer' 
         });
 
@@ -309,10 +309,9 @@ export class EdgeOptimizer {
         const duration = performance.now() - startTime;
         
         logger.error('Operation failed during measurement', error as Error, { 
-          context: 'edge', 
+          context: 'performance', 
           component: 'EdgeOptimizer',
-          operation: operationName,
-          duration: `${duration.toFixed(2)}ms`
+          data: { operation: operationName, duration: `${duration.toFixed(2)}ms` }
         });
         
         throw error;
@@ -357,7 +356,7 @@ export class EdgeOptimizer {
     this.preloadQueue.clear();
     
     logger.info('Edge cache cleared', undefined, { 
-      context: 'edge', 
+      context: 'performance', 
       component: 'EdgeOptimizer' 
     });
   }
