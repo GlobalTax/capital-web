@@ -12,6 +12,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/utils/bundleAnalysis';
+import { useEffect } from 'react';
 
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
@@ -271,6 +272,39 @@ function App() {
 
   // Preload de chunks críticos
   preloadCriticalChunks();
+
+  useEffect(() => {
+    // Initialize service worker and background sync
+    const initializeAdvancedFeatures = async () => {
+      try {
+        // Initialize service worker
+        const { serviceWorkerManager } = await import('./utils/serviceWorker');
+        await serviceWorkerManager.register();
+
+        // Initialize background sync
+        const { backgroundSync } = await import('./utils/backgroundSync');
+        backgroundSync.init();
+
+        // Pre-load critical chunks
+        await Promise.all([
+          import('./components/admin/lazy'),
+          import('./features/dashboard/hooks/useMarketingMetrics'),
+          import('./shared/services/performance-monitor.service')
+        ]);
+
+        // Prefetch critical resources
+        await serviceWorkerManager.prefetchCriticalResources([
+          '/api/dashboard/stats',
+          '/api/leads/hot',
+          '/api/blog/posts'
+        ]);
+      } catch (error) {
+        console.error('Failed to initialize advanced features:', error);
+      }
+    };
+
+    initializeAdvancedFeatures();
+  }, []);
 
   return (
     <ErrorBoundaryProvider>
