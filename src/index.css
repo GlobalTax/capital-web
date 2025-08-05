@@ -7,30 +7,34 @@
 
 @layer base {
   :root {
-    /* Modern professional color scheme */
+    /* Legal professional color scheme - Navarro style */
     --background: 0 0% 100%;
-    --foreground: 215 27% 23%;
+    --foreground: 210 20% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 27% 23%;
+    --card-foreground: 210 20% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 27% 23%;
+    --popover-foreground: 210 20% 25%;
 
-    /* Modern primary black with better contrast */
-    --primary: 215 27% 23%;
+    /* Professional navy for legal style */
+    --primary: 210 25% 20%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 215 27% 18%;
+    --primary-hover: 210 25% 15%;
+    
+    /* Legal accent color */
+    --legal-accent: 210 15% 35%;
+    --legal-accent-foreground: 0 0% 100%;
 
-    /* Enhanced gray scale */
-    --secondary: 210 16% 98%;
-    --secondary-foreground: 215 20% 45%;
+    /* Legal gray scale - more sophisticated */
+    --secondary: 210 10% 97%;
+    --secondary-foreground: 210 15% 40%;
 
-    --muted: 210 15% 96%;
-    --muted-foreground: 215 16% 50%;
+    --muted: 210 8% 95%;
+    --muted-foreground: 210 12% 45%;
 
-    --accent: 210 16% 98%;
-    --accent-foreground: 215 27% 23%;
+    --accent: 210 10% 97%;
+    --accent-foreground: 210 20% 25%;
 
     /* Status colors */
     --destructive: 0 72% 51%;
