@@ -78,8 +78,7 @@ export default {
 				lg: 'var(--radius-lg)',
 				md: 'var(--radius)',
 				sm: 'var(--radius-sm)',
-				xl: 'var(--radius-xl)',
-				button: 'var(--radius-button)'
+				xl: 'var(--radius-xl)'
 			},
 			borderWidth: {
 				'0.5': '0.5px',
