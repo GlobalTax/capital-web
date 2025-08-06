@@ -1172,6 +1172,63 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_slides: {
+        Row: {
+          autoplay_duration: number | null
+          background_color: string | null
+          created_at: string
+          cta_primary_text: string | null
+          cta_primary_url: string | null
+          cta_secondary_text: string | null
+          cta_secondary_url: string | null
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          subtitle: string | null
+          text_color: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          autoplay_duration?: number | null
+          background_color?: string | null
+          created_at?: string
+          cta_primary_text?: string | null
+          cta_primary_url?: string | null
+          cta_secondary_text?: string | null
+          cta_secondary_url?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          subtitle?: string | null
+          text_color?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          autoplay_duration?: number | null
+          background_color?: string | null
+          created_at?: string
+          cta_primary_text?: string | null
+          cta_primary_url?: string | null
+          cta_secondary_text?: string | null
+          cta_secondary_url?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       key_statistics: {
         Row: {
           display_locations: string[] | null
