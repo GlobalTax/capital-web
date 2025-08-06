@@ -59,75 +59,75 @@ const Services = () => {
 
   return (
     <ErrorBoundary fallback={<ServicesSkeleton />}>
-      <section id="servicios" className="py-20 bg-background">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground mb-6 tracking-tight">
-              Nuestros Servicios
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-normal">
-              Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
-            </p>
-          </div>
+      <section id="servicios" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+            Nuestros Servicios
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
+          </p>
+        </div>
 
-          {/* Core Services - Legal Style Cards */}
-          <div className="mb-20">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {coreServices.map((service, index) => (
-                <div key={index} className="group">
-                  <div className="bg-card border border-border rounded-lg p-8 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
-                    {/* Title */}
-                    <h3 className="text-xl font-normal text-foreground mb-4 tracking-tight">
-                      {service.title}
-                    </h3>
-                    
-                    {/* Description */}
-                    <p className="text-muted-foreground mb-6 leading-relaxed text-base font-normal">
-                      {service.description}
-                    </p>
+        {/* Core Services - Enhanced Cards */}
+        <div className="mb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {coreServices.map((service, index) => (
+              <div key={index} className="group">
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-black mb-4">
+                    {service.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 leading-relaxed text-base">
+                    {service.description}
+                  </p>
 
-                    {/* Features */}
-                    <div className="space-y-3 mb-8">
-                      {service.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center">
-                          <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                          <span className="text-muted-foreground text-sm font-normal">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Button */}
-                    <Button variant="outline" className="w-full text-sm py-3 font-normal">
-                      Más información
-                    </Button>
+                  {/* Features */}
+                  <div className="space-y-3 mb-8">
+                    {service.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center">
+                        <div className="w-2 h-2 bg-black rounded-full mr-3"></div>
+                        <span className="text-gray-700 text-sm">{feature}</span>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Complementary Services - Legal Style */}
-          <div>
-            <h3 className="text-xl font-normal text-foreground text-center mb-8 tracking-tight">
-              Servicios Complementarios
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {complementaryServices.map((service, index) => (
-                <Card key={index} className="bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ease-out group cursor-pointer">
-                  <CardContent className="p-6">
-                    <h3 className="text-base font-medium text-foreground mb-3">
-                      {service.title}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed text-sm font-normal">
-                      {service.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  {/* Button */}
+                  <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
+                    Más información
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </section>
+
+        {/* Complementary Services - Simplified Cards */}
+        <div>
+          <h3 className="text-xl font-bold text-black text-center mb-8">
+            Servicios Complementarios
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {complementaryServices.map((service, index) => (
+              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group cursor-pointer">
+                <CardContent className="p-6">
+                  <h3 className="text-base font-semibold text-black mb-3">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    {service.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
     </ErrorBoundary>
   );
 };
