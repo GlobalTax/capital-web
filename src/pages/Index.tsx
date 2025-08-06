@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Header from '@/components/Header';
-import HeroSlider from '@/components/HeroSlider';
+import Hero from '@/components/Hero';
 import LogoCarousel from '@/components/LogoCarousel';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel';
 import MarketInsights from '@/components/MarketInsights';
@@ -23,7 +23,7 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <main role="main">
-        <HeroSlider />
+        <Hero />
         <LogoCarousel />
         <TestimonialsCarousel />
         <MarketInsights />
