@@ -16,26 +16,21 @@ const Hero = () => {
               Líderes en M&A desde 2008
             </div>
             
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-8 leading-tight">Especialistas en compraventa de empresas</h1>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-12 leading-tight tracking-tight">Especialistas en compraventa de empresas</h1>
             
-            <p className="text-lg text-gray-600 mb-12 leading-relaxed max-w-2xl">
-              Especialistas en compraventa de empresas con más de 15 años de experiencia. 
-              Te acompañamos en cada paso para lograr el mejor precio.
+            <p className="text-xl md:text-2xl text-gray-700 mb-16 leading-relaxed max-w-3xl font-medium">
+              Maximizamos el valor de tu empresa con resultados garantizados
             </p>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-8 mb-12 py-8">
+            {/* Stats Row - Simplified */}
+            <div className="grid grid-cols-2 gap-16 mb-16 py-12">
               <div className="text-center">
-                <div className="text-2xl font-bold text-black mb-2">€1.0B+</div>
-                <div className="text-sm text-gray-600">Valor Transaccional</div>
+                <div className="text-4xl md:text-5xl font-bold text-black mb-4">€1.0B+</div>
+                <div className="text-base text-gray-600 font-medium">Valor Transaccional</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-black mb-2">200+</div>
-                <div className="text-sm text-gray-600">Operaciones</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-black mb-2">95%</div>
-                <div className="text-sm text-gray-600">Éxito</div>
+                <div className="text-4xl md:text-5xl font-bold text-black mb-4">95%</div>
+                <div className="text-base text-gray-600 font-medium">Tasa de Éxito</div>
               </div>
             </div>
 
@@ -59,74 +54,47 @@ const Hero = () => {
           {/* Right Column - Interactive Dashboard */}
           <div className="lg:col-span-5">
             <div className="relative">
-              {/* Main Dashboard Card */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="bg-gray-900 text-white p-6">
-                  <h3 className="text-lg font-semibold mb-2">Capittal Market </h3>
-                  <p className="text-gray-300 text-sm">Análisis en tiempo real</p>
+              {/* Minimalist Dashboard Card */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="bg-gray-900 text-white px-8 py-6">
+                  <h3 className="text-xl font-semibold">Capittal Market</h3>
                 </div>
                 
-                {/* Market Data Table */}
-                <div className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="font-medium text-gray-900">Tech Startup</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">€15M</div>
-                        <div className="text-sm text-green-600">+12%</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="font-medium text-gray-900">Industrial Co.</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">€45M</div>
-                        <div className="text-sm text-blue-600">+8%</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-black rounded-full"></div>
-                        <span className="font-medium text-gray-900">Retail Chain</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">€32M</div>
-                        <div className="text-sm text-black">+15%</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 pt-6">
+                {/* Simplified Market Data */}
+                <div className="px-8 py-10">
+                  <div className="space-y-8">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Transacciones Q4</span>
-                      <span className="font-bold text-gray-900">47 activas</span>
+                      <div className="flex items-center space-x-4">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span className="font-semibold text-gray-900 text-lg">Tech Startup</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900 text-xl">€15M</div>
+                        <div className="text-sm text-green-600 font-medium">+12%</div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating Stats */}
-              <div className="absolute -top-4 -right-4 bg-black text-white rounded-lg p-4 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <div className="font-bold">+23%</div>
-                    <div className="text-xs text-gray-300">Este mes</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute -bottom-4 -left-4 bg-white rounded-lg p-4 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <div className="font-bold text-gray-900">156</div>
-                    <div className="text-xs text-gray-500">Empresas</div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span className="font-semibold text-gray-900 text-lg">Industrial Co.</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900 text-xl">€45M</div>
+                        <div className="text-sm text-blue-600 font-medium">+8%</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <span className="font-semibold text-gray-900 text-lg">Retail Chain</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900 text-xl">€32M</div>
+                        <div className="text-sm text-purple-600 font-medium">+15%</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
