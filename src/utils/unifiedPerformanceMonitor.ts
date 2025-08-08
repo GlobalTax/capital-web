@@ -5,6 +5,7 @@ import type { PerformanceMetric, PerformanceConfig, WebVitals } from './performa
 import { WebVitalsCollector } from './performance/webVitalsCollector';
 import { MetricsCollector } from './performance/metricsCollector';
 import { DataTransmitter } from './performance/dataTransmitter';
+import { AlertManager } from './performance/alertManager';
 
 class UnifiedPerformanceMonitor {
   private config: PerformanceConfig = {
@@ -29,6 +30,7 @@ class UnifiedPerformanceMonitor {
   private webVitalsCollector: WebVitalsCollector;
   private metricsCollector: MetricsCollector;
   private dataTransmitter: DataTransmitter;
+  private alertManager: AlertManager;
   private flushTimer?: NodeJS.Timeout;
   private isSampled = true;
   private active = true;
@@ -41,6 +43,7 @@ class UnifiedPerformanceMonitor {
     // Inicializar módulos
     this.metricsCollector = new MetricsCollector(this.config);
     this.dataTransmitter = new DataTransmitter(this.config, {});
+    this.alertManager = new AlertManager();
     this.webVitalsCollector = new WebVitalsCollector((metric) => {
       this.addMetric(metric);
     });
@@ -80,6 +83,9 @@ class UnifiedPerformanceMonitor {
   private addMetric(metric: PerformanceMetric): void {
     this.metricsCollector.addMetric(metric);
     this.dataTransmitter.enqueue(metric);
+    
+    // Verificar alertas
+    this.alertManager.checkMetric(metric);
   }
 
   // API principal para registrar métricas
@@ -132,6 +138,23 @@ class UnifiedPerformanceMonitor {
     this.config = { ...this.config, ...updates };
     this.metricsCollector.updateConfig(this.config);
     this.dataTransmitter.updateConfig(this.config);
+  }
+
+  // Gestión de alertas
+  getAlerts(severity?: 'low' | 'medium' | 'high' | 'critical') {
+    return this.alertManager.getAlerts(severity);
+  }
+
+  getActiveAlerts() {
+    return this.alertManager.getActiveAlerts();
+  }
+
+  onAlert(callback: (alert: any) => void) {
+    return this.alertManager.onAlert(callback);
+  }
+
+  clearAlerts(): void {
+    this.alertManager.clearAlerts();
   }
 
   private startPeriodicCleanup(): void {

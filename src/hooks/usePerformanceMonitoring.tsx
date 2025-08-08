@@ -76,11 +76,14 @@ export const usePerformanceMonitoring = () => {
   }, []);
 
   const getPerformanceAlerts = useCallback((): PerformanceAlert[] => {
-    return [...alertsRef.current];
+    // Combinar alertas locales con alertas del sistema unificado
+    const systemAlerts = performanceMonitor.getActiveAlerts();
+    return [...alertsRef.current, ...systemAlerts];
   }, []);
 
   const clearMetrics = useCallback(() => {
     performanceMonitor.clear();
+    performanceMonitor.clearAlerts();
     alertsRef.current = [];
   }, []);
 

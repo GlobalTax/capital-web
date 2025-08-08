@@ -2,7 +2,7 @@
 // Hook para métricas en tiempo real con WebSocket
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { performanceMonitor } from '@/utils/performanceMonitor';
+import { performanceMonitor } from '@/utils/unifiedPerformanceMonitor';
 
 interface RealTimeMetric {
   timestamp: number;
