@@ -187,7 +187,7 @@ class PerformanceAnalytics {
     // Calcular estadísticas de rendimiento
     const totalOperations = metrics.length;
     const averageResponseTime = totalOperations > 0 
-      ? metrics.reduce((sum, m) => sum + m.value, 0) / totalOperations 
+      ? metrics.reduce((sum, m) => sum + m.value, 0) / totalOperations
       : 0;
     const slowOperations = metrics.filter(m => m.value > 1000).length;
     
