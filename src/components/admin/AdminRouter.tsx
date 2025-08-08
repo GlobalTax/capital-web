@@ -3,6 +3,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminDashboard from './dashboard/AdminDashboard';
+import EnhancedAdminDashboard from './dashboard/EnhancedAdminDashboard';
 import LeadScoringManager from './dashboard/LeadScoringManager';
 import LeadScoringRulesManager from './dashboard/LeadScoringRulesManager';
 import AdminSettings from './AdminSettings';
@@ -54,8 +55,9 @@ const AdminRouter = () => {
   return (
     <Routes>
       {/* Dashboard */}
-      <Route index element={<AdminDashboard />} />
-      <Route path="/dashboard" element={<AdminDashboard />} />
+      <Route index element={<EnhancedAdminDashboard />} />
+      <Route path="/dashboard" element={<EnhancedAdminDashboard />} />
+      <Route path="/dashboard/classic" element={<AdminDashboard />} />
       
       {/* Lead Management */}
       <Route path="/leads-dashboard" element={<EnhancedLeadsDashboard />} />
