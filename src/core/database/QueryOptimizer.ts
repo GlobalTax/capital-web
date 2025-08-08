@@ -1,7 +1,7 @@
 // ============= QUERY OPTIMIZER =============
 // Optimización inteligente de consultas SQL y RLS
 
-import { getDbPool } from './ConnectionPool';
+import { getDbPool, getDbPoolSync } from './ConnectionPool';
 import { logger } from '@/utils/logger';
 
 interface QueryPlan {
@@ -163,9 +163,9 @@ class DatabaseQueryOptimizer {
     // Optimizar el plan
     const optimizedPlan = this.optimizeQuery(plan);
 
-  // Ejecutar la consulta optimizada
+   // Ejecutar la consulta optimizada
     try {
-      const dbPool = getDbPool();
+      const dbPool = await getDbPool();
       const result = await dbPool.executeQuery(async (client) => {
         // Aplicar hints de índice si están disponibles
         if (optimizedPlan.useIndex) {
@@ -235,10 +235,10 @@ class DatabaseQueryOptimizer {
     slowQueries: any[];
     indexSuggestions: Array<{ table: string; suggestion: string }>;
   } {
-    const dbPool = getDbPool();
-    const slowQueries = dbPool.getSlowQueries();
+    const dbPool = getDbPoolSync();
+    const slowQueries = dbPool ? dbPool.getSlowQueries() : [];
     const cacheSize = this.queryCache.size;
-    const poolStats = dbPool.getStats();
+    const poolStats = dbPool ? dbPool.getStats() : { totalQueries: 0, failedQueries: 0, avgQueryTime: 0 };
 
     return {
       cacheHitRate: cacheSize > 0 ? (poolStats.totalQueries - poolStats.failedQueries) / poolStats.totalQueries : 0,

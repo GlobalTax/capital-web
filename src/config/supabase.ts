@@ -15,8 +15,12 @@ export const SUPABASE_CONFIG = {
   anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I"
 } as const;
 
-// Validación de configuración
+// Validación de configuración (lazy)
+let configValidated = false;
+
 export const validateSupabaseConfig = () => {
+  if (configValidated) return true;
+  
   const { url, anonKey } = SUPABASE_CONFIG;
   
   if (!url || !url.includes('supabase.co')) {
@@ -27,6 +31,7 @@ export const validateSupabaseConfig = () => {
     throw new Error('SUPABASE_ANON_KEY no está configurada correctamente');
   }
   
+  configValidated = true;
   return true;
 };
 

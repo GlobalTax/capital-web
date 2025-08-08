@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { queryOptimizer } from '@/core/database/QueryOptimizer';
-import { dbPool } from '@/core/database/ConnectionPool';
+import { getDbPool, getDbPoolSync } from '@/core/database/ConnectionPool';
 import { logger } from '@/utils/logger';
 
 interface DatabaseMetrics {
@@ -51,7 +51,14 @@ export const useDatabaseOptimization = (config: Partial<OptimizationConfig> = {}
   // Obtener métricas actuales
   const fetchMetrics = useCallback(async (): Promise<DatabaseMetrics> => {
     const queryReport = queryOptimizer.generatePerformanceReport();
-    const poolStats = dbPool.getStats();
+    const dbPool = getDbPoolSync();
+    const poolStats = dbPool ? dbPool.getStats() : {
+      activeConnections: 0,
+      idleConnections: 0,
+      totalQueries: 0,
+      avgQueryTime: 0,
+      failedQueries: 0
+    };
 
     return {
       queryPerformance: {

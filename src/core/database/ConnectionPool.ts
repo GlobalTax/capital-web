@@ -230,13 +230,43 @@ class DatabaseConnectionPool {
 
 // Lazy singleton instance
 let dbPoolInstance: DatabaseConnectionPool | null = null;
+let dbPoolInitPromise: Promise<DatabaseConnectionPool> | null = null;
 
-export const getDbPool = (): DatabaseConnectionPool => {
-  if (!dbPoolInstance) {
-    dbPoolInstance = new DatabaseConnectionPool();
+export const getDbPool = async (): Promise<DatabaseConnectionPool> => {
+  if (dbPoolInstance) {
+    return dbPoolInstance;
   }
-  return dbPoolInstance;
+  
+  if (dbPoolInitPromise) {
+    return dbPoolInitPromise;
+  }
+
+  dbPoolInitPromise = (async () => {
+    try {
+      // Esperar a que el DOM esté listo y los módulos cargados
+      await new Promise(resolve => {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', resolve);
+        } else {
+          resolve(void 0);
+        }
+      });
+      
+      // Pequeño delay para asegurar que todos los módulos estén completamente inicializados
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      dbPoolInstance = new DatabaseConnectionPool();
+      return dbPoolInstance;
+    } catch (error) {
+      dbPoolInitPromise = null; // Reset para permitir retry
+      throw error;
+    }
+  })();
+
+  return dbPoolInitPromise;
 };
 
-// For backward compatibility
-export const dbPool = getDbPool();
+// Synchronous getter que devuelve null si no está inicializado
+export const getDbPoolSync = (): DatabaseConnectionPool | null => {
+  return dbPoolInstance;
+};
