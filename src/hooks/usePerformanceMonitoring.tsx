@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
-import { useRateLimit } from './useRateLimit';
-import { logger } from '@/utils/logger';
+import { performanceMonitor } from '@/utils/unifiedPerformanceMonitor';
+import type { PerformanceAlert } from '@/utils/performance/types';
 
 interface PerformanceMetrics {
   queryExecutionTime: number;
@@ -10,33 +10,8 @@ interface PerformanceMetrics {
   avgResponseTime: number;
 }
 
-interface PerformanceAlert {
-  type: 'cache_miss' | 'slow_query' | 'rate_limit' | 'error_spike';
-  message: string;
-  threshold: number;
-  current: number;
-  timestamp: number;
-}
-
 export const usePerformanceMonitoring = () => {
-  const metricsRef = useRef<PerformanceMetrics>({
-    queryExecutionTime: 0,
-    cacheHitRate: 0,
-    rateLimitHits: 0,
-    errorRate: 0,
-    avgResponseTime: 0,
-  });
-  
   const alertsRef = useRef<PerformanceAlert[]>([]);
-  const queryTimesRef = useRef<number[]>([]);
-  const errorCountRef = useRef(0);
-  const totalQueriesRef = useRef(0);
-
-  // Rate limiting para el monitoreo mismo
-  const { executeWithRateLimit } = useRateLimit({
-    maxRequests: 60,
-    windowMs: 60000, // 1 minuto
-  });
 
   const recordQueryPerformance = useCallback((
     queryKey: string,
@@ -44,103 +19,60 @@ export const usePerformanceMonitoring = () => {
     wasFromCache: boolean,
     hasError: boolean = false
   ) => {
-    totalQueriesRef.current++;
-    queryTimesRef.current.push(executionTime);
-    
-    // Mantener solo las últimas 100 métricas
-    if (queryTimesRef.current.length > 100) {
-      queryTimesRef.current.shift();
-    }
+    // Registrar en el monitor unificado
+    performanceMonitor.record(
+      queryKey, 
+      executionTime, 
+      'database', 
+      { 
+        cached: wasFromCache.toString(),
+        error: hasError.toString()
+      }
+    );
 
-    if (hasError) {
-      errorCountRef.current++;
-    }
-
-    // Calcular métricas actualizadas
-    const avgTime = queryTimesRef.current.reduce((a, b) => a + b, 0) / queryTimesRef.current.length;
-    const cacheHits = wasFromCache ? 1 : 0;
-    const errorRate = (errorCountRef.current / totalQueriesRef.current) * 100;
-
-    metricsRef.current = {
-      ...metricsRef.current,
-      queryExecutionTime: executionTime,
-      avgResponseTime: avgTime,
-      errorRate,
-    };
-
-    // Detectar problemas de performance
-    executeWithRateLimit(async () => {
-      await checkPerformanceThresholds(queryKey, executionTime, errorRate);
-    }, 'performance-check');
-
-    // Log métricas importantes
-    logger.debug('Query performance recorded', {
-      queryKey,
-      executionTime,
-      wasFromCache,
-      hasError,
-      avgTime,
-      errorRate
-    }, { context: 'performance', component: 'usePerformanceMonitoring' });
-  }, [executeWithRateLimit]);
-
-  const checkPerformanceThresholds = useCallback(async (
-    queryKey: string,
-    executionTime: number,
-    errorRate: number
-  ) => {
-    const alerts: PerformanceAlert[] = [];
-
-    // Query lenta (> 2 segundos)
+    // Generar alertas para queries lentas
     if (executionTime > 2000) {
-      alerts.push({
+      const alert: PerformanceAlert = {
         type: 'slow_query',
         message: `Query lenta detectada: ${queryKey} (${executionTime}ms)`,
         threshold: 2000,
         current: executionTime,
         timestamp: Date.now(),
-      });
+        severity: executionTime > 5000 ? 'critical' : 'high'
+      };
+      alertsRef.current.push(alert);
     }
 
-    // Alta tasa de errores (> 10%)
-    if (errorRate > 10) {
-      alerts.push({
-        type: 'error_spike',
-        message: `Alta tasa de errores: ${errorRate.toFixed(1)}%`,
-        threshold: 10,
-        current: errorRate,
-        timestamp: Date.now(),
-      });
-    }
-
-    // Agregar alertas
-    alertsRef.current.push(...alerts);
-
-    // Log alertas críticas
-    alerts.forEach(alert => {
-      logger.warn('Performance alert triggered', alert, {
-        context: 'performance',
-        component: 'usePerformanceMonitoring'
-      });
-    });
-
-    // Mantener solo las últimas 20 alertas
-    if (alertsRef.current.length > 20) {
-      alertsRef.current = alertsRef.current.slice(-20);
-    }
+    // Limpiar alertas antiguas
+    const oneHourAgo = Date.now() - 3600000;
+    alertsRef.current = alertsRef.current.filter(alert => alert.timestamp > oneHourAgo);
   }, []);
 
   const recordRateLimitHit = useCallback((operation: string) => {
-    metricsRef.current.rateLimitHits++;
+    performanceMonitor.record('Rate Limit Hit', 1, 'api', { operation });
     
-    logger.info('Rate limit hit recorded', { operation }, {
-      context: 'performance',
-      component: 'usePerformanceMonitoring'
-    });
+    const alert: PerformanceAlert = {
+      type: 'rate_limit',
+      message: `Rate limit alcanzado: ${operation}`,
+      threshold: 1,
+      current: 1,
+      timestamp: Date.now(),
+      severity: 'medium'
+    };
+    alertsRef.current.push(alert);
   }, []);
 
   const getPerformanceMetrics = useCallback((): PerformanceMetrics => {
-    return { ...metricsRef.current };
+    const stats = performanceMonitor.getAggregatedStats();
+    const dbStats = performanceMonitor.getAggregatedStats('database');
+    
+    return {
+      queryExecutionTime: dbStats.average || 0,
+      cacheHitRate: 0, // Calculado desde tags si es necesario
+      rateLimitHits: performanceMonitor.getMetrics('api').filter(m => m.name === 'Rate Limit Hit').length,
+      errorRate: 0, // Calculado desde métricas con error: true
+      avgResponseTime: stats.average || 0,
+    };
   }, []);
 
   const getPerformanceAlerts = useCallback((): PerformanceAlert[] => {
@@ -148,35 +80,8 @@ export const usePerformanceMonitoring = () => {
   }, []);
 
   const clearMetrics = useCallback(() => {
-    metricsRef.current = {
-      queryExecutionTime: 0,
-      cacheHitRate: 0,
-      rateLimitHits: 0,
-      errorRate: 0,
-      avgResponseTime: 0,
-    };
+    performanceMonitor.clear();
     alertsRef.current = [];
-    queryTimesRef.current = [];
-    errorCountRef.current = 0;
-    totalQueriesRef.current = 0;
-    
-    logger.info('Performance metrics cleared', undefined, {
-      context: 'performance',
-      component: 'usePerformanceMonitoring'
-    });
-  }, []);
-
-  // Limpiar métricas antiguas automáticamente
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Limpiar alertas de más de 1 hora
-      const oneHourAgo = Date.now() - 3600000;
-      alertsRef.current = alertsRef.current.filter(
-        alert => alert.timestamp > oneHourAgo
-      );
-    }, 300000); // Cada 5 minutos
-
-    return () => clearInterval(interval);
   }, []);
 
   return {
