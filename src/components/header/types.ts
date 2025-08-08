@@ -1,9 +1,11 @@
 
+import type { IconName } from '@/components/ui/icon-registry';
+
 export interface NavItem {
   id: string;
   label: string;
   href: string;
-  icon?: any;
+  icon?: IconName;
   description?: string;
   image?: string;
 }

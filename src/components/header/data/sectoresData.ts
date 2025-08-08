@@ -1,11 +1,4 @@
 
-import { 
-  Scale, 
-  Hospital, 
-  Factory, 
-  ShoppingBag, 
-  Computer 
-} from "lucide-react";
 import { MenuCategory } from '../types';
 
 export const sectoresData: MenuCategory[] = [
@@ -16,35 +9,35 @@ export const sectoresData: MenuCategory[] = [
         id: "financial-services",
         label: "Financial Services",
         href: "/sectores/financial-services",
-        icon: Scale,
+        icon: 'Scale',
         description: "Especialistas en el sector financiero"
       },
       {
         id: "healthcare",
         label: "Healthcare",
         href: "/sectores/healthcare",
-        icon: Hospital,
+        icon: 'Hospital',
         description: "Sector sanitario y farmacéutico"
       },
       {
         id: "industrial",
         label: "Industrial",
         href: "/sectores/industrial",
-        icon: Factory,
+        icon: 'Factory',
         description: "Sector industrial y manufactura"
       },
       {
         id: "retail-consumer",
         label: "Retail & Consumer",
         href: "/sectores/retail-consumer",
-        icon: ShoppingBag,
+        icon: 'ShoppingBag',
         description: "Comercio y bienes de consumo"
       },
       {
         id: "tecnologia",
         label: "Tecnología",
         href: "/sectores/tecnologia",
-        icon: Computer,
+        icon: 'Computer',
         description: "Sector tecnológico y digital"
       }
     ]
