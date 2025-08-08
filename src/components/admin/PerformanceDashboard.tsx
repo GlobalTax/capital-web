@@ -1,16 +1,14 @@
 // ============= PERFORMANCE DASHBOARD =============
 // Dashboard completo de monitoreo de rendimiento
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { performanceMonitor } from '@/utils/performanceMonitor';
-import { performanceOptimizer } from '@/utils/performanceOptimizer';
-import { serviceWorkerManager } from '@/utils/serviceWorker';
-import { backgroundSync } from '@/utils/backgroundSync';
+import { usePerformanceAnalytics } from '@/hooks/usePerformanceAnalytics';
+import { useWebVitals } from '@/hooks/useWebVitals';
 import { 
   Activity, 
   Database, 
@@ -18,100 +16,57 @@ import {
   Clock, 
   TrendingUp, 
   AlertTriangle,
-  HardDrive,
+  Gauge,
   Wifi,
   RefreshCw
 } from 'lucide-react';
 
-interface PerformanceStats {
-  totalMetrics: number;
-  averageResponseTime: number;
-  slowOperations: number;
-  cacheHitRate: number;
-  bundleSize: number;
-  pendingTasks: number;
-}
-
 export const PerformanceDashboard = () => {
-  const [stats, setStats] = useState<PerformanceStats>({
-    totalMetrics: 0,
-    averageResponseTime: 0,
-    slowOperations: 0,
-    cacheHitRate: 0,
-    bundleSize: 0,
-    pendingTasks: 0
-  });
+  const { 
+    stats,
+    alerts,
+    isMonitoring,
+    startMonitoring,
+    stopMonitoring,
+    clearAlerts,
+    refresh,
+    getTrendIcon,
+    getTrendColor
+  } = usePerformanceAnalytics();
   
-  const [isLoading, setIsLoading] = useState(true);
-  const [cacheSize, setCacheSize] = useState({ total: 0, breakdown: {} });
-  const [report, setReport] = useState<any>(null);
+  const { 
+    vitals,
+    score,
+    scoreLabel,
+    scoreColor,
+    alerts: vitalAlerts
+  } = useWebVitals();
+  
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    loadPerformanceData();
-    const interval = setInterval(loadPerformanceData, 30000); // Actualizar cada 30s
-    return () => clearInterval(interval);
-  }, []);
+  const handleRefresh = () => {
+    setIsLoading(true);
+    refresh();
+    setTimeout(() => setIsLoading(false), 1000);
+  };
 
-  const loadPerformanceData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Obtener métricas del monitor
-      const metrics = performanceMonitor.getMetrics();
-      const slowQueries = metrics.filter(m => m.value > 1000);
-      
-      // Generar reporte de optimización
-      const optimizationReport = performanceOptimizer.generateReport();
-      
-      // Obtener tamaño de cache
-      const cacheData = await serviceWorkerManager.getCacheSize();
-      
-      // Obtener tareas pendientes
-      const pendingTasksCount = await backgroundSync.getTaskCount();
-      
-      setStats({
-        totalMetrics: metrics.length,
-        averageResponseTime: metrics.length > 0 
-          ? metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length 
-          : 0,
-        slowOperations: slowQueries.length,
-        cacheHitRate: optimizationReport.cacheHitRate,
-        bundleSize: optimizationReport.bundleSize,
-        pendingTasks: pendingTasksCount
-      });
-      
-      setCacheSize(cacheData);
-      setReport(optimizationReport);
-      
-    } catch (error) {
-      console.error('Error loading performance data:', error);
-    } finally {
-      setIsLoading(false);
+  const toggleMonitoring = () => {
+    if (isMonitoring) {
+      stopMonitoring();
+    } else {
+      startMonitoring();
     }
-  };
-
-  const clearCache = async () => {
-    await serviceWorkerManager.clearCache();
-    await loadPerformanceData();
-  };
-
-  const clearMetrics = () => {
-    performanceMonitor.clear();
-    loadPerformanceData();
-  };
-
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const getPerformanceColor = (value: number, thresholds: [number, number]) => {
     if (value <= thresholds[0]) return 'bg-green-500';
     if (value <= thresholds[1]) return 'bg-yellow-500';
     return 'bg-red-500';
+  };
+
+  const formatMs = (ms: number) => {
+    if (ms < 1000) return `${ms.toFixed(0)}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
   };
 
   return (
@@ -128,18 +83,53 @@ export const PerformanceDashboard = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={loadPerformanceData}
+            onClick={handleRefresh}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Actualizar
           </Button>
-          <Button variant="outline" size="sm" onClick={clearMetrics}>
+          <Button 
+            variant={isMonitoring ? "destructive" : "default"} 
+            size="sm" 
+            onClick={toggleMonitoring}
+          >
             <Activity className="h-4 w-4 mr-2" />
-            Limpiar Métricas
+            {isMonitoring ? 'Pausar' : 'Iniciar'} Monitoreo
+          </Button>
+          <Button variant="outline" size="sm" onClick={clearAlerts}>
+            Limpiar Alertas
           </Button>
         </div>
       </div>
+
+      {/* Web Vitals Score */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Gauge className="h-5 w-5" />
+            Web Vitals Score
+            <span className={`text-2xl font-bold ${scoreColor}`}>
+              {getTrendIcon(stats.recentTrend)} {score}
+            </span>
+          </CardTitle>
+          <CardDescription>
+            Puntuación general de rendimiento: {scoreLabel}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Object.entries(vitals).map(([key, value]) => (
+              <div key={key} className="text-center">
+                <div className="text-sm font-medium text-muted-foreground">{key}</div>
+                <div className="text-lg font-bold">
+                  {value ? formatMs(value) : '-'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Métricas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -159,7 +149,7 @@ export const PerformanceDashboard = () => {
                 }`} 
               />
               <p className="text-xs text-muted-foreground">
-                {stats.totalMetrics} operaciones registradas
+                {stats.totalOperations} operaciones registradas
               </p>
             </div>
           </CardContent>
@@ -183,29 +173,32 @@ export const PerformanceDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cache Hit Rate</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Tendencia</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.cacheHitRate.toFixed(1)}%
+            <div className={`text-2xl font-bold ${getTrendColor(stats.recentTrend)}`}>
+              {getTrendIcon(stats.recentTrend)}
             </div>
-            <Progress value={stats.cacheHitRate} className="mt-2" />
+            <Badge className="mt-2">
+              {stats.recentTrend === 'improving' ? 'Mejorando' : 
+               stats.recentTrend === 'degrading' ? 'Degradando' : 'Estable'}
+            </Badge>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tareas Pendientes</CardTitle>
+            <CardTitle className="text-sm font-medium">Alertas Activas</CardTitle>
             <Wifi className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingTasks}</div>
+            <div className="text-2xl font-bold">{alerts.length + vitalAlerts.length}</div>
             <Badge 
-              variant={stats.pendingTasks > 0 ? "secondary" : "default"}
+              variant={alerts.length > 0 ? "destructive" : "default"}
               className="mt-2"
             >
-              {stats.pendingTasks > 0 ? 'Sincronizando' : 'Sincronizado'}
+              {alerts.length > 0 ? 'Requiere atención' : 'Todo bien'}
             </Badge>
           </CardContent>
         </Card>
@@ -214,118 +207,150 @@ export const PerformanceDashboard = () => {
       {/* Tabs de detalles */}
       <Tabs defaultValue="metrics" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="metrics">Métricas Detalladas</TabsTrigger>
-          <TabsTrigger value="cache">Gestión de Cache</TabsTrigger>
-          <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
+          <TabsTrigger value="metrics">Métricas por Categoría</TabsTrigger>
+          <TabsTrigger value="alerts">Alertas</TabsTrigger>
+          <TabsTrigger value="vitals">Web Vitals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="metrics" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Métricas de Rendimiento</CardTitle>
+              <CardTitle>Métricas por Categoría</CardTitle>
               <CardDescription>
-                Análisis detallado de las operaciones de la aplicación
+                Análisis detallado del rendimiento por tipo de operación
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Bundle Size</label>
-                    <p className="text-2xl font-bold">{formatBytes(stats.bundleSize)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Total Cache</label>
-                    <p className="text-2xl font-bold">{formatBytes(cacheSize.total)}</p>
-                  </div>
-                </div>
-                
-                {report?.slowQueries && report.slowQueries.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Operaciones Lentas</h4>
-                    <div className="space-y-2">
-                      {report.slowQueries.slice(0, 5).map((query: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                          <span className="text-sm">{query.name}</span>
-                          <Badge variant="secondary">{query.duration}ms</Badge>
-                        </div>
-                      ))}
+                {Object.entries(stats.categoryBreakdown).map(([category, data]) => (
+                  <div key={category} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium capitalize">{category}</h4>
+                      <Badge variant="outline">{data.count} operaciones</Badge>
                     </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Promedio: </span>
+                        <span className="font-medium">{data.average}ms</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">P95: </span>
+                        <span className="font-medium">{data.p95}ms</span>
+                      </div>
+                    </div>
+                    <Progress 
+                      value={Math.min((data.average / 1000) * 100, 100)} 
+                      className="mt-2" 
+                    />
                   </div>
-                )}
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="cache" className="space-y-4">
+        <TabsContent value="alerts" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Gestión de Cache</CardTitle>
+              <CardTitle>Alertas de Rendimiento</CardTitle>
               <CardDescription>
-                Control y optimización del sistema de cache
+                Problemas detectados que requieren atención
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">Cache Total</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {formatBytes(cacheSize.total)} almacenados
+              <div className="space-y-3">
+                {/* Alertas de performance */}
+                {alerts.map((alert, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded">
+                    <AlertTriangle className={`h-5 w-5 mt-0.5 ${
+                      alert.severity === 'high' ? 'text-red-500' : 
+                      alert.severity === 'medium' ? 'text-yellow-500' : 'text-blue-500'
+                    }`} />
+                    <div>
+                      <p className="font-medium">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(alert.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Alertas de Web Vitals */}
+                {vitalAlerts.map((alert, index) => (
+                  <div key={`vital-${index}`} className="flex items-start gap-3 p-3 bg-muted rounded">
+                    <Database className={`h-5 w-5 mt-0.5 ${
+                      alert.severity === 'poor' ? 'text-red-500' : 'text-yellow-500'
+                    }`} />
+                    <div>
+                      <p className="font-medium">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Métrica: {alert.metric}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {alerts.length === 0 && vitalAlerts.length === 0 && (
+                  <div className="text-center py-8">
+                    <Zap className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <h3 className="font-medium text-lg">¡Todo funcionando bien!</h3>
+                    <p className="text-muted-foreground">
+                      No se detectaron problemas de rendimiento.
                     </p>
                   </div>
-                  <Button variant="outline" onClick={clearCache}>
-                    <HardDrive className="h-4 w-4 mr-2" />
-                    Limpiar Cache
-                  </Button>
-                </div>
-                
-                {Object.entries(cacheSize.breakdown).length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Desglose por Tipo</h4>
-                    <div className="space-y-2">
-                      {Object.entries(cacheSize.breakdown).map(([name, size]) => (
-                        <div key={name} className="flex justify-between items-center p-2 bg-muted rounded">
-                          <span className="text-sm">{name}</span>
-                          <span className="text-sm font-medium">{formatBytes(size as number)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="recommendations" className="space-y-4">
+        <TabsContent value="vitals" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recomendaciones de Optimización</CardTitle>
+              <CardTitle>Web Vitals Detalladas</CardTitle>
               <CardDescription>
-                Sugerencias basadas en el análisis de rendimiento
+                Métricas de rendimiento de carga de la página
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {report?.recommendations && report.recommendations.length > 0 ? (
-                <div className="space-y-3">
-                  {report.recommendations.map((recommendation: string, index: number) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded">
-                      <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
-                      <p className="text-sm">{recommendation}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Object.entries(vitals).map(([key, value]) => {
+                  const getVitalStatus = (metric: string, val: number) => {
+                    const thresholds: Record<string, [number, number]> = {
+                      FCP: [1800, 3000],
+                      LCP: [2500, 4000],
+                      FID: [100, 300],
+                      CLS: [0.1, 0.25]
+                    };
+                    const [good, poor] = thresholds[metric] || [0, 0];
+                    if (val <= good) return { label: 'Bueno', color: 'text-green-600' };
+                    if (val <= poor) return { label: 'Necesita mejora', color: 'text-yellow-600' };
+                    return { label: 'Pobre', color: 'text-red-600' };
+                  };
+
+                  if (!value) return null;
+                  
+                  const status = getVitalStatus(key, value);
+                  
+                  return (
+                    <div key={key} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">{key}</h4>
+                        <Badge className={status.color}>{status.label}</Badge>
+                      </div>
+                      <div className="text-2xl font-bold">
+                        {formatMs(value)}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {key === 'FCP' && 'First Contentful Paint'}
+                        {key === 'LCP' && 'Largest Contentful Paint'}
+                        {key === 'FID' && 'First Input Delay'}
+                        {key === 'CLS' && 'Cumulative Layout Shift'}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Zap className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="font-medium text-lg">¡Excelente Rendimiento!</h3>
-                  <p className="text-muted-foreground">
-                    No se detectaron problemas de rendimiento significativos.
-                  </p>
-                </div>
-              )}
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

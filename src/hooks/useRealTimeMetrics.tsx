@@ -6,7 +6,7 @@ import { performanceMonitor } from '@/utils/performanceMonitor';
 
 interface RealTimeMetric {
   timestamp: number;
-  category: 'loading' | 'interaction' | 'database' | 'api';
+  category: 'loading' | 'interaction' | 'database' | 'api' | 'rendering' | 'navigation';
   value: number;
   name: string;
 }
