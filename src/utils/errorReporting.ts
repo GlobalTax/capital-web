@@ -2,7 +2,7 @@
 // Sistema avanzado de reporte y gestión de errores
 
 import { devLogger } from './devLogger';
-import { performanceMonitor } from '@/shared/services/performance-monitor.service';
+import { performanceMonitor } from '@/utils/unifiedPerformanceMonitor';
 
 export interface ErrorReport {
   id: string;
@@ -106,13 +106,7 @@ class ErrorReportingSystem {
     devLogger.error('Error captured', report, 'error-reporting');
 
     // Monitorear performance de errores
-    performanceMonitor.record({
-      name: 'error_captured',
-      value: 1,
-      category: 'api',
-      timestamp: Date.now(),
-      tags: { severity: errorData.severity }
-    });
+    performanceMonitor.record('error_captured', 1, 'api', { severity: errorData.severity });
 
     return report.id;
   }

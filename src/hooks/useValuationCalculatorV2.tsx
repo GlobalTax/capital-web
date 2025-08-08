@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyDataV2, ValuationResultV2, SectorMultiple } from '@/types/valuationV2';
 import { calculateCompanyValuationV2 } from '@/utils/valuationCalculationV2';
@@ -36,19 +36,55 @@ export const useValuationCalculatorV2 = () => {
   const [result, setResult] = useState<ValuationResultV2 | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
 
-  // Usar el hook de validación con reglas V2
+// Estado del formulario y validación (nuevo API)
+  const [companyData, setCompanyData] = useState<CompanyDataV2>(initialCompanyDataV2);
   const validationRules = createValidationRulesV2();
   const {
-    data: companyData,
-    errors,
-    touched,
-    isValid: isFormValid,
-    updateField: updateFormField,
-    markFieldAsTouched,
-    getFieldState,
-    validateAll,
-    reset: resetForm
-  } = useFormValidation(initialCompanyDataV2, validationRules);
+    validationState,
+    validateField,
+    markFieldTouched,
+    reset: resetValidation,
+    getFieldError,
+    isFieldTouched,
+    isFieldValid
+  } = useFormValidation({ fields: validationRules } as any);
+
+  const errors = useMemo(() => {
+    const map: Record<string, string> = {};
+    validationState.errors.forEach(e => {
+      if (map[e.field]) {
+        map[e.field] = `${map[e.field]}, ${e.message}`;
+      } else {
+        map[e.field] = e.message;
+      }
+    });
+    return map;
+  }, [validationState.errors]);
+
+  const touched = validationState.touchedFields;
+  const isFormValid = validationState.isValid;
+
+  const getFieldState = useCallback((field: keyof CompanyDataV2) => {
+    const name = field as string;
+    const error = getFieldError(name)?.message;
+    return {
+      isTouched: isFieldTouched(name),
+      hasError: !!error,
+      isValid: isFieldValid(name),
+      errorMessage: error
+    };
+  }, [getFieldError, isFieldTouched, isFieldValid]);
+
+  const updateFormField = useCallback((field: keyof CompanyDataV2, value: any) => {
+    setCompanyData(prev => {
+      const updated = { ...prev, [field]: value };
+      validateField(field as string, value, updated, true);
+      return updated;
+    });
+  }, [validateField]);
+
+  const markFieldAsTouched = markFieldTouched;
+  const resetForm = resetValidation;
 
   // Cargar múltiplos por sector desde Supabase
   useEffect(() => {
@@ -144,6 +180,7 @@ export const useValuationCalculatorV2 = () => {
 
   const resetCalculator = useCallback(() => {
     resetForm();
+    setCompanyData(initialCompanyDataV2);
     setResult(null);
     setCurrentStep(1);
     setShowValidation(false);
