@@ -27,6 +27,11 @@ import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
+import ContactsPage from '@/pages/admin/ContactsPage';
+import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
+import TrackingDashboardPage from '@/pages/admin/TrackingDashboardPage';
+import TrackingConfigPage from '@/pages/admin/TrackingConfigPage';
+import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -58,11 +63,13 @@ const AdminRouter = () => {
       <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
+      <Route path="/contacts" element={<ContactsPage />} />
       
       {/* Content Management */}
       <Route path="/content-performance" element={<ContentPerformancePage />} />
       <Route path="/content-studio" element={<ContentStudioPage />} />
       <Route path="/design-resources" element={<DesignResourcesPage />} />
+      <Route path="/lead-magnets" element={<LeadMagnetsPage />} />
       <Route path="/blog-v2" element={<ModernBlogManager />} />
       <Route path="/blog/new" element={<BlogEditorPage />} />
       <Route path="/blog/edit/:id" element={<BlogEditorPage />} />
@@ -80,6 +87,13 @@ const AdminRouter = () => {
       <Route path="/testimonials" element={<TestimonialsManager />} />
       <Route path="/carousel-testimonials" element={<CarouselTestimonialsManager />} />
       <Route path="/carousel-logos" element={<CarouselLogosManager />} />
+      
+      {/* Tracking & Analytics */}
+      <Route path="/tracking-dashboard" element={<TrackingDashboardPage />} />
+      <Route path="/tracking-config" element={<TrackingConfigPage />} />
+      
+      {/* Integrations */}
+      <Route path="/integrations" element={<IntegrationsPage />} />
       
       {/* Settings */}
       <Route path="/admin-users" element={<AdminUsersManager />} />
