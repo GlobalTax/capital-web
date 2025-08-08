@@ -22,6 +22,11 @@ interface PerformanceConfig {
   maxMetrics: number;
   flushInterval: number;
   thresholds: Record<string, number>;
+  endpoint?: string; // URL de envío opcional
+  useBeacon: boolean; // Usar navigator.sendBeacon cuando sea posible
+  sampleRate: number; // 0..1 - muestreo en producción
+  batchSize: number; // Tamaño del lote a enviar
+  maxQueueSize: number; // Límite de cola de envío
 }
 
 class UnifiedPerformanceMonitor {
@@ -38,11 +43,18 @@ class UnifiedPerformanceMonitor {
       api: 3000,
       rendering: 16,
       navigation: 1500
-    }
+    },
+    endpoint: undefined,
+    useBeacon: true,
+    sampleRate: import.meta.env.PROD ? 0.1 : 1,
+    batchSize: 50,
+    maxQueueSize: 1000
   };
   private observer?: PerformanceObserver;
   private flushTimer?: NodeJS.Timeout;
-
+  private isSampled = true;
+  private sendQueue: PerformanceMetric[] = [];
+  private active = true;
   constructor() {
     this.setupWebVitals();
 
@@ -66,6 +78,21 @@ class UnifiedPerformanceMonitor {
       }
     } catch {}
 
+    // Muestreo y listeners para flush por beacon
+    try {
+      this.isSampled = Math.random() < this.config.sampleRate;
+      this.active = this.config.enabled || (import.meta.env.PROD && this.isSampled);
+
+      const flushAndClear = () => {
+        this.flushSendQueue(true);
+      };
+      window.addEventListener('pagehide', flushAndClear, { capture: true } as any);
+      window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushAndClear();
+      });
+      window.addEventListener('beforeunload', flushAndClear);
+    } catch {}
+
     this.startPeriodicCleanup();
   }
 
@@ -76,7 +103,8 @@ class UnifiedPerformanceMonitor {
     category: PerformanceMetric['category'],
     tags?: Record<string, string>
   ): void {
-    if (!this.config.enabled) return;
+    const enabled = this.config.enabled || (import.meta.env.PROD && this.isSampled);
+    if (!enabled) return;
 
     const metric: PerformanceMetric = {
       name,
@@ -88,6 +116,7 @@ class UnifiedPerformanceMonitor {
 
     this.metrics.push(metric);
     this.cleanupOldMetrics();
+    this.enqueueForSend(metric);
 
     // Log críticos para debugging
     if (value > this.config.thresholds[category] * 2) {
@@ -139,6 +168,59 @@ class UnifiedPerformanceMonitor {
       const effectiveThreshold = threshold || this.config.thresholds[m.category];
       return m.value > effectiveThreshold;
     }).sort((a, b) => b.value - a.value);
+  }
+
+  // Envío por beacon / batching
+  private enqueueForSend(metric: PerformanceMetric): void {
+    if (!this.config.endpoint) return;
+    this.sendQueue.push(metric);
+    if (this.sendQueue.length > this.config.maxQueueSize) {
+      this.sendQueue = this.sendQueue.slice(-this.config.maxQueueSize);
+    }
+    if (this.sendQueue.length >= this.config.batchSize) {
+      this.flushSendQueue();
+    }
+  }
+
+  private flushSendQueue(preferBeacon = false): void {
+    if (!this.config.endpoint || this.sendQueue.length === 0) return;
+
+    const batch = this.sendQueue.splice(0, this.config.batchSize);
+    const payload = JSON.stringify({
+      ts: Date.now(),
+      vitals: this.vitals,
+      metrics: batch
+    });
+
+    const useBeacon = this.config.useBeacon && (preferBeacon || (typeof document !== 'undefined' && document.visibilityState === 'hidden')) && typeof navigator !== 'undefined' && 'sendBeacon' in navigator;
+
+    if (useBeacon) {
+      try {
+        const ok = (navigator as any).sendBeacon(this.config.endpoint!, new Blob([payload], { type: 'application/json' }));
+        if (!ok) {
+          // Si el beacon falla, reinsertamos el batch al inicio de la cola
+          this.sendQueue.unshift(...batch);
+        }
+        return;
+      } catch {
+        this.sendQueue.unshift(...batch);
+        return;
+      }
+    }
+
+    // Fallback a fetch con keepalive
+    try {
+      fetch(this.config.endpoint!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true as any
+      }).catch(() => {
+        this.sendQueue.unshift(...batch);
+      });
+    } catch {
+      this.sendQueue.unshift(...batch);
+    }
   }
 
   // Configuración
@@ -219,6 +301,9 @@ class UnifiedPerformanceMonitor {
   private startPeriodicCleanup(): void {
     this.flushTimer = setInterval(() => {
       this.cleanupOldMetrics();
+      if (this.sendQueue.length > 0) {
+        this.flushSendQueue();
+      }
     }, this.config.flushInterval);
   }
 
