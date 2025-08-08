@@ -6,7 +6,7 @@ import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useDebounce, useDebouncedCallback } from '@/hooks/useDebounce';
-import { performanceMonitor } from '@/shared/services/performance-monitor.service';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 import { cn } from '@/lib/utils';
 
 interface SearchInputProps {
@@ -33,12 +33,14 @@ const SearchInputComponent = ({
   const debouncedSearch = useDebouncedCallback(
     useCallback((searchQuery: string) => {
       if (trackPerformance) {
-        performanceMonitor.startTimer('search-operation', 'interaction');
+        const startTime = performance.now();
         try {
           onSearch(searchQuery);
-          performanceMonitor.endTimer('search-operation');
+          const duration = performance.now() - startTime;
+          performanceMonitor.record('search-operation', duration, 'interaction');
         } catch (error) {
-          performanceMonitor.endTimer('search-operation');
+          const duration = performance.now() - startTime;
+          performanceMonitor.record('search-operation-error', duration, 'interaction');
           throw error;
         }
       } else {

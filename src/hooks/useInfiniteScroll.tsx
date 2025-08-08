@@ -2,7 +2,7 @@
 // Hook optimizado para infinite scroll con performance monitoring
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { performanceMonitor } from '@/shared/services/performance-monitor.service';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 
 interface UseInfiniteScrollOptions {
   threshold?: number;
@@ -32,14 +32,17 @@ export const useInfiniteScroll = (
     if (entry.isIntersecting && hasNextPage && !loading && enabled) {
       setLoading(true);
       
-      performanceMonitor.startTimer('infinite-scroll-load', 'interaction');
+      const startTime = performance.now();
       
       try {
         await loadMoreRef.current();
+        const duration = performance.now() - startTime;
+        performanceMonitor.record('infinite-scroll-load', duration, 'interaction');
       } catch (error) {
+        const duration = performance.now() - startTime;
+        performanceMonitor.record('infinite-scroll-error', duration, 'interaction');
         console.error('Error loading more data:', error);
       } finally {
-        performanceMonitor.endTimer('infinite-scroll-load');
         setLoading(false);
       }
     }

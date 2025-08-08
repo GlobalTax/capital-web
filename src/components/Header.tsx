@@ -28,7 +28,7 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
             {/* DEV ONLY - Admin access button for development */}
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <Link to="/admin">
                 <InteractiveHoverButton 
                   text="🔧"

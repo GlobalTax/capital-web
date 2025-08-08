@@ -1,7 +1,7 @@
 // ============= PERFORMANCE OPTIMIZER UTILITIES =============
 // Utilidades para optimizar el rendimiento de la aplicación
 
-import { performanceMonitor } from '@/shared/services/performance-monitor.service';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 
 interface OptimizationReport {
   bundleSize: number;
@@ -37,8 +37,7 @@ class PerformanceOptimizer {
     const category = this.categorizeEntry(entry);
     
     if (entry.duration > 100) { // Operaciones lentas > 100ms
-      performanceMonitor.startTimer(entry.name, category);
-      setTimeout(() => performanceMonitor.endTimer(entry.name), entry.duration);
+      performanceMonitor.record(entry.name, entry.duration, category);
     }
   }
 
@@ -55,8 +54,7 @@ class PerformanceOptimizer {
         const longTaskObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             if (entry.duration > 50) { // Long tasks > 50ms
-              performanceMonitor.startTimer('long-task', 'interaction');
-              setTimeout(() => performanceMonitor.endTimer('long-task'), entry.duration);
+              performanceMonitor.record('long-task', entry.duration, 'interaction');
               console.warn(`🐌 Long task detected: ${entry.duration.toFixed(2)}ms`);
             }
           }
@@ -72,15 +70,15 @@ class PerformanceOptimizer {
   // Generar reporte de optimización
   generateReport(): OptimizationReport {
     const metrics = performanceMonitor.getMetrics();
-    const summary = performanceMonitor.getPerformanceSummary();
     
-    const slowQueries = performanceMonitor.getSlowQueries(1000) // > 1 segundo
+    const slowQueries = metrics
+      .filter(metric => metric.value > 1000) // > 1 segundo
       .map(metric => ({
         name: metric.name,
-        duration: metric.duration || 0
+        duration: metric.value
       }));
 
-    const recommendations = this.generateRecommendations(summary, slowQueries);
+    const recommendations = this.generateRecommendations(metrics, slowQueries);
 
     return {
       bundleSize: this.estimateBundleSize(),
@@ -91,7 +89,7 @@ class PerformanceOptimizer {
   }
 
   private generateRecommendations(
-    summary: any, 
+    metrics: any[], 
     slowQueries: Array<{ name: string; duration: number }>
   ): string[] {
     const recommendations: string[] = [];
@@ -102,9 +100,14 @@ class PerformanceOptimizer {
     }
 
     // Análisis por categoría
-    Object.entries(summary).forEach(([category, stats]: [string, any]) => {
-      if (stats.averageTime > 500) {
-        recommendations.push(`Optimizar operaciones de ${category} (promedio: ${stats.averageTime}ms)`);
+    const categories = ['api', 'database', 'interaction', 'loading'];
+    categories.forEach(category => {
+      const categoryMetrics = metrics.filter(m => m.category === category);
+      if (categoryMetrics.length > 0) {
+        const avgTime = categoryMetrics.reduce((sum, m) => sum + m.value, 0) / categoryMetrics.length;
+        if (avgTime > 500) {
+          recommendations.push(`Optimizar operaciones de ${category} (promedio: ${avgTime.toFixed(0)}ms)`);
+        }
       }
     });
 
