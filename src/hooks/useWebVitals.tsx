@@ -8,6 +8,7 @@ interface WebVitalsData {
   FCP?: number;
   LCP?: number;
   FID?: number;
+  INP?: number;
   CLS?: number;
 }
 
@@ -23,6 +24,7 @@ const VITALS_THRESHOLDS = {
   FCP: { good: 1800, poor: 3000 },
   LCP: { good: 2500, poor: 4000 },
   FID: { good: 100, poor: 300 },
+  INP: { good: 200, poor: 500 },
   CLS: { good: 0.1, poor: 0.25 }
 };
 
@@ -92,6 +94,10 @@ export const useWebVitals = () => {
       FID: {
         'needs-improvement': `First Input Delay es alto (${Math.round(value)}ms). Objetivo: <100ms`,
         'poor': `First Input Delay es muy alto (${Math.round(value)}ms). Crítico: >300ms`
+      },
+      INP: {
+        'needs-improvement': `Interaction to Next Paint es alto (${Math.round(value)}ms). Objetivo: ≤200ms`,
+        'poor': `Interaction to Next Paint es muy alto (${Math.round(value)}ms). Crítico: >500ms`
       },
       CLS: {
         'needs-improvement': `Cumulative Layout Shift es alto (${value.toFixed(3)}). Objetivo: <0.1`,

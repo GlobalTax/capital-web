@@ -51,7 +51,7 @@ export const usePerformanceAnalytics = (options: {
   const previousStatsRef = useRef<PerformanceStats | null>(null);
 
   const calculateStats = useCallback((): PerformanceStats => {
-    const categories = ['loading', 'interaction', 'database', 'api', 'rendering'] as const;
+    const categories = ['loading', 'interaction', 'database', 'api', 'rendering', 'navigation'] as const;
     const categoryBreakdown: Record<string, any> = {};
     let totalOps = 0;
     let totalTime = 0;

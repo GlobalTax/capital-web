@@ -13,6 +13,7 @@ interface WebVitals {
   FCP?: number;
   LCP?: number;
   FID?: number;
+  INP?: number;
   CLS?: number;
 }
 
@@ -44,6 +45,27 @@ class UnifiedPerformanceMonitor {
 
   constructor() {
     this.setupWebVitals();
+
+    // Record navigation timings (TTFB, DCL, DOMComplete)
+    try {
+      const recordNav = () => {
+        const entries = performance.getEntriesByType('navigation') as any[];
+        const nav: any = entries && entries[0];
+        if (!nav) return;
+        const ttfb = nav.responseStart - nav.startTime;
+        const dcl = nav.domContentLoadedEventEnd - nav.startTime;
+        const complete = nav.domComplete - nav.startTime;
+        this.record('TTFB', ttfb, 'navigation');
+        this.record('DOM Content Loaded', dcl, 'navigation');
+        this.record('DOM Complete', complete, 'navigation');
+      };
+      if (document.readyState === 'complete') {
+        recordNav();
+      } else {
+        window.addEventListener('load', () => recordNav(), { once: true });
+      }
+    } catch {}
+
     this.startPeriodicCleanup();
   }
 
@@ -134,8 +156,8 @@ class UnifiedPerformanceMonitor {
     });
 
     try {
-      this.observer.observe({ 
-        entryTypes: ['paint', 'largest-contentful-paint', 'first-input', 'layout-shift'] 
+      this.observer.observe({
+        entryTypes: ['paint', 'largest-contentful-paint', 'first-input', 'layout-shift', 'event', 'longtask']
       });
     } catch (error) {
       console.warn('Web Vitals observation failed:', error);
@@ -158,12 +180,29 @@ class UnifiedPerformanceMonitor {
         this.vitals.FID = (entry as any).processingStart - entry.startTime;
         this.record('FID', this.vitals.FID, 'interaction');
         break;
+      case 'event': {
+        // Approximate INP using Event Timing: track worst interaction latency
+        const e: any = entry as any;
+        const candidate = typeof e.duration === 'number' ? e.duration : ((e.processingEnd || 0) - entry.startTime);
+        if (!Number.isNaN(candidate) && candidate > 0) {
+          this.vitals.INP = Math.max(this.vitals.INP || 0, candidate);
+          this.record('INP', candidate, 'interaction', { event: e.name || 'event' });
+        }
+        break;
+      }
       case 'layout-shift':
         if (!(entry as any).hadRecentInput) {
           this.vitals.CLS = (this.vitals.CLS || 0) + (entry as any).value;
           this.record('CLS', (entry as any).value, 'rendering');
         }
         break;
+      case 'longtask': {
+        const duration = (entry as any).duration as number;
+        if (duration && duration > 0) {
+          this.record('Long Task', duration, 'rendering', { name: entry.name });
+        }
+        break;
+      }
     }
   }
 
