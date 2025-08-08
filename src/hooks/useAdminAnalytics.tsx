@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/logger';
+import { performanceMonitor } from '@/utils/unifiedPerformanceMonitor';
 
 interface AdminAnalytics {
   totalUsers: number;
@@ -42,6 +43,8 @@ export const useAdminAnalytics = (): UseAdminAnalyticsReturn => {
       setError('Acceso denegado: Se requieren permisos de administrador');
       return null;
     }
+
+    performanceMonitor.record('analytics-fetch-start', Date.now(), 'api');
 
     try {
       setIsLoading(true);
@@ -97,9 +100,11 @@ export const useAdminAnalytics = (): UseAdminAnalyticsReturn => {
       }
 
       setAnalytics(mockAnalytics);
+      performanceMonitor.record('analytics-fetch-success', Date.now(), 'api');
       return mockAnalytics;
 
     } catch (err) {
+      performanceMonitor.record('analytics-fetch-error', Date.now(), 'api');
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(errorMessage);
       logger.error('Failed to fetch admin analytics', err as Error, { 
