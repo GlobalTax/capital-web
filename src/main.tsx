@@ -9,7 +9,11 @@ console.log('Capittal App initializing...');
 // Inicialización optimizada y lazy
 const initializeApp = async () => {
   try {
-// Importar error handler optimizado de forma lazy
+    // Inicializar orquestador de startup primero
+    const { startupOrchestrator } = await import('./core/startup/StartupOrchestrator');
+    await startupOrchestrator.initialize();
+
+    // Importar error handler optimizado de forma lazy
     const { optimizedErrorHandler } = await import('./utils/optimizedErrorHandler');
     
     // Verificar que el DOM está listo

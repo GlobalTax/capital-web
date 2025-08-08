@@ -1,7 +1,7 @@
 // ============= QUERY OPTIMIZER =============
 // Optimización inteligente de consultas SQL y RLS
 
-import { dbPool } from './ConnectionPool';
+import { getDbPool } from './ConnectionPool';
 import { logger } from '@/utils/logger';
 
 interface QueryPlan {
@@ -165,6 +165,7 @@ class DatabaseQueryOptimizer {
 
   // Ejecutar la consulta optimizada
     try {
+      const dbPool = getDbPool();
       const result = await dbPool.executeQuery(async (client) => {
         // Aplicar hints de índice si están disponibles
         if (optimizedPlan.useIndex) {
@@ -234,6 +235,7 @@ class DatabaseQueryOptimizer {
     slowQueries: any[];
     indexSuggestions: Array<{ table: string; suggestion: string }>;
   } {
+    const dbPool = getDbPool();
     const slowQueries = dbPool.getSlowQueries();
     const cacheSize = this.queryCache.size;
     const poolStats = dbPool.getStats();
@@ -285,5 +287,15 @@ class DatabaseQueryOptimizer {
   }
 }
 
-// Singleton instance
-export const queryOptimizer = new DatabaseQueryOptimizer();
+// Lazy singleton instance
+let queryOptimizerInstance: DatabaseQueryOptimizer | null = null;
+
+export const getQueryOptimizer = (): DatabaseQueryOptimizer => {
+  if (!queryOptimizerInstance) {
+    queryOptimizerInstance = new DatabaseQueryOptimizer();
+  }
+  return queryOptimizerInstance;
+};
+
+// For backward compatibility
+export const queryOptimizer = getQueryOptimizer();

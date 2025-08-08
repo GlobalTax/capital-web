@@ -2,8 +2,8 @@
 // Capa de abstracción optimizada para interactuar con Supabase
 
 import { supabase } from '@/integrations/supabase/client';
-import { queryOptimizer } from '@/core/database/QueryOptimizer';
-import { dbPool } from '@/core/database/ConnectionPool';
+import { getQueryOptimizer } from '@/core/database/QueryOptimizer';
+import { getDbPool } from '@/core/database/ConnectionPool';
 import type { 
   ContactLead, 
   LeadScore, 
@@ -17,8 +17,8 @@ export class SupabaseApi {
   // ============= PERFORMANCE MONITORING =============
   getPerformanceMetrics() {
     return {
-      queryOptimizer: queryOptimizer.generatePerformanceReport(),
-      connectionPool: dbPool.getStats()
+      queryOptimizer: getQueryOptimizer().generatePerformanceReport(),
+      connectionPool: getDbPool().getStats()
     };
   }
 
@@ -30,7 +30,7 @@ export class SupabaseApi {
       .order('created_at', { ascending: false })
       .limit(limit);
     
-    return await queryOptimizer.executeOptimizedQuery<any[]>(
+    return await getQueryOptimizer().executeOptimizedQuery<any[]>(
       queryBuilder,
       'contact_leads',
       'SELECT'
@@ -45,7 +45,7 @@ export class SupabaseApi {
       .order('total_score', { ascending: false })
       .limit(limit);
     
-    const result = await queryOptimizer.executeOptimizedQuery(
+    const result = await getQueryOptimizer().executeOptimizedQuery(
       queryBuilder,
       'lead_scores',
       'SELECT'
@@ -62,7 +62,7 @@ export class SupabaseApi {
       .order('created_at', { ascending: false })
       .limit(limit);
     
-    const result = await queryOptimizer.executeOptimizedQuery(
+    const result = await getQueryOptimizer().executeOptimizedQuery(
       queryBuilder,
       'company_valuations',
       'SELECT'
@@ -79,7 +79,7 @@ export class SupabaseApi {
       .order('viewed_at', { ascending: false })
       .limit(limit);
     
-    const result = await queryOptimizer.executeOptimizedQuery(
+    const result = await getQueryOptimizer().executeOptimizedQuery(
       queryBuilder,
       'blog_analytics',
       'SELECT'
@@ -96,7 +96,7 @@ export class SupabaseApi {
       .order('total_views', { ascending: false })
       .limit(limit);
     
-    const result = await queryOptimizer.executeOptimizedQuery(
+    const result = await getQueryOptimizer().executeOptimizedQuery(
       queryBuilder,
       'blog_post_metrics',
       'SELECT'
@@ -113,7 +113,7 @@ export class SupabaseApi {
       .order('created_at', { ascending: false })
       .limit(limit);
     
-    const result = await queryOptimizer.executeOptimizedQuery(
+    const result = await getQueryOptimizer().executeOptimizedQuery(
       queryBuilder,
       'lead_behavior_events',
       'SELECT'

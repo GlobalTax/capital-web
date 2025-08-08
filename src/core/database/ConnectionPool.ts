@@ -228,5 +228,15 @@ class DatabaseConnectionPool {
   }
 }
 
-// Singleton instance
-export const dbPool = new DatabaseConnectionPool();
+// Lazy singleton instance
+let dbPoolInstance: DatabaseConnectionPool | null = null;
+
+export const getDbPool = (): DatabaseConnectionPool => {
+  if (!dbPoolInstance) {
+    dbPoolInstance = new DatabaseConnectionPool();
+  }
+  return dbPoolInstance;
+};
+
+// For backward compatibility
+export const dbPool = getDbPool();
