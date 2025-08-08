@@ -1,9 +1,8 @@
-// ============= DATABASE CONNECTION POOL =============
-// Optimización de conexiones de base de datos
+// ============= OPTIMIZED DATABASE CONNECTION POOL =============
+// Pool de conexiones optimizado sin dependencias circulares
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { devLogger } from '@/utils/devLogger';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 interface PoolStats {
   activeConnections: number;
@@ -15,203 +14,217 @@ interface PoolStats {
 
 interface QueryMetrics {
   startTime: number;
-  query: string;
+  queryName?: string;
   duration?: number;
-  success?: boolean;
+  success: boolean;
 }
 
 class DatabaseConnectionPool {
   private connections: SupabaseClient[] = [];
-  private activeQueries = new Map<string, QueryMetrics>();
-  private queryStats: PoolStats = {
-    activeConnections: 0,
-    idleConnections: 0,
-    totalQueries: 0,
-    avgQueryTime: 0,
-    failedQueries: 0
-  };
-  
-  private readonly maxConnections = 10;
-  private readonly connectionTimeout = 30000; // 30 segundos
-  private readonly queryTimeout = 15000; // 15 segundos
-  
+  private activeConnections = new Set<SupabaseClient>();
+  private readonly maxConnections: number = 10;
+  private readonly minConnections: number = 3;
+  private queryMetrics: QueryMetrics[] = [];
+  private totalQueries = 0;
+  private failedQueries = 0;
+  private initialized = false;
+  private initPromise: Promise<void> | null = null;
+
   constructor() {
-    this.initializePool();
-    this.startHealthCheck();
+    // Inicialización diferida para evitar problemas de dependencias circulares
+    this.initPromise = this.deferredInit();
   }
 
-  private initializePool() {
-    // Crear conexiones iniciales
-    for (let i = 0; i < 3; i++) {
-      this.createConnection();
+  private async deferredInit() {
+    try {
+      await this.initializePool();
+      this.initialized = true;
+      console.log('Database pool initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize database pool:', error);
     }
-    
-    devLogger.info('Database connection pool initialized', {
-      initialConnections: 3,
-      maxConnections: this.maxConnections
-    }, 'database', 'ConnectionPool');
   }
 
-  private createConnection(): SupabaseClient {
-    // Usar el cliente existente para evitar múltiples instancias
-    this.connections.push(supabase);
-    this.queryStats.idleConnections++;
-    
-    return supabase;
+  private async initializePool() {
+    // Crear conexiones mínimas al inicializar
+    for (let i = 0; i < this.minConnections; i++) {
+      try {
+        const connection = await this.createConnection();
+        this.connections.push(connection);
+      } catch (error) {
+        console.error(`Failed to create connection ${i}:`, error);
+      }
+    }
+  }
+
+  private async createConnection(): Promise<SupabaseClient> {
+    try {
+      return createClient(
+        SUPABASE_CONFIG.url,
+        SUPABASE_CONFIG.anonKey,
+        {
+          auth: {
+            persistSession: true,
+            detectSessionInUrl: false
+          },
+          db: {
+            schema: 'public'
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error creating Supabase connection:', error);
+      throw error;
+    }
   }
 
   async getConnection(): Promise<SupabaseClient> {
-    // Si hay conexiones disponibles, usar una
-    if (this.queryStats.idleConnections > 0) {
-      this.queryStats.idleConnections--;
-      this.queryStats.activeConnections++;
-      return this.connections[0]; // Simplificado para el ejemplo
+    // Esperar a que se complete la inicialización
+    if (!this.initialized && this.initPromise) {
+      await this.initPromise;
     }
 
-    // Si no hay conexiones y podemos crear más
-    if (this.connections.length < this.maxConnections) {
-      const newConnection = this.createConnection();
-      this.queryStats.idleConnections--;
-      this.queryStats.activeConnections++;
-      return newConnection;
+    try {
+      // Buscar conexión idle disponible
+      const idleConnection = this.connections.find(conn => 
+        !this.activeConnections.has(conn)
+      );
+
+      if (idleConnection) {
+        this.activeConnections.add(idleConnection);
+        return idleConnection;
+      }
+
+      // Si no hay conexiones idle y no hemos alcanzado el máximo, crear nueva
+      if (this.connections.length < this.maxConnections) {
+        const newConnection = await this.createConnection();
+        this.connections.push(newConnection);
+        this.activeConnections.add(newConnection);
+        return newConnection;
+      }
+
+      // Si hemos alcanzado el máximo, esperar por una conexión disponible
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection pool timeout'));
+        }, 10000); // 10 segundos timeout
+
+        const checkForConnection = () => {
+          const availableConnection = this.connections.find(conn => 
+            !this.activeConnections.has(conn)
+          );
+          
+          if (availableConnection) {
+            clearTimeout(timeout);
+            this.activeConnections.add(availableConnection);
+            resolve(availableConnection);
+          } else {
+            setTimeout(checkForConnection, 100);
+          }
+        };
+        
+        checkForConnection();
+      });
+    } catch (error) {
+      console.error('Error getting database connection:', error);
+      throw error;
     }
+  }
 
-    // Esperar a que se libere una conexión
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Connection pool timeout'));
-      }, this.connectionTimeout);
-
-      const checkForConnection = () => {
-        if (this.queryStats.idleConnections > 0) {
-          clearTimeout(timeout);
-          this.queryStats.idleConnections--;
-          this.queryStats.activeConnections++;
-          resolve(this.connections[0]);
-        } else {
-          setTimeout(checkForConnection, 100);
-        }
-      };
-
-      checkForConnection();
-    });
+  releaseConnection(connection: SupabaseClient) {
+    this.activeConnections.delete(connection);
   }
 
   async executeQuery<T>(
     queryFn: (client: SupabaseClient) => Promise<T>,
-    queryName: string = 'unknown'
+    queryName?: string
   ): Promise<T> {
-    const queryId = `${queryName}_${Date.now()}_${Math.random()}`;
     const startTime = performance.now();
-    
-    this.activeQueries.set(queryId, {
-      startTime,
-      query: queryName
-    });
+    let connection: SupabaseClient | null = null;
 
     try {
-      const connection = await this.getConnection();
+      connection = await this.getConnection();
       
       // Timeout para la query
       const queryPromise = queryFn(connection);
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Query timeout')), this.queryTimeout);
+        setTimeout(() => reject(new Error('Query timeout')), 15000);
       });
 
       const result = await Promise.race([queryPromise, timeoutPromise]);
       
       // Actualizar métricas exitosas
       const duration = performance.now() - startTime;
-      this.updateQueryMetrics(queryId, duration, true);
+      this.updateQueryMetrics(queryName || 'unknown', duration, true);
       
       return result;
     } catch (error) {
       // Actualizar métricas de error
       const duration = performance.now() - startTime;
-      this.updateQueryMetrics(queryId, duration, false);
-      
-      devLogger.error('Database query failed', error, 'database', 'ConnectionPool');
+      this.updateQueryMetrics(queryName || 'unknown', duration, false);
       
       throw error;
     } finally {
-      this.releaseConnection();
-      this.activeQueries.delete(queryId);
+      if (connection) {
+        this.releaseConnection(connection);
+      }
     }
   }
 
-  private updateQueryMetrics(queryId: string, duration: number, success: boolean) {
-    const query = this.activeQueries.get(queryId);
-    if (query) {
-      query.duration = duration;
-      query.success = success;
+  private updateQueryMetrics(queryName: string, duration: number, success: boolean) {
+    this.totalQueries++;
+    
+    this.queryMetrics.push({
+      startTime: Date.now(),
+      queryName,
+      duration,
+      success
+    });
+
+    if (!success) {
+      this.failedQueries++;
     }
 
-    this.queryStats.totalQueries++;
-    
-    if (success) {
-      // Calcular tiempo promedio
-      const totalTime = this.queryStats.avgQueryTime * (this.queryStats.totalQueries - 1) + duration;
-      this.queryStats.avgQueryTime = totalTime / this.queryStats.totalQueries;
-    } else {
-      this.queryStats.failedQueries++;
+    // Mantener solo las últimas 100 métricas
+    if (this.queryMetrics.length > 100) {
+      this.queryMetrics = this.queryMetrics.slice(-100);
     }
 
     // Log si la query es muy lenta
-    if (duration > 5000) {
-      devLogger.warn('Slow query detected', {
-        queryId,
-        duration,
-        query: query?.query || 'unknown'
-      }, 'database', 'ConnectionPool');
-    }
-  }
-
-  private releaseConnection() {
-    if (this.queryStats.activeConnections > 0) {
-      this.queryStats.activeConnections--;
-      this.queryStats.idleConnections++;
-    }
-  }
-
-  private startHealthCheck() {
-    setInterval(() => {
-      this.performHealthCheck();
-    }, 60000); // Cada minuto
-  }
-
-  private async performHealthCheck() {
-    try {
-      const healthQuery = async (client: SupabaseClient) => {
-        const { data, error } = await client.from('admin_users').select('count').limit(1);
-        if (error) throw error;
-        return data;
-      };
-
-      await this.executeQuery(healthQuery, 'health_check');
-      
-      devLogger.debug('Database health check passed', this.getStats(), 'database', 'ConnectionPool');
-    } catch (error) {
-      devLogger.error('Database health check failed', error, 'database', 'ConnectionPool');
+    if (duration > 2000) {
+      console.warn(`Slow query detected: ${queryName} took ${duration}ms`);
     }
   }
 
   getStats(): PoolStats {
-    return { ...this.queryStats };
+    const successfulQueries = this.queryMetrics.filter(m => m.success);
+    const avgQueryTime = successfulQueries.length > 0 
+      ? successfulQueries.reduce((sum, m) => sum + (m.duration || 0), 0) / successfulQueries.length
+      : 0;
+
+    return {
+      activeConnections: this.activeConnections.size,
+      idleConnections: this.connections.length - this.activeConnections.size,
+      totalQueries: this.totalQueries,
+      avgQueryTime,
+      failedQueries: this.failedQueries
+    };
   }
 
-  // Método para optimización de queries lentas
+  // Método para optimización de queries lentas (para compatibilidad)
   getSlowQueries(): QueryMetrics[] {
-    return Array.from(this.activeQueries.values())
+    return this.queryMetrics
       .filter(query => query.duration && query.duration > 3000)
       .sort((a, b) => (b.duration || 0) - (a.duration || 0));
   }
 
   // Cleanup al cerrar la aplicación
   async closePool() {
-    devLogger.info('Closing database connection pool', this.getStats(), 'database', 'ConnectionPool');
+    console.log('Closing database connection pool');
     
     this.connections.length = 0;
-    this.activeQueries.clear();
+    this.activeConnections.clear();
+    this.queryMetrics = [];
   }
 }
 

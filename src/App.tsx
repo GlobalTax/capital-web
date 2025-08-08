@@ -272,73 +272,73 @@ function AppContent() {
 }
 
 function App() {
-  // Optimizaciones de bundle en desarrollo
-  if (process.env.NODE_ENV === 'development') {
-    logBundleSize();
-    monitorResourceLoading();
-  }
-
-  // Preload de chunks críticos
-  preloadCriticalChunks();
-
   useEffect(() => {
-    // Initialize service worker and background sync
-    const initializeAdvancedFeatures = async () => {
+    // Inicialización simplificada y optimizada
+    const initializeFeatures = async () => {
       try {
-        // Initialize service worker
-        const { serviceWorkerManager } = await import('./utils/serviceWorker');
-        await serviceWorkerManager.register();
+        // Solo en desarrollo: optimizaciones de bundle
+        if (process.env.NODE_ENV === 'development') {
+          const { logBundleSize, monitorResourceLoading } = await import('./utils/bundleAnalysis');
+          logBundleSize();
+          monitorResourceLoading();
+        }
 
-        // Initialize background sync
-        const { backgroundSync } = await import('./utils/backgroundSync');
-        backgroundSync.init();
+        // Inicializar service worker de forma diferida
+        setTimeout(async () => {
+          try {
+            if ('serviceWorker' in navigator) {
+              await navigator.serviceWorker.register('/sw.js');
+              console.log('Service worker registered successfully');
+            }
+          } catch (error) {
+            console.warn('Service worker registration failed:', error);
+          }
+        }, 2000);
 
-        // Initialize performance optimizer
-        const { performanceOptimizer } = await import('./utils/performanceOptimizer');
-        performanceOptimizer.init();
+        // Precargar chunks críticos de forma diferida
+        setTimeout(async () => {
+          try {
+            const { preloadCriticalChunks } = await import('./utils/bundleAnalysis');
+            preloadCriticalChunks();
+            
+            // Precargar módulos críticos
+            Promise.all([
+              import('./components/admin/lazy'),
+              import('./features/dashboard/hooks/useMarketingMetrics'),
+            ]).catch(error => {
+              console.warn('Failed to preload some modules:', error);
+            });
+          } catch (error) {
+            console.warn('Failed to initialize preloading:', error);
+          }
+        }, 3000);
 
-        // Initialize resource hints
-        const { resourceHints } = await import('./utils/resourceHints');
-        resourceHints.adaptivePreload();
-        resourceHints.setupIntelligentPrefetch();
+        // Inicializar analytics de rendimiento de forma diferida
+        setTimeout(async () => {
+          try {
+            const { performanceAnalytics } = await import('./utils/performanceAnalytics');
+            
+            const handleRouteChange = () => {
+              performanceAnalytics.recordPageView(window.location.pathname);
+            };
+            
+            window.addEventListener('popstate', handleRouteChange);
+            handleRouteChange();
 
-        // Initialize performance analytics
-        const { performanceAnalytics } = await import('./utils/performanceAnalytics');
-        
-        // Registrar eventos de navegación
-        const handleRouteChange = () => {
-          performanceAnalytics.recordPageView(window.location.pathname);
-        };
-        
-        window.addEventListener('popstate', handleRouteChange);
-        handleRouteChange(); // Initial page view
+            return () => {
+              window.removeEventListener('popstate', handleRouteChange);
+            };
+          } catch (error) {
+            console.warn('Failed to initialize performance analytics:', error);
+          }
+        }, 1000);
 
-        // Pre-load critical chunks
-        await Promise.all([
-          import('./components/admin/lazy'),
-          import('./features/dashboard/hooks/useMarketingMetrics'),
-          import('./shared/services/performance-monitor.service')
-        ]);
-
-        // Prefetch critical resources
-        await serviceWorkerManager.prefetchCriticalResources([
-          '/api/dashboard/stats',
-          '/api/leads/hot',
-          '/api/blog/posts'
-        ]);
-
-        // Cleanup function
-        return () => {
-          performanceOptimizer.cleanup();
-          performanceAnalytics.destroy();
-          window.removeEventListener('popstate', handleRouteChange);
-        };
       } catch (error) {
-        console.error('Failed to initialize advanced features:', error);
+        console.warn('Some features failed to initialize:', error);
       }
     };
 
-    initializeAdvancedFeatures();
+    initializeFeatures();
   }, []);
 
   return (
