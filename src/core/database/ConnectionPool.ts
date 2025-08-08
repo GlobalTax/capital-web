@@ -2,8 +2,8 @@
 // Optimización de conexiones de base de datos
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { SUPABASE_CONFIG } from '@/config/supabase';
-import { logger } from '@/utils/logger';
+import { supabase } from '@/integrations/supabase/client';
+import { devLogger } from '@/utils/devLogger';
 
 interface PoolStats {
   activeConnections: number;
@@ -46,37 +46,18 @@ class DatabaseConnectionPool {
       this.createConnection();
     }
     
-    logger.info('Database connection pool initialized', {
+    devLogger.info('Database connection pool initialized', {
       initialConnections: 3,
       maxConnections: this.maxConnections
-    }, { context: 'database', component: 'ConnectionPool' });
+    }, 'database', 'ConnectionPool');
   }
 
   private createConnection(): SupabaseClient {
-    const client = createClient(
-      SUPABASE_CONFIG.url,
-      SUPABASE_CONFIG.anonKey,
-      {
-        db: {
-          schema: 'public',
-        },
-        auth: {
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: false
-        },
-        realtime: {
-          params: {
-            eventsPerSecond: 2,
-          },
-        },
-      }
-    );
-
-    this.connections.push(client);
+    // Usar el cliente existente para evitar múltiples instancias
+    this.connections.push(supabase);
     this.queryStats.idleConnections++;
     
-    return client;
+    return supabase;
   }
 
   async getConnection(): Promise<SupabaseClient> {
@@ -149,7 +130,7 @@ class DatabaseConnectionPool {
       const duration = performance.now() - startTime;
       this.updateQueryMetrics(queryId, duration, false);
       
-      logger.error('Database query failed', undefined, { context: 'database', component: 'ConnectionPool' });
+      devLogger.error('Database query failed', error, 'database', 'ConnectionPool');
       
       throw error;
     } finally {
@@ -177,11 +158,11 @@ class DatabaseConnectionPool {
 
     // Log si la query es muy lenta
     if (duration > 5000) {
-      logger.warn('Slow query detected', {
+      devLogger.warn('Slow query detected', {
         queryId,
         duration,
         query: query?.query || 'unknown'
-      }, { context: 'database', component: 'ConnectionPool' });
+      }, 'database', 'ConnectionPool');
     }
   }
 
@@ -208,12 +189,9 @@ class DatabaseConnectionPool {
 
       await this.executeQuery(healthQuery, 'health_check');
       
-      logger.debug('Database health check passed', this.getStats(), { 
-        context: 'database', 
-        component: 'ConnectionPool' 
-      });
+      devLogger.debug('Database health check passed', this.getStats(), 'database', 'ConnectionPool');
     } catch (error) {
-      logger.error('Database health check failed', undefined, { context: 'database', component: 'ConnectionPool' });
+      devLogger.error('Database health check failed', error, 'database', 'ConnectionPool');
     }
   }
 
@@ -230,10 +208,7 @@ class DatabaseConnectionPool {
 
   // Cleanup al cerrar la aplicación
   async closePool() {
-    logger.info('Closing database connection pool', this.getStats(), { 
-      context: 'database', 
-      component: 'ConnectionPool' 
-    });
+    devLogger.info('Closing database connection pool', this.getStats(), 'database', 'ConnectionPool');
     
     this.connections.length = 0;
     this.activeQueries.clear();

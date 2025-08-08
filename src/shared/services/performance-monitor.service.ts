@@ -71,8 +71,8 @@ export class PerformanceMonitorService {
     const oneHourAgo = Date.now() - 3600000;
     this.historicalMetrics = this.historicalMetrics.filter(m => m.timestamp > oneHourAgo);
 
-    // Log alertas críticas
-    if (duration > this.thresholds[metric.category]) {
+    // Log alertas críticas (solo si es muy lento para reducir spam)
+    if (duration > this.thresholds[metric.category] * 2) {
       devLogger.warn(
         `⚠️ Slow ${metric.category}: ${name} took ${duration.toFixed(2)}ms (threshold: ${this.thresholds[metric.category]}ms)`,
         metric.metadata,

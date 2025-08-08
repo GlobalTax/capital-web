@@ -24,8 +24,8 @@ class PerformanceMonitor {
     const oneHourAgo = Date.now() - 3600000;
     this.metrics = this.metrics.filter(m => m.timestamp > oneHourAgo);
 
-    // Log en desarrollo si es crítico
-    if (value > 1000) {
+    // Log en desarrollo si es crítico (reducir spam de logs)
+    if (value > 2000) {
       console.warn(`⚠️ Slow ${category}: ${name} took ${value}ms`);
     }
   }

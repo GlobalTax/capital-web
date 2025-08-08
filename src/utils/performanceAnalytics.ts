@@ -292,12 +292,14 @@ class PerformanceAnalytics {
   private flush(): void {
     if (this.batchBuffer.length === 0) return;
 
-    // En un entorno real, enviaríamos a un endpoint de analytics
-    console.log('📊 Performance Analytics Batch:', {
-      batches: this.batchBuffer.length,
-      session: this.session.id,
-      totalMetrics: this.batchBuffer.reduce((sum, batch) => sum + batch.metrics.length, 0)
-    });
+    // Reducir spam de logs - solo cada 5 flushes
+    if (this.batchBuffer.length % 5 === 0) {
+      console.log('📊 Performance Analytics Batch:', {
+        batches: this.batchBuffer.length,
+        session: this.session.id,
+        totalMetrics: this.batchBuffer.reduce((sum, batch) => sum + batch.metrics.length, 0)
+      });
+    }
 
     // Limpiar buffer manteniendo el último batch si tiene métricas
     const lastBatch = this.batchBuffer[this.batchBuffer.length - 1];
