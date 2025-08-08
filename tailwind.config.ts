@@ -19,25 +19,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'sans': ['Inter', 'system-ui', 'sans-serif'],
-			},
-			fontSize: {
-				'xs': ['0.875rem', { lineHeight: '1.4' }],
-				'sm': ['1rem', { lineHeight: '1.5' }],
-				'base': ['1.125rem', { lineHeight: '1.7' }],
-				'lg': ['1.25rem', { lineHeight: '1.7' }],
-				'xl': ['1.5rem', { lineHeight: '1.6' }],
-				'2xl': ['1.875rem', { lineHeight: '1.5' }],
-				'3xl': ['2rem', { lineHeight: '1.4' }],
-				'4xl': ['2.5rem', { lineHeight: '1.3' }],
-				'5xl': ['3rem', { lineHeight: '1.2' }],
-				'6xl': ['4rem', { lineHeight: '1.1' }],
-				'7xl': ['4.5rem', { lineHeight: '1.1' }],
-			},
-			maxWidth: {
-				'content': '72ch',
-				'container': '1100px',
-				'container-lg': '1200px',
+				'sans': ['Manrope', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -90,10 +72,6 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				'cta-accent': {
-					DEFAULT: 'hsl(var(--cta-accent))',
-					foreground: 'hsl(var(--cta-accent-foreground))'
 				}
 			},
 			borderRadius: {
