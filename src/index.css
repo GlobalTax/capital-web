@@ -208,6 +208,20 @@
     @apply text-lg lg:text-xl leading-relaxed text-muted-foreground;
   }
 
+  /* Legacy and admin component aliases */
+  .admin-card {
+    @apply bg-card border border-border rounded-md p-8
+           shadow-[0_2px_10px_0_hsl(0_0%_0%_/_0.03)]
+           transition-all duration-150 ease-out;
+  }
+
+  .admin-input {
+    @apply bg-background border border-input rounded-md px-4 py-3 text-lg
+           transition-all duration-150 ease-out
+           focus:outline-none focus:ring-1 focus:ring-ring focus:border-transparent
+           placeholder:text-muted-foreground;
+  }
+
   /* Legacy components for backward compatibility */
   .capittal-card {
     @apply admin-card;
