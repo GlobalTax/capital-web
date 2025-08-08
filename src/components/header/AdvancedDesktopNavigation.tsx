@@ -234,16 +234,18 @@ const AdvancedDesktopNavigation = () => {
             </NavigationMenuContent>
           </NavigationMenuItem>
 
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-              Sectores
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="w-[600px] p-6">
-                <SectoresMenu />
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          {sectoresData?.[0]?.items?.length ? (
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                Sectores
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="w-[600px] p-6">
+                  <SectoresMenu />
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          ) : null}
 
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">

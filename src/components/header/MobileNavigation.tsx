@@ -50,22 +50,23 @@ const MobileNavigation = ({
           </div>
         </div>
 
-        {/* Mobile Sectores */}
-        <div>
-          <div className="text-black text-sm font-medium mb-2">Sectores</div>
-          <div className="pl-4 space-y-2">
-            {sectoresItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+        {sectoresItems.length > 0 && (
+          <div>
+            <div className="text-black text-sm font-medium mb-2">Sectores</div>
+            <div className="pl-4 space-y-2">
+              {sectoresItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile Nosotros */}
         <div>

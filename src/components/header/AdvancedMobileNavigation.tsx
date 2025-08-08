@@ -29,7 +29,6 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
 
   const navSections = [
     { id: 'servicios', title: 'Servicios', items: serviciosData },
-    { id: 'sectores', title: 'Sectores', items: sectoresData },
     { id: 'nosotros', title: 'Nosotros', items: nosotrosData },
     { id: 'recursos', title: 'Recursos', items: recursosData },
     { id: 'colaboradores', title: 'Colaboradores', items: colaboradoresData },

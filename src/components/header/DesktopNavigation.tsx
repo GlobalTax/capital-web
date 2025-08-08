@@ -54,25 +54,27 @@ const DesktopNavigation = ({
             </NavigationMenuContent>
           </NavigationMenuItem>
 
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-              Sectores
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="grid w-[400px] gap-3 p-4 bg-white">
-                {sectoresItems.map((item) => (
-                  <NavigationMenuLink key={item.label} asChild>
-                    <Link
-                      to={item.href}
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900"
-                    >
-                      <div className="text-sm font-medium leading-none">{item.label}</div>
-                    </Link>
-                  </NavigationMenuLink>
-                ))}
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          {sectoresItems.length > 0 && (
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+                Sectores
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="grid w-[400px] gap-3 p-4 bg-white">
+                  {sectoresItems.map((item) => (
+                    <NavigationMenuLink key={item.label} asChild>
+                      <Link
+                        to={item.href}
+                        className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900"
+                      >
+                        <div className="text-sm font-medium leading-none">{item.label}</div>
+                      </Link>
+                    </NavigationMenuLink>
+                  ))}
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          )}
 
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
