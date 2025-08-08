@@ -7,36 +7,36 @@
 
 @layer base {
   :root {
-    /* Legal professional color scheme - Navarro style */
+    /* OpenAI-style color scheme */
     --background: 0 0% 100%;
-    --foreground: 210 20% 25%;
+    --foreground: 0 0% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 20% 25%;
+    --card-foreground: 0 0% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 25%;
+    --popover-foreground: 0 0% 4%;
 
-    /* Professional navy for legal style */
-    --primary: 210 25% 20%;
+    /* Minimal primary - very dark for text */
+    --primary: 0 0% 7%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 25% 15%;
+    --primary-hover: 0 0% 12%;
     
-    /* Legal accent color */
-    --legal-accent: 210 15% 35%;
-    --legal-accent-foreground: 0 0% 100%;
+    /* Blue accent only for key CTAs */
+    --cta-accent: 214 100% 37%;
+    --cta-accent-foreground: 0 0% 100%;
 
-    /* Legal gray scale - more sophisticated */
-    --secondary: 210 10% 97%;
-    --secondary-foreground: 210 15% 40%;
+    /* OpenAI gray scale */
+    --secondary: 0 0% 40%;
+    --secondary-foreground: 0 0% 4%;
 
-    --muted: 210 8% 95%;
-    --muted-foreground: 210 12% 45%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 210 10% 97%;
-    --accent-foreground: 210 20% 25%;
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 4%;
 
-    /* Status colors */
+    /* Status colors - minimal */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     
@@ -46,36 +46,55 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    /* Enhanced borders and inputs */
-    --border: 214 20% 89%;
-    --input: 214 20% 89%;
-    --ring: 215 27% 23%;
+    /* Minimal borders and inputs */
+    --border: 0 0% 93%;
+    --input: 0 0% 93%;
+    --ring: 0 0% 7%;
 
-    /* Modern radius system */
-    --radius: 8px;
-    --radius-sm: 6px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
+    /* Minimal radius system */
+    --radius: 6px;
+    --radius-sm: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(215 27% 23%) 0%, hsl(215 27% 18%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(210 16% 98%) 0%, hsl(210 15% 96%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(215 27% 23% / 0.1) 0%, hsl(215 27% 18% / 0.05) 100%);
+    /* Subtle gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 98%) 0%, hsl(0 0% 96%) 100%);
+    --gradient-hero: radial-gradient(ellipse at center, hsl(0 0% 4% / 0.02) 0%, transparent 70%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 27% 23% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 27% 23% / 0.1), 0 2px 4px -1px hsl(215 27% 23% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(215 27% 23% / 0.1), 0 4px 6px -2px hsl(215 27% 23% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(215 27% 23% / 0.1), 0 10px 10px -5px hsl(215 27% 23% / 0.04);
+    /* Minimal shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.02);
+    --shadow-md: 0 2px 10px 0 hsl(0 0% 0% / 0.03);
+    --shadow-lg: 0 4px 20px 0 hsl(0 0% 0% / 0.04);
+    --shadow-xl: 0 8px 30px 0 hsl(0 0% 0% / 0.05);
 
-    /* Spacing system */
-    --space-xs: 0.5rem;
-    --space-sm: 0.75rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
-    --space-3xl: 4rem;
+    /* OpenAI spacing system - generous */
+    --space-xs: 0.75rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2.5rem;
+    --space-xl: 4rem;
+    --space-2xl: 6rem;
+    --space-3xl: 8rem;
+    --space-4xl: 12rem;
+
+    /* Typography scale - large and light */
+    --text-xs: 0.875rem;
+    --text-sm: 1rem;
+    --text-base: 1.125rem;
+    --text-lg: 1.25rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 1.875rem;
+    --text-3xl: 2rem;
+    --text-4xl: 2.5rem;
+    --text-5xl: 3rem;
+    --text-6xl: 4rem;
+    --text-7xl: 4.5rem;
+
+    /* Layout constraints */
+    --container-width: 1100px;
+    --container-width-lg: 1200px;
+    --content-width: 72ch;
 
     /* Modern sidebar colors - Clean White theme */
     --sidebar-background: 0 0% 100%;
@@ -116,45 +135,77 @@
 }
 
 @layer components {
-  /* Enhanced admin components */
-  .admin-card {
-    @apply bg-card border border-border rounded-lg p-6 
-           shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1),0_1px_2px_0_hsl(215_27%_23%_/_0.06)]
-           transition-all duration-300 ease-out 
-           hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1),0_2px_4px_-1px_hsl(215_27%_23%_/_0.06)]
-           hover:-translate-y-1;
+  /* OpenAI-style components */
+  .openai-container {
+    @apply max-w-[1100px] mx-auto px-6;
   }
 
-  .admin-input {
-    @apply bg-background border border-input rounded-lg px-4 py-3 text-sm
-           transition-all duration-200 ease-out
-           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
-           focus:shadow-[0_0_0_3px_hsl(var(--ring)_/_0.1)]
+  .openai-container-lg {
+    @apply max-w-[1200px] mx-auto px-6;
+  }
+
+  .openai-content {
+    @apply max-w-[72ch];
+  }
+
+  .openai-section {
+    @apply py-24 lg:py-32;
+  }
+
+  .openai-card {
+    @apply bg-card border border-border rounded-md p-8
+           shadow-[0_2px_10px_0_hsl(0_0%_0%_/_0.03)]
+           transition-all duration-150 ease-out;
+  }
+
+  .openai-input {
+    @apply bg-background border border-input rounded-md px-4 py-3 text-lg
+           transition-all duration-150 ease-out
+           focus:outline-none focus:ring-1 focus:ring-ring focus:border-transparent
            placeholder:text-muted-foreground;
   }
 
-  .admin-button-primary {
-    @apply bg-primary text-primary-foreground 
-           hover:bg-[hsl(var(--primary-hover))]
-           rounded-lg px-6 py-3 text-sm font-semibold 
-           transition-all duration-200 ease-out
-           shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1)]
-           hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1)]
-           hover:-translate-y-0.5
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-           focus-visible:ring-offset-2;
+  .openai-button-primary {
+    @apply bg-[hsl(var(--cta-accent))] text-[hsl(var(--cta-accent-foreground))]
+           hover:bg-[hsl(var(--cta-accent))]/90
+           rounded-md px-6 py-3 text-lg font-medium
+           transition-all duration-150 ease-out
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
   }
 
-  .admin-button-secondary {
-    @apply bg-secondary text-secondary-foreground 
-           hover:bg-secondary/80
-           border border-border rounded-lg px-6 py-3 text-sm font-medium 
-           transition-all duration-200 ease-out
-           shadow-[0_1px_2px_0_hsl(215_27%_23%_/_0.05)]
-           hover:shadow-[0_2px_4px_0_hsl(215_27%_23%_/_0.1)]
-           hover:-translate-y-0.5
+  .openai-button-secondary {
+    @apply text-foreground underline-offset-4
+           hover:underline
+           transition-all duration-150 ease-out
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-           focus-visible:ring-offset-2;
+           focus-visible:rounded-sm;
+  }
+
+  .openai-link {
+    @apply text-foreground underline-offset-4
+           hover:underline
+           transition-all duration-150 ease-out;
+  }
+
+  /* Typography classes */
+  .openai-h1 {
+    @apply text-6xl lg:text-7xl font-light leading-[1.1] tracking-tight text-foreground;
+  }
+
+  .openai-h2 {
+    @apply text-4xl lg:text-5xl font-light leading-[1.2] tracking-tight text-foreground;
+  }
+
+  .openai-h3 {
+    @apply text-2xl lg:text-3xl font-light leading-[1.3] text-foreground;
+  }
+
+  .openai-body {
+    @apply text-lg lg:text-xl leading-relaxed text-foreground;
+  }
+
+  .openai-body-secondary {
+    @apply text-lg lg:text-xl leading-relaxed text-muted-foreground;
   }
 
   /* Legacy components for backward compatibility */
