@@ -15,6 +15,7 @@ import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/
 import { useEffect } from 'react';
 import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 
+import { APP_CONFIG } from '@/core/constants/app-config';
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
@@ -219,13 +220,17 @@ function AppContent() {
           <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
           
           {/* Sector routes */}
-          <Route path="/sectores/tecnologia" element={<Tecnologia />} />
-          <Route path="/sectores/healthcare" element={<Healthcare />} />
-          <Route path="/sectores/financial-services" element={<FinancialServices />} />
-          <Route path="/sectores/industrial" element={<Industrial />} />
-          <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
-          <Route path="/sectores/energia" element={<Energia />} />
-          <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
+          {APP_CONFIG.FEATURES.SECTORS_ENABLED && (
+            <>
+              <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+              <Route path="/sectores/healthcare" element={<Healthcare />} />
+              <Route path="/sectores/financial-services" element={<FinancialServices />} />
+              <Route path="/sectores/industrial" element={<Industrial />} />
+              <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
+              <Route path="/sectores/energia" element={<Energia />} />
+              <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
+            </>
+          )}
           
           {/* Resource routes */}
           <Route path="/recursos/blog" element={<Blog />} />
@@ -277,7 +282,7 @@ function App() {
     const initializeFeatures = async () => {
       try {
         // Solo en desarrollo: optimizaciones de bundle
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           const { logBundleSize, monitorResourceLoading } = await import('./utils/bundleAnalysis');
           logBundleSize();
           monitorResourceLoading();
