@@ -23,17 +23,8 @@ export const logBundleSize = () => {
 
 // Preload de chunks críticos
 export const preloadCriticalChunks = () => {
-  const criticalChunks = [
-    '/assets/vendor.js',
-    '/assets/main.js'
-  ];
-
-  criticalChunks.forEach(chunk => {
-    const link = document.createElement('link');
-    link.rel = 'modulepreload';
-    link.href = chunk;
-    document.head.appendChild(link);
-  });
+  // Eliminado: referencias manuales a /assets/*.js
+  // No-op para evitar preloads de chunks no determinísticos tras build
 };
 
 // Monitor de recursos cargados
