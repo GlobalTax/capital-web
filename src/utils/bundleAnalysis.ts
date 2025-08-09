@@ -3,7 +3,7 @@
 
 // Función para analizar el tamaño de bundle en desarrollo
 export const logBundleSize = () => {
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     // Simular análisis de bundle (en producción usarías webpack-bundle-analyzer)
     const estimatedSizes = {
       'vendor.js': '250KB',
@@ -23,8 +23,17 @@ export const logBundleSize = () => {
 
 // Preload de chunks críticos
 export const preloadCriticalChunks = () => {
-  // Eliminado: referencias manuales a /assets/*.js
-  // No-op para evitar preloads de chunks no determinísticos tras build
+  const criticalChunks = [
+    '/assets/vendor.js',
+    '/assets/main.js'
+  ];
+
+  criticalChunks.forEach(chunk => {
+    const link = document.createElement('link');
+    link.rel = 'modulepreload';
+    link.href = chunk;
+    document.head.appendChild(link);
+  });
 };
 
 // Monitor de recursos cargados

@@ -27,7 +27,7 @@ export const RateLimitFeedback: React.FC<RateLimitFeedbackProps> = ({
   onClearLimit,
   title = "Límite de intentos alcanzado",
   message = "Has excedido el número máximo de intentos permitidos.",
-  showDevelopmentControls = import.meta.env.DEV,
+  showDevelopmentControls = process.env.NODE_ENV === 'development',
   className = ""
 }) => {
   const [countdown, setCountdown] = useState(remainingTime);

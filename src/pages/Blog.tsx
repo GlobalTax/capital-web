@@ -8,14 +8,12 @@ import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import SEO from '@/components/SEO';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { posts, isLoading } = useBlogPosts(true); // Only fetch published posts
-
 
   // Obtener categorías y tags únicos de los posts
   const { availableCategories, availableTags, filteredPosts } = useMemo(() => {
@@ -64,9 +62,8 @@ const Blog = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Header />
-        <SEO title="Blog de M&A y valoración" description="Artículos y análisis sobre fusiones, adquisiciones y valoración de empresas." />
         <div className="pt-16 flex items-center justify-center min-h-[500px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -79,9 +76,8 @@ const Blog = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
-      <SEO title="Blog de M&A y valoración" description="Artículos y análisis sobre fusiones, adquisiciones y valoración de empresas." />
       <div className="pt-16">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-blue-600 to-indigo-600 py-20">
@@ -93,7 +89,7 @@ const Blog = () => {
               <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
                 Análisis experto, tendencias del mercado y mejores prácticas en fusiones y adquisiciones
               </p>
-              <div className="flex items-center max-w-md mx-auto bg-card border border-border rounded-lg shadow-sm">
+              <div className="flex items-center max-w-md mx-auto bg-white rounded-lg shadow-lg">
                 <Search className="w-5 h-5 text-gray-400 ml-4" />
                 <input
                   type="text"
@@ -128,7 +124,7 @@ const Blog = () => {
             {filteredPosts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredPosts.map(post => (
-                  <article key={post.id} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                  <article key={post.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                     {post.featured_image_url && (
                       <img
                         src={post.featured_image_url}
@@ -155,7 +151,7 @@ const Blog = () => {
                         </div>
                       </div>
                       
-                      <h2 className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                      <h2 className="text-xl font-bold text-black mb-3 line-clamp-2">
                         {post.title}
                       </h2>
                       
@@ -183,7 +179,7 @@ const Blog = () => {
                         <Badge variant="outline" className="text-xs">
                           {post.category}
                         </Badge>
-                        <button className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors">
+                        <button className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors">
                           Leer más <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
@@ -208,7 +204,7 @@ const Blog = () => {
         </section>
 
         {/* Newsletter Section */}
-        <section className="py-16 bg-muted">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <Newsletter />
           </div>

@@ -2,17 +2,15 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import SEO from '@/components/SEO';
 
 const Cookies = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
-      <SEO title="Política de Cookies" description="Conoce cómo usamos cookies y tecnologías similares." />
       
-      <section className="pt-32 pb-20 bg-background">
+      <section className="pt-32 pb-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-8">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8">
             Política de Cookies
           </h1>
           
@@ -23,8 +21,8 @@ const Cookies = () => {
             </p>
 
             <div className="space-y-8">
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">¿Qué son las Cookies?</h2>
+              <div className="bg-white border-0.5 border-black rounded-lg p-6">
+                <h2 className="text-xl font-bold text-black mb-4">¿Qué son las Cookies?</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Las cookies son pequeños archivos de texto que se almacenan en su dispositivo cuando visita un sitio web. 
                   Se utilizan ampliamente para hacer que los sitios web funcionen de manera más eficiente, 
@@ -32,12 +30,12 @@ const Cookies = () => {
                 </p>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Tipos de Cookies que Utilizamos</h2>
+              <div className="bg-white border-0.5 border-black rounded-lg p-6">
+                <h2 className="text-xl font-bold text-black mb-4">Tipos de Cookies que Utilizamos</h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Cookies Esenciales</h3>
+                    <h3 className="text-lg font-semibold text-black mb-2">Cookies Esenciales</h3>
                     <p className="text-gray-600 leading-relaxed">
                       Estas cookies son necesarias para que el sitio web funcione correctamente. 
                       No se pueden desactivar en nuestros sistemas.
@@ -45,7 +43,7 @@ const Cookies = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Cookies de Rendimiento</h3>
+                    <h3 className="text-lg font-semibold text-black mb-2">Cookies de Rendimiento</h3>
                     <p className="text-gray-600 leading-relaxed">
                       Estas cookies nos permiten contar las visitas y fuentes de tráfico para poder medir 
                       y mejorar el rendimiento de nuestro sitio.
@@ -53,7 +51,7 @@ const Cookies = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Cookies de Funcionalidad</h3>
+                    <h3 className="text-lg font-semibold text-black mb-2">Cookies de Funcionalidad</h3>
                     <p className="text-gray-600 leading-relaxed">
                       Estas cookies permiten que el sitio web proporcione una funcionalidad mejorada 
                       y personalización, como recordar sus preferencias.
@@ -61,7 +59,7 @@ const Cookies = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Cookies de Marketing</h3>
+                    <h3 className="text-lg font-semibold text-black mb-2">Cookies de Marketing</h3>
                     <p className="text-gray-600 leading-relaxed">
                       Estas cookies pueden ser establecidas a través de nuestro sitio por nuestros socios publicitarios 
                       para crear un perfil de sus intereses.
@@ -70,8 +68,8 @@ const Cookies = () => {
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Cookies de Terceros</h2>
+              <div className="bg-white border-0.5 border-black rounded-lg p-6">
+                <h2 className="text-xl font-bold text-black mb-4">Cookies de Terceros</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   Utilizamos servicios de terceros que pueden establecer cookies en su dispositivo:
                 </p>
@@ -82,8 +80,8 @@ const Cookies = () => {
                 </ul>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Control de Cookies</h2>
+              <div className="bg-white border-0.5 border-black rounded-lg p-6">
+                <h2 className="text-xl font-bold text-black mb-4">Control de Cookies</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   Puede controlar y/o eliminar las cookies como desee. Puede eliminar todas las cookies 
                   que ya están en su dispositivo y configurar la mayoría de los navegadores para evitar que se coloquen.
@@ -94,8 +92,8 @@ const Cookies = () => {
                 </p>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Configuración del Navegador</h2>
+              <div className="bg-white border-0.5 border-black rounded-lg p-6">
+                <h2 className="text-xl font-bold text-black mb-4">Configuración del Navegador</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   Puede configurar su navegador para rechazar cookies:
                 </p>
@@ -107,15 +105,14 @@ const Cookies = () => {
                 </ul>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Contacto</h2>
+              <div className="bg-white border-0.5 border-black rounded-lg p-6">
+                <h2 className="text-xl font-bold text-black mb-4">Contacto</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Si tiene preguntas sobre nuestra política de cookies, puede contactarnos en:
                 </p>
                 <div className="mt-4 text-gray-600">
                   <p>Email: cookies@capittal.com</p>
-                  <p>Direcciones: Carrer Ausias March, 36, Principal (Barcelona)</p>
-                  <p>P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</p>
+                  <p>Dirección: Paseo de la Castellana 123, 28046 Madrid, España</p>
                 </div>
               </div>
             </div>

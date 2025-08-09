@@ -2,13 +2,11 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import SEO from '@/components/SEO';
 
 const TerminosUso = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <SEO title="Términos de Uso" description="Condiciones que regulan el uso del sitio y los servicios de Capittal." />
       
       <section className="pt-32 pb-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

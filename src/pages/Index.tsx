@@ -17,25 +17,11 @@ import Footer from '@/components/Footer';
 import OurGroup from '@/components/OurGroup';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
-import SEO from '@/components/SEO';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
-      <SEO
-        title="Asesores M&A y valoración de empresas"
-        description="Asesoría en fusiones y adquisiciones, valoración de empresas y venta de compañías en España. Expertos en M&A."
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Capittal",
-          address: [
-            "Carrer Ausias March número 36 principal.",
-            "P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid"
-          ]
-        }}
-      />
       <main role="main">
         <Hero />
         <LogoCarousel />

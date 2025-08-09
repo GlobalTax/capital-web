@@ -195,15 +195,6 @@ export class EdgeOptimizer {
 
   // ============= SERVICE WORKER MANAGEMENT =============
   async registerServiceWorker(swPath: string = '/sw.js'): Promise<ServiceWorkerRegistration | null> {
-    // Registrar SW solo en producción
-    if (!import.meta.env.PROD) {
-      logger.info('Skipping Service Worker registration in non-production', undefined, {
-        context: 'performance',
-        component: 'EdgeOptimizer'
-      });
-      return null;
-    }
-
     if (!('serviceWorker' in navigator)) {
       logger.warn('Service Worker not supported', undefined, { 
         context: 'performance', 

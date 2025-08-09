@@ -1,12 +1,12 @@
 
 import { Suspense, lazy } from 'react';
-import { AppProviders } from "@/components/providers/AppProviders";
-
-import { Routes, Route } from 'react-router-dom';
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
-
-
+import { AuthProvider } from '@/contexts/AuthContext';
+import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
@@ -15,8 +15,6 @@ import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/
 import { useEffect } from 'react';
 import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 
-
-import { APP_CONFIG } from '@/core/constants/app-config';
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
@@ -28,9 +26,6 @@ const CalculadoraValoracionV2 = lazy(() => import('@/pages/CalculadoraValoracion
 const CalculadoraValoracionV3 = lazy(() => import('@/pages/CalculadoraValoracionV3'));
 const CalculadoraValoracionV4 = lazy(() => import('@/pages/CalculadoraValoracionV4'));
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
-const LandingCalculadora = lazy(() => import('@/pages/LandingCalculadora'));
-const CalculadorasSectores = lazy(() => import('@/pages/CalculadorasSectores'));
-const SectorPage = lazy(() => import('@/pages/sectores/SectorPage'));
 const Contacto = lazy(() => import('@/pages/Contacto'));
 const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
 const CasosExito = lazy(() => import('@/pages/CasosExito'));
@@ -208,9 +203,6 @@ function AppContent() {
           <Route path="/simulador-venta/:clientId" element={<CalculadoraValoracionV3 />} />
           <Route path="/simulador-ultra-rapido/:clientId" element={<CalculadoraValoracionV4 />} />
           <Route path="/calculadora-standalone" element={<CalculadoraStandalone />} />
-          <Route path="/calculadora-gratuita" element={<LandingCalculadora />} />
-          <Route path="/calculadoras" element={<CalculadorasSectores />} />
-          <Route path="/calculadora/:sector" element={<SectorPage />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           <Route path="/casos-exito" element={<CasosExito />} />
@@ -227,17 +219,13 @@ function AppContent() {
           <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
           
           {/* Sector routes */}
-          {APP_CONFIG.FEATURES.SECTORS_ENABLED && (
-            <>
-              <Route path="/sectores/tecnologia" element={<Tecnologia />} />
-              <Route path="/sectores/healthcare" element={<Healthcare />} />
-              <Route path="/sectores/financial-services" element={<FinancialServices />} />
-              <Route path="/sectores/industrial" element={<Industrial />} />
-              <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
-              <Route path="/sectores/energia" element={<Energia />} />
-              <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
-            </>
-          )}
+          <Route path="/sectores/tecnologia" element={<Tecnologia />} />
+          <Route path="/sectores/healthcare" element={<Healthcare />} />
+          <Route path="/sectores/financial-services" element={<FinancialServices />} />
+          <Route path="/sectores/industrial" element={<Industrial />} />
+          <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
+          <Route path="/sectores/energia" element={<Energia />} />
+          <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
           
           {/* Resource routes */}
           <Route path="/recursos/blog" element={<Blog />} />
@@ -289,25 +277,18 @@ function App() {
     const initializeFeatures = async () => {
       try {
         // Solo en desarrollo: optimizaciones de bundle
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           const { logBundleSize, monitorResourceLoading } = await import('./utils/bundleAnalysis');
           logBundleSize();
           monitorResourceLoading();
         }
 
-        // Inicializar/gestionar service worker solo en producción
+        // Inicializar service worker de forma diferida
         setTimeout(async () => {
           try {
             if ('serviceWorker' in navigator) {
-              if (import.meta.env.PROD) {
-                await navigator.serviceWorker.register('/sw.js');
-                console.log('Service worker registered successfully');
-              } else {
-                // En desarrollo, asegurarnos de no tener SW que contamine el dev server
-                const regs = await navigator.serviceWorker.getRegistrations();
-                regs.forEach(r => r.unregister());
-                console.log('Service worker unregistered for dev');
-              }
+              await navigator.serviceWorker.register('/sw.js');
+              console.log('Service worker registered successfully');
             }
           } catch (error) {
             console.warn('Service worker registration failed:', error);
@@ -363,9 +344,16 @@ function App() {
   return (
     <ErrorBoundaryProvider>
       <QueryClientProvider client={queryClient}>
-        <AppProviders>
-          <AppContent />
-        </AppProviders>
+        <AuthProvider>
+          <TooltipProvider>
+            <Router>
+              <LeadTrackingProvider enabled={true}>
+                <AppContent />
+              </LeadTrackingProvider>
+              <Toaster />
+            </Router>
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundaryProvider>
   );

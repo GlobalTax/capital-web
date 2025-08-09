@@ -9,7 +9,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu-lazy";
 import { ArrowRight } from 'lucide-react';
-import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData, calculadorasData } from './menuDataIndex';
+import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
 import LazyIcon from '@/components/ui/LazyIcon';
 
 const ServiciosMenu = () => (
@@ -230,35 +230,6 @@ const AdvancedDesktopNavigation = () => {
             <NavigationMenuContent>
               <div className="w-[800px] p-6">
                 <ServiciosMenu />
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-              Calculadoras
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="w-[600px] p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  {calculadorasData[0].items.map((item) => (
-                    <NavigationMenuLink key={item.id} asChild>
-                      <Link to={item.href} className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                        <div className="flex-shrink-0">
-                          <LazyIcon name={item.icon!} className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <p className="font-medium text-gray-900 group-hover:text-primary transition-colors duration-200">
-                            {item.label}
-                          </p>
-                          <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-200">
-                            {item.description}
-                          </p>
-                        </div>
-                      </Link>
-                    </NavigationMenuLink>
-                  ))}
-                </div>
               </div>
             </NavigationMenuContent>
           </NavigationMenuItem>

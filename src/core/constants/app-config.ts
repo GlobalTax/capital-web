@@ -34,12 +34,7 @@ export const APP_CONFIG = {
     ALERTS_REFRESH: 30 * 1000, // 30 segundos
   },
 
-  // Feature flags
-  FEATURES: {
-    SECTORS_ENABLED: false,
-  },
-
   // Environment
-  IS_DEVELOPMENT: import.meta.env.DEV,
-  IS_PRODUCTION: import.meta.env.PROD,
+  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
+  IS_PRODUCTION: process.env.NODE_ENV === 'production',
 } as const;

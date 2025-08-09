@@ -2,7 +2,7 @@
 // Hook optimizado para throttle con performance monitoring
 
 import { useCallback, useRef } from 'react';
-import { usePerformanceTimer } from '@/utils/performanceMonitor';
+import { performanceMonitor } from '@/shared/services/performance-monitor.service';
 
 export const useThrottle = <T extends (...args: any[]) => any>(
   callback: T,
@@ -15,8 +15,6 @@ export const useThrottle = <T extends (...args: any[]) => any>(
   // Actualizar la referencia del callback
   callbackRef.current = callback;
 
-  // Hook de performance
-  const { startTimer } = usePerformanceTimer();
   const throttledCallback = useCallback(
     ((...args: Parameters<T>) => {
       const now = Date.now();
@@ -25,13 +23,13 @@ export const useThrottle = <T extends (...args: any[]) => any>(
         lastCallRef.current = now;
         
         if (trackPerformance) {
-          const end = startTimer('throttled-operation');
+          performanceMonitor.startTimer('throttled-operation', 'interaction');
           try {
             const result = callbackRef.current(...args);
-            end('interaction');
+            performanceMonitor.endTimer('throttled-operation');
             return result;
           } catch (error) {
-            end('interaction');
+            performanceMonitor.endTimer('throttled-operation');
             throw error;
           }
         } else {

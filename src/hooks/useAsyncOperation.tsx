@@ -2,7 +2,7 @@
 // Hook optimizado para operaciones asíncronas con debounce
 
 import { useCallback, useRef, useState } from 'react';
-import { performanceMonitor } from '@/utils/performanceMonitor';
+import { performanceMonitor } from '@/shared/services/performance-monitor.service';
 
 interface AsyncOperationOptions {
   debounceMs?: number;
@@ -40,7 +40,7 @@ export const useAsyncOperation = <T, R>(
         abortControllerRef.current = new AbortController();
         
         const operationName = operation.name || 'async-operation';
-        const startTime = performance.now();
+        performanceMonitor.startTimer(operationName, 'api');
 
         try {
           let lastError: Error;
@@ -58,8 +58,7 @@ export const useAsyncOperation = <T, R>(
                 timeoutPromise
               ]);
               
-              const duration = performance.now() - startTime;
-              performanceMonitor.record(operationName, duration, 'api');
+              performanceMonitor.endTimer(operationName);
               setLoading(false);
               resolve(result);
               return;
@@ -76,10 +75,9 @@ export const useAsyncOperation = <T, R>(
           throw lastError!;
         } catch (err) {
           const finalError = err instanceof Error ? err : new Error('Unknown error');
-          const duration = performance.now() - startTime;
-          performanceMonitor.record(`${operationName}_error`, duration, 'api');
           setError(finalError);
           setLoading(false);
+          performanceMonitor.endTimer(operationName);
           resolve(null);
         }
       }, debounceMs);

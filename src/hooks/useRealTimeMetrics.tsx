@@ -2,11 +2,11 @@
 // Hook para métricas en tiempo real con WebSocket
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { performanceMonitor } from '@/utils/unifiedPerformanceMonitor';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 
 interface RealTimeMetric {
   timestamp: number;
-  category: 'loading' | 'interaction' | 'database' | 'api' | 'rendering' | 'navigation';
+  category: 'loading' | 'interaction' | 'database' | 'api';
   value: number;
   name: string;
 }

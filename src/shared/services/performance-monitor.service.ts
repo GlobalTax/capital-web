@@ -24,7 +24,7 @@ interface PerformanceThresholds {
 export class PerformanceMonitorService {
   private metrics: Map<string, PerformanceMetric> = new Map();
   private historicalMetrics: PerformanceMetric[] = [];
-  private isEnabled = import.meta.env.DEV;
+  private isEnabled = process.env.NODE_ENV === 'development';
   private thresholds: PerformanceThresholds = {
     loading: 2000,    // 2 segundos
     interaction: 100, // 100ms

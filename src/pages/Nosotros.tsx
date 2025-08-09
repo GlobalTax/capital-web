@@ -4,16 +4,11 @@ import Footer from '@/components/Footer';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import About from '@/components/About';
-import SEO from '@/components/SEO';
 
 const Nosotros = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <SEO
-        title="Nosotros"
-        description="Conoce a Capittal: equipo, valores y metodología en M&A y valoración de empresas."
-      />
       <main role="main">
         <div className="pt-16">
           <About />

@@ -29,7 +29,7 @@ interface LoggerConfig {
 }
 
 const getEnvironment = (): string => {
-  return import.meta.env.MODE || 'development';
+  return process.env.NODE_ENV || 'development';
 };
 
 const getMinLogLevel = (): LogLevel => {
