@@ -23,11 +23,16 @@ class ServiceWorkerManager {
   };
 
   async register(): Promise<ServiceWorkerRegistration | null> {
+    // Registrar SW solo en producción
+    if (!import.meta.env.PROD) {
+      console.info('SW: registro omitido en no-producción');
+      return null;
+    }
     if (!('serviceWorker' in navigator)) {
       console.warn('Service Worker not supported');
       return null;
     }
-
+ 
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
