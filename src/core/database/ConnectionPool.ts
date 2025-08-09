@@ -1,8 +1,8 @@
 // ============= OPTIMIZED DATABASE CONNECTION POOL =============
 // Pool de conexiones optimizado sin dependencias circulares
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { SUPABASE_CONFIG } from '@/config/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabaseClient';
 
 interface PoolStats {
   activeConnections: number;
@@ -59,21 +59,10 @@ class DatabaseConnectionPool {
 
   private async createConnection(): Promise<SupabaseClient> {
     try {
-      return createClient(
-        SUPABASE_CONFIG.url,
-        SUPABASE_CONFIG.anonKey,
-        {
-          auth: {
-            persistSession: true,
-            detectSessionInUrl: false
-          },
-          db: {
-            schema: 'public'
-          }
-        }
-      );
+      // Usar el cliente único centralizado
+      return supabase as unknown as SupabaseClient;
     } catch (error) {
-      console.error('Error creating Supabase connection:', error);
+      console.error('Error obtaining Supabase connection:', error);
       throw error;
     }
   }
