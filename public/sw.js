@@ -65,8 +65,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Evitar cachear APIs externas conocidas
   const url = new URL(request.url);
+
+  // No interferir con el Vite dev server ni con módulos/workers
+  if (
+    url.pathname.startsWith('/@vite') ||
+    url.pathname.startsWith('/@react-refresh') ||
+    url.pathname.startsWith('/src/') ||
+    request.destination === 'script' ||
+    request.destination === 'worker' ||
+    request.destination === 'sharedworker' ||
+    request.destination === 'serviceworker'
+  ) {
+    return; // dejar pasar al network tal cual
+  }
+  
+  // Evitar cachear APIs externas conocidas
   const isExternalAPI = [
     'supabase.co',
     'googleapis.com',
