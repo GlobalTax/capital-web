@@ -9,14 +9,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 const Perfil = () => {
+  const location = useLocation();
+  const canonical = `${window.location.origin}${location.pathname}`;
   const { user } = useAuth();
   
   if (!user) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         <Header />
+        <Helmet>
+          <title>Mi perfil | Capittal</title>
+          <meta name="description" content="Gestiona tu información personal y acceso al panel de administración." />
+          <link rel="canonical" href={canonical} />
+        </Helmet>
         <div className="pt-16 min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Acceso Requerido</h1>
@@ -35,8 +44,13 @@ const Perfil = () => {
   const userName = userEmail.split('@')[0] || 'Usuario';
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Header />
+      <Helmet>
+        <title>Mi perfil | Capittal</title>
+        <meta name="description" content="Gestiona tu información personal y acceso al panel de administración." />
+        <link rel="canonical" href={canonical} />
+      </Helmet>
       <div className="pt-16 min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-8">

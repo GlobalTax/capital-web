@@ -5,29 +5,29 @@ import { Phone, Mail, MapPin } from 'lucide-react';
 
 export const Footerdemo = () => {
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-card text-foreground border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="mb-4">
-              <Link to="/" className="text-2xl font-bold text-white">
+              <Link to="/" className="text-2xl font-bold text-foreground">
                 Capittal
               </Link>
             </div>
-            <p className="text-gray-300 mb-4 max-w-md">
+            <p className="text-muted-foreground mb-4 max-w-md">
               Expertos en M&A y valoración de empresas. Junto con Navarro Legal, ofrecemos un servicio integral desde la originación hasta el cierre de la operación.
             </p>
             <div className="space-y-2">
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-muted-foreground">
                 <MapPin className="h-4 w-4 mr-2" />
-                <span>Carrer Ausias March, 36 Principal - P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</span>
+                <span>Carrer Ausias March número 36, Principal (Barcelona) — P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</span>
               </div>
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-muted-foreground">
                 <Phone className="h-4 w-4 mr-2" />
                 <span>+34 912 345 678</span>
               </div>
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-muted-foreground">
                 <Mail className="h-4 w-4 mr-2" />
                 <span>info@capittal.es</span>
               </div>
@@ -90,19 +90,19 @@ export const Footerdemo = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
+        <div className="border-t border-border mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+            <div className="text-muted-foreground text-sm mb-4 md:mb-0">
               © 2024 Capittal. Todos los derechos reservados.
             </div>
             <div className="flex space-x-6">
-              <Link to="/politica-privacidad" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link to="/politica-privacidad" className="text-muted-foreground hover:text-foreground text-sm transition-colors">
                 Política de Privacidad
               </Link>
               <Link to="/terminos-uso" className="text-gray-400 hover:text-white text-sm transition-colors">
                 Términos de Uso
               </Link>
-              <Link to="/cookies" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link to="/cookies" className="text-muted-foreground hover:text-foreground text-sm transition-colors">
                 Cookies
               </Link>
             </div>
