@@ -294,12 +294,19 @@ function App() {
           monitorResourceLoading();
         }
 
-        // Inicializar service worker de forma diferida
+        // Inicializar/gestionar service worker solo en producción
         setTimeout(async () => {
           try {
             if ('serviceWorker' in navigator) {
-              await navigator.serviceWorker.register('/sw.js');
-              console.log('Service worker registered successfully');
+              if (import.meta.env.PROD) {
+                await navigator.serviceWorker.register('/sw.js');
+                console.log('Service worker registered successfully');
+              } else {
+                // En desarrollo, asegurarnos de no tener SW que contamine el dev server
+                const regs = await navigator.serviceWorker.getRegistrations();
+                regs.forEach(r => r.unregister());
+                console.log('Service worker unregistered for dev');
+              }
             }
           } catch (error) {
             console.warn('Service worker registration failed:', error);
