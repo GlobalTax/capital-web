@@ -26,6 +26,15 @@ const Index = () => {
       <SEO
         title="Asesores M&A y valoración de empresas"
         description="Asesoría en fusiones y adquisiciones, valoración de empresas y venta de compañías en España. Expertos en M&A."
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Capittal",
+          address: [
+            "Carrer Ausias March número 36 principal.",
+            "P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid"
+          ]
+        }}
       />
       <main role="main">
         <Hero />

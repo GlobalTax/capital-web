@@ -4,20 +4,16 @@ import Footer from '@/components/Footer';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import About from '@/components/About';
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 const Nosotros = () => {
-  const location = useLocation();
-  const canonical = `${window.location.origin}${location.pathname}`;
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Helmet>
-        <title>Nosotros | Capittal</title>
-        <meta name="description" content="Conoce a Capittal: equipo, valores y metodología en M&A y valoración de empresas." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      <SEO
+        title="Nosotros"
+        description="Conoce a Capittal: equipo, valores y metodología en M&A y valoración de empresas."
+      />
       <main role="main">
         <div className="pt-16">
           <About />
