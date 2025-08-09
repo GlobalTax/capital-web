@@ -6,7 +6,7 @@ import { useAdminDebug } from '@/hooks/useAdminDebug';
 import { AdminSidebar } from './sidebar/AdminSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
-import { ErrorBoundaryProvider } from './ErrorBoundaryProvider';
+import ErrorBoundaryProvider from './ErrorBoundaryProvider';
 import { AdminSecurityProvider } from './security/AdminSecurityProvider';
 
 interface AdminLayoutProps {

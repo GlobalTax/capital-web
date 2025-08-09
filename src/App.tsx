@@ -14,7 +14,7 @@ import { useAccessibility } from '@/hooks/useAccessibility';
 import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/utils/bundleAnalysis';
 import { useEffect } from 'react';
 import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
-import { HelmetProvider } from 'react-helmet-async';
+
 
 import { APP_CONFIG } from '@/core/constants/app-config';
 // Lazy loading components - Core pages
@@ -365,14 +365,12 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <TooltipProvider>
-            <HelmetProvider>
-              <Router>
-                <LeadTrackingProvider enabled={true}>
-                  <AppContent />
-                </LeadTrackingProvider>
-                <Toaster />
-              </Router>
-            </HelmetProvider>
+            <Router>
+              <LeadTrackingProvider enabled={true}>
+                <AppContent />
+              </LeadTrackingProvider>
+              <Toaster />
+            </Router>
           </TooltipProvider>
         </AuthProvider>
       </QueryClientProvider>
