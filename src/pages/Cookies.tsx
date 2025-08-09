@@ -2,20 +2,13 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 const Cookies = () => {
-  const location = useLocation();
-  const canonical = `${window.location.origin}${location.pathname}`;
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Helmet>
-        <title>Política de Cookies | Capittal</title>
-        <meta name="description" content="Conoce cómo usamos cookies y tecnologías similares." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      <SEO title="Política de Cookies" description="Conoce cómo usamos cookies y tecnologías similares." />
       
       <section className="pt-32 pb-20 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

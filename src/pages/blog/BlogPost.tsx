@@ -12,6 +12,7 @@ import { useBlogNavigation } from '@/hooks/useBlogNavigation';
 import { useSimpleBlogAnalytics } from '@/hooks/useSimpleBlogAnalytics';
 import { useBlogRSS } from '@/hooks/useBlogRSS';
 import { BlogPost as BlogPostType } from '@/types/blog';
+import SEO from '@/components/SEO';
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -107,6 +108,21 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <SEO
+        title={post.meta_title || post.title}
+        description={post.meta_description || post.excerpt || undefined}
+        ogImage={post.featured_image_url || undefined}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: post.title,
+          image: post.featured_image_url ? [post.featured_image_url] : undefined,
+          datePublished: post.published_at || post.created_at,
+          dateModified: post.updated_at || post.published_at || post.created_at,
+          author: { "@type": "Person", name: post.author_name },
+          publisher: { "@type": "Organization", name: "Capittal" }
+        }}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32">
         {/* Breadcrumbs */}
         <BlogBreadcrumbs 

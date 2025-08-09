@@ -17,20 +17,16 @@ import Footer from '@/components/Footer';
 import OurGroup from '@/components/OurGroup';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 const Index = () => {
-  const location = useLocation();
-  const canonical = `${window.location.origin}${location.pathname}`;
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Helmet>
-        <title>Capittal | Asesores M&A y valoración de empresas</title>
-        <meta name="description" content="Asesoría en fusiones y adquisiciones, valoración de empresas y venta de compañías en España. Expertos en M&A." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      <SEO
+        title="Asesores M&A y valoración de empresas"
+        description="Asesoría en fusiones y adquisiciones, valoración de empresas y venta de compañías en España. Expertos en M&A."
+      />
       <main role="main">
         <Hero />
         <LogoCarousel />

@@ -8,8 +8,7 @@ import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,8 +16,6 @@ const Blog = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { posts, isLoading } = useBlogPosts(true); // Only fetch published posts
 
-  const location = useLocation();
-  const canonical = `${window.location.origin}${location.pathname}`;
 
   // Obtener categorías y tags únicos de los posts
   const { availableCategories, availableTags, filteredPosts } = useMemo(() => {
@@ -69,11 +66,7 @@ const Blog = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <Helmet>
-          <title>Blog de M&A y valoración | Capittal</title>
-          <meta name="description" content="Artículos y análisis sobre fusiones, adquisiciones y valoración de empresas." />
-          <link rel="canonical" href={canonical} />
-        </Helmet>
+        <SEO title="Blog de M&A y valoración" description="Artículos y análisis sobre fusiones, adquisiciones y valoración de empresas." />
         <div className="pt-16 flex items-center justify-center min-h-[500px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -88,11 +81,7 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Helmet>
-        <title>Blog de M&A y valoración | Capittal</title>
-        <meta name="description" content="Artículos y análisis sobre fusiones, adquisiciones y valoración de empresas." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      <SEO title="Blog de M&A y valoración" description="Artículos y análisis sobre fusiones, adquisiciones y valoración de empresas." />
       <div className="pt-16">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-blue-600 to-indigo-600 py-20">
