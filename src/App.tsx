@@ -28,6 +28,8 @@ const CalculadoraValoracionV3 = lazy(() => import('@/pages/CalculadoraValoracion
 const CalculadoraValoracionV4 = lazy(() => import('@/pages/CalculadoraValoracionV4'));
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
 const LandingCalculadora = lazy(() => import('@/pages/LandingCalculadora'));
+const CalculadorasSectores = lazy(() => import('@/pages/CalculadorasSectores'));
+const SectorPage = lazy(() => import('@/pages/sectores/SectorPage'));
 const Contacto = lazy(() => import('@/pages/Contacto'));
 const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
 const CasosExito = lazy(() => import('@/pages/CasosExito'));
@@ -206,6 +208,8 @@ function AppContent() {
           <Route path="/simulador-ultra-rapido/:clientId" element={<CalculadoraValoracionV4 />} />
           <Route path="/calculadora-standalone" element={<CalculadoraStandalone />} />
           <Route path="/calculadora-gratuita" element={<LandingCalculadora />} />
+          <Route path="/calculadoras" element={<CalculadorasSectores />} />
+          <Route path="/calculadora/:sector" element={<SectorPage />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           <Route path="/casos-exito" element={<CasosExito />} />
