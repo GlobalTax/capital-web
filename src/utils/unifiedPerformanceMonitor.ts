@@ -3,7 +3,7 @@
 
 import type { PerformanceMetric, PerformanceConfig, WebVitals } from './performance/types';
 import { WebVitalsCollector } from './performance/webVitalsCollector';
-import MetricsCollector from './performance/metrics-collector';
+import { MetricsCollector } from './performance/metrics-collector';
 import { DataTransmitter } from './performance/dataTransmitter';
 import { AlertManager } from './performance/alertManager';
 
