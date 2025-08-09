@@ -12,7 +12,12 @@ const getSupabaseClient = () => {
     validateSupabaseConfig();
     supabaseInstance = createClient<Database>(
       SUPABASE_CONFIG.url, 
-      SUPABASE_CONFIG.anonKey
+      SUPABASE_CONFIG.anonKey,
+      {
+        auth: {
+          storageKey: 'capittal-auth'
+        }
+      }
     );
   }
   return supabaseInstance;
