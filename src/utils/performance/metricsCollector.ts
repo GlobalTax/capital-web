@@ -72,3 +72,5 @@ export class MetricsCollector {
     this.metrics = this.metrics.filter(m => m.timestamp > oneHourAgo);
   }
 }
+
+export default MetricsCollector;

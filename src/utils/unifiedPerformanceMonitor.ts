@@ -3,7 +3,7 @@
 
 import type { PerformanceMetric, PerformanceConfig, WebVitals } from './performance/types';
 import { WebVitalsCollector } from './performance/webVitalsCollector';
-import { MetricsCollector } from './performance/metricsCollector';
+import MetricsCollector from './performance/metricsCollector';
 import { DataTransmitter } from './performance/dataTransmitter';
 import { AlertManager } from './performance/alertManager';
 
@@ -28,7 +28,7 @@ class UnifiedPerformanceMonitor {
   };
 
   private webVitalsCollector: WebVitalsCollector;
-  private metricsCollector: MetricsCollector;
+  private metricsCollector: any;
   private dataTransmitter: DataTransmitter;
   private alertManager: AlertManager;
   private flushTimer?: NodeJS.Timeout;
