@@ -192,12 +192,20 @@ function AppContent() {
     return <OfflineState onRetry={() => window.location.reload()} />;
   }
 
-  // Redirección por host: calculadoras.capittal.es -> /lp/calculadora
+  // Redirección por host a rutas específicas
   if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
+    const rawHost = window.location.hostname;
+    const host = rawHost.replace(/^www\./, '');
     const path = window.location.pathname;
-    if (host === 'calculadoras.capittal.es' && path !== '/lp/calculadora') {
-      return <Navigate to="/lp/calculadora" replace />;
+
+    const hostRedirects: Record<string, string> = {
+      'calculadoras.capittal.es': '/lp/calculadora',
+      'calculadora.capittal.es': '/lp/calculadora',
+    };
+
+    const target = hostRedirects[host];
+    if (target && path !== target) {
+      return <Navigate to={target} replace />;
     }
   }
 
