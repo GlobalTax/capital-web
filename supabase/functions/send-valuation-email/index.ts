@@ -1,8 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,6 +222,25 @@ const handler = async (req: Request): Promise<Response> => {
     }
     const filename = pdfFilename || `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
 
+    // Subir PDF a Supabase Storage (bucket: valuations) para re-descarga
+    let pdfPublicUrl: string | null = null;
+    if (pdfToAttach) {
+      try {
+        const binary = Uint8Array.from(atob(pdfToAttach), (c) => c.charCodeAt(0));
+        const objectKey = `valuations/${Date.now()}-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+        const { data: up, error: upErr } = await supabase.storage
+          .from('valuations')
+          .upload(objectKey, binary, { contentType: 'application/pdf', upsert: true });
+        if (upErr) {
+          console.error('Error subiendo PDF a storage:', upErr);
+        } else {
+          pdfPublicUrl = `${supabaseUrl}/storage/v1/object/public/${objectKey}`;
+        }
+      } catch (eUp: any) {
+        console.error('Excepción al subir PDF a storage:', eUp?.message || eUp);
+      }
+    }
+
     let emailResponse: any;
     try {
       emailResponse = await resend.emails.send({
@@ -247,10 +271,11 @@ const handler = async (req: Request): Promise<Response> => {
       const firma = sender?.firma || 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid';
 
       // Enlaces útiles (sólo si se facilitan)
+      const pdfUrlFinal = (enlaces && enlaces.pdfUrl) || pdfPublicUrl || '';
       const enlacesUtiles = [
-        enlaces.pdfUrl ? `<p style="margin:0 0 6px;"><strong>Re-descargar el PDF:</strong> <a href="${enlaces.pdfUrl}" target="_blank" style="color:#1f2937;">${enlaces.pdfUrl}</a></p>` : '',
-        enlaces.escenariosUrl ? `<p style="margin:0 0 6px;"><strong>Generar nuevos escenarios:</strong> <a href="${enlaces.escenariosUrl}" target="_blank" style="color:#1f2937;">${enlaces.escenariosUrl}</a></p>` : '',
-        enlaces.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937;">${enlaces.calculadoraFiscalUrl}</a></p>` : ''
+        pdfUrlFinal ? `<p style="margin:0 0 6px;"><strong>Re-descargar el PDF:</strong> <a href="${pdfUrlFinal}" target="_blank" style="color:#1f2937;">${pdfUrlFinal}</a></p>` : '',
+        enlaces?.escenariosUrl ? `<p style="margin:0 0 6px;"><strong>Generar nuevos escenarios:</strong> <a href="${enlaces.escenariosUrl}" target="_blank" style="color:#1f2937;">${enlaces.escenariosUrl}</a></p>` : '',
+        enlaces?.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937;">${enlaces.calculadoraFiscalUrl}</a></p>` : ''
       ].filter(Boolean).join('');
 
       const userHtml = `

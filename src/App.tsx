@@ -126,6 +126,7 @@ const BlogPost = lazy(() => import('@/pages/blog/BlogPost').catch(() =>
 
 // Landing Calculator
 const LandingCalculator = lazy(() => import('@/pages/LandingCalculator'));
+const LandingCalculadoraFiscal = lazy(() => import('@/pages/LandingCalculadoraFiscal'));
 
 // Documentacion MA pages - Create placeholder components for missing ones
 const NuestroMetodo = lazy(() => import('@/pages/documentacion-ma/NuestroMetodo').catch(() => 
@@ -269,6 +270,8 @@ function AppContent() {
           <Route path="/lp/*" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/lp/calculadora" element={<LandingCalculator />} />
           <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
+          <Route path="/lp/calculadora-fiscal" element={<LandingCalculadoraFiscal />} />
+          <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
           
           {/* Por que elegirnos routes */}
           <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />

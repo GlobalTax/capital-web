@@ -12,6 +12,7 @@ const LandingFooterMinimal: React.FC = () => {
             <Link to="/legal/privacidad" className="hover:underline">Política de Privacidad</Link>
             <Link to="/legal/terminos" className="hover:underline">Términos de Uso</Link>
             <Link to="/legal/cookies" className="hover:underline">Cookies</Link>
+            <Link to="/lp/calculadora-fiscal" className="font-medium hover:underline">Calculadora Fiscal</Link>
             <Link to="/contacto" className="font-medium hover:underline">Contacto</Link>
           </nav>
         </div>

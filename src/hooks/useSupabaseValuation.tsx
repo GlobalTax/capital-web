@@ -143,7 +143,7 @@ export const useSupabaseValuation = () => {
             enlaces: {
               // pdfUrl: opcional si se sube a un storage público
               escenariosUrl: `${window.location.origin}/lp/calculadora`,
-              calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora`
+              calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora-fiscal`
             },
             sender: {
               nombre: 'Equipo Capittal',

@@ -113,9 +113,10 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       'media': 'Media (25-75%)',
       'baja': 'Baja (<25%)'
     };
-    return labels[participation] || participation;
+  return labels[participation] || participation;
   };
 
+  const isFiscalES = typeof window !== 'undefined' && window.location.pathname.includes('calculadora-fiscal');
   const handleDownloadPDF = async () => {
     if (!result || !companyData) {
       toast({
@@ -335,6 +336,38 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           {isGeneratingPDF ? 'Generando PDF...' : 'Descargar Informe PDF'}
         </Button>
       </div>
+
+      {/* Escenario Fiscal España (solo en calculadora fiscal) */}
+      {isFiscalES && (
+        <div className="bg-white border border-gray-300 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Impacto fiscal estimado (España)</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Cálculo orientativo del posible impacto fiscal en una venta de participaciones/activos realizada en España.
+            Consulte con nuestro equipo fiscal para un estudio detallado.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded border border-gray-200">
+              <p className="text-xs text-gray-500">Ganancia patrimonial</p>
+              <p className="text-sm text-gray-800">Requiere coste de adquisición y ajustes (no aportados)</p>
+            </div>
+            <div className="p-4 rounded border border-gray-200">
+              <p className="text-xs text-gray-500">Tipo orientativo</p>
+              <p className="text-sm text-gray-800">IRPF: 19%–26% | IS: 25% (según caso)</p>
+            </div>
+            <div className="p-4 rounded border border-gray-200">
+              <p className="text-xs text-gray-500">Retenciones</p>
+              <p className="text-sm text-gray-800">Posible retención 19% en pagos a personas físicas</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Nota: estos datos son orientativos y pueden variar por régimen fiscal, exenciones (p. ej. ETVE/participation exemption),
+            deducciones y circunstancias particulares.
+          </p>
+          <div className="mt-4">
+            <a href="/contacto" className="underline text-gray-900">Hablar con un asesor fiscal</a>
+          </div>
+        </div>
+      )}
 
       {/* Sistema de valoración de la herramienta */}
       <ToolRating companyData={companyData} />
