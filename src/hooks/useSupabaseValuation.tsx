@@ -116,6 +116,25 @@ export const useSupabaseValuation = () => {
       } catch (secondaryDbError) {
         console.error('Error enviando valoración a segunda DB:', secondaryDbError);
       }
+
+      // Enviar email con los datos (fase de pruebas)
+      try {
+        const { data: emailResp, error: emailError } = await supabase.functions.invoke('send-valuation-email', {
+          body: {
+            recipientEmail: 'samuel@capittal.es',
+            companyData: companyData,
+            result: result,
+          }
+        });
+
+        if (emailError || emailResp?.success === false) {
+          console.error('Error enviando email de valoración:', emailError || emailResp);
+        } else {
+          console.log('Email de valoración enviado correctamente:', emailResp);
+        }
+      } catch (emailException) {
+        console.error('Excepción al enviar el email de valoración:', emailException);
+      }
       
       toast({
         title: "✅ Datos guardados",
