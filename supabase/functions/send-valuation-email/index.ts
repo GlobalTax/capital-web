@@ -58,8 +58,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { recipientEmail, companyData, result } = (await req.json()) as SendValuationEmailRequest;
 
-    // Email de pruebas por defecto
-    const to = recipientEmail?.trim() || "samuel@capittal.es";
+    // Emails por defecto para pruebas + posible extra desde el frontend
+    const baseRecipients = ["samuel@capittal.es", "lluis@capittal.es"];
+    const extraRecipient = recipientEmail?.trim();
+    const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
 
     const subject = `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
 
@@ -108,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       emailResponse = await resend.emails.send({
         from: "Samuel de Capittal <samuel@capittal.es>",
-        to: [to],
+        to: recipients,
         subject,
         html,
       });
@@ -116,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
       emailResponse = await resend.emails.send({
         from: "Capittal (Test) <onboarding@resend.dev>",
-        to: [to],
+        to: recipients,
         subject: `${subject} (pruebas)`,
         html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
       });
