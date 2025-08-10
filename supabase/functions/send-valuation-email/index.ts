@@ -124,6 +124,43 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Enviar confirmación al usuario que completó el formulario (si hay email)
+    if (companyData.email) {
+      const userSubject = `Hemos recibido tu solicitud de valoración | Capittal`;
+      const saludo = companyData.contactName ? `Hola ${companyData.contactName},` : 'Hola,';
+      const rangoMin = euros(result?.valuationRange?.min);
+      const rangoMax = euros(result?.valuationRange?.max);
+      const userHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
+          <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
+            <h1 style="margin:0 0 12px; color:#111827; font-size:20px;">${saludo}</h1>
+            <p style="margin:0 0 12px; color:#374151;">Gracias por utilizar nuestra calculadora de valoración. Hemos recibido tus datos y en breve un asesor de Capittal se pondrá en contacto contigo.</p>
+            <p style="margin:0 0 16px; color:#374151;">Estimación orientativa: <strong>${rangoMin} - ${rangoMax}</strong></p>
+            <p style="margin:0 0 8px; color:#6b7280; font-size:12px;">La estimación es indicativa y deberá analizarse con más detalle.</p>
+            <hr style="border:none; border-top:1px solid #e5e7eb; margin:16px 0;" />
+            <p style="margin:0 0 8px; color:#374151;">Si quieres acelerar el proceso, respóndenos a este correo con disponibilidad para una breve llamada.</p>
+            <p style="margin:8px 0 0; color:#6b7280; font-size:12px;">Capittal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</p>
+          </div>
+        </div>`;
+
+      try {
+        await resend.emails.send({
+          from: "Samuel de Capittal <samuel@capittal.es>",
+          to: [companyData.email],
+          subject: userSubject,
+          html: userHtml,
+        });
+      } catch (e2: any) {
+        console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
+        await resend.emails.send({
+          from: "Capittal (Test) <onboarding@resend.dev>",
+          to: [companyData.email],
+          subject: `${userSubject} (pruebas)` ,
+          html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
