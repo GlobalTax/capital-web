@@ -265,7 +265,10 @@ function AppContent() {
           
           {/* Landing Pages */}
           <Route path="/landing/:slug" element={<LandingPageView />} />
+          <Route path="/lp" element={<Navigate to="/lp/calculadora" replace />} />
+          <Route path="/lp/*" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/lp/calculadora" element={<LandingCalculator />} />
+          <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
           
           {/* Por que elegirnos routes */}
           <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
