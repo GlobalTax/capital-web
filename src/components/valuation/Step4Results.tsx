@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
 import ToolRating from './ToolRating';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Step4Props {
   result: any;
@@ -152,11 +153,38 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
-      toast({
-        title: "Error al generar PDF",
-        description: "Ha ocurrido un error al generar el informe. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('send-valuation-email', {
+          body: {
+            pdfOnly: true,
+            companyData,
+            result
+          }
+        });
+
+        if (fnError || !data?.pdfUrl) {
+          throw fnError || new Error('Sin URL de PDF');
+        }
+
+        const a = document.createElement('a');
+        a.href = data.pdfUrl as string;
+        a.download = `Valoracion_${companyData.companyName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        toast({
+          title: 'PDF alternativo listo',
+          description: 'Se ha generado un PDF de respaldo y comenzado la descarga.'
+        });
+      } catch (fallbackErr) {
+        console.error('Fallback PDF failed:', fallbackErr);
+        toast({
+          title: 'No se pudo descargar el PDF',
+          description: 'Intentaremos enviarlo por email automáticamente.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsGeneratingPDF(false);
     }

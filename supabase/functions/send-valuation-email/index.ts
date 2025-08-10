@@ -57,6 +57,7 @@ interface SendValuationEmailRequest {
     firma?: string;
   };
   subjectOverride?: string;
+  pdfOnly?: boolean; // si true, solo genera/sube PDF y devuelve URL, no envía emails
 }
 
 const euros = (n?: number | null) =>
@@ -240,6 +241,13 @@ const handler = async (req: Request): Promise<Response> => {
         console.error('Excepción al subir PDF a storage:', eUp?.message || eUp);
       }
     }
+    // Si solo se solicita el PDF, devolver URL y no enviar emails
+    if (payload.pdfOnly) {
+      return new Response(
+        JSON.stringify({ success: true, pdfUrl: pdfPublicUrl, filename }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     let emailResponse: any;
     try {
@@ -333,7 +341,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
+      JSON.stringify({ success: true, emailId: emailResponse?.data?.id, pdfUrl: pdfPublicUrl, filename }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
