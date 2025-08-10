@@ -2,7 +2,7 @@
 import { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -190,6 +190,15 @@ function AppContent() {
 
   if (!isOnline) {
     return <OfflineState onRetry={() => window.location.reload()} />;
+  }
+
+  // Redirección por host: calculadoras.capittal.es -> /lp/calculadora
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const path = window.location.pathname;
+    if (host === 'calculadoras.capittal.es' && path !== '/lp/calculadora') {
+      return <Navigate to="/lp/calculadora" replace />;
+    }
   }
 
   return (
