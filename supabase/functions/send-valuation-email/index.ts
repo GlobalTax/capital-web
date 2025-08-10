@@ -38,6 +38,8 @@ interface SendValuationEmailRequest {
   recipientEmail?: string; // opcional, por defecto se usa el de pruebas
   companyData: CompanyDataEmail;
   result: ValuationResultEmail;
+  pdfBase64?: string; // PDF generado en frontend (base64 sin prefijo data:)
+  pdfFilename?: string; // nombre sugerido para el adjunto
 }
 
 const euros = (n?: number | null) =>
@@ -141,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, companyData, result } = (await req.json()) as SendValuationEmailRequest;
+    const { recipientEmail, companyData, result, pdfBase64, pdfFilename } = (await req.json()) as SendValuationEmailRequest;
 
     // Emails por defecto para pruebas + posible extra desde el frontend
     const baseRecipients = ["samuel@capittal.es", "lluis@capittal.es"];
@@ -228,15 +230,17 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>`;
 
-      // Generar PDF y adjuntarlo
-      let pdfBase64: string | null = null;
-      try {
-        pdfBase64 = await generateValuationPdfBase64(companyData, result);
-      } catch (ePdf: any) {
-        console.error("Error generando PDF para el usuario:", ePdf?.message || ePdf);
+      // Adjuntar el MISMO PDF del frontend si viene en la petición; si no, generar uno de respaldo
+      let pdfToAttach: string | null = (pdfBase64 && pdfBase64.trim().length > 0) ? pdfBase64.trim() : null;
+      if (!pdfToAttach) {
+        try {
+          pdfToAttach = await generateValuationPdfBase64(companyData, result);
+        } catch (ePdf: any) {
+          console.error("Error generando PDF de respaldo para el usuario:", ePdf?.message || ePdf);
+        }
       }
 
-      const filename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+      const filename = pdfFilename || `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
 
       try {
         await resend.emails.send({
@@ -244,7 +248,7 @@ const handler = async (req: Request): Promise<Response> => {
           to: [companyData.email],
           subject: userSubject,
           html: userHtml,
-          attachments: pdfBase64 ? [{ filename, content: pdfBase64, contentType: "application/pdf" }] : undefined,
+          attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
         });
       } catch (e2: any) {
         console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
@@ -253,7 +257,7 @@ const handler = async (req: Request): Promise<Response> => {
           to: [companyData.email],
           subject: `${userSubject} (pruebas)` ,
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
-          attachments: pdfBase64 ? [{ filename, content: pdfBase64, contentType: "application/pdf" }] : undefined,
+          attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
         });
       }
     }

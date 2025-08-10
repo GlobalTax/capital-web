@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 
 interface CompanyData {
   contactName: string;
@@ -117,13 +117,28 @@ export const useSupabaseValuation = () => {
         console.error('Error enviando valoración a segunda DB:', secondaryDbError);
       }
 
-      // Enviar email con los datos (fase de pruebas)
+      // Enviar email con los datos + adjuntar el MISMO PDF del frontend
       try {
+        // Generar PDF (React-PDF) y convertir a Base64
+        const blob = await generateValuationPDFWithReactPDF(companyData, result);
+        const pdfBase64: string = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            resolve((dataUrl.split(',')[1]) || '');
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
+
         const { data: emailResp, error: emailError } = await supabase.functions.invoke('send-valuation-email', {
           body: {
             recipientEmail: 'samuel@capittal.es',
             companyData: companyData,
             result: result,
+            pdfBase64,
+            pdfFilename,
           }
         });
 
@@ -133,7 +148,7 @@ export const useSupabaseValuation = () => {
           console.log('Email de valoración enviado correctamente:', emailResp);
         }
       } catch (emailException) {
-        console.error('Excepción al enviar el email de valoración:', emailException);
+        console.error('Excepción al generar/adjuntar PDF o enviar el email de valoración:', emailException);
       }
       
       toast({
