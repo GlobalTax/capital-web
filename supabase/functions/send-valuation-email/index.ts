@@ -40,6 +40,18 @@ interface SendValuationEmailRequest {
   result: ValuationResultEmail;
   pdfBase64?: string; // PDF generado en frontend (base64 sin prefijo data:)
   pdfFilename?: string; // nombre sugerido para el adjunto
+  agendaUrl?: string;
+  enlaces?: {
+    pdfUrl?: string;
+    escenariosUrl?: string;
+    calculadoraFiscalUrl?: string;
+  };
+  sender?: {
+    nombre?: string;
+    cargo?: string;
+    firma?: string;
+  };
+  subjectOverride?: string;
 }
 
 const euros = (n?: number | null) =>
@@ -143,7 +155,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, companyData, result, pdfBase64, pdfFilename } = (await req.json()) as SendValuationEmailRequest;
+    const payload = (await req.json()) as SendValuationEmailRequest;
+    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, agendaUrl, enlaces, sender, subjectOverride } = payload;
 
     // Emails por defecto para pruebas + posible extra desde el frontend
     const baseRecipients = ["samuel@capittal.es", "lluis@capittal.es"];
@@ -226,24 +239,53 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Enviar confirmación al usuario que completó el formulario (si hay email)
     if (companyData.email) {
-      const userSubject = `Hemos recibido tu solicitud de valoración | Capittal`;
+      const userSubject = subjectOverride || `Valoración · PDF, escenarios y calculadora fiscal`;
       const saludo = companyData.contactName ? `Hola ${companyData.contactName},` : 'Hola,';
-      const rangoMin = euros(result?.valuationRange?.min);
-      const rangoMax = euros(result?.valuationRange?.max);
+      const sector = companyData.industry || 'su sector';
+      const nombre = sender?.nombre || 'Equipo Capittal';
+      const cargo = sender?.cargo || 'M&A';
+      const firma = sender?.firma || 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid';
+
+      // Enlaces útiles (sólo si se facilitan)
+      const enlacesUtiles = [
+        enlaces.pdfUrl ? `<p style="margin:0 0 6px;"><strong>Re-descargar el PDF:</strong> <a href="${enlaces.pdfUrl}" target="_blank" style="color:#1f2937;">${enlaces.pdfUrl}</a></p>` : '',
+        enlaces.escenariosUrl ? `<p style="margin:0 0 6px;"><strong>Generar nuevos escenarios:</strong> <a href="${enlaces.escenariosUrl}" target="_blank" style="color:#1f2937;">${enlaces.escenariosUrl}</a></p>` : '',
+        enlaces.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937;">${enlaces.calculadoraFiscalUrl}</a></p>` : ''
+      ].filter(Boolean).join('');
+
       const userHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
-          <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
-            <h1 style="margin:0 0 12px; color:#111827; font-size:20px;">${saludo}</h1>
-            <p style="margin:0 0 12px; color:#374151;">Gracias por utilizar nuestra calculadora de valoración. Hemos recibido tus datos y en breve un asesor de Capittal se pondrá en contacto contigo.</p>
-            <p style="margin:0 0 16px; color:#374151;">Estimación orientativa: <strong>${rangoMin} - ${rangoMax}</strong></p>
-            <p style="margin:0 0 8px; color:#6b7280; font-size:12px;">La estimación es indicativa y deberá analizarse con más detalle.</p>
-            <hr style="border:none; border-top:1px solid #e5e7eb; margin:16px 0;" />
-            <p style="margin:0 0 8px; color:#374151;">Si quieres acelerar el proceso, respóndenos a este correo con disponibilidad para una breve llamada.</p>
-            <p style="margin:8px 0 0; color:#6b7280; font-size:12px;">Capittal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</p>
+          <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px; color:#111827;">
+            <p style="margin:0 0 16px;">${saludo}</p>
+            <p style="margin:0 0 12px;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${companyData.companyName || ''}</strong>.</p>
+            <p style="margin:0 0 12px;">Su PDF ya se ha generado y pudo descargarlo en la pantalla de confirmación. Por si lo necesita de nuevo, lo adjuntamos a este correo.</p>
+
+            <p style="margin:16px 0 8px;"><strong>En ese documento encontrará:</strong></p>
+            <ul style="margin:0 0 12px 18px; padding:0;">
+              <li style="margin:0 0 6px;">Una horquilla preliminar basada en comparables de ${sector} y en el tamaño de la compañía.</li>
+              <li style="margin:0 0 6px;">La metodología aplicada y los principales supuestos considerados.</li>
+              <li style="margin:0;">Se trata de una valoración orientativa, dado que por el momento hemos tenido acceso a información limitada.</li>
+            </ul>
+
+            <p style="margin:0 0 12px;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede reservar una llamada de 20–30 minutos aquí: <a href="${agendaUrl}" target="_blank" style="color:#1f2937;">${agendaUrl}</a>.` : ''}</p>
+            <p style="margin:0 0 16px;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es completamente confidencial.</p>
+
+            ${enlacesUtiles ? `<div style="margin:16px 0 12px;"><p style=\"margin:0 0 8px;\"><strong>Enlaces útiles (guarde este correo):</strong></p>${enlacesUtiles}</div>` : ''}
+
+            <p style="margin:16px 0 8px;"><strong>Sobre Capittal</strong></p>
+            <ul style="margin:0 0 12px 18px; padding:0;">
+              <li style="margin:0 0 6px;">Equipo multidisciplinar de 50 profesionales (M&A, fiscal y legal).</li>
+              <li style="margin:0 0 6px;">Más de 100 operaciones cerradas en 15 años.</li>
+              <li style="margin:0;">Enfoque práctico y acompañamiento de principio a fin del proceso.</li>
+            </ul>
+
+            <p style="margin:16px 0 6px;">Un saludo,</p>
+            <p style="margin:0;">${nombre} · ${cargo}</p>
+            <p style="margin:0 0 16px;">${firma}</p>
+
+            <p style="margin:12px 0 0; font-size:12px; color:#6b7280;"><strong>Nota legal:</strong> Este contenido es orientativo y no constituye una valoración u oferta vinculante. La valoración final puede variar tras el análisis completo de la documentación (estados financieros, deuda y ajustes de EBITDA).</p>
           </div>
         </div>`;
-
-      // Adjuntos ya preparados anteriormente (pdfToAttach, filename)
 
       try {
         await resend.emails.send({

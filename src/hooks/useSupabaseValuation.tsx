@@ -139,6 +139,18 @@ export const useSupabaseValuation = () => {
             result: result,
             pdfBase64,
             pdfFilename,
+            agendaUrl: `${window.location.origin}/contacto`,
+            enlaces: {
+              // pdfUrl: opcional si se sube a un storage público
+              escenariosUrl: `${window.location.origin}/lp/calculadora`,
+              calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora`
+            },
+            sender: {
+              nombre: 'Equipo Capittal',
+              cargo: 'M&A',
+              firma: 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid'
+            },
+            subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal'
           }
         });
 
