@@ -193,6 +193,17 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
+    // Preparar PDF adjunto: usar el generado en frontend o crear uno de respaldo
+    let pdfToAttach: string | null = (pdfBase64 && pdfBase64.trim().length > 0) ? pdfBase64.trim() : null;
+    if (!pdfToAttach) {
+      try {
+        pdfToAttach = await generateValuationPdfBase64(companyData, result);
+      } catch (ePdf: any) {
+        console.error("Error generando PDF de respaldo:", ePdf?.message || ePdf);
+      }
+    }
+    const filename = pdfFilename || `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+
     let emailResponse: any;
     try {
       emailResponse = await resend.emails.send({
@@ -200,6 +211,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: recipients,
         subject,
         html,
+        attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
       });
     } catch (e: any) {
       console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
@@ -208,6 +220,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: recipients,
         subject: `${subject} (pruebas)`,
         html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
+        attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
       });
     }
 
@@ -230,17 +243,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>`;
 
-      // Adjuntar el MISMO PDF del frontend si viene en la petición; si no, generar uno de respaldo
-      let pdfToAttach: string | null = (pdfBase64 && pdfBase64.trim().length > 0) ? pdfBase64.trim() : null;
-      if (!pdfToAttach) {
-        try {
-          pdfToAttach = await generateValuationPdfBase64(companyData, result);
-        } catch (ePdf: any) {
-          console.error("Error generando PDF de respaldo para el usuario:", ePdf?.message || ePdf);
-        }
-      }
-
-      const filename = pdfFilename || `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+      // Adjuntos ya preparados anteriormente (pdfToAttach, filename)
 
       try {
         await resend.emails.send({
