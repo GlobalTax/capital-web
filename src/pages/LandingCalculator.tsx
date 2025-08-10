@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
+import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
 import ValuationCalculator from '@/components/ValuationCalculator';
 
 const LandingCalculator = () => {
@@ -33,13 +33,13 @@ const LandingCalculator = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <LandingHeaderMinimal />
       <main className="pt-20">
         {/* H1 único para SEO, oculto visualmente */}
         <h1 className="sr-only">Calculadora de Valoración de Empresas</h1>
         <ValuationCalculator />
       </main>
-      <Footer />
+      <LandingFooterMinimal />
     </div>
   );
 };
