@@ -198,9 +198,18 @@ function AppContent() {
     const host = rawHost.replace(/^www\./, '');
     const path = window.location.pathname;
 
+    // Si entran por calculadoras.capittal.es, forzamos dominio canónico capittal.es/lp/calculadora
+    if (host === 'calculadoras.capittal.es' || host === 'calculadora.capittal.es') {
+      const canonical = 'https://capittal.es/lp/calculadora';
+      if (window.location.href !== canonical) {
+        window.location.replace(canonical); // 302 en cliente (efecto similar a 301 para UX)
+        return null;
+      }
+    }
+
+    // Redirecciones internas por host -> ruta (si en el mismo dominio)
     const hostRedirects: Record<string, string> = {
-      'calculadoras.capittal.es': '/lp/calculadora',
-      'calculadora.capittal.es': '/lp/calculadora',
+      'webcapittal.lovable.app': '/lp/calculadora',
     };
 
     const target = hostRedirects[host];
