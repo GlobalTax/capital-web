@@ -104,12 +104,23 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const emailResponse = await resend.emails.send({
-      from: "Capittal <admin@capittal.com>",
-      to: [to],
-      subject,
-      html,
-    });
+    let emailResponse: any;
+    try {
+      emailResponse = await resend.emails.send({
+        from: "Capittal <admin@capittal.com>",
+        to: [to],
+        subject,
+        html,
+      });
+    } catch (e: any) {
+      console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
+      emailResponse = await resend.emails.send({
+        from: "Capittal (Test) <onboarding@resend.dev>",
+        to: [to],
+        subject: `${subject} (pruebas)`,
+        html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
