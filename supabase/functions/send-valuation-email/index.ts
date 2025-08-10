@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
@@ -44,6 +45,90 @@ const euros = (n?: number | null) =>
 
 const pct = (n?: number | null) =>
   typeof n === "number" && !isNaN(n) ? `${n.toFixed(2)}%` : "-";
+
+// Genera un PDF sencillo con el resumen de la valoración y lo devuelve en Base64 (sin data URI)
+const generateValuationPdfBase64 = async (
+  companyData: CompanyDataEmail,
+  result: ValuationResultEmail
+): Promise<string> => {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595.28, 841.89]); // A4 en puntos (72 dpi)
+  const { width, height } = page.getSize();
+  const margin = 40;
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  let y = height - margin;
+  const lineHeight = 18;
+  const colorPrimary = rgb(0.106, 0.247, 0.675); // Azul Capittal aprox
+
+  const drawHeader = () => {
+    const title = "Informe de Valoración";
+    page.drawText(title, { x: margin, y, size: 20, font: fontBold, color: colorPrimary });
+    y -= lineHeight + 6;
+    page.drawText("Capittal", { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+    const date = new Date().toLocaleDateString("es-ES");
+    const dateText = `Fecha: ${date}`;
+    const dateWidth = font.widthOfTextAtSize(dateText, 10);
+    page.drawText(dateText, { x: width - margin - dateWidth, y, size: 10, font });
+    y -= lineHeight;
+
+    // Línea separadora
+    page.drawLine({ start: { x: margin, y }, end: { x: width - margin, y }, color: rgb(0.85, 0.89, 0.95), thickness: 1 });
+    y -= lineHeight;
+  };
+
+  const drawSectionTitle = (text: string) => {
+    page.drawText(text, { x: margin, y, size: 14, font: fontBold, color: colorPrimary });
+    y -= lineHeight;
+  };
+
+  const drawKV = (k: string, v: string) => {
+    page.drawText(k, { x: margin, y, size: 11, font: fontBold });
+    page.drawText(v, { x: margin + 170, y, size: 11, font });
+    y -= lineHeight;
+  };
+
+  drawHeader();
+
+  // Datos de contacto y empresa
+  drawSectionTitle("Datos de la empresa");
+  drawKV("Contacto:", companyData.contactName || "-");
+  drawKV("Empresa:", companyData.companyName || "-");
+  drawKV("Email:", companyData.email || "-");
+  drawKV("Teléfono:", companyData.phone || "-");
+  drawKV("Sector:", companyData.industry || "-");
+  y -= 6;
+
+  // Resultados
+  drawSectionTitle("Resultado de la valoración");
+  drawKV("Valoración final:", euros(result?.finalValuation ?? result?.valuationRange?.min ?? null));
+  drawKV("Rango estimado:", `${euros(result?.valuationRange?.min)} - ${euros(result?.valuationRange?.max)}`);
+  drawKV("EBITDA:", euros(companyData.ebitda ?? null));
+  drawKV("Múltiplo EBITDA usado:", `${result?.multiples?.ebitdaMultipleUsed ?? result?.ebitdaMultiple ?? "-"}x`);
+  y -= lineHeight;
+
+  // Nota legal y direcciones
+  const disclaimer =
+    "Documento informativo y no vinculante. La valoración es orientativa y requiere un análisis más detallado.";
+  page.drawText("Nota legal:", { x: margin, y, size: 11, font: fontBold });
+  y -= lineHeight;
+  page.drawText(disclaimer, { x: margin, y, size: 10, font, maxWidth: width - margin * 2, lineHeight: 12 });
+  y -= 36;
+
+  const addr1 = "Carrer Ausias March, 36 Principal";
+  const addr2 = "P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid";
+  page.drawText("Capittal · Oficinas:", { x: margin, y, size: 10, font: fontBold, color: colorPrimary });
+  y -= lineHeight;
+  page.drawText(`- ${addr1}`, { x: margin, y, size: 10, font });
+  y -= lineHeight;
+  page.drawText(`- ${addr2}`, { x: margin, y, size: 10, font });
+
+  // Devolver en Base64 sin data URI
+  const base64 = await pdfDoc.saveAsBase64({ dataUri: false });
+  return base64;
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // CORS preflight
@@ -143,12 +228,23 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>`;
 
+      // Generar PDF y adjuntarlo
+      let pdfBase64: string | null = null;
+      try {
+        pdfBase64 = await generateValuationPdfBase64(companyData, result);
+      } catch (ePdf: any) {
+        console.error("Error generando PDF para el usuario:", ePdf?.message || ePdf);
+      }
+
+      const filename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+
       try {
         await resend.emails.send({
           from: "Samuel de Capittal <samuel@capittal.es>",
           to: [companyData.email],
           subject: userSubject,
           html: userHtml,
+          attachments: pdfBase64 ? [{ filename, content: pdfBase64, contentType: "application/pdf" }] : undefined,
         });
       } catch (e2: any) {
         console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
@@ -157,6 +253,7 @@ const handler = async (req: Request): Promise<Response> => {
           to: [companyData.email],
           subject: `${userSubject} (pruebas)` ,
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
+          attachments: pdfBase64 ? [{ filename, content: pdfBase64, contentType: "application/pdf" }] : undefined,
         });
       }
     }
