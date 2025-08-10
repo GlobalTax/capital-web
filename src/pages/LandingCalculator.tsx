@@ -4,8 +4,10 @@ import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
 import ValuationCalculator from '@/components/ValuationCalculator';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
+import { useLocation } from 'react-router-dom';
 
 const LandingCalculator = () => {
+  const location = useLocation();
   // SEO básico para la landing
   useEffect(() => {
     const title = 'Calculadora de Valoración de Empresas | Capittal';
@@ -35,7 +37,7 @@ const LandingCalculator = () => {
 
   // Disparador temporal de prueba por query param ?sendTest=1
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     if (params.get('sendTest') === '1') {
       (async () => {
         try {
@@ -106,7 +108,7 @@ const LandingCalculator = () => {
         }
       })();
     }
-  }, []);
+  }, [location.search]);
 
   return (
     <div className="min-h-screen bg-white">
