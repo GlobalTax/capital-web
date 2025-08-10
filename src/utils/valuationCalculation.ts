@@ -1,5 +1,6 @@
 
 import { CompanyData, ValuationResult, SectorMultiple } from '@/types/valuation';
+import { getSectorMultiplesByEbitda } from '@/utils/ebitdaMatrix';
 
 export const calculateCompanyValuation = async (
   companyData: CompanyData, 
@@ -13,13 +14,34 @@ export const calculateCompanyValuation = async (
   const employeeRangeToUse = companyData.employeeRange || '2-5';
   const ebitdaToUse = companyData.ebitda || 100000; // EBITDA por defecto de 100k
 
-  // Buscar múltiplos del sector y rango de empleados seleccionados
+  // Primero: intentar usar la matriz por EBITDA si aplica (EV/EBITDA)
+  const byEbitda = getSectorMultiplesByEbitda(industryToUse, ebitdaToUse);
+  if (byEbitda && byEbitda.metric === 'EV/EBITDA') {
+    const avgMultiple = (byEbitda.low + byEbitda.high) / 2;
+    const ebitdaValuation = ebitdaToUse * avgMultiple;
+    const finalValuation = Math.round(ebitdaValuation);
+
+    const valuationResult: ValuationResult = {
+      ebitdaMultiple: Math.round(ebitdaValuation),
+      finalValuation,
+      valuationRange: {
+        min: Math.round(ebitdaToUse * byEbitda.low),
+        max: Math.round(ebitdaToUse * byEbitda.high)
+      },
+      multiples: {
+        ebitdaMultipleUsed: avgMultiple
+      }
+    };
+
+    return valuationResult;
+  }
+
+  // Fallback: usar múltiplos por sector y rango de empleados
   let sectorData = sectorMultiples.find(s => 
     s.sector_name === industryToUse && 
     s.employee_range === employeeRangeToUse
   );
   
-  // Si no se encuentra, usar un múltiplo por defecto
   if (!sectorData) {
     console.log('No se encontraron múltiplos específicos, usando valores por defecto');
     sectorData = {
@@ -31,10 +53,7 @@ export const calculateCompanyValuation = async (
     };
   }
 
-  // Calcular valoración usando solo múltiplo EBITDA
   const ebitdaValuation = ebitdaToUse * sectorData.ebitda_multiple;
-
-  // Valoración final basada únicamente en EBITDA
   const finalValuation = Math.round(ebitdaValuation);
   
   const valuationResult: ValuationResult = {
