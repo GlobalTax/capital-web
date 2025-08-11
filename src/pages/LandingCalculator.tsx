@@ -9,6 +9,7 @@ import LanguageSelector from '@/components/i18n/LanguageSelector';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 import CapittalBrief from '@/components/landing/CapittalBrief';
+import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
 
 const LandingCalculatorInner = () => {
   const location = useLocation();
@@ -126,6 +127,8 @@ const LandingCalculatorInner = () => {
         {/* H1 único para SEO, oculto visualmente */}
         <h1 className="sr-only">{t('landing.h1')}</h1>
         <ValuationCalculator />
+        {/* Confidencialidad y privacidad de la herramienta */}
+        <ConfidentialityBlock />
         {/* Breve descripción de Capittal */}
         <CapittalBrief />
       </main>
