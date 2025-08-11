@@ -57,8 +57,8 @@ export const useEdgeOptimization = () => {
       try {
         const swRegistration = await edgeOptimizer.registerServiceWorker();
         setIsServiceWorkerActive(!!swRegistration);
-
-        await edgeOptimizer.preloadResource('/api/health', 'script');
+        
+        // Evitamos preloads de endpoints como script para no generar warnings de MIME/uso
         
         logger.info('Edge optimizations initialized', { 
           serviceWorker: !!swRegistration,

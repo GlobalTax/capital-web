@@ -11,7 +11,7 @@ import { PageLoadingSkeleton } from '@/components/LoadingStates';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
-import { logBundleSize, preloadCriticalChunks, monitorResourceLoading } from '@/utils/bundleAnalysis';
+import { logBundleSize, monitorResourceLoading } from '@/utils/bundleAnalysis';
 import { useEffect } from 'react';
 import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 
@@ -331,13 +331,11 @@ function App() {
           }
         }, 2000);
 
-        // Precargar chunks críticos de forma diferida
+        // Precarga diferida desactivada: evitamos preloads a chunks inexistentes en Vite
+        // Mantener solo el preloading de módulos críticos vía dynamic import cuando sea necesario
         setTimeout(async () => {
           try {
-            const { preloadCriticalChunks } = await import('./utils/bundleAnalysis');
-            preloadCriticalChunks();
-            
-            // Precargar módulos críticos
+            // Precargar módulos críticos reales (hash gestionado por Vite)
             Promise.all([
               import('./components/admin/lazy'),
               import('./features/dashboard/hooks/useMarketingMetrics'),
