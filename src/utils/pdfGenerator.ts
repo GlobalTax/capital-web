@@ -275,23 +275,6 @@ export const generateValuationPDF = async (
         </div>
       </div>
 
-      <!-- Footer -->
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #000; text-align: center;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; font-size: 11px;">
-          <div>
-            <h4 style="margin: 0 0 8px 0; font-weight: bold;">CAPITTAL</h4>
-            
-          </div>
-          <div>
-            <h4 style="margin: 0 0 8px 0; font-weight: bold;">Contacto</h4>
-            <p style="margin: 0; line-height: 1.4;">info@capittal.com<br>+34 XXX XXX XXX</p>
-          </div>
-          <div>
-            <h4 style="margin: 0 0 8px 0; font-weight: bold;">Web</h4>
-            <p style="margin: 0; line-height: 1.4;">www.capittal.com</p>
-          </div>
-        </div>
-      </div>
     </div>
   `;
 

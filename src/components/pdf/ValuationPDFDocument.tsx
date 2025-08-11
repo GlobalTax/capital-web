@@ -521,23 +521,7 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
           </Text>
         </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <View style={styles.footerGrid}>
-            <View style={styles.footerColumn}>
-              <Text style={styles.footerTitle}>CAPITTAL</Text>
-              
-            </View>
-            <View style={styles.footerColumn}>
-              <Text style={styles.footerTitle}>Contacto</Text>
-              <Text style={styles.footerText}>info@capittal.com{'\n'}+34 XXX XXX XXX</Text>
-            </View>
-            <View style={styles.footerColumn}>
-              <Text style={styles.footerTitle}>Web</Text>
-              <Text style={styles.footerText}>www.capittal.com</Text>
-            </View>
-          </View>
-        </View>
+        {/* Footer eliminado a petición del cliente */}
       </Page>
     </Document>
   );
