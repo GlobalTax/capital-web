@@ -13,3 +13,7 @@ verify_jwt = false
 [functions.send-valuation-email]
 verify_jwt = false
 
+[functions.sync-leads]
+verify_jwt = false
+
+
