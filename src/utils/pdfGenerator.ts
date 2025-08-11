@@ -280,7 +280,7 @@ export const generateValuationPDF = async (
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; font-size: 11px;">
           <div>
             <h4 style="margin: 0 0 8px 0; font-weight: bold;">CAPITTAL</h4>
-            <p style="margin: 0; line-height: 1.4;">Consultoría especializada<br>en valoración empresarial</p>
+            
           </div>
           <div>
             <h4 style="margin: 0 0 8px 0; font-weight: bold;">Contacto</h4>
