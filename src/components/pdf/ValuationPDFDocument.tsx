@@ -4,22 +4,22 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 
 // Registrar fuentes
 Font.register({
-  family: 'Roboto',
+  family: 'Plus Jakarta Sans',
   fonts: [
     {
-      src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf',
+      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Light.ttf',
       fontWeight: 300,
     },
     {
-      src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf',
+      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Regular.ttf',
       fontWeight: 400,
     },
     {
-      src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-medium-webfont.ttf',
+      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Medium.ttf',
       fontWeight: 500,
     },
     {
-      src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf',
+      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Bold.ttf',
       fontWeight: 700,
     },
   ],
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
     padding: 30,
-    fontFamily: 'Roboto',
+    fontFamily: 'Plus Jakarta Sans',
     fontSize: 10,
     lineHeight: 1.4,
   },
