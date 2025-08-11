@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getPreferredLang } from '@/shared/i18n/locale';
 
 export const useV4LinkSender = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +14,8 @@ export const useV4LinkSender = () => {
       const { data, error } = await supabase.functions.invoke('send-v4-link', {
         body: { 
           valuationId,
-          sendEmail 
+          sendEmail,
+          lang: getPreferredLang()
         }
       });
 

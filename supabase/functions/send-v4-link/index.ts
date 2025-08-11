@@ -10,6 +10,7 @@ const corsHeaders = {
 interface SendV4LinkRequest {
   valuationId: string;
   sendEmail?: boolean;
+  lang?: 'es' | 'ca' | 'val' | 'gl';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -26,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     
-    const { valuationId, sendEmail = true }: SendV4LinkRequest = await req.json();
+    const { valuationId, sendEmail = true, lang = 'es' }: SendV4LinkRequest = await req.json();
 
     console.log('Processing V4 link request for valuation:', valuationId);
 
@@ -74,6 +75,78 @@ const handler = async (req: Request): Promise<Response> => {
     const v4Url = `${Deno.env.get('SUPABASE_URL')?.replace('https://', 'https://').replace('.supabase.co', '.lovable.app')}/simulador-ultra-rapido/${token}`;
 
     if (sendEmail && valuation.email) {
+      const dict = {
+        es: {
+          subject: `🚀 ${valuation.company_name} - Tu Simulador de Venta Personalizado`,
+          title: '🚀 Tu Simulador Está Listo',
+          subtitle: 'Explora escenarios de venta en tiempo real',
+          greeting: `Hola ${valuation.contact_name},`,
+          prepared: `Hemos preparado un <strong>simulador ultra-rápido personalizado</strong> con los datos de <strong>${valuation.company_name}</strong>.`,
+          bulletsHeader: '🎯 Con este simulador podrás:',
+          bullets: [
+            'Ver múltiples escenarios de valoración en tiempo real',
+            'Ajustar parámetros fiscales y de venta',
+            'Calcular el impacto fiscal automáticamente',
+            'Visualizar el retorno neto de cada escenario'
+          ],
+          cta: '🔥 Acceder al Simulador',
+          nextSteps: 'Después de explorar los escenarios, podremos agendar una consulta personalizada para profundizar en las mejores estrategias para tu caso específico.',
+          questions: '¿Tienes alguna pregunta? Responde a este email o contáctanos directamente.'
+        },
+        ca: {
+          subject: `🚀 ${valuation.company_name} - El teu Simulador de Venda Personalitzat`,
+          title: '🚀 El teu Simulador Està Llest',
+          subtitle: 'Explora escenaris de venda en temps real',
+          greeting: `Hola ${valuation.contact_name},`,
+          prepared: `Hem preparat un <strong>simulador ultra-ràpid personalitzat</strong> amb les dades de <strong>${valuation.company_name}</strong>.`,
+          bulletsHeader: '🎯 Amb aquest simulador podràs:',
+          bullets: [
+            'Veure múltiples escenaris de valoració en temps real',
+            'Ajustar paràmetres fiscals i de venda',
+            "Calcular l'impacte fiscal automàticament",
+            'Visualitzar el retorn net de cada escenari'
+          ],
+          cta: '🔥 Accedir al Simulador',
+          nextSteps: 'Després d\'explorar els escenaris, podrem agendar una consulta personalitzada per aprofundir en les millors estratègies per al teu cas específic.',
+          questions: 'Tens algun dubte? Respon a aquest correu o contacta\'ns directament.'
+        },
+        val: {
+          subject: `🚀 ${valuation.company_name} - El teu Simulador de Venda Personalitzat`,
+          title: '🚀 El teu Simulador Està Llest',
+          subtitle: 'Explora escenaris de venda en temps real',
+          greeting: `Hola ${valuation.contact_name},`,
+          prepared: `Hem preparat un <strong>simulador ultra-ràpid personalitzat</strong> amb les dades de <strong>${valuation.company_name}</strong>.`,
+          bulletsHeader: '🎯 Amb este simulador podràs:',
+          bullets: [
+            'Vore múltiples escenaris de valoració en temps real',
+            'Ajustar paràmetres fiscals i de venda',
+            "Calcular l'impacte fiscal automàticament",
+            'Visualisar el retorn net de cada escenari'
+          ],
+          cta: '🔥 Accedir al Simulador',
+          nextSteps: 'Després d\'explorar els escenaris, podrem agendar una consulta personalitzada per a aprofundir en les millors estratègies per al teu cas en concret.',
+          questions: 'Tens algun dubte? Respon a este correu o contacta\'ns directament.'
+        },
+        gl: {
+          subject: `🚀 ${valuation.company_name} - O teu simulador de venda personalizado`,
+          title: '🚀 O teu simulador está preparado',
+          subtitle: 'Explora escenarios de venda en tempo real',
+          greeting: `Ola ${valuation.contact_name},`,
+          prepared: `Preparamos un <strong>simulador ultra-rápido personalizado</strong> cos datos de <strong>${valuation.company_name}</strong>.`,
+          bulletsHeader: '🎯 Con este simulador poderás:',
+          bullets: [
+            'Ver múltiples escenarios de valoración en tempo real',
+            'Axustar parámetros fiscais e de venda',
+            'Calcular o impacto fiscal automaticamente',
+            'Visualizar o retorno neto de cada escenario'
+          ],
+          cta: '🔥 Acceder ao simulador',
+          nextSteps: 'Despois de explorar os escenarios, poderemos axendar unha consulta personalizada para afondar nas mellores estratexias para o teu caso.',
+          questions: 'Tes algunha dúbida? Responde a este email ou contáctanos directamente.'
+        }
+      } as const;
+      const S = dict[(lang as 'es'|'ca'|'val'|'gl') || 'es'] || dict.es;
+
       const emailHtml = `
         <!DOCTYPE html>
         <html>
@@ -83,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
             <link rel="preconnect" href="https://fonts.googleapis.com">
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
             <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-            <title>Tu Simulador de Venta Personalizado - Capittal</title>
+            <title>${S.subject.replace(/^🚀\s*/, '')}</title>
           </head>
         <body style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc;">
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -91,30 +164,27 @@ const handler = async (req: Request): Promise<Response> => {
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); padding: 40px 30px; text-align: center;">
               <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">
-                🚀 Tu Simulador Está Listo
+                ${S.title}
               </h1>
               <p style="color: #e0f2fe; margin: 10px 0 0; font-size: 16px;">
-                Explora escenarios de venta en tiempo real
+                ${S.subtitle}
               </p>
             </div>
 
             <!-- Content -->
             <div style="padding: 40px 30px;">
               <h2 style="color: #1e40af; margin: 0 0 20px; font-size: 22px;">
-                Hola ${valuation.contact_name},
+                ${S.greeting}
               </h2>
               
               <p style="margin: 0 0 20px; font-size: 16px;">
-                Hemos preparado un <strong>simulador ultra-rápido personalizado</strong> con los datos de <strong>${valuation.company_name}</strong>.
+                ${S.prepared}
               </p>
 
               <div style="background-color: #f1f5f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                <h3 style="margin: 0 0 15px; color: #1e40af; font-size: 18px;">🎯 Con este simulador podrás:</h3>
+                <h3 style="margin: 0 0 15px; color: #1e40af; font-size: 18px;">${S.bulletsHeader}</h3>
                 <ul style="margin: 0; padding-left: 20px; color: #475569;">
-                  <li>Ver múltiples escenarios de valoración en tiempo real</li>
-                  <li>Ajustar parámetros fiscales y de venta</li>
-                  <li>Calcular el impacto fiscal automáticamente</li>
-                  <li>Visualizar el retorno neto de cada escenario</li>
+                  ${S.bullets.map(li => `<li>${li}</li>`).join('')}
                 </ul>
               </div>
 
@@ -122,7 +192,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${v4Url}" 
                    style="display: inline-block; background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s;">
-                  🔥 Acceder al Simulador
+                  ${S.cta}
                 </a>
               </div>
 
@@ -135,11 +205,11 @@ const handler = async (req: Request): Promise<Response> => {
 
               <p style="margin: 25px 0 10px; font-size: 14px; color: #64748b;">
                 <strong>Próximos pasos:</strong><br>
-                Después de explorar los escenarios, podremos agendar una consulta personalizada para profundizar en las mejores estrategias para tu caso específico.
+                ${S.nextSteps}
               </p>
 
               <p style="margin: 20px 0; font-size: 14px; color: #64748b;">
-                ¿Tienes alguna pregunta? Responde a este email o contáctanos directamente.
+                ${S.questions}
               </p>
             </div>
 
@@ -160,7 +230,7 @@ const handler = async (req: Request): Promise<Response> => {
         const emailResponse = await resend.emails.send({
           from: 'Capittal <onboarding@resend.dev>',
           to: [valuation.email],
-          subject: `🚀 ${valuation.company_name} - Tu Simulador de Venta Personalizado`,
+          subject: S.subject,
           html: emailHtml,
         });
 

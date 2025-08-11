@@ -58,10 +58,11 @@ interface SendValuationEmailRequest {
   };
   subjectOverride?: string;
   pdfOnly?: boolean; // si true, solo genera/sube PDF y devuelve URL, no envía emails
+  lang?: 'es' | 'ca' | 'val' | 'gl';
 }
 
-const euros = (n?: number | null) =>
-  typeof n === "number" && !isNaN(n) ? n.toLocaleString("es-ES", { style: "currency", currency: "EUR" }) : "-";
+const euros = (n?: number | null, locale: string = "es-ES") =>
+  typeof n === "number" && !isNaN(n) ? n.toLocaleString(locale, { style: "currency", currency: "EUR" }) : "-";
 
 const pct = (n?: number | null) =>
   typeof n === "number" && !isNaN(n) ? `${n.toFixed(2)}%` : "-";
@@ -69,7 +70,8 @@ const pct = (n?: number | null) =>
 // Genera un PDF sencillo con el resumen de la valoración y lo devuelve en Base64 (sin data URI)
 const generateValuationPdfBase64 = async (
   companyData: CompanyDataEmail,
-  result: ValuationResultEmail
+  result: ValuationResultEmail,
+  locale: string
 ): Promise<string> => {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]); // A4 en puntos (72 dpi)
@@ -88,7 +90,7 @@ const generateValuationPdfBase64 = async (
     page.drawText(title, { x: margin, y, size: 20, font: fontBold, color: colorPrimary });
     y -= lineHeight + 6;
     page.drawText("Capittal", { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
-    const date = new Date().toLocaleDateString("es-ES");
+    const date = new Date().toLocaleDateString(locale);
     const dateText = `Fecha: ${date}`;
     const dateWidth = font.widthOfTextAtSize(dateText, 10);
     page.drawText(dateText, { x: width - margin - dateWidth, y, size: 10, font });
@@ -123,9 +125,9 @@ const generateValuationPdfBase64 = async (
 
   // Resultados
   drawSectionTitle("Resultado de la valoración");
-  drawKV("Valoración final:", euros(result?.finalValuation ?? result?.valuationRange?.min ?? null));
-  drawKV("Rango estimado:", `${euros(result?.valuationRange?.min)} - ${euros(result?.valuationRange?.max)}`);
-  drawKV("EBITDA:", euros(companyData.ebitda ?? null));
+  drawKV("Valoración final:", euros(result?.finalValuation ?? result?.valuationRange?.min ?? null, locale));
+  drawKV("Rango estimado:", `${euros(result?.valuationRange?.min, locale)} - ${euros(result?.valuationRange?.max, locale)}`);
+  drawKV("EBITDA:", euros(companyData.ebitda ?? null, locale));
   drawKV("Múltiplo EBITDA usado:", `${result?.multiples?.ebitdaMultipleUsed ?? result?.ebitdaMultiple ?? "-"}x`);
   y -= lineHeight;
 
@@ -162,7 +164,10 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const payload = (await req.json()) as SendValuationEmailRequest;
-    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, agendaUrl, enlaces, sender, subjectOverride } = payload;
+    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, agendaUrl, enlaces, sender, subjectOverride, lang } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl' };
+
+    const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
+    const locale = localeMap[lang || 'es'] || 'es-ES';
 
     // Emails por defecto para pruebas + posible extra desde el frontend
     const baseRecipients = ["samuel@capittal.es", "lluis@capittal.es"];
@@ -191,8 +196,8 @@ const handler = async (req: Request): Promise<Response> => {
             <tr><td style="padding:6px 0; color:#374151;">Sector</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.industry || "-"}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Años de actividad</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.yearsOfOperation ?? "-"}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Empleados</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.employeeRange || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Ingresos</td><td style="padding:6px 0; color:#111827; font-weight:600;">${euros(companyData.revenue)}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">EBITDA</td><td style="padding:6px 0; color:#111827; font-weight:600;">${euros(companyData.ebitda)}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Ingresos</td><td style="padding:6px 0; color:#111827; font-weight:600;">${euros(companyData.revenue, locale)}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">EBITDA</td><td style="padding:6px 0; color:#111827; font-weight:600;">${euros(companyData.ebitda, locale)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Margen Neto</td><td style="padding:6px 0; color:#111827; font-weight:600;">${pct(companyData.netProfitMargin)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Crec. anual</td><td style="padding:6px 0; color:#111827; font-weight:600;">${pct(companyData.growthRate)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Ubicación</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.location || "-"}</td></tr>
@@ -202,8 +207,8 @@ const handler = async (req: Request): Promise<Response> => {
 
           <h2 style="margin:16px 0 8px; color:#111827; font-size:16px;">Resultado de la valoración</h2>
           <table style="width:100%; border-collapse:collapse;">
-            <tr><td style="padding:6px 0; color:#374151;">Valoración final</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.finalValuation ?? result?.valuationRange?.min)}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Rango</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.valuationRange?.min)} - ${euros(result?.valuationRange?.max)}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Valoración final</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.finalValuation ?? result?.valuationRange?.min, locale)}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Rango</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.valuationRange?.min, locale)} - ${euros(result?.valuationRange?.max, locale)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Múltiplo EBITDA usado</td><td style="padding:6px 0; color:#111827; font-weight:600;">${result?.multiples?.ebitdaMultipleUsed ?? result?.ebitdaMultiple ?? "-"}x</td></tr>
           </table>
 
@@ -216,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
     let pdfToAttach: string | null = (pdfBase64 && pdfBase64.trim().length > 0) ? pdfBase64.trim() : null;
     if (!pdfToAttach) {
       try {
-        pdfToAttach = await generateValuationPdfBase64(companyData, result);
+        pdfToAttach = await generateValuationPdfBase64(companyData, result, locale);
       } catch (ePdf: any) {
         console.error("Error generando PDF de respaldo:", ePdf?.message || ePdf);
       }

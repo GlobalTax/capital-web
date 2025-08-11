@@ -152,7 +152,8 @@ export const useSupabaseValuation = () => {
               cargo: 'M&A',
               firma: 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid'
             },
-            subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal'
+            subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal',
+            lang
           }
         });
 
