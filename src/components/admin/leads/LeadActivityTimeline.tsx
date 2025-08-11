@@ -83,6 +83,7 @@ const LeadActivityTimeline: React.FC<LeadActivityTimelineProps> = ({
   const formatPagePath = (path: string) => {
     const pathNames: Record<string, string> = {
       '/': 'Página principal',
+      '/lp/calculadora': 'Calculadora de valoración',
       '/calculadora-valoracion': 'Calculadora de valoración',
       '/contacto': 'Página de contacto',
       '/venta-empresas': 'Venta de empresas',

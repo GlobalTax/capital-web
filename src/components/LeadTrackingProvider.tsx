@@ -31,7 +31,7 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
     trackPageView(location.pathname);
     
     // Track specific high-value pages
-    if (location.pathname.includes('/calculadora-valoracion')) {
+    if (location.pathname.includes('/lp/calculadora')) {
       trackCalculatorUsage('page_visit');
     }
     

@@ -34,7 +34,7 @@ export const recursosData: MenuCategory[] = [
       {
         id: "calculadora-valoracion",
         label: "Calculadora de Valoración",
-        href: "/calculadora-valoracion",
+        href: "/lp/calculadora",
         icon: 'Calculator',
         description: "Herramienta gratuita para valorar tu empresa"
       },

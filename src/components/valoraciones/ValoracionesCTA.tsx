@@ -43,7 +43,7 @@ const ValoracionesCTA = () => {
 
           {/* CTAs */}
           <div className="space-y-6">
-            <Link to="/calculadora-valoracion">
+            <Link to="/lp/calculadora">
               <InteractiveHoverButton
                 text="Calcular Valoración Gratuita"
                 variant="secondary"

@@ -228,10 +228,10 @@ function AppContent() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
-          <Route path="/calculadora-valoracion" element={<CalculadoraValoracion />} />
-          <Route path="/calculadora-valoracion-v2" element={<CalculadoraValoracionV2 />} />
-          <Route path="/simulador-venta/:clientId" element={<CalculadoraValoracionV3 />} />
-          <Route path="/simulador-ultra-rapido/:clientId" element={<CalculadoraValoracionV4 />} />
+          <Route path="/calculadora-valoracion" element={<Navigate to="/lp/calculadora" replace />} />
+          <Route path="/calculadora-valoracion-v2" element={<Navigate to="/lp/calculadora" replace />} />
+          <Route path="/simulador-venta/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
+          <Route path="/simulador-ultra-rapido/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/calculadora-standalone" element={<CalculadoraStandalone />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />

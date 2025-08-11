@@ -87,7 +87,7 @@ const ValoracionesBenefits = () => {
                   </div>
                 ))}
               </div>
-              <Link to="/calculadora-valoracion">
+              <Link to="/lp/calculadora">
                 <InteractiveHoverButton 
                   text="Comenzar Valoración Gratuita" 
                   variant="primary" 

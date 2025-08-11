@@ -7,7 +7,7 @@ const DocumentacionMAPopularArticles = () => {
     {
       title: "Calculadora de Valoración",
       description: "Herramienta interactiva para valorar tu empresa",
-      link: "/calculadora-valoracion",
+      link: "/lp/calculadora",
       icon: Calculator
     },
     {

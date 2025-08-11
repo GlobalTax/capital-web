@@ -43,7 +43,7 @@ const AsesoramientoLegalHero = () => {
                   className="w-full sm:w-auto"
                 />
               </Link>
-              <Link to="/calculadora-valoracion">
+              <Link to="/lp/calculadora">
                 <InteractiveHoverButton
                   text="Ver Casos de Éxito"
                   variant="secondary"

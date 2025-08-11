@@ -43,7 +43,7 @@ const PlanificacionFiscalHero = () => {
                   className="w-full sm:w-auto"
                 />
               </Link>
-              <Link to="/calculadora-valoracion">
+              <Link to="/lp/calculadora">
                 <InteractiveHoverButton
                   text="Calculadora de Ahorro"
                   variant="secondary"
