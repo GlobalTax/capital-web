@@ -7,7 +7,7 @@ const corsHeaders = {
 }
 
 interface LeadData {
-  type: 'contact' | 'collaborator' | 'lead_magnet_download' | 'company_valuation';
+  type: 'contact' | 'collaborator' | 'lead_magnet_download' | 'company_valuation' | 'valuation_pdf';
   data: any;
 }
 
@@ -174,6 +174,21 @@ serve(async (req) => {
         console.error('Error firmando/enviando a CRM:', e);
         // caemos a la ruta legacy de inserción si falla
       }
+    }
+
+    // Si no hay CRM y el tipo es valuation_pdf, no intentamos fallback inseguro
+    if (type === 'valuation_pdf') {
+      console.warn('sync-leads: CRM no configurado, no se puede procesar valuation_pdf sin ingestión CRM');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'CRM ingest no configurado para valuation_pdf. Configure CRM_INGEST_SECRET/URL.'
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Insertar en la segunda base de datos (legacy / fallback)
