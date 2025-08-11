@@ -27,8 +27,8 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ className }) => {
     try {
       setPreferredLang(value);
     } catch {}
-    // Opcional: recargar para que todo el contenido refleje el idioma
-    // window.location.reload();
+    // Recargar para que todo el contenido refleje el idioma
+    window.location.reload();
   };
 
   return (
