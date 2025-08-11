@@ -9,7 +9,6 @@ import LanguageSelector from '@/components/i18n/LanguageSelector';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 import CapittalBrief from '@/components/landing/CapittalBrief';
-import VentaEmpresasLogos from '@/components/venta-empresas/VentaEmpresasLogos';
 
 const LandingCalculatorInner = () => {
   const location = useLocation();
@@ -127,9 +126,8 @@ const LandingCalculatorInner = () => {
         {/* H1 único para SEO, oculto visualmente */}
         <h1 className="sr-only">{t('landing.h1')}</h1>
         <ValuationCalculator />
-        {/* Breve descripción de Capittal + operaciones realizadas */}
+        {/* Breve descripción de Capittal */}
         <CapittalBrief />
-        <VentaEmpresasLogos />
       </main>
       <LandingFooterMinimal />
     </div>

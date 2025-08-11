@@ -25,7 +25,7 @@ const CapittalBrief: React.FC = () => {
           </div>
           <div className="rounded-lg border p-4">
             <p className="text-sm text-gray-500">Especialización</p>
-            <p className="mt-1 font-medium text-gray-900">B2B, industrial y tecnología</p>
+            <p className="mt-1 font-medium text-gray-900">B2B, industrial, tecnología, salud, alimentación y bebidas, energía y renovables, logística y transporte, e-commerce y retail, construcción e inmobiliario, educación y formación</p>
           </div>
         </div>
       </div>
