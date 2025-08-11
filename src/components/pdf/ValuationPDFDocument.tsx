@@ -315,7 +315,6 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
         <View style={styles.header}>
           <View>
             <Text style={styles.logo}>CAPITTAL</Text>
-            <Text style={styles.subtitle}>Consultoría en Valoración Empresarial</Text>
           </View>
           <View style={styles.dateSection}>
             <Text style={styles.dateLabel}>Fecha del informe</Text>

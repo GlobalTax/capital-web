@@ -81,7 +81,7 @@ export const generateValuationPDF = async (
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <h1 style="font-size: 32px; font-weight: bold; margin: 0; color: #000;">CAPITTAL</h1>
-            <p style="font-size: 14px; margin: 5px 0 0 0; color: #666;">Consultoría en Valoración Empresarial</p>
+            
           </div>
           <div style="text-align: right;">
             <p style="font-size: 12px; margin: 0; color: #666;">Fecha del informe</p>
