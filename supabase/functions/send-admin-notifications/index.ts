@@ -29,7 +29,7 @@ const getEmailTemplate = (type: string, data: any) => {
     welcome: {
       subject: "¡Bienvenido al Panel de Administración de Capittal!",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1e40af; margin: 0;">Capittal</h1>
             <p style="color: #6b7280; margin: 5px 0;">Panel de Administración</p>
@@ -62,7 +62,7 @@ const getEmailTemplate = (type: string, data: any) => {
     role_changed: {
       subject: "Cambio de Rol en tu Cuenta de Administración",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1e40af; margin: 0;">Capittal</h1>
             <p style="color: #6b7280; margin: 5px 0;">Panel de Administración</p>
@@ -97,7 +97,7 @@ const getEmailTemplate = (type: string, data: any) => {
     account_deactivated: {
       subject: "Tu Cuenta de Administración ha sido Desactivada",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1e40af; margin: 0;">Capittal</h1>
             <p style="color: #6b7280; margin: 5px 0;">Panel de Administración</p>
@@ -126,7 +126,7 @@ const getEmailTemplate = (type: string, data: any) => {
     account_activated: {
       subject: "Tu Cuenta de Administración ha sido Reactivada",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #1e40af; margin: 0;">Capittal</h1>
             <p style="color: #6b7280; margin: 5px 0;">Panel de Administración</p>

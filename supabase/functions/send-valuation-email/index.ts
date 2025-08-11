@@ -172,7 +172,7 @@ const handler = async (req: Request): Promise<Response> => {
     const subject = `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
+      <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
         <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
           <h1 style="margin:0 0 8px; color:#111827; font-size:20px;">Nueva valoración recibida</h1>
           <p style="margin:0 0 16px; color:#6b7280;">Calculadora de valoración - Capittal</p>
@@ -287,7 +287,7 @@ const handler = async (req: Request): Promise<Response> => {
       ].filter(Boolean).join('');
 
       const userHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
+        <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
           <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px; color:#111827;">
             <p style="margin:0 0 16px;">${saludo}</p>
             <p style="margin:0 0 12px;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${companyData.companyName || ''}</strong>.</p>
