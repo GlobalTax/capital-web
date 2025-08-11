@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { localeForIntl, LangCode } from '@/shared/i18n/locale';
 
 // Registrar fuentes
 Font.register({
@@ -268,11 +269,227 @@ const styles = StyleSheet.create({
 interface ValuationPDFDocumentProps {
   companyData: any;
   result: any;
+  lang?: LangCode;
 }
 
-const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData, result }) => {
+const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData, result, lang = 'es' }) => {
+  const locale = localeForIntl(lang);
+
+  const L = {
+    es: {
+      reportDateLabel: 'Fecha del informe',
+      reportTitle: 'INFORME DE VALORACIÓN EMPRESARIAL',
+      executiveSummary: 'RESUMEN EJECUTIVO',
+      estimatedValuation: 'Valoración estimada:',
+      range: 'Rango:',
+      ebitdaMultipleApplied: 'Múltiplo EBITDA aplicado:',
+      sector: 'Sector:',
+      companyInfo: 'INFORMACIÓN DE LA EMPRESA',
+      generalData: 'Datos Generales',
+      legalName: 'Razón Social:',
+      cif: 'CIF:',
+      location: 'Ubicación:',
+      yearsOperating: 'Años operando:',
+      yearsSuffix: 'años',
+      employeesCount: 'Nº empleados:',
+      contact: 'Contacto',
+      contactPerson: 'Persona de contacto:',
+      email: 'Email:',
+      phone: 'Teléfono:',
+      financialData: 'DATOS FINANCIEROS',
+      annualRevenue: 'Ingresos anuales:',
+      ebitda: 'EBITDA:',
+      netProfitMargin: 'Margen beneficio neto:',
+      growthRate: 'Tasa de crecimiento:',
+      valuationMethodology: 'METODOLOGÍA DE VALORACIÓN',
+      ebitdaMultiplesBySector: 'Múltiplos EBITDA por Sector',
+      methodologyParagraph: 'La valoración se ha realizado utilizando el método de múltiplos EBITDA, ampliamente aceptado en el mercado para la valoración de empresas. Este método compara la empresa con otras similares en el mismo sector y rango de empleados.',
+      appliedCalculation: 'Cálculo aplicado:',
+      consideredFactors: 'Factores considerados:',
+      companySize: 'Tamaño de la empresa:',
+      yearsOfOperation: 'Años de operación:',
+      geographicLocation: 'Ubicación geográfica:',
+      valuationRange: 'Rango de valoración:',
+      minimum: 'Mínimo:',
+      centralValuation: 'Valoración central:',
+      maximum: 'Máximo:',
+      qualitativeAnalysis: 'ANÁLISIS CUALITATIVO',
+      competitiveAdvantage: 'Ventaja Competitiva',
+      shareOwnership: 'Participación societaria:',
+      profitability: 'Rentabilidad:',
+      ebitdaMargin: 'Margen EBITDA:',
+      legalDisclaimerAndLimitations: 'AVISO LEGAL Y LIMITACIONES',
+      disclaimerPurposeTitle: 'Propósito del informe:',
+      disclaimerPurposeText: 'Esta valoración es una estimación basada en múltiplos EBITDA por sector y no constituye asesoramiento financiero, fiscal o legal profesional.',
+      disclaimerLimitationsTitle: 'Limitaciones:',
+      disclaimerLimitationsText: 'Los resultados se basan en la información proporcionada por el cliente y múltiplos de mercado generales. Para valoraciones precisas se recomienda un análisis detallado por parte de expertos.',
+      disclaimerValidityTitle: 'Validez:',
+      disclaimerValidityText: 'Esta estimación es válida en la fecha de emisión y está sujeta a cambios en las condiciones del mercado y la empresa.',
+      disclaimerUseTitle: 'Uso recomendado:',
+      disclaimerUseText: 'Esta valoración debe usarse únicamente como referencia inicial. Para transacciones reales, se recomienda realizar una due diligence completa y valoración profesional detallada.',
+    },
+    ca: {
+      reportDateLabel: "Data de l'informe",
+      reportTitle: 'INFORME DE VALORACIÓ EMPRESARIAL',
+      executiveSummary: 'RESUMEN EXECUTIU',
+      estimatedValuation: 'Valoració estimada:',
+      range: 'Rang:',
+      ebitdaMultipleApplied: "Múltiple d'EBITDA aplicat:",
+      sector: 'Sector:',
+      companyInfo: "INFORMACIÓ DE L'EMPRESA",
+      generalData: 'Dades generals',
+      legalName: 'Raó Social:',
+      cif: 'NIF:',
+      location: 'Ubicació:',
+      yearsOperating: "Anys operant:",
+      yearsSuffix: 'anys',
+      employeesCount: "Núm. d’empleats:",
+      contact: 'Contacte',
+      contactPerson: 'Persona de contacte:',
+      email: 'Email:',
+      phone: 'Telèfon:',
+      financialData: 'DADES FINANCERES',
+      annualRevenue: 'Ingressos anuals:',
+      ebitda: 'EBITDA:',
+      netProfitMargin: 'Marge de benefici net:',
+      growthRate: 'Taxa de creixement:',
+      valuationMethodology: 'METODOLOGIA DE VALORACIÓ',
+      ebitdaMultiplesBySector: "Múltiples d'EBITDA per sector",
+      methodologyParagraph: "La valoració s'ha realitzat utilitzant el mètode de múltiples d'EBITDA, àmpliament acceptat al mercat. Aquest mètode compara l'empresa amb d'altres similars en el mateix sector i rang d'empleats.",
+      appliedCalculation: 'Càlcul aplicat:',
+      consideredFactors: 'Factors considerats:',
+      companySize: "Mida de l'empresa:",
+      yearsOfOperation: "Anys d'operació:",
+      geographicLocation: 'Ubicació geogràfica:',
+      valuationRange: 'Rang de valoració:',
+      minimum: 'Mínim:',
+      centralValuation: 'Valoració central:',
+      maximum: 'Màxim:',
+      qualitativeAnalysis: 'ANÀLISI QUALITATIVA',
+      competitiveAdvantage: 'Avantatge competitiu',
+      shareOwnership: 'Participació societària:',
+      profitability: 'Rendibilitat:',
+      ebitdaMargin: "Marge d'EBITDA:",
+      legalDisclaimerAndLimitations: 'AVÍS LEGAL I LIMITACIONS',
+      disclaimerPurposeTitle: "Propòsit de l'informe:",
+      disclaimerPurposeText: "Aquesta valoració és una estimació basada en múltiples d'EBITDA per sector i no constitueix assessorament professional.",
+      disclaimerLimitationsTitle: 'Limitacions:',
+      disclaimerLimitationsText: "Els resultats es basen en la informació facilitada pel client i múltiples de mercat generals. Per a valoracions precises es recomana un anàlisi detallat.",
+      disclaimerValidityTitle: 'Validesa:',
+      disclaimerValidityText: "Aquesta estimació és vàlida en la data d'emissió i subjecta a canvis.",
+      disclaimerUseTitle: 'Ús recomanat:',
+      disclaimerUseText: "Aquesta valoració s'ha d'utilitzar només com a referència inicial. Per a transaccions reals, es recomana due diligence completa.",
+    },
+    val: {
+      reportDateLabel: "Data de l'informe",
+      reportTitle: 'INFORME DE VALORACIÓ EMPRESARIAL',
+      executiveSummary: 'RESUM EXECUTIU',
+      estimatedValuation: 'Valoració estimada:',
+      range: 'Rang:',
+      ebitdaMultipleApplied: "Múltiple d’EBITDA aplicat:",
+      sector: 'Sector:',
+      companyInfo: "INFORMACIÓ DE L’EMPRESA",
+      generalData: 'Dades generals',
+      legalName: 'Raó Social:',
+      cif: 'NIF:',
+      location: 'Ubicació:',
+      yearsOperating: "Anys operant:",
+      yearsSuffix: 'anys',
+      employeesCount: "Núm. d’empleats:",
+      contact: 'Contacte',
+      contactPerson: 'Persona de contacte:',
+      email: 'Email:',
+      phone: 'Telèfon:',
+      financialData: 'DADES FINANCERES',
+      annualRevenue: 'Ingressos anuals:',
+      ebitda: 'EBITDA:',
+      netProfitMargin: 'Marge de benefici net:',
+      growthRate: 'Taxa de creixement:',
+      valuationMethodology: 'METODOLOGIA DE VALORACIÓ',
+      ebitdaMultiplesBySector: "Múltiples d’EBITDA per sector",
+      methodologyParagraph: "La valoració s’ha realitzat utilitzant el mètode de múltiples d’EBITDA, àmpliament acceptat al mercat. Este mètode compara l’empresa amb altres similars en el mateix sector i rang d’empleats.",
+      appliedCalculation: 'Càlcul aplicat:',
+      consideredFactors: 'Factors considerats:',
+      companySize: "Mida de l’empresa:",
+      yearsOfOperation: "Anys d’operació:",
+      geographicLocation: 'Ubicació geogràfica:',
+      valuationRange: 'Rang de valoració:',
+      minimum: 'Mínim:',
+      centralValuation: 'Valoració central:',
+      maximum: 'Màxim:',
+      qualitativeAnalysis: 'ANÀLISI QUALITATIVA',
+      competitiveAdvantage: 'Avantatge competitiu',
+      shareOwnership: 'Participació societària:',
+      profitability: 'Rendibilitat:',
+      ebitdaMargin: "Marge d’EBITDA:",
+      legalDisclaimerAndLimitations: 'AVÍS LEGAL I LIMITACIONS',
+      disclaimerPurposeTitle: "Propòsit de l’informe:",
+      disclaimerPurposeText: "Esta valoració és una estimació basada en múltiples d’EBITDA per sector i no constituïx assessorament professional.",
+      disclaimerLimitationsTitle: 'Limitacions:',
+      disclaimerLimitationsText: "Els resultats es basen en la informació facilitada pel client i múltiples de mercat generals. Per a valoracions precises es recomana un anàlisi detallat.",
+      disclaimerValidityTitle: 'Validesa:',
+      disclaimerValidityText: "Esta estimació és vàlida en la data d’emissió i subjecta a canvis.",
+      disclaimerUseTitle: 'Ús recomanat:',
+      disclaimerUseText: "Esta valoració s’ha d’utilitzar només com a referència inicial. Per a transaccions reals, es recomana due diligence completa.",
+    },
+    gl: {
+      reportDateLabel: 'Data do informe',
+      reportTitle: 'INFORME DE VALORACIÓN EMPRESARIAL',
+      executiveSummary: 'RESUMO EXECUTIVO',
+      estimatedValuation: 'Valoración estimada:',
+      range: 'Rango:',
+      ebitdaMultipleApplied: 'Múltiplo EBITDA aplicado:',
+      sector: 'Sector:',
+      companyInfo: 'INFORMACIÓN DA EMPRESA',
+      generalData: 'Datos xerais',
+      legalName: 'Razón Social:',
+      cif: 'NIF:',
+      location: 'Localización:',
+      yearsOperating: 'Anos operando:',
+      yearsSuffix: 'anos',
+      employeesCount: 'Nº de empregados:',
+      contact: 'Contacto',
+      contactPerson: 'Persoa de contacto:',
+      email: 'Email:',
+      phone: 'Teléfono:',
+      financialData: 'DATOS FINANCEIROS',
+      annualRevenue: 'Ingresos anuais:',
+      ebitda: 'EBITDA:',
+      netProfitMargin: 'Marxe de beneficio neto:',
+      growthRate: 'Taxa de crecemento:',
+      valuationMethodology: 'METODOLOXÍA DE VALORACIÓN',
+      ebitdaMultiplesBySector: 'Múltiplos EBITDA por sector',
+      methodologyParagraph: 'A valoración realizouse empregando o método de múltiplos EBITDA, amplamente aceptado no mercado. Este método compara a empresa con outras similares no mesmo sector e rango de empregados.',
+      appliedCalculation: 'Cálculo aplicado:',
+      consideredFactors: 'Factores considerados:',
+      companySize: 'Tamaño da empresa:',
+      yearsOfOperation: 'Anos de operación:',
+      geographicLocation: 'Localización xeográfica:',
+      valuationRange: 'Rango de valoración:',
+      minimum: 'Mínimo:',
+      centralValuation: 'Valoración central:',
+      maximum: 'Máximo:',
+      qualitativeAnalysis: 'ANÁLISE CUALITATIVA',
+      competitiveAdvantage: 'Vantaxe competitiva',
+      shareOwnership: 'Participación societaria:',
+      profitability: 'Rentabilidade:',
+      ebitdaMargin: 'Marxe EBITDA:',
+      legalDisclaimerAndLimitations: 'AVISO LEGAL E LIMITACIÓNS',
+      disclaimerPurposeTitle: 'Propósito do informe:',
+      disclaimerPurposeText: 'Esta valoración é unha estimación baseada en múltiplos EBITDA por sector e non constitúe asesoramento profesional.',
+      disclaimerLimitationsTitle: 'Limitacións:',
+      disclaimerLimitationsText: 'Os resultados baséanse na información proporcionada polo cliente e múltiplos de mercado xerais. Para valoracións precisas recoméndase unha análise detallada.',
+      disclaimerValidityTitle: 'Validez:',
+      disclaimerValidityText: 'Esta estimación é válida na data de emisión e pode cambiar coas condicións do mercado e da empresa.',
+      disclaimerUseTitle: 'Uso recomendado:',
+      disclaimerUseText: 'Esta valoración debe empregarse só como referencia inicial. Para transaccións reais, recoméndase unha due diligence completa.',
+    },
+  } as const;
+
+  const T = L[lang];
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
@@ -281,33 +498,32 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
   };
 
   const getEmployeeRangeLabel = (range: string) => {
-    const ranges: { [key: string]: string } = {
-      '1-10': '1-10 empleados',
-      '11-50': '11-50 empleados',
-      '51-200': '51-200 empleados',
-      '201-500': '201-500 empleados',
-      '500+': 'Más de 500 empleados'
+    const ranges: Record<string, Record<string, string>> = {
+      es: { '1-10': '1-10 empleados', '11-50': '11-50 empleados', '51-200': '51-200 empleados', '201-500': '201-500 empleados', '500+': 'Más de 500 empleados' },
+      ca: { '1-10': '1-10 empleats', '11-50': '11-50 empleats', '51-200': '51-200 empleats', '201-500': '201-500 empleats', '500+': 'Més de 500 empleats' },
+      val:{ '1-10': '1-10 empleats', '11-50': '11-50 empleats', '51-200': '51-200 empleats', '201-500': '201-500 empleats', '500+': 'Més de 500 empleats' },
+      gl: { '1-10': '1-10 empregados', '11-50': '11-50 empregados', '51-200': '51-200 empregados', '201-500': '201-500 empregados', '500+': 'Máis de 500 empregados' },
     };
-    return ranges[range] || range;
+    return (ranges[lang] && ranges[lang][range]) || range;
   };
 
   const getOwnershipLabel = (participation: string) => {
-    const labels: { [key: string]: string } = {
-      'alta': 'Alta (>75%)',
-      'media': 'Media (25-75%)',
-      'baja': 'Baja (<25%)'
+    const labels: Record<string, Record<string, string>> = {
+      es: { alta: 'Alta (>75%)', media: 'Media (25-75%)', baja: 'Baja (<25%)' },
+      ca: { alta: 'Alta (>75%)', media: 'Mitjana (25-75%)', baja: 'Baixa (<25%)' },
+      val:{ alta: 'Alta (>75%)', media: 'Mitjana (25-75%)', baja: 'Baixa (<25%)' },
+      gl: { alta: 'Alta (>75%)', media: 'Media (25-75%)', baja: 'Baixa (<25%)' },
     };
-    return labels[participation] || participation;
+    return (labels[lang] && labels[lang][participation]) || participation;
   };
 
   const getCurrentDate = () => {
-    return new Date().toLocaleDateString('es-ES', {
+    return new Date().toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
   };
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -317,33 +533,33 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
             <Text style={styles.logo}>CAPITTAL</Text>
           </View>
           <View style={styles.dateSection}>
-            <Text style={styles.dateLabel}>Fecha del informe</Text>
+            <Text style={styles.dateLabel}>{T.reportDateLabel}</Text>
             <Text style={styles.dateValue}>{getCurrentDate()}</Text>
           </View>
         </View>
 
         {/* Título principal */}
         <View style={styles.title}>
-          <Text style={styles.mainTitle}>INFORME DE VALORACIÓN EMPRESARIAL</Text>
+          <Text style={styles.mainTitle}>{T.reportTitle}</Text>
           <Text style={styles.companyTitle}>{companyData.companyName}</Text>
         </View>
 
         {/* Resumen ejecutivo */}
         <View style={styles.executiveSummary}>
-          <Text style={styles.sectionTitle}>RESUMEN EJECUTIVO</Text>
+          <Text style={styles.sectionTitle}>{T.executiveSummary}</Text>
           <View style={styles.summaryGrid}>
             <View style={styles.summaryColumn}>
-              <Text style={styles.summaryLabel}>Valoración estimada:</Text>
+              <Text style={styles.summaryLabel}>{T.estimatedValuation}</Text>
               <Text style={styles.summaryValue}>{formatCurrency(result.finalValuation)}</Text>
               <Text style={styles.summarySubtext}>
-                Rango: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
+                {T.range} {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
               </Text>
             </View>
             <View style={styles.summaryColumn}>
-              <Text style={styles.summaryLabel}>Múltiplo EBITDA aplicado:</Text>
+              <Text style={styles.summaryLabel}>{T.ebitdaMultipleApplied}</Text>
               <Text style={styles.summaryValue}>{result.multiples.ebitdaMultipleUsed}x</Text>
               <Text style={styles.summarySubtext}>
-                Sector: {companyData.industry.charAt(0).toUpperCase() + companyData.industry.slice(1)}
+                {T.sector} {companyData.industry.charAt(0).toUpperCase() + companyData.industry.slice(1)}
               </Text>
             </View>
           </View>
@@ -351,51 +567,51 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
 
         {/* Información de la empresa */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>INFORMACIÓN DE LA EMPRESA</Text>
+          <Text style={styles.sectionTitle}>{T.companyInfo}</Text>
           <View style={styles.dataGrid}>
             <View style={styles.dataColumn}>
-              <Text style={styles.subsectionTitle}>Datos Generales</Text>
+              <Text style={styles.subsectionTitle}>{T.generalData}</Text>
               <View style={styles.table}>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Razón Social:</Text>
+                  <Text style={styles.tableLabelCell}>{T.legalName}</Text>
                   <Text style={styles.tableValueCell}>{companyData.companyName}</Text>
                 </View>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>CIF:</Text>
+                  <Text style={styles.tableLabelCell}>{T.cif}</Text>
                   <Text style={styles.tableValueCell}>{companyData.cif}</Text>
                 </View>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Sector:</Text>
+                  <Text style={styles.tableLabelCell}>{T.sector}</Text>
                   <Text style={styles.tableValueCell}>{companyData.industry.charAt(0).toUpperCase() + companyData.industry.slice(1)}</Text>
                 </View>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Ubicación:</Text>
+                  <Text style={styles.tableLabelCell}>{T.location}</Text>
                   <Text style={styles.tableValueCell}>{companyData.location}</Text>
                 </View>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Años operando:</Text>
-                  <Text style={styles.tableValueCell}>{companyData.yearsOfOperation} años</Text>
+                  <Text style={styles.tableLabelCell}>{T.yearsOperating}</Text>
+                  <Text style={styles.tableValueCell}>{companyData.yearsOfOperation} {T.yearsSuffix}</Text>
                 </View>
                 <View style={styles.tableRowLast}>
-                  <Text style={styles.tableLabelCell}>Nº empleados:</Text>
+                  <Text style={styles.tableLabelCell}>{T.employeesCount}</Text>
                   <Text style={styles.tableValueCell}>{getEmployeeRangeLabel(companyData.employeeRange)}</Text>
                 </View>
               </View>
             </View>
             
             <View style={styles.dataColumn}>
-              <Text style={styles.subsectionTitle}>Contacto</Text>
+              <Text style={styles.subsectionTitle}>{T.contact}</Text>
               <View style={styles.table}>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Persona de contacto:</Text>
+                  <Text style={styles.tableLabelCell}>{T.contactPerson}</Text>
                   <Text style={styles.tableValueCell}>{companyData.contactName}</Text>
                 </View>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Email:</Text>
+                  <Text style={styles.tableLabelCell}>{T.email}</Text>
                   <Text style={styles.tableValueCell}>{companyData.email}</Text>
                 </View>
                 <View style={styles.tableRowLast}>
-                  <Text style={styles.tableLabelCell}>Teléfono:</Text>
+                  <Text style={styles.tableLabelCell}>{T.phone}</Text>
                   <Text style={styles.tableValueCell}>{companyData.phone}</Text>
                 </View>
               </View>
@@ -405,16 +621,16 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
 
         {/* Datos financieros */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>DATOS FINANCIEROS</Text>
+          <Text style={styles.sectionTitle}>{T.financialData}</Text>
           <View style={styles.dataGrid}>
             <View style={styles.dataColumn}>
               <View style={styles.table}>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Ingresos anuales:</Text>
+                  <Text style={styles.tableLabelCell}>{T.annualRevenue}</Text>
                   <Text style={styles.tableValueBold}>{formatCurrency(companyData.revenue)}</Text>
                 </View>
                 <View style={styles.tableRowLast}>
-                  <Text style={styles.tableLabelCell}>EBITDA:</Text>
+                  <Text style={styles.tableLabelCell}>{T.ebitda}</Text>
                   <Text style={styles.tableValueBold}>{formatCurrency(companyData.ebitda)}</Text>
                 </View>
               </View>
@@ -422,11 +638,11 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
             <View style={styles.dataColumn}>
               <View style={styles.table}>
                 <View style={styles.tableRow}>
-                  <Text style={styles.tableLabelCell}>Margen beneficio neto:</Text>
+                  <Text style={styles.tableLabelCell}>{T.netProfitMargin}</Text>
                   <Text style={styles.tableValueBold}>{companyData.netProfitMargin}%</Text>
                 </View>
                 <View style={styles.tableRowLast}>
-                  <Text style={styles.tableLabelCell}>Tasa de crecimiento:</Text>
+                  <Text style={styles.tableLabelCell}>{T.growthRate}</Text>
                   <Text style={styles.tableValueBold}>{companyData.growthRate}%</Text>
                 </View>
               </View>
@@ -436,17 +652,15 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
 
         {/* Metodología de valoración */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>METODOLOGÍA DE VALORACIÓN</Text>
+          <Text style={styles.sectionTitle}>{T.valuationMethodology}</Text>
           <View style={styles.methodologyBox}>
-            <Text style={styles.subsectionTitle}>Múltiplos EBITDA por Sector</Text>
+            <Text style={styles.subsectionTitle}>{T.ebitdaMultiplesBySector}</Text>
             <Text style={{ fontSize: 9, lineHeight: 1.4, marginBottom: 10 }}>
-              La valoración se ha realizado utilizando el método de múltiplos EBITDA, que es una metodología ampliamente 
-              aceptada en el mercado para la valoración de empresas. Este método compara la empresa con otras similares 
-              en el mismo sector y rango de empleados.
+              {T.methodologyParagraph}
             </Text>
             
             <View style={styles.calculationBox}>
-              <Text style={styles.calculationLabel}>Cálculo aplicado:</Text>
+              <Text style={styles.calculationLabel}>{T.appliedCalculation}</Text>
               <Text style={styles.calculationValue}>
                 {formatCurrency(companyData.ebitda)} × {result.multiples.ebitdaMultipleUsed} = {formatCurrency(result.finalValuation)}
               </Text>
@@ -455,20 +669,20 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
 
           <View style={styles.factorsGrid}>
             <View style={styles.factorBox}>
-              <Text style={styles.factorTitle}>Factores considerados:</Text>
+              <Text style={styles.factorTitle}>{T.consideredFactors}</Text>
               <Text style={styles.factorList}>
-                • Sector de actividad: {companyData.industry}{'\n'}
-                • Tamaño de la empresa: {getEmployeeRangeLabel(companyData.employeeRange)}{'\n'}
-                • Años de operación: {companyData.yearsOfOperation} años{'\n'}
-                • Ubicación geográfica: {companyData.location}
+                • {T.sector} {companyData.industry}{'\n'}
+                • {T.companySize} {getEmployeeRangeLabel(companyData.employeeRange)}{'\n'}
+                • {T.yearsOfOperation} {companyData.yearsOfOperation} {T.yearsSuffix}{'\n'}
+                • {T.geographicLocation} {companyData.location}
               </Text>
             </View>
             <View style={styles.factorBox}>
-              <Text style={styles.factorTitle}>Rango de valoración:</Text>
+              <Text style={styles.factorTitle}>{T.valuationRange}</Text>
               <Text style={styles.factorList}>
-                Mínimo: {formatCurrency(result.valuationRange.min)} (-20%){'\n'}
-                Valoración central: {formatCurrency(result.finalValuation)}{'\n'}
-                Máximo: {formatCurrency(result.valuationRange.max)} (+20%)
+                {T.minimum} {formatCurrency(result.valuationRange.min)} (-20%){'\n'}
+                {T.centralValuation} {formatCurrency(result.finalValuation)}{'\n'}
+                {T.maximum} {formatCurrency(result.valuationRange.max)} (+20%)
               </Text>
             </View>
           </View>
@@ -476,9 +690,9 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
 
         {/* Análisis cualitativo */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ANÁLISIS CUALITATIVO</Text>
+          <Text style={styles.sectionTitle}>{T.qualitativeAnalysis}</Text>
           <View style={styles.competitiveAdvantageBox}>
-            <Text style={styles.subsectionTitle}>Ventaja Competitiva</Text>
+            <Text style={styles.subsectionTitle}>{T.competitiveAdvantage}</Text>
             <Text style={styles.competitiveAdvantageText}>
               {companyData.competitiveAdvantage}
             </Text>
@@ -486,15 +700,15 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
           
           <View style={styles.factorsGrid}>
             <View style={styles.factorBox}>
-              <Text style={styles.factorTitle}>Participación societaria:</Text>
+              <Text style={styles.factorTitle}>{T.shareOwnership}</Text>
               <Text style={styles.factorList}>
                 {getOwnershipLabel(companyData.ownershipParticipation)}
               </Text>
             </View>
             <View style={styles.factorBox}>
-              <Text style={styles.factorTitle}>Rentabilidad:</Text>
+              <Text style={styles.factorTitle}>{T.profitability}</Text>
               <Text style={styles.factorList}>
-                Margen EBITDA: {((companyData.ebitda / companyData.revenue) * 100).toFixed(1)}%
+                {T.ebitdaMargin} {((companyData.ebitda / companyData.revenue) * 100).toFixed(1)}%
               </Text>
             </View>
           </View>
@@ -502,22 +716,18 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
 
         {/* Disclaimer */}
         <View style={styles.disclaimer}>
-          <Text style={styles.disclaimerTitle}>AVISO LEGAL Y LIMITACIONES</Text>
+          <Text style={styles.disclaimerTitle}>{T.legalDisclaimerAndLimitations}</Text>
           <Text style={styles.disclaimerText}>
-            <Text style={{ fontWeight: 700 }}>Propósito del informe:</Text> Esta valoración es una estimación basada en múltiplos EBITDA por sector 
-            y no constituye asesoramiento financiero, fiscal o legal profesional.
+            <Text style={{ fontWeight: 700 }}>{T.disclaimerPurposeTitle}</Text> {T.disclaimerPurposeText}
           </Text>
           <Text style={styles.disclaimerText}>
-            <Text style={{ fontWeight: 700 }}>Limitaciones:</Text> Los resultados se basan en la información proporcionada por el cliente y múltiplos 
-            de mercado generales. Para valoraciones precisas se recomienda un análisis detallado por parte de expertos.
+            <Text style={{ fontWeight: 700 }}>{T.disclaimerLimitationsTitle}</Text> {T.disclaimerLimitationsText}
           </Text>
           <Text style={styles.disclaimerText}>
-            <Text style={{ fontWeight: 700 }}>Validez:</Text> Esta estimación es válida en la fecha de emisión y está sujeta a cambios en las 
-            condiciones del mercado y la empresa.
+            <Text style={{ fontWeight: 700 }}>{T.disclaimerValidityTitle}</Text> {T.disclaimerValidityText}
           </Text>
           <Text style={styles.disclaimerText}>
-            <Text style={{ fontWeight: 700 }}>Uso recomendado:</Text> Esta valoración debe usarse únicamente como referencia inicial. Para 
-            transacciones reales, se recomienda realizar una due diligence completa y valoración profesional detallada.
+            <Text style={{ fontWeight: 700 }}>{T.disclaimerUseTitle}</Text> {T.disclaimerUseText}
           </Text>
         </View>
 
