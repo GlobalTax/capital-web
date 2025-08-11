@@ -5,6 +5,8 @@ import ValuationCalculator from '@/components/ValuationCalculator';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useLocation } from 'react-router-dom';
+import LanguageSelector from '@/components/i18n/LanguageSelector';
+import { getPreferredLang } from '@/shared/i18n/locale';
 
 const LandingCalculator = () => {
   const location = useLocation();
@@ -64,8 +66,8 @@ const LandingCalculator = () => {
             valuationRange: { min: 1600000, max: 2000000 },
             multiples: { ebitdaMultipleUsed: 7.5 }
           } as any;
-
-          const blob = await generateValuationPDFWithReactPDF(companyData, result);
+          const lang = getPreferredLang();
+          const blob = await generateValuationPDFWithReactPDF(companyData, result, lang);
           const pdfBase64: string = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -94,7 +96,8 @@ const LandingCalculator = () => {
                 cargo: 'M&A',
                 firma: 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid'
               },
-              subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal'
+              subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal',
+              lang
             }
           });
 
@@ -114,6 +117,10 @@ const LandingCalculator = () => {
     <div className="min-h-screen bg-white">
       <LandingHeaderMinimal />
       <main className="pt-20">
+        {/* Selector de idioma */}
+        <div className="max-w-6xl mx-auto px-4 flex justify-end">
+          <LanguageSelector />
+        </div>
         {/* H1 único para SEO, oculto visualmente */}
         <h1 className="sr-only">Calculadora de Valoración de Empresas</h1>
         <ValuationCalculator />

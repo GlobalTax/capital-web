@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
+import { getPreferredLang } from '@/shared/i18n/locale';
 
 interface CompanyData {
   contactName: string;
@@ -119,8 +120,9 @@ export const useSupabaseValuation = () => {
 
       // Enviar email con los datos + adjuntar el MISMO PDF del frontend
       try {
+        const lang = getPreferredLang();
         // Generar PDF (React-PDF) y convertir a Base64
-        const blob = await generateValuationPDFWithReactPDF(companyData, result);
+        const blob = await generateValuationPDFWithReactPDF(companyData, result, lang);
         const pdfBase64: string = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => {

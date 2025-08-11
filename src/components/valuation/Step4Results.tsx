@@ -7,6 +7,7 @@ import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
 import ToolRating from './ToolRating';
 import { supabase } from '@/integrations/supabase/client';
+import { getPreferredLang } from '@/shared/i18n/locale';
 
 interface Step4Props {
   result: any;
@@ -131,7 +132,8 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     setIsGeneratingPDF(true);
     
     try {
-      const pdfBlob = await generateValuationPDFWithReactPDF(companyData, result);
+      const lang = getPreferredLang();
+      const pdfBlob = await generateValuationPDFWithReactPDF(companyData, result, lang);
       
       // Crear enlace de descarga
       const url = URL.createObjectURL(pdfBlob);
@@ -154,11 +156,13 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     } catch (error) {
       console.error('Error generating PDF:', error);
       try {
+        const lang = getPreferredLang();
         const { data, error: fnError } = await supabase.functions.invoke('send-valuation-email', {
           body: {
             pdfOnly: true,
             companyData,
-            result
+            result,
+            lang
           }
         });
 
