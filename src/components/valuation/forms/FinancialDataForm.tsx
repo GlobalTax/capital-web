@@ -3,6 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Check } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface FinancialDataFormProps {
   companyData: any;
@@ -15,6 +16,7 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
   updateField,
   showValidation = false
 }) => {
+  const { t } = useI18n();
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
 
   const handleBlur = (fieldName: string) => {
@@ -64,15 +66,15 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Información Financiera</h2>
-        <p className="text-gray-600">Datos del último ejercicio fiscal completo</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('form.financial.title')}</h2>
+        <p className="text-gray-600">{t('form.financial.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Facturación anual */}
         <div className="relative">
           <Label htmlFor="revenue" className="block text-sm font-medium text-gray-700 mb-2">
-            Facturación anual *
+            {t('label.revenue')}
           </Label>
           <Input
             id="revenue"
@@ -90,17 +92,17 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
           <p className="text-sm text-gray-500 mt-1">
-            {companyData.revenue ? `Aprox. ${formatCurrency(companyData.revenue)}` : 'Ingresos totales del último año'}
+            {companyData.revenue ? `Aprox. ${formatCurrency(companyData.revenue)}` : t('helper.revenue')}
           </p>
           {showValidation && !isFieldValid('revenue') && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+            <p className="text-red-500 text-sm mt-1">{t('validation.required')}</p>
           )}
         </div>
 
         {/* EBITDA */}
         <div className="relative">
           <Label htmlFor="ebitda" className="block text-sm font-medium text-gray-700 mb-2">
-            EBITDA *
+            {t('label.ebitda')}
           </Label>
           <Input
             id="ebitda"
@@ -117,17 +119,17 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
           <p className="text-sm text-gray-500 mt-1">
-            {companyData.ebitda ? `Aprox. ${formatCurrency(companyData.ebitda)}` : 'Beneficio antes de intereses, impuestos, depreciación y amortización'}
+            {companyData.ebitda ? `Aprox. ${formatCurrency(companyData.ebitda)}` : t('helper.ebitda')}
           </p>
           {showValidation && !isFieldValid('ebitda') && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+            <p className="text-red-500 text-sm mt-1">{t('validation.required')}</p>
           )}
         </div>
 
         {/* ¿Tienes ajustes? */}
         <div className="col-span-1 md:col-span-2">
           <Label className="block text-sm font-medium text-gray-700 mb-3">
-            ¿Tienes ajustes al EBITDA?
+            {t('label.adjustments.question')}
           </Label>
           <div className="flex gap-4 mb-4">
             <label className="flex items-center">
@@ -143,7 +145,7 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
                 }}
                 className="mr-2"
               />
-              No
+              {t('option.no')}
             </label>
             <label className="flex items-center">
               <input
@@ -157,14 +159,14 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
                 }}
                 className="mr-2"
               />
-              Sí
+              {t('option.yes')}
             </label>
           </div>
           
           {companyData.hasAdjustments && (
             <div className="relative">
               <Label htmlFor="adjustmentAmount" className="block text-sm font-medium text-gray-700 mb-2">
-                Importe del ajuste (€)
+                {t('label.adjustmentAmount')}
               </Label>
               <Input
                 id="adjustmentAmount"
@@ -181,7 +183,7 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
                 <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
               )}
               <p className="text-sm text-gray-500 mt-1">
-                {companyData.adjustmentAmount ? `Aprox. ${formatCurrency(companyData.adjustmentAmount)}` : 'Importe a añadir o sustraer del EBITDA'}
+                {companyData.adjustmentAmount ? `Aprox. ${formatCurrency(companyData.adjustmentAmount)}` : t('helper.adjustmentAmount')}
               </p>
             </div>
           )}
@@ -191,11 +193,10 @@ const FinancialDataForm: React.FC<FinancialDataFormProps> = ({
       {/* Información adicional */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-blue-800 mb-2">
-          ¿Necesita ayuda con estos datos?
+          {t('helper.need_help.title')}
         </h3>
         <p className="text-sm text-blue-700">
-          Si no dispone de algunos de estos datos, nuestro equipo puede ayudarle a obtenerlos 
-          de sus estados financieros. La precisión de estos datos es crucial para una valoración exacta.
+          {t('helper.need_help.text')}
         </p>
       </div>
     </div>

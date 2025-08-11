@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calculator } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface NavigationButtonsProps {
   currentStep: number;
@@ -16,6 +17,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onPrev,
   onNext
 }) => {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200">
       <Button
@@ -25,11 +27,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         className="flex items-center h-11 border-gray-900 text-gray-900 hover:bg-gray-100"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
-        Anterior
+        {t('nav.prev')}
       </Button>
       
       <div className="text-sm text-gray-500">
-        Paso {currentStep} de 3
+        {t('nav.step_of', { current: currentStep, total: 3 })}
       </div>
       
       <Button
@@ -40,11 +42,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         {currentStep === 3 ? (
           <>
             <Calculator className="h-4 w-4 mr-2" />
-            Calcular Valoración
+            {t('nav.calculate')}
           </>
         ) : (
           <>
-            Siguiente
+            {t('nav.next')}
             <ChevronRight className="h-4 w-4 ml-2" />
           </>
         )}

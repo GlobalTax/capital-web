@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface CharacteristicsFormProps {
   companyData: any;
@@ -33,6 +34,7 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
   updateField,
   showValidation = false
 }) => {
+  const { t } = useI18n();
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
 
   const handleBlur = (fieldName: string) => {
@@ -67,15 +69,15 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Características de la Empresa</h2>
-        <p className="text-gray-600">Factores adicionales que influyen en la valoración</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('form.characteristics.title')}</h2>
+        <p className="text-gray-600">{t('form.characteristics.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ubicación */}
         <div className="relative">
           <Label htmlFor="location-select" className="block text-sm font-medium text-gray-700 mb-2">
-            Ubicación principal *
+            {t('label.location')}
           </Label>
           <Select
             value={companyData.location}
@@ -89,7 +91,7 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
               name="location"
               className={getFieldClassName(isLocationValid, Boolean(companyData.location), 'location')}
             >
-              <SelectValue placeholder="Selecciona una provincia" />
+              <SelectValue placeholder={t('placeholder.location')} />
             </SelectTrigger>
             <SelectContent className="bg-white shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
               {provincesSpain.map((province) => (
@@ -103,14 +105,14 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
             <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
           )}
           {showValidation && !isLocationValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+            <p className="text-red-500 text-sm mt-1">{t('validation.required')}</p>
           )}
         </div>
 
         {/* Participación de la propiedad */}
         <div className="relative">
           <Label htmlFor="ownership-select" className="block text-sm font-medium text-gray-700 mb-2">
-            Participación de la propiedad *
+            {t('label.ownershipParticipation')}
           </Label>
           <Select
             value={companyData.ownershipParticipation}
@@ -124,12 +126,12 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
               name="ownershipParticipation"
               className={getFieldClassName(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation')}
             >
-              <SelectValue placeholder="Selecciona el nivel de participación" />
+              <SelectValue placeholder={t('placeholder.ownershipParticipation')} />
             </SelectTrigger>
             <SelectContent className="bg-white shadow-lg border border-gray-200 z-50">
               {ownershipParticipation.map((option) => (
                 <SelectItem key={option.value} value={option.value} className="hover:bg-gray-100">
-                  {option.label}
+                  {t(option.value === 'alta' ? 'ownership.high' : option.value === 'media' ? 'ownership.medium' : 'ownership.low')}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -137,9 +139,9 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
           {shouldShowCheckIcon(isOwnershipParticipationValid, Boolean(companyData.ownershipParticipation), 'ownershipParticipation') && (
             <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
           )}
-          <p className="text-sm text-gray-500 mt-1">Nivel de participación que posees en la empresa</p>
+          <p className="text-sm text-gray-500 mt-1">{t('helper.ownershipParticipation')}</p>
           {showValidation && !isOwnershipParticipationValid && (
-            <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+            <p className="text-red-500 text-sm mt-1">{t('validation.required')}</p>
           )}
         </div>
       </div>
@@ -147,7 +149,7 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
       {/* Ventaja competitiva */}
       <div className="relative">
         <Label htmlFor="competitiveAdvantage" className="block text-sm font-medium text-gray-700 mb-2">
-          Principal ventaja competitiva *
+          {t('label.competitiveAdvantage')}
         </Label>
         <Textarea
           id="competitiveAdvantage"
@@ -156,29 +158,28 @@ const CharacteristicsForm: React.FC<CharacteristicsFormProps> = ({
           value={companyData.competitiveAdvantage}
           onChange={(e) => updateField('competitiveAdvantage', e.target.value)}
           onBlur={() => handleBlur('competitiveAdvantage')}
-          placeholder="Describe qué hace única a tu empresa en el mercado..."
+          placeholder={t('placeholder.competitiveAdvantage')}
           rows={4}
           className={getFieldClassName(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage), 'competitiveAdvantage')}
         />
         {shouldShowCheckIcon(isCompetitiveAdvantageValid, Boolean(companyData.competitiveAdvantage), 'competitiveAdvantage') && (
           <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
         )}
-        <p className="text-sm text-gray-500 mt-1">
-          Por ejemplo: tecnología propia, patentes, base de clientes fiel, ubicación estratégica, etc.
-        </p>
+          <p className="text-sm text-gray-500 mt-1">
+            {t('helper.competitiveAdvantage.examples')}
+          </p>
         {showValidation && !isCompetitiveAdvantageValid && (
-          <p className="text-red-500 text-sm mt-1">Este campo es obligatorio</p>
+          <p className="text-red-500 text-sm mt-1">{t('validation.required')}</p>
         )}
       </div>
 
       {/* Información adicional */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-green-800 mb-2">
-          ¿Por qué es importante?
+          {t('helper.why_important.title')}
         </h3>
         <p className="text-sm text-green-700">
-          Estos factores cualitativos pueden impactar significativamente la valoración final, 
-          ya que representan activos intangibles y posicionamiento estratégico de la empresa.
+          {t('helper.why_important.text')}
         </p>
       </div>
     </div>

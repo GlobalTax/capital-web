@@ -8,6 +8,7 @@ import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
 import ToolRating from './ToolRating';
 import { supabase } from '@/integrations/supabase/client';
 import { getPreferredLang } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface Step4Props {
   result: any;
@@ -22,6 +23,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   const { toast } = useToast();
   const { createCompanyValuation } = useHubSpotIntegration();
   const { saveValuation } = useSupabaseValuation();
+  const { t } = useI18n();
 
   // Guardar datos cuando se muestran los resultados - FIX: Agregar más dependencias específicas
   useEffect(() => {
@@ -41,15 +43,15 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
             console.log('✅ Datos guardados correctamente en Supabase');
             
             toast({
-              title: "✅ Valoración guardada",
-              description: "Los datos se han guardado correctamente en la base de datos.",
+              title: t('toast.saved.title'),
+              description: t('toast.saved.desc'),
               variant: "default",
             });
           } catch (supabaseError) {
             console.error('❌ Error crítico guardando en Supabase:', supabaseError);
             toast({
-              title: "❌ Error crítico",
-              description: "No se pudieron guardar los datos en la base de datos. Por favor, inténtalo de nuevo.",
+              title: t('toast.critical.title'),
+              description: t('toast.critical.desc'),
               variant: "destructive",
             });
             return; // No continuar si Supabase falla
@@ -99,22 +101,22 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   };
 
   const getEmployeeRangeLabel = (range: string) => {
-    const ranges: { [key: string]: string } = {
-      '1-10': '1-10 empleados',
-      '11-50': '11-50 empleados',
-      '51-200': '51-200 empleados',
-      '201-500': '201-500 empleados',
-      '500+': 'Más de 500 empleados'
-    };
+  const ranges: { [key: string]: string } = {
+    '1-10': t('employees.1_10'),
+    '11-50': t('employees.11_50'),
+    '51-200': '51-200',
+    '201-500': '201-500',
+    '500+': t('employees.501_plus')
+  };
     return ranges[range] || range;
   };
 
   const getOwnershipLabel = (participation: string) => {
-    const labels: { [key: string]: string } = {
-      'alta': 'Alta (>75%)',
-      'media': 'Media (25-75%)',
-      'baja': 'Baja (<25%)'
-    };
+  const labels: { [key: string]: string } = {
+    'alta': t('ownership.high'),
+    'media': t('ownership.medium'),
+    'baja': t('ownership.low')
+  };
   return labels[participation] || participation;
   };
 
@@ -122,8 +124,8 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   const handleDownloadPDF = async () => {
     if (!result || !companyData) {
       toast({
-        title: "Error",
-        description: "No hay datos suficientes para generar el PDF",
+        title: t('error.noData.title'),
+        description: t('error.noData.desc'),
         variant: "destructive",
       });
       return;
@@ -150,8 +152,8 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       URL.revokeObjectURL(url);
       
       toast({
-        title: "PDF generado",
-        description: "El informe de valoración se ha descargado correctamente",
+        title: t('toast.pdf.title'),
+        description: t('toast.pdf.desc'),
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -178,14 +180,14 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         document.body.removeChild(a);
 
         toast({
-          title: 'PDF alternativo listo',
-          description: 'Se ha generado un PDF de respaldo y comenzado la descarga.'
+          title: t('toast.pdfFallback.title'),
+          description: t('toast.pdfFallback.desc')
         });
       } catch (fallbackErr) {
         console.error('Fallback PDF failed:', fallbackErr);
         toast({
-          title: 'No se pudo descargar el PDF',
-          description: 'Intentaremos enviarlo por email automáticamente.',
+          title: t('toast.pdfFail.title'),
+          description: t('toast.pdfFail.desc'),
           variant: 'destructive',
         });
       }
@@ -198,8 +200,8 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     return (
       <div className="text-center py-12">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-600 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Calculando Valoración</h2>
-        <p className="text-gray-600">Analizando los datos de tu empresa...</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('calc.loading.title')}</h2>
+        <p className="text-gray-600">{t('calc.loading.subtitle')}</p>
       </div>
     );
   }
@@ -208,10 +210,10 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     return (
       <div className="text-center py-12">
         <h3 className="text-xl font-semibold text-gray-600 mb-2">
-          Sin resultados aún
+          {t('calc.no_results.title')}
         </h3>
         <p className="text-gray-500">
-          Completa todos los pasos para obtener la valoración de tu empresa.
+          {t('calc.no_results.subtitle')}
         </p>
       </div>
     );
@@ -221,48 +223,48 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
     <div className="space-y-8">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Valoración de {companyData.companyName}
+          {t('calc.results.title', { company: companyData.companyName })}
         </h2>
-        <p className="text-gray-600">Resultados basados en múltiplos EBITDA por sector</p>
+        <p className="text-gray-600">{t('calc.results.subtitle')}</p>
       </div>
 
       {/* Resumen de datos de la empresa */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Resumen de Datos de la Empresa
+          {t('summary.title')}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Información básica */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Información Básica</h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">{t('summary.basic')}</h4>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-gray-600">Empresa:</span>
+                <span className="text-gray-600">{t('fields.company')}:</span>
                 <span className="ml-2 font-medium">{companyData.companyName}</span>
               </div>
               <div>
-                <span className="text-gray-600">CIF:</span>
+                <span className="text-gray-600">{t('fields.cif')}:</span>
                 <span className="ml-2 font-medium">{companyData.cif}</span>
               </div>
               <div>
-                <span className="text-gray-600">Contacto:</span>
+                <span className="text-gray-600">{t('fields.contact')}:</span>
                 <span className="ml-2 font-medium">{companyData.contactName}</span>
               </div>
               <div>
-                <span className="text-gray-600">Sector:</span>
+                <span className="text-gray-600">{t('fields.sector')}:</span>
                 <span className="ml-2 font-medium capitalize">{companyData.industry}</span>
               </div>
               <div>
-                <span className="text-gray-600">Descripción actividad:</span>
+                <span className="text-gray-600">{t('fields.activity')}:</span>
                 <span className="ml-2 font-medium">{companyData.activityDescription}</span>
               </div>
               <div>
-                <span className="text-gray-600">Empleados:</span>
+                <span className="text-gray-600">{t('fields.employees')}:</span>
                 <span className="ml-2 font-medium">{getEmployeeRangeLabel(companyData.employeeRange)}</span>
               </div>
               <div>
-                <span className="text-gray-600">Ubicación:</span>
+                <span className="text-gray-600">{t('fields.location')}:</span>
                 <span className="ml-2 font-medium">{companyData.location}</span>
               </div>
             </div>
@@ -270,19 +272,19 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
 
           {/* Datos financieros */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Datos Financieros</h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">{t('summary.financial')}</h4>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-gray-600">Ingresos anuales:</span>
+                <span className="text-gray-600">{t('fields.annual_revenue')}:</span>
                 <span className="ml-2 font-medium">{formatCurrency(companyData.revenue)}</span>
               </div>
               <div>
-                <span className="text-gray-600">EBITDA:</span>
+                <span className="text-gray-600">{t('fields.ebitda')}:</span>
                 <span className="ml-2 font-medium">{formatCurrency(companyData.ebitda)}</span>
               </div>
               {companyData.hasAdjustments && companyData.adjustmentAmount !== 0 && (
                 <div>
-                  <span className="text-gray-600">Ajustes EBITDA:</span>
+                  <span className="text-gray-600">{t('fields.ebitda_adjustments')}:</span>
                   <span className="ml-2 font-medium">{formatCurrency(companyData.adjustmentAmount)}</span>
                 </div>
               )}
@@ -291,14 +293,14 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
 
           {/* Características adicionales */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Características</h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">{t('summary.features')}</h4>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-gray-600">Participación:</span>
+                <span className="text-gray-600">{t('fields.ownership')}:</span>
                 <span className="ml-2 font-medium">{getOwnershipLabel(companyData.ownershipParticipation)}</span>
               </div>
               <div>
-                <span className="text-gray-600 block mb-1">Ventaja competitiva:</span>
+                <span className="text-gray-600 block mb-1">{t('fields.competitive_advantage')}:</span>
                 <span className="text-gray-800 text-xs bg-white p-2 rounded border block">
                   {companyData.competitiveAdvantage}
                 </span>
@@ -311,40 +313,40 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       {/* Valoración principal - sin colores ni íconos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-300 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Valoración Estimada</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('valuation.estimated')}</h3>
           <p className="text-3xl font-bold text-gray-900 mb-2">
             {formatCurrency(result.finalValuation)}
           </p>
           <p className="text-sm text-gray-600">
-            Rango: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
+            {t('valuation.range')}: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
           </p>
         </div>
 
         <div className="bg-white border border-gray-300 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Múltiplo EBITDA</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('valuation.multiple')}</h3>
           <p className="text-3xl font-bold text-gray-900 mb-2">
             {result.multiples.ebitdaMultipleUsed}x
           </p>
           <p className="text-sm text-gray-600">
-            Aplicado sobre EBITDA de {formatCurrency(companyData.ebitda)}
+            {t('valuation.applied_over', { amount: formatCurrency(companyData.ebitda) })}
           </p>
         </div>
       </div>
 
       {/* Información de múltiplos aplicados */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Múltiplo Aplicado por Sector</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('sector.multiple.title')}</h3>
         <div className="text-center">
-          <p className="text-sm text-gray-600">Múltiplo EBITDA</p>
+          <p className="text-sm text-gray-600">{t('sector.multiple.label')}</p>
           <p className="text-2xl font-bold text-gray-900">{result.multiples.ebitdaMultipleUsed}x</p>
           <p className="text-sm text-gray-500 mt-2">
-            Valoración: {formatCurrency(companyData.ebitda)} × {result.multiples.ebitdaMultipleUsed} = {formatCurrency(result.finalValuation)}
+            {t('sector.valuation_formula', { ebitda: formatCurrency(companyData.ebitda), multiple: result.multiples.ebitdaMultipleUsed, valuation: formatCurrency(result.finalValuation) })}
           </p>
         </div>
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-600 text-center">
-            Sector: <span className="font-semibold capitalize">{companyData.industry}</span> • 
-            <span className="ml-2">Empleados: {getEmployeeRangeLabel(companyData.employeeRange)}</span>
+            {t('sector.sector')}: <span className="font-semibold capitalize">{companyData.industry}</span> • 
+            <span className="ml-2">{t('sector.employees')}: {getEmployeeRangeLabel(companyData.employeeRange)}</span>
           </p>
         </div>
       </div>
@@ -357,7 +359,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           className="flex items-center"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
-          Nueva Valoración
+          {t('actions.new')}
         </Button>
         <Button 
           onClick={handleDownloadPDF}
@@ -365,38 +367,36 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           className="flex items-center"
         >
           <Download className="h-4 w-4 mr-2" />
-          {isGeneratingPDF ? 'Generando PDF...' : 'Descargar Informe PDF'}
+          {isGeneratingPDF ? t('actions.generating') : t('actions.download')}
         </Button>
       </div>
 
       {/* Escenario Fiscal España (solo en calculadora fiscal) */}
       {isFiscalES && (
         <div className="bg-white border border-gray-300 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Impacto fiscal estimado (España)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('fiscal.title')}</h3>
           <p className="text-sm text-gray-600 mb-3">
-            Cálculo orientativo del posible impacto fiscal en una venta de participaciones/activos realizada en España.
-            Consulte con nuestro equipo fiscal para un estudio detallado.
+            {t('fiscal.description')}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded border border-gray-200">
-              <p className="text-xs text-gray-500">Ganancia patrimonial</p>
-              <p className="text-sm text-gray-800">Requiere coste de adquisición y ajustes (no aportados)</p>
+              <p className="text-xs text-gray-500">{t('fiscal.gain')}</p>
+              <p className="text-sm text-gray-800">{t('fiscal.need_cost')}</p>
             </div>
             <div className="p-4 rounded border border-gray-200">
-              <p className="text-xs text-gray-500">Tipo orientativo</p>
-              <p className="text-sm text-gray-800">IRPF: 19%–26% | IS: 25% (según caso)</p>
+              <p className="text-xs text-gray-500">{t('fiscal.rate')}</p>
+              <p className="text-sm text-gray-800">{t('fiscal.rate_detail')}</p>
             </div>
             <div className="p-4 rounded border border-gray-200">
-              <p className="text-xs text-gray-500">Retenciones</p>
-              <p className="text-sm text-gray-800">Posible retención 19% en pagos a personas físicas</p>
+              <p className="text-xs text-gray-500">{t('fiscal.withholding')}</p>
+              <p className="text-sm text-gray-800">{t('fiscal.withholding_detail')}</p>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Nota: estos datos son orientativos y pueden variar por régimen fiscal, exenciones (p. ej. ETVE/participation exemption),
-            deducciones y circunstancias particulares.
+            {t('fiscal.note')}
           </p>
           <div className="mt-4">
-            <a href="/contacto" className="underline text-gray-900">Hablar con un asesor fiscal</a>
+            <a href="/contacto" className="underline text-gray-900">{t('fiscal.contact_link')}</a>
           </div>
         </div>
       )}
@@ -407,12 +407,10 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       {/* Aviso legal */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-          Aviso Importante
+          {t('legal.notice.title')}
         </h3>
         <p className="text-sm text-yellow-700">
-          Esta valoración es una estimación basada en múltiplos EBITDA por sector y no debe considerarse 
-          como asesoramiento financiero profesional. Para valoraciones empresariales precisas, consulte con 
-          un asesor financiero cualificado o un experto en valoración empresarial.
+          {t('legal.notice.text')}
         </p>
       </div>
     </div>

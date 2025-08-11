@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Check } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -8,14 +9,14 @@ interface StepIndicatorProps {
   validateStep: (step: number) => boolean;
 }
 
-const steps = [
-  { number: 1, title: 'Información básica' },
-  { number: 2, title: 'Datos financieros' },
-  { number: 3, title: 'Características' },
-  { number: 4, title: 'Resultado' }
-];
-
 const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, validateStep }) => {
+  const { t } = useI18n();
+  const steps = [
+    { number: 1, title: t('steps.basic_info') },
+    { number: 2, title: t('steps.financial_data') },
+    { number: 3, title: t('steps.characteristics') },
+    { number: 4, title: t('steps.result') }
+  ];
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-8">
       {steps.map((step, index) => {

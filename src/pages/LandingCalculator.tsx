@@ -123,7 +123,7 @@ const LandingCalculatorInner = () => {
           <LanguageSelector />
         </div>
         {/* H1 único para SEO, oculto visualmente */}
-        <h1 className="sr-only">Calculadora de Valoración de Empresas</h1>
+        <h1 className="sr-only">{t('landing.h1')}</h1>
         <ValuationCalculator />
       </main>
       <LandingFooterMinimal />

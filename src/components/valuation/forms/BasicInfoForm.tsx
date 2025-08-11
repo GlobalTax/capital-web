@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface BasicInfoFormProps {
   companyData: any;
@@ -54,8 +55,8 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   handleFieldBlur,
   errors
 }) => {
+  const { t } = useI18n();
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
-
   const handleBlur = (fieldName: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
     if (handleFieldBlur) {
@@ -101,18 +102,29 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     return state.isValid && hasValue && (state.isTouched || showValidation);
   };
 
+  const employeeRangeKey = (value: string) => {
+    switch (value) {
+      case '1-10': return 'employees.1_10';
+      case '11-50': return 'employees.11_50';
+      case '51-100': return 'employees.51_100';
+      case '101-250': return 'employees.101_250';
+      case '251-500': return 'employees.251_500';
+      default: return 'employees.501_plus';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Información Básica</h2>
-        <p className="text-gray-600">Datos generales de su empresa</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('form.basic.title')}</h2>
+        <p className="text-gray-600">{t('form.basic.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nombre de contacto */}
         <div className="relative">
           <Label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
-            Nombre de contacto *
+            {t('label.contactName')}
           </Label>
           <Input
             id="contactName"
@@ -122,7 +134,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={companyData.contactName}
             onChange={(e) => updateField('contactName', e.target.value)}
             onBlur={() => handleBlur('contactName')}
-            placeholder="Su nombre completo"
+            placeholder={t('placeholder.contactName')}
             className={getFieldClassName('contactName')}
           />
           {shouldShowCheckIcon('contactName') && (
@@ -136,7 +148,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* Nombre de la empresa */}
         <div className="relative">
           <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-            Nombre de la empresa *
+            {t('label.companyName')}
           </Label>
           <Input
             id="companyName"
@@ -146,7 +158,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={companyData.companyName}
             onChange={(e) => updateField('companyName', e.target.value)}
             onBlur={() => handleBlur('companyName')}
-            placeholder="Nombre de su empresa"
+            placeholder={t('placeholder.companyName')}
             className={getFieldClassName('companyName')}
           />
           {shouldShowCheckIcon('companyName') && (
@@ -160,7 +172,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* Email */}
         <div className="relative">
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email corporativo *
+            {t('label.email')}
           </Label>
           <Input
             id="email"
@@ -170,7 +182,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={companyData.email}
             onChange={(e) => updateField('email', e.target.value)}
             onBlur={() => handleBlur('email')}
-            placeholder="empresa@ejemplo.com"
+            placeholder={t('placeholder.email')}
             className={getFieldClassName('email')}
           />
           {shouldShowCheckIcon('email') && (
@@ -184,7 +196,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* Teléfono */}
         <div className="relative">
           <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-            Teléfono
+            {t('label.phone')}
           </Label>
           <Input
             id="phone"
@@ -194,7 +206,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={companyData.phone}
             onChange={(e) => updateField('phone', e.target.value)}
             onBlur={() => handleBlur('phone')}
-            placeholder="+34 600 000 000"
+            placeholder={t('placeholder.phone')}
             className={getFieldClassName('phone', false)}
           />
           {shouldShowCheckIcon('phone') && (
@@ -205,7 +217,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* CIF */}
         <div className="relative">
           <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
-            CIF/NIF
+            {t('label.cif')}
           </Label>
           <Input
             id="cif"
@@ -214,7 +226,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={companyData.cif}
             onChange={(e) => updateField('cif', e.target.value)}
             onBlur={() => handleBlur('cif')}
-            placeholder="B12345678"
+            placeholder={t('placeholder.cif')}
             className={getFieldClassName('cif', false)}
           />
           {shouldShowCheckIcon('cif') && (
@@ -225,7 +237,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* Sector */}
         <div className="relative">
           <Label htmlFor="industry-select" className="block text-sm font-medium text-gray-700 mb-2">
-            Sector de actividad *
+            {t('label.industry')}
           </Label>
           <Select
             value={companyData.industry}
@@ -239,7 +251,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               name="industry"
               className={getFieldClassName('industry')}
             >
-              <SelectValue placeholder="Selecciona tu sector" />
+              <SelectValue placeholder={t('placeholder.industry')} />
             </SelectTrigger>
             <SelectContent className="bg-white shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
               {industries.map((industry) => (
@@ -260,7 +272,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* Descripción de actividad */}
         <div className="relative">
           <Label htmlFor="activityDescription" className="block text-sm font-medium text-gray-700 mb-2">
-            Descripción de actividad *
+            {t('label.activityDescription')}
           </Label>
           <Input
             id="activityDescription"
@@ -269,13 +281,13 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={companyData.activityDescription}
             onChange={(e) => updateField('activityDescription', e.target.value)}
             onBlur={() => handleBlur('activityDescription')}
-            placeholder="ej. Distribución HORECA, Consultoría IT, etc."
+            placeholder={t('placeholder.activityDescription')}
             className={getFieldClassName('activityDescription')}
           />
           {shouldShowCheckIcon('activityDescription') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
-          <p className="text-sm text-gray-500 mt-1">Describe brevemente la actividad principal de tu empresa</p>
+          <p className="text-sm text-gray-500 mt-1">{t('helper.activityDescription')}</p>
           {showValidation && errors?.activityDescription && (
             <p className="text-red-500 text-sm mt-1">{errors.activityDescription}</p>
           )}
@@ -284,7 +296,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         {/* Rango de empleados */}
         <div className="relative">
           <Label htmlFor="employeeRange-select" className="block text-sm font-medium text-gray-700 mb-2">
-            Número de empleados *
+            {t('label.employeeRange')}
           </Label>
           <Select
             value={companyData.employeeRange}
@@ -298,12 +310,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               name="employeeRange"
               className={getFieldClassName('employeeRange')}
             >
-              <SelectValue placeholder="Selecciona el rango" />
+              <SelectValue placeholder={t('placeholder.employeeRange')} />
             </SelectTrigger>
             <SelectContent className="bg-white shadow-lg border border-gray-200 z-50">
               {employeeRanges.map((range) => (
                 <SelectItem key={range.value} value={range.value} className="hover:bg-gray-100">
-                  {range.label}
+                  {t(employeeRangeKey(range.value))}
                 </SelectItem>
               ))}
             </SelectContent>
