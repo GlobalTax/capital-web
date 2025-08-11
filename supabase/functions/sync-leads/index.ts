@@ -109,7 +109,74 @@ serve(async (req) => {
       };
     }
 
-    // Insertar en la segunda base de datos
+    // Si existe secreto (y opcionalmente URL), reenviamos al CRM con firma HMAC
+    const crmUrl = Deno.env.get('CRM_INGEST_URL') || 'https://nbvvdaprcecaqvvkqcto.functions.supabase.co/ingest-lead';
+    const crmSecret = Deno.env.get('CRM_INGEST_SECRET');
+
+    if (crmSecret) {
+      try {
+        const payload = JSON.stringify({ type, data });
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+          'raw',
+          enc.encode(crmSecret),
+          { name: 'HMAC', hash: 'SHA-256' },
+          false,
+          ['sign']
+        );
+        const sigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+        const signature = Array.from(new Uint8Array(sigBuffer))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const crmResponse = await fetch(crmUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Signature': signature,
+          },
+          body: payload,
+        });
+
+        const respText = await crmResponse.text();
+        let respJson: any = null;
+        try { respJson = JSON.parse(respText); } catch (_) {}
+
+        if (!crmResponse.ok) {
+          console.error('Error reenviando a CRM ingest-lead:', respText);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: 'CRM ingest failed',
+              status: crmResponse.status,
+              body: respText,
+            }),
+            { 
+              status: 502, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        console.log('Lead reenviado a CRM correctamente');
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            forwarded: true,
+            crm_response: respJson ?? respText,
+          }),
+          { 
+            status: 200, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      } catch (e) {
+        console.error('Error firmando/enviando a CRM:', e);
+        // caemos a la ruta legacy de inserción si falla
+      }
+    }
+
+    // Insertar en la segunda base de datos (legacy / fallback)
     const { data: insertedData, error } = await secondarySupabase
       .from('leads')
       .insert(leadData)
