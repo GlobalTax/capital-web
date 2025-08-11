@@ -105,6 +105,31 @@ const LandingCalculatorInner = () => {
           });
 
           console.log('Prueba de envío ejecutada', { data, error });
+          // Replicar metadatos hacia sync-leads si tenemos URL del PDF
+          try {
+            const pdfUrl = (data as any)?.pdfUrl;
+            if (pdfUrl) {
+              const { data: syncData, error: syncErr } = await supabase.functions.invoke('sync-leads', {
+                body: {
+                  type: 'valuation_pdf',
+                  data: {
+                    pdf_url: pdfUrl,
+                    company: companyData,
+                    result,
+                    source: 'landing-test',
+                    timestamp: new Date().toISOString()
+                  }
+                }
+              });
+              if (syncErr) {
+                console.error('sync-leads error (test):', syncErr);
+              } else {
+                console.log('sync-leads OK (test):', syncData);
+              }
+            }
+          } catch (e) {
+            console.error('Excepción sync-leads (test):', e);
+          }
         } catch (e) {
           console.error('Error en prueba de envío', e);
         } finally {

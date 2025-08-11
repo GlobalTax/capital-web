@@ -161,6 +161,31 @@ export const useSupabaseValuation = () => {
           console.error('Error enviando email de valoración:', emailError || emailResp);
         } else {
           console.log('Email de valoración enviado correctamente:', emailResp);
+          // Replicar metadatos (incluyendo URL del PDF) a la segunda base/CRM
+          try {
+            const pdfUrl = emailResp?.pdfUrl;
+            if (pdfUrl) {
+              const { data: syncResp, error: syncErr } = await supabase.functions.invoke('sync-leads', {
+                body: {
+                  type: 'valuation_pdf',
+                  data: {
+                    pdf_url: pdfUrl,
+                    company: companyData,
+                    result,
+                    source: 'web-app',
+                    timestamp: new Date().toISOString()
+                  }
+                }
+              });
+              if (syncErr) {
+                console.error('Error reenviando PDF a sync-leads:', syncErr);
+              } else {
+                console.log('sync-leads (PDF) OK:', syncResp);
+              }
+            }
+          } catch (e) {
+            console.error('Excepción al reenviar a sync-leads:', e);
+          }
         }
       } catch (emailException) {
         console.error('Excepción al generar/adjuntar PDF o enviar el email de valoración:', emailException);

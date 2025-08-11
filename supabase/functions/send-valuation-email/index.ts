@@ -345,6 +345,28 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Replicar metadatos al CRM/segunda DB vía función sync-leads
+    try {
+      const syncPayload = {
+        type: 'valuation_pdf',
+        data: {
+          pdf_url: pdfPublicUrl,
+          company: companyData,
+          result,
+          source: 'send-valuation-email',
+          timestamp: new Date().toISOString()
+        }
+      };
+      const { data: syncData, error: syncErr } = await supabase.functions.invoke('sync-leads', { body: syncPayload });
+      if (syncErr) {
+        console.error('sync-leads error:', syncErr);
+      } else {
+        console.log('sync-leads ok:', syncData);
+      }
+    } catch (e) {
+      console.error('Exception calling sync-leads:', e);
+    }
+
     return new Response(
       JSON.stringify({ success: true, emailId: emailResponse?.data?.id, pdfUrl: pdfPublicUrl, filename }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
