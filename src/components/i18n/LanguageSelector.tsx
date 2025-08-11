@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getPreferredLang, setPreferredLang, LangCode } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const labels: Record<LangCode, string> = {
   es: 'Castellano',
@@ -13,22 +14,34 @@ interface LanguageSelectorProps {
 }
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ className }) => {
-  const [lang, setLang] = useState<LangCode>('es');
+  const { lang: ctxLang, setLang: ctxSetLang, managed } = useI18n();
+  const [localLang, setLocalLang] = useState<LangCode>(ctxLang ?? 'es');
 
   useEffect(() => {
-    try {
-      setLang(getPreferredLang());
-    } catch {}
-  }, []);
+    setLocalLang(ctxLang);
+  }, [ctxLang]);
+
+  // Fallback para cuando no hay provider
+  useEffect(() => {
+    if (!managed) {
+      try {
+        setLocalLang(getPreferredLang());
+      } catch {}
+    }
+  }, [managed]);
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as LangCode;
-    setLang(value);
-    try {
-      setPreferredLang(value);
-    } catch {}
-    // Recargar para que todo el contenido refleje el idioma
-    window.location.reload();
+    if (managed) {
+      ctxSetLang(value);
+      try { setPreferredLang(value); } catch {}
+      // sin recarga: el contexto re-renderiza la UI
+    } else {
+      setLocalLang(value);
+      try { setPreferredLang(value); } catch {}
+      // Recargar para que todo el contenido refleje el idioma cuando no hay provider
+      window.location.reload();
+    }
   };
 
   return (
@@ -36,7 +49,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ className }) => {
       <label htmlFor="lang" className="sr-only">Idioma</label>
       <select
         id="lang"
-        value={lang}
+        value={managed ? ctxLang : localLang}
         onChange={onChange}
         className="border rounded px-2 py-1 text-sm"
         aria-label="Seleccionar idioma"

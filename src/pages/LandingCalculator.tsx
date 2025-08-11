@@ -7,17 +7,19 @@ import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useLocation } from 'react-router-dom';
 import LanguageSelector from '@/components/i18n/LanguageSelector';
 import { getPreferredLang } from '@/shared/i18n/locale';
+import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 
-const LandingCalculator = () => {
+const LandingCalculatorInner = () => {
   const location = useLocation();
-  // SEO básico para la landing
+  const { t } = useI18n();
+
+  // SEO dinámico según idioma
   useEffect(() => {
-    const title = 'Calculadora de Valoración de Empresas | Capittal';
-    const description = 'Calculadora de valoración con múltiplos de mercado: estimación rápida y orientativa. Recibe resultados gratuitos al instante.';
+    const title = t('landing.title');
+    const description = t('landing.description');
 
     document.title = title;
 
-    // Meta description
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -26,7 +28,6 @@ const LandingCalculator = () => {
     }
     meta.setAttribute('content', description);
 
-    // Canonical
     const canonicalHref = window.location.href;
     let link = document.querySelector('link[rel="canonical"]');
     if (!link) {
@@ -35,7 +36,7 @@ const LandingCalculator = () => {
       document.head.appendChild(link);
     }
     link.setAttribute('href', canonicalHref);
-  }, []);
+  }, [t]);
 
   // Disparador temporal de prueba por query param ?sendTest=1
   useEffect(() => {
@@ -127,6 +128,14 @@ const LandingCalculator = () => {
       </main>
       <LandingFooterMinimal />
     </div>
+  );
+};
+
+const LandingCalculator = () => {
+  return (
+    <I18nProvider>
+      <LandingCalculatorInner />
+    </I18nProvider>
   );
 };
 
