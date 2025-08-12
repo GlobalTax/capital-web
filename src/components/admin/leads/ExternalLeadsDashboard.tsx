@@ -152,8 +152,8 @@ const ExternalLeadsDashboard: React.FC = () => {
           ) : filtered.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">No hay leads con los filtros aplicados</div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="overflow-x-visible">
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tipo</TableHead>

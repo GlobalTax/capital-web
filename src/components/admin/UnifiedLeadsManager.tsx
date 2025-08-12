@@ -214,8 +214,8 @@ const UnifiedLeadsManager = () => {
           <CardTitle>Leads ({filteredLeads.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="overflow-x-visible">
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
                   <TableHead>Origen</TableHead>
