@@ -11,6 +11,7 @@ import {
   Calculator, 
   UserCheck, 
   Mail, 
+  MailOpen,
   Phone, 
   Building, 
   Calendar,
@@ -29,6 +30,7 @@ const UnifiedLeadsManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originFilter, setOriginFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
   const getOriginBadge = (origin: string) => {
     switch (origin) {
@@ -230,13 +232,31 @@ const UnifiedLeadsManager = () => {
               </TableHeader>
               <TableBody>
                 {filteredLeads.map((lead) => (
-                  <TableRow key={`${lead.origin}-${lead.id}`}>
+                  <TableRow key={`${lead.origin}-${lead.id}`} 
+                    onClick={() => setSelectedLead(selectedLead && selectedLead.id === lead.id && selectedLead.origin === lead.origin ? null : lead)}
+                    className="cursor-pointer"
+                    data-state={selectedLead && selectedLead.id === lead.id && selectedLead.origin === lead.origin ? 'selected' : undefined}
+                  >
                     <TableCell>{getOriginBadge(lead.origin)}</TableCell>
                     <TableCell className="font-medium">{lead.name}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Mail className="h-4 w-4 text-gray-400" />
-                        {lead.email}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1">
+                          <Mail className="h-4 w-4 text-gray-400" />
+                          {lead.email}
+                        </div>
+                        {lead.email && (
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            {((lead as any).email_opened || (lead as any).email_opened_at) ? (
+                              <Badge variant="secondary" className="px-1.5 py-0">Abierto</Badge>
+                            ) : (
+                              <Badge variant="outline" className="px-1.5 py-0">No abierto</Badge>
+                            )}
+                            {(lead as any).email_sent_at && (
+                              <span>Enviado: {format(new Date((lead as any).email_sent_at), 'dd/MM HH:mm', { locale: es })}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -330,6 +350,37 @@ const UnifiedLeadsManager = () => {
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No se encontraron leads con los filtros aplicados</p>
               </div>
+            )}
+            {selectedLead && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-sm">Detalles del lead</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="font-medium">Nombre</div>
+                      <div className="text-muted-foreground">{selectedLead.name || selectedLead.full_name || '-'}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Email</div>
+                      <div className="text-muted-foreground">{selectedLead.email || '-'}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Empresa</div>
+                      <div className="text-muted-foreground">{selectedLead.company || '-'}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Teléfono</div>
+                      <div className="text-muted-foreground">{selectedLead.phone || '-'}</div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <div className="font-medium">Registro completo</div>
+                      <pre className="mt-1 p-3 rounded-md bg-muted/40 text-xs whitespace-pre-wrap break-words">{JSON.stringify(selectedLead, null, 2)}</pre>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </CardContent>
