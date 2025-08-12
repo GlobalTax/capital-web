@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
 import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
 import ValuationCalculator from '@/components/ValuationCalculator';
+import { Toaster } from '@/components/ui/sonner';
 
 const LandingCalculadoraFiscal = () => {
   useEffect(() => {
@@ -36,6 +37,7 @@ const LandingCalculadoraFiscal = () => {
         <ValuationCalculator />
       </main>
       <LandingFooterMinimal />
+      <Toaster />
     </div>
   );
 };
