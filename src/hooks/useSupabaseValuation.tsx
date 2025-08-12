@@ -96,10 +96,24 @@ export const useSupabaseValuation = () => {
       
       // Enviar a segunda base de datos (herramienta externa)
       try {
+        // Enriquecer con UTM y referrer
+        const urlParams = new URLSearchParams(window.location.search);
+        const utm_source = urlParams.get('utm_source') || undefined;
+        const utm_medium = urlParams.get('utm_medium') || undefined;
+        const utm_campaign = urlParams.get('utm_campaign') || undefined;
+        const referrer = document.referrer || undefined;
+
         const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
           body: {
             type: 'company_valuation',
-            data: insertData
+            data: {
+              ...insertData,
+              utm_source,
+              utm_medium,
+              utm_campaign,
+              referrer,
+              source: 'lp-calculadora'
+            }
           }
         });
 
