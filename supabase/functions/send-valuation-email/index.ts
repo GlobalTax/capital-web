@@ -309,6 +309,7 @@ const handler = async (req: Request): Promise<Response> => {
         `Gracias por completar el formulario de valoración de ${companyData.companyName || ''}.\n` +
         (pdfUrlFinal ? `Descargar PDF: ${pdfUrlFinal}\n` : '') +
         (agendaUrl ? `Reserve una llamada: ${agendaUrl}\n` : '') +
+        `Para cualquier duda, responda a este correo o escriba a samuel@capittal.es\n` +
         `\nUn saludo,\n${nombre} · ${cargo}\n${firma}`;
 
       const userHtml = `
