@@ -308,7 +308,10 @@ if (pdfToAttach) {
         html,
         text: internalText,
         reply_to: "samuel@capittal.es",
-        headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
+         headers: { 
+           "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
+           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+         },
       });
     } catch (e: any) {
       console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
@@ -319,7 +322,10 @@ if (pdfToAttach) {
         html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
         reply_to: "samuel@capittal.es",
-        headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
+         headers: { 
+           "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
+           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+         },
       });
     }
 
@@ -389,7 +395,10 @@ if (pdfToAttach) {
           html: userHtml,
           text: userText,
           reply_to: "samuel@capittal.es",
-          headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
+           headers: { 
+             "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
+             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+           },
         });
       } catch (e2: any) {
         console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
@@ -400,7 +409,10 @@ if (pdfToAttach) {
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
           text: userText,
           reply_to: "samuel@capittal.es",
-          headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
+           headers: { 
+             "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
+             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+           },
         });
       }
     }

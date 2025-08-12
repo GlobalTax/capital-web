@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
       token = updated.unique_token;
     }
 
-    const v4Url = `${Deno.env.get('SUPABASE_URL')?.replace('https://', 'https://').replace('.supabase.co', '.lovable.app')}/simulador-ultra-rapido/${token}`;
+    const v4Url = `https://capittal.es/simulador-ultra-rapido/${token}`;
 
     if (sendEmail && valuation.email) {
       const dict = {
@@ -228,10 +228,16 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         const emailResponse = await resend.emails.send({
-          from: 'Capittal <onboarding@resend.dev>',
+          from: 'Capittal <no-reply@capittal.es>',
           to: [valuation.email],
           subject: S.subject,
           html: emailHtml,
+          text: `${S.title}\n\n${S.subtitle}\n\n${v4Url}\n\nCapittal · P.º de la Castellana, 11, B - A, 28046 Madrid`,
+          reply_to: 'contacto@capittal.es',
+          headers: {
+            "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
+          }
         });
 
         console.log('Email sent successfully:', emailResponse);
