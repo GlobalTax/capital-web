@@ -21,55 +21,19 @@ const CalculadoraValoracionV4 = () => {
       }
 
       try {
-        // Buscar por unique_token en lugar de ID
-        const { data, error: fetchError } = await supabase
-          .from('company_valuations')
-          .select('*')
-          .eq('unique_token', clientId)
-          .single();
+        // Obtener datos vía Edge Function protegida
+        const { data: payload, error: funcError } = await supabase.functions.invoke('get-valuation-v4', {
+          body: { token: clientId }
+        });
 
-        if (fetchError || !data) {
+        if (funcError || !payload?.companyData) {
           setError('Valoración no encontrada o enlace expirado');
           setLoading(false);
           return;
         }
 
-        // Convertir datos de BD a formato V4
-        const mappedData: CompanyDataV4 = {
-          id: data.id,
-          contactName: data.contact_name,
-          companyName: data.company_name,
-          email: data.email,
-          phone: data.phone || '+34 000 000 000',
-          industry: data.industry,
-          revenue: data.revenue || 0,
-          ebitda: data.ebitda || 0,
-          baseValuation: data.final_valuation || 0
-        };
-
+        const mappedData: CompanyDataV4 = payload.companyData;
         setCompanyData(mappedData);
-
-        // Marcar como accedido y trackear visita
-        await Promise.all([
-          supabase
-            .from('company_valuations')
-            .update({ 
-              v4_accessed: true, 
-              v4_accessed_at: new Date().toISOString() 
-            })
-            .eq('id', data.id),
-          
-          supabase
-            .from('v4_interactions')
-            .insert({
-              company_valuation_id: data.id,
-              interaction_type: 'page_view',
-              interaction_data: { 
-                user_agent: navigator.userAgent,
-                timestamp: new Date().toISOString()
-              }
-            })
-        ]);
 
       } catch (err) {
         console.error('Error loading company data:', err);

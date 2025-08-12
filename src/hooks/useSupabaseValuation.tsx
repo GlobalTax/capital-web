@@ -83,21 +83,16 @@ export const useSupabaseValuation = () => {
 
       console.log('Datos preparados para insertar:', insertData);
 
-      const { error } = await supabase
-        .from('company_valuations')
-        .insert(insertData);
-
-      const data = null;
+      const { data, error } = await supabase.functions.invoke('submit-valuation', {
+        body: insertData
+      });
 
       if (error) {
-        console.error('❌ Error de Supabase:', error);
-        console.error('Detalles del error:', error.message);
-        console.error('Hint:', error.hint);
-        console.error('Details:', error.details);
+        console.error('❌ Error de Supabase (edge function):', error);
         throw new Error(`Error de Supabase: ${error.message}`);
       }
 
-      console.log('✅ Valoración guardada exitosamente en Supabase:', data);
+      console.log('✅ Valoración guardada exitosamente a través de Edge Function:', data);
       
       // Enviar a segunda base de datos (herramienta externa)
       try {

@@ -1,4 +1,3 @@
-
 project_id = "fwhqtzkkvnjkazhaficj"
 
 [functions.generate-scheduled-reports]
@@ -16,4 +15,8 @@ verify_jwt = false
 [functions.sync-leads]
 verify_jwt = false
 
+[functions.submit-valuation]
+verify_jwt = false
 
+[functions.get-valuation-v4]
+verify_jwt = false
