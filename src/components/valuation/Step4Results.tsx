@@ -5,7 +5,7 @@ import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
-import ToolRating from './ToolRating';
+import ReferralPrompt from './ReferralPrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/I18nProvider';
@@ -401,8 +401,8 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         </div>
       )}
 
-      {/* Sistema de valoración de la herramienta */}
-      <ToolRating companyData={companyData} />
+      {/* Recomendar a un tercero */}
+      <ReferralPrompt companyData={companyData} />
 
       {/* Aviso legal */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
