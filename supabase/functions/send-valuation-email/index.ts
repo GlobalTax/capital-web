@@ -67,6 +67,33 @@ const euros = (n?: number | null, locale: string = "es-ES") =>
 const pct = (n?: number | null) =>
   typeof n === "number" && !isNaN(n) ? `${n.toFixed(2)}%` : "-";
 
+// Helpers: sanitizar nombre de archivo y limpiar base64
+const sanitizeForFilename = (input: string): string => {
+  try {
+    let s = (input || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, ''); // quitar acentos
+    s = s
+      .replace(/[^a-zA-Z0-9._-]+/g, '-') // caracteres seguros
+      .replace(/-+/g, '-') // colapsar guiones
+      .replace(/^[-.]+|[-.]+$/g, ''); // recortar extremos
+    return s || 'documento';
+  } catch (_) {
+    return 'documento';
+  }
+};
+
+const ensurePdfExtension = (name: string) =>
+  name.toLowerCase().endsWith('.pdf') ? name : `${name}.pdf`;
+
+const cleanPdfBase64 = (b64: string): string => {
+  const trimmed = (b64 || '').trim();
+  if (trimmed.toLowerCase().includes('base64,')) {
+    return trimmed.substring(trimmed.indexOf(',') + 1);
+  }
+  return trimmed.replace(/^data:application\/pdf;base64,/, '');
+};
+
 // Genera un PDF sencillo con el resumen de la valoración y lo devuelve en Base64 (sin data URI)
 const generateValuationPdfBase64 = async (
   companyData: CompanyDataEmail,
@@ -230,19 +257,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Subir PDF a Supabase Storage (bucket: valuations) para re-descarga
     let pdfPublicUrl: string | null = null;
-    if (pdfToAttach) {
+if (pdfToAttach) {
       try {
-        const binary = Uint8Array.from(atob(pdfToAttach), (c) => c.charCodeAt(0));
-        // Guardar el archivo directamente en el bucket 'valuations' con un nombre limpio (sin subcarpetas)
-        const fileName = `${Date.now()}-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+        const cleaned = cleanPdfBase64(pdfToAttach);
+        const binary = Uint8Array.from(atob(cleaned), (c) => c.charCodeAt(0));
+        const baseName = sanitizeForFilename(
+          (pdfFilename && pdfFilename.replace(/\.pdf$/i, '')) || (companyData.companyName || 'empresa')
+        );
+        const fileName = ensurePdfExtension(`${Date.now()}-${baseName}`);
         const { data: up, error: upErr } = await supabase.storage
           .from('valuations')
           .upload(fileName, binary, { contentType: 'application/pdf', upsert: true });
         if (upErr) {
           console.error('Error subiendo PDF a storage:', upErr);
         } else {
-          // Construir URL pública correcta: /object/public/{bucket}/{ruta}
-          pdfPublicUrl = `${supabaseUrl}/storage/v1/object/public/valuations/${encodeURIComponent(fileName)}`;
+          const pub = supabase.storage.from('valuations').getPublicUrl(fileName);
+          pdfPublicUrl = pub.data.publicUrl;
+          console.log('PDF subido correctamente', { fileName, publicUrl: pdfPublicUrl });
         }
       } catch (eUp: any) {
         console.error('Excepción al subir PDF a storage:', eUp?.message || eUp);
@@ -271,12 +302,13 @@ const handler = async (req: Request): Promise<Response> => {
     let emailResponse: any;
     try {
       emailResponse = await resend.emails.send({
-        from: "Samuel <samuel@capittal.es>",
+        from: "Capittal <no-reply@capittal.es>",
         to: recipients,
         subject,
         html,
         text: internalText,
         reply_to: "samuel@capittal.es",
+        headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
       });
     } catch (e: any) {
       console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
@@ -287,6 +319,7 @@ const handler = async (req: Request): Promise<Response> => {
         html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
         reply_to: "samuel@capittal.es",
+        headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
       });
     }
 
@@ -350,12 +383,13 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         await resend.emails.send({
-          from: "Samuel <samuel@capittal.es>",
+          from: "Capittal <no-reply@capittal.es>",
           to: [companyData.email],
           subject: userSubject,
           html: userHtml,
           text: userText,
           reply_to: "samuel@capittal.es",
+          headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
         });
       } catch (e2: any) {
         console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
@@ -366,6 +400,7 @@ const handler = async (req: Request): Promise<Response> => {
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
           text: userText,
           reply_to: "samuel@capittal.es",
+          headers: { "List-Unsubscribe": "<mailto:no-reply@capittal.es?subject=unsubscribe>" },
         });
       }
     }
