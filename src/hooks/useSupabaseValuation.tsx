@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { getPreferredLang } from '@/shared/i18n/locale';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CompanyData {
   contactName: string;
@@ -35,6 +36,7 @@ interface ValuationResult {
 
 export const useSupabaseValuation = () => {
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
 
   const saveValuation = async (companyData: CompanyData, result: ValuationResult) => {
     try {
@@ -191,20 +193,23 @@ export const useSupabaseValuation = () => {
         console.error('Excepción al generar/adjuntar PDF o enviar el email de valoración:', emailException);
       }
       
-      toast({
-        title: "✅ Datos guardados",
-        description: "La valoración se ha guardado correctamente en la base de datos.",
-        variant: "default",
-      });
-
+      if (isAdmin) {
+        toast({
+          title: "✅ Datos guardados",
+          description: "La valoración se ha guardado correctamente en la base de datos.",
+          variant: "default",
+        });
+      }
       return data;
     } catch (error) {
       console.error('❌ Error completo en saveValuation:', error);
-      toast({
-        title: "❌ Error al guardar",
-        description: `No se pudieron guardar los datos: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-        variant: "destructive",
-      });
+      if (isAdmin) {
+        toast({
+          title: "❌ Error al guardar",
+          description: `No se pudieron guardar los datos: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+          variant: "destructive",
+        });
+      }
       throw error;
     }
   };

@@ -7,9 +7,11 @@ import StepContent from '@/components/valuation/StepContent';
 import NavigationButtons from '@/components/valuation/NavigationButtons';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ValuationCalculator = () => {
   const { t } = useI18n();
+  const { isAdmin } = useAuth();
   const { 
     currentStep,
     companyData, 
@@ -68,21 +70,28 @@ const ValuationCalculator = () => {
     if (currentStep === 3) {
       console.log('In step 3, calculating valuation...');
       trackCalculationStart();
-      const id = toast.loading(t('calc.loading.title'), {
-        description: t('calc.loading.subtitle'),
-      });
+      let id: string | undefined;
+      if (isAdmin) {
+        id = toast.loading(t('calc.loading.title'), {
+          description: t('calc.loading.subtitle'),
+        }) as unknown as string;
+      }
       calculateValuation().then(() => {
         trackCalculationComplete();
-        toast.success(t('calc.success.title'), {
-          description: t('calc.success.subtitle'),
-          id,
-        });
+        if (isAdmin) {
+          toast.success(t('calc.success.title'), {
+            description: t('calc.success.subtitle'),
+            id,
+          });
+        }
       }).catch(() => {
         trackCalculationAbandon(currentStep);
-        toast.error(t('calc.error.title'), {
-          description: t('calc.error.subtitle'),
-          id,
-        });
+        if (isAdmin) {
+          toast.error(t('calc.error.title'), {
+            description: t('calc.error.subtitle'),
+            id,
+          });
+        }
       });
     } else {
       console.log('Moving to next step...');
