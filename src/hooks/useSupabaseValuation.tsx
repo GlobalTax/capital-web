@@ -196,8 +196,8 @@ export const useSupabaseValuation = () => {
       
       if (isAdmin) {
         toast({
-          title: "✅ Datos guardados",
-          description: "La valoración se ha guardado correctamente en la base de datos.",
+          title: "✅ Valoración completada",
+          description: "Su Valoración ha sido completado con éxito.",
           variant: "default",
         });
       }
