@@ -8,6 +8,7 @@ import ScenarioCard from '@/components/valuation-v3/ScenarioCard';
 import TaxConfigPanel from '@/components/valuation-v3/TaxConfigPanel';
 import ComparisonDashboard from '@/components/valuation-v3/ComparisonDashboard';
 import { Building2, Calculator, BarChart3, Settings } from 'lucide-react';
+import { formatCurrency } from '@/shared/utils/format';
 
 interface ValuationCalculatorV3Props {
   companyData: CompanyDataV3;
@@ -24,14 +25,6 @@ const ValuationCalculatorV3 = ({ companyData }: ValuationCalculatorV3Props) => {
     updateTaxData,
     updateCustomValue
   } = useValuationCalculatorV3(companyData);
-
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
 
   return (
     <div className="min-h-screen bg-background py-8">

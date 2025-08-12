@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
 import TaxSimulator from './TaxSimulator';
+import { formatCurrency } from '@/shared/utils/format';
 
 interface Step4Props {
   result: any;
@@ -55,15 +56,6 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       saveData();
     }
   }, [result?.finalValuation, companyData?.companyName, dataSaved]);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   if (isCalculating) {
     return (

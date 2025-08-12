@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { AdvancedDashboardStats } from '@/types/dashboard';
 import DashboardCharts from './DashboardCharts';
+import { formatCurrency, formatPercentage, formatNumber } from '@/shared/utils/format';
 
 interface AdvancedDashboardStatsProps {
   stats: AdvancedDashboardStats;
@@ -34,21 +35,6 @@ const AdvancedDashboardStatsComponent = ({
   historicalRevenueData = [],
   historicalContentData = []
 }: AdvancedDashboardStatsProps) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
-  };
-
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`;
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('es-ES').format(Math.round(value));
-  };
-
   const getTrendIcon = (value: number) => {
     return value >= 0 ? (
       <TrendingUp className="h-4 w-4 text-green-500" />

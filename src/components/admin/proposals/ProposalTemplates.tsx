@@ -5,13 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SERVICE_TYPE_LABELS } from '@/types/proposals';
 import { Edit, Copy, Trash2, Plus } from 'lucide-react';
+import { formatCurrency } from '@/shared/utils/format';
 
 export const ProposalTemplates = () => {
   const { templates } = useProposals();
-
-  const formatCurrency = (amount: number) => {
-    return `€${amount.toLocaleString()}`;
-  };
 
   return (
     <div className="space-y-6">

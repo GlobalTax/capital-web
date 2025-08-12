@@ -22,6 +22,7 @@ import {
 import { useUnifiedLeads } from '@/hooks/useUnifiedLeads';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { formatCurrency as formatCurrencyShared } from '@/shared/utils/format';
 
 const UnifiedLeadsManager = () => {
   const { leads, stats, isLoading, refetch, updateLeadStatus } = useUnifiedLeads();
@@ -80,14 +81,9 @@ const UnifiedLeadsManager = () => {
   });
 
   const formatCurrency = (amount: number | undefined) => {
-    if (!amount) return '-';
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-    }).format(amount);
+    if (amount == null) return '-';
+    return formatCurrencyShared(amount);
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">

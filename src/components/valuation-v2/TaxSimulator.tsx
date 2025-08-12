@@ -10,6 +10,7 @@ import { Calculator, AlertTriangle, Info, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { TaxSimulatorData, TaxCalculationResult } from '@/types/valuationV2';
 import { calculateSpanishTaxImpact } from '@/utils/taxCalculationV2';
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 
 interface TaxSimulatorProps {
   companyValuation: number;
@@ -36,15 +37,6 @@ const TaxSimulator: React.FC<TaxSimulatorProps> = ({ companyValuation, companyNa
   const handleCalculate = () => {
     const taxResult = calculateSpanishTaxImpact(simulatorData, companyValuation);
     setResult(taxResult);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   const isPreHistoricAcquisition = () => {
@@ -297,7 +289,7 @@ const TaxSimulator: React.FC<TaxSimulatorProps> = ({ companyValuation, companyNa
                       {formatCurrency(result.totalTax)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Tipo efectivo: {(result.effectiveTaxRate * 100).toFixed(1)}%
+                      Tipo efectivo: {formatPercentage(result.effectiveTaxRate * 100)}
                     </p>
                   </CardContent>
                 </Card>

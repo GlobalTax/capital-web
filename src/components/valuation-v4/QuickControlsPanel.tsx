@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Sliders, Calculator } from 'lucide-react';
+import { formatCurrency } from '@/shared/utils/format';
 
 interface QuickControlsPanelProps {
   acquisitionValue: number;
@@ -37,14 +38,6 @@ const QuickControlsPanel = ({
   onVitaliciaToggle,
   maxValuation
 }: QuickControlsPanelProps) => {
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-
   return (
     <Card>
       <CardHeader>

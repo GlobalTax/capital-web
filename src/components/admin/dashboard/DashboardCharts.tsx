@@ -29,6 +29,7 @@ import {
   type LeadSourceData,
   type SectorPerformanceData
 } from '@/utils/chartDataTransformers';
+import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/format';
 
 interface DashboardChartsProps {
   stats: AdvancedDashboardStats;
@@ -45,19 +46,6 @@ const DashboardCharts = ({ stats, revenueData = [], contentData = [] }: Dashboar
   
   const leadsData: LeadSourceData[] = generateLeadSourceData();
   const sectorData: SectorPerformanceData[] = generateSectorPerformanceData();
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('es-ES').format(value);
-  };
 
   return (
     <div className="space-y-6">
@@ -154,7 +142,7 @@ const DashboardCharts = ({ stats, revenueData = [], contentData = [] }: Dashboar
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
-                  formatter={(value: number) => [`${value}%`, 'Porcentaje']}
+                  formatter={(value: number) => [formatPercentage(value), 'Porcentaje']}
                 />
                 <Legend 
                   verticalAlign="bottom" 

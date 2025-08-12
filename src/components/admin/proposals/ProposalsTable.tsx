@@ -29,6 +29,7 @@ import {
   Copy,
   ExternalLink
 } from 'lucide-react';
+import { formatCurrency as formatCurrencyShared } from '@/shared/utils/format';
 import { FeeProposal } from '@/types/proposals';
 import { PROPOSAL_STATUS_LABELS, SERVICE_TYPE_LABELS } from '@/types/proposals';
 
@@ -56,10 +57,9 @@ export const ProposalsTable = () => {
   };
 
   const formatCurrency = (amount: number | null | undefined) => {
-    if (!amount) return '-';
-    return `€${amount.toLocaleString()}`;
+    if (amount == null) return '-';
+    return formatCurrencyShared(amount);
   };
-
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('es-ES');

@@ -8,6 +8,7 @@ import QuickScenariosGrid from '@/components/valuation-v4/QuickScenariosGrid';
 import QuickControlsPanel from '@/components/valuation-v4/QuickControlsPanel';
 import DistributionChart from '@/components/valuation-v4/DistributionChart';
 import { Building2, Zap, Download, Share2, RotateCcw, TrendingUp, Calculator } from 'lucide-react';
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 
 interface StandaloneCalculatorProps {
   companyData: CompanyDataV4;
@@ -29,14 +30,6 @@ const StandaloneCalculator = ({ companyData, onReset }: StandaloneCalculatorProp
     toggleReinvestment,
     toggleVitalicia
   } = useValuationCalculatorV4(companyData);
-
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
 
   const handleExportResults = () => {
     const results = {
@@ -81,7 +74,7 @@ const StandaloneCalculator = ({ companyData, onReset }: StandaloneCalculatorProp
     
 📊 Mejor escenario: ${bestScenario.name}
 💰 Retorno neto: ${formatCurrency(bestScenario.netReturn)}
-📈 ROI: ${bestScenario.roi.toFixed(1)}%
+📈 ROI: ${formatPercentage(bestScenario.roi)}
 🏛️ Impuestos: ${formatCurrency(bestScenario.totalTax)}
 
 Calculado con la herramienta de valoración standalone.`;
@@ -241,7 +234,7 @@ Calculado con la herramienta de valoración standalone.`;
                   <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-background/50 border border-border/50">
                     <div>
                       <span className="text-sm text-muted-foreground">ROI</span>
-                      <p className="font-bold text-lg text-primary">{bestScenario.roi.toFixed(1)}%</p>
+                      <p className="font-bold text-lg text-primary">{formatPercentage(bestScenario.roi)}</p>
                     </div>
                     <div>
                       <span className="text-sm text-muted-foreground">Impuestos</span>
