@@ -233,14 +233,16 @@ const handler = async (req: Request): Promise<Response> => {
     if (pdfToAttach) {
       try {
         const binary = Uint8Array.from(atob(pdfToAttach), (c) => c.charCodeAt(0));
-        const objectKey = `valuations/${Date.now()}-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
+        // Guardar el archivo directamente en el bucket 'valuations' con un nombre limpio (sin subcarpetas)
+        const fileName = `${Date.now()}-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
         const { data: up, error: upErr } = await supabase.storage
           .from('valuations')
-          .upload(objectKey, binary, { contentType: 'application/pdf', upsert: true });
+          .upload(fileName, binary, { contentType: 'application/pdf', upsert: true });
         if (upErr) {
           console.error('Error subiendo PDF a storage:', upErr);
         } else {
-          pdfPublicUrl = `${supabaseUrl}/storage/v1/object/public/${objectKey}`;
+          // Construir URL pública correcta: /object/public/{bucket}/{ruta}
+          pdfPublicUrl = `${supabaseUrl}/storage/v1/object/public/valuations/${encodeURIComponent(fileName)}`;
         }
       } catch (eUp: any) {
         console.error('Excepción al subir PDF a storage:', eUp?.message || eUp);
