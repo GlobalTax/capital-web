@@ -154,53 +154,63 @@ const ExternalLeadsDashboard: React.FC = () => {
           ) : (
             <div className="overflow-x-visible">
               <Table className="table-fixed">
+                <colgroup>
+                  <col className="w-[120px]" />
+                  <col className="w-[220px]" />
+                  <col className="w-[280px]" />
+                  <col className="w-[220px]" />
+                  <col className="w-[240px]" />
+                  <col className="w-[140px]" />
+                  <col className="w-[180px]" />
+                  <col className="w-[260px]" />
+                </colgroup>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead>Fuente</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Detalles</TableHead>
+                    <TableHead className="whitespace-nowrap">Tipo</TableHead>
+                    <TableHead className="whitespace-nowrap">Nombre</TableHead>
+                    <TableHead className="whitespace-nowrap">Email</TableHead>
+                    <TableHead className="whitespace-nowrap">Empresa</TableHead>
+                    <TableHead className="whitespace-nowrap">Fuente</TableHead>
+                    <TableHead className="whitespace-nowrap">Estado</TableHead>
+                    <TableHead className="whitespace-nowrap">Fecha</TableHead>
+                    <TableHead className="whitespace-nowrap">Detalles</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((l) => (
                     <TableRow key={(l.id as string) || `${l.email}-${l.created_at}`}>
                       <TableCell>{getTypeBadge(l.lead_type)}</TableCell>
-                      <TableCell className="font-medium">{l.full_name || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium truncate">{l.full_name || '-'}</TableCell>
+                      <TableCell className="truncate">
                         {l.email ? (
                           <a href={`mailto:${l.email}`} className="hover:underline inline-flex items-center gap-2">
                             <Mail className="h-4 w-4" />
-                            {l.email}
+                            <span className="truncate">{l.email}</span>
                           </a>
                         ) : '-'}
                       </TableCell>
-                      <TableCell className="inline-flex items-center gap-2">
+                      <TableCell className="truncate inline-flex items-center gap-2">
                         <Building className="h-4 w-4" />
-                        {l.company || '-'}
+                        <span className="truncate">{l.company || '-'}</span>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground truncate">
                         <div className="flex flex-col">
                           <span className="inline-flex items-center gap-2">
                             <Globe className="h-4 w-4" /> {l.source || 'web'}
                           </span>
                           {(l.utm_source || l.utm_campaign) && (
-                            <span className="text-xs">{l.utm_source || ''} {l.utm_campaign ? `· ${l.utm_campaign}` : ''}</span>
+                            <span className="text-xs truncate">{l.utm_source || ''} {l.utm_campaign ? `· ${l.utm_campaign}` : ''}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <Badge variant="outline">{l.status || 'new'}</Badge>
                       </TableCell>
-                      <TableCell className="inline-flex items-center gap-2 text-sm">
+                      <TableCell className="inline-flex items-center gap-2 text-sm whitespace-nowrap">
                         <Calendar className="h-4 w-4" />
                         {l.created_at ? format(new Date(l.created_at), 'dd LLL yyyy, HH:mm', { locale: es }) : '-'}
                       </TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="text-sm truncate">
                         {l.lead_type === 'company_valuation' && (
                           <div className="space-y-1">
                             <div>Val. final: {l.final_valuation ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(l.final_valuation)) : '-'}</div>

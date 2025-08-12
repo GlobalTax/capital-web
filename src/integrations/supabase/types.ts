@@ -528,6 +528,9 @@ export type Database = {
           company: string | null
           created_at: string
           email: string
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
           email_sent: boolean | null
           email_sent_at: string | null
           experience: string | null
@@ -547,6 +550,9 @@ export type Database = {
           company?: string | null
           created_at?: string
           email: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           experience?: string | null
@@ -566,6 +572,9 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           experience?: string | null
@@ -644,6 +653,9 @@ export type Database = {
           ebitda: number | null
           ebitda_multiple_used: number | null
           email: string
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
           email_sent: boolean | null
           email_sent_at: string | null
           employee_range: string
@@ -683,6 +695,9 @@ export type Database = {
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           employee_range: string
@@ -722,6 +737,9 @@ export type Database = {
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email?: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           employee_range?: string
@@ -761,6 +779,9 @@ export type Database = {
           country: string | null
           created_at: string
           email: string
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
           email_sent: boolean | null
           email_sent_at: string | null
           full_name: string
@@ -780,6 +801,9 @@ export type Database = {
           country?: string | null
           created_at?: string
           email: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name: string
@@ -799,6 +823,9 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name?: string

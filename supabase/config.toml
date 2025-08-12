@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.get-valuation-v4]
 verify_jwt = false
+
+[functions.email-open]
+verify_jwt = false
+
+[functions.register-email-sent]
+verify_jwt = false

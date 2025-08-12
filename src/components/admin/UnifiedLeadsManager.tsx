@@ -218,16 +218,26 @@ const UnifiedLeadsManager = () => {
         <CardContent>
           <div className="overflow-x-visible">
             <Table className="table-fixed">
+              <colgroup>
+                <col className="w-[110px]" />
+                <col className="w-[220px]" />
+                <col className="w-[280px]" />
+                <col className="w-[240px]" />
+                <col className="w-[320px]" />
+                <col className="w-[140px]" />
+                <col className="w-[180px]" />
+                <col className="w-[120px]" />
+              </colgroup>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Origen</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>Información Específica</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Acciones</TableHead>
+                  <TableHead className="whitespace-nowrap">Origen</TableHead>
+                  <TableHead className="whitespace-nowrap">Nombre</TableHead>
+                  <TableHead className="whitespace-nowrap">Email</TableHead>
+                  <TableHead className="whitespace-nowrap">Empresa</TableHead>
+                  <TableHead className="whitespace-nowrap">Información Específica</TableHead>
+                  <TableHead className="whitespace-nowrap">Estado</TableHead>
+                  <TableHead className="whitespace-nowrap">Fecha</TableHead>
+                  <TableHead className="whitespace-nowrap">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -238,12 +248,12 @@ const UnifiedLeadsManager = () => {
                     data-state={selectedLead && selectedLead.id === lead.id && selectedLead.origin === lead.origin ? 'selected' : undefined}
                   >
                     <TableCell>{getOriginBadge(lead.origin)}</TableCell>
-                    <TableCell className="font-medium">{lead.name}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium truncate">{lead.name}</TableCell>
+                    <TableCell className="truncate">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
                           <Mail className="h-4 w-4 text-gray-400" />
-                          {lead.email}
+                          <span className="truncate">{lead.email}</span>
                         </div>
                         {lead.email && (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -259,13 +269,13 @@ const UnifiedLeadsManager = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="truncate">
                       <div className="flex items-center gap-1">
                         <Building className="h-4 w-4 text-gray-400" />
-                        {lead.company || '-'}
+                        <span className="truncate">{lead.company || '-'}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="truncate">
                       {lead.origin === 'valuation' && (
                         <div className="space-y-1">
                           <div className="flex items-center gap-1 text-sm">
@@ -301,7 +311,7 @@ const UnifiedLeadsManager = () => {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {lead.origin === 'valuation' ? (
                         getStatusBadge(lead.status, lead.origin)
                       ) : (
@@ -322,13 +332,13 @@ const UnifiedLeadsManager = () => {
                         </Select>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm text-gray-500">
                         <Calendar className="h-4 w-4" />
                         {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <div className="flex gap-2">
                         {lead.phone && (
                           <Button size="sm" variant="outline" onClick={() => window.open(`tel:${lead.phone}`)}>
