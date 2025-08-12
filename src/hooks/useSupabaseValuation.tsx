@@ -87,10 +87,11 @@ export const useSupabaseValuation = () => {
 
       console.log('Datos preparados para insertar:', insertData);
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('company_valuations')
-        .insert(insertData)
-        .select();
+        .insert(insertData);
+
+      const data = null;
 
       if (error) {
         console.error('❌ Error de Supabase:', error);
