@@ -126,6 +126,13 @@ export const useContactForm = () => {
 
         // Enviar a segunda base de datos (herramienta externa)
         try {
+          // Enriquecer con UTM y referrer
+          const urlParams = new URLSearchParams(window.location.search);
+          const utm_source = urlParams.get('utm_source') || undefined;
+          const utm_medium = urlParams.get('utm_medium') || undefined;
+          const utm_campaign = urlParams.get('utm_campaign') || undefined;
+          const referrer = document.referrer || undefined;
+
           const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
             body: {
               type: 'contact',
@@ -133,6 +140,11 @@ export const useContactForm = () => {
                 ...data,
                 ip_address: ipData?.ip,
                 user_agent: navigator.userAgent,
+                utm_source,
+                utm_medium,
+                utm_campaign,
+                referrer,
+                source: 'web-contact'
               }
             }
           });

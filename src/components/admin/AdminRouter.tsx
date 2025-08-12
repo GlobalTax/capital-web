@@ -22,6 +22,7 @@ import SectorReportsGenerator from './SectorReportsGenerator';
 import AdminUsersManager from './AdminUsersManager';
 import ProposalsManager from './ProposalsManager';
 import EnhancedLeadsDashboard from './leads/EnhancedLeadsDashboard';
+import ExternalLeadsDashboard from './leads/ExternalLeadsDashboard';
 import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
@@ -59,6 +60,7 @@ const AdminRouter = () => {
       
       {/* Lead Management */}
       <Route path="/leads-dashboard" element={<EnhancedLeadsDashboard />} />
+      <Route path="/external-leads" element={<ExternalLeadsDashboard />} />
       <Route path="/lead-scoring" element={<LeadScoringManager />} />
       <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
       <Route path="/alerts" element={<AlertsManager />} />

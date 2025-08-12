@@ -146,6 +146,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Users,
         description: "Base de contactos"
       },
+      { 
+        title: "Leads Externos", 
+        url: "/admin/external-leads", 
+        icon: Activity,
+        badge: "NEW",
+        description: "Leads del CRM secundario"
+      },
     ]
   },
   {
