@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScenarioResult } from '@/types/valuationV3';
 import { TrendingUp, TrendingDown, Minus, Calculator } from 'lucide-react';
-
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 interface ScenarioCardProps {
   result: ScenarioResult;
   isCustom?: boolean;
@@ -28,17 +28,6 @@ const ScenarioCard = ({
     if (scenario.type === 'custom') return <Calculator className="h-4 w-4" />;
     return <Minus className="h-4 w-4" />;
   };
-
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-
-  const formatPercentage = (value: number) => 
-    `${value.toFixed(1)}%`;
 
   return (
     <Card className={`transition-all duration-300 hover:shadow-lg ${className}`}>

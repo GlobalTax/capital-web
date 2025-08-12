@@ -3,21 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { DistributionData } from '@/types/valuationV4';
 import { PieChart as PieChartIcon } from 'lucide-react';
-
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 interface DistributionChartProps {
   data: DistributionData[];
   title?: string;
 }
 
 const DistributionChart = ({ data, title = 'Distribución del Mejor Escenario' }: DistributionChartProps) => {
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
@@ -28,7 +20,7 @@ const DistributionChart = ({ data, title = 'Distribución del Mejor Escenario' }
             {formatCurrency(data.value)}
           </p>
           <p className="text-sm text-muted-foreground">
-            {((data.value / data.payload.total) * 100).toFixed(1)}%
+            {formatPercentage((data.value / data.payload.total) * 100)}
           </p>
         </div>
       );

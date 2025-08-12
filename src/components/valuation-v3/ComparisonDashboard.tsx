@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { ScenarioComparison } from '@/types/valuationV3';
 import { Trophy, TrendingUp, Target, AlertCircle } from 'lucide-react';
-
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 interface ComparisonDashboardProps {
   comparison: ScenarioComparison;
 }
@@ -34,15 +34,6 @@ const ComparisonDashboard = ({ comparison }: ComparisonDashboardProps) => {
     neto: result.netReturn,
     color: result.scenario.color
   }));
-
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-      notation: amount >= 1000000 ? 'compact' : 'standard'
-    }).format(amount);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -83,7 +74,7 @@ const ComparisonDashboard = ({ comparison }: ComparisonDashboardProps) => {
                 {formatCurrency(bestScenario.netReturn)}
               </div>
               <div className="text-sm text-muted-foreground">
-                ROI: {bestScenario.roi.toFixed(1)}%
+                ROI: {formatPercentage(bestScenario.roi)}
               </div>
             </div>
           </div>
@@ -178,7 +169,7 @@ const ComparisonDashboard = ({ comparison }: ComparisonDashboardProps) => {
                     </td>
                     <td className="text-right p-3">
                       <span className={result.roi > 0 ? 'text-accent' : 'text-destructive'}>
-                        {result.roi.toFixed(1)}%
+                        {formatPercentage(result.roi)}
                       </span>
                     </td>
                   </tr>

@@ -9,7 +9,7 @@ import ReferralPrompt from './ReferralPrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-
+import { formatCurrency } from '@/shared/utils/format';
 interface Step4Props {
   result: any;
   companyData: any;
@@ -90,15 +90,6 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       saveData();
     }
   }, [result?.finalValuation, companyData?.companyName, dataSaved]); // FIX: Dependencias más específicas
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const getEmployeeRangeLabel = (range: string) => {
   const ranges: { [key: string]: string } = {

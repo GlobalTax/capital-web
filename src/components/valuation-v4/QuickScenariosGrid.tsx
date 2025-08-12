@@ -3,21 +3,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScenarioResultV4 } from '@/types/valuationV4';
 import { TrendingUp, TrendingDown, Minus, Settings } from 'lucide-react';
-
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 interface QuickScenariosGridProps {
   scenarios: ScenarioResultV4[];
   bestScenarioId: string;
 }
 
 const QuickScenariosGrid = ({ scenarios, bestScenarioId }: QuickScenariosGridProps) => {
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-
   const getIcon = (id: string) => {
     switch (id) {
       case 'optimistic': return <TrendingUp className="h-4 w-4" />;
@@ -71,7 +63,7 @@ const QuickScenariosGrid = ({ scenarios, bestScenarioId }: QuickScenariosGridPro
               </div>
               
               <div className="text-xs text-muted-foreground">
-                ROI: {scenario.roi.toFixed(1)}%
+                ROI: {formatPercentage(scenario.roi)}
               </div>
             </div>
           </CardContent>

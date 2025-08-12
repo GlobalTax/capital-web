@@ -2,17 +2,22 @@
 // Utilidades para formatear datos
 
 export const formatNumber = (value: number): string => {
-  return new Intl.NumberFormat('es-ES').format(value);
+  return new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
 };
 
 export const formatCurrency = (value: number, currency = 'EUR'): string => {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(value);
 };
 
-export const formatPercentage = (value: number, decimals = 1): string => {
+export const formatPercentage = (value: number, decimals = 0): string => {
   return `${value.toFixed(decimals)}%`;
 };
 

@@ -8,7 +8,7 @@ import QuickScenariosGrid from '@/components/valuation-v4/QuickScenariosGrid';
 import QuickControlsPanel from '@/components/valuation-v4/QuickControlsPanel';
 import DistributionChart from '@/components/valuation-v4/DistributionChart';
 import { Building2, Zap, MessageCircle } from 'lucide-react';
-
+import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 interface ValuationCalculatorV4Props {
   companyData: CompanyDataV4;
 }
@@ -35,14 +35,6 @@ const ValuationCalculatorV4 = ({ companyData }: ValuationCalculatorV4Props) => {
     trackContactClick, 
     trackTimeSpent 
   } = useV4Tracking(companyData.id);
-
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
 
   // Tracking de tiempo
   useEffect(() => {
@@ -161,7 +153,7 @@ const ValuationCalculatorV4 = ({ companyData }: ValuationCalculatorV4Props) => {
                   </span>
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  ROI: {bestScenario.roi.toFixed(1)}% • Impuestos: {formatCurrency(bestScenario.totalTax)}
+                  ROI: {formatPercentage(bestScenario.roi)} • Impuestos: {formatCurrency(bestScenario.totalTax)}
                 </p>
               </div>
               
