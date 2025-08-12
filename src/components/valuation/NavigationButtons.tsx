@@ -22,6 +22,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
     <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200">
       <Button
         onClick={onPrev}
+        aria-label={t('aria.prev')}
         variant="outline"
         disabled={currentStep === 1}
         className="flex items-center h-11 border-gray-900 text-gray-900 hover:bg-gray-100"
@@ -36,6 +37,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       
       <Button
         onClick={onNext}
+        aria-label={currentStep === 3 ? t('aria.calculate') : t('aria.next')}
         disabled={isNextDisabled}
         className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >

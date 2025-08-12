@@ -23,6 +23,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.next': 'Siguiente',
     'nav.step_of': 'Paso {current} de {total}',
     'nav.calculate': 'Calcular Valoración',
+    'aria.prev': 'Ir al paso anterior',
+    'aria.next': 'Ir al siguiente paso',
+    'aria.calculate': 'Calcular valoración con los datos introducidos',
 
     // Estados
     'calc.loading.title': 'Calculando Valoración',
@@ -185,6 +188,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.next': 'Següent',
     'nav.step_of': 'Pas {current} de {total}',
     'nav.calculate': 'Calcular Valoració',
+    'aria.prev': 'Anar al pas anterior',
+    'aria.next': 'Anar al pas següent',
+    'aria.calculate': 'Calcular valoració amb les dades introduïdes',
 
     'calc.loading.title': 'Calculant Valoració',
     'calc.loading.subtitle': 'Analitzant les dades de la teva empresa...',
@@ -331,6 +337,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.next': 'Següent',
     'nav.step_of': 'Pas {current} de {total}',
     'nav.calculate': 'Calcular Valoració',
+    'aria.prev': 'Anar al pas anterior',
+    'aria.next': 'Anar al pas següent',
+    'aria.calculate': 'Calcular valoració amb les dades introduïdes',
 
     'calc.loading.title': 'Calculant Valoració',
     'calc.loading.subtitle': 'Analitzant les dades de la teua empresa...',
@@ -477,6 +486,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.next': 'Seguinte',
     'nav.step_of': 'Paso {current} de {total}',
     'nav.calculate': 'Calcular Valoración',
+    'aria.prev': 'Ir ao paso anterior',
+    'aria.next': 'Ir ao seguinte paso',
+    'aria.calculate': 'Calcular valoración cos datos introducidos',
 
     'calc.loading.title': 'Calculando Valoración',
     'calc.loading.subtitle': 'Analizando os datos da túa empresa...',
