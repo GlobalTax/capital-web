@@ -254,14 +254,27 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Texto plano para mejorar entregabilidad (sin adjuntos)
+    const internalText = `Nueva valoración recibida - ${companyData.companyName || "Capittal"}\n` +
+      `Contacto: ${companyData.contactName || "-"}\n` +
+      `Email: ${companyData.email || "-"}\n` +
+      `Teléfono: ${companyData.phone || "-"}\n` +
+      `Ingresos: ${euros(companyData.revenue, locale)}\n` +
+      `EBITDA: ${euros(companyData.ebitda, locale)}\n` +
+      `Valoración final: ${euros(result?.finalValuation ?? result?.valuationRange?.min, locale)}\n` +
+      `Rango: ${euros(result?.valuationRange?.min, locale)} - ${euros(result?.valuationRange?.max, locale)}\n` +
+      (pdfPublicUrl ? `PDF: ${pdfPublicUrl}\n` : '') +
+      `Calculadora de valoración - Capittal`;
+
     let emailResponse: any;
     try {
       emailResponse = await resend.emails.send({
-        from: "Samuel de Capittal <samuel@capittal.es>",
+        from: "Samuel <samuel@capittal.es>",
         to: recipients,
         subject,
         html,
-        attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
+        text: internalText,
+        reply_to: "samuel@capittal.es",
       });
     } catch (e: any) {
       console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
@@ -270,7 +283,8 @@ const handler = async (req: Request): Promise<Response> => {
         to: recipients,
         subject: `${subject} (pruebas)`,
         html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
-        attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
+        text: internalText,
+        reply_to: "samuel@capittal.es",
       });
     }
 
@@ -291,12 +305,18 @@ const handler = async (req: Request): Promise<Response> => {
         enlaces?.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937;">${enlaces.calculadoraFiscalUrl}</a></p>` : ''
       ].filter(Boolean).join('');
 
+      const userText = `${saludo}\n` +
+        `Gracias por completar el formulario de valoración de ${companyData.companyName || ''}.\n` +
+        (pdfUrlFinal ? `Descargar PDF: ${pdfUrlFinal}\n` : '') +
+        (agendaUrl ? `Reserve una llamada: ${agendaUrl}\n` : '') +
+        `\nUn saludo,\n${nombre} · ${cargo}\n${firma}`;
+
       const userHtml = `
         <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
           <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px; color:#111827;">
             <p style="margin:0 0 16px;">${saludo}</p>
             <p style="margin:0 0 12px;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${companyData.companyName || ''}</strong>.</p>
-            <p style="margin:0 0 12px;">Su PDF ya se ha generado y pudo descargarlo en la pantalla de confirmación. Por si lo necesita de nuevo, lo adjuntamos a este correo.</p>
+            <p style="margin:0 0 12px;">Su PDF ya se ha generado y pudo descargarlo en la pantalla de confirmación. Por si lo necesita de nuevo, puede volver a descargarlo desde el enlace más abajo.</p>
 
             <p style="margin:16px 0 8px;"><strong>En ese documento encontrará:</strong></p>
             <ul style="margin:0 0 12px 18px; padding:0;">
@@ -327,11 +347,12 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         await resend.emails.send({
-          from: "Samuel de Capittal <samuel@capittal.es>",
+          from: "Samuel <samuel@capittal.es>",
           to: [companyData.email],
           subject: userSubject,
           html: userHtml,
-          attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
+          text: userText,
+          reply_to: "samuel@capittal.es",
         });
       } catch (e2: any) {
         console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
@@ -340,7 +361,8 @@ const handler = async (req: Request): Promise<Response> => {
           to: [companyData.email],
           subject: `${userSubject} (pruebas)` ,
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
-          attachments: pdfToAttach ? [{ filename, content: pdfToAttach, contentType: "application/pdf" }] : undefined,
+          text: userText,
+          reply_to: "samuel@capittal.es",
         });
       }
     }
