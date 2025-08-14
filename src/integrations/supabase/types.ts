@@ -2101,6 +2101,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_admin_basic_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          full_name: string
+          id: string
+          is_active: boolean
+          last_login: string
+          role: Database["public"]["Enums"]["admin_role"]
+        }[]
+      }
       is_user_admin: {
         Args: { check_user_id: string }
         Returns: boolean
