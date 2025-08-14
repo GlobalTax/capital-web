@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
+import { useValuationAutosave } from '@/hooks/useValuationAutosave';
 import { CompanyData } from '@/types/valuation';
 import StepIndicator from '@/components/valuation/StepIndicator';
 import StepContent from '@/components/valuation/StepContent';
@@ -37,15 +38,35 @@ const ValuationCalculator = () => {
     trackCalculationAbandon
   } = useValuationCalculatorTracking();
 
+  const {
+    uniqueToken,
+    hasExistingSession,
+    initializeToken,
+    createInitialValuation,
+    updateValuation,
+    finalizeValuation,
+    clearAutosave
+  } = useValuationAutosave();
+
+  // Initialize autosave token on mount
+  useEffect(() => {
+    initializeToken();
+  }, [initializeToken]);
+
   // Track step changes
   useEffect(() => {
     trackStepChange(currentStep);
   }, [currentStep, trackStepChange]);
 
-  // Enhanced updateField with tracking
+  // Enhanced updateField with tracking and autosave
   const trackedUpdateField = (field: keyof CompanyData, value: any) => {
     updateField(field, value);
     trackFieldUpdate(field, value);
+    
+    // Autosave if we have a token (Step 1 completed)
+    if (uniqueToken) {
+      updateValuation({ [field]: value });
+    }
   };
 
   // Enhanced handleFieldBlur with tracking
@@ -62,19 +83,40 @@ const ValuationCalculator = () => {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     console.log('handleNext called, currentStep:', currentStep);
     
-    if (currentStep === 3) {
+    if (currentStep === 1) {
+      // Step 1: Create initial valuation if not exists
+      if (!uniqueToken) {
+        console.log('Creating initial valuation for Step 1...');
+        const token = await createInitialValuation(companyData);
+        if (!token) {
+          console.warn('Failed to create initial valuation');
+        }
+      }
+      nextStep();
+    } else if (currentStep === 3) {
       console.log('In step 3, calculating valuation...');
       trackCalculationStart();
-      calculateValuation()
-        .then(() => {
-          trackCalculationComplete();
-        })
-        .catch(() => {
-          trackCalculationAbandon(currentStep);
-        });
+      try {
+        await calculateValuation();
+        
+        // Finalize autosave with calculation results if we have a token
+        if (uniqueToken && result) {
+          await finalizeValuation({
+            ...companyData,
+            finalValuation: result.finalValuation,
+            ebitdaMultipleUsed: result.multiples.ebitdaMultipleUsed,
+            valuationRangeMin: result.valuationRange.min,
+            valuationRangeMax: result.valuationRange.max,
+          });
+        }
+        
+        trackCalculationComplete();
+      } catch (error) {
+        trackCalculationAbandon(currentStep);
+      }
     } else {
       console.log('Moving to next step...');
       nextStep();

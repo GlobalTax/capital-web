@@ -34,65 +34,155 @@ interface ValuationResult {
 
 export const useSupabaseValuation = () => {
 
-  const saveValuation = async (companyData: CompanyData, result: ValuationResult) => {
+  // Create initial valuation (from Step 1 data)
+  const createInitialValuation = async (stepOneData: Partial<CompanyData>): Promise<{ success: boolean; uniqueToken?: string }> => {
     try {
-      console.log('=== INICIANDO GUARDADO EN SUPABASE ===');
-      console.log('Datos de empresa:', companyData);
-      console.log('Resultado de valoración:', result);
-      
-      // Obtener información del cliente
-      let userAgent = '';
-      let ipAddress = '';
-      
-      try {
-        userAgent = navigator.userAgent;
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        ipAddress = ipData.ip;
-      } catch (error) {
-        console.warn('No se pudo obtener IP o user agent:', error);
-      }
+      console.log('=== CREANDO VALORACIÓN INICIAL ===');
+      console.log('Datos paso 1:', stepOneData);
 
-      // Preparar datos para insertar - usando nombres exactos de columnas de la base de datos
       const insertData = {
-        contact_name: companyData.contactName || '',
-        company_name: companyData.companyName || '',
-        cif: companyData.cif || null,
-        email: companyData.email || '',
-        phone: companyData.phone || null,
-        industry: companyData.industry || '',
-        years_of_operation: companyData.yearsOfOperation || null,
-        employee_range: companyData.employeeRange || '',
-        revenue: companyData.revenue || null,
-        ebitda: companyData.ebitda || null,
-        net_profit_margin: companyData.netProfitMargin || null,
-        growth_rate: companyData.growthRate || null,
-        location: companyData.location || null,
-        ownership_participation: companyData.ownershipParticipation || null,
-        competitive_advantage: companyData.competitiveAdvantage || null,
-        final_valuation: result.finalValuation || null,
-        ebitda_multiple_used: result.multiples.ebitdaMultipleUsed || null,
-        valuation_range_min: result.valuationRange.min || null,
-        valuation_range_max: result.valuationRange.max || null,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        email_sent: false,
-        whatsapp_sent: false,
-        hubspot_sent: false
+        contact_name: stepOneData.contactName || '',
+        company_name: stepOneData.companyName || '',
+        cif: stepOneData.cif || null,
+        email: stepOneData.email || '',
+        phone: stepOneData.phone || null,
+        industry: stepOneData.industry || '',
+        employee_range: stepOneData.employeeRange || '',
+        // Note: activityDescription is not in the CompanyData interface but may be needed
       };
-
-      console.log('Datos preparados para insertar:', insertData);
 
       const { data, error } = await supabase.functions.invoke('submit-valuation', {
         body: insertData
       });
 
       if (error) {
-        console.error('❌ Error de Supabase (edge function):', error);
-        throw new Error(`Error de Supabase: ${error.message}`);
+        console.error('❌ Error creando valoración inicial:', error);
+        return { success: false };
       }
 
-      console.log('✅ Valoración guardada exitosamente a través de Edge Function:', data);
+      console.log('✅ Valoración inicial creada:', data);
+      return { success: true, uniqueToken: data?.uniqueToken };
+    } catch (error) {
+      console.error('Exception creando valoración inicial:', error);
+      return { success: false };
+    }
+  };
+
+  // Update existing valuation
+  const updateValuation = async (uniqueToken: string, partialData: Partial<CompanyData>): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('update-valuation', {
+        body: {
+          uniqueToken,
+          data: partialData
+        }
+      });
+
+      if (error) {
+        console.error('Error actualizando valoración:', error);
+        return false;
+      }
+
+      console.log('Valoración actualizada:', data);
+      return true;
+    } catch (error) {
+      console.error('Exception actualizando valoración:', error);
+      return false;
+    }
+  };
+
+  const saveValuation = async (companyData: CompanyData, result: ValuationResult, uniqueToken?: string) => {
+    try {
+      console.log('=== GUARDANDO VALORACIÓN FINAL ===');
+      console.log('Datos finales:', companyData);
+      console.log('Resultado:', result);
+      console.log('Token existente:', uniqueToken);
+
+      if (uniqueToken) {
+        // Actualizar registro existente con datos finales
+        const finalData = {
+          // Update any missing basic data
+          contact_name: companyData.contactName || '',
+          company_name: companyData.companyName || '',
+          cif: companyData.cif || null,
+          email: companyData.email || '',
+          phone: companyData.phone || null,
+          industry: companyData.industry || '',
+          years_of_operation: companyData.yearsOfOperation || null,
+          employee_range: companyData.employeeRange || '',
+          revenue: companyData.revenue || null,
+          ebitda: companyData.ebitda || null,
+          net_profit_margin: companyData.netProfitMargin || null,
+          growth_rate: companyData.growthRate || null,
+          location: companyData.location || null,
+          ownership_participation: companyData.ownershipParticipation || null,
+          competitive_advantage: companyData.competitiveAdvantage || null,
+          // Add final calculation results
+          final_valuation: result.finalValuation || null,
+          ebitda_multiple_used: result.multiples.ebitdaMultipleUsed || null,
+          valuation_range_min: result.valuationRange.min || null,
+          valuation_range_max: result.valuationRange.max || null,
+        };
+
+        const updateSuccess = await updateValuation(uniqueToken, finalData);
+        if (!updateSuccess) {
+          throw new Error('Failed to update existing valuation');
+        }
+        
+        console.log('✅ Valoración actualizada con datos finales');
+      } else {
+        // Legacy: crear nuevo registro completo (si no hay token)
+        // Obtener información del cliente para legacy insert
+        let userAgent = '';
+        let ipAddress = '';
+        
+        try {
+          userAgent = navigator.userAgent;
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipResponse.json();
+          ipAddress = ipData.ip;
+        } catch (error) {
+          console.warn('No se pudo obtener IP o user agent:', error);
+        }
+
+        const insertData = {
+          contact_name: companyData.contactName || '',
+          company_name: companyData.companyName || '',
+          cif: companyData.cif || null,
+          email: companyData.email || '',
+          phone: companyData.phone || null,
+          industry: companyData.industry || '',
+          years_of_operation: companyData.yearsOfOperation || null,
+          employee_range: companyData.employeeRange || '',
+          revenue: companyData.revenue || null,
+          ebitda: companyData.ebitda || null,
+          net_profit_margin: companyData.netProfitMargin || null,
+          growth_rate: companyData.growthRate || null,
+          location: companyData.location || null,
+          ownership_participation: companyData.ownershipParticipation || null,
+          competitive_advantage: companyData.competitiveAdvantage || null,
+          final_valuation: result.finalValuation || null,
+          ebitda_multiple_used: result.multiples.ebitdaMultipleUsed || null,
+          valuation_range_min: result.valuationRange.min || null,
+          valuation_range_max: result.valuationRange.max || null,
+          ip_address: ipAddress,
+          user_agent: userAgent,
+          email_sent: false,
+          whatsapp_sent: false,
+          hubspot_sent: false
+        };
+
+        const { data, error } = await supabase.functions.invoke('submit-valuation', {
+          body: insertData
+        });
+
+        if (error) {
+          console.error('❌ Error creando valoración legacy:', error);
+          throw new Error(`Error de Supabase: ${error.message}`);
+        }
+
+        console.log('✅ Valoración legacy creada:', data);
+      }
       
       // Enviar a segunda base de datos (herramienta externa)
       try {
@@ -103,17 +193,37 @@ export const useSupabaseValuation = () => {
         const utm_campaign = urlParams.get('utm_campaign') || undefined;
         const referrer = document.referrer || undefined;
 
+        const syncData = {
+          contact_name: companyData.contactName || '',
+          company_name: companyData.companyName || '',
+          cif: companyData.cif || null,
+          email: companyData.email || '',
+          phone: companyData.phone || null,
+          industry: companyData.industry || '',
+          years_of_operation: companyData.yearsOfOperation || null,
+          employee_range: companyData.employeeRange || '',
+          revenue: companyData.revenue || null,
+          ebitda: companyData.ebitda || null,
+          net_profit_margin: companyData.netProfitMargin || null,
+          growth_rate: companyData.growthRate || null,
+          location: companyData.location || null,
+          ownership_participation: companyData.ownershipParticipation || null,
+          competitive_advantage: companyData.competitiveAdvantage || null,
+          final_valuation: result.finalValuation || null,
+          ebitda_multiple_used: result.multiples.ebitdaMultipleUsed || null,
+          valuation_range_min: result.valuationRange.min || null,
+          valuation_range_max: result.valuationRange.max || null,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          referrer,
+          source: 'lp-calculadora'
+        };
+
         const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
           body: {
             type: 'company_valuation',
-            data: {
-              ...insertData,
-              utm_source,
-              utm_medium,
-              utm_campaign,
-              referrer,
-              source: 'lp-calculadora'
-            }
+            data: syncData
           }
         });
 
@@ -200,7 +310,7 @@ export const useSupabaseValuation = () => {
       }
       
       // Toast de éxito oculto intencionalmente
-      return data;
+      return { success: true };
     } catch (error) {
       // Toast de error oculto intencionalmente
       throw error;
@@ -244,6 +354,8 @@ export const useSupabaseValuation = () => {
   };
 
   return {
+    createInitialValuation,
+    updateValuation,
     saveValuation,
     saveToolRating
   };
