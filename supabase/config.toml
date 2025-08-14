@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.update-valuation]
 verify_jwt = false
+
+[functions.daily-incomplete-report]
+verify_jwt = false
