@@ -84,15 +84,13 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       const utmMedium = urlParams.get('utm_medium');
       const utmCampaign = urlParams.get('utm_campaign');
 
-      const insertData = {
-        session_id: sessionId,
+      const trackingEvent = {
         visitor_id: visitorId,
-        company_domain: companyDomain,
+        session_id: sessionId,
         event_type: eventType,
         page_path: pagePath,
         event_data: eventData || {},
-        points_awarded: pointsAwarded || 0,
-        user_agent: navigator.userAgent || null,
+        company_domain: companyDomain,
         referrer: document.referrer || null,
         utm_source: utmSource,
         utm_medium: utmMedium,
@@ -101,14 +99,17 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId);
       
-      const { error } = await supabase.from('lead_behavior_events').insert(insertData);
+      // Use secure tracking edge function instead of direct database insertion
+      const { error } = await supabase.functions.invoke('secure-tracking', {
+        body: { event: trackingEvent }
+      });
       
       if (error) {
         console.error('❌ Lead tracking failed:', error);
         throw error;
       }
       
-      console.debug('✅ Event tracked successfully:', eventType);
+      console.debug('✅ Event tracked successfully via secure endpoint:', eventType);
 
     } catch (error) {
       console.error('❌ Lead tracking error:', error);
