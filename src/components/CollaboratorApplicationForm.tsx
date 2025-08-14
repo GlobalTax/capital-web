@@ -102,7 +102,7 @@ const CollaboratorApplicationForm = () => {
                 required
                 value={formData.phone}
                 onChange={handleInputChange}
-                placeholder="+34 123 456 789"
+                placeholder="600 000 000"
               />
             </div>
             

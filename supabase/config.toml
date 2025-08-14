@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.register-email-sent]
 verify_jwt = false
+
+[functions.update-valuation]
+verify_jwt = false

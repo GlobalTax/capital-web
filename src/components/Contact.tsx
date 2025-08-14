@@ -262,7 +262,7 @@ const Contact = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     onBlur={() => handleFieldBlur('phone')}
-                    placeholder="+34 600 000 000"
+                    placeholder="600 000 000"
                     className="bg-white border-0.5 border-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
                   />
                 </div>

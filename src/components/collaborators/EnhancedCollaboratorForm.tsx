@@ -147,7 +147,7 @@ export const EnhancedCollaboratorForm = () => {
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => updateFormData('phone', e.target.value)}
-                  placeholder="+34 600 000 000"
+                  placeholder="600 000 000"
                   className="admin-input"
                 />
               </div>

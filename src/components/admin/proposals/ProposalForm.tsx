@@ -153,7 +153,7 @@ export const ProposalForm = ({ isOpen, onClose, proposalId }: ProposalFormProps)
                       id="client_phone"
                       value={formData.client_phone || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, client_phone: e.target.value }))}
-                      placeholder="+34 xxx xxx xxx"
+                      placeholder="600 000 000"
                     />
                   </div>
                 </div>

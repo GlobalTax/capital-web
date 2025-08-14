@@ -242,7 +242,7 @@ const LeadMagnetLandingPage = ({ leadMagnet }: LeadMagnetLandingPageProps) => {
                       type="tel"
                       value={formData.user_phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, user_phone: e.target.value }))}
-                      placeholder="+34 600 000 000"
+                      placeholder="600 000 000"
                     />
                   </div>
 

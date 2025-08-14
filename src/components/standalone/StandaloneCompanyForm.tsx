@@ -142,7 +142,7 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
       contactName: validateContactName(sanitizedData.contactName).sanitizedValue || sanitizedData.contactName || 'Usuario',
       companyName: validateCompanyName(sanitizedData.companyName).sanitizedValue || sanitizedData.companyName || 'Mi Empresa',
       email: sanitizedData.email ? (validateEmail(sanitizedData.email).sanitizedValue || sanitizedData.email) : 'contacto@empresa.com',
-      phone: sanitizedData.phone ? (validateSpanishPhone(sanitizedData.phone).sanitizedValue || sanitizedData.phone) : '+34 000 000 000',
+      phone: sanitizedData.phone ? (validateSpanishPhone(sanitizedData.phone).sanitizedValue || sanitizedData.phone) : '',
       industry: sanitizedData.industry || 'Otros',
       revenue,
       ebitda,
@@ -264,7 +264,7 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     onBlur={(e) => handleBlur('phone', e.target.value)}
-                    placeholder="+34 000 000 000"
+                    placeholder="600 000 000"
                     className={errors.phone ? 'border-destructive' : ''}
                   />
                   {errors.phone && (

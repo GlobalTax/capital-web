@@ -51,7 +51,7 @@ const LandingCalculatorInner = () => {
             companyName: 'Empresa Demo S.L.',
             cif: 'B12345678',
             email: 'samuel@capittal.es',
-            phone: '+34 600 000 000',
+            phone: '600 000 000',
             industry: 'Tecnología',
             yearsOfOperation: 5,
             employeeRange: '11-50',

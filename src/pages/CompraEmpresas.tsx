@@ -310,7 +310,7 @@ const CompraEmpresas = () => {
                       <Input
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        placeholder="+34 000 000 000"
+                        placeholder="600 000 000"
                       />
                     </div>
                   </div>

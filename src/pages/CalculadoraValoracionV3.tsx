@@ -10,7 +10,7 @@ const mockCompanyData: CompanyDataV3 = {
   contactName: 'Juan Pérez',
   companyName: 'TechSolutions S.L.',
   email: 'juan.perez@techsolutions.es',
-  phone: '+34 600 000 000',
+  phone: '600 000 000',
   industry: 'tecnologia',
   revenue: 2500000,
   ebitda: 350000,

@@ -113,7 +113,7 @@ const VentaEmpresasCTA = () => {
                 <input
                   type="tel"
                   className="capittal-input w-full"
-                  placeholder="+34 600 000 000"
+                  placeholder="600 000 000"
                 />
               </div>
               
