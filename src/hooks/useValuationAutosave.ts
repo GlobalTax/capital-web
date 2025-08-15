@@ -54,22 +54,30 @@ export const useValuationAutosave = () => {
     }
   }, []);
 
-  // Create initial valuation record (Step 1)
-  const createInitialValuation = useCallback(async (stepOneData: Partial<CompanyData>): Promise<string | null> => {
+  // Create initial valuation record INMEDIATAMENTE cuando se complete el primer campo
+  const createInitialValuation = useCallback(async (initialData: Partial<CompanyData>): Promise<string | null> => {
     try {
       setState(prev => ({ ...prev, isSaving: true }));
 
+      // Obtener datos del primer campo completado
+      const minimalData = {
+        contact_name: initialData.contactName || '',
+        company_name: initialData.companyName || '',
+        cif: initialData.cif || null,
+        email: initialData.email || '',
+        phone: initialData.phone || null,
+        industry: initialData.industry || '',
+        employee_range: initialData.employeeRange || '',
+        activity_description: initialData.activityDescription || null,
+        location: initialData.location || null,
+        ownership_participation: initialData.ownershipParticipation || null,
+        competitive_advantage: initialData.competitiveAdvantage || null,
+        revenue: initialData.revenue || null,
+        ebitda: initialData.ebitda || null
+      };
+
       const { data, error } = await supabase.functions.invoke('submit-valuation', {
-        body: {
-          contact_name: stepOneData.contactName || '',
-          company_name: stepOneData.companyName || '',
-          cif: stepOneData.cif || null,
-          email: stepOneData.email || '',
-          phone: stepOneData.phone || null,
-          industry: stepOneData.industry || '',
-          employee_range: stepOneData.employeeRange || '',
-          activity_description: stepOneData.activityDescription || null,
-        }
+        body: minimalData
       });
 
       if (error) {
@@ -98,6 +106,17 @@ export const useValuationAutosave = () => {
       return null;
     }
   }, [saveTokenToStorage]);
+
+  // Crear valuación automáticamente en el primer campo completado
+  const createInitialValuationOnFirstField = useCallback(async (field: keyof CompanyData, value: any, allData: CompanyData): Promise<string | null> => {
+    // Solo crear si no existe token y el valor no está vacío
+    if (state.uniqueToken || !value || value === '') {
+      return state.uniqueToken;
+    }
+
+    console.log(`Primer campo completado: ${field} = ${value}. Creando valoración inicial...`);
+    return await createInitialValuation(allData);
+  }, [state.uniqueToken, createInitialValuation]);
 
   // Update existing valuation record (debounced)
   const updateValuation = useCallback((partialData: Partial<CompanyData>) => {
@@ -204,6 +223,7 @@ export const useValuationAutosave = () => {
     // Actions
     initializeToken,
     createInitialValuation,
+    createInitialValuationOnFirstField,
     updateValuation,
     finalizeValuation,
     clearAutosave

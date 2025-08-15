@@ -43,6 +43,7 @@ const ValuationCalculator = () => {
     hasExistingSession,
     initializeToken,
     createInitialValuation,
+    createInitialValuationOnFirstField,
     updateValuation,
     finalizeValuation,
     clearAutosave
@@ -58,12 +59,18 @@ const ValuationCalculator = () => {
     trackStepChange(currentStep);
   }, [currentStep, trackStepChange]);
 
-  // Enhanced updateField with tracking and autosave
-  const trackedUpdateField = (field: keyof CompanyData, value: any) => {
+  // Enhanced updateField with tracking and AUTOSAVE INMEDIATO desde el primer campo
+  const trackedUpdateField = async (field: keyof CompanyData, value: any) => {
     updateField(field, value);
     trackFieldUpdate(field, value);
     
-    // Autosave if we have a token (Step 1 completed)
+    // Crear valoración inicial si es el primer campo completado
+    if (!uniqueToken && value && value !== '') {
+      console.log(`Primer campo completado: ${field}. Creando registro...`);
+      await createInitialValuationOnFirstField(field, value, companyData);
+    }
+    
+    // Actualizar si ya existe token
     if (uniqueToken) {
       updateValuation({ [field]: value });
     }
