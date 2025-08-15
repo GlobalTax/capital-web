@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
-import { secondarySupabase } from '@/integrations/supabase/secondaryClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export type ExternalLeadType = 'contact' | 'collaborator' | 'lead_magnet_download' | 'company_valuation' | 'valuation_pdf' | string;
@@ -44,8 +44,10 @@ export const useExternalLeads = () => {
       setIsLoading(true);
       setError(null);
 
-      const { data, error } = await secondarySupabase
-        .from('leads')
+      // Nota: La tabla 'leads' no existe en este esquema.
+      // Usar tablas existentes para consolidar leads.
+      const { data, error } = await supabase
+        .from('contact_leads')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200);

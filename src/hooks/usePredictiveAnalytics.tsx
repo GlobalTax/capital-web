@@ -4,6 +4,7 @@ import { PredictionEngine, ConversionPrediction, MarketTrend } from '@/utils/ana
 import { AIInsightsGenerator, AIInsight, ContextualInsight } from '@/utils/analytics/AIInsightsGenerator';
 import { useMarketingIntelligence } from './useMarketingIntelligence';
 import { getAnalytics } from '@/utils/analytics/AnalyticsManager';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 export interface PredictiveAnalyticsData {
   predictions: ConversionPrediction[];
@@ -117,7 +118,7 @@ export const usePredictiveAnalytics = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I'}`
+          'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
         },
         body: JSON.stringify({ analyticsData })
       });

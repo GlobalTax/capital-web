@@ -162,7 +162,7 @@ export const logSecurityEvent = (
     timestamp: new Date().toISOString(),
     type: eventType,
     context: details.context || 'unknown',
-    userAgent: details.userAgent || navigator.userAgent,
+    userAgent: details.userAgent || (typeof navigator !== 'undefined' ? navigator.userAgent : 'server'),
     inputLength: details.input?.length || 0,
     sanitizedLength: details.sanitized?.length || 0,
     // No loguear el contenido completo por seguridad, solo indicadores

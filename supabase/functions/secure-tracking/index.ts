@@ -4,10 +4,24 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// Configuración CORS específica por entorno
+const allowedOrigins = [
+  'https://capittal.es',
+  'https://www.capittal.es', 
+  'https://capittal-valuation.lovable.app',
+  'http://localhost:5173', // Para desarrollo
+  'https://lovable.dev' // Para preview
+];
+
+const getCorsHeaders = (origin: string | null) => {
+  const isAllowed = origin && allowedOrigins.includes(origin);
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400', // 24 horas
+  };
+};
 
 interface TrackingEvent {
   visitor_id: string;
@@ -64,15 +78,16 @@ function validateTrackingEvent(event: TrackingEvent): string | null {
   if (event.event_type.length > 50) return 'event_type demasiado largo';
   if (event.page_path && event.page_path.length > 500) return 'page_path demasiado largo';
   
-  // Validar tipos de eventos permitidos
+  // Validar tipos de eventos permitidos - expandido para incluir time_on_page
   const allowedEventTypes = [
     'page_view', 'calculator_usage', 'contact_interest', 'download',
     'scroll_depth', 'video_interaction', 'search', 'cta_interaction',
-    'error', 'engagement_milestone', 'exit_intent', 'micro_conversion'
+    'error', 'engagement_milestone', 'exit_intent', 'micro_conversion',
+    'time_on_page', 'form_start', 'form_complete', 'button_click'
   ];
   
   if (!allowedEventTypes.includes(event.event_type)) {
-    return `event_type no permitido: ${event.event_type}`;
+    return `Tipo de evento no permitido. Eventos válidos: ${allowedEventTypes.join(', ')}`;
   }
   
   return null;
@@ -80,6 +95,9 @@ function validateTrackingEvent(event: TrackingEvent): string | null {
 
 serve(async (req) => {
   // Handle CORS preflight requests
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -101,9 +119,17 @@ serve(async (req) => {
     }
 
     // Obtener IP del cliente para rate limiting
-    const clientIP = req.headers.get('x-forwarded-for') || 
-                     req.headers.get('x-real-ip') || 
-                     'unknown';
+    // Fix: Manejar IPs múltiples en x-forwarded-for (separadas por comas)
+    let clientIP = req.headers.get('x-forwarded-for') || 
+                   req.headers.get('x-real-ip') || 
+                   'unknown';
+    
+    // Si hay múltiples IPs separadas por comas, tomar la primera válida
+    if (clientIP !== 'unknown' && clientIP.includes(',')) {
+      const ips = clientIP.split(',').map(ip => ip.trim());
+      clientIP = ips[0] || 'unknown';
+      console.log('Multiple IPs detected, using first:', clientIP);
+    }
 
     // Verificar rate limiting
     if (!checkRateLimit(clientIP)) {
@@ -134,7 +160,17 @@ serve(async (req) => {
 
     // Obtener información adicional del request
     const userAgent = req.headers.get('user-agent') || '';
-    const ipAddress = clientIP !== 'unknown' ? clientIP : null;
+    let ipAddress = clientIP !== 'unknown' ? clientIP : null;
+    
+    // Validar formato de IP antes de insertar
+    if (ipAddress) {
+      // Validar IPv4 básico
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      if (!ipv4Regex.test(ipAddress)) {
+        console.warn('Invalid IP format detected:', ipAddress);
+        ipAddress = null; // No insertar IP inválida
+      }
+    }
 
     // Insertar evento en la base de datos usando service role
     const { error: insertError } = await supabaseClient
