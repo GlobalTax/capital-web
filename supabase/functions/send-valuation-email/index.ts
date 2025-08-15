@@ -338,12 +338,12 @@ if (pdfToAttach) {
       const cargo = sender?.cargo || 'M&A';
       const firma = sender?.firma || 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid';
 
-      // Enlaces útiles (sólo si se facilitan)
+      // Enlaces útiles con texto descriptivo (no URLs visibles)
       const pdfUrlFinal = (enlaces && enlaces.pdfUrl) || pdfPublicUrl || '';
       const enlacesUtiles = [
-        pdfUrlFinal ? `<p style="margin:0 0 6px;"><strong>Re-descargar el PDF:</strong> <a href="${pdfUrlFinal}" target="_blank" style="color:#1f2937;">${pdfUrlFinal}</a></p>` : '',
-        enlaces?.escenariosUrl ? `<p style="margin:0 0 6px;"><strong>Generar nuevos escenarios:</strong> <a href="${enlaces.escenariosUrl}" target="_blank" style="color:#1f2937;">${enlaces.escenariosUrl}</a></p>` : '',
-        enlaces?.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937;">${enlaces.calculadoraFiscalUrl}</a></p>` : ''
+        pdfUrlFinal ? `<p style="margin:0 0 6px;"><strong>📄 Re-descargar el PDF:</strong> <a href="${pdfUrlFinal}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Haga clic aquí</a></p>` : '',
+        enlaces?.escenariosUrl ? `<p style="margin:0 0 6px;"><strong>🔢 Generar nuevos escenarios:</strong> <a href="${enlaces.escenariosUrl}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Acceder a la calculadora</a></p>` : '',
+        enlaces?.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>💰 Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Calcular impactos fiscales</a></p>` : ''
       ].filter(Boolean).join('');
 
       const userText = `${saludo}\n` +
@@ -369,7 +369,7 @@ if (pdfToAttach) {
               </ul>
             </div>
 
-            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede reservar una llamada de 20-30 minutos aquí: <a href="${agendaUrl}" target="_blank" style="color:#1f2937; text-decoration:underline;">${agendaUrl}</a>.` : ''}</p>
+            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede <a href="${agendaUrl}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">reservar una llamada de 20-30 minutos aquí</a>.` : ''}</p>
             <p style="margin:0 0 20px; line-height:1.6;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es <strong>completamente confidencial</strong>.</p>
 
             ${enlacesUtiles ? `<div style="background:#ecfdf5; border:1px solid #d1fae5; border-radius:8px; padding:20px; margin:20px 0;"><p style="margin:0 0 12px; font-weight:600; color:#065f46;">🔗 Enlaces útiles (guarde este correo):</p>${enlacesUtiles}</div>` : ''}
