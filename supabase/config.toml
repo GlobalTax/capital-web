@@ -32,3 +32,12 @@ verify_jwt = false
 
 [functions.daily-incomplete-report]
 verify_jwt = false
+
+[functions.send-incomplete-alert]
+verify_jwt = false
+
+[functions.send-recovery-email]
+verify_jwt = false
+
+[functions.abandonment-detector]
+verify_jwt = false

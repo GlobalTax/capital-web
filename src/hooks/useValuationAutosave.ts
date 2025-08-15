@@ -6,6 +6,9 @@ interface AutosaveState {
   uniqueToken: string | null;
   lastSaved: Date | null;
   isSaving: boolean;
+  currentStep: number;
+  timeSpent: number;
+  startTime: Date | null;
 }
 
 const STORAGE_KEY = 'valuation_v4_token';
@@ -15,7 +18,10 @@ export const useValuationAutosave = () => {
   const [state, setState] = useState<AutosaveState>({
     uniqueToken: null,
     lastSaved: null,
-    isSaving: false
+    isSaving: false,
+    currentStep: 1,
+    timeSpent: 0,
+    startTime: null
   });
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -115,11 +121,18 @@ export const useValuationAutosave = () => {
     }
 
     console.log(`Primer campo completado: ${field} = ${value}. Creando valoración inicial...`);
-    return await createInitialValuation(allData);
+    const token = await createInitialValuation(allData);
+    
+    // Start timing when first field is completed
+    if (token) {
+      setState(prev => ({ ...prev, startTime: new Date() }));
+    }
+    
+    return token;
   }, [state.uniqueToken, createInitialValuation]);
 
   // Update existing valuation record (debounced)
-  const updateValuation = useCallback((partialData: Partial<CompanyData>) => {
+  const updateValuation = useCallback((partialData: Partial<CompanyData>, field?: string) => {
     const token = state.uniqueToken;
     if (!token) {
       console.warn('No token available for autosave update');
@@ -136,10 +149,21 @@ export const useValuationAutosave = () => {
       try {
         setState(prev => ({ ...prev, isSaving: true }));
 
+        // Calculate time spent if we have a start time
+        const timeSpentSeconds = state.startTime 
+          ? Math.floor((Date.now() - state.startTime.getTime()) / 1000)
+          : state.timeSpent;
+
+        const updateData = {
+          ...partialData,
+          timeSpentSeconds,
+          lastModifiedField: field || 'unknown'
+        };
+
         const { data, error } = await supabase.functions.invoke('update-valuation', {
           body: {
             uniqueToken: token,
-            data: partialData
+            data: updateData
           }
         });
 
@@ -147,7 +171,11 @@ export const useValuationAutosave = () => {
           console.error('Error updating valuation:', error);
         } else {
           console.log('Valuation updated successfully:', data);
-          setState(prev => ({ ...prev, lastSaved: new Date() }));
+          setState(prev => ({ 
+            ...prev, 
+            lastSaved: new Date(),
+            timeSpent: timeSpentSeconds
+          }));
         }
       } catch (error) {
         console.error('Exception updating valuation:', error);
@@ -155,7 +183,7 @@ export const useValuationAutosave = () => {
         setState(prev => ({ ...prev, isSaving: false }));
       }
     }, 600); // 600ms debounce
-  }, [state.uniqueToken]);
+  }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
   // Final update with calculation results
   const finalizeValuation = useCallback(async (finalData: Partial<CompanyData> & {
@@ -195,6 +223,32 @@ export const useValuationAutosave = () => {
     }
   }, [state.uniqueToken]);
 
+  // Update step tracking
+  const updateStep = useCallback((step: number) => {
+    setState(prev => ({ ...prev, currentStep: step }));
+    if (state.uniqueToken) {
+      // Send step update directly to avoid type issues
+      const updateData = {
+        currentStep: step,
+        timeSpentSeconds: state.startTime 
+          ? Math.floor((Date.now() - state.startTime.getTime()) / 1000)
+          : state.timeSpent,
+        lastModifiedField: 'step_change'
+      };
+      
+      supabase.functions.invoke('update-valuation', {
+        body: {
+          uniqueToken: state.uniqueToken,
+          data: updateData
+        }
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Error updating step:', error);
+        }
+      });
+    }
+  }, [state.uniqueToken, state.startTime, state.timeSpent]);
+
   // Clear autosave data
   const clearAutosave = useCallback(() => {
     try {
@@ -202,7 +256,10 @@ export const useValuationAutosave = () => {
       setState({
         uniqueToken: null,
         lastSaved: null,
-        isSaving: false
+        isSaving: false,
+        currentStep: 1,
+        timeSpent: 0,
+        startTime: null
       });
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
@@ -218,6 +275,8 @@ export const useValuationAutosave = () => {
     uniqueToken: state.uniqueToken,
     lastSaved: state.lastSaved,
     isSaving: state.isSaving,
+    currentStep: state.currentStep,
+    timeSpent: state.timeSpent,
     hasExistingSession: Boolean(state.uniqueToken),
 
     // Actions
@@ -226,6 +285,7 @@ export const useValuationAutosave = () => {
     createInitialValuationOnFirstField,
     updateValuation,
     finalizeValuation,
+    updateStep,
     clearAutosave
   };
 };

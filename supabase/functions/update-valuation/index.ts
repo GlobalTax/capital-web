@@ -48,6 +48,11 @@ const ALLOWED_FIELDS = new Set([
   "v4_engagement_score",
   "v4_scenarios_viewed",
   "v4_time_spent",
+  // New tracking fields
+  "current_step",
+  "completion_percentage",
+  "time_spent_seconds",
+  "last_modified_field",
 ]);
 
 function toSnakeCase(key: string): string {

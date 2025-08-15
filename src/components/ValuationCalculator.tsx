@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import { useValuationAutosave } from '@/hooks/useValuationAutosave';
+import { useValuationHeartbeat } from '@/hooks/useValuationHeartbeat';
 import { CompanyData } from '@/types/valuation';
 import StepIndicator from '@/components/valuation/StepIndicator';
 import StepContent from '@/components/valuation/StepContent';
@@ -40,14 +41,26 @@ const ValuationCalculator = () => {
 
   const {
     uniqueToken,
+    currentStep: autosaveStep,
+    timeSpent,
     hasExistingSession,
     initializeToken,
     createInitialValuation,
     createInitialValuationOnFirstField,
     updateValuation,
     finalizeValuation,
+    updateStep,
     clearAutosave
   } = useValuationAutosave();
+
+  // Setup heartbeat for activity tracking
+  useValuationHeartbeat({
+    uniqueToken,
+    currentStep,
+    timeSpent,
+    startTime: null, // We'll get this from autosave hook
+    isActive: currentStep < 4 // Only active during form steps, not results
+  });
 
   // Initialize autosave token on mount
   useEffect(() => {
@@ -57,7 +70,8 @@ const ValuationCalculator = () => {
   // Track step changes
   useEffect(() => {
     trackStepChange(currentStep);
-  }, [currentStep, trackStepChange]);
+    updateStep(currentStep); // Update autosave step tracking
+  }, [currentStep, trackStepChange, updateStep]);
 
   // Enhanced updateField with tracking and AUTOSAVE INMEDIATO desde el primer campo
   const trackedUpdateField = async (field: keyof CompanyData, value: any) => {

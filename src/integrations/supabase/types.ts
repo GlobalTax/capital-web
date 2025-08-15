@@ -645,11 +645,14 @@ export type Database = {
       }
       company_valuations: {
         Row: {
+          abandonment_detected_at: string | null
           cif: string | null
           company_name: string
           competitive_advantage: string | null
+          completion_percentage: number | null
           contact_name: string
           created_at: string
+          current_step: number | null
           ebitda: number | null
           ebitda_multiple_used: number | null
           email: string
@@ -667,11 +670,16 @@ export type Database = {
           id: string
           industry: string
           ip_address: unknown | null
+          last_activity_at: string | null
+          last_modified_field: string | null
           location: string | null
           net_profit_margin: number | null
           ownership_participation: string | null
           phone: string | null
+          recovery_link_sent: boolean | null
+          recovery_link_sent_at: string | null
           revenue: number | null
+          time_spent_seconds: number | null
           unique_token: string | null
           user_agent: string | null
           v4_accessed: boolean | null
@@ -683,16 +691,20 @@ export type Database = {
           v4_time_spent: number | null
           valuation_range_max: number | null
           valuation_range_min: number | null
+          valuation_status: string | null
           whatsapp_sent: boolean | null
           whatsapp_sent_at: string | null
           years_of_operation: number | null
         }
         Insert: {
+          abandonment_detected_at?: string | null
           cif?: string | null
           company_name: string
           competitive_advantage?: string | null
+          completion_percentage?: number | null
           contact_name: string
           created_at?: string
+          current_step?: number | null
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email: string
@@ -710,11 +722,16 @@ export type Database = {
           id?: string
           industry: string
           ip_address?: unknown | null
+          last_activity_at?: string | null
+          last_modified_field?: string | null
           location?: string | null
           net_profit_margin?: number | null
           ownership_participation?: string | null
           phone?: string | null
+          recovery_link_sent?: boolean | null
+          recovery_link_sent_at?: string | null
           revenue?: number | null
+          time_spent_seconds?: number | null
           unique_token?: string | null
           user_agent?: string | null
           v4_accessed?: boolean | null
@@ -726,16 +743,20 @@ export type Database = {
           v4_time_spent?: number | null
           valuation_range_max?: number | null
           valuation_range_min?: number | null
+          valuation_status?: string | null
           whatsapp_sent?: boolean | null
           whatsapp_sent_at?: string | null
           years_of_operation?: number | null
         }
         Update: {
+          abandonment_detected_at?: string | null
           cif?: string | null
           company_name?: string
           competitive_advantage?: string | null
+          completion_percentage?: number | null
           contact_name?: string
           created_at?: string
+          current_step?: number | null
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email?: string
@@ -753,11 +774,16 @@ export type Database = {
           id?: string
           industry?: string
           ip_address?: unknown | null
+          last_activity_at?: string | null
+          last_modified_field?: string | null
           location?: string | null
           net_profit_margin?: number | null
           ownership_participation?: string | null
           phone?: string | null
+          recovery_link_sent?: boolean | null
+          recovery_link_sent_at?: string | null
           revenue?: number | null
+          time_spent_seconds?: number | null
           unique_token?: string | null
           user_agent?: string | null
           v4_accessed?: boolean | null
@@ -769,6 +795,7 @@ export type Database = {
           v4_time_spent?: number | null
           valuation_range_max?: number | null
           valuation_range_min?: number | null
+          valuation_status?: string | null
           whatsapp_sent?: boolean | null
           whatsapp_sent_at?: string | null
           years_of_operation?: number | null
@@ -2143,6 +2170,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      detect_abandoned_valuations: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       generate_proposal_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2174,6 +2205,10 @@ export type Database = {
         Returns: boolean
       }
       process_automation_workflows: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      send_recovery_emails: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
