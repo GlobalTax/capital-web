@@ -117,6 +117,13 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+  let reportStatus = 'pending';
+  let errorMessage = null;
+  let emailSent = false;
+  let emailId = null;
+  let emailSubject = '';
+
   try {
     const supabase = getClient();
     
@@ -170,6 +177,8 @@ Deno.serve(async (req) => {
       ? `✅ Sin valoraciones pendientes - ${dateStr}`
       : `⚠️ ${total} valoraciones incompletas - ${dateStr}`;
 
+    emailSubject = subject;
+
     // Enviar email
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: "Capittal Reportes <reportes@capittal.es>",
@@ -184,12 +193,42 @@ Deno.serve(async (req) => {
     }
 
     console.log("Email de reporte diario enviado exitosamente:", emailData);
+    
+    emailSent = true;
+    emailId = emailData?.id;
+    reportStatus = 'success';
+
+    const executionTime = Date.now() - startTime;
+
+    // Guardar registro del reporte en la base de datos
+    const { error: reportError } = await supabase
+      .from("daily_incomplete_reports")
+      .insert({
+        report_date: yesterday.toISOString().split('T')[0], // Solo la fecha
+        period_start: startOfYesterday.toISOString(),
+        period_end: endOfYesterday.toISOString(),
+        incomplete_count: total,
+        incomplete_valuations: incompleteValuations || [],
+        email_sent: emailSent,
+        email_id: emailId,
+        email_subject: emailSubject,
+        report_status: reportStatus,
+        execution_time_ms: executionTime
+      });
+
+    if (reportError) {
+      console.error("Error guardando registro del reporte:", reportError);
+      // No lanzamos error aquí porque el reporte ya se envió exitosamente
+    } else {
+      console.log("Registro del reporte guardado exitosamente");
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         incompleteCount: total,
         emailId: emailData?.id,
+        executionTime,
         message: `Reporte enviado: ${total} valoraciones incompletas`
       }),
       { 
@@ -200,8 +239,39 @@ Deno.serve(async (req) => {
 
   } catch (err: any) {
     console.error("Error en daily-incomplete-report:", err);
+    
+    reportStatus = 'error';
+    errorMessage = err?.message || "Error inesperado";
+    const executionTime = Date.now() - startTime;
+
+    // Intentar guardar el error en la base de datos
+    try {
+      const supabase = getClient();
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const startOfYesterday = new Date(yesterday.setHours(0, 0, 0, 0));
+      const endOfYesterday = new Date(yesterday.setHours(23, 59, 59, 999));
+
+      await supabase
+        .from("daily_incomplete_reports")
+        .insert({
+          report_date: yesterday.toISOString().split('T')[0],
+          period_start: startOfYesterday.toISOString(),
+          period_end: endOfYesterday.toISOString(),
+          incomplete_count: 0,
+          incomplete_valuations: [],
+          email_sent: emailSent,
+          email_id: emailId,
+          email_subject: emailSubject,
+          report_status: reportStatus,
+          error_message: errorMessage,
+          execution_time_ms: executionTime
+        });
+    } catch (reportErr) {
+      console.error("Error guardando registro de error:", reportErr);
+    }
+
     return new Response(
-      JSON.stringify({ error: err?.message || "Error inesperado" }),
+      JSON.stringify({ error: errorMessage }),
       { 
         status: 500, 
         headers: { "Content-Type": "application/json", ...corsHeaders } 

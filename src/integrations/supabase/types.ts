@@ -1038,6 +1038,57 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_incomplete_reports: {
+        Row: {
+          created_at: string
+          email_id: string | null
+          email_sent: boolean
+          email_subject: string | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          incomplete_count: number
+          incomplete_valuations: Json
+          period_end: string
+          period_start: string
+          report_date: string
+          report_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email_id?: string | null
+          email_sent?: boolean
+          email_subject?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          incomplete_count?: number
+          incomplete_valuations?: Json
+          period_end: string
+          period_start: string
+          report_date: string
+          report_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email_id?: string | null
+          email_sent?: boolean
+          email_subject?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          incomplete_count?: number
+          incomplete_valuations?: Json
+          period_end?: string
+          period_start?: string
+          report_date?: string
+          report_status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       design_resources: {
         Row: {
           category: string
