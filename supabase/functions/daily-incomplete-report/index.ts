@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
 
     emailSubject = subject;
 
-    // Enviar email
+    // Enviar email SIEMPRE (incluso si no hay valoraciones incompletas)
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: "Capittal Reportes <reportes@capittal.es>",
       to: ["samuel@capittal.es"],
@@ -189,18 +189,18 @@ Deno.serve(async (req) => {
 
     if (emailError) {
       console.error("Error enviando email:", emailError);
-      throw emailError;
+      errorMessage = `Error enviando email: ${emailError.message}`;
+      reportStatus = 'error';
+    } else {
+      console.log("Email de reporte diario enviado exitosamente:", emailData);
+      emailSent = true;
+      emailId = emailData?.id;
+      reportStatus = 'success';
     }
-
-    console.log("Email de reporte diario enviado exitosamente:", emailData);
-    
-    emailSent = true;
-    emailId = emailData?.id;
-    reportStatus = 'success';
 
     const executionTime = Date.now() - startTime;
 
-    // Guardar registro del reporte en la base de datos
+    // Guardar SIEMPRE registro del reporte en la base de datos
     const { error: reportError } = await supabase
       .from("daily_incomplete_reports")
       .insert({
