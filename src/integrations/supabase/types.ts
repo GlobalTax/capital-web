@@ -660,6 +660,7 @@ export type Database = {
           email_sent_at: string | null
           employee_range: string
           final_valuation: number | null
+          form_submitted_at: string | null
           growth_rate: number | null
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
@@ -702,6 +703,7 @@ export type Database = {
           email_sent_at?: string | null
           employee_range: string
           final_valuation?: number | null
+          form_submitted_at?: string | null
           growth_rate?: number | null
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
@@ -744,6 +746,7 @@ export type Database = {
           email_sent_at?: string | null
           employee_range?: string
           final_valuation?: number | null
+          form_submitted_at?: string | null
           growth_rate?: number | null
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
