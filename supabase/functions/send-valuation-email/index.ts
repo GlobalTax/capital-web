@@ -355,35 +355,43 @@ if (pdfToAttach) {
 
       const userHtml = `
         <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
-          <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px; color:#111827;">
-            <p style="margin:0 0 16px;">${saludo}</p>
-            <p style="margin:0 0 12px;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${companyData.companyName || ''}</strong>.</p>
-            <p style="margin:0 0 12px;">Su PDF ya se ha generado y pudo descargarlo en la pantalla de confirmación. Por si lo necesita de nuevo, puede volver a descargarlo desde el enlace más abajo.</p>
+          <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:32px; color:#111827;">
+            <p style="margin:0 0 16px; font-size:16px;">${saludo}</p>
+            <p style="margin:0 0 16px; line-height:1.6;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${companyData.companyName || ''}</strong>.</p>
+            <p style="margin:0 0 16px; line-height:1.6;">Su PDF ya se ha generado y pudo descargarlo en la pantalla de confirmación. Por si lo necesita de nuevo, puede volver a descargarlo desde el enlace más abajo.</p>
 
-            <p style="margin:16px 0 8px;"><strong>En ese documento encontrará:</strong></p>
-            <ul style="margin:0 0 12px 18px; padding:0;">
-              <li style="margin:0 0 6px;">Una horquilla preliminar basada en comparables de ${sector} y en el tamaño de la compañía.</li>
-              <li style="margin:0 0 6px;">La metodología aplicada y los principales supuestos considerados.</li>
-              <li style="margin:0;">Se trata de una valoración orientativa, dado que por el momento hemos tenido acceso a información limitada.</li>
-            </ul>
+            <div style="background:#f3f4f6; border-radius:8px; padding:20px; margin:20px 0;">
+              <p style="margin:0 0 12px; font-weight:600; color:#374151;">📊 En ese documento encontrará:</p>
+              <ul style="margin:0 0 0 20px; padding:0; line-height:1.5;">
+                <li style="margin:0 0 8px;">Una horquilla preliminar basada en comparables de <strong>${sector}</strong> y en el tamaño de la compañía.</li>
+                <li style="margin:0 0 8px;">La metodología aplicada y los principales supuestos considerados.</li>
+                <li style="margin:0;">Se trata de una valoración orientativa, dado que por el momento hemos tenido acceso a información limitada.</li>
+              </ul>
+            </div>
 
-            <p style="margin:0 0 12px;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede reservar una llamada de 20–30 minutos aquí: <a href="${agendaUrl}" target="_blank" style="color:#1f2937;">${agendaUrl}</a>.` : ''}</p>
-            <p style="margin:0 0 16px;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es completamente confidencial.</p>
+            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede reservar una llamada de 20-30 minutos aquí: <a href="${agendaUrl}" target="_blank" style="color:#1f2937; text-decoration:underline;">${agendaUrl}</a>.` : ''}</p>
+            <p style="margin:0 0 20px; line-height:1.6;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es <strong>completamente confidencial</strong>.</p>
 
-            ${enlacesUtiles ? `<div style="margin:16px 0 12px;"><p style=\"margin:0 0 8px;\"><strong>Enlaces útiles (guarde este correo):</strong></p>${enlacesUtiles}</div>` : ''}
+            ${enlacesUtiles ? `<div style="background:#ecfdf5; border:1px solid #d1fae5; border-radius:8px; padding:20px; margin:20px 0;"><p style="margin:0 0 12px; font-weight:600; color:#065f46;">🔗 Enlaces útiles (guarde este correo):</p>${enlacesUtiles}</div>` : ''}
 
-            <p style="margin:16px 0 8px;"><strong>Sobre Capittal</strong></p>
-            <ul style="margin:0 0 12px 18px; padding:0;">
-              <li style="margin:0 0 6px;">Equipo multidisciplinar de 50 profesionales (M&A, fiscal y legal).</li>
-              <li style="margin:0 0 6px;">Más de 100 operaciones cerradas en 15 años.</li>
-              <li style="margin:0;">Enfoque práctico y acompañamiento de principio a fin del proceso.</li>
-            </ul>
+            <div style="background:#f8fafc; border-radius:8px; padding:20px; margin:24px 0;">
+              <p style="margin:0 0 12px; font-weight:600; color:#374151;">🏢 Sobre Capittal</p>
+              <ul style="margin:0 0 0 20px; padding:0; line-height:1.5;">
+                <li style="margin:0 0 8px;">Equipo multidisciplinar de <strong>50 profesionales</strong> (M&A, fiscal y legal).</li>
+                <li style="margin:0 0 8px;">Más de <strong>100 operaciones cerradas</strong> en 15 años.</li>
+                <li style="margin:0;">Enfoque práctico y acompañamiento de principio a fin del proceso.</li>
+              </ul>
+            </div>
 
-            <p style="margin:16px 0 6px;">Un saludo,</p>
-            <p style="margin:0;">${nombre} · ${cargo}</p>
-            <p style="margin:0 0 16px;">${firma}</p>
+            <div style="border-top:1px solid #e5e7eb; padding-top:20px; margin-top:24px;">
+              <p style="margin:0 0 8px; font-size:16px;">Un saludo,</p>
+              <p style="margin:0 0 4px; font-weight:600; color:#1f2937;">${nombre} · ${cargo}</p>
+              <p style="margin:0 0 20px; font-size:14px; color:#6b7280;">${firma}</p>
+            </div>
 
-            <p style="margin:12px 0 0; font-size:12px; color:#6b7280;"><strong>Nota legal:</strong> Este contenido es orientativo y no constituye una valoración u oferta vinculante. La valoración final puede variar tras el análisis completo de la documentación (estados financieros, deuda y ajustes de EBITDA).</p>
+            <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:6px; padding:16px; margin:20px 0;">
+              <p style="margin:0; font-size:12px; color:#92400e; line-height:1.4;"><strong>⚖️ Nota legal:</strong> Este contenido es orientativo y no constituye una valoración u oferta vinculante. La valoración final puede variar tras el análisis completo de la documentación (estados financieros, deuda y ajustes de EBITDA).</p>
+            </div>
           </div>
         </div>`;
 
