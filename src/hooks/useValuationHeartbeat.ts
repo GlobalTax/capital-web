@@ -61,7 +61,7 @@ export const useValuationHeartbeat = ({
       return;
     }
 
-    // Send heartbeat every 2 minutes
+    // Send heartbeat every 60 seconds
     heartbeatRef.current = setInterval(() => {
       const timeSinceActivity = Date.now() - lastActivityRef.current.getTime();
       
@@ -69,7 +69,7 @@ export const useValuationHeartbeat = ({
       if (timeSinceActivity < 5 * 60 * 1000) {
         sendHeartbeat();
       }
-    }, 2 * 60 * 1000); // 2 minutes
+    }, 60 * 1000); // 60 seconds
 
     // Send initial heartbeat
     sendHeartbeat();
