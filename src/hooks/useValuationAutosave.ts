@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyData } from '@/types/valuation';
+import { useLeadTracking } from './useLeadTracking';
 
 interface AutosaveState {
   uniqueToken: string | null;
@@ -25,6 +26,7 @@ export const useValuationAutosave = () => {
   });
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const { trackValuationCompleted } = useLeadTracking();
 
   // Initialize token from localStorage on first load
   const initializeToken = useCallback(() => {
@@ -215,6 +217,14 @@ export const useValuationAutosave = () => {
 
       console.log('Valuation finalized successfully:', data);
       setState(prev => ({ ...prev, lastSaved: new Date(), isSaving: false }));
+      
+      // Track valuation completion with full metadata
+      await trackValuationCompleted(finalData, {
+        timeSpent: state.startTime ? Math.floor((Date.now() - state.startTime.getTime()) / 1000) : state.timeSpent,
+        currentStep: state.currentStep,
+        token: token
+      });
+      
       return true;
     } catch (error) {
       console.error('Exception finalizing valuation:', error);

@@ -85,6 +85,17 @@ function validateTrackingEvent(event: TrackingEvent): string | null {
     'error', 'engagement_milestone', 'exit_intent', 'micro_conversion',
     'time_on_page', 'form_start', 'form_complete', 'button_click'
   ];
+
+  // Validación específica para evento valuation_completed
+  if (event.event_type === 'calculator_usage' && event.event_data?.action === 'valuation_completed') {
+    const eventData = event.event_data;
+    if (!eventData.result?.finalValuation || typeof eventData.result.finalValuation !== 'number') {
+      return 'Evento valuation_completed requiere result.finalValuation (number)';
+    }
+    if (!eventData.companyData?.industry || typeof eventData.companyData.industry !== 'string') {
+      return 'Evento valuation_completed requiere companyData.industry (string)';
+    }
+  }
   
   if (!allowedEventTypes.includes(event.event_type)) {
     return `Tipo de evento no permitido. Eventos válidos: ${allowedEventTypes.join(', ')}`;

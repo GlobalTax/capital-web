@@ -174,6 +174,36 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     }, action === 'form_submit' ? 30 : 20);
   }, [enableContactTracking, trackEvent]);
 
+  // Track valuation completion with high-value scoring
+  const trackValuationCompleted = useCallback(async (companyData: any, metadata: any = {}) => {
+    try {
+      await trackEvent('calculator_usage', window.location.pathname, {
+        action: 'valuation_completed',
+        companyData: {
+          industry: companyData.industry,
+          employeeRange: companyData.employeeRange,
+          revenue: companyData.revenue,
+          ebitda: companyData.ebitda,
+          location: companyData.location
+        },
+        result: {
+          finalValuation: companyData.finalValuation,
+          ebitdaMultipleUsed: companyData.ebitdaMultipleUsed,
+          valuationRangeMin: companyData.valuationRangeMin,
+          valuationRangeMax: companyData.valuationRangeMax
+        },
+        metadata: {
+          timeSpent: metadata.timeSpent,
+          currentStep: metadata.currentStep,
+          completedAt: new Date().toISOString()
+        },
+        timestamp: Date.now()
+      }, 75); // Very high points for completed valuations
+    } catch (error) {
+      console.error('Failed to track valuation completion', error);
+    }
+  }, [trackEvent]);
+
   // Auto-tracking al montar el componente
   useEffect(() => {
     // Track page view automáticamente
@@ -199,6 +229,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     trackTimeOnPage,
     trackCalculatorUsage,
     trackContactInterest,
+    trackValuationCompleted,
     getVisitorId: getOrCreateVisitorId,
     getSessionId: getOrCreateSessionId
   };
