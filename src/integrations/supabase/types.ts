@@ -1888,6 +1888,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          action_attempted: string | null
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          severity: string
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_attempted?: string | null
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          severity?: string
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_attempted?: string | null
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          severity?: string
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           bio: string | null
@@ -2225,6 +2264,16 @@ export type Database = {
           ip_address?: unknown
           user_agent?: string
           user_email?: string
+        }
+        Returns: undefined
+      }
+      log_security_event: {
+        Args: {
+          p_action_attempted?: string
+          p_details?: Json
+          p_event_type: string
+          p_severity?: string
+          p_table_name?: string
         }
         Returns: undefined
       }
