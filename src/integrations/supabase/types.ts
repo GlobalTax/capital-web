@@ -2210,6 +2210,15 @@ export type Database = {
         Args: { check_user_id: string }
         Returns: boolean
       }
+      log_security_violation: {
+        Args: {
+          details?: Json
+          table_name: string
+          user_id?: string
+          violation_type: string
+        }
+        Returns: undefined
+      }
       process_automation_workflows: {
         Args: Record<PropertyKey, never>
         Returns: number
