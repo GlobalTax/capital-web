@@ -48,11 +48,20 @@ const ALLOWED_FIELDS = new Set([
   "v4_engagement_score",
   "v4_scenarios_viewed",
   "v4_time_spent",
-  // New tracking fields
+  // Tracking fields
   "current_step",
   "completion_percentage",
   "time_spent_seconds",
   "last_modified_field",
+  // UTM and referrer data for attribution
+  "utm_source",
+  "utm_medium",
+  "utm_campaign", 
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "referrer",
+  "user_agent",
 ]);
 
 function toSnakeCase(key: string): string {
@@ -87,30 +96,43 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (Object.keys(updateData).length === 0) {
-      return new Response(
-        JSON.stringify({ error: "No hay campos válidos para actualizar" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+    // Always update activity tracking fields
+    updateData.last_activity_at = new Date().toISOString();
+    
+    // Set unique_token for upsert operation
+    updateData.unique_token = body.uniqueToken;
 
+    // Accept partial data - no validation required
+    console.log(`Processing update for token: ${body.uniqueToken}, fields: ${Object.keys(updateData).join(', ')}`);
+
+    // Use upsert (insert with on_conflict update) to handle both new and existing records
     const { data, error } = await supabase
       .from("company_valuations")
-      .update(updateData)
-      .eq("unique_token", body.uniqueToken)
-      .select("id, unique_token")
+      .upsert(updateData, { 
+        onConflict: 'unique_token',
+        ignoreDuplicates: false 
+      })
+      .select("id, unique_token, valuation_status, completion_percentage")
       .single();
 
     if (error) {
-      console.error("Update error:", error);
+      console.error("Upsert error:", error);
       return new Response(
         JSON.stringify({ error: error.message }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
+    console.log(`Successfully processed update for token: ${body.uniqueToken}, id: ${data?.id}`);
+
     return new Response(
-      JSON.stringify({ success: true, id: data?.id, uniqueToken: data?.unique_token }),
+      JSON.stringify({ 
+        success: true, 
+        id: data?.id, 
+        uniqueToken: data?.unique_token,
+        valuationStatus: data?.valuation_status,
+        completionPercentage: data?.completion_percentage
+      }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (err: any) {
