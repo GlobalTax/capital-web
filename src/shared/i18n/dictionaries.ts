@@ -94,6 +94,25 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Formularios - Básica
     'form.basic.title': 'Información Básica',
     'form.basic.subtitle': 'Datos generales de su empresa',
+    
+    // Pasos actualizados
+    'steps.company_info': 'Información Completa',
+    
+    // Formularios - Datos financieros (sección integrada)
+    'form.financial_data_title': 'Datos Financieros',
+    'form.financial_data_subtitle': 'Información del último ejercicio fiscal completo',
+    'form.revenue': 'Facturación anual',
+    'form.ebitda': 'EBITDA',
+    'form.has_adjustments': '¿Tienes ajustes al EBITDA?',
+    'form.no': 'No',
+    'form.yes': 'Sí',
+    'form.adjustment_amount': 'Importe del ajuste (€)',
+    'form.financial_info_title': 'Información sobre estos datos financieros',
+    'form.financial_info_revenue': 'Los ingresos incluyen todas las ventas y servicios facturados',
+    'form.financial_info_ebitda': 'El EBITDA es el beneficio antes de intereses, impuestos, depreciación y amortización',
+    'form.financial_info_adjustments': 'Los ajustes pueden incluir gastos extraordinarios o ingresos no recurrentes',
+    'validation.revenue_required': 'Los ingresos son obligatorios y deben ser mayores a 0',
+    'validation.ebitda_required': 'El EBITDA es obligatorio y debe ser mayor a 0',
     'label.contactName': 'Nombre de contacto *',
     'placeholder.contactName': 'Su nombre completo',
     'label.companyName': 'Nombre de la empresa *',
@@ -249,6 +268,25 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'form.basic.title': 'Informació Bàsica',
     'form.basic.subtitle': 'Dades generals de la teva empresa',
+    
+    // Pasos actualizados
+    'steps.company_info': 'Informació Completa',
+    
+    // Formularios - Datos financieros (sección integrada)
+    'form.financial_data_title': 'Dades Financeres',
+    'form.financial_data_subtitle': 'Informació del darrer exercici fiscal complet',
+    'form.revenue': 'Facturació anual',
+    'form.ebitda': 'EBITDA',
+    'form.has_adjustments': 'Tens ajustos a l\'EBITDA?',
+    'form.no': 'No',
+    'form.yes': 'Sí',
+    'form.adjustment_amount': 'Import de l\'ajust (€)',
+    'form.financial_info_title': 'Informació sobre aquestes dades financeres',
+    'form.financial_info_revenue': 'Els ingressos inclouen totes les vendes i serveis facturats',
+    'form.financial_info_ebitda': 'L\'EBITDA és el benefici abans d\'interessos, impostos, depreciació i amortització',
+    'form.financial_info_adjustments': 'Els ajustos poden incloure despeses extraordinàries o ingressos no recurrents',
+    'validation.revenue_required': 'Els ingressos són obligatoris i han de ser majors a 0',
+    'validation.ebitda_required': 'L\'EBITDA és obligatori i ha de ser major a 0',
     'label.contactName': 'Nom de contacte *',
     'placeholder.contactName': 'El teu nom complet',
     'label.companyName': 'Nom de l’empresa *',
@@ -398,6 +436,25 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'form.basic.title': 'Informació Bàsica',
     'form.basic.subtitle': 'Dades generals de la teua empresa',
+    
+    // Pasos actualizados
+    'steps.company_info': 'Informació Completa',
+    
+    // Formularios - Datos financieros (sección integrada)
+    'form.financial_data_title': 'Dades Financeres',
+    'form.financial_data_subtitle': 'Informació de l\'últim exercici fiscal complet',
+    'form.revenue': 'Facturació anual',
+    'form.ebitda': 'EBITDA',
+    'form.has_adjustments': 'Tens ajustos a l\'EBITDA?',
+    'form.no': 'No',
+    'form.yes': 'Sí',
+    'form.adjustment_amount': 'Import de l\'ajust (€)',
+    'form.financial_info_title': 'Informació sobre aquestes dades financeres',
+    'form.financial_info_revenue': 'Els ingressos inclouen totes les vendes i serveis facturats',
+    'form.financial_info_ebitda': 'L\'EBITDA és el benefici abans d\'interessos, impostos, depreciació i amortització',
+    'form.financial_info_adjustments': 'Els ajustos poden incloure despeses extraordinàries o ingressos no recurrents',
+    'validation.revenue_required': 'Els ingressos són obligatoris i han de ser majors a 0',
+    'validation.ebitda_required': 'L\'EBITDA és obligatori i ha de ser major a 0',
     'label.contactName': 'Nom de contacte *',
     'placeholder.contactName': 'El teu nom complet',
     'label.companyName': 'Nom de l’empresa *',
@@ -547,6 +604,25 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'form.basic.title': 'Información Básica',
     'form.basic.subtitle': 'Datos xerais da túa empresa',
+    
+    // Pasos actualizados
+    'steps.company_info': 'Información Completa',
+    
+    // Formularios - Datos financieros (sección integrada)
+    'form.financial_data_title': 'Datos Financeiros',
+    'form.financial_data_subtitle': 'Información do último exercicio fiscal completo',
+    'form.revenue': 'Facturación anual',
+    'form.ebitda': 'EBITDA',
+    'form.has_adjustments': 'Tes axustes ao EBITDA?',
+    'form.no': 'Non',
+    'form.yes': 'Si',
+    'form.adjustment_amount': 'Importe do axuste (€)',
+    'form.financial_info_title': 'Información sobre estes datos financeiros',
+    'form.financial_info_revenue': 'Os ingresos inclúen todas as vendas e servizos facturados',
+    'form.financial_info_ebitda': 'O EBITDA é o beneficio antes de xuros, impostos, depreciación e amortización',
+    'form.financial_info_adjustments': 'Os axustes poden incluír gastos extraordinarios ou ingresos non recurrentes',
+    'validation.revenue_required': 'Os ingresos son obrigatorios e deben ser maiores a 0',
+    'validation.ebitda_required': 'O EBITDA é obrigatorio e debe ser maior a 0',
     'label.contactName': 'Nome de contacto *',
     'placeholder.contactName': 'O teu nome completo',
     'label.companyName': 'Nome da empresa *',
