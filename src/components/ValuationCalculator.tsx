@@ -125,7 +125,11 @@ const ValuationCalculator = () => {
     console.log('handleNext called, currentStep:', currentStep);
     
     if (currentStep === 1) {
-      // Step 1: Create initial valuation if not exists
+      // Step 1: Calculate valuation and move to results
+      console.log('In step 1, calculating valuation...');
+      trackCalculationStart();
+      
+      // Create initial valuation if not exists
       if (!uniqueToken) {
         console.log('Creating initial valuation for Step 1...');
         const token = await createInitialValuation(companyData);
@@ -133,10 +137,7 @@ const ValuationCalculator = () => {
           console.warn('Failed to create initial valuation');
         }
       }
-      nextStep();
-    } else if (currentStep === 3) {
-      console.log('In step 3, calculating valuation...');
-      trackCalculationStart();
+      
       try {
         await calculateValuation();
         
@@ -150,14 +151,11 @@ const ValuationCalculator = () => {
             valuationRangeMax: result.valuationRange.max,
           });
         }
-        
+         
         trackCalculationComplete();
       } catch (error) {
         trackCalculationAbandon(currentStep);
       }
-    } else {
-      console.log('Moving to next step...');
-      nextStep();
     }
   };
 
@@ -247,7 +245,7 @@ const ValuationCalculator = () => {
             errors={errors}
           />
 
-          {currentStep < 4 && (
+          {currentStep < 2 && (
             <NavigationButtons
               currentStep={currentStep}
               isNextDisabled={isNextDisabled}

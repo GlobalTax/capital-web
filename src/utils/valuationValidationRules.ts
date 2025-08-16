@@ -95,7 +95,7 @@ export const validateStepFields = (step: number, data: CompanyData, validationRu
 export const getStepFields = (step: number): string[] => {
   switch (step) {
     case 1:
-      return ['contactName', 'companyName', 'email', 'phone', 'industry', 'activityDescription', 'employeeRange', 'revenue', 'ebitda'];
+      return ['contactName', 'companyName', 'email', 'phone', 'industry', 'activityDescription', 'employeeRange', 'revenue', 'ebitda', 'location'];
     default:
       return [];
   }

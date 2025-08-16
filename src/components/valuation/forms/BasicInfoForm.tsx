@@ -314,6 +314,30 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           )}
         </div>
 
+        {/* Ubicación */}
+        <div className="relative">
+          <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+            {t('label.location')}
+          </Label>
+          <Input
+            id="location"
+            name="location"
+            type="text"
+            value={companyData.location}
+            onChange={(e) => updateField('location', e.target.value)}
+            onBlur={() => handleBlur('location')}
+            placeholder={t('placeholder.location')}
+            className={getFieldClassName('location')}
+          />
+          {shouldShowCheckIcon('location') && (
+            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
+          )}
+          <p className="text-sm text-gray-500 mt-1">{t('helper.location')}</p>
+          {showValidation && errors?.location && (
+            <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+          )}
+        </div>
+
         {/* Rango de empleados */}
         <div className="relative">
           <Label htmlFor="employeeRange-select" className="block text-sm font-medium text-gray-700 mb-2">
