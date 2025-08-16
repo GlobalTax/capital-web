@@ -1,0 +1,192 @@
+import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { CompanyDataMaster, ValuationResultMaster, SectorMultipleMaster } from '@/types/valuationMaster';
+import { calculateCompanyValuationMaster } from '@/utils/valuationCalculationMaster';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { createValidationRulesMaster, validateStepFieldsMaster, getStepFieldsMaster } from '@/utils/valuationValidationRulesMaster';
+
+const initialCompanyDataMaster: CompanyDataMaster = {
+  // Paso 1
+  contactName: '',
+  companyName: '',
+  cif: '',
+  email: '',
+  phone: '',
+  industry: '',
+  activityDescription: '',
+  employeeRange: '',
+  
+  // Paso 2
+  revenue: 0,
+  ebitda: 0,
+  hasAdjustments: false,
+  adjustmentAmount: 0,
+  
+  // Paso 3
+  location: '',
+  ownershipParticipation: '',
+  competitiveAdvantage: ''
+};
+
+export const useValuationCalculatorMaster = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [showValidation, setShowValidation] = useState(false);
+  const [sectorMultiples, setSectorMultiples] = useState<SectorMultipleMaster[]>([]);
+  const [result, setResult] = useState<ValuationResultMaster | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+
+  // Usar el nuevo hook de validación
+  const validationRules = createValidationRulesMaster();
+  const {
+    data: companyData,
+    errors,
+    touched,
+    isValid: isFormValid,
+    updateField: updateFormField,
+    markFieldAsTouched,
+    getFieldState,
+    validateAll,
+    reset: resetForm
+  } = useFormValidation(initialCompanyDataMaster, validationRules);
+
+  // Cargar múltiplos por sector desde Supabase
+  useEffect(() => {
+    const fetchSectorMultiples = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('sector_multiples')
+          .select('*')
+          .eq('is_active', true)
+          .order('sector_name');
+        
+        if (error) {
+          console.error('Error fetching sector multiples:', error);
+          return;
+        }
+        
+        setSectorMultiples(data || []);
+      } catch (error) {
+        console.error('Error fetching sector multiples:', error);
+      }
+    };
+
+    fetchSectorMultiples();
+  }, []);
+
+  // Validar si el paso actual es válido
+  const isCurrentStepValid = useCallback(() => {
+    return validateStepFieldsMaster(currentStep, companyData, validationRules);
+  }, [currentStep, companyData, validationRules]);
+
+  // Wrapper para updateField que mantiene compatibilidad
+  const updateField = useCallback((field: keyof CompanyDataMaster, value: string | number | boolean) => {
+    updateFormField(field, value);
+  }, [updateFormField]);
+
+  // Función para manejar blur y marcar campos como tocados
+  const handleFieldBlur = useCallback((field: keyof CompanyDataMaster) => {
+    markFieldAsTouched(field);
+  }, [markFieldAsTouched]);
+
+  const nextStep = useCallback(() => {
+    console.log('nextStep called, currentStep:', currentStep);
+    
+    // Marcar todos los campos del paso actual como tocados
+    const stepFields = getStepFieldsMaster(currentStep);
+    stepFields.forEach(field => markFieldAsTouched(field as keyof CompanyDataMaster));
+    
+    // Validar el paso actual antes de avanzar
+    if (!isCurrentStepValid()) {
+      setShowValidation(true);
+      return;
+    }
+    
+    setShowValidation(false);
+    setCurrentStep(prev => {
+      const newStep = Math.min(prev + 1, 4);
+      console.log('Moving from step', prev, 'to step', newStep);
+      return newStep;
+    });
+  }, [currentStep, isCurrentStepValid, markFieldAsTouched]);
+
+  const prevStep = useCallback(() => {
+    console.log('prevStep called');
+    setShowValidation(false);
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  }, []);
+
+  const goToStep = useCallback((step: number) => {
+    console.log('goToStep called with step:', step);
+    setShowValidation(false);
+    setCurrentStep(step);
+  }, []);
+
+  const validateStep = useCallback((step: number): boolean => {
+    return validateStepFieldsMaster(step, companyData, validationRules);
+  }, [companyData, validationRules]);
+
+  const calculateValuation = useCallback(async () => {
+    console.log('calculateValuation called');
+    setIsCalculating(true);
+    
+    try {
+      const valuationResult = await calculateCompanyValuationMaster(companyData, sectorMultiples);
+      setResult(valuationResult);
+      setCurrentStep(4); // Ir al paso de resultados
+      console.log('Valuation calculated, moved to step 4');
+    } catch (error) {
+      console.error('Error calculating valuation:', error);
+    } finally {
+      setIsCalculating(false);
+    }
+  }, [companyData, sectorMultiples]);
+
+  const resetCalculator = useCallback(() => {
+    // Reset más inteligente: mantener datos básicos de contacto y empresa
+    const resetData: CompanyDataMaster = {
+      ...initialCompanyDataMaster,
+      contactName: companyData.contactName,
+      companyName: companyData.companyName,
+      email: companyData.email,
+      phone: companyData.phone,
+      industry: companyData.industry,
+      activityDescription: companyData.activityDescription,
+      employeeRange: companyData.employeeRange
+    };
+    
+    resetForm();
+    updateFormField('contactName', resetData.contactName);
+    updateFormField('companyName', resetData.companyName);
+    updateFormField('email', resetData.email);
+    updateFormField('phone', resetData.phone);
+    updateFormField('industry', resetData.industry);
+    updateFormField('activityDescription', resetData.activityDescription);
+    updateFormField('employeeRange', resetData.employeeRange);
+    
+    setResult(null);
+    setCurrentStep(1);
+    setShowValidation(false);
+  }, [companyData, resetForm, updateFormField]);
+
+  return {
+    currentStep,
+    companyData,
+    result,
+    isCalculating,
+    showValidation,
+    sectorMultiples,
+    errors,
+    touched,
+    isCurrentStepValid: isCurrentStepValid(),
+    isFormValid,
+    updateField,
+    handleFieldBlur,
+    getFieldState,
+    nextStep,
+    prevStep,
+    goToStep,
+    validateStep,
+    calculateValuation,
+    resetCalculator
+  };
+};
