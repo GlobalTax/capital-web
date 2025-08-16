@@ -7,6 +7,7 @@ import { CompanyData } from '@/types/valuation';
 import StepIndicator from '@/components/valuation/StepIndicator';
 import StepContent from '@/components/valuation/StepContent';
 import NavigationButtons from '@/components/valuation/NavigationButtons';
+import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ValuationCalculator = () => {
@@ -41,6 +42,8 @@ const ValuationCalculator = () => {
 
   const {
     uniqueToken,
+    lastSaved,
+    isSaving,
     currentStep: autosaveStep,
     timeSpent,
     hasExistingSession,
@@ -208,15 +211,20 @@ const ValuationCalculator = () => {
             {t('calc.subtitle')}
           </p>
           
-          {/* Autosave status indicator */}
-          {hasExistingSession && (
-            <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
-              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Sesión recuperada
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-4 mt-4">
+            {/* Save status indicator */}
+            <SaveStatus isSaving={isSaving} lastSaved={lastSaved} />
+            
+            {/* Existing session indicator */}
+            {hasExistingSession && (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Sesión recuperada
+              </div>
+            )}
+          </div>
         </div>
 
         <StepIndicator 

@@ -6,6 +6,7 @@ import { useValuationHeartbeat } from '@/hooks/useValuationHeartbeat';
 import StepIndicatorMaster from './valuation-master/StepIndicatorMaster';
 import StepContentMaster from './valuation-master/StepContentMaster';
 import NavigationButtonsMaster from './valuation-master/NavigationButtonsMaster';
+import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ValuationCalculatorMaster = () => {
@@ -122,6 +123,11 @@ const ValuationCalculatorMaster = () => {
         <p className="text-lg text-gray-600">
           {t('calculator.subtitle')}
         </p>
+        
+        {/* Save status indicator */}
+        <div className="flex justify-center mt-4">
+          <SaveStatus isSaving={isSaving} lastSaved={lastSaved} />
+        </div>
       </div>
 
       <StepIndicatorMaster
