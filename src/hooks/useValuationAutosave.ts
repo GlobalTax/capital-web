@@ -251,6 +251,54 @@ export const useValuationAutosave = () => {
     }, 600); // 600ms debounce
   }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
+  // Immediate update function (no debounce) for critical saves like page exit
+  const updateValuationImmediate = useCallback(async (partialData: Partial<CompanyData>, field?: string) => {
+    const token = state.uniqueToken;
+    if (!token) {
+      console.warn('No token available for immediate update');
+      return;
+    }
+
+    try {
+      setState(prev => ({ ...prev, isSaving: true }));
+
+      // Calculate time spent if we have a start time
+      const timeSpentSeconds = state.startTime 
+        ? Math.floor((Date.now() - state.startTime.getTime()) / 1000)
+        : state.timeSpent;
+
+      const updateData = {
+        ...partialData,
+        timeSpentSeconds,
+        lastModifiedField: field || 'unknown'
+      };
+
+      console.log('Immediate valuation update:', { field, token });
+
+      const { data, error } = await supabase.functions.invoke('update-valuation', {
+        body: {
+          uniqueToken: token,
+          data: updateData
+        }
+      });
+
+      if (error) {
+        console.error('Error in immediate valuation update:', error);
+      } else {
+        console.log('Immediate valuation update successful:', { field, token });
+        setState(prev => ({ 
+          ...prev, 
+          lastSaved: new Date(),
+          timeSpent: timeSpentSeconds
+        }));
+      }
+    } catch (error) {
+      console.error('Exception in immediate valuation update:', error);
+    } finally {
+      setState(prev => ({ ...prev, isSaving: false }));
+    }
+  }, [state.uniqueToken, state.startTime, state.timeSpent]);
+
   // Final update with calculation results
   const finalizeValuation = useCallback(async (finalData: Partial<CompanyData> & {
     finalValuation?: number;
@@ -383,6 +431,7 @@ export const useValuationAutosave = () => {
     createInitialValuation,
     createInitialValuationOnFirstField,
     updateValuation,
+    updateValuationImmediate,
     finalizeValuation,
     updateStep,
     clearAutosave,

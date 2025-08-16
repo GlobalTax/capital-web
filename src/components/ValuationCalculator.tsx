@@ -48,6 +48,7 @@ const ValuationCalculator = () => {
     createInitialValuation,
     createInitialValuationOnFirstField,
     updateValuation,
+    updateValuationImmediate,
     finalizeValuation,
     updateStep,
     clearAutosave,
@@ -170,15 +171,29 @@ const ValuationCalculator = () => {
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        updateValuationImmediate(companyData, 'flush_exit');
+      }
+    };
+
+    const handlePageHide = () => {
+      updateValuationImmediate(companyData, 'flush_exit');
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('unload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('unload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
       handleUnload();
     };
-  }, [currentStep, result, trackCalculationAbandon, flushPendingUpdates]);
+  }, [currentStep, result, trackCalculationAbandon, flushPendingUpdates, updateValuationImmediate, companyData]);
 
   const isNextDisabled = isCalculating;
 
