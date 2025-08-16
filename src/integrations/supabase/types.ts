@@ -668,6 +668,8 @@ export type Database = {
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
           id: string
+          immediate_alert_sent: boolean | null
+          immediate_alert_sent_at: string | null
           industry: string
           ip_address: unknown | null
           last_activity_at: string | null
@@ -720,6 +722,8 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
+          immediate_alert_sent?: boolean | null
+          immediate_alert_sent_at?: string | null
           industry: string
           ip_address?: unknown | null
           last_activity_at?: string | null
@@ -772,6 +776,8 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
+          immediate_alert_sent?: boolean | null
+          immediate_alert_sent_at?: string | null
           industry?: string
           ip_address?: unknown | null
           last_activity_at?: string | null
