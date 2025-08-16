@@ -32,16 +32,16 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       </Button>
       
       <div className="text-sm text-gray-500">
-        {t('nav.step_of', { current: currentStep, total: 3 })}
+        {t('nav.step_of', { current: currentStep, total: 2 })}
       </div>
       
       <Button
         onClick={onNext}
-        aria-label={currentStep === 3 ? t('aria.calculate') : t('aria.next')}
+        aria-label={currentStep === 1 ? t('aria.calculate') : t('aria.next')}
         disabled={isNextDisabled}
         className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >
-        {currentStep === 3 ? (
+        {currentStep === 1 ? (
           <>
             <Calculator className="h-4 w-4 mr-2" />
             {t('nav.calculate')}

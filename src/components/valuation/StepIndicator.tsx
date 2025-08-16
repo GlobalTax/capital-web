@@ -12,10 +12,8 @@ interface StepIndicatorProps {
 const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, validateStep }) => {
   const { t } = useI18n();
   const steps = [
-    { number: 1, title: t('steps.basic_info') },
-    { number: 2, title: t('steps.financial_data') },
-    { number: 3, title: t('steps.characteristics') },
-    { number: 4, title: t('steps.result') }
+    { number: 1, title: t('steps.company_info') },
+    { number: 2, title: t('steps.result') }
   ];
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-8">

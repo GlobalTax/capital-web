@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Check } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
@@ -56,7 +57,27 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   errors
 }) => {
   const { t } = useI18n();
-  const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+
+  // Financial data formatting functions
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  const isFieldValid = (field: string, value: any): boolean => {
+    switch (field) {
+      case 'revenue':
+      case 'ebitda':
+        return value > 0;
+      default:
+        return Boolean(value);
+    }
+  };
   const handleBlur = (fieldName: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
     if (handleFieldBlur) {
@@ -326,6 +347,145 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           {showValidation && errors?.employeeRange && (
             <p className="text-red-500 text-sm mt-1">{errors.employeeRange}</p>
           )}
+        </div>
+      </div>
+
+      {/* Financial Data Section */}
+      <div className="space-y-6 mt-8 pt-8 border-t border-gray-200">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {t('form.financial_data_title')}
+          </h3>
+          <p className="text-sm text-gray-600">
+            {t('form.financial_data_subtitle')}
+          </p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* Revenue */}
+          <div className="space-y-2">
+            <Label htmlFor="revenue" className="text-sm font-medium text-gray-700">
+              {t('form.revenue')} <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+                id="revenue"
+                type="number"
+                placeholder="500000"
+                value={companyData.revenue || ''}
+                onChange={(e) => updateField('revenue', parseInt(e.target.value) || 0)}
+                onBlur={() => handleBlur('revenue')}
+                className={getFieldClassName('revenue')}
+                min="0"
+                step="1000"
+              />
+              {shouldShowCheckIcon('revenue') && (
+                <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+              )}
+            </div>
+            {companyData.revenue > 0 && (
+              <p className="text-xs text-gray-500">
+                {formatCurrency(companyData.revenue)}
+              </p>
+            )}
+            {showValidation && !isFieldValid('revenue', companyData.revenue) && (
+              <p className="text-sm text-red-600">{t('validation.revenue_required')}</p>
+            )}
+          </div>
+
+          {/* EBITDA */}
+          <div className="space-y-2">
+            <Label htmlFor="ebitda" className="text-sm font-medium text-gray-700">
+              {t('form.ebitda')} <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+                id="ebitda"
+                type="number"
+                placeholder="75000"
+                value={companyData.ebitda || ''}
+                onChange={(e) => updateField('ebitda', parseInt(e.target.value) || 0)}
+                onBlur={() => handleBlur('ebitda')}
+                className={getFieldClassName('ebitda')}
+                min="0"
+                step="1000"
+              />
+              {shouldShowCheckIcon('ebitda') && (
+                <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+              )}
+            </div>
+            {companyData.ebitda > 0 && (
+              <p className="text-xs text-gray-500">
+                {formatCurrency(companyData.ebitda)}
+              </p>
+            )}
+            {showValidation && !isFieldValid('ebitda', companyData.ebitda) && (
+              <p className="text-sm text-red-600">{t('validation.ebitda_required')}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Adjustments */}
+        <div className="space-y-4">
+          <Label className="text-sm font-medium text-gray-700">
+            {t('form.has_adjustments')}
+          </Label>
+          <RadioGroup
+            value={companyData.hasAdjustments ? 'yes' : 'no'}
+            onValueChange={(value) => updateField('hasAdjustments', value === 'yes')}
+            className="flex flex-row space-x-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="no-adjustments" />
+              <Label htmlFor="no-adjustments" className="text-sm text-gray-700">
+                {t('form.no')}
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="yes-adjustments" />
+              <Label htmlFor="yes-adjustments" className="text-sm text-gray-700">
+                {t('form.yes')}
+              </Label>
+            </div>
+          </RadioGroup>
+
+          {companyData.hasAdjustments && (
+            <div className="space-y-2">
+              <Label htmlFor="adjustmentAmount" className="text-sm font-medium text-gray-700">
+                {t('form.adjustment_amount')}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="adjustmentAmount"
+                  type="number"
+                  placeholder="15000"
+                  value={companyData.adjustmentAmount || ''}
+                  onChange={(e) => updateField('adjustmentAmount', parseInt(e.target.value) || 0)}
+                  onBlur={() => handleBlur('adjustmentAmount')}
+                  className={getFieldClassName('adjustmentAmount', false)}
+                  min="0"
+                  step="1000"
+                />
+                {shouldShowCheckIcon('adjustmentAmount') && (
+                  <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                )}
+              </div>
+              {companyData.adjustmentAmount > 0 && (
+                <p className="text-xs text-gray-500">
+                  {formatCurrency(companyData.adjustmentAmount)}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-medium text-blue-900 mb-2">{t('form.financial_info_title')}</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• {t('form.financial_info_revenue')}</li>
+            <li>• {t('form.financial_info_ebitda')}</li>
+            <li>• {t('form.financial_info_adjustments')}</li>
+          </ul>
         </div>
       </div>
     </div>
