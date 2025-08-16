@@ -28,7 +28,7 @@ export const useValuationAutosave = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const { trackValuationCompleted } = useLeadTracking();
 
-  // Initialize token from localStorage on first load
+  // Initialize token from localStorage on first load with session recovery
   const initializeToken = useCallback(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -37,9 +37,11 @@ export const useValuationAutosave = () => {
         const now = Date.now();
         if (data.token && data.timestamp && (now - data.timestamp) < TOKEN_TTL) {
           setState(prev => ({ ...prev, uniqueToken: data.token }));
+          console.log('Session recovered with token:', data.token);
           return data.token;
         } else {
           localStorage.removeItem(STORAGE_KEY);
+          console.log('Token expired, removed from storage');
         }
       }
     } catch (error) {
@@ -116,22 +118,84 @@ export const useValuationAutosave = () => {
   }, [saveTokenToStorage]);
 
   // Crear valuación automáticamente en el primer campo completado
-  const createInitialValuationOnFirstField = useCallback(async (field: keyof CompanyData, value: any, allData: CompanyData): Promise<string | null> => {
+  const createInitialValuationOnFirstField = useCallback(async (
+    field: keyof CompanyData, 
+    value: any, 
+    allData: CompanyData,
+    utmData?: { utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; referrer?: string | null }
+  ): Promise<string | null> => {
     // Solo crear si no existe token y el valor no está vacío
     if (state.uniqueToken || !value || value === '') {
       return state.uniqueToken;
     }
 
-    console.log(`Primer campo completado: ${field} = ${value}. Creando valoración inicial...`);
-    const token = await createInitialValuation(allData);
+    console.log(`Primer campo completado: ${field} = ${value}. Creando valoración inicial con UTMs...`);
     
-    // Start timing when first field is completed
-    if (token) {
-      setState(prev => ({ ...prev, startTime: new Date() }));
+    try {
+      setState(prev => ({ ...prev, isSaving: true }));
+
+      // Preparar datos mínimos incluyendo UTMs
+      const minimalData = {
+        contact_name: allData.contactName || (field === 'contactName' ? value : ''),
+        company_name: allData.companyName || (field === 'companyName' ? value : ''),
+        cif: allData.cif || (field === 'cif' ? value : null),
+        email: allData.email || (field === 'email' ? value : ''),
+        phone: allData.phone || (field === 'phone' ? value : null),
+        industry: allData.industry || (field === 'industry' ? value : ''),
+        employee_range: allData.employeeRange || (field === 'employeeRange' ? value : ''),
+        activity_description: allData.activityDescription || (field === 'activityDescription' ? value : null),
+        location: allData.location || (field === 'location' ? value : null),
+        ownership_participation: allData.ownershipParticipation || (field === 'ownershipParticipation' ? value : null),
+        competitive_advantage: allData.competitiveAdvantage || (field === 'competitiveAdvantage' ? value : null),
+        revenue: allData.revenue || (field === 'revenue' ? value : null),
+        ebitda: allData.ebitda || (field === 'ebitda' ? value : null),
+        
+        // UTM y tracking data
+        utm_source: utmData?.utm_source,
+        utm_medium: utmData?.utm_medium,
+        utm_campaign: utmData?.utm_campaign,
+        referrer: utmData?.referrer,
+        current_step: 1,
+        completion_percentage: 5,
+        last_modified_field: field
+      };
+
+      // Crear registro usando update-valuation con uniqueToken generado
+      const tempToken = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      const { data, error } = await supabase.functions.invoke('update-valuation', {
+        body: {
+          uniqueToken: tempToken,
+          data: minimalData,
+          isInitialCreation: true
+        }
+      });
+
+      if (error) {
+        console.error('Error creating initial valuation:', error);
+        setState(prev => ({ ...prev, isSaving: false }));
+        return null;
+      }
+
+      const finalToken = data?.uniqueToken || tempToken;
+      setState(prev => ({ 
+        ...prev, 
+        uniqueToken: finalToken, 
+        lastSaved: new Date(),
+        isSaving: false,
+        startTime: new Date()
+      }));
+      
+      saveTokenToStorage(finalToken);
+      console.log('Initial valuation created with token:', finalToken);
+      return finalToken;
+      
+    } catch (error) {
+      console.error('Exception creating initial valuation:', error);
+      setState(prev => ({ ...prev, isSaving: false }));
+      return null;
     }
-    
-    return token;
-  }, [state.uniqueToken, createInitialValuation]);
+  }, [state.uniqueToken, saveTokenToStorage]);
 
   // Update existing valuation record (debounced)
   const updateValuation = useCallback((partialData: Partial<CompanyData>, field?: string) => {
@@ -172,7 +236,7 @@ export const useValuationAutosave = () => {
         if (error) {
           console.error('Error updating valuation:', error);
         } else {
-          console.log('Valuation updated successfully:', data);
+          console.log('Valuation updated successfully via debounced update:', { field, token });
           setState(prev => ({ 
             ...prev, 
             lastSaved: new Date(),
@@ -231,7 +295,7 @@ export const useValuationAutosave = () => {
       setState(prev => ({ ...prev, isSaving: false }));
       return false;
     }
-  }, [state.uniqueToken]);
+  }, [state.uniqueToken, trackValuationCompleted, state.startTime, state.timeSpent, state.currentStep]);
 
   // Update step tracking
   const updateStep = useCallback((step: number) => {
@@ -259,7 +323,7 @@ export const useValuationAutosave = () => {
     }
   }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
-  // Clear autosave data
+  // Clear autosave data and cleanup
   const clearAutosave = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -275,10 +339,35 @@ export const useValuationAutosave = () => {
         clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
+      console.log('Autosave data cleared');
     } catch (error) {
       console.warn('Error clearing autosave:', error);
     }
   }, []);
+
+  // Flush pending updates immediately (for beforeunload)
+  const flushPendingUpdates = useCallback(() => {
+    if (debounceRef.current && state.uniqueToken) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      
+      // Force immediate update
+      const timeSpentSeconds = state.startTime 
+        ? Math.floor((Date.now() - state.startTime.getTime()) / 1000)
+        : state.timeSpent;
+
+      supabase.functions.invoke('update-valuation', {
+        body: {
+          uniqueToken: state.uniqueToken,
+          data: {
+            timeSpentSeconds,
+            lastModifiedField: 'page_exit',
+            session_status: 'abandoned'
+          }
+        }
+      }).catch(console.error);
+    }
+  }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
   return {
     // State
@@ -296,6 +385,7 @@ export const useValuationAutosave = () => {
     updateValuation,
     finalizeValuation,
     updateStep,
-    clearAutosave
+    clearAutosave,
+    flushPendingUpdates
   };
 };

@@ -50,7 +50,8 @@ const ValuationCalculator = () => {
     updateValuation,
     finalizeValuation,
     updateStep,
-    clearAutosave
+    clearAutosave,
+    flushPendingUpdates
   } = useValuationAutosave();
 
   // Setup heartbeat for activity tracking
@@ -78,15 +79,27 @@ const ValuationCalculator = () => {
     updateField(field, value);
     trackFieldUpdate(field, value);
     
+    // Obtener UTMs y referrer actuales
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentUTMs = {
+      utm_source: urlParams.get('utm_source'),
+      utm_medium: urlParams.get('utm_medium'),
+      utm_campaign: urlParams.get('utm_campaign'),
+      referrer: document.referrer || null
+    };
+    
     // Crear valoración inicial si es el primer campo completado
     if (!uniqueToken && value && value !== '') {
-      console.log(`Primer campo completado: ${field}. Creando registro...`);
-      await createInitialValuationOnFirstField(field, value, companyData);
+      console.log(`Primer campo completado: ${field}. Creando registro con UTMs...`);
+      await createInitialValuationOnFirstField(field, value, {
+        ...companyData,
+        [field]: value
+      }, currentUTMs);
     }
     
     // Actualizar si ya existe token
     if (uniqueToken) {
-      updateValuation({ [field]: value });
+      updateValuation({ [field]: value }, field);
     }
   };
 
@@ -144,14 +157,28 @@ const ValuationCalculator = () => {
     }
   };
 
-  // Track abandon on unmount
+  // Track abandon on unmount and handle page unload flush
   useEffect(() => {
-    return () => {
+    const handleBeforeUnload = () => {
+      // Flush any pending updates before leaving
+      flushPendingUpdates();
+    };
+
+    const handleUnload = () => {
       if (currentStep < 4 && !result) {
         trackCalculationAbandon(currentStep);
       }
     };
-  }, [currentStep, result, trackCalculationAbandon]);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+      handleUnload();
+    };
+  }, [currentStep, result, trackCalculationAbandon, flushPendingUpdates]);
 
   const isNextDisabled = isCalculating;
 
@@ -165,6 +192,16 @@ const ValuationCalculator = () => {
           <p className="text-lg text-gray-600">
             {t('calc.subtitle')}
           </p>
+          
+          {/* Autosave status indicator */}
+          {hasExistingSession && (
+            <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Sesión recuperada
+            </div>
+          )}
         </div>
 
         <StepIndicator 
