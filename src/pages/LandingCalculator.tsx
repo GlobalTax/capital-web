@@ -15,13 +15,14 @@ const LandingCalculatorInner = () => {
   const location = useLocation();
   const { t } = useI18n();
 
-  // SEO dinámico según idioma
+  // SEO dinámico según idioma con canonical fijo y hreflang
   useEffect(() => {
     const title = t('landing.title');
     const description = t('landing.description');
 
     document.title = title;
 
+    // Meta description
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -30,14 +31,39 @@ const LandingCalculatorInner = () => {
     }
     meta.setAttribute('content', description);
 
-    const canonicalHref = window.location.href;
-    let link = document.querySelector('link[rel="canonical"]');
-    if (!link) {
-      link = document.createElement('link');
-      link.setAttribute('rel', 'canonical');
-      document.head.appendChild(link);
+    // Canonical link fijo
+    const canonicalUrl = 'https://capittal.es/lp/calculadora';
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
     }
-    link.setAttribute('href', canonicalHref);
+    canonicalLink.setAttribute('href', canonicalUrl);
+
+    // Limpiar hreflang existentes para evitar duplicados
+    const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
+    existingHreflang.forEach(link => link.remove());
+
+    // Hreflang links para idiomas soportados
+    const hreflangUrls = {
+      'es': 'https://capittal.es/lp/calculadora',
+      'ca': 'https://capittal.es/lp/calculadora',
+      'val': 'https://capittal.es/lp/calculadora', 
+      'gl': 'https://capittal.es/lp/calculadora',
+      'en': 'https://capittal.es/lp/calculadora?lang=en', // Para futuro soporte inglés
+      'x-default': 'https://capittal.es/lp/calculadora'
+    };
+
+    // Crear hreflang links
+    Object.entries(hreflangUrls).forEach(([hreflang, href]) => {
+      const hreflangLink = document.createElement('link');
+      hreflangLink.setAttribute('rel', 'alternate');
+      hreflangLink.setAttribute('hreflang', hreflang);
+      hreflangLink.setAttribute('href', href);
+      document.head.appendChild(hreflangLink);
+    });
+
   }, [t]);
 
   // Disparador temporal de prueba por query param ?sendTest=1
