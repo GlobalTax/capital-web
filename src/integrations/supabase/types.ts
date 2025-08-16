@@ -2164,6 +2164,14 @@ export type Database = {
         Args: { p_visitor_id: string }
         Returns: number
       }
+      check_rate_limit: {
+        Args: {
+          identifier: string
+          max_requests?: number
+          window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_user_admin_role: {
         Args: { check_user_id: string }
         Returns: string
@@ -2210,6 +2218,16 @@ export type Database = {
         Args: { check_user_id: string }
         Returns: boolean
       }
+      log_auth_security_event: {
+        Args: {
+          details?: Json
+          event_type: string
+          ip_address?: unknown
+          user_agent?: string
+          user_email?: string
+        }
+        Returns: undefined
+      }
       log_security_violation: {
         Args: {
           details?: Json
@@ -2226,6 +2244,10 @@ export type Database = {
       send_recovery_emails: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      validate_strong_password: {
+        Args: { password_text: string }
+        Returns: boolean
       }
     }
     Enums: {
