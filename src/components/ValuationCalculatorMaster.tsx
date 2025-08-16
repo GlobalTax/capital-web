@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useValuationCalculatorMaster } from '@/hooks/useValuationCalculatorMaster';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import { useValuationAutosave } from '@/hooks/useValuationAutosave';
@@ -10,6 +10,7 @@ import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ValuationCalculatorMaster = () => {
   const { t } = useI18n();
+  const [startTime] = useState<Date>(new Date());
   
   const {
     currentStep,
@@ -44,7 +45,6 @@ const ValuationCalculatorMaster = () => {
     isSaving,
     currentStep: autosaveStep,
     timeSpent,
-    startTime,
     initializeToken,
     createInitialValuation,
     updateValuation,
