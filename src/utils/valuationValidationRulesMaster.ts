@@ -20,6 +20,11 @@ export const createValidationRulesMaster = (): ValidationRulesMaster => ({
   
   phone: (value: string) => validateSpanishPhone(value),
   
+  whatsapp_opt_in: (value: boolean) => ({
+    isValid: true, // Campo siempre válido
+    message: undefined
+  }),
+  
   cif: (value: string) => {
     if (!value) return { isValid: true }; // CIF es opcional
     return value ? { 

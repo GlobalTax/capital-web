@@ -9,6 +9,7 @@ export interface CompanyDataV4 {
   revenue: number;
   ebitda: number;
   baseValuation: number;
+  whatsapp_opt_in: boolean;
 }
 
 export interface TaxDataV4 {

@@ -32,6 +32,12 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
         Paso {currentStep} de 4
       </div>
       
+      {currentStep === 3 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-700 text-center max-w-xs">
+          Al calcular acepto que Capittal procese mis datos para la valoración y envío por WhatsApp si proporcioné mi teléfono.
+        </div>
+      )}
+      
       <Button
         onClick={onNext}
         disabled={isNextDisabled}

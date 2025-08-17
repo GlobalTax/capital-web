@@ -34,6 +34,12 @@ const NavigationButtonsMaster: React.FC<NavigationButtonsMasterProps> = ({
         {t('nav.step_of', { current: currentStep, total: 3 })}
       </div>
       
+      {currentStep === 3 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-700 text-center sm:max-w-xs">
+          Al calcular acepto que Capittal procese mis datos para la valoración y envío por WhatsApp si proporcioné mi teléfono.
+        </div>
+      )}
+      
       <Button
         onClick={onNext}
         aria-label={currentStep === 3 ? t('aria.calculate') : t('aria.next')}

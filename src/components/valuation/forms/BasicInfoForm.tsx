@@ -251,23 +251,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           )}
         </div>
 
-        {/* Consentimiento WhatsApp */}
-        <div className="flex items-start space-x-2 pt-2">
-          <Checkbox
-            id="whatsapp_opt_in"
-            checked={companyData.whatsapp_opt_in}
-            onCheckedChange={(checked) => {
-              updateField('whatsapp_opt_in', Boolean(checked));
-            }}
-            className="mt-0.5"
-          />
-          <Label 
-            htmlFor="whatsapp_opt_in" 
-            className="text-sm text-gray-600 leading-5"
-          >
-            Usaremos tu número solo para enviarte el resultado por WhatsApp. Puedes darte de baja en cualquier momento.
-          </Label>
-        </div>
 
         {/* CIF */}
         <div className="relative">

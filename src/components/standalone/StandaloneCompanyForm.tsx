@@ -31,7 +31,7 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
     revenue: '',
     ebitda: '',
     baseValuation: '',
-    whatsapp_opt_in: false
+    whatsapp_opt_in: true
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -139,19 +139,19 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
       baseValuation = ebitda * 4;
     }
 
-    // Usar valores sanitizados y validados
-    const companyData: CompanyDataV4 = {
-      contactName: validateContactName(sanitizedData.contactName).sanitizedValue || sanitizedData.contactName || 'Usuario',
-      companyName: validateCompanyName(sanitizedData.companyName).sanitizedValue || sanitizedData.companyName || 'Mi Empresa',
-      email: sanitizedData.email ? (validateEmail(sanitizedData.email).sanitizedValue || sanitizedData.email) : 'contacto@empresa.com',
-      phone: sanitizedData.phone ? (validateSpanishPhone(sanitizedData.phone).sanitizedValue || sanitizedData.phone) : '',
+    const processedData: CompanyDataV4 = {
+      contactName: sanitizedData.contactName || 'Usuario',
+      companyName: sanitizedData.companyName || 'Mi Empresa',
+      email: sanitizedData.email || 'contacto@empresa.com',
+      phone: sanitizedData.phone ? sanitizedData.phone.trim() : '',
       industry: sanitizedData.industry || 'Otros',
       revenue,
       ebitda,
-      baseValuation
+      baseValuation,
+      whatsapp_opt_in: true // Consentimiento unificado activado automáticamente
     };
 
-    onSubmit(companyData);
+    onSubmit(processedData);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -275,25 +275,6 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
                  </div>
                </div>
 
-               {/* Consentimiento WhatsApp */}
-               <div className="flex items-start space-x-2">
-                 <Checkbox
-                   id="whatsapp_opt_in"
-                   checked={formData.whatsapp_opt_in}
-                   onCheckedChange={(checked) => {
-                     setFormData(prev => ({ ...prev, whatsapp_opt_in: Boolean(checked) }));
-                   }}
-                   className="mt-0.5"
-                 />
-                 <Label 
-                   htmlFor="whatsapp_opt_in" 
-                   className="text-sm text-muted-foreground leading-5"
-                 >
-                   Usaremos tu número solo para enviarte el resultado por WhatsApp. Puedes darte de baja en cualquier momento.
-                 </Label>
-               </div>
-
-               {/* Resto del formulario permanece igual */}
               <div>
                 <Label htmlFor="industry">Sector</Label>
                 <Select 
@@ -355,11 +336,19 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
                 </p>
               </div>
 
-              {/* Botón de envío */}
-              <Button type="submit" className="w-full" size="lg">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Calcular Valoración
-              </Button>
+              {/* Consentimiento y botón de envío */}
+              <div className="space-y-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 leading-5">
+                    Al hacer clic en "Calcular Valoración", acepto que Capittal procese mis datos para generar el informe de valoración y enviármelo por WhatsApp si he proporcionado mi número de teléfono. Puedo darme de baja en cualquier momento.
+                  </p>
+                </div>
+                
+                <Button type="submit" className="w-full" size="lg">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Calcular Valoración
+                </Button>
+              </div>
 
             </form>
           </CardContent>

@@ -14,7 +14,7 @@ const initialCompanyData: CompanyData = {
   email: '',
   phone: '',
   phone_e164: '',
-  whatsapp_opt_in: false,
+  whatsapp_opt_in: true,
   industry: '',
   activityDescription: '',
   employeeRange: '',
@@ -156,7 +156,7 @@ export const useValuationCalculator = () => {
       industry: companyData.industry,
       activityDescription: companyData.activityDescription,
       employeeRange: companyData.employeeRange
-      // whatsapp_opt_in se resetea a false (no se mantiene el consentimiento)
+      // whatsapp_opt_in se establece automáticamente a true (consentimiento unificado)
     };
     
     resetForm();
@@ -165,7 +165,7 @@ export const useValuationCalculator = () => {
     updateFormField('email', resetData.email);
     updateFormField('phone', resetData.phone);
     updateFormField('phone_e164', resetData.phone_e164);
-    updateFormField('whatsapp_opt_in', false); // Reset consentimiento
+    updateFormField('whatsapp_opt_in', true); // Consentimiento automático
     updateFormField('industry', resetData.industry);
     updateFormField('activityDescription', resetData.activityDescription);
     updateFormField('employeeRange', resetData.employeeRange);

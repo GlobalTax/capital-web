@@ -12,6 +12,7 @@ const initialCompanyDataMaster: CompanyDataMaster = {
   cif: '',
   email: '',
   phone: '',
+  whatsapp_opt_in: true,
   industry: '',
   activityDescription: '',
   employeeRange: '',
@@ -162,6 +163,7 @@ export const useValuationCalculatorMaster = () => {
     updateFormField('industry', resetData.industry);
     updateFormField('activityDescription', resetData.activityDescription);
     updateFormField('employeeRange', resetData.employeeRange);
+    updateFormField('whatsapp_opt_in', true); // Consentimiento automático
     
     setResult(null);
     setCurrentStep(1);
