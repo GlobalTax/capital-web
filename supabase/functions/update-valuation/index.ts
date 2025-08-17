@@ -64,6 +64,8 @@ const ALLOWED_FIELDS = new Set([
   "gclid",
   "referrer",
   "user_agent",
+  // User association
+  "user_id",
 ]);
 
 function toSnakeCase(key: string): string {
@@ -89,6 +91,25 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Get user ID from JWT if available
+    const authHeader = req.headers.get('Authorization');
+    let currentUserId: string | null = null;
+    let isAuthenticated = false;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const { data: { user } } = await supabase.auth.getUser(token);
+        if (user) {
+          currentUserId = user.id;
+          isAuthenticated = true;
+          console.log(`Authenticated request from user: ${currentUserId}`);
+        }
+      } catch (error) {
+        console.log('JWT verification failed, continuing as anonymous:', error);
+      }
+    }
+
     // Map input keys to snake_case and whitelist
     const updateData: Record<string, any> = {};
     for (const [k, v] of Object.entries(body.data)) {
@@ -104,8 +125,27 @@ Deno.serve(async (req) => {
     // Set unique_token for upsert operation
     updateData.unique_token = body.uniqueToken;
 
+    // If user is authenticated, check if we need to link this valuation to the user
+    if (isAuthenticated && currentUserId) {
+      // First check if this valuation already exists and has no user_id
+      const { data: existingValuation } = await supabase
+        .from("company_valuations")
+        .select("user_id")
+        .eq("unique_token", body.uniqueToken)
+        .single();
+      
+      // If valuation exists and has no user_id, or it's a new valuation, set user_id
+      if (!existingValuation || existingValuation.user_id === null) {
+        updateData.user_id = currentUserId;
+        console.log(`Linking valuation to user: ${currentUserId} (token: ${body.uniqueToken})`);
+      }
+    }
+
     // Accept partial data - no validation required
-    console.log(`Processing update for token: ${body.uniqueToken}, fields: ${Object.keys(updateData).join(', ')}`);
+    const logMessage = isAuthenticated 
+      ? `Processing authenticated update for user ${currentUserId}, token: ${body.uniqueToken}, fields: ${Object.keys(updateData).join(', ')}`
+      : `Processing anonymous update for token: ${body.uniqueToken}, fields: ${Object.keys(updateData).join(', ')}`;
+    console.log(logMessage);
 
     // Use upsert (insert with on_conflict update) to handle both new and existing records
     const { data, error } = await supabase
@@ -114,7 +154,7 @@ Deno.serve(async (req) => {
         onConflict: 'unique_token',
         ignoreDuplicates: false 
       })
-      .select("id, unique_token, valuation_status, completion_percentage")
+      .select("id, unique_token, valuation_status, completion_percentage, user_id")
       .single();
 
     if (error) {

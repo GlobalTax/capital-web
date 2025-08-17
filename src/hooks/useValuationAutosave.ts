@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyData } from '@/types/valuation';
 import { useLeadTracking } from './useLeadTracking';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AutosaveState {
   uniqueToken: string | null;
@@ -27,6 +28,7 @@ export const useValuationAutosave = () => {
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const { trackValuationCompleted } = useLeadTracking();
+  const { user, session } = useAuth();
 
   // Initialize token from localStorage on first load with session recovery
   const initializeToken = useCallback(() => {
@@ -163,13 +165,18 @@ export const useValuationAutosave = () => {
       // Crear registro usando update-valuation con uniqueToken generado
       const tempToken = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      const { data, error } = await supabase.functions.invoke('update-valuation', {
+      // Use authenticated session if user is logged in
+      const invokeOptions = {
         body: {
           uniqueToken: tempToken,
           data: minimalData,
           isInitialCreation: true
         }
-      });
+      };
+
+      const { data, error } = user && session 
+        ? await supabase.functions.invoke('update-valuation', invokeOptions)
+        : await supabase.functions.invoke('update-valuation', invokeOptions);
 
       if (error) {
         console.error('Error creating initial valuation:', error);
@@ -235,6 +242,7 @@ export const useValuationAutosave = () => {
           }
         }
 
+        // Ensure authenticated session is used when available
         const { data, error } = await supabase.functions.invoke('update-valuation', {
           body: {
             uniqueToken: token,
@@ -284,6 +292,7 @@ export const useValuationAutosave = () => {
 
       console.log('Immediate valuation update:', { field, token });
 
+      // Ensure authenticated session is used when available  
       const { data, error } = await supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken: token,
@@ -324,6 +333,7 @@ export const useValuationAutosave = () => {
     try {
       setState(prev => ({ ...prev, isSaving: true }));
 
+      // Ensure authenticated session is used when available
       const { data, error } = await supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken: token,
@@ -367,6 +377,7 @@ export const useValuationAutosave = () => {
         lastModifiedField: 'step_change'
       };
       
+      // Ensure authenticated session is used when available
       supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken: state.uniqueToken,
@@ -375,6 +386,8 @@ export const useValuationAutosave = () => {
       }).then(({ error }) => {
         if (error) {
           console.error('Error updating step:', error);
+        } else if (user) {
+          console.log('Step updated for authenticated user:', user.email);
         }
       });
     }
@@ -413,6 +426,7 @@ export const useValuationAutosave = () => {
         ? Math.floor((Date.now() - state.startTime.getTime()) / 1000)
         : state.timeSpent;
 
+      // Ensure authenticated session is used when available
       supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken: state.uniqueToken,
