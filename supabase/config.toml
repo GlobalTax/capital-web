@@ -1,5 +1,8 @@
 project_id = "fwhqtzkkvnjkazhaficj"
 
+[functions.claim-valuation]
+verify_jwt = true
+
 [functions.send-whatsapp-message]
 verify_jwt = false
 
