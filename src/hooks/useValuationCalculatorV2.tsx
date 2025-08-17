@@ -1,10 +1,11 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyDataV2, ValuationResultV2, SectorMultiple } from '@/types/valuationV2';
 import { calculateCompanyValuationV2 } from '@/utils/valuationCalculationV2';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { createValidationRulesV2, validateStepFieldsV2, getStepFieldsV2 } from '@/utils/valuationValidationRulesV2';
+import { useThrottle } from '@/hooks/useThrottle';
 
 const initialCompanyDataV2: CompanyDataV2 = {
   // Paso 1
@@ -79,35 +80,41 @@ export const useValuationCalculatorV2 = () => {
     return validateStepFieldsV2(currentStep, companyData, validationRules);
   }, [currentStep, companyData, validationRules]);
 
-  // Wrapper para updateField que mantiene compatibilidad
+  // Wrapper para updateField que mantiene compatibilidad con throttling
   const updateField = useCallback((field: keyof CompanyDataV2, value: string | number | boolean) => {
     updateFormField(field, value);
   }, [updateFormField]);
+
+  // Versión throttled para inputs que cambian frecuentemente
+  const throttledUpdateField = useThrottle(updateField, 100);
 
   // Función para manejar blur y marcar campos como tocados
   const handleFieldBlur = useCallback((field: keyof CompanyDataV2) => {
     markFieldAsTouched(field);
   }, [markFieldAsTouched]);
 
-  const nextStep = useCallback(() => {
-    console.log('nextStep called, currentStep:', currentStep);
-    
-    // Marcar todos los campos del paso actual como tocados
-    const stepFields = getStepFieldsV2(currentStep);
-    stepFields.forEach(field => markFieldAsTouched(field as keyof CompanyDataV2));
-    
-    // Validar el paso actual antes de avanzar
-    if (!isCurrentStepValid()) {
-      setShowValidation(true);
-      return;
-    }
-    
-    setShowValidation(false);
-    setCurrentStep(prev => {
-      const newStep = Math.min(prev + 1, 4); // Ahora son 4 pasos
-      console.log('Moving from step', prev, 'to step', newStep);
-      return newStep;
-    });
+  // Versión optimizada de nextStep con memoización
+  const nextStep = useMemo(() => {
+    return () => {
+      console.log('nextStep called, currentStep:', currentStep);
+      
+      // Marcar todos los campos del paso actual como tocados
+      const stepFields = getStepFieldsV2(currentStep);
+      stepFields.forEach(field => markFieldAsTouched(field as keyof CompanyDataV2));
+      
+      // Validar el paso actual antes de avanzar
+      if (!isCurrentStepValid()) {
+        setShowValidation(true);
+        return;
+      }
+      
+      setShowValidation(false);
+      setCurrentStep(prev => {
+        const newStep = Math.min(prev + 1, 4); // Ahora son 4 pasos
+        console.log('Moving from step', prev, 'to step', newStep);
+        return newStep;
+      });
+    };
   }, [currentStep, isCurrentStepValid, markFieldAsTouched]);
 
   const prevStep = useCallback(() => {
@@ -161,6 +168,7 @@ export const useValuationCalculatorV2 = () => {
     isCurrentStepValid: isCurrentStepValid(),
     isFormValid,
     updateField,
+    throttledUpdateField,
     handleFieldBlur,
     getFieldState,
     nextStep,

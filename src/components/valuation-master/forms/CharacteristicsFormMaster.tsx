@@ -1,8 +1,5 @@
-import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Check } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+import FormField from '@/components/ui/form-field';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface CharacteristicsFormMasterProps {
@@ -33,150 +30,104 @@ const CharacteristicsFormMaster: React.FC<CharacteristicsFormMasterProps> = ({
   const { t } = useI18n();
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
-  const handleBlur = (fieldName: string) => {
+  const handleBlur = useCallback((fieldName: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
-  };
+  }, []);
 
-  const getFieldClassName = (fieldName: string, value: any, baseClasses: string = '') => {
+  const getValidationState = useCallback((fieldName: string, value: any) => {
     const isTouched = touchedFields.has(fieldName);
     const isValid = Boolean(value);
-    let classes = baseClasses;
+    const hasError = (isTouched || showValidation) && !isValid;
     
-    if ((isTouched || showValidation)) {
-      if (!isValid) {
-        classes += ' border-red-500 focus:border-red-500';
-      } else if (isValid) {
-        classes += ' border-green-500 focus:border-green-500';
-      }
-    }
-    
-    return classes;
-  };
+    return {
+      isTouched,
+      hasError,
+      isValid,
+      errorMessage: hasError ? t(`validation.${fieldName}_required`) : undefined
+    };
+  }, [touchedFields, showValidation, t]);
 
-  const shouldShowCheckIcon = (fieldName: string, value: any): boolean => {
-    const isTouched = touchedFields.has(fieldName);
-    const isValid = Boolean(value);
-    return (isTouched || showValidation) && isValid;
-  };
+  const locationOptions = useMemo(() => 
+    provincesSpain.map(province => ({
+      value: province,
+      label: province
+    })), []);
+
+  const ownershipOptions = useMemo(() => 
+    ownershipParticipation.map(option => ({
+      value: option.value,
+      label: t(`ownership.${option.value}`)
+    })), [t]);
 
   return (
-    <div className="space-y-6">
+    <div className="stable-form-container">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-foreground mb-2">
           {t('steps.characteristics')}
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted-foreground mb-6">
           {t('step3.subtitle')}
         </p>
       </div>
 
       <div className="space-y-6">
-        {/* Ubicación */}
-        <div className="relative">
-          <Label htmlFor="location" className="text-sm font-medium text-gray-700 mb-2 block">
-            {t('fields.location')} *
-          </Label>
-          <div className="relative">
-            <Select 
-              value={companyData.location} 
-              onValueChange={(value) => updateField('location', value)}
-            >
-              <SelectTrigger 
-                className={getFieldClassName('location', companyData.location, 'pr-10')}
-                aria-describedby="location-error"
-              >
-                <SelectValue placeholder={t('placeholders.location')} />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {provincesSpain.map((province) => (
-                  <SelectItem key={province} value={province}>
-                    {province}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {shouldShowCheckIcon('location', companyData.location) && (
-              <Check className="absolute right-8 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none z-10" />
-            )}
-          </div>
-          {(showValidation || touchedFields.has('location')) && !companyData.location && (
-            <p id="location-error" className="text-red-600 text-sm mt-1">
-              {t('validation.location_required')}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="location"
+          label={t('fields.location')}
+          type="select"
+          value={companyData.location}
+          onChange={(value) => updateField('location', value)}
+          onBlur={() => handleBlur('location')}
+          placeholder={t('placeholders.location')}
+          required
+          options={locationOptions}
+          error={getValidationState('location', companyData.location).errorMessage}
+          isValid={getValidationState('location', companyData.location).isValid}
+          isTouched={getValidationState('location', companyData.location).isTouched}
+          showValidation={showValidation}
+          selectClassName="max-h-60"
+        />
 
-        {/* Participación en propiedad */}
-        <div className="relative">
-          <Label htmlFor="ownershipParticipation" className="text-sm font-medium text-gray-700 mb-2 block">
-            {t('fields.ownership')} *
-          </Label>
-          <div className="relative">
-            <Select 
-              value={companyData.ownershipParticipation} 
-              onValueChange={(value) => updateField('ownershipParticipation', value)}
-            >
-              <SelectTrigger 
-                className={getFieldClassName('ownershipParticipation', companyData.ownershipParticipation, 'pr-10')}
-                aria-describedby="ownershipParticipation-error"
-              >
-                <SelectValue placeholder={t('placeholders.ownership')} />
-              </SelectTrigger>
-              <SelectContent>
-                {ownershipParticipation.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {t(`ownership.${option.value}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {shouldShowCheckIcon('ownershipParticipation', companyData.ownershipParticipation) && (
-              <Check className="absolute right-8 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none z-10" />
-            )}
-          </div>
-          {(showValidation || touchedFields.has('ownershipParticipation')) && !companyData.ownershipParticipation && (
-            <p id="ownershipParticipation-error" className="text-red-600 text-sm mt-1">
-              {t('validation.ownership_required')}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="ownershipParticipation"
+          label={t('fields.ownership')}
+          type="select"
+          value={companyData.ownershipParticipation}
+          onChange={(value) => updateField('ownershipParticipation', value)}
+          onBlur={() => handleBlur('ownershipParticipation')}
+          placeholder={t('placeholders.ownership')}
+          required
+          options={ownershipOptions}
+          error={getValidationState('ownershipParticipation', companyData.ownershipParticipation).errorMessage}
+          isValid={getValidationState('ownershipParticipation', companyData.ownershipParticipation).isValid}
+          isTouched={getValidationState('ownershipParticipation', companyData.ownershipParticipation).isTouched}
+          showValidation={showValidation}
+        />
 
-        {/* Ventaja competitiva */}
-        <div className="relative">
-          <Label htmlFor="competitiveAdvantage" className="text-sm font-medium text-gray-700 mb-2 block">
-            {t('fields.competitive_advantage')} *
-          </Label>
-          <div className="relative">
-            <Textarea
-              id="competitiveAdvantage"
-              value={companyData.competitiveAdvantage}
-              onChange={(e) => updateField('competitiveAdvantage', e.target.value)}
-              onBlur={() => handleBlur('competitiveAdvantage')}
-              placeholder={t('placeholders.competitive_advantage')}
-              className={getFieldClassName('competitiveAdvantage', companyData.competitiveAdvantage, 'min-h-[120px] pr-10')}
-              aria-describedby="competitiveAdvantage-error"
-            />
-            {shouldShowCheckIcon('competitiveAdvantage', companyData.competitiveAdvantage) && (
-              <Check className="absolute right-3 top-3 h-4 w-4 text-green-500" />
-            )}
-          </div>
-          {(showValidation || touchedFields.has('competitiveAdvantage')) && !companyData.competitiveAdvantage && (
-            <p id="competitiveAdvantage-error" className="text-red-600 text-sm mt-1">
-              {t('validation.competitive_advantage_required')}
-            </p>
-          )}
-          <p className="text-xs text-gray-500 mt-2">
-            {t('competitive_advantage.help')}
-          </p>
-        </div>
+        <FormField
+          id="competitiveAdvantage"
+          label={t('fields.competitive_advantage')}
+          type="textarea"
+          value={companyData.competitiveAdvantage}
+          onChange={(value) => updateField('competitiveAdvantage', value)}
+          onBlur={() => handleBlur('competitiveAdvantage')}
+          placeholder={t('placeholders.competitive_advantage')}
+          required
+          error={getValidationState('competitiveAdvantage', companyData.competitiveAdvantage).errorMessage}
+          isValid={getValidationState('competitiveAdvantage', companyData.competitiveAdvantage).isValid}
+          isTouched={getValidationState('competitiveAdvantage', companyData.competitiveAdvantage).isTouched}
+          showValidation={showValidation}
+          help={t('competitive_advantage.help')}
+          className="min-h-[120px]"
+        />
       </div>
 
       {/* Información sobre la importancia de estas características */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">
+      <div className="bg-accent border border-border rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-accent-foreground mb-2">
           {t('step3.importance.title')}
         </h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+        <ul className="text-sm text-accent-foreground space-y-1">
           <li>• <strong>{t('step3.importance.location')}:</strong> {t('step3.importance.location_desc')}</li>
           <li>• <strong>{t('step3.importance.ownership')}:</strong> {t('step3.importance.ownership_desc')}</li>
           <li>• <strong>{t('step3.importance.advantage')}:</strong> {t('step3.importance.advantage_desc')}</li>

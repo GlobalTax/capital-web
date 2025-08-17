@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Check } from 'lucide-react';
+import FormField from '@/components/ui/form-field';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface FinancialDataFormMasterProps {
@@ -19,20 +18,20 @@ const FinancialDataFormMaster: React.FC<FinancialDataFormMasterProps> = ({
   const { t } = useI18n();
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
-  const handleBlur = (fieldName: string) => {
+  const handleBlur = useCallback((fieldName: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
-  };
+  }, []);
 
-  const formatCurrency = (amount: number): string => {
+  const formatCurrency = useCallback((amount: number): string => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-  };
+  }, []);
 
-  const isFieldValid = (fieldName: string, value: any): boolean => {
+  const isFieldValid = useCallback((fieldName: string, value: any): boolean => {
     switch (fieldName) {
       case 'revenue':
       case 'ebitda':
@@ -40,107 +39,68 @@ const FinancialDataFormMaster: React.FC<FinancialDataFormMasterProps> = ({
       default:
         return true;
     }
-  };
+  }, []);
 
-  const getFieldClassName = (fieldName: string, value: any, baseClasses: string = '') => {
+  const getValidationState = useCallback((fieldName: string, value: any) => {
     const isTouched = touchedFields.has(fieldName);
     const isValid = isFieldValid(fieldName, value);
-    let classes = baseClasses;
+    const hasError = (isTouched || showValidation) && !isValid;
     
-    if ((isTouched || showValidation)) {
-      if (!isValid) {
-        classes += ' border-red-500 focus:border-red-500';
-      } else if (isValid && value > 0) {
-        classes += ' border-green-500 focus:border-green-500';
-      }
-    }
-    
-    return classes;
-  };
-
-  const shouldShowCheckIcon = (fieldName: string, value: any): boolean => {
-    const isTouched = touchedFields.has(fieldName);
-    const isValid = isFieldValid(fieldName, value);
-    return (isTouched || showValidation) && isValid && value > 0;
-  };
+    return {
+      isTouched,
+      hasError,
+      isValid: isValid && value > 0,
+      errorMessage: hasError ? t('validation.revenue_required') : undefined
+    };
+  }, [touchedFields, showValidation, isFieldValid, t]);
 
   return (
-    <div className="space-y-6">
+    <div className="stable-form-container">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-foreground mb-2">
           {t('steps.financial_data')}
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted-foreground mb-6">
           {t('step2.subtitle')}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Ingresos anuales */}
-        <div className="relative">
-          <Label htmlFor="revenue" className="text-sm font-medium text-gray-700 mb-2 block">
-            {t('fields.annual_revenue')} *
-          </Label>
-          <div className="relative">
-            <Input
-              id="revenue"
-              type="number"
-              value={companyData.revenue || ''}
-              onChange={(e) => updateField('revenue', parseFloat(e.target.value) || 0)}
-              onBlur={() => handleBlur('revenue')}
-              placeholder="500000"
-              className={getFieldClassName('revenue', companyData.revenue, 'pr-10')}
-              min="0"
-              step="1000"
-            />
-            {shouldShowCheckIcon('revenue', companyData.revenue) && (
-              <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
-            )}
-          </div>
-          {companyData.revenue > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              {formatCurrency(companyData.revenue)}
-            </p>
-          )}
-          {(showValidation || touchedFields.has('revenue')) && !isFieldValid('revenue', companyData.revenue) && (
-            <p className="text-red-600 text-sm mt-1">
-              {t('validation.revenue_required')}
-            </p>
-          )}
-        </div>
+      <div className="stable-grid">
+        <FormField
+          id="revenue"
+          label={t('fields.annual_revenue')}
+          type="number"
+          value={companyData.revenue || 0}
+          onChange={(value) => updateField('revenue', Number(value) || 0)}
+          onBlur={() => handleBlur('revenue')}
+          placeholder="500000"
+          required
+          min={0}
+          step={1000}
+          error={getValidationState('revenue', companyData.revenue).errorMessage}
+          isValid={getValidationState('revenue', companyData.revenue).isValid}
+          isTouched={getValidationState('revenue', companyData.revenue).isTouched}
+          showValidation={showValidation}
+          help={companyData.revenue > 0 ? formatCurrency(companyData.revenue) : undefined}
+        />
 
-        {/* EBITDA */}
-        <div className="relative">
-          <Label htmlFor="ebitda" className="text-sm font-medium text-gray-700 mb-2 block">
-            {t('fields.ebitda')} *
-          </Label>
-          <div className="relative">
-            <Input
-              id="ebitda"
-              type="number"
-              value={companyData.ebitda || ''}
-              onChange={(e) => updateField('ebitda', parseFloat(e.target.value) || 0)}
-              onBlur={() => handleBlur('ebitda')}
-              placeholder="100000"
-              className={getFieldClassName('ebitda', companyData.ebitda, 'pr-10')}
-              min="0"
-              step="1000"
-            />
-            {shouldShowCheckIcon('ebitda', companyData.ebitda) && (
-              <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
-            )}
-          </div>
-          {companyData.ebitda > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              {formatCurrency(companyData.ebitda)}
-            </p>
-          )}
-          {(showValidation || touchedFields.has('ebitda')) && !isFieldValid('ebitda', companyData.ebitda) && (
-            <p className="text-red-600 text-sm mt-1">
-              {t('validation.ebitda_required')}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="ebitda"
+          label={t('fields.ebitda')}
+          type="number"
+          value={companyData.ebitda || 0}
+          onChange={(value) => updateField('ebitda', Number(value) || 0)}
+          onBlur={() => handleBlur('ebitda')}
+          placeholder="100000"
+          required
+          min={0}
+          step={1000}
+          error={getValidationState('ebitda', companyData.ebitda).errorMessage}
+          isValid={getValidationState('ebitda', companyData.ebitda).isValid}
+          isTouched={getValidationState('ebitda', companyData.ebitda).isTouched}
+          showValidation={showValidation}
+          help={companyData.ebitda > 0 ? formatCurrency(companyData.ebitda) : undefined}
+        />
       </div>
 
       {/* Ayuda con EBITDA */}
@@ -159,7 +119,7 @@ const FinancialDataFormMaster: React.FC<FinancialDataFormMasterProps> = ({
 
       {/* Ajustes al EBITDA */}
       <div className="space-y-4">
-        <Label className="text-sm font-medium text-gray-700">
+        <Label className="text-sm font-medium text-foreground">
           {t('fields.ebitda_adjustments')}
         </Label>
         
@@ -170,51 +130,37 @@ const FinancialDataFormMaster: React.FC<FinancialDataFormMasterProps> = ({
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="no" id="no-adjustments" />
-            <Label htmlFor="no-adjustments" className="text-sm text-gray-700">
+            <Label htmlFor="no-adjustments" className="text-sm text-foreground">
               {t('no')}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id="yes-adjustments" />
-            <Label htmlFor="yes-adjustments" className="text-sm text-gray-700">
+            <Label htmlFor="yes-adjustments" className="text-sm text-foreground">
               {t('yes')}
             </Label>
           </div>
         </RadioGroup>
 
         {companyData.hasAdjustments && (
-          <div className="relative mt-4">
-            <Label htmlFor="adjustmentAmount" className="text-sm font-medium text-gray-700 mb-2 block">
-              {t('fields.adjustment_amount')}
-            </Label>
-            <div className="relative">
-              <Input
-                id="adjustmentAmount"
-                type="number"
-                value={companyData.adjustmentAmount || ''}
-                onChange={(e) => updateField('adjustmentAmount', parseFloat(e.target.value) || 0)}
-                onBlur={() => handleBlur('adjustmentAmount')}
-                placeholder="10000"
-                className="pr-10"
-                min="0"
-                step="1000"
-              />
-            </div>
-            {companyData.adjustmentAmount > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                {formatCurrency(companyData.adjustmentAmount)}
-              </p>
-            )}
-            <p className="text-xs text-gray-500 mt-2">
-              {t('adjustment.help')}
-            </p>
-          </div>
+          <FormField
+            id="adjustmentAmount"
+            label={t('fields.adjustment_amount')}
+            type="number"
+            value={companyData.adjustmentAmount || 0}
+            onChange={(value) => updateField('adjustmentAmount', Number(value) || 0)}
+            onBlur={() => handleBlur('adjustmentAmount')}
+            placeholder="10000"
+            min={0}
+            step={1000}
+            help={`${t('adjustment.help')}${companyData.adjustmentAmount > 0 ? ` - ${formatCurrency(companyData.adjustmentAmount)}` : ''}`}
+          />
         )}
       </div>
 
       {/* Texto informativo */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-accent border border-border rounded-lg p-4">
+        <p className="text-sm text-accent-foreground">
           {t('step2.info')}
         </p>
       </div>

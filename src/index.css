@@ -125,6 +125,62 @@
            hover:-translate-y-1;
   }
 
+  /* Stable form field container */
+  .form-field {
+    @apply relative min-h-[80px] flex flex-col justify-start;
+  }
+
+  .form-field-input {
+    @apply w-full pr-10 transition-all duration-200 ease-out;
+  }
+
+  .form-field-icon {
+    @apply absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 
+           opacity-0 transition-all duration-300 ease-out scale-75;
+  }
+
+  .form-field-icon.show {
+    @apply opacity-100 scale-100;
+  }
+
+  .form-field-error {
+    @apply text-destructive text-sm mt-1 min-h-[20px] 
+           transition-all duration-300 ease-out overflow-hidden;
+  }
+
+  .form-field-help {
+    @apply text-muted-foreground text-xs mt-1 min-h-[16px] 
+           transition-all duration-300 ease-out overflow-hidden;
+  }
+
+  /* Stable grid layout */
+  .stable-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6 
+           auto-rows-[minmax(80px,_auto)];
+  }
+
+  .stable-form-container {
+    @apply space-y-6 min-h-[600px] 
+           transition-all duration-500 ease-out;
+  }
+
+  /* Form animations */
+  .form-enter {
+    @apply animate-fade-in-up opacity-0;
+    animation-delay: 0.1s;
+  }
+
+  .form-field-enter {
+    @apply animate-slide-up opacity-0;
+  }
+
+  .form-field-enter:nth-child(1) { animation-delay: 0.1s; }
+  .form-field-enter:nth-child(2) { animation-delay: 0.2s; }
+  .form-field-enter:nth-child(3) { animation-delay: 0.3s; }
+  .form-field-enter:nth-child(4) { animation-delay: 0.4s; }
+  .form-field-enter:nth-child(5) { animation-delay: 0.5s; }
+  .form-field-enter:nth-child(6) { animation-delay: 0.6s; }
+
   .admin-input {
     @apply bg-background border border-input rounded-lg px-4 py-3 text-sm
            transition-all duration-200 ease-out
