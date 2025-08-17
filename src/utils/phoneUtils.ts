@@ -39,6 +39,62 @@ export const isValidE164 = (phone: string): boolean => {
 };
 
 /**
+ * Normaliza un número de teléfono al formato E.164 con validación estricta
+ * @param phone - Número de teléfono sin normalizar
+ * @param defaultCountry - País por defecto ('ES', 'FR', etc.)
+ * @returns Número en formato E.164 o null si es inválido
+ */
+export const normalizeToE164 = (phone: string, defaultCountry: string = 'ES'): string | null => {
+  if (!phone || typeof phone !== 'string') return null;
+  
+  // Limpiar todos los separadores (espacios, puntos, guiones, paréntesis)
+  const cleaned = phone.replace(/[\s\.\-\(\)\+]/g, '');
+  
+  // Si está vacío después de limpiar
+  if (!cleaned) return null;
+  
+  let normalized = '';
+  
+  // Si el número original tenía +, reconstruir con el prefijo
+  if (phone.includes('+')) {
+    normalized = `+${cleaned}`;
+  } else {
+    // Aplicar prefijo de país por defecto
+    const countryPrefixes: Record<string, string> = {
+      'ES': '34',
+      'FR': '33',
+      'IT': '39',
+      'DE': '49',
+      'GB': '44',
+      'US': '1',
+      'MX': '52'
+    };
+    
+    const prefix = countryPrefixes[defaultCountry] || countryPrefixes['ES'];
+    
+    // Para España, números de 9 dígitos empezando por 6,7,8,9
+    if (defaultCountry === 'ES' && /^[6789]\d{8}$/.test(cleaned)) {
+      normalized = `+34${cleaned}`;
+    } else {
+      normalized = `+${prefix}${cleaned}`;
+    }
+  }
+  
+  // Validación estricta E.164: + seguido de 1-3 dígitos de país + 4-14 dígitos
+  if (!/^\+[1-9]\d{1,3}\d{4,14}$/.test(normalized)) {
+    return null;
+  }
+  
+  // Verificar longitud total (10-15 dígitos después del +)
+  const digitsAfterPlus = normalized.slice(1);
+  if (digitsAfterPlus.length < 10 || digitsAfterPlus.length > 15) {
+    return null;
+  }
+  
+  return normalized;
+};
+
+/**
  * Formatea un número E.164 para mostrar de forma legible
  * @param phone - Número en formato E.164
  * @returns Número formateado para mostrar

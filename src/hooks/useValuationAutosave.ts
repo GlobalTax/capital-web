@@ -220,11 +220,20 @@ export const useValuationAutosave = () => {
           ? Math.floor((Date.now() - state.startTime.getTime()) / 1000)
           : state.timeSpent;
 
-        const updateData = {
+        // Si se está actualizando el campo phone, normalizar automáticamente
+        const updateData: any = {
           ...partialData,
           timeSpentSeconds,
           lastModifiedField: field || 'unknown'
         };
+        
+        if (field === 'phone' && partialData.phone) {
+          const { normalizeToE164 } = await import('@/utils/phoneUtils');
+          const normalizedPhone = normalizeToE164(partialData.phone, 'ES');
+          if (normalizedPhone) {
+            updateData.phone_e164 = normalizedPhone;
+          }
+        }
 
         const { data, error } = await supabase.functions.invoke('update-valuation', {
           body: {
