@@ -1777,6 +1777,56 @@ export type Database = {
         }
         Relationships: []
       }
+      message_logs: {
+        Row: {
+          created_at: string
+          error_details: string | null
+          id: string
+          payload_summary: Json | null
+          provider_id: string | null
+          provider_name: string | null
+          recipient: string | null
+          retry_count: number | null
+          status: string
+          type: string
+          valuation_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_details?: string | null
+          id?: string
+          payload_summary?: Json | null
+          provider_id?: string | null
+          provider_name?: string | null
+          recipient?: string | null
+          retry_count?: number | null
+          status: string
+          type: string
+          valuation_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_details?: string | null
+          id?: string
+          payload_summary?: Json | null
+          provider_id?: string | null
+          provider_name?: string | null
+          recipient?: string | null
+          retry_count?: number | null
+          status?: string
+          type?: string
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_logs_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           company: string | null

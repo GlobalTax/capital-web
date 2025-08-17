@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,7 @@ interface SendWhatsAppRequest {
   variables?: Record<string, string>;
   textFallback: string;
   pdfUrl?: string;
+  valuationId?: string;
 }
 
 interface WhatsAppResponse {
@@ -38,6 +40,63 @@ interface WhatsAppMessagePayload {
 
 const validateE164Phone = (phone: string): boolean => {
   return /^\+[1-9]\d{1,14}$/.test(phone);
+};
+
+// Initialize Supabase client for logging (service role)
+const getSupabaseClient = () => {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing Supabase credentials for logging');
+    return null;
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey);
+};
+
+// Log message to database
+const logMessage = async (
+  valuationId: string | undefined,
+  type: 'whatsapp',
+  status: 'sent' | 'failed',
+  providerId: string | undefined,
+  payloadSummary: any,
+  phoneE164: string,
+  errorDetails?: string
+) => {
+  if (!valuationId) {
+    console.log('No valuation_id provided, skipping message log');
+    return;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    console.error('Cannot log message: Supabase client not available');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from('message_logs').insert({
+      valuation_id: valuationId,
+      type,
+      status,
+      provider_id: providerId,
+      provider_name: 'whatsapp_cloud_api',
+      recipient: phoneE164.slice(0, 4) + '***',
+      payload_summary: payloadSummary,
+      error_details: errorDetails,
+      retry_count: 0
+    });
+
+    if (error) {
+      console.error('Failed to log message:', error);
+    } else {
+      console.log('Message logged successfully:', { type, status, valuationId });
+    }
+  } catch (error) {
+    console.error('Error logging message:', error);
+  }
 };
 
 const createTemplateMessage = (
@@ -140,7 +199,7 @@ serve(async (req) => {
   }
 
   try {
-    const { phoneE164, template, variables, textFallback, pdfUrl }: SendWhatsAppRequest = await req.json();
+    const { phoneE164, template, variables, textFallback, pdfUrl, valuationId }: SendWhatsAppRequest = await req.json();
 
     // Validation
     if (!phoneE164 || !textFallback) {
@@ -169,28 +228,64 @@ serve(async (req) => {
       type: template ? 'template' : 'text',
       template: template || null,
       hasVariables: variables ? Object.keys(variables).length > 0 : false,
-      hasPdfUrl: !!pdfUrl
+      hasPdfUrl: !!pdfUrl,
+      hasValuationId: !!valuationId
     };
     console.log('WhatsApp message request:', logPayload);
 
     let result: WhatsAppResponse;
+    let payloadSummary: any;
 
     // Try template message first if template is provided
     if (template) {
       const templatePayload = createTemplateMessage(phoneE164, template, variables);
+      payloadSummary = {
+        message_type: 'template',
+        template_name: template,
+        has_variables: variables ? Object.keys(variables).length > 0 : false,
+        variable_count: variables ? Object.keys(variables).length : 0,
+        has_pdf_url: !!pdfUrl,
+        language: 'es',
+        fallback_used: false
+      };
+      
       result = await sendWhatsAppMessage(templatePayload);
       
       // If template fails, fallback to text message
       if (!result.success) {
         console.log('Template message failed, falling back to text:', result.error);
         const textPayload = createTextMessage(phoneE164, textFallback, pdfUrl);
+        payloadSummary.fallback_used = true;
+        payloadSummary.message_type = 'text';
+        payloadSummary.message_length = textFallback.length + (pdfUrl ? pdfUrl.length + 30 : 0);
         result = await sendWhatsAppMessage(textPayload);
       }
     } else {
       // Send text message directly
       const textPayload = createTextMessage(phoneE164, textFallback, pdfUrl);
+      payloadSummary = {
+        message_type: 'text',
+        template_name: null,
+        has_variables: false,
+        variable_count: 0,
+        has_pdf_url: !!pdfUrl,
+        message_length: textFallback.length + (pdfUrl ? pdfUrl.length + 30 : 0),
+        language: 'es',
+        fallback_used: false
+      };
       result = await sendWhatsAppMessage(textPayload);
     }
+
+    // Log the message result
+    await logMessage(
+      valuationId,
+      'whatsapp',
+      result.success ? 'sent' : 'failed',
+      result.providerMessageId,
+      payloadSummary,
+      phoneE164,
+      result.success ? undefined : result.error
+    );
 
     const statusCode = result.success ? 200 : 500;
     
