@@ -70,6 +70,15 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
 
         {/* Enlaces directos */}
         <div className="border-t border-gray-200 pt-4 space-y-2">
+          {user && (
+            <Link
+              to="/mis-valoraciones"
+              className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
+              onClick={closeMenu}
+            >
+              Mis Valoraciones
+            </Link>
+          )}
           <Link
             to="/casos-exito"
             className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"

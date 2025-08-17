@@ -685,6 +685,7 @@ export type Database = {
           time_spent_seconds: number | null
           unique_token: string | null
           user_agent: string | null
+          user_id: string | null
           v4_accessed: boolean | null
           v4_accessed_at: string | null
           v4_engagement_score: number | null
@@ -741,6 +742,7 @@ export type Database = {
           time_spent_seconds?: number | null
           unique_token?: string | null
           user_agent?: string | null
+          user_id?: string | null
           v4_accessed?: boolean | null
           v4_accessed_at?: string | null
           v4_engagement_score?: number | null
@@ -797,6 +799,7 @@ export type Database = {
           time_spent_seconds?: number | null
           unique_token?: string | null
           user_agent?: string | null
+          user_id?: string | null
           v4_accessed?: boolean | null
           v4_accessed_at?: string | null
           v4_engagement_score?: number | null

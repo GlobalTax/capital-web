@@ -19,6 +19,7 @@ import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
+const MyValuations = lazy(() => import('@/pages/MyValuations'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
 const CalculadoraValoracion = lazy(() => import('@/pages/CalculadoraValoracion'));
@@ -227,6 +228,7 @@ function AppContent() {
           <Route path="/" element={<Index />} />
           <Route path="/admin/*" element={<Admin />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/mis-valoraciones" element={<MyValuations />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/calculadora-valoracion" element={<Navigate to="/lp/calculadora" replace />} />

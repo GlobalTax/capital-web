@@ -9,6 +9,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu-lazy";
 import { ArrowRight } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
 import LazyIcon from '@/components/ui/LazyIcon';
 
@@ -219,6 +220,8 @@ const NosotrosMenu = () => (
 );
 
 const AdvancedDesktopNavigation = () => {
+  const { user } = useAuth();
+  
   return (
     <nav className="hidden md:flex items-center space-x-6">
       <NavigationMenu>
@@ -270,6 +273,16 @@ const AdvancedDesktopNavigation = () => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
+
+      {/* User specific navigation */}
+      {user && (
+        <Link
+          to="/mis-valoraciones"
+          className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
+        >
+          Mis Valoraciones
+        </Link>
+      )}
 
       {colaboradoresData.map((item) => (
         <Link
