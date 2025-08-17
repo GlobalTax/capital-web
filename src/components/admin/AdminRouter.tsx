@@ -33,6 +33,7 @@ import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
 import TrackingDashboardPage from '@/pages/admin/TrackingDashboardPage';
 import TrackingConfigPage from '@/pages/admin/TrackingConfigPage';
 import IntegrationsPage from '@/pages/admin/IntegrationsPage';
+import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -96,6 +97,9 @@ const AdminRouter = () => {
       
       {/* Integrations */}
       <Route path="/integrations" element={<IntegrationsPage />} />
+      
+      {/* Valuations */}
+      <Route path="/valuations/:id" element={<ValuationDetailPage />} />
       
       {/* Settings */}
       <Route path="/admin-users" element={<AdminUsersManager />} />
