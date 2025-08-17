@@ -38,6 +38,16 @@ const Header = () => {
                 />
               </Link>
             )}
+            {!user && (
+              <Link to="/auth">
+                <InteractiveHoverButton 
+                  text="Mi Cuenta"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white text-black border-gray-300 hover:bg-gray-50"
+                />
+              </Link>
+            )}
             <Link to="/contacto">
               <InteractiveHoverButton 
                 text="Contacto"

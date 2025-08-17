@@ -55,6 +55,20 @@ const ValoracionesCTA = () => {
             <p className="text-gray-400 text-sm">
               Sin registro requerido • Resultado inmediato • 100% gratuito
             </p>
+            
+            <div className="pt-4">
+              <p className="text-gray-300 text-sm mb-3">
+                ¿Quieres guardar y gestionar todas tus valoraciones?
+              </p>
+              <Link to="/auth">
+                <InteractiveHoverButton
+                  text="Crear Cuenta Gratuita"
+                  variant="outline"
+                  size="default"
+                  className="border-white text-white hover:bg-white hover:text-black transition-all duration-300"
+                />
+              </Link>
+            </div>
           </div>
 
           {/* Social Proof */}

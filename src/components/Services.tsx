@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ServicesSkeleton } from '@/components/LoadingStates';
 
@@ -97,9 +98,18 @@ const Services = () => {
                   </div>
 
                   {/* Button */}
-                  <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
-                    Más información
-                  </Button>
+                  <div className="space-y-3">
+                    <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
+                      {service.title === 'Valoraciones' ? 'Calcular Ahora' : 'Más información'}
+                    </Button>
+                    {service.title === 'Valoraciones' && (
+                      <div className="text-center">
+                        <Link to="/auth" className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                          ¿Quieres guardar tus valoraciones? Crear cuenta gratuita
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

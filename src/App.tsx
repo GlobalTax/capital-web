@@ -37,6 +37,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 // Protected route component
 const ProtectedRoute = lazy(() => import('@/components/auth/ProtectedRoute'));
 const ProfileRouter = lazy(() => import('@/pages/profile/ProfileRouter'));
+const AuthPage = lazy(() => import('@/pages/Auth'));
 
 // Service pages - Create placeholder components for missing ones
 const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones').catch(() => 
@@ -228,6 +229,7 @@ function AppContent() {
       <Suspense fallback={<PageLoadingSkeleton />}>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin/*" element={<Admin />} />
           <Route 
             path="/perfil/*" 
