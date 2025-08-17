@@ -3,6 +3,7 @@ import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import { useValuationAutosave } from '@/hooks/useValuationAutosave';
 import { useValuationHeartbeat } from '@/hooks/useValuationHeartbeat';
+import { useValuationLoader } from '@/hooks/useValuationLoader';
 import { CompanyData } from '@/types/valuation';
 import StepIndicator from '@/components/valuation/StepIndicator';
 import StepContent from '@/components/valuation/StepContent';
@@ -12,6 +13,13 @@ import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ValuationCalculator = () => {
   const { t } = useI18n();
+  
+  // Extract token from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlToken = urlParams.get('token');
+
+  // Load existing valuation if token provided
+  const { data: existingValuation, isLoading: isLoadingValuation } = useValuationLoader(urlToken);
   
   const { 
     currentStep,
@@ -67,10 +75,19 @@ const ValuationCalculator = () => {
     isActive: currentStep < 4 // Only active during form steps, not results
   });
 
-  // Initialize autosave token on mount
+  // Initialize autosave token on mount or load existing valuation
   useEffect(() => {
-    initializeToken();
-  }, [initializeToken]);
+    if (urlToken && existingValuation) {
+      // Pre-fill form with loaded data
+      Object.entries(existingValuation).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          updateField(key as keyof CompanyData, value);
+        }
+      });
+    } else {
+      initializeToken();
+    }
+  }, [initializeToken, urlToken, existingValuation, updateField]);
 
   // Track step changes
   useEffect(() => {

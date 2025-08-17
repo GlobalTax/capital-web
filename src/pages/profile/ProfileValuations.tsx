@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { Loader2, Plus, Search, Building2, Calendar, TrendingUp, Eye, Copy, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Search, Building2, Calendar, TrendingUp, Eye, Copy, Trash2, Play } from 'lucide-react';
 
 type CompanyValuation = Database['public']['Tables']['company_valuations']['Row'];
 
@@ -83,6 +83,18 @@ export const ProfileValuations: React.FC = () => {
 
   const handleViewValuation = (valuation: CompanyValuation) => {
     navigate(`/perfil/valoraciones/${valuation.id}`);
+  };
+
+  const handleResumeValuation = (valuation: CompanyValuation) => {
+    if (valuation.unique_token) {
+      navigate(`/lp/calculadora?token=${valuation.unique_token}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "No se puede reanudar esta valoración",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDuplicateValuation = async (valuation: CompanyValuation) => {
@@ -348,6 +360,16 @@ export const ProfileValuations: React.FC = () => {
                 </div>
                 
                 <div className="flex gap-2">
+                  {valuation.valuation_status === 'in_progress' && valuation.unique_token && (
+                    <Button 
+                      size="sm"
+                      onClick={() => handleResumeValuation(valuation)}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Reanudar
+                    </Button>
+                  )}
                   <Button 
                     variant="outline" 
                     size="sm"

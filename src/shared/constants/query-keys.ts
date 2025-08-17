@@ -24,6 +24,7 @@ export const QUERY_KEYS = {
   // Valoraciones de usuario
   USER_VALUATIONS: 'user_valuations',
   USER_VALUATION_DETAIL: 'user_valuation_detail',
+  VALUATION_BY_TOKEN: 'valuation_by_token',
   
   // Sistema
   SYSTEM_METRICS: 'system_metrics',
