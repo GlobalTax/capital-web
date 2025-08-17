@@ -345,6 +345,67 @@ export const useValuationAutosave = () => {
         currentStep: state.currentStep,
         token: token
       });
+
+      // Send valuation email and conditionally WhatsApp
+      try {
+        const emailPayload = {
+          companyData: finalData,
+          result: {
+            finalValuation: finalData.finalValuation,
+            ebitdaMultiple: finalData.ebitdaMultipleUsed,
+            valuationRange: {
+              min: finalData.valuationRangeMin,
+              max: finalData.valuationRangeMax
+            }
+          }
+        };
+
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-valuation-email', {
+          body: emailPayload
+        });
+
+        if (emailError) {
+          console.error('Error sending valuation email:', emailError);
+        } else {
+          console.log('Valuation email sent successfully');
+
+          // Send WhatsApp if opted in and phone is valid
+          const whatsappOptIn = finalData.whatsapp_opt_in;
+          const phoneNumber = finalData.phone;
+
+          if (whatsappOptIn && phoneNumber) {
+            try {
+              // Import phone normalization utility
+              const { normalizeToE164 } = await import('@/utils/phoneUtils');
+              const phoneE164 = normalizeToE164(phoneNumber);
+
+              if (phoneE164) {
+                const whatsappPayload = {
+                  phone: phoneE164,
+                  templateType: 'text',
+                  message: `Hola ${finalData.contactName || ''}! Tu valoración de ${finalData.companyName || 'la empresa'} está lista. Valoración: ${finalData.finalValuation?.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) || 'N/A'}. ${emailData?.pdfUrl ? `PDF: ${emailData.pdfUrl}` : 'Te hemos enviado los detalles por email.'}`
+                };
+
+                const { error: whatsappError } = await supabase.functions.invoke('send-whatsapp-message', {
+                  body: whatsappPayload
+                });
+
+                if (whatsappError) {
+                  console.error('WhatsApp send failed (non-blocking):', whatsappError);
+                } else {
+                  console.log('WhatsApp message sent successfully');
+                }
+              } else {
+                console.warn('Invalid phone number for WhatsApp:', phoneNumber);
+              }
+            } catch (whatsappError) {
+              console.error('WhatsApp processing failed (non-blocking):', whatsappError);
+            }
+          }
+        }
+      } catch (emailException) {
+        console.error('Email/WhatsApp processing failed (non-blocking):', emailException);
+      }
       
       return true;
     } catch (error) {
