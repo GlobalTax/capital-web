@@ -128,6 +128,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'label.activityDescription': 'Descripción de actividad *',
     'placeholder.activityDescription': 'ej. Distribución HORECA, Consultoría IT, etc.',
     'helper.activityDescription': 'Describe brevemente la actividad principal de tu empresa',
+    'helper.location': 'Seleccione la ubicación principal de su empresa',
     'label.employeeRange': 'Número de empleados *',
     'placeholder.employeeRange': 'Selecciona el rango',
 
@@ -638,6 +639,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'label.activityDescription': 'Descrición de actividade *',
     'placeholder.activityDescription': 'ex. Distribución HORECA, Consultoría IT, etc.',
     'helper.activityDescription': 'Describe brevemente a actividade principal da túa empresa',
+    'helper.location': 'Selecciona a localización principal da túa empresa',
     'label.employeeRange': 'Número de empregados *',
     'placeholder.employeeRange': 'Selecciona o rango',
 
