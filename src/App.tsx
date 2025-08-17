@@ -1,5 +1,5 @@
 
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -11,8 +11,6 @@ import { PageLoadingSkeleton } from '@/components/LoadingStates';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
-import { logBundleSize, monitorResourceLoading } from '@/utils/bundleAnalysis';
-import { useEffect } from 'react';
 import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 
 // Lazy loading components - Core pages
@@ -35,6 +33,10 @@ const Nosotros = lazy(() => import('@/pages/Nosotros'));
 const Equipo = lazy(() => import('@/pages/Equipo'));
 const DocumentacionMA = lazy(() => import('@/pages/DocumentacionMA'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+
+// Protected route component
+const ProtectedRoute = lazy(() => import('@/components/auth/ProtectedRoute'));
+const ProfileRouter = lazy(() => import('@/pages/profile/ProfileRouter'));
 
 // Service pages - Create placeholder components for missing ones
 const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones').catch(() => 
@@ -227,8 +229,15 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin/*" element={<Admin />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/mis-valoraciones" element={<MyValuations />} />
+          <Route 
+            path="/perfil/*" 
+            element={
+              <ProtectedRoute>
+                <ProfileRouter />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/mis-valoraciones" element={<Navigate to="/perfil/valoraciones" replace />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/calculadora-valoracion" element={<Navigate to="/lp/calculadora" replace />} />
