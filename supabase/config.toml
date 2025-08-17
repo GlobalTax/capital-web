@@ -3,6 +3,9 @@ project_id = "fwhqtzkkvnjkazhaficj"
 [functions.claim-valuation]
 verify_jwt = true
 
+[functions.duplicate-valuation]
+verify_jwt = true
+
 [functions.list-user-valuations]
 verify_jwt = true
 
