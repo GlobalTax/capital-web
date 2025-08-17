@@ -653,6 +653,7 @@ export type Database = {
           contact_name: string
           created_at: string
           current_step: number | null
+          deleted_at: string | null
           ebitda: number | null
           ebitda_multiple_used: number | null
           email: string
@@ -672,6 +673,7 @@ export type Database = {
           immediate_alert_sent_at: string | null
           industry: string
           ip_address: unknown | null
+          is_deleted: boolean | null
           last_activity_at: string | null
           last_modified_field: string | null
           location: string | null
@@ -710,6 +712,7 @@ export type Database = {
           contact_name: string
           created_at?: string
           current_step?: number | null
+          deleted_at?: string | null
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email: string
@@ -729,6 +732,7 @@ export type Database = {
           immediate_alert_sent_at?: string | null
           industry: string
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           last_activity_at?: string | null
           last_modified_field?: string | null
           location?: string | null
@@ -767,6 +771,7 @@ export type Database = {
           contact_name?: string
           created_at?: string
           current_step?: number | null
+          deleted_at?: string | null
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email?: string
@@ -786,6 +791,7 @@ export type Database = {
           immediate_alert_sent_at?: string | null
           industry?: string
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           last_activity_at?: string | null
           last_modified_field?: string | null
           location?: string | null
