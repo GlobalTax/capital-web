@@ -200,6 +200,10 @@ serve(async (req) => {
 
   try {
     const { phoneE164, template, variables, textFallback, pdfUrl, valuationId }: SendWhatsAppRequest = await req.json();
+    
+    // Get template name from environment with fallback
+    const defaultTemplateName = Deno.env.get('WHATSAPP_TEMPLATE_NAME') || 'valuation_result_es';
+    const templateToUse = template || defaultTemplateName;
 
     // Validation
     if (!phoneE164 || !textFallback) {
@@ -225,8 +229,9 @@ serve(async (req) => {
     // Secure logging - don't log full PII
     const logPayload = {
       phone: phoneE164.slice(0, 4) + '***',
-      type: template ? 'template' : 'text',
-      template: template || null,
+      type: templateToUse ? 'template' : 'text',
+      template: templateToUse || null,
+      templateFromEnv: Deno.env.get('WHATSAPP_TEMPLATE_NAME') || 'not_configured',
       hasVariables: variables ? Object.keys(variables).length > 0 : false,
       hasPdfUrl: !!pdfUrl,
       hasValuationId: !!valuationId
@@ -236,12 +241,13 @@ serve(async (req) => {
     let result: WhatsAppResponse;
     let payloadSummary: any;
 
-    // Try template message first if template is provided
-    if (template) {
-      const templatePayload = createTemplateMessage(phoneE164, template, variables);
+    // Try template message first if template is available
+    if (templateToUse && variables && Object.keys(variables).length > 0) {
+      const templatePayload = createTemplateMessage(phoneE164, templateToUse, variables);
       payloadSummary = {
         message_type: 'template',
-        template_name: template,
+        template_name: templateToUse,
+        template_source: template ? 'request' : 'environment',
         has_variables: variables ? Object.keys(variables).length > 0 : false,
         variable_count: variables ? Object.keys(variables).length : 0,
         has_pdf_url: !!pdfUrl,
