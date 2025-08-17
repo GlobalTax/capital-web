@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { CompanyDataV4 } from '@/types/valuationV4';
 import { Building2, Calculator, TrendingUp } from 'lucide-react';
 import { 
@@ -29,7 +30,8 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
     industry: '',
     revenue: '',
     ebitda: '',
-    baseValuation: ''
+    baseValuation: '',
+    whatsapp_opt_in: false
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -269,11 +271,29 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
                   />
                   {errors.phone && (
                     <p className="text-sm text-destructive mt-1">{errors.phone}</p>
-                  )}
-                </div>
-              </div>
+                   )}
+                 </div>
+               </div>
 
-              {/* Resto del formulario permanece igual */}
+               {/* Consentimiento WhatsApp */}
+               <div className="flex items-start space-x-2">
+                 <Checkbox
+                   id="whatsapp_opt_in"
+                   checked={formData.whatsapp_opt_in}
+                   onCheckedChange={(checked) => {
+                     setFormData(prev => ({ ...prev, whatsapp_opt_in: Boolean(checked) }));
+                   }}
+                   className="mt-0.5"
+                 />
+                 <Label 
+                   htmlFor="whatsapp_opt_in" 
+                   className="text-sm text-muted-foreground leading-5"
+                 >
+                   Usaremos tu número solo para enviarte el resultado por WhatsApp. Puedes darte de baja en cualquier momento.
+                 </Label>
+               </div>
+
+               {/* Resto del formulario permanece igual */}
               <div>
                 <Label htmlFor="industry">Sector</Label>
                 <Select 

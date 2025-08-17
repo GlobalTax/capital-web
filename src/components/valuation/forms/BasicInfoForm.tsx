@@ -265,7 +265,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             htmlFor="whatsapp_opt_in" 
             className="text-sm text-gray-600 leading-5"
           >
-            Quiero recibir mi valoración por WhatsApp
+            Usaremos tu número solo para enviarte el resultado por WhatsApp. Puedes darte de baja en cualquier momento.
           </Label>
         </div>
 

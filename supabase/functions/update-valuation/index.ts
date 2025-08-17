@@ -28,6 +28,7 @@ const ALLOWED_FIELDS = new Set([
   "email",
   "phone",
   "phone_e164",
+  "whatsapp_opt_in",
   "industry",
   "years_of_operation",
   "employee_range",

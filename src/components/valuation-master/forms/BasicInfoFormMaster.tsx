@@ -3,12 +3,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Check } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { normalizeToE164 } from '@/utils/phoneUtils';
 
 interface BasicInfoFormMasterProps {
   companyData: any;
-  updateField: (field: string, value: string | number) => void;
+  updateField: (field: string, value: string | number | boolean) => void;
   showValidation?: boolean;
   getFieldState?: (field: string) => {
     isTouched: boolean;
@@ -217,7 +219,16 @@ const BasicInfoFormMaster: React.FC<BasicInfoFormMasterProps> = ({
               id="phone"
               type="tel"
               value={companyData.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                updateField('phone', value);
+                
+                // Normalizar a E.164 automáticamente
+                const normalizedPhone = normalizeToE164(value, 'ES');
+                if (normalizedPhone) {
+                  updateField('phone_e164', normalizedPhone);
+                }
+              }}
               onBlur={() => handleBlur('phone')}
               placeholder={t('placeholders.phone')}
               className={getFieldClassName('phone', 'pr-10')}
@@ -227,11 +238,34 @@ const BasicInfoFormMaster: React.FC<BasicInfoFormMasterProps> = ({
               <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
+          {companyData.phone_e164 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Formato internacional: {companyData.phone_e164}
+            </p>
+          )}
           {(showValidation || getValidationState('phone').isTouched) && getValidationState('phone').hasError && (
             <p id="phone-error" className="text-red-600 text-sm mt-1">
               {getValidationState('phone').errorMessage}
             </p>
           )}
+        </div>
+
+        {/* Consentimiento WhatsApp */}
+        <div className="flex items-start space-x-2 pt-2">
+          <Checkbox
+            id="whatsapp_opt_in"
+            checked={companyData.whatsapp_opt_in}
+            onCheckedChange={(checked) => {
+              updateField('whatsapp_opt_in', Boolean(checked));
+            }}
+            className="mt-0.5"
+          />
+          <Label 
+            htmlFor="whatsapp_opt_in" 
+            className="text-sm text-gray-600 leading-5"
+          >
+            Usaremos tu número solo para enviarte el resultado por WhatsApp. Puedes darte de baja en cualquier momento.
+          </Label>
         </div>
 
         {/* CIF */}
