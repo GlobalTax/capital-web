@@ -10,7 +10,6 @@ const CapittalBrief: React.FC = () => {
           </h2>
           <p className="mt-3 text-gray-700">
             Capittal es una firma boutique de M&A que acompaña procesos de compra y venta de empresas en España.
-            Trabajamos con pymes y mid-market, especialmente en sectores B2B, industrial y tecnología.
           </p>
         </header>
 
