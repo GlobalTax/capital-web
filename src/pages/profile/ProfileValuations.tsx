@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { Loader2, Plus, Search, Building2, Calendar, TrendingUp, Eye, Copy, Trash2, Play, Download } from 'lucide-react';
+import { Loader2, Plus, Search, Building2, Calendar, TrendingUp, Eye, Copy, Trash2, Play, Download, PlayCircle, XCircle, CheckCircle2 } from 'lucide-react';
 
 type CompanyValuation = Database['public']['Tables']['company_valuations']['Row'];
 
@@ -36,7 +36,13 @@ export const ProfileValuations: React.FC = () => {
         .eq('is_deleted', false);
 
       if (statusFilter !== 'all') {
-        query = query.eq('valuation_status', statusFilter);
+        if (statusFilter === 'in_progress') {
+          query = query.in('valuation_status', ['started', 'in_progress']);
+        } else if (statusFilter === 'abandoned') {
+          // Para abandonadas, filtramos después en el cliente
+        } else {
+          query = query.eq('valuation_status', statusFilter);
+        }
       }
 
       // Ordenamiento  
@@ -187,14 +193,41 @@ export const ProfileValuations: React.FC = () => {
     }
   };
 
+  // Función para detectar valoraciones abandonadas (started sin final_valuation y + 7 días inactivas)
+  const getAbandonedValuations = () => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    return valuations.filter(v => 
+      (v.valuation_status === 'started' || v.valuation_status === 'in_progress') &&
+      !v.final_valuation &&
+      new Date(v.last_activity_at || v.created_at) < sevenDaysAgo
+    );
+  };
+
+  // Función para obtener valoraciones en progreso (started/in_progress activas)
+  const getInProgressValuations = () => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    return valuations.filter(v => 
+      (v.valuation_status === 'started' || v.valuation_status === 'in_progress') &&
+      !v.final_valuation &&
+      new Date(v.last_activity_at || v.created_at) >= sevenDaysAgo
+    );
+  };
+
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-800 border-green-200';
+      case 'started':
       case 'in_progress':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'draft':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'abandoned':
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -204,10 +237,13 @@ export const ProfileValuations: React.FC = () => {
     switch (status) {
       case 'completed':
         return 'Completada';
+      case 'started':
       case 'in_progress':
         return 'En progreso';
       case 'draft':
         return 'Borrador';
+      case 'abandoned':
+        return 'Abandonada';
       default:
         return status || 'Sin estado';
     }
@@ -223,10 +259,34 @@ export const ProfileValuations: React.FC = () => {
     }).format(value);
   };
 
-  const filteredValuations = valuations.filter(valuation =>
-    valuation.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (valuation.industry && valuation.industry.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredValuations = valuations.filter(valuation => {
+    // Filtro por texto de búsqueda
+    const matchesSearch = valuation.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (valuation.industry && valuation.industry.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (!matchesSearch) return false;
+
+    // Filtro por estado
+    if (statusFilter === 'all') return true;
+    
+    if (statusFilter === 'abandoned') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return (valuation.valuation_status === 'started' || valuation.valuation_status === 'in_progress') &&
+             !valuation.final_valuation &&
+             new Date(valuation.last_activity_at || valuation.created_at) < sevenDaysAgo;
+    }
+    
+    if (statusFilter === 'in_progress') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return (valuation.valuation_status === 'started' || valuation.valuation_status === 'in_progress') &&
+             !valuation.final_valuation &&
+             new Date(valuation.last_activity_at || valuation.created_at) >= sevenDaysAgo;
+    }
+    
+    return valuation.valuation_status === statusFilter;
+  });
 
   if (isLoading) {
     return (
@@ -253,22 +313,11 @@ export const ProfileValuations: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-2xl font-bold">{valuations.length}</p>
-                <p className="text-sm text-muted-foreground">Total valoraciones</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-2xl font-bold">
                   {valuations.filter(v => v.valuation_status === 'completed').length}
@@ -281,12 +330,36 @@ export const ProfileValuations: React.FC = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <PlayCircle className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {valuations.filter(v => v.valuation_status === 'in_progress').length}
+                  {getInProgressValuations().length}
                 </p>
                 <p className="text-sm text-muted-foreground">En progreso</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-2xl font-bold">
+                  {getAbandonedValuations().length}
+                </p>
+                <p className="text-sm text-muted-foreground">Abandonadas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-2xl font-bold">{valuations.length}</p>
+                <p className="text-sm text-muted-foreground">Total valoraciones</p>
               </div>
             </div>
           </CardContent>
@@ -311,9 +384,10 @@ export const ProfileValuations: React.FC = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los estados</SelectItem>
-            <SelectItem value="draft">Borradores</SelectItem>
-            <SelectItem value="in_progress">En progreso</SelectItem>
             <SelectItem value="completed">Completadas</SelectItem>
+            <SelectItem value="in_progress">En progreso</SelectItem>
+            <SelectItem value="abandoned">Abandonadas</SelectItem>
+            <SelectItem value="draft">Borradores</SelectItem>
           </SelectContent>
         </Select>
 
@@ -385,7 +459,7 @@ export const ProfileValuations: React.FC = () => {
                 </div>
                 
                 <div className="flex gap-2 flex-wrap">
-                  {valuation.valuation_status === 'in_progress' && valuation.unique_token && (
+                  {(valuation.valuation_status === 'started' || valuation.valuation_status === 'in_progress') && valuation.unique_token && (
                     <Button 
                       size="sm"
                       onClick={() => handleResumeValuation(valuation)}
