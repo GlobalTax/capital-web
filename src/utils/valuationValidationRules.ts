@@ -21,6 +21,16 @@ export const createValidationRules = (): ValidationRules => ({
   
   phone: (value: string) => validateSpanishPhone(value),
   
+  phone_e164: (value: string) => ({
+    isValid: true, // Validación opcional, se normaliza automáticamente
+    message: undefined
+  }),
+  
+  whatsapp_opt_in: (value: boolean) => ({
+    isValid: true, // Campo siempre válido
+    message: undefined
+  }),
+  
   cif: (value: string) => {
     if (!value) return { isValid: true }; // CIF es opcional
     return value ? { 
@@ -95,7 +105,7 @@ export const validateStepFields = (step: number, data: CompanyData, validationRu
 export const getStepFields = (step: number): string[] => {
   switch (step) {
     case 1:
-      return ['contactName', 'companyName', 'email', 'phone', 'industry', 'activityDescription', 'employeeRange', 'revenue', 'ebitda', 'location'];
+      return ['contactName', 'companyName', 'email', 'phone', 'phone_e164', 'whatsapp_opt_in', 'industry', 'activityDescription', 'employeeRange', 'revenue', 'ebitda', 'location'];
     default:
       return [];
   }

@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Check } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { normalizePhoneToE164 } from '@/utils/phoneUtils';
 
 interface BasicInfoFormProps {
   companyData: any;
@@ -214,10 +216,10 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           )}
         </div>
 
-        {/* Teléfono */}
+        {/* Teléfono (WhatsApp) */}
         <div className="relative">
           <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.phone')}
+            Teléfono (WhatsApp)
           </Label>
           <Input
             id="phone"
@@ -225,14 +227,46 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             type="tel"
             autoComplete="tel"
             value={companyData.phone}
-            onChange={(e) => updateField('phone', e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              updateField('phone', value);
+              
+              // Normalizar a E.164 automáticamente
+              const normalizedPhone = normalizePhoneToE164(value);
+              if (normalizedPhone) {
+                updateField('phone_e164', normalizedPhone);
+              }
+            }}
             onBlur={() => handleBlur('phone')}
-            placeholder={t('placeholder.phone')}
+            placeholder="612 345 678"
             className={getFieldClassName('phone', false)}
           />
           {shouldShowCheckIcon('phone') && (
             <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
           )}
+          {companyData.phone_e164 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Formato internacional: {companyData.phone_e164}
+            </p>
+          )}
+        </div>
+
+        {/* Consentimiento WhatsApp */}
+        <div className="flex items-start space-x-2 pt-2">
+          <Checkbox
+            id="whatsapp_opt_in"
+            checked={companyData.whatsapp_opt_in}
+            onCheckedChange={(checked) => {
+              updateField('whatsapp_opt_in', Boolean(checked));
+            }}
+            className="mt-0.5"
+          />
+          <Label 
+            htmlFor="whatsapp_opt_in" 
+            className="text-sm text-gray-600 leading-5"
+          >
+            Quiero recibir mi valoración por WhatsApp
+          </Label>
         </div>
 
         {/* CIF */}

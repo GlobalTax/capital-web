@@ -47,6 +47,8 @@ export const createValidationState = (companyData: CompanyData): ValidationState
     companyName: validateCompanyName(companyData.companyName),
     email: validateEmail(companyData.email),
     phone: validateSpanishPhone(companyData.phone),
+    phone_e164: { isValid: true, message: undefined },
+    whatsapp_opt_in: { isValid: true, message: undefined },
     cif: companyData.cif ? { isValid: validateCIF(companyData.cif), message: validateCIF(companyData.cif) ? undefined : 'El CIF no es válido' } : { isValid: true },
     industry: { isValid: Boolean(companyData.industry), message: companyData.industry ? undefined : 'El sector es obligatorio' },
     activityDescription: { isValid: Boolean(companyData.activityDescription), message: companyData.activityDescription ? undefined : 'La descripción de actividad es obligatoria' },

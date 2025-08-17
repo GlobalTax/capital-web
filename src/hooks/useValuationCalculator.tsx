@@ -13,6 +13,8 @@ const initialCompanyData: CompanyData = {
   cif: '',
   email: '',
   phone: '',
+  phone_e164: '',
+  whatsapp_opt_in: false,
   industry: '',
   activityDescription: '',
   employeeRange: '',
@@ -150,9 +152,11 @@ export const useValuationCalculator = () => {
       companyName: companyData.companyName,
       email: companyData.email,
       phone: companyData.phone,
+      phone_e164: companyData.phone_e164, // Mantener el formato E.164
       industry: companyData.industry,
       activityDescription: companyData.activityDescription,
       employeeRange: companyData.employeeRange
+      // whatsapp_opt_in se resetea a false (no se mantiene el consentimiento)
     };
     
     resetForm();
@@ -160,6 +164,8 @@ export const useValuationCalculator = () => {
     updateFormField('companyName', resetData.companyName);
     updateFormField('email', resetData.email);
     updateFormField('phone', resetData.phone);
+    updateFormField('phone_e164', resetData.phone_e164);
+    updateFormField('whatsapp_opt_in', false); // Reset consentimiento
     updateFormField('industry', resetData.industry);
     updateFormField('activityDescription', resetData.activityDescription);
     updateFormField('employeeRange', resetData.employeeRange);

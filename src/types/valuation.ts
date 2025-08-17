@@ -6,6 +6,8 @@ export interface CompanyData {
   cif: string;
   email: string;
   phone: string;
+  phone_e164: string;
+  whatsapp_opt_in: boolean;
   industry: string;
   activityDescription: string;
   employeeRange: string;
@@ -52,6 +54,8 @@ export interface ValidationState {
   companyName: ValidationResult;
   email: ValidationResult;
   phone: ValidationResult;
+  phone_e164: ValidationResult;
+  whatsapp_opt_in: ValidationResult;
   cif: ValidationResult;
   industry: ValidationResult;
   activityDescription: ValidationResult;
