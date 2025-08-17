@@ -22,7 +22,7 @@ export const ProfileValuations: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('updated_at');
+  const [sortBy, setSortBy] = useState<string>('created_desc');
 
   const fetchValuations = async () => {
     if (!user) return;
@@ -48,7 +48,7 @@ export const ProfileValuations: React.FC = () => {
       // Ordenamiento  
       const [field, direction] = sortBy.split('_');
       const ascending = direction === 'asc';
-      if (field === 'updated_at') {
+      if (field === 'updated' || field === 'created') {
         query = query.order('created_at', { ascending });
       } else {
         query = query.order(field, { ascending });
@@ -396,8 +396,8 @@ export const ProfileValuations: React.FC = () => {
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="updated_at_desc">Más recientes</SelectItem>
-            <SelectItem value="updated_at_asc">Más antiguas</SelectItem>
+            <SelectItem value="created_desc">Más recientes</SelectItem>
+            <SelectItem value="created_asc">Más antiguas</SelectItem>
             <SelectItem value="company_name_asc">Nombre A-Z</SelectItem>
             <SelectItem value="company_name_desc">Nombre Z-A</SelectItem>
           </SelectContent>

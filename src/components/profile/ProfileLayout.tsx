@@ -27,7 +27,7 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
     ];
 
     if (path.includes('/perfil')) {
-      breadcrumbs.push({ label: 'Perfil', href: '/perfil/valoraciones', icon: User });
+      breadcrumbs.push({ label: 'Perfil', href: '/perfil', icon: User });
     }
 
     if (path.includes('/valoraciones') && !path.includes('/valoraciones/')) {
@@ -52,7 +52,7 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               {breadcrumbs.map((breadcrumb, index) => (
-                <React.Fragment key={breadcrumb.href}>
+                <div key={`${breadcrumb.href}-${index}`} className="flex items-center">
                   <Link 
                     to={breadcrumb.href} 
                     className="flex items-center gap-1 hover:text-foreground transition-colors"
@@ -61,9 +61,9 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
                     {breadcrumb.label}
                   </Link>
                   {index < breadcrumbs.length - 1 && (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 ml-2" />
                   )}
-                </React.Fragment>
+                </div>
               ))}
             </div>
             
