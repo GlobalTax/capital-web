@@ -678,6 +678,7 @@ export type Database = {
           net_profit_margin: number | null
           ownership_participation: string | null
           phone: string | null
+          phone_e164: string | null
           recovery_link_sent: boolean | null
           recovery_link_sent_at: string | null
           revenue: number | null
@@ -694,6 +695,7 @@ export type Database = {
           valuation_range_max: number | null
           valuation_range_min: number | null
           valuation_status: string | null
+          whatsapp_opt_in: boolean | null
           whatsapp_sent: boolean | null
           whatsapp_sent_at: string | null
           years_of_operation: number | null
@@ -732,6 +734,7 @@ export type Database = {
           net_profit_margin?: number | null
           ownership_participation?: string | null
           phone?: string | null
+          phone_e164?: string | null
           recovery_link_sent?: boolean | null
           recovery_link_sent_at?: string | null
           revenue?: number | null
@@ -748,6 +751,7 @@ export type Database = {
           valuation_range_max?: number | null
           valuation_range_min?: number | null
           valuation_status?: string | null
+          whatsapp_opt_in?: boolean | null
           whatsapp_sent?: boolean | null
           whatsapp_sent_at?: string | null
           years_of_operation?: number | null
@@ -786,6 +790,7 @@ export type Database = {
           net_profit_margin?: number | null
           ownership_participation?: string | null
           phone?: string | null
+          phone_e164?: string | null
           recovery_link_sent?: boolean | null
           recovery_link_sent_at?: string | null
           revenue?: number | null
@@ -802,6 +807,7 @@ export type Database = {
           valuation_range_max?: number | null
           valuation_range_min?: number | null
           valuation_status?: string | null
+          whatsapp_opt_in?: boolean | null
           whatsapp_sent?: boolean | null
           whatsapp_sent_at?: string | null
           years_of_operation?: number | null
