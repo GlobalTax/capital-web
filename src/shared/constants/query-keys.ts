@@ -21,6 +21,10 @@ export const QUERY_KEYS = {
   USER_PROFILE: 'user_profile',
   USER_PREFERENCES: 'user_preferences',
   
+  // Valoraciones de usuario
+  USER_VALUATIONS: 'user_valuations',
+  USER_VALUATION_DETAIL: 'user_valuation_detail',
+  
   // Sistema
   SYSTEM_METRICS: 'system_metrics',
   PERFORMANCE_METRICS: 'performance_metrics'
