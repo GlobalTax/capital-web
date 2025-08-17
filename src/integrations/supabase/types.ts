@@ -1884,6 +1884,53 @@ export type Database = {
         }
         Relationships: []
       }
+      pdf_download_logs: {
+        Row: {
+          created_at: string | null
+          download_status: string
+          file_size_bytes: number | null
+          generation_time_ms: number | null
+          id: string
+          ip_address: unknown | null
+          pdf_type: string
+          user_agent: string | null
+          user_id: string | null
+          valuation_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          download_status?: string
+          file_size_bytes?: number | null
+          generation_time_ms?: number | null
+          id?: string
+          ip_address?: unknown | null
+          pdf_type: string
+          user_agent?: string | null
+          user_id?: string | null
+          valuation_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          download_status?: string
+          file_size_bytes?: number | null
+          generation_time_ms?: number | null
+          id?: string
+          ip_address?: unknown | null
+          pdf_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_download_logs_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sector_multiples: {
         Row: {
           description: string | null

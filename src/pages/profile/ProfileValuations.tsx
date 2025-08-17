@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { Loader2, Plus, Search, Building2, Calendar, TrendingUp, Eye, Copy, Trash2, Play } from 'lucide-react';
+import { Loader2, Plus, Search, Building2, Calendar, TrendingUp, Eye, Copy, Trash2, Play, Download } from 'lucide-react';
 
 type CompanyValuation = Database['public']['Tables']['company_valuations']['Row'];
 
@@ -128,6 +128,31 @@ export const ProfileValuations: React.FC = () => {
       toast({
         title: "Error",
         description: "No se pudo duplicar la valoración",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadPDF = async (valuation: CompanyValuation) => {
+    try {
+      const { downloadValuationPDF } = await import('@/utils/pdfManager');
+      
+      await downloadValuationPDF({
+        valuationId: valuation.id,
+        pdfType: 'auto',
+        userId: user?.id,
+        language: 'es'
+      });
+
+      toast({
+        title: "PDF descargado",
+        description: "El informe se ha descargado correctamente",
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo descargar el PDF",
         variant: "destructive",
       });
     }
@@ -359,7 +384,7 @@ export const ProfileValuations: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {valuation.valuation_status === 'in_progress' && valuation.unique_token && (
                     <Button 
                       size="sm"
@@ -377,6 +402,14 @@ export const ProfileValuations: React.FC = () => {
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Ver detalle
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDownloadPDF(valuation)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    PDF
                   </Button>
                   <Button 
                     variant="outline" 

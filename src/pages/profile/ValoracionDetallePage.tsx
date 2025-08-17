@@ -46,26 +46,24 @@ export const ValoracionDetallePage: React.FC = () => {
     if (!valuation) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-pdf-report', {
-        body: {
-          valuationId: valuation.id,
-          includeCharts: true,
-          language: 'es'
-        }
+      const { downloadValuationPDF } = await import('@/utils/pdfManager');
+      
+      await downloadValuationPDF({
+        valuationId: valuation.id,
+        pdfType: 'auto', // Decidirá automáticamente el mejor método
+        userId: user?.id,
+        language: 'es'
       });
 
-      if (error) throw error;
-
-      if (data?.pdfUrl) {
-        // Open PDF in new tab
-        window.open(data.pdfUrl, '_blank');
-        toast({ title: "PDF generado correctamente" });
-      }
+      toast({ 
+        title: "PDF descargado", 
+        description: "El informe se ha descargado correctamente" 
+      });
     } catch (error: any) {
-      console.error('Error generating PDF:', error);
+      console.error('Error downloading PDF:', error);
       toast({
         title: "Error",
-        description: "No se pudo generar el PDF",
+        description: "No se pudo descargar el PDF",
         variant: "destructive",
       });
     }
