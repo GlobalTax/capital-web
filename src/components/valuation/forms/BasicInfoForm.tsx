@@ -448,11 +448,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 type="number"
                 placeholder="500000"
                 value={companyData.revenue || ''}
-                onChange={(e) => updateField('revenue', parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  const value = Math.round(parseFloat(e.target.value) || 0);
+                  updateField('revenue', value);
+                }}
                 onBlur={() => handleBlur('revenue')}
                 className={getFieldClassName('revenue')}
                 min="0"
-                step="1000"
+                step="1"
               />
               {shouldShowCheckIcon('revenue') && (
                 <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
@@ -479,11 +482,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 type="number"
                 placeholder="75000"
                 value={companyData.ebitda || ''}
-                onChange={(e) => updateField('ebitda', parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  const value = Math.round(parseFloat(e.target.value) || 0);
+                  updateField('ebitda', value);
+                }}
                 onBlur={() => handleBlur('ebitda')}
                 className={getFieldClassName('ebitda')}
                 min="0"
-                step="1000"
+                step="1"
               />
               {shouldShowCheckIcon('ebitda') && (
                 <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
@@ -535,11 +541,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                   type="number"
                   placeholder="15000"
                   value={companyData.adjustmentAmount || ''}
-                  onChange={(e) => updateField('adjustmentAmount', parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = Math.round(parseFloat(e.target.value) || 0);
+                    updateField('adjustmentAmount', value);
+                  }}
                   onBlur={() => handleBlur('adjustmentAmount')}
                   className={getFieldClassName('adjustmentAmount', false)}
                   min="0"
-                  step="1000"
+                  step="1"
                 />
                 {shouldShowCheckIcon('adjustmentAmount') && (
                   <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
