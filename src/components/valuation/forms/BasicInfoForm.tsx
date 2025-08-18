@@ -145,249 +145,283 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nombre de contacto */}
-        <div className="relative">
-          <Label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.contactName')}
-          </Label>
-          <Input
-            id="contactName"
-            name="contactName"
-            type="text"
-            autoComplete="name"
-            value={companyData.contactName}
-            onChange={(e) => updateField('contactName', e.target.value)}
-            onBlur={() => handleBlur('contactName')}
-            placeholder={t('placeholder.contactName')}
-            className={getFieldClassName('contactName')}
-          />
-          {shouldShowCheckIcon('contactName') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {showValidation && errors?.contactName && (
-            <p className="text-red-500 text-sm mt-1">{errors.contactName}</p>
-          )}
+        <div className="min-h-[85px]">
+          <div className="relative">
+            <Label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.contactName')}
+            </Label>
+            <Input
+              id="contactName"
+              name="contactName"
+              type="text"
+              autoComplete="name"
+              value={companyData.contactName}
+              onChange={(e) => updateField('contactName', e.target.value)}
+              onBlur={() => handleBlur('contactName')}
+              placeholder={t('placeholder.contactName')}
+              className={getFieldClassName('contactName')}
+            />
+            {shouldShowCheckIcon('contactName') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            {showValidation && errors?.contactName && (
+              <p className="text-red-500 text-sm">{errors.contactName}</p>
+            )}
+          </div>
         </div>
 
         {/* Nombre de la empresa */}
-        <div className="relative">
-          <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.companyName')}
-          </Label>
-          <Input
-            id="companyName"
-            name="companyName"
-            type="text"
-            autoComplete="organization"
-            value={companyData.companyName}
-            onChange={(e) => updateField('companyName', e.target.value)}
-            onBlur={() => handleBlur('companyName')}
-            placeholder={t('placeholder.companyName')}
-            className={getFieldClassName('companyName')}
-          />
-          {shouldShowCheckIcon('companyName') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {showValidation && errors?.companyName && (
-            <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
-          )}
+        <div className="min-h-[85px]">
+          <div className="relative">
+            <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.companyName')}
+            </Label>
+            <Input
+              id="companyName"
+              name="companyName"
+              type="text"
+              autoComplete="organization"
+              value={companyData.companyName}
+              onChange={(e) => updateField('companyName', e.target.value)}
+              onBlur={() => handleBlur('companyName')}
+              placeholder={t('placeholder.companyName')}
+              className={getFieldClassName('companyName')}
+            />
+            {shouldShowCheckIcon('companyName') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            {showValidation && errors?.companyName && (
+              <p className="text-red-500 text-sm">{errors.companyName}</p>
+            )}
+          </div>
         </div>
 
         {/* Email */}
-        <div className="relative">
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.email')}
-          </Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={companyData.email}
-            onChange={(e) => updateField('email', e.target.value)}
-            onBlur={() => handleBlur('email')}
-            placeholder={t('placeholder.email')}
-            className={getFieldClassName('email')}
-          />
-          {shouldShowCheckIcon('email') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {showValidation && errors?.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-          )}
+        <div className="min-h-[85px]">
+          <div className="relative">
+            <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.email')}
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={companyData.email}
+              onChange={(e) => updateField('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              placeholder={t('placeholder.email')}
+              className={getFieldClassName('email')}
+            />
+            {shouldShowCheckIcon('email') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            {showValidation && errors?.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
+          </div>
         </div>
 
         {/* Teléfono (WhatsApp) */}
-        <div className="relative">
-          <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-            Teléfono (WhatsApp)
-          </Label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            value={companyData.phone}
-            onChange={(e) => {
-              const value = e.target.value;
-              updateField('phone', value);
-              
-              // Normalizar a E.164 automáticamente
-              const normalizedPhone = normalizePhoneToE164(value);
-              if (normalizedPhone) {
-                updateField('phone_e164', normalizedPhone);
-              }
-            }}
-            onBlur={() => handleBlur('phone')}
-            placeholder="612 345 678"
-            className={getFieldClassName('phone', false)}
-          />
-          {shouldShowCheckIcon('phone') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          {companyData.phone_e164 && (
-            <p className="text-xs text-gray-500 mt-1">
-              Formato internacional: {companyData.phone_e164}
+        <div className="min-h-[105px]">
+          <div className="relative">
+            <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              Teléfono (WhatsApp)
+            </Label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              value={companyData.phone}
+              onChange={(e) => {
+                const value = e.target.value;
+                updateField('phone', value);
+                
+                // Normalizar a E.164 automáticamente
+                const normalizedPhone = normalizePhoneToE164(value);
+                if (normalizedPhone) {
+                  updateField('phone_e164', normalizedPhone);
+                }
+              }}
+              onBlur={() => handleBlur('phone')}
+              placeholder="612 345 678"
+              className={getFieldClassName('phone', false)}
+            />
+            {shouldShowCheckIcon('phone') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            <p className={`text-xs text-gray-500 ${companyData.phone_e164 ? 'opacity-100' : 'opacity-0'}`}>
+              Formato internacional: {companyData.phone_e164 || 'N/A'}
             </p>
-          )}
+          </div>
         </div>
 
-
         {/* CIF */}
-        <div className="relative">
-          <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.cif')}
-          </Label>
-          <Input
-            id="cif"
-            name="cif"
-            type="text"
-            value={companyData.cif}
-            onChange={(e) => updateField('cif', e.target.value)}
-            onBlur={() => handleBlur('cif')}
-            placeholder={t('placeholder.cif')}
-            className={getFieldClassName('cif', false)}
-          />
-          {shouldShowCheckIcon('cif') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
+        <div className="min-h-[85px]">
+          <div className="relative">
+            <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.cif')}
+            </Label>
+            <Input
+              id="cif"
+              name="cif"
+              type="text"
+              value={companyData.cif}
+              onChange={(e) => updateField('cif', e.target.value)}
+              onBlur={() => handleBlur('cif')}
+              placeholder={t('placeholder.cif')}
+              className={getFieldClassName('cif', false)}
+            />
+            {shouldShowCheckIcon('cif') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            {/* Reserved space for error messages */}
+          </div>
         </div>
 
         {/* Sector */}
-        <div className="relative">
-          <Label htmlFor="industry-select" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.industry')}
-          </Label>
-          <Select
-            value={companyData.industry}
-            onValueChange={(value) => {
-              updateField('industry', value);
-              handleBlur('industry');
-            }}
-          >
-            <SelectTrigger 
-              id="industry-select"
-              name="industry"
-              className={getFieldClassName('industry')}
+        <div className="min-h-[85px]">
+          <div className="relative">
+            <Label htmlFor="industry-select" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.industry')}
+            </Label>
+            <Select
+              value={companyData.industry}
+              onValueChange={(value) => {
+                updateField('industry', value);
+                handleBlur('industry');
+              }}
             >
-              <SelectValue placeholder={t('placeholder.industry')} />
-            </SelectTrigger>
-            <SelectContent className="bg-white shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
-              {industries.map((industry) => (
-                <SelectItem key={industry} value={industry} className="hover:bg-gray-100">
-                  {industry}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {shouldShowCheckIcon('industry') && (
-            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
-          )}
-          {showValidation && errors?.industry && (
-            <p className="text-red-500 text-sm mt-1">{errors.industry}</p>
-          )}
+              <SelectTrigger 
+                id="industry-select"
+                name="industry"
+                className={getFieldClassName('industry')}
+              >
+                <SelectValue placeholder={t('placeholder.industry')} />
+              </SelectTrigger>
+              <SelectContent className="bg-white shadow-lg border border-gray-200 z-[100] max-h-60 overflow-y-auto">
+                {industries.map((industry) => (
+                  <SelectItem key={industry} value={industry} className="hover:bg-gray-100">
+                    {industry}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {shouldShowCheckIcon('industry') && (
+              <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            {showValidation && errors?.industry && (
+              <p className="text-red-500 text-sm">{errors.industry}</p>
+            )}
+          </div>
         </div>
 
         {/* Descripción de actividad */}
-        <div className="relative">
-          <Label htmlFor="activityDescription" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.activityDescription')}
-          </Label>
-          <Input
-            id="activityDescription"
-            name="activityDescription"
-            type="text"
-            value={companyData.activityDescription}
-            onChange={(e) => updateField('activityDescription', e.target.value)}
-            onBlur={() => handleBlur('activityDescription')}
-            placeholder={t('placeholder.activityDescription')}
-            className={getFieldClassName('activityDescription')}
-          />
-          {shouldShowCheckIcon('activityDescription') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          <p className="text-sm text-gray-500 mt-1">{t('helper.activityDescription')}</p>
-          {showValidation && errors?.activityDescription && (
-            <p className="text-red-500 text-sm mt-1">{errors.activityDescription}</p>
-          )}
+        <div className="min-h-[105px]">
+          <div className="relative">
+            <Label htmlFor="activityDescription" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.activityDescription')}
+            </Label>
+            <Input
+              id="activityDescription"
+              name="activityDescription"
+              type="text"
+              value={companyData.activityDescription}
+              onChange={(e) => updateField('activityDescription', e.target.value)}
+              onBlur={() => handleBlur('activityDescription')}
+              placeholder={t('placeholder.activityDescription')}
+              className={getFieldClassName('activityDescription')}
+            />
+            {shouldShowCheckIcon('activityDescription') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[40px] mt-1 space-y-1">
+            <p className="text-sm text-gray-500">{t('helper.activityDescription')}</p>
+            {showValidation && errors?.activityDescription && (
+              <p className="text-red-500 text-sm">{errors.activityDescription}</p>
+            )}
+          </div>
         </div>
 
         {/* Ubicación */}
-        <div className="relative">
-          <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.location')}
-          </Label>
-          <Input
-            id="location"
-            name="location"
-            type="text"
-            value={companyData.location}
-            onChange={(e) => updateField('location', e.target.value)}
-            onBlur={() => handleBlur('location')}
-            placeholder={t('placeholder.location')}
-            className={getFieldClassName('location')}
-          />
-          {shouldShowCheckIcon('location') && (
-            <Check className="absolute right-3 top-10 h-4 w-4 text-green-500" />
-          )}
-          <p className="text-sm text-gray-500 mt-1">{t('helper.location')}</p>
-          {showValidation && errors?.location && (
-            <p className="text-red-500 text-sm mt-1">{errors.location}</p>
-          )}
+        <div className="min-h-[105px]">
+          <div className="relative">
+            <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.location')}
+            </Label>
+            <Input
+              id="location"
+              name="location"
+              type="text"
+              value={companyData.location}
+              onChange={(e) => updateField('location', e.target.value)}
+              onBlur={() => handleBlur('location')}
+              placeholder={t('placeholder.location')}
+              className={getFieldClassName('location')}
+            />
+            {shouldShowCheckIcon('location') && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
+          </div>
+          <div className="min-h-[40px] mt-1 space-y-1">
+            <p className="text-sm text-gray-500">{t('helper.location')}</p>
+            {showValidation && errors?.location && (
+              <p className="text-red-500 text-sm">{errors.location}</p>
+            )}
+          </div>
         </div>
 
         {/* Rango de empleados */}
-        <div className="relative">
-          <Label htmlFor="employeeRange-select" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('label.employeeRange')}
-          </Label>
-          <Select
-            value={companyData.employeeRange}
-            onValueChange={(value) => {
-              updateField('employeeRange', value);
-              handleBlur('employeeRange');
-            }}
-          >
-            <SelectTrigger 
-              id="employeeRange-select"
-              name="employeeRange"
-              className={getFieldClassName('employeeRange')}
+        <div className="min-h-[85px]">
+          <div className="relative">
+            <Label htmlFor="employeeRange-select" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('label.employeeRange')}
+            </Label>
+            <Select
+              value={companyData.employeeRange}
+              onValueChange={(value) => {
+                updateField('employeeRange', value);
+                handleBlur('employeeRange');
+              }}
             >
-              <SelectValue placeholder={t('placeholder.employeeRange')} />
-            </SelectTrigger>
-            <SelectContent className="bg-white shadow-lg border border-gray-200 z-50">
-              {employeeRanges.map((range) => (
-                <SelectItem key={range.value} value={range.value} className="hover:bg-gray-100">
-                  {t(employeeRangeKey(range.value))}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {shouldShowCheckIcon('employeeRange') && (
-            <Check className="absolute right-8 top-10 h-4 w-4 text-green-500 pointer-events-none" />
-          )}
-          {showValidation && errors?.employeeRange && (
-            <p className="text-red-500 text-sm mt-1">{errors.employeeRange}</p>
-          )}
+              <SelectTrigger 
+                id="employeeRange-select"
+                name="employeeRange"
+                className={getFieldClassName('employeeRange')}
+              >
+                <SelectValue placeholder={t('placeholder.employeeRange')} />
+              </SelectTrigger>
+              <SelectContent className="bg-white shadow-lg border border-gray-200 z-[100]">
+                {employeeRanges.map((range) => (
+                  <SelectItem key={range.value} value={range.value} className="hover:bg-gray-100">
+                    {t(employeeRangeKey(range.value))}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {shouldShowCheckIcon('employeeRange') && (
+              <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+            )}
+          </div>
+          <div className="min-h-[20px] mt-1">
+            {showValidation && errors?.employeeRange && (
+              <p className="text-red-500 text-sm">{errors.employeeRange}</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -404,11 +438,11 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
         <div className="grid gap-6 sm:grid-cols-2">
           {/* Revenue */}
-          <div className="space-y-2">
+          <div className="min-h-[100px]">
             <Label htmlFor="revenue" className="text-sm font-medium text-gray-700">
               {t('form.revenue')} <span className="text-red-500">*</span>
             </Label>
-            <div className="relative">
+            <div className="relative mt-2">
               <Input
                 id="revenue"
                 type="number"
@@ -421,25 +455,25 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 step="1000"
               />
               {shouldShowCheckIcon('revenue') && (
-                <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
               )}
             </div>
-            {companyData.revenue > 0 && (
-              <p className="text-xs text-gray-500">
-                {formatCurrency(companyData.revenue)}
+            <div className="min-h-[40px] mt-1 space-y-1">
+              <p className={`text-xs text-gray-500 ${companyData.revenue > 0 ? 'opacity-100' : 'opacity-0'}`}>
+                {companyData.revenue > 0 ? formatCurrency(companyData.revenue) : 'N/A'}
               </p>
-            )}
-            {showValidation && !isFieldValid('revenue', companyData.revenue) && (
-              <p className="text-sm text-red-600">{t('validation.revenue_required')}</p>
-            )}
+              {showValidation && !isFieldValid('revenue', companyData.revenue) && (
+                <p className="text-sm text-red-600">{t('validation.revenue_required')}</p>
+              )}
+            </div>
           </div>
 
           {/* EBITDA */}
-          <div className="space-y-2">
+          <div className="min-h-[100px]">
             <Label htmlFor="ebitda" className="text-sm font-medium text-gray-700">
               {t('form.ebitda')} <span className="text-red-500">*</span>
             </Label>
-            <div className="relative">
+            <div className="relative mt-2">
               <Input
                 id="ebitda"
                 type="number"
@@ -452,17 +486,17 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 step="1000"
               />
               {shouldShowCheckIcon('ebitda') && (
-                <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
               )}
             </div>
-            {companyData.ebitda > 0 && (
-              <p className="text-xs text-gray-500">
-                {formatCurrency(companyData.ebitda)}
+            <div className="min-h-[40px] mt-1 space-y-1">
+              <p className={`text-xs text-gray-500 ${companyData.ebitda > 0 ? 'opacity-100' : 'opacity-0'}`}>
+                {companyData.ebitda > 0 ? formatCurrency(companyData.ebitda) : 'N/A'}
               </p>
-            )}
-            {showValidation && !isFieldValid('ebitda', companyData.ebitda) && (
-              <p className="text-sm text-red-600">{t('validation.ebitda_required')}</p>
-            )}
+              {showValidation && !isFieldValid('ebitda', companyData.ebitda) && (
+                <p className="text-sm text-red-600">{t('validation.ebitda_required')}</p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -508,7 +542,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                   step="1000"
                 />
                 {shouldShowCheckIcon('adjustmentAmount') && (
-                  <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                 )}
               </div>
               {companyData.adjustmentAmount > 0 && (
