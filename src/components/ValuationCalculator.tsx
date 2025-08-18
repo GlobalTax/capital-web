@@ -95,32 +95,40 @@ const ValuationCalculator = () => {
     updateStep(currentStep); // Update autosave step tracking
   }, [currentStep, trackStepChange, updateStep]);
 
-  // Enhanced updateField with tracking and AUTOSAVE INMEDIATO desde el primer campo
+  // Enhanced updateField with tracking y GUARDADO AUTOMÁTICO INMEDIATO desde el primer campo
   const trackedUpdateField = async (field: keyof CompanyData, value: any) => {
     updateField(field, value);
     trackFieldUpdate(field, value);
-    
-    // Obtener UTMs y referrer actuales
+
+    // Obtener parámetros UTM del URL para el tracking
     const urlParams = new URLSearchParams(window.location.search);
-    const currentUTMs = {
+    const utmData = {
       utm_source: urlParams.get('utm_source'),
       utm_medium: urlParams.get('utm_medium'),
       utm_campaign: urlParams.get('utm_campaign'),
       referrer: document.referrer || null
     };
-    
-    // Crear valoración inicial si es el primer campo completado
-    if (!uniqueToken && value && value !== '') {
-      console.log(`Primer campo completado: ${field}. Creando registro con UTMs...`);
-      await createInitialValuationOnFirstField(field, value, {
-        ...companyData,
-        [field]: value
-      }, currentUTMs);
-    }
-    
-    // Actualizar si ya existe token
-    if (uniqueToken) {
-      updateValuation({ [field]: value }, field);
+
+    try {
+      // CREAR valoración inicial si no existe token
+      if (!uniqueToken) {
+        console.log(`🔥 Primer campo detectado: ${field} = "${value}"`);
+        const newToken = await createInitialValuationOnFirstField(field, value, companyData, utmData);
+        if (newToken) {
+          console.log('✅ Sistema de guardado automático activado!');
+        }
+      } else {
+        // CAMPOS CRÍTICOS: guardado inmediato (email, companyName)
+        if (field === 'email' || field === 'companyName') {
+          console.log(`🔥 Campo crítico detectado: ${field}. Guardado inmediato...`);
+          await updateValuationImmediate({ [field]: value }, field);
+        } else {
+          // OTROS CAMPOS: guardado con debounce (300ms)
+          updateValuation({ [field]: value }, field);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error en guardado automático:', error);
     }
   };
 

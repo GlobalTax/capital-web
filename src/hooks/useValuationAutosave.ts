@@ -126,12 +126,19 @@ export const useValuationAutosave = () => {
     allData: CompanyData,
     utmData?: { utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; referrer?: string | null }
   ): Promise<string | null> => {
-    // Solo crear si no existe token y el valor no está vacío
-    if (state.uniqueToken || !value || value === '') {
+    // Mejorar condición: crear si no existe token y el valor tiene al menos 2 caracteres
+    if (state.uniqueToken) {
       return state.uniqueToken;
     }
 
-    console.log(`Primer campo completado: ${field} = ${value}. Creando valoración inicial con UTMs...`);
+    // Verificar que el valor tenga contenido significativo
+    if (!value || 
+        (typeof value === 'string' && value.trim().length < 2) ||
+        (typeof value === 'number' && value <= 0)) {
+      return null;
+    }
+
+    console.log(`🚀 Primer campo completado: ${field} = "${value}". Iniciando guardado automático...`);
     
     try {
       setState(prev => ({ ...prev, isSaving: true }));
@@ -194,7 +201,7 @@ export const useValuationAutosave = () => {
       }));
       
       saveTokenToStorage(finalToken);
-      console.log('Initial valuation created with token:', finalToken);
+      console.log('✅ Valoración inicial creada exitosamente con token:', finalToken);
       return finalToken;
       
     } catch (error) {
@@ -251,9 +258,9 @@ export const useValuationAutosave = () => {
         });
 
         if (error) {
-          console.error('Error updating valuation:', error);
+          console.error('❌ Error actualizando valoración:', error);
         } else {
-          console.log('Valuation updated successfully via debounced update:', { field, token });
+          console.log('✅ Valoración actualizada exitosamente:', { field, token: `${token.substring(0, 12)}...` });
           setState(prev => ({ 
             ...prev, 
             lastSaved: new Date(),
@@ -261,18 +268,18 @@ export const useValuationAutosave = () => {
           }));
         }
       } catch (error) {
-        console.error('Exception updating valuation:', error);
+        console.error('❌ Excepción actualizando valoración:', error);
       } finally {
         setState(prev => ({ ...prev, isSaving: false }));
       }
-    }, 600); // 600ms debounce
+    }, 300); // 300ms debounce para guardado más rápido
   }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
-  // Immediate update function (no debounce) for critical saves like page exit
+  // Guardado inmediato para campos críticos (email, company name)
   const updateValuationImmediate = useCallback(async (partialData: Partial<CompanyData>, field?: string) => {
     const token = state.uniqueToken;
     if (!token) {
-      console.warn('No token available for immediate update');
+      console.warn('⚠️ No hay token disponible para guardado inmediato');
       return;
     }
 
@@ -290,7 +297,7 @@ export const useValuationAutosave = () => {
         lastModifiedField: field || 'unknown'
       };
 
-      console.log('Immediate valuation update:', { field, token });
+      console.log('🔥 Guardado inmediato iniciado para campo crítico:', { field, token: `${token.substring(0, 12)}...` });
 
       // Ensure authenticated session is used when available  
       const { data, error } = await supabase.functions.invoke('update-valuation', {
@@ -301,9 +308,9 @@ export const useValuationAutosave = () => {
       });
 
       if (error) {
-        console.error('Error in immediate valuation update:', error);
+        console.error('❌ Error en guardado inmediato:', error);
       } else {
-        console.log('Immediate valuation update successful:', { field, token });
+        console.log('✅ Guardado inmediato exitoso:', { field, token: `${token.substring(0, 12)}...` });
         setState(prev => ({ 
           ...prev, 
           lastSaved: new Date(),
@@ -311,7 +318,7 @@ export const useValuationAutosave = () => {
         }));
       }
     } catch (error) {
-      console.error('Exception in immediate valuation update:', error);
+      console.error('❌ Excepción en guardado inmediato:', error);
     } finally {
       setState(prev => ({ ...prev, isSaving: false }));
     }
