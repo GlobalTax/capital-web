@@ -27,27 +27,6 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* DEV ONLY - Admin access button for development */}
-            {process.env.NODE_ENV === 'development' && (
-              <Link to="/admin">
-                <InteractiveHoverButton 
-                  text="🔧"
-                  variant="secondary"
-                  size="sm"
-                  className="bg-gray-50 text-gray-500 hover:bg-gray-100 border-gray-200 opacity-50 hover:opacity-100"
-                />
-              </Link>
-            )}
-            {!user && (
-              <Link to="/auth">
-                <InteractiveHoverButton 
-                  text="Mi Cuenta"
-                  variant="outline"
-                  size="sm"
-                  className="bg-white text-black border-gray-300 hover:bg-gray-50"
-                />
-              </Link>
-            )}
             <Link to="/contacto">
               <InteractiveHoverButton 
                 text="Contacto"
