@@ -2339,6 +2339,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      enhanced_rate_limit_check: {
+        Args: {
+          identifier: string
+          max_requests?: number
+          window_minutes?: number
+        }
+        Returns: boolean
+      }
       generate_proposal_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2396,6 +2404,10 @@ export type Database = {
           user_id?: string
           violation_type: string
         }
+        Returns: undefined
+      }
+      monitor_security_violations: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       process_automation_workflows: {
