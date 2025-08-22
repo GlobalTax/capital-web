@@ -1931,6 +1931,36 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          identifier: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          identifier: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          identifier?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       sector_multiples: {
         Row: {
           description: string | null
@@ -2375,6 +2405,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_rate_limit_enhanced: {
+        Args: {
+          p_category?: string
+          p_identifier: string
+          p_max_requests?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_user_admin_role: {
         Args: { check_user_id: string }
         Returns: string
@@ -2382,6 +2421,14 @@ export type Database = {
       cleanup_old_lead_data: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      create_temporary_user: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_role?: Database["public"]["Enums"]["admin_role"]
+        }
+        Returns: Json
       }
       current_user_is_admin: {
         Args: Record<PropertyKey, never>
