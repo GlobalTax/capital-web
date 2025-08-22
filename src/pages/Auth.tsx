@@ -25,26 +25,15 @@ const Auth = () => {
     return <Navigate to="/perfil/valoraciones" replace />;
   }
 
-  const handleAuth = async (e: React.FormEvent, mode: 'signin' | 'signup') => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
     setError('');
 
     try {
-      if (mode === 'signup') {
-        if (!fullName.trim()) {
-          throw new Error('El nombre completo es obligatorio');
-        }
-        const { error } = await signUp(email, password, fullName);
-        if (error) {
-          throw error;
-        }
-        setShowSuccess(true);
-      } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          throw error;
-        }
+      const { error } = await signIn(email, password);
+      if (error) {
+        throw error;
       }
     } catch (err: any) {
       setError(err.message || 'Error de conexión. Inténtalo de nuevo.');
@@ -88,11 +77,7 @@ const Auth = () => {
           </CardHeader>
           
           <CardContent className="pt-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">Iniciar Sesión</TabsTrigger>
-                <TabsTrigger value="signup">Solicitar Acceso</TabsTrigger>
-              </TabsList>
+            <div className="w-full">
 
               {error && (
                 <Alert variant="destructive" className="mb-4">
@@ -101,17 +86,8 @@ const Auth = () => {
                 </Alert>
               )}
 
-              {showSuccess && activeTab === 'signup' && (
-                <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    ¡Solicitud de registro enviada! Tu cuenta está pendiente de aprobación. Te notificaremos por email cuando sea aprobada.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={(e) => handleAuth(e, 'signin')} className="space-y-4">
+              <div className="space-y-4">
+                <form onSubmit={handleAuth} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
                     <div className="relative">
@@ -152,80 +128,22 @@ const Auth = () => {
                     {authLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
                   </Button>
                 </form>
-              </TabsContent>
-              
-              <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={(e) => handleAuth(e, 'signup')} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-fullname">Nombre completo</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-fullname"
-                        type="text"
-                        placeholder="Tu nombre completo"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="tu@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Contraseña</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="Mínimo 6 caracteres"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  </div>
+              </div>
 
-                  <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded-lg">
-                    <strong>Nota:</strong> Tu solicitud de registro será revisada por nuestro equipo. 
-                    Te notificaremos por email cuando sea aprobada y puedas acceder al sistema.
-                  </div>
-                  
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={authLoading}
-                  >
-                    {authLoading ? "Enviando solicitud..." : "Solicitar Acceso"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+              <Alert className="mt-4 bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Acceso Restringido:</strong> Solo usuarios autorizados pueden acceder. 
+                  Si necesitas una cuenta, contacta con el administrador.
+                </AlertDescription>
+              </Alert>
 
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              <p>¿Problemas para acceder?</p>
-              <Link to="/contacto" className="text-primary hover:underline">
-                Contacta con nosotros
-              </Link>
+              <div className="mt-6 text-center text-sm text-muted-foreground">
+                <p>¿Problemas para acceder?</p>
+                <Link to="/contacto" className="text-primary hover:underline">
+                  Contacta con nosotros
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>

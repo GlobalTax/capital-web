@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, CheckCircle, XCircle, User, Mail, Calendar, Monitor, MapPin, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, User, Mail, Calendar, Monitor, MapPin, AlertCircle, UserPlus } from 'lucide-react';
 import { useRegistrationRequests } from '@/hooks/useRegistrationRequests';
+import { CreateUser } from './CreateUser';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -64,33 +65,52 @@ export const RegistrationRequests: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Solicitudes de Registro
-        </CardTitle>
-        <CardDescription>
-          Gestiona las solicitudes de acceso al sistema
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Gestión de Usuarios
+            </CardTitle>
+            <CardDescription>
+              Crea nuevos usuarios y gestiona el acceso al sistema. Solo los administradores pueden dar de alta usuarios.
+            </CardDescription>
+          </div>
+          <CreateUser />
+        </div>
       </CardHeader>
       
       <CardContent>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-blue-900 mb-1">Nuevo Sistema de Gestión</h3>
+              <p className="text-sm text-blue-800">
+                Ahora solo los administradores pueden crear usuarios. No se permite el registro público. 
+                Utiliza el botón "Crear Usuario" para dar de alta nuevos accesos y enviar automáticamente las credenciales por email.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <Tabs defaultValue="pending" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="pending" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              Pendientes ({pendingRequests.length})
+              Solicitudes Pendientes ({pendingRequests.length})
             </TabsTrigger>
             <TabsTrigger value="processed" className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4" />
-              Procesadas ({processedRequests.length})
+              Historial ({processedRequests.length})
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="pending" className="mt-4">
             {pendingRequests.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No hay solicitudes pendientes</p>
+                <UserPlus className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No hay solicitudes pendientes</p>
+                <p className="text-sm">Usa el botón "Crear Usuario" para dar de alta nuevos accesos</p>
               </div>
             ) : (
               <div className="rounded-md border">
