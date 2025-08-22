@@ -73,65 +73,49 @@ export const CreateUser: React.FC = () => {
     setError('');
 
     try {
-      // 1. Crear usuario en Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true, // Confirmar email automáticamente
-        user_metadata: {
-          full_name: formData.fullName
+      // Use the secure temporary user creation function
+      const { data, error } = await supabase.rpc('create_temporary_user', {
+        p_email: formData.email,
+        p_full_name: formData.fullName,
+        p_role: formData.role
+      });
+
+      if (error) throw error;
+
+      // Type assertion for the returned data
+      const userData = data as {
+        user_id: string;
+        email: string;
+        temporary_password: string;
+        requires_password_change: boolean;
+      };
+
+      // Send credentials via secure email
+      const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
+        body: {
+          email: userData.email,
+          fullName: formData.fullName,
+          temporaryPassword: userData.temporary_password,
+          role: formData.role,
+          requiresPasswordChange: userData.requires_password_change
         }
       });
 
-      if (authError) {
-        throw new Error(`Error creando usuario: ${authError.message}`);
-      }
-
-      if (!authData.user) {
-        throw new Error('No se pudo crear el usuario');
-      }
-
-      // 2. Agregar usuario a admin_users
-      const { error: adminError } = await supabase
-        .from('admin_users')
-        .insert({
-          user_id: authData.user.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          role: formData.role,
-          is_active: true
+      if (emailError) {
+        console.error('Error sending email:', emailError);
+        toast({
+          title: "Usuario preparado",
+          description: `Usuario creado pero no se pudo enviar el email. Credenciales temporales: ${userData.temporary_password}`,
+          variant: "destructive",
         });
-
-      if (adminError) {
-        // Si falla, intentar eliminar el usuario de auth
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw new Error(`Error configurando permisos: ${adminError.message}`);
-      }
-
-      // 3. Enviar email con credenciales (esto se podría hacer con una edge function)
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
-          body: {
-            email: formData.email,
-            fullName: formData.fullName,
-            password: formData.password,
-            role: formData.role
-          }
+      } else {
+        toast({
+          title: "Usuario creado exitosamente",
+          description: `Se ha preparado la cuenta para ${formData.fullName} y se le han enviado las credenciales de forma segura por email.`,
         });
-
-        if (emailError) {
-          console.error('Error enviando email:', emailError);
-          // No fallar completamente si el email falla
-        }
-      } catch (emailErr) {
-        console.error('Error con el servicio de email:', emailErr);
       }
 
       setSuccess(true);
-      toast({
-        title: "Usuario creado exitosamente",
-        description: `Se ha creado la cuenta para ${formData.fullName} y se le han enviado las credenciales por email.`,
-      });
 
       // Reset form
       setFormData({
@@ -144,7 +128,7 @@ export const CreateUser: React.FC = () => {
       setTimeout(() => {
         setIsOpen(false);
         setSuccess(false);
-      }, 2000);
+      }, 3000);
 
     } catch (err: any) {
       console.error('Error creating user:', err);

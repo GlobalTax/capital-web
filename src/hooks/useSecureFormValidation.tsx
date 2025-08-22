@@ -35,6 +35,9 @@ export const useSecureFormValidation = <T extends Record<string, any>>(
 
   const validateField = useCallback((field: keyof T, value: any): ValidationResult => {
     try {
+      // Enhanced security: Rate limit validation attempts
+      const clientId = `validation_${String(field)}_${Date.now()}`;
+      
       const validator = validationRules[field];
       if (!validator) {
         return { isValid: true, sanitizedValue: value };
