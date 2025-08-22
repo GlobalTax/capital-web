@@ -47,7 +47,7 @@ const Admin = () => {
     try {
       const { error } = mode === 'login' 
         ? await signIn(email, password)
-        : await signUp(email, password);
+        : await signUp(email, password, 'Admin User');
 
       if (error) {
         setError(error.message);

@@ -2207,6 +2207,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_registration_requests: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          ip_address: unknown | null
+          processed_at: string | null
+          processed_by: string | null
+          rejection_reason: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          ip_address?: unknown | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          ip_address?: unknown | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       v4_interactions: {
         Row: {
           company_valuation_id: string | null
@@ -2307,6 +2355,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_user_registration: {
+        Args: { request_id: string }
+        Returns: boolean
+      }
       bootstrap_first_admin: {
         Args: { user_email: string }
         Returns: boolean
@@ -2413,6 +2465,10 @@ export type Database = {
       process_automation_workflows: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      reject_user_registration: {
+        Args: { reason?: string; request_id: string }
+        Returns: boolean
       }
       send_recovery_emails: {
         Args: Record<PropertyKey, never>

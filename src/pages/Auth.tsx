@@ -14,9 +14,11 @@ const Auth = () => {
   const { user, isLoading, signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('signin');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Si ya está autenticado, redirigir al perfil
   if (!isLoading && user) {
@@ -29,18 +31,23 @@ const Auth = () => {
     setError('');
 
     try {
-      const { error } = mode === 'signin' 
-        ? await signIn(email, password)
-        : await signUp(email, password);
-
-      if (error) {
-        setError(error.message);
-      } else if (mode === 'signup') {
-        setError('');
-        // Show success message for signup
+      if (mode === 'signup') {
+        if (!fullName.trim()) {
+          throw new Error('El nombre completo es obligatorio');
+        }
+        const { error } = await signUp(email, password, fullName);
+        if (error) {
+          throw error;
+        }
+        setShowSuccess(true);
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          throw error;
+        }
       }
-    } catch (err) {
-      setError('Error de conexión. Inténtalo de nuevo.');
+    } catch (err: any) {
+      setError(err.message || 'Error de conexión. Inténtalo de nuevo.');
     }
     
     setAuthLoading(false);
@@ -84,13 +91,22 @@ const Auth = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="signin">Iniciar Sesión</TabsTrigger>
-                <TabsTrigger value="signup">Crear Cuenta</TabsTrigger>
+                <TabsTrigger value="signup">Solicitar Acceso</TabsTrigger>
               </TabsList>
 
               {error && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {showSuccess && activeTab === 'signup' && (
+                <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    ¡Solicitud de registro enviada! Tu cuenta está pendiente de aprobación. Te notificaremos por email cuando sea aprobada.
+                  </AlertDescription>
                 </Alert>
               )}
               
@@ -141,6 +157,22 @@ const Auth = () => {
               <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={(e) => handleAuth(e, 'signup')} className="space-y-4">
                   <div className="space-y-2">
+                    <Label htmlFor="signup-fullname">Nombre completo</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signup-fullname"
+                        type="text"
+                        placeholder="Tu nombre completo"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -172,22 +204,20 @@ const Auth = () => {
                       />
                     </div>
                   </div>
+
+                  <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded-lg">
+                    <strong>Nota:</strong> Tu solicitud de registro será revisada por nuestro equipo. 
+                    Te notificaremos por email cuando sea aprobada y puedas acceder al sistema.
+                  </div>
                   
                   <Button
                     type="submit"
                     className="w-full"
                     disabled={authLoading}
                   >
-                    {authLoading ? "Creando cuenta..." : "Crear Cuenta"}
+                    {authLoading ? "Enviando solicitud..." : "Solicitar Acceso"}
                   </Button>
                 </form>
-
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Al crear una cuenta podrás guardar y gestionar todas tus valoraciones de empresa.
-                  </AlertDescription>
-                </Alert>
               </TabsContent>
             </Tabs>
 

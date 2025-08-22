@@ -30,7 +30,7 @@ const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, 'Admin User');
     if (!error) {
       setShowSetup(true);
     }
