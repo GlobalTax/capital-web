@@ -145,8 +145,8 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nombre de contacto */}
-        <div className="min-h-[85px]">
-          <div className="relative">
+        <div className="h-[100px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.contactName')}
             </Label>
@@ -165,16 +165,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            {showValidation && errors?.contactName && (
-              <p className="text-red-500 text-sm">{errors.contactName}</p>
-            )}
+          <div className="h-[20px] mt-1 flex items-start">
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.contactName ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.contactName || '\u00A0'}
+            </p>
           </div>
         </div>
 
         {/* Nombre de la empresa */}
-        <div className="min-h-[85px]">
-          <div className="relative">
+        <div className="h-[100px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.companyName')}
             </Label>
@@ -193,16 +193,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            {showValidation && errors?.companyName && (
-              <p className="text-red-500 text-sm">{errors.companyName}</p>
-            )}
+          <div className="h-[20px] mt-1 flex items-start">
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.companyName ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.companyName || '\u00A0'}
+            </p>
           </div>
         </div>
 
         {/* Email */}
-        <div className="min-h-[85px]">
-          <div className="relative">
+        <div className="h-[100px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.email')}
             </Label>
@@ -221,16 +221,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            {showValidation && errors?.email && (
-              <p className="text-red-500 text-sm">{errors.email}</p>
-            )}
+          <div className="h-[20px] mt-1 flex items-start">
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.email ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.email || '\u00A0'}
+            </p>
           </div>
         </div>
 
         {/* Teléfono (WhatsApp) */}
-        <div className="min-h-[105px]">
-          <div className="relative">
+        <div className="h-[120px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
               Teléfono (WhatsApp)
             </Label>
@@ -258,16 +258,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            <p className={`text-xs text-gray-500 ${companyData.phone_e164 ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="h-[20px] mt-1 flex items-start">
+            <p className={`text-xs text-gray-500 transition-opacity duration-200 ${companyData.phone_e164 ? 'opacity-100' : 'opacity-0'}`}>
               Formato internacional: {companyData.phone_e164 || 'N/A'}
             </p>
           </div>
         </div>
 
         {/* CIF */}
-        <div className="min-h-[85px]">
-          <div className="relative">
+        <div className="h-[100px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.cif')}
             </Label>
@@ -285,14 +285,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            {/* Reserved space for error messages */}
+          <div className="h-[20px] mt-1">
+            {/* Reserved space for consistency */}
           </div>
         </div>
 
         {/* Sector */}
-        <div className="min-h-[85px]">
-          <div className="relative">
+        <div className="h-[100px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="industry-select" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.industry')}
             </Label>
@@ -322,16 +322,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            {showValidation && errors?.industry && (
-              <p className="text-red-500 text-sm">{errors.industry}</p>
-            )}
+          <div className="h-[20px] mt-1 flex items-start">
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.industry ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.industry || '\u00A0'}
+            </p>
           </div>
         </div>
 
         {/* Descripción de actividad */}
-        <div className="min-h-[105px]">
-          <div className="relative">
+        <div className="h-[120px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="activityDescription" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.activityDescription')}
             </Label>
@@ -349,17 +349,17 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[40px] mt-1 space-y-1">
+          <div className="h-[40px] mt-1 space-y-1">
             <p className="text-sm text-gray-500">{t('helper.activityDescription')}</p>
-            {showValidation && errors?.activityDescription && (
-              <p className="text-red-500 text-sm">{errors.activityDescription}</p>
-            )}
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.activityDescription ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.activityDescription || '\u00A0'}
+            </p>
           </div>
         </div>
 
         {/* Ubicación */}
-        <div className="min-h-[105px]">
-          <div className="relative">
+        <div className="h-[120px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.location')}
             </Label>
@@ -377,17 +377,17 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             )}
           </div>
-          <div className="min-h-[40px] mt-1 space-y-1">
+          <div className="h-[40px] mt-1 space-y-1">
             <p className="text-sm text-gray-500">{t('helper.location')}</p>
-            {showValidation && errors?.location && (
-              <p className="text-red-500 text-sm">{errors.location}</p>
-            )}
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.location ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.location || '\u00A0'}
+            </p>
           </div>
         </div>
 
         {/* Rango de empleados */}
-        <div className="min-h-[85px]">
-          <div className="relative">
+        <div className="h-[100px] flex flex-col">
+          <div className="relative flex-1">
             <Label htmlFor="employeeRange-select" className="block text-sm font-medium text-gray-700 mb-2">
               {t('label.employeeRange')}
             </Label>
@@ -417,10 +417,10 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
             )}
           </div>
-          <div className="min-h-[20px] mt-1">
-            {showValidation && errors?.employeeRange && (
-              <p className="text-red-500 text-sm">{errors.employeeRange}</p>
-            )}
+          <div className="h-[20px] mt-1 flex items-start">
+            <p className={`text-red-500 text-sm transition-opacity duration-200 ${showValidation && errors?.employeeRange ? 'opacity-100' : 'opacity-0'}`}>
+              {errors?.employeeRange || '\u00A0'}
+            </p>
           </div>
         </div>
       </div>
@@ -438,11 +438,11 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
         <div className="grid gap-6 sm:grid-cols-2">
           {/* Revenue */}
-          <div className="min-h-[100px]">
+          <div className="h-[110px] flex flex-col">
             <Label htmlFor="revenue" className="text-sm font-medium text-gray-700">
               {t('form.revenue')} <span className="text-red-500">*</span>
             </Label>
-            <div className="relative mt-2">
+            <div className="relative mt-2 flex-1">
               <Input
                 id="revenue"
                 type="number"
@@ -461,22 +461,22 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
               )}
             </div>
-            <div className="min-h-[40px] mt-1 space-y-1">
-              <p className={`text-xs text-gray-500 ${companyData.revenue > 0 ? 'opacity-100' : 'opacity-0'}`}>
-                {companyData.revenue > 0 ? formatCurrency(companyData.revenue) : 'N/A'}
+            <div className="h-[40px] mt-1 space-y-1">
+              <p className={`text-xs text-gray-500 transition-opacity duration-200 ${companyData.revenue > 0 ? 'opacity-100' : 'opacity-0'}`}>
+                {companyData.revenue > 0 ? formatCurrency(companyData.revenue) : '\u00A0'}
               </p>
-              {showValidation && !isFieldValid('revenue', companyData.revenue) && (
-                <p className="text-sm text-red-600">{t('validation.revenue_required')}</p>
-              )}
+              <p className={`text-sm text-red-600 transition-opacity duration-200 ${showValidation && !isFieldValid('revenue', companyData.revenue) ? 'opacity-100' : 'opacity-0'}`}>
+                {t('validation.revenue_required')}
+              </p>
             </div>
           </div>
 
           {/* EBITDA */}
-          <div className="min-h-[100px]">
+          <div className="h-[110px] flex flex-col">
             <Label htmlFor="ebitda" className="text-sm font-medium text-gray-700">
               {t('form.ebitda')} <span className="text-red-500">*</span>
             </Label>
-            <div className="relative mt-2">
+            <div className="relative mt-2 flex-1">
               <Input
                 id="ebitda"
                 type="number"
@@ -495,13 +495,13 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
               )}
             </div>
-            <div className="min-h-[40px] mt-1 space-y-1">
-              <p className={`text-xs text-gray-500 ${companyData.ebitda > 0 ? 'opacity-100' : 'opacity-0'}`}>
-                {companyData.ebitda > 0 ? formatCurrency(companyData.ebitda) : 'N/A'}
+            <div className="h-[40px] mt-1 space-y-1">
+              <p className={`text-xs text-gray-500 transition-opacity duration-200 ${companyData.ebitda > 0 ? 'opacity-100' : 'opacity-0'}`}>
+                {companyData.ebitda > 0 ? formatCurrency(companyData.ebitda) : '\u00A0'}
               </p>
-              {showValidation && !isFieldValid('ebitda', companyData.ebitda) && (
-                <p className="text-sm text-red-600">{t('validation.ebitda_required')}</p>
-              )}
+              <p className={`text-sm text-red-600 transition-opacity duration-200 ${showValidation && !isFieldValid('ebitda', companyData.ebitda) ? 'opacity-100' : 'opacity-0'}`}>
+                {t('validation.ebitda_required')}
+              </p>
             </div>
           </div>
         </div>
