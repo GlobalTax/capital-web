@@ -2530,6 +2530,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      validate_data_access_security: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          has_rls: boolean
+          policy_count: number
+          security_status: string
+          table_name: string
+        }[]
+      }
       validate_strong_password: {
         Args: { password_text: string }
         Returns: boolean
