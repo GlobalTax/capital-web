@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Building, TrendingUp } from 'lucide-react';
@@ -163,9 +164,11 @@ const CompaniesForSale = () => {
         )}
 
         <div className="text-center mt-12">
-          <button className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-            Ver Todas las Oportunidades
-          </button>
+          <Link to="/compra-empresas">
+            <button className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              Ver Todas las Oportunidades
+            </button>
+          </Link>
         </div>
       </div>
     </section>

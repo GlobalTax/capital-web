@@ -99,9 +99,15 @@ const Services = () => {
 
                   {/* Button */}
                   <div className="space-y-3">
-                    <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
-                      {service.title === 'Valoraciones' ? 'Calcular Ahora' : 'Más información'}
-                    </Button>
+                    <Link to={
+                      service.title === 'Valoraciones' ? '/lp/calculadora' : 
+                      service.title === 'Vender Empresa' ? '/venta-empresas' : 
+                      '/compra-empresas'
+                    }>
+                      <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
+                        {service.title === 'Valoraciones' ? 'Calcular Ahora' : 'Más información'}
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

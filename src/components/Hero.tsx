@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
@@ -35,19 +36,23 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6">
-              <InteractiveHoverButton 
-                text="Valorar mi empresa" 
-                variant="primary" 
-                size="lg" 
-                disabled={!isOnline}
-              />
+              <Link to="/lp/calculadora">
+                <InteractiveHoverButton 
+                  text="Valorar mi empresa" 
+                  variant="primary" 
+                  size="lg" 
+                  disabled={!isOnline}
+                />
+              </Link>
               
-              <InteractiveHoverButton 
-                text="Ver Casos de Éxito" 
-                variant="secondary" 
-                size="lg"
-                disabled={!isOnline}
-              />
+              <Link to="/casos-exito">
+                <InteractiveHoverButton 
+                  text="Ver Casos de Éxito" 
+                  variant="secondary" 
+                  size="lg"
+                  disabled={!isOnline}
+                />
+              </Link>
             </div>
           </div>
 
