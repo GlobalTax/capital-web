@@ -9,7 +9,8 @@ export interface BookingData {
   companyName?: string;
   bookingDate: string;
   bookingTime: string;
-  meetingType: 'consultation' | 'valuation_review' | 'negotiation';
+  meetingType: 'consultation' | 'valuation_review' | 'negotiation' | 'sell_company';
+  meetingFormat: 'phone_call' | 'video_call';
   notes?: string;
   valuationId?: string;
 }
@@ -33,6 +34,7 @@ export const useCalendarBooking = () => {
         booking_time: bookingData.bookingTime,
         booking_datetime: bookingDateTime.toISOString(),
         meeting_type: bookingData.meetingType,
+        meeting_format: bookingData.meetingFormat,
         notes: bookingData.notes || null,
         valuation_id: bookingData.valuationId || null,
         status: 'pending'

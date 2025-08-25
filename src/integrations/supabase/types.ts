@@ -415,6 +415,7 @@ export type Database = {
           confirmed_by: string | null
           created_at: string
           id: string
+          meeting_format: string
           meeting_type: string
           notes: string | null
           status: string
@@ -435,6 +436,7 @@ export type Database = {
           confirmed_by?: string | null
           created_at?: string
           id?: string
+          meeting_format?: string
           meeting_type?: string
           notes?: string | null
           status?: string
@@ -455,6 +457,7 @@ export type Database = {
           confirmed_by?: string | null
           created_at?: string
           id?: string
+          meeting_format?: string
           meeting_type?: string
           notes?: string | null
           status?: string

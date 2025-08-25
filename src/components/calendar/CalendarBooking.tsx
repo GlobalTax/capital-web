@@ -5,9 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, User, Building2, Phone, Mail, MessageSquare } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { Calendar, Clock, User, Building2, Phone, Video, MessageSquare, Handshake, FileText, Users, Briefcase } from 'lucide-react';
+import { useCalendarBooking } from '@/hooks/useCalendarBooking';
 
 interface CalendarBookingProps {
   contactName?: string;
@@ -38,114 +37,62 @@ const CalendarBooking = ({
     clientPhone: contactPhone,
     companyName: companyName,
     meetingType: 'consultation',
+    meetingFormat: 'video_call' as 'phone_call' | 'video_call',
     notes: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { createBooking, getAvailableDates, getAvailableTimeSlots, isSubmitting } = useCalendarBooking();
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
-  // Generate available dates (next 30 days, excluding weekends)
+  // Generate available dates using hook
   useEffect(() => {
-    const dates = [];
-    const today = new Date();
-    
-    for (let i = 1; i <= 45; i++) {  // Check next 45 days to get 30 business days
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      // Skip weekends
-      if (date.getDay() !== 0 && date.getDay() !== 6) {
-        dates.push(date.toISOString().split('T')[0]);
-      }
-      
-      if (dates.length >= 30) break;  // Stop when we have 30 business days
-    }
-    
+    const dates = getAvailableDates(30);
     setAvailableDates(dates);
-  }, []);
+  }, [getAvailableDates]);
 
-  // Generate time slots for selected date
+  // Generate time slots for selected date using hook
   useEffect(() => {
     if (!selectedDate) {
       setTimeSlots([]);
       return;
     }
 
-    const slots: TimeSlot[] = [];
-    
-    // Morning slots: 9:00 - 13:00
-    for (let hour = 9; hour < 14; hour++) {
-      const time = `${hour.toString().padStart(2, '0')}:00`;
-      slots.push({
-        time,
-        label: `${hour}:00`,
-        available: true
-      });
-    }
-    
-    // Afternoon slots: 15:00 - 18:00 (excluding 14:00-15:00 lunch break)
-    for (let hour = 15; hour < 19; hour++) {
-      const time = `${hour.toString().padStart(2, '0')}:00`;
-      slots.push({
-        time,
-        label: `${hour}:00`,
-        available: true
-      });
-    }
+    const times = getAvailableTimeSlots(selectedDate);
+    const slots: TimeSlot[] = times.map(time => ({
+      time,
+      label: time,
+      available: true
+    }));
 
     setTimeSlots(slots);
-  }, [selectedDate]);
+  }, [selectedDate, getAvailableTimeSlots]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedDate || !selectedTime) {
-      toast.error('Por favor selecciona fecha y hora');
       return;
     }
 
     if (!formData.clientName || !formData.clientEmail) {
-      toast.error('Nombre y email son obligatorios');
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      // Create booking datetime
-      const bookingDateTime = new Date(`${selectedDate}T${selectedTime}`);
-
       const bookingData = {
-        client_name: formData.clientName,
-        client_email: formData.clientEmail,
-        client_phone: formData.clientPhone || null,
-        company_name: formData.companyName || null,
-        booking_date: selectedDate,
-        booking_time: selectedTime,
-        booking_datetime: bookingDateTime.toISOString(),
-        meeting_type: formData.meetingType,
-        notes: formData.notes || null,
-        status: 'pending'
+        clientName: formData.clientName,
+        clientEmail: formData.clientEmail,
+        clientPhone: formData.clientPhone,
+        companyName: formData.companyName,
+        bookingDate: selectedDate,
+        bookingTime: selectedTime,
+        meetingType: formData.meetingType as 'consultation' | 'valuation_review' | 'negotiation' | 'sell_company',
+        meetingFormat: formData.meetingFormat,
+        notes: formData.notes
       };
 
-      console.log('Submitting booking:', bookingData);
-
-      const { data, error } = await supabase
-        .from('calendar_bookings')
-        .insert([bookingData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating booking:', error);
-        throw error;
-      }
-
-      console.log('Booking created successfully:', data);
-
-      toast.success('¡Cita reservada correctamente!', {
-        description: 'Te enviaremos una confirmación por email en breve.'
-      });
+      await createBooking(bookingData);
 
       // Reset form
       setSelectedDate('');
@@ -156,6 +103,7 @@ const CalendarBooking = ({
         clientPhone: '',
         companyName: '',
         meetingType: 'consultation',
+        meetingFormat: 'video_call',
         notes: ''
       });
 
@@ -163,13 +111,9 @@ const CalendarBooking = ({
         onSuccess();
       }
 
-    } catch (error: any) {
-      console.error('Error booking appointment:', error);
-      toast.error('Error al reservar la cita', {
-        description: error.message || 'Por favor, inténtalo de nuevo'
-      });
-    } finally {
-      setIsSubmitting(false);
+    } catch (error) {
+      // Error handling is done in the hook
+      console.error('Error in form submission:', error);
     }
   };
 
@@ -304,11 +248,41 @@ const CalendarBooking = ({
             </div>
           )}
 
+          {/* Meeting Format */}
+          <div className="space-y-4">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              Formato de Reunión
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant={formData.meetingFormat === 'phone_call' ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ ...prev, meetingFormat: 'phone_call' }))}
+                className="h-auto p-4 flex flex-col items-center gap-2"
+              >
+                <Phone className="h-5 w-5" />
+                <span className="text-sm">Llamada Telefónica</span>
+              </Button>
+              
+              <Button
+                type="button"
+                variant={formData.meetingFormat === 'video_call' ? "default" : "outline"}
+                onClick={() => setFormData(prev => ({ ...prev, meetingFormat: 'video_call' }))}
+                className="h-auto p-4 flex flex-col items-center gap-2"
+              >
+                <Video className="h-5 w-5" />
+                <span className="text-sm">Videollamada</span>
+              </Button>
+            </div>
+          </div>
+
           {/* Meeting Type */}
           <div className="space-y-4">
             <h3 className="font-semibold flex items-center gap-2">
               <Building2 className="h-4 w-4" />
-              Tipo de Reunión
+              Motivo de la Reunión
             </h3>
             
             <Select 
@@ -319,9 +293,30 @@ const CalendarBooking = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="consultation">Consulta General</SelectItem>
-                <SelectItem value="valuation_review">Revisión de Valoración</SelectItem>
-                <SelectItem value="negotiation">Proceso de Negociación</SelectItem>
+                <SelectItem value="consultation">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Consulta General
+                  </div>
+                </SelectItem>
+                <SelectItem value="valuation_review">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Revisión de Valoración
+                  </div>
+                </SelectItem>
+                <SelectItem value="negotiation">
+                  <div className="flex items-center gap-2">
+                    <Handshake className="h-4 w-4" />
+                    Proceso de Negociación
+                  </div>
+                </SelectItem>
+                <SelectItem value="sell_company">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Vender mi Empresa
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -348,10 +343,14 @@ const CalendarBooking = ({
               <div className="text-sm space-y-1">
                 <p><strong>Fecha:</strong> {formatDateForDisplay(selectedDate)}</p>
                 <p><strong>Hora:</strong> {selectedTime}</p>
-                <p><strong>Tipo:</strong> {
+                <p><strong>Formato:</strong> {
+                  formData.meetingFormat === 'phone_call' ? 'Llamada Telefónica' : 'Videollamada'
+                }</p>
+                <p><strong>Motivo:</strong> {
                   formData.meetingType === 'consultation' ? 'Consulta General' :
                   formData.meetingType === 'valuation_review' ? 'Revisión de Valoración' :
-                  'Proceso de Negociación'
+                  formData.meetingType === 'negotiation' ? 'Proceso de Negociación' :
+                  'Vender mi Empresa'
                 }</p>
               </div>
             </div>
