@@ -2486,6 +2486,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_critical_security_event: {
+        Args: {
+          details?: Json
+          event_type: string
+          operation: string
+          table_name: string
+        }
+        Returns: undefined
+      }
       log_security_event: {
         Args: {
           p_action_attempted?: string
