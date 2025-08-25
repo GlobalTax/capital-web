@@ -33,9 +33,10 @@ export const CreateUser: React.FC = () => {
   const [success, setSuccess] = useState(false);
 
   const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
     let password = '';
-    for (let i = 0; i < 12; i++) {
+    // Generate 16 character password for enhanced security
+    for (let i = 0; i < 16; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     setFormData(prev => ({ ...prev, password }));
@@ -46,7 +47,7 @@ export const CreateUser: React.FC = () => {
     setError('');
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = async (): Promise<boolean> => {
     if (!formData.email || !formData.fullName || !formData.password) {
       setError('Todos los campos son obligatorios');
       return false;
@@ -58,8 +59,26 @@ export const CreateUser: React.FC = () => {
       return false;
     }
 
-    if (formData.password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres');
+    // Enhanced password validation using Supabase function
+    try {
+      const { data: isValidPassword, error: validationError } = await supabase
+        .rpc('validate_strong_password', { password_text: formData.password });
+      
+      if (validationError) {
+        console.error('Error validando contraseña:', validationError);
+        setError('Error al validar la contraseña');
+        return false;
+      }
+      
+      if (!isValidPassword) {
+        setError(
+          'La contraseña debe tener al menos 12 caracteres, incluir mayúsculas, minúsculas, números y caracteres especiales. No puede ser una contraseña común.'
+        );
+        return false;
+      }
+    } catch (error) {
+      console.error('Error en validación de contraseña:', error);
+      setError('Error al validar la contraseña');
       return false;
     }
 
@@ -67,7 +86,8 @@ export const CreateUser: React.FC = () => {
   };
 
   const createUser = async () => {
-    if (!validateForm()) return;
+    const isValid = await validateForm();
+    if (!isValid) return;
 
     setIsLoading(true);
     setError('');
@@ -242,7 +262,7 @@ export const CreateUser: React.FC = () => {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Haz clic en el escudo para generar una contraseña segura automáticamente.
+              Genera contraseña segura (16+ caracteres). Debe incluir mayúsculas, minúsculas, números y símbolos.
             </p>
           </div>
 
