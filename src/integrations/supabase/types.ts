@@ -400,6 +400,77 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_bookings: {
+        Row: {
+          booking_date: string
+          booking_datetime: string
+          booking_time: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          client_email: string
+          client_name: string
+          client_phone: string | null
+          company_name: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          id: string
+          meeting_type: string
+          notes: string | null
+          status: string
+          updated_at: string
+          valuation_id: string | null
+        }
+        Insert: {
+          booking_date: string
+          booking_datetime: string
+          booking_time: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_email: string
+          client_name: string
+          client_phone?: string | null
+          company_name?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          meeting_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          valuation_id?: string | null
+        }
+        Update: {
+          booking_date?: string
+          booking_datetime?: string
+          booking_time?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_email?: string
+          client_name?: string
+          client_phone?: string | null
+          company_name?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          meeting_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_bookings_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carousel_logos: {
         Row: {
           company_name: string
