@@ -115,7 +115,7 @@ const LandingCalculatorInner = () => {
               result,
               pdfBase64,
               pdfFilename,
-              agendaUrl: `${window.location.origin}/contacto`,
+              agendaUrl: `${window.location.origin}/lp/reservar-cita?contactName=${encodeURIComponent(companyData.contactName)}&contactEmail=${encodeURIComponent(companyData.email)}&contactPhone=${encodeURIComponent(companyData.phone || '')}&companyName=${encodeURIComponent(companyData.companyName)}`,
               enlaces: {
                 escenariosUrl: `${window.location.origin}/lp/calculadora`,
                 calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora-fiscal`

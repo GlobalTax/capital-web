@@ -369,7 +369,7 @@ if (pdfToAttach) {
               </ul>
             </div>
 
-            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede <a href="${agendaUrl}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">reservar una llamada de 20-30 minutos aquí</a>.` : ''}</p>
+            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede <a href="${agendaUrl}" target="_blank" style="color:#ffffff; background:#1f2937; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:600; display:inline-block; margin:8px 0;">📅 Reservar una llamada (20-30 min)</a>.` : ''}</p>
             <p style="margin:0 0 20px; line-height:1.6;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es <strong>completamente confidencial</strong>.</p>
 
             ${enlacesUtiles ? `<div style="background:#ecfdf5; border:1px solid #d1fae5; border-radius:8px; padding:20px; margin:20px 0;"><p style="margin:0 0 12px; font-weight:600; color:#065f46;">🔗 Enlaces útiles (guarde este correo):</p>${enlacesUtiles}</div>` : ''}
