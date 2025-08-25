@@ -2389,6 +2389,16 @@ export type Database = {
         Args: { request_id: string }
         Returns: boolean
       }
+      audit_table_security: {
+        Args: { table_name_param: string }
+        Returns: {
+          allows_anonymous: boolean
+          command: string
+          is_permissive: boolean
+          policy_name: string
+          security_risk_level: string
+        }[]
+      }
       bootstrap_first_admin: {
         Args: { user_email: string }
         Returns: boolean
