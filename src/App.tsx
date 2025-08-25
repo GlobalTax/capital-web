@@ -95,6 +95,7 @@ const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() =>
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => 
   import('@/pages/NotFound')
 ));
+const BookingPage = lazy(() => import('@/pages/BookingPage'));
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
@@ -287,6 +288,7 @@ function AppContent() {
           <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
           <Route path="/lp/calculadora-fiscal" element={<LandingCalculadoraFiscal />} />
           <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
+          <Route path="/lp/reservar-cita" element={<BookingPage />} />
           
           {/* Por que elegirnos routes */}
           <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />

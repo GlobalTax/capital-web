@@ -75,17 +75,25 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'actions.download': 'Descargar Informe PDF',
     'actions.generating': 'Generando PDF...',
 
-    // Fiscal
+    // Fiscal - Updated with clearer field names
     'fiscal.title': 'Impacto fiscal estimado (España)',
     'fiscal.description': 'Cálculo orientativo del posible impacto fiscal en una venta de participaciones/activos realizada en España. Consulte con nuestro equipo fiscal para un estudio detallado.',
-    'fiscal.gain': 'Ganancia patrimonial',
-    'fiscal.need_cost': 'Requiere coste de adquisición y ajustes (no aportados)',
+    'fiscal.acquisition_value': 'Valor de adquisición',
+    'fiscal.sale_value': 'Valor de venta',
+    'fiscal.capital_gain': 'Ganancia patrimonial calculada',
+    'fiscal.gain_formula': 'Ganancia = Valor de venta - Valor de adquisición',
     'fiscal.rate': 'Tipo orientativo',
     'fiscal.rate_detail': 'IRPF: 19%–26% | IS: 25% (según caso)',
     'fiscal.withholding': 'Retenciones',
     'fiscal.withholding_detail': 'Posible retención 19% en pagos a personas físicas',
     'fiscal.note': 'Nota: estos datos son orientativos y pueden variar por régimen fiscal, exenciones (p. ej. ETVE/participation exemption), deducciones y circunstancias particulares.',
     'fiscal.contact_link': 'Hablar con un asesor fiscal',
+    
+    // Calendar Booking
+    'booking.title': 'Reservar Cita',
+    'booking.description': 'Agenda una reunión con nuestro equipo',
+    'booking.success': 'Cita reservada correctamente',
+    'booking.error': 'Error al reservar la cita',
 
     // Aviso legal
     'legal.notice.title': 'Aviso Importante',

@@ -50,7 +50,10 @@ const QuickControlsPanel = ({
       <CardContent className="space-y-6">
         {/* Valor de Adquisición */}
         <div className="space-y-3">
-          <Label>Valor de Adquisición: {formatCurrency(acquisitionValue)}</Label>
+          <div className="flex items-center justify-between">
+            <Label>Valor de Adquisición: {formatCurrency(acquisitionValue)}</Label>
+            <span className="text-xs text-muted-foreground">Precio original de compra</span>
+          </div>
           <Slider
             value={[acquisitionValue]}
             onValueChange={(value) => onAcquisitionValueChange(value[0])}
@@ -58,6 +61,9 @@ const QuickControlsPanel = ({
             step={10000}
             className="w-full"
           />
+          <div className="text-xs text-muted-foreground">
+            Este valor se usará para calcular la ganancia patrimonial
+          </div>
         </div>
 
         {/* Multiplier Personalizado */}
