@@ -1,74 +1,90 @@
+// ============= DEVELOPMENT LOGGER =============
+// Simplified logging for development - only critical errors in production
 
-// Sistema de logging optimizado solo para desarrollo
-interface DevLogEntry {
-  timestamp: string;
-  level: 'debug' | 'info' | 'warn' | 'error';
-  message: string;
-  data?: any;
+import { logger } from './logger';
+
+interface DevLoggerOptions {
   context?: string;
   component?: string;
+  userId?: string;
 }
 
 class DevLogger {
-  private static instance: DevLogger;
-  private enabled = process.env.NODE_ENV === 'development';
-  private entries: DevLogEntry[] = [];
-  private maxEntries = 100;
+  private isDev = process.env.NODE_ENV === 'development';
 
-  private constructor() {}
-
-  static getInstance(): DevLogger {
-    if (!DevLogger.instance) {
-      DevLogger.instance = new DevLogger();
+  info(message: string, data?: unknown, context?: string): void {
+    if (this.isDev) {
+      logger.info(message, data, { context: context as any, component: 'DevLogger' });
     }
-    return DevLogger.instance;
   }
 
-  private log(level: DevLogEntry['level'], message: string, data?: any, context?: string, component?: string) {
-    if (!this.enabled) return;
-
-    const entry: DevLogEntry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      data,
-      context,
-      component
-    };
-
-    this.entries.push(entry);
-    if (this.entries.length > this.maxEntries) {
-      this.entries.shift();
+  warn(message: string, data?: unknown, context?: string): void {
+    if (this.isDev) {
+      logger.warn(message, data, { context: context as any, component: 'DevLogger' });
     }
-
-    // Solo mostrar en consola en desarrollo
-    const consoleMethod = level === 'debug' ? 'log' : level;
-    console[consoleMethod](`[${level.toUpperCase()}] ${context ? `[${context}] ` : ''}${component ? `[${component}] ` : ''}${message}`, data);
   }
 
-  debug(message: string, data?: any, context?: string, component?: string) {
-    this.log('debug', message, data, context, component);
+  error(message: string, error?: Error | unknown, options?: DevLoggerOptions): void {
+    // Always log errors, but in production only critical ones
+    if (this.isDev) {
+      logger.error(message, error as Error, { 
+        context: options?.context as any, 
+        component: options?.component || 'DevLogger',
+        userId: options?.userId 
+      });
+    } else if (error instanceof Error && this.isCriticalError(error)) {
+      // Only log critical errors in production
+      logger.error(message, error, { 
+        context: 'system', 
+        component: 'Critical',
+        userId: options?.userId 
+      });
+    }
   }
 
-  info(message: string, data?: any, context?: string, component?: string) {
-    this.log('info', message, data, context, component);
+  debug(message: string, data?: unknown, context?: string): void {
+    if (this.isDev) {
+      logger.debug(message, data, { context: context as any, component: 'DevLogger' });
+    }
   }
 
-  warn(message: string, data?: any, context?: string, component?: string) {
-    this.log('warn', message, data, context, component);
+  // Wrapper for API errors
+  apiError(message: string, error: unknown, endpoint?: string): void {
+    this.error(`API Error: ${message}`, error as Error, { 
+      context: 'api',
+      component: endpoint || 'unknown' 
+    });
   }
 
-  error(message: string, data?: any, context?: string, component?: string) {
-    this.log('error', message, data, context, component);
+  // Wrapper for form errors
+  formError(message: string, error: unknown, formName?: string): void {
+    this.error(`Form Error: ${message}`, error as Error, { 
+      context: 'form',
+      component: formName || 'unknown' 
+    });
   }
 
-  getEntries(): DevLogEntry[] {
-    return this.enabled ? [...this.entries] : [];
+  // Wrapper for database errors
+  dbError(message: string, error: unknown, table?: string): void {
+    this.error(`Database Error: ${message}`, error as Error, { 
+      context: 'database',
+      component: table || 'unknown' 
+    });
   }
 
-  clear() {
-    this.entries = [];
+  private isCriticalError(error: Error): boolean {
+    const criticalPatterns = [
+      'network',
+      'authentication',
+      'authorization',  
+      'database',
+      'payment',
+      'security'
+    ];
+    
+    const errorMessage = error.message.toLowerCase();
+    return criticalPatterns.some(pattern => errorMessage.includes(pattern));
   }
 }
 
-export const devLogger = DevLogger.getInstance();
+export const devLogger = new DevLogger();

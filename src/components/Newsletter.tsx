@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Mail, Check } from 'lucide-react';
+import { devLogger } from '@/utils/devLogger';
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ const Newsletter = () => {
         description: "Te has suscrito correctamente a nuestro newsletter.",
       });
     } catch (error) {
-      console.error('Error al suscribirse:', error);
+      devLogger.formError('Error al suscribirse', error, 'Newsletter');
       toast({
         title: "Error",
         description: "Error al procesar la suscripción. Inténtalo de nuevo.",

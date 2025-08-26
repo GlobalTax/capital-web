@@ -8,6 +8,7 @@ import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
+import { logger } from '@/utils/logger';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -33,10 +34,16 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           try {
             if ('serviceWorker' in navigator) {
               await navigator.serviceWorker.register('/sw.js');
-              console.log('Service worker registered successfully');
+              logger.info('Service worker registered successfully', undefined, { 
+                context: 'system', 
+                component: 'AppLayout' 
+              });
             }
           } catch (error) {
-            console.warn('Service worker registration failed:', error);
+            logger.warn('Service worker registration failed', error as Error, { 
+              context: 'system', 
+              component: 'AppLayout' 
+            });
           }
         }, 2000);
 
@@ -51,11 +58,17 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             handleRouteChange();
             return () => window.removeEventListener('popstate', handleRouteChange);
           } catch (error) {
-            console.warn('Failed to initialize performance analytics:', error);
+            logger.warn('Failed to initialize performance analytics', error as Error, { 
+              context: 'performance', 
+              component: 'AppLayout' 
+            });
           }
         }, 1000);
       } catch (error) {
-        console.warn('Some features failed to initialize:', error);
+        logger.warn('Some features failed to initialize', error as Error, { 
+          context: 'system', 
+          component: 'AppLayout' 
+        });
       }
     };
 

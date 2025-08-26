@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { devLogger } from '@/utils/devLogger';
 
 const CollaboratorApplicationForm = () => {
   const { submitApplication, isSubmitting } = useCollaboratorApplications();
@@ -50,7 +51,7 @@ const CollaboratorApplicationForm = () => {
         motivation: '',
       });
     } catch (error) {
-      console.error('Error enviando solicitud:', error);
+      devLogger.formError('Error enviando solicitud', error, 'CollaboratorApplicationForm');
     }
   };
 

@@ -104,7 +104,7 @@ const UnifiedDashboard = memo(() => {
 
   // Callback memoizado para el tab change
   const handleTabChange = useCallback((value: string) => {
-    devLogger.info(`Dashboard tab changed to: ${value}`, undefined, 'ui', 'UnifiedDashboard');
+    devLogger.info(`Dashboard tab changed to: ${value}`, undefined, 'ui');
   }, []);
 
   if (isLoading) {

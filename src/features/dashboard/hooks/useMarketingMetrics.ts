@@ -17,13 +17,13 @@ export const useMarketingMetrics = () => {
     queryKey: [QUERY_KEYS.MARKETING_METRICS],
     queryFn: performanceMonitor.measureFunction(
       async () => {
-        devLogger.info('Fetching unified marketing data', undefined, 'marketing', 'useMarketingMetrics');
+        devLogger.info('Fetching unified marketing data', undefined, 'marketing');
         
         try {
           const data = await supabaseApi.getUnifiedMarketingData();
           return data;
         } catch (error) {
-          devLogger.error('Error fetching unified marketing data', error, 'marketing', 'useMarketingMetrics');
+          devLogger.error('Error fetching unified marketing data', error, { context: 'marketing', component: 'useMarketingMetrics' });
           throw error;
         }
       },
