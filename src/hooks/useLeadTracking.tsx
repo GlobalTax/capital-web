@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TrackingOptions {
@@ -25,7 +25,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
   } = options;
 
   // Circuit breaker state for tracking failures
-  const [circuitBreakerState, setCircuitBreakerState] = React.useState({
+  const [circuitBreakerState, setCircuitBreakerState] = useState({
     failureCount: 0,
     lastFailureTime: 0,
     isOpen: false
