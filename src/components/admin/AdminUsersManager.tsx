@@ -10,11 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, UserPlus, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, UserPlus, CheckCircle, XCircle, Mail } from 'lucide-react';
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { useForm } from 'react-hook-form';
 import { createBulkUsers, CAPITTAL_USERS, BulkCreationResult } from '@/utils/bulkUserCreation';
+import { resendCredentials, ResendResult, getCapittalTeamUsers } from '@/utils/resendCredentials';
 import { useToast } from '@/hooks/use-toast';
 
 const ROLE_LABELS = {
@@ -39,6 +40,13 @@ const AdminUsersManager = () => {
   const [bulkProgress, setBulkProgress] = useState(0);
   const [currentBulkUser, setCurrentBulkUser] = useState('');
   const [bulkResults, setBulkResults] = useState<BulkCreationResult[]>([]);
+
+  // Resend credentials states
+  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendProgress, setResendProgress] = useState(0);
+  const [currentResendUser, setCurrentResendUser] = useState('');
+  const [resendResults, setResendResults] = useState<ResendResult[]>([]);
 
   const {
     register: registerCreate,
@@ -144,6 +152,56 @@ const AdminUsersManager = () => {
     }
   };
 
+  const handleResendCredentials = async () => {
+    const capittalUsers = getCapittalTeamUsers(users);
+    
+    if (capittalUsers.length === 0) {
+      toast({
+        title: "No hay usuarios del equipo Capittal",
+        description: "No se encontraron usuarios con emails @capittal.es",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsResending(true);
+    setResendProgress(0);
+    setResendResults([]);
+    
+    try {
+      const results = await resendCredentials(
+        capittalUsers,
+        (current, total, currentUser) => {
+          setResendProgress((current / total) * 100);
+          setCurrentResendUser(currentUser);
+        }
+      );
+      
+      setResendResults(results);
+      
+      // Show summary toast
+      const successful = results.filter(r => r.success).length;
+      const failed = results.filter(r => !r.success).length;
+      
+      toast({
+        title: "Reenvío de credenciales completado",
+        description: `${successful} emails enviados exitosamente. ${failed} errores.`,
+        variant: failed > 0 ? "destructive" : "default"
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Error en reenvío de credenciales",
+        description: error.message || "Error inesperado",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResending(false);
+      setResendProgress(0);
+      setCurrentResendUser('');
+    }
+  };
+
   if (isLoading || permissionsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -182,6 +240,15 @@ const AdminUsersManager = () => {
         </div>
         
         <div className="flex gap-2">
+          <Dialog open={isResendDialogOpen} onOpenChange={setIsResendDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Mail className="h-4 w-4 mr-2" />
+                Reenviar Credenciales
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          
           <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -444,6 +511,139 @@ const AdminUsersManager = () => {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Resend Credentials Dialog */}
+      <Dialog open={isResendDialogOpen} onOpenChange={setIsResendDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Reenviar Credenciales</DialogTitle>
+          </DialogHeader>
+          
+          {!isResending && resendResults.length === 0 && (() => {
+            const capittalUsers = getCapittalTeamUsers(users);
+            return (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Se reenviarán credenciales temporales a los siguientes usuarios del equipo Capittal:
+                </p>
+                
+                {capittalUsers.length > 0 ? (
+                  <>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {capittalUsers.map((user, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <div>
+                            <span className="font-medium">{user.full_name}</span>
+                            <br />
+                            <span className="text-sm text-gray-500">{user.email}</span>
+                          </div>
+                          <Badge variant="secondary">{user.role}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="bg-amber-50 border border-amber-200 rounded p-3">
+                      <p className="text-sm text-amber-800">
+                        <strong>⚠️ Importante:</strong> Se generarán nuevas contraseñas temporales y se enviarán por email.
+                        Las contraseñas actuales seguirán funcionando hasta que los usuarios cambien a las nuevas.
+                      </p>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsResendDialogOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleResendCredentials}>
+                        Reenviar Credenciales ({capittalUsers.length})
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No hay usuarios del equipo Capittal</p>
+                    <p className="text-sm">No se encontraron usuarios con emails @capittal.es</p>
+                    
+                    <div className="flex justify-end mt-4">
+                      <Button variant="outline" onClick={() => setIsResendDialogOpen(false)}>
+                        Cerrar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          
+          {isResending && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="font-medium">Reenviando credenciales...</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Procesando: {currentResendUser}
+                </p>
+              </div>
+              
+              <Progress value={resendProgress} className="w-full" />
+              
+              <p className="text-sm text-center text-gray-500">
+                {Math.round(resendProgress)}% completado
+              </p>
+            </div>
+          )}
+          
+          {resendResults.length > 0 && !isResending && (
+            <div className="space-y-4">
+              <h3 className="font-medium">Resultados del reenvío:</h3>
+              
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {resendResults.map((result, index) => (
+                  <div key={index} className={`flex items-center justify-between p-2 rounded ${
+                    result.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      {result.success ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      )}
+                      <div>
+                        <span className="font-medium">{result.full_name}</span>
+                        <br />
+                        <span className="text-sm text-gray-500">{result.email}</span>
+                        {result.error && (
+                          <>
+                            <br />
+                            <span className="text-xs text-red-600">{result.error}</span>
+                          </>
+                        )}
+                        {result.success && (
+                          <>
+                            <br />
+                            <span className="text-xs text-green-600">✓ Email enviado correctamente</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button onClick={() => {
+                  setIsResendDialogOpen(false);
+                  setResendResults([]);
+                }}>
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
