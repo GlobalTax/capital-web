@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
-import { useAdminStatusQuery, useRegistrationStatusQuery } from '@/services/auth-queries.service';
+import { useOptimizedAdminStatusQuery, useOptimizedRegistrationStatusQuery, getCachedAdminStatus, setCachedAdminStatus } from '@/services/auth-queries-optimized.service';
 
 interface RegistrationRequest {
   id: string;
@@ -36,16 +36,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const registrationRequestAttempted = React.useRef(false);
   const { toast } = useToast();
 
-  // FIXED: Remove circular dependency - both queries run independently
-  const { data: adminStatusData, isLoading: isLoadingAdmin, error: adminError } = useAdminStatusQuery(
+  // Enhanced queries with better error handling and caching
+  const { data: adminStatusData, isLoading: isLoadingAdmin, error: adminError } = useOptimizedAdminStatusQuery(
     user?.id && authInitialized ? user.id : null
   );
-  const { data: registrationStatusData, isLoading: isLoadingRegistration, error: registrationError } = useRegistrationStatusQuery(
+  const { data: registrationStatusData, isLoading: isLoadingRegistration, error: registrationError } = useOptimizedRegistrationStatusQuery(
     user?.id && authInitialized ? user.id : null
   );
 
-  // Derived state from queries with fallbacks and circuit breaker
-  const isAdmin = adminStatusData?.isAdmin ?? false;
+  // Fallback to cached admin status if query fails
+  const cachedAdminStatus = user?.id ? getCachedAdminStatus(user.id) : null;
+  const isAdmin = adminStatusData?.isAdmin ?? cachedAdminStatus ?? false;
+  
+  // Cache successful admin status
+  React.useEffect(() => {
+    if (user?.id && adminStatusData?.isAdmin !== undefined) {
+      setCachedAdminStatus(user.id, adminStatusData.isAdmin);
+    }
+  }, [user?.id, adminStatusData?.isAdmin]);
+  
   const registrationRequest = (registrationStatusData?.request as RegistrationRequest) ?? null;
   // Only check registration status if NOT admin
   const isApproved = isAdmin || (registrationStatusData?.isApproved ?? false);

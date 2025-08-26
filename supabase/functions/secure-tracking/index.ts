@@ -206,30 +206,60 @@ serve(async (req) => {
       }
     }
 
-    // Insertar evento en la base de datos usando service role
-    const { error: insertError } = await supabaseClient
-      .from('lead_behavior_events')
-      .insert({
-        visitor_id: event.visitor_id,
-        session_id: event.session_id,
-        event_type: event.event_type,
-        page_path: event.page_path,
-        event_data: event.event_data || {},
-        company_domain: event.company_domain,
-        referrer: event.referrer,
-        utm_source: event.utm_source,
-        utm_medium: event.utm_medium,
-        utm_campaign: event.utm_campaign,
-        rule_id: event.rule_id,
-        user_agent: userAgent,
-        ip_address: ipAddress,
-        points_awarded: 0 // Se calculará con triggers
-      });
+    // Insertar evento en la base de datos con timeout y fallback
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 segundos timeout
 
-    if (insertError) {
-      console.error('Database insert error:', insertError);
+    try {
+      const { error: insertError } = await supabaseClient
+        .from('lead_behavior_events')
+        .insert({
+          visitor_id: event.visitor_id,
+          session_id: event.session_id,
+          event_type: event.event_type,
+          page_path: event.page_path,
+          event_data: event.event_data || {},
+          company_domain: event.company_domain,
+          referrer: event.referrer,
+          utm_source: event.utm_source,
+          utm_medium: event.utm_medium,
+          utm_campaign: event.utm_campaign,
+          rule_id: event.rule_id,
+          user_agent: userAgent,
+          ip_address: ipAddress,
+          points_awarded: 0 // Se calculará con triggers
+        })
+        .abortSignal(controller.signal);
+
+      clearTimeout(timeoutId);
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Database error', details: insertError.message }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+    } catch (dbError: any) {
+      clearTimeout(timeoutId);
+      
+      if (dbError.name === 'AbortError') {
+        console.error('Database timeout - operation aborted after 2s');
+        return new Response(
+          JSON.stringify({ error: 'Database timeout' }),
+          { 
+            status: 408, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+      console.error('Database operation failed:', dbError);
       return new Response(
-        JSON.stringify({ error: 'Database error' }),
+        JSON.stringify({ error: 'Database error', details: 'Operation failed' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

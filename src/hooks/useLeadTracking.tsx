@@ -24,11 +24,12 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableContactTracking = true
   } = options;
 
-  // Circuit breaker state for tracking failures
+  // Enhanced circuit breaker state for tracking failures
   const [circuitBreakerState, setCircuitBreakerState] = useState({
     failureCount: 0,
     lastFailureTime: 0,
-    isOpen: false
+    isOpen: false,
+    isDisabled: false // New flag to completely disable tracking
   });
 
   // Check if storage is available (privacy protection)
@@ -44,19 +45,25 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     }
   }, []);
 
-  // Circuit breaker logic
+  // Enhanced circuit breaker logic with more aggressive protection
   const shouldAllowTracking = useCallback(() => {
     if (!isStorageAvailable()) {
       return false;
     }
 
     const now = Date.now();
-    const { failureCount, lastFailureTime, isOpen } = circuitBreakerState;
+    const { failureCount, lastFailureTime, isOpen, isDisabled } = circuitBreakerState;
+
+    // If tracking is completely disabled, don't allow
+    if (isDisabled) {
+      console.debug('🚫 Tracking completely disabled due to persistent failures');
+      return false;
+    }
 
     // If circuit is open, check if enough time has passed to try again
     if (isOpen) {
       const timeSinceLastFailure = now - lastFailureTime;
-      const backoffTime = Math.min(300000, 5000 * Math.pow(2, failureCount)); // Max 5 minutes
+      const backoffTime = Math.min(600000, 10000 * Math.pow(2, failureCount)); // Max 10 minutes, longer backoff
       
       if (timeSinceLastFailure > backoffTime) {
         setCircuitBreakerState(prev => ({ ...prev, isOpen: false }));
@@ -68,16 +75,22 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     return true;
   }, [circuitBreakerState, isStorageAvailable]);
 
-  // Handle tracking failures
+  // Enhanced tracking failure handler with complete disable option
   const handleTrackingFailure = useCallback(() => {
     setCircuitBreakerState(prev => {
       const newFailureCount = prev.failureCount + 1;
-      const shouldOpenCircuit = newFailureCount >= 3; // Open after 3 failures
+      const shouldOpenCircuit = newFailureCount >= 2; // More aggressive: open after 2 failures
+      const shouldDisable = newFailureCount >= 10; // Disable completely after 10 failures
+
+      if (shouldDisable) {
+        console.warn('🚫 Tracking disabled due to persistent failures:', newFailureCount);
+      }
 
       return {
         failureCount: newFailureCount,
         lastFailureTime: Date.now(),
-        isOpen: shouldOpenCircuit
+        isOpen: shouldOpenCircuit,
+        isDisabled: shouldDisable
       };
     });
   }, []);
@@ -88,7 +101,8 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       setCircuitBreakerState({
         failureCount: 0,
         lastFailureTime: 0,
-        isOpen: false
+        isOpen: false,
+        isDisabled: false // Re-enable tracking on success
       });
     }
   }, [circuitBreakerState.failureCount]);
@@ -199,9 +213,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId);
       
-      // Use secure tracking edge function with timeout
+      // Use secure tracking edge function with shorter timeout
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Tracking timeout')), 5000)
+        setTimeout(() => reject(new Error('Tracking timeout')), 3000) // Reduced from 5s to 3s
       );
 
       const trackingPromise = supabase.functions.invoke('secure-tracking', {
