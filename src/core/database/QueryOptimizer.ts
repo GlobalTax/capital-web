@@ -1,7 +1,7 @@
 // ============= QUERY OPTIMIZER =============
 // Optimización inteligente de consultas SQL y RLS
 
-import { supabase } from '@/integrations/supabase/client';
+import { getDbPool, getDbPoolSync } from './ConnectionPool';
 import { logger } from '@/utils/logger';
 
 interface QueryPlan {
@@ -165,17 +165,20 @@ class DatabaseQueryOptimizer {
 
    // Ejecutar la consulta optimizada
     try {
-      // Aplicar hints de índice si están disponibles
-      if (optimizedPlan.useIndex) {
-        logger.debug('Using index hint', {
-          table: tableName,
-          index: optimizedPlan.useIndex
-        }, { context: 'database', component: 'QueryOptimizer' });
-      }
+      const dbPool = await getDbPool();
+      const result = await dbPool.executeQuery(async (client) => {
+        // Aplicar hints de índice si están disponibles
+        if (optimizedPlan.useIndex) {
+          logger.debug('Using index hint', {
+            table: tableName,
+            index: optimizedPlan.useIndex
+          }, { context: 'database', component: 'QueryOptimizer' });
+        }
 
-      const { data, error } = await queryBuilder;
-      if (error) throw error;
-      const result = data as T;
+        const { data, error } = await queryBuilder;
+        if (error) throw error;
+        return data as T;
+      }, `optimized_${tableName}_${operation.toLowerCase()}`);
 
       // Cachear resultado si es apropiado
       if (operation === 'SELECT' && this.shouldCacheResult(optimizedPlan)) {
@@ -232,12 +235,15 @@ class DatabaseQueryOptimizer {
     slowQueries: any[];
     indexSuggestions: Array<{ table: string; suggestion: string }>;
   } {
+    const dbPool = getDbPoolSync();
+    const slowQueries = dbPool ? dbPool.getSlowQueries() : [];
     const cacheSize = this.queryCache.size;
+    const poolStats = dbPool ? dbPool.getStats() : { totalQueries: 0, failedQueries: 0, avgQueryTime: 0 };
 
     return {
-      cacheHitRate: cacheSize > 0 ? 0.85 : 0,
-      averageOptimization: 100,
-      slowQueries: [],
+      cacheHitRate: cacheSize > 0 ? (poolStats.totalQueries - poolStats.failedQueries) / poolStats.totalQueries : 0,
+      averageOptimization: poolStats.avgQueryTime,
+      slowQueries: slowQueries.slice(0, 10),
       indexSuggestions: this.generateIndexSuggestions()
     };
   }

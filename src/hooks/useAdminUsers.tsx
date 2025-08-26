@@ -1,11 +1,8 @@
-import { useAdminUsersQuery } from '@/services/auth-queries.service';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AUTH_QUERY_KEYS } from '@/services/auth-queries.service';
 import { logger } from '@/utils/logger';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCallback } from 'react';
 
 export interface AdminUser {
   id: string;
@@ -27,10 +24,10 @@ export interface CreateAdminUserData {
 }
 
 export const useAdminUsers = () => {
-  // Use centralized query
-  const { data: users = [], isLoading, error, refetch } = useAdminUsersQuery();
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
 
   const sendNotification = useCallback(async (
@@ -53,13 +50,45 @@ export const useAdminUsers = () => {
       });
     } catch (error) {
       console.error('Error sending notification:', error);
+      // No hacer throw aquí para no bloquear la operación principal
     }
   }, [currentUser]);
 
-  // Mutations for admin user management
-  const createUserMutation = useMutation({
-    mutationFn: async (userData: CreateAdminUserData) => {
-      // Create user in auth first
+  const fetchUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      setUsers(data || []);
+      
+      logger.info('Admin users fetched successfully', {
+        count: data?.length || 0
+      }, { context: 'system', component: 'useAdminUsers' });
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar usuarios';
+      setError(errorMessage);
+      logger.error('Failed to fetch admin users', err as Error, {
+        context: 'system',
+        component: 'useAdminUsers'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const createUser = useCallback(async (userData: CreateAdminUserData): Promise<void> => {
+    try {
+      // First create the auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -78,7 +107,7 @@ export const useAdminUsers = () => {
         throw new Error('No user data returned from signup');
       }
 
-      // Then create admin user record
+      // Then create the admin user record
       const { error: adminError } = await supabase
         .from('admin_users')
         .insert({
@@ -93,44 +122,47 @@ export const useAdminUsers = () => {
         throw adminError;
       }
 
-      // Send notification
+      await fetchUsers();
+      
+      // Enviar notificación de bienvenida
       await sendNotification(
         'welcome',
         userData.email,
         userData.full_name,
         { role: userData.role }
       );
+      
+      toast({
+        title: "Usuario creado exitosamente",
+        description: `${userData.full_name} ha sido añadido como ${userData.role}`,
+      });
 
       logger.info('Admin user created successfully', {
         email: userData.email,
         role: userData.role
       }, { context: 'system', component: 'useAdminUsers' });
 
-      return authData.user;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.adminUsers() });
-      toast({
-        title: "Usuario creado exitosamente",
-        description: "El usuario administrador ha sido creado exitosamente",
-      });
-    },
-    onError: (error: any) => {
-      logger.error('Failed to create admin user', error, {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear usuario';
+      logger.error('Failed to create admin user', err as Error, {
         context: 'system',
-        component: 'useAdminUsers'
+        component: 'useAdminUsers',
+        data: { email: userData.email, role: userData.role }
       });
+      
       toast({
         title: "Error al crear usuario",
-        description: error.message || "Error al crear el usuario",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      throw err;
     }
-  });
+  }, [fetchUsers, toast]);
 
-  const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, updates }: { userId: string; updates: Partial<AdminUser> }) => {
-      // Get old user data for notifications
+  const updateUser = useCallback(async (userId: string, updates: Partial<AdminUser>): Promise<void> => {
+    try {
+      // Obtener datos del usuario antes de actualizar para notificaciones
       const oldUser = users.find(u => u.id === userId);
       
       const { error } = await supabase
@@ -138,9 +170,13 @@ export const useAdminUsers = () => {
         .update(updates)
         .eq('id', userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      // Send notifications based on changes
+      await fetchUsers();
+      
+      // Enviar notificaciones según el tipo de cambio
       if (oldUser && updates.role && oldUser.role !== updates.role) {
         await sendNotification(
           'role_changed',
@@ -159,89 +195,91 @@ export const useAdminUsers = () => {
           { role: oldUser.role, changedBy: currentUser?.email }
         );
       }
+      
+      toast({
+        title: "Usuario actualizado",
+        description: "Los cambios se han guardado correctamente",
+      });
 
       logger.info('Admin user updated successfully', {
         userId,
         updates
       }, { context: 'system', component: 'useAdminUsers' });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.adminUsers() });
-      toast({
-        title: "Usuario actualizado",
-        description: "Los cambios se han guardado correctamente",
-      });
-    },
-    onError: (error: any) => {
-      logger.error('Failed to update admin user', error, {
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar usuario';
+      logger.error('Failed to update admin user', err as Error, {
         context: 'system',
-        component: 'useAdminUsers'
+        component: 'useAdminUsers',
+        data: { userId, updates }
       });
+      
       toast({
         title: "Error al actualizar usuario",
-        description: error.message || "Error al actualizar el usuario",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      throw err;
     }
-  });
+  }, [fetchUsers, toast]);
 
-  const deleteUserMutation = useMutation({
-    mutationFn: async (userId: string) => {
+  const deleteUser = useCallback(async (userId: string): Promise<void> => {
+    try {
       const { error } = await supabase
         .from('admin_users')
         .delete()
         .eq('id', userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      logger.info('Admin user deleted successfully', {
-        userId
-      }, { context: 'system', component: 'useAdminUsers' });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.adminUsers() });
+      await fetchUsers();
+      
       toast({
         title: "Usuario eliminado",
         description: "El usuario ha sido eliminado del sistema",
       });
-    },
-    onError: (error: any) => {
-      logger.error('Failed to delete admin user', error, {
+
+      logger.info('Admin user deleted successfully', {
+        userId
+      }, { context: 'system', component: 'useAdminUsers' });
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar usuario';
+      logger.error('Failed to delete admin user', err as Error, {
         context: 'system',
-        component: 'useAdminUsers'
+        component: 'useAdminUsers',
+        data: { userId }
       });
+      
       toast({
         title: "Error al eliminar usuario",
-        description: error.message || "Error al eliminar el usuario",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      throw err;
     }
-  });
+  }, [fetchUsers, toast]);
 
-  const createUser = async (userData: CreateAdminUserData) => {
-    await createUserMutation.mutateAsync(userData);
-  };
-
-  const updateUser = async (userId: string, updates: Partial<AdminUser>) => {
-    await updateUserMutation.mutateAsync({ userId, updates });
-  };
-
-  const deleteUser = async (userId: string) => {
-    await deleteUserMutation.mutateAsync(userId);
-  };
-
-  const toggleUserStatus = async (userId: string, isActive: boolean) => {
+  const toggleUserStatus = useCallback(async (userId: string, isActive: boolean): Promise<void> => {
     await updateUser(userId, { is_active: isActive });
-  };
+  }, [updateUser]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   return {
     users,
     isLoading,
-    error: error?.message || null,
+    error,
     createUser,
     updateUser,
     deleteUser,
     toggleUserStatus,
-    refetch,
+    refetch: fetchUsers
   };
 };

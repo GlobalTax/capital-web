@@ -15,8 +15,7 @@ import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
-const AdminApp = lazy(() => import('@/components/admin/AdminApp'));
-const CalculatorApp = lazy(() => import('@/components/calculator-app/CalculatorApp'));
+const Admin = lazy(() => import('@/pages/Admin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
 const MyValuations = lazy(() => import('@/pages/MyValuations'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
@@ -207,49 +206,12 @@ function AppContent() {
     const host = rawHost.replace(/^www\./, '');
     const path = window.location.pathname;
 
-    // Si están en app.capittal.es, mostrar solo admin con providers necesarios
-    if (host === 'app.capittal.es') {
-      return (
-        <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
-          <Suspense fallback={<PageLoadingSkeleton />}>
-            <AuthProvider>
-              <AdminApp />
-            </AuthProvider>
-          </Suspense>
-        </div>
-      );
-    }
-
-    // Si están en calculadoras.capittal.es, mostrar app de calculadoras para usuarios registrados
+    // Si entran por calculadoras.capittal.es, forzamos dominio canónico capittal.es/lp/calculadora
     if (host === 'calculadoras.capittal.es' || host === 'calculadora.capittal.es') {
-      return (
-        <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
-          <Suspense fallback={<PageLoadingSkeleton />}>
-            <AuthProvider>
-              <CalculatorApp />
-            </AuthProvider>
-          </Suspense>
-        </div>
-      );
-    }
-
-    // Si están en capittal.es y van a /admin, redirigir a app.capittal.es
-    if ((host === 'capittal.es' || host.includes('lovable.app')) && path.startsWith('/admin')) {
-      if (host === 'capittal.es') {
-        window.location.href = `https://app.capittal.es${path}`;
+      const canonical = 'https://capittal.es/lp/calculadora';
+      if (window.location.href !== canonical) {
+        window.location.replace(canonical); // 302 en cliente (efecto similar a 301 para UX)
         return null;
-      }
-      // En desarrollo (lovable), permitir /admin localmente pero usar AdminApp
-      if (host.includes('lovable.app')) {
-        return (
-          <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
-            <Suspense fallback={<PageLoadingSkeleton />}>
-              <AuthProvider>
-                <AdminApp />
-              </AuthProvider>
-            </Suspense>
-          </div>
-        );
       }
     }
 
@@ -270,6 +232,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin/*" element={<Admin />} />
           <Route 
             path="/perfil/*" 
             element={
@@ -354,12 +317,6 @@ function AppContent() {
           <Route path="/documentacion-ma/variables" element={<Variables />} />
           <Route path="/documentacion-ma/customization" element={<Customization />} />
           <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
-          
-          {/* Admin route fallbacks - redirect to admin subdomain */}
-          <Route path="/admin" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
-          <Route path="/admin/*" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
-          <Route path="/dashboard" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
-          <Route path="/leads" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
           
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />

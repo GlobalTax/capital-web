@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import AdminDashboardHome from './AdminDashboardHome';
 import LeadScoringIntelligenceDashboard from './LeadScoringIntelligenceDashboard';
 import MarketingHubDashboard from './MarketingHubDashboard';
-import UserActivityDashboard from './UserActivityDashboard';
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
@@ -40,8 +39,6 @@ const AdminDashboard = () => {
         return <LeadScoringIntelligenceDashboard />;
       case 'marketing-hub':
         return <MarketingHubDashboard />;
-      case 'user-activity':
-        return <UserActivityDashboard />;
       default:
         return <AdminDashboardHome />;
     }
@@ -70,9 +67,6 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('marketing-hub')}>
               🚀 Marketing Hub
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveSection('user-activity')}>
-              👥 Actividad Usuarios
             </Button>
           </CardContent>
         </Card>

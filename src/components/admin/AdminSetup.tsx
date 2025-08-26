@@ -7,14 +7,38 @@ import { Shield, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { AUTH_QUERY_KEYS } from '@/services/auth-queries.service';
 
 const AdminSetup = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, checkAdminStatus } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
+  const [adminExists, setAdminExists] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkCurrentAdminStatus();
+  }, [user]);
+
+  const checkCurrentAdminStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, is_active')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking admin:', error);
+        setAdminExists(false);
+      } else {
+        setAdminExists(!!data?.is_active);
+      }
+    } catch (error) {
+      console.error('Error checking admin:', error);
+      setAdminExists(false);
+    }
+  };
 
   const createAdminUser = async () => {
     if (!user) return;
@@ -46,10 +70,8 @@ const AdminSetup = () => {
         }
       }
 
-      // Invalidate admin status query to refresh data
-      queryClient.invalidateQueries({ 
-        queryKey: AUTH_QUERY_KEYS.adminStatus(user.id) 
-      });
+      setAdminExists(true);
+      await checkAdminStatus();
       
       toast({
         title: "¡Admin configurado!",
@@ -100,14 +122,15 @@ const AdminSetup = () => {
         <div className="text-sm text-gray-600">
           Usuario actual: <strong>{user.email}</strong>
         </div>
-        {isAdmin ? (
+        
+        {adminExists === true ? (
           <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>
               ✅ Tu usuario tiene permisos de administrador activos.
             </AlertDescription>
           </Alert>
-        ) : (
+        ) : adminExists === false ? (
           <div className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -123,6 +146,11 @@ const AdminSetup = () => {
             >
               {isCheckingAdmin ? "Configurando..." : "Configurar como Admin"}
             </Button>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="text-sm text-gray-600 mt-2">Verificando permisos...</p>
           </div>
         )}
       </CardContent>

@@ -21,9 +21,9 @@ const Perfil = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Acceso Requerido</h1>
             <p className="text-gray-600 mb-6">Debes iniciar sesión para ver tu perfil</p>
-            <a href="https://app.capittal.es/auth">
+            <Link to="/admin">
               <Button>Iniciar Sesión</Button>
-            </a>
+            </Link>
           </div>
         </div>
         <Footer />
@@ -96,17 +96,17 @@ const Perfil = () => {
                   </p>
                   
                   <div className="space-y-2">
-                    <a href="https://app.capittal.es/admin" className="block">
+                    <Link to="/admin" className="block">
                       <Button className="w-full">
                         Panel de Administración
                       </Button>
-                    </a>
+                    </Link>
                     
-                    <a href="https://app.capittal.es/admin/leads-dashboard" className="block">
+                    <Link to="/admin/all-leads" className="block">
                       <Button variant="outline" className="w-full">
                         Todos los Leads
                       </Button>
-                    </a>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

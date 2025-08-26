@@ -4,46 +4,26 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { SUPABASE_CONFIG, validateSupabaseConfig } from '@/config/supabase';
 
-// Singleton pattern to prevent multiple client instances
-class SupabaseClientSingleton {
-  private static instance: ReturnType<typeof createClient<Database>> | null = null;
-  private static isCreating = false;
+// Lazy supabase client creation
+let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
 
-  static getInstance(): ReturnType<typeof createClient<Database>> {
-    if (!SupabaseClientSingleton.instance && !SupabaseClientSingleton.isCreating) {
-      SupabaseClientSingleton.isCreating = true;
-      
-      try {
-        validateSupabaseConfig();
-        console.debug('Creating Supabase client instance');
-        
-        SupabaseClientSingleton.instance = createClient<Database>(
-          SUPABASE_CONFIG.url, 
-          SUPABASE_CONFIG.anonKey,
-          {
-            auth: {
-              persistSession: true,
-              autoRefreshToken: true,
-              detectSessionInUrl: true,
-              flowType: 'pkce'
-            }
-          }
-        );
-      } catch (error) {
-        console.error('Failed to create Supabase client:', error);
-        throw error;
-      } finally {
-        SupabaseClientSingleton.isCreating = false;
-      }
-    }
-    
-    return SupabaseClientSingleton.instance!;
+const getSupabaseClient = () => {
+  if (!supabaseInstance) {
+    validateSupabaseConfig();
+    supabaseInstance = createClient<Database>(
+      SUPABASE_CONFIG.url, 
+      SUPABASE_CONFIG.anonKey
+    );
   }
+  return supabaseInstance;
+};
 
-  static hasInstance(): boolean {
-    return SupabaseClientSingleton.instance !== null;
+// Import the supabase client like this:
+// import { supabase } from "@/integrations/supabase/client";
+export const supabase = new Proxy({} as ReturnType<typeof createClient<Database>>, {
+  get(target, prop) {
+    const client = getSupabaseClient();
+    const value = (client as any)[prop];
+    return typeof value === 'function' ? value.bind(client) : value;
   }
-}
-
-// Export the singleton client
-export const supabase = SupabaseClientSingleton.getInstance();
+});

@@ -21,16 +21,10 @@ const AdminHeader = ({ onLogout }: AdminHeaderProps) => {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <a 
-              href="https://capittal.es" 
-              className="flex items-center gap-2 hover:opacity-75 transition-opacity"
-              title="Ir a Capittal.es"
-            >
-              <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-                <Command className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <h1 className="text-lg font-semibold text-foreground">Capittal</h1>
-            </a>
+            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
+              <Command className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <h1 className="text-lg font-semibold text-foreground">Capittal</h1>
           </div>
           <Badge variant="outline" className="text-xs">
             Admin

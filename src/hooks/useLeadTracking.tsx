@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TrackingOptions {
@@ -24,169 +24,55 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableContactTracking = true
   } = options;
 
-  // Enhanced circuit breaker state for tracking failures
-  const [circuitBreakerState, setCircuitBreakerState] = useState({
-    failureCount: 0,
-    lastFailureTime: 0,
-    isOpen: false,
-    isDisabled: false // New flag to completely disable tracking
-  });
-
-  // Check if storage is available (privacy protection)
-  const isStorageAvailable = useCallback(() => {
-    try {
-      const test = 'test';
-      localStorage.setItem(test, test);
-      localStorage.removeItem(test);
-      return true;
-    } catch (e) {
-      console.warn('Storage not available, tracking disabled');
-      return false;
-    }
-  }, []);
-
-  // Enhanced circuit breaker logic with more aggressive protection
-  const shouldAllowTracking = useCallback(() => {
-    if (!isStorageAvailable()) {
-      return false;
-    }
-
-    const now = Date.now();
-    const { failureCount, lastFailureTime, isOpen, isDisabled } = circuitBreakerState;
-
-    // If tracking is completely disabled, don't allow
-    if (isDisabled) {
-      console.debug('🚫 Tracking completely disabled due to persistent failures');
-      return false;
-    }
-
-    // If circuit is open, check if enough time has passed to try again
-    if (isOpen) {
-      const timeSinceLastFailure = now - lastFailureTime;
-      const backoffTime = Math.min(600000, 10000 * Math.pow(2, failureCount)); // Max 10 minutes, longer backoff
-      
-      if (timeSinceLastFailure > backoffTime) {
-        setCircuitBreakerState(prev => ({ ...prev, isOpen: false }));
-        return true;
-      }
-      return false;
-    }
-
-    return true;
-  }, [circuitBreakerState, isStorageAvailable]);
-
-  // Enhanced tracking failure handler with complete disable option
-  const handleTrackingFailure = useCallback(() => {
-    setCircuitBreakerState(prev => {
-      const newFailureCount = prev.failureCount + 1;
-      const shouldOpenCircuit = newFailureCount >= 2; // More aggressive: open after 2 failures
-      const shouldDisable = newFailureCount >= 10; // Disable completely after 10 failures
-
-      if (shouldDisable) {
-        console.warn('🚫 Tracking disabled due to persistent failures:', newFailureCount);
-      }
-
-      return {
-        failureCount: newFailureCount,
-        lastFailureTime: Date.now(),
-        isOpen: shouldOpenCircuit,
-        isDisabled: shouldDisable
-      };
-    });
-  }, []);
-
-  // Reset circuit breaker on success
-  const handleTrackingSuccess = useCallback(() => {
-    if (circuitBreakerState.failureCount > 0) {
-      setCircuitBreakerState({
-        failureCount: 0,
-        lastFailureTime: 0,
-        isOpen: false,
-        isDisabled: false // Re-enable tracking on success
-      });
-    }
-  }, [circuitBreakerState.failureCount]);
-
   // Generar IDs únicos para sesión y visitante
   const getOrCreateVisitorId = useCallback(() => {
-    if (!isStorageAvailable()) {
-      // Fallback to session-based ID when storage is blocked
-      return `temp_visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    let visitorId = localStorage.getItem('capittal_visitor_id');
+    if (!visitorId) {
+      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('capittal_visitor_id', visitorId);
     }
-
-    try {
-      let visitorId = localStorage.getItem('capittal_visitor_id');
-      if (!visitorId) {
-        visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('capittal_visitor_id', visitorId);
-      }
-      return visitorId;
-    } catch (e) {
-      return `temp_visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-  }, [isStorageAvailable]);
+    return visitorId;
+  }, []);
 
   const getOrCreateSessionId = useCallback(() => {
-    if (!isStorageAvailable()) {
-      return `temp_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    let sessionId = sessionStorage.getItem('capittal_session_id');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('capittal_session_id', sessionId);
     }
-
-    try {
-      let sessionId = sessionStorage.getItem('capittal_session_id');
-      if (!sessionId) {
-        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        sessionStorage.setItem('capittal_session_id', sessionId);
-      }
-      return sessionId;
-    } catch (e) {
-      return `temp_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-  }, [isStorageAvailable]);
+    return sessionId;
+  }, []);
 
   // Detectar empresa desde email o dominio
   const detectCompanyDomain = useCallback(() => {
-    if (!isStorageAvailable()) {
-      return undefined;
-    }
+    // Intentar detectar desde localStorage, email o referrer
+    const savedDomain = localStorage.getItem('capittal_company_domain');
+    if (savedDomain) return savedDomain;
 
-    try {
-      // Intentar detectar desde localStorage, email o referrer
-      const savedDomain = localStorage.getItem('capittal_company_domain');
-      if (savedDomain) return savedDomain;
-
-      // Detectar desde referrer si viene de un dominio corporativo
-      const referrer = document.referrer;
-      if (referrer && !referrer.includes(window.location.hostname)) {
-        try {
-          const domain = new URL(referrer).hostname;
-          if (!['google.com', 'linkedin.com', 'facebook.com', 'twitter.com'].includes(domain)) {
-            localStorage.setItem('capittal_company_domain', domain);
-            return domain;
-          }
-        } catch (e) {
-          // Ignore invalid URLs
+    // Detectar desde referrer si viene de un dominio corporativo
+    const referrer = document.referrer;
+    if (referrer && !referrer.includes(window.location.hostname)) {
+      try {
+        const domain = new URL(referrer).hostname;
+        if (!['google.com', 'linkedin.com', 'facebook.com', 'twitter.com'].includes(domain)) {
+          localStorage.setItem('capittal_company_domain', domain);
+          return domain;
         }
+      } catch (e) {
+        // Ignore invalid URLs
       }
-    } catch (e) {
-      console.warn('Could not detect company domain:', e);
     }
 
     return undefined;
-  }, [isStorageAvailable]);
+  }, []);
 
-  // Función principal de tracking con circuit breaker
+  // Función principal de tracking
   const trackEvent = useCallback(async (
     eventType: string,
     pagePath: string,
     eventData: Record<string, any> = {},
     pointsAwarded: number = 0
   ) => {
-    // Check circuit breaker before attempting tracking
-    if (!shouldAllowTracking()) {
-      console.debug('🚫 Tracking disabled by circuit breaker or privacy settings');
-      return;
-    }
-
     try {
       const visitorId = getOrCreateVisitorId();
       const sessionId = getOrCreateSessionId();
@@ -213,32 +99,23 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId);
       
-      // Use secure tracking edge function with shorter timeout
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Tracking timeout')), 3000) // Reduced from 5s to 3s
-      );
-
-      const trackingPromise = supabase.functions.invoke('secure-tracking', {
+      // Use secure tracking edge function instead of direct database insertion
+      const { error } = await supabase.functions.invoke('secure-tracking', {
         body: { event: trackingEvent }
       });
-
-      const { error } = await Promise.race([trackingPromise, timeoutPromise]) as any;
       
       if (error) {
         console.error('❌ Lead tracking failed:', error);
-        handleTrackingFailure();
-        return;
+        throw error;
       }
       
       console.debug('✅ Event tracked successfully via secure endpoint:', eventType);
-      handleTrackingSuccess();
 
     } catch (error) {
       console.error('❌ Lead tracking error:', error);
-      handleTrackingFailure();
-      // Fallar silenciosamente para no afectar UX
+      // Fallar silenciosamente para no afectar UX pero logear el error
     }
-  }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain, shouldAllowTracking, handleTrackingFailure, handleTrackingSuccess]);
+  }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain]);
 
   // Tracking de páginas visitadas
   const trackPageView = useCallback(async (pagePath?: string) => {

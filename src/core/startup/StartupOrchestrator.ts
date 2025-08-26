@@ -32,18 +32,14 @@ class StartupOrchestrator {
       {
         name: 'DatabasePool',
         initialize: async () => {
-          try {
-            // Try to initialize database pool if available
-            const { getQueryOptimizer } = await import('@/core/database/QueryOptimizer');
-            getQueryOptimizer();
-            console.log('Database pool initialized successfully');
-          } catch (error) {
-            console.warn('Database pool initialization skipped:', error.message);
-            // Don't throw - this is optional
-          }
+          // Importación lazy para evitar dependencias circulares
+          const { getDbPool } = await import('@/core/database/ConnectionPool');
+          const pool = getDbPool();
+          // Esperar a que el pool se inicialice
+          await new Promise(resolve => setTimeout(resolve, 100));
         },
         isRequired: false,
-        timeout: 5000
+        timeout: 10000
       },
       {
         name: 'QueryOptimizer',

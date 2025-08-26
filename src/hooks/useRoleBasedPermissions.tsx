@@ -2,7 +2,6 @@ import { useMemo, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { logger } from '@/utils/logger';
 
 // IMPORTANTE: Este archivo está llegando a ser muy largo (349 líneas).
 // Considera refactorizar en archivos separados después de completar la implementación.
@@ -266,8 +265,6 @@ const ROLE_PERMISSIONS: Record<AdminRole, RolePermissions> = {
 export const useRoleBasedPermissions = () => {
   const { user, isAdmin } = useAuth();
   const mountedRef = useRef(true);
-  const errorCountRef = useRef(0);
-  const lastErrorTimeRef = useRef<number>(0);
   
   // Cleanup on unmount to prevent React #300 error
   useEffect(() => {
@@ -275,286 +272,117 @@ export const useRoleBasedPermissions = () => {
       mountedRef.current = false;
     };
   }, []);
-
-  // Circuit breaker: if too many errors in short time, go to safe mode
-  const isCircuitBreakerOpen = () => {
-    const now = Date.now();
-    const timeSinceLastError = now - lastErrorTimeRef.current;
-    
-    // Reset counter if more than 5 minutes passed
-    if (timeSinceLastError > 5 * 60 * 1000) {
-      errorCountRef.current = 0;
-    }
-    
-    // Open circuit if 3+ errors in 5 minutes
-    return errorCountRef.current >= 3;
-  };
-
-  const recordError = () => {
-    errorCountRef.current += 1;
-    lastErrorTimeRef.current = Date.now();
-  };
   
-  // Fetch user role from database with enhanced circuit breaker
+  // Fetch user role from database with circuit breaker
   const { data: userRole, error, isLoading: queryLoading } = useQuery({
     queryKey: ['user-role', user?.id],
     queryFn: async (): Promise<AdminRole> => {
-      // Guard against undefined/null user
-      if (!user?.id || typeof user.id !== 'string') {
-        return 'none';
-      }
-      
-      // Circuit breaker: if too many failures, return safe fallback
-      if (isCircuitBreakerOpen()) {
-        logger.warn('Role check circuit breaker open, returning safe fallback', {
-          context: 'system',
-          component: 'useRoleBasedPermissions',
-          data: { errorCount: errorCountRef.current }
-        });
-        return 'none';
-      }
+      if (!user?.id) return 'none';
       
       try {
-        // Timeout after 10 seconds to prevent hanging
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('RPC timeout')), 10000);
-        });
-        
-        const rpcPromise = supabase
+        const { data, error } = await supabase
           .rpc('check_user_admin_role', { check_user_id: user.id });
         
-        const { data, error } = await Promise.race([rpcPromise, timeoutPromise]);
-        
         if (error) {
-          recordError();
-          logger.error('RPC error in role check', error, {
-            context: 'system',
-            component: 'useRoleBasedPermissions',
-            data: { userId: user.id, errorCode: error.code }
-          });
-          return 'none';
+          console.error('RPC error:', error);
+          return 'none'; // Fallback seguro
         }
         
-        // Validate response is a valid role
-        const validRoles: AdminRole[] = ['super_admin', 'admin', 'editor', 'viewer', 'none'];
-        const role = data as AdminRole;
-        
-        if (!validRoles.includes(role)) {
-          logger.warn('Invalid role returned from RPC', {
-            context: 'system',
-            component: 'useRoleBasedPermissions',
-            data: { receivedRole: role, userId: user.id }
-          });
-          return 'none';
-        }
-        
-        return role;
+        return (data as AdminRole) || 'none';
       } catch (error) {
-        recordError();
-        logger.error('Role check failed completely', error as Error, {
-          context: 'system',
-          component: 'useRoleBasedPermissions',
-          data: { 
-            userId: user.id,
-            errorType: error instanceof Error ? error.name : 'Unknown',
-            isTimeout: error instanceof Error && error.message.includes('timeout')
-          }
-        });
-        return 'none';
+        console.error('Role check failed:', error);
+        return 'none'; // Fallback seguro
       }
     },
-    enabled: !!user?.id && !isCircuitBreakerOpen(),
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 15 * 60 * 1000, // 15 minutes
-    retry: (failureCount, error) => {
-      // Don't retry if circuit breaker is open
-      if (isCircuitBreakerOpen()) return false;
-      // Don't retry timeout errors more than once
-      if (error?.message?.includes('timeout') && failureCount >= 1) return false;
-      return failureCount < 2;
-    },
+    enabled: !!user?.id,
+    staleTime: 10 * 60 * 1000, // 10 minutes - más cache
+    gcTime: 15 * 60 * 1000, // 15 minutes (nuevo nombre para cacheTime)
+    retry: 2, // Solo 2 reintentos
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnWindowFocus: false, // Evitar refetch automático
+    refetchOnMount: false, // Evitar refetch en mount
   });
 
   const permissions = useMemo(() => {
-    // Always ensure we have a valid role
-    const role = (userRole && userRole in ROLE_PERMISSIONS) ? userRole : 'none';
-    const rolePermissions = ROLE_PERMISSIONS[role];
-    
-    // Extra safety: ensure permissions object exists
-    if (!rolePermissions) {
-      logger.error('Missing role permissions configuration', new Error('Invalid role permissions'), {
-        context: 'system',
-        component: 'useRoleBasedPermissions',
-        data: { role, userRole }
-      });
-      return ROLE_PERMISSIONS.none;
-    }
-    
-    return rolePermissions;
+    const role = userRole || 'none';
+    return ROLE_PERMISSIONS[role];
   }, [userRole]);
 
   const hasPermission = (permission: keyof RolePermissions): boolean => {
-    try {
-      // Guard against invalid permissions object
-      if (!permissions || typeof permissions !== 'object') {
-        return false;
-      }
-      
-      // Guard against invalid permission key
-      if (!(permission in permissions)) {
-        logger.warn('Unknown permission requested', {
-          context: 'system',
-          component: 'useRoleBasedPermissions',
-          data: { permission, availablePermissions: Object.keys(permissions) }
-        });
-        return false;
-      }
-      
-      return Boolean(permissions[permission]);
-    } catch (error) {
-      logger.error('Error checking permission', error as Error, {
-        context: 'system',
-        component: 'useRoleBasedPermissions',
-        data: { permission, userRole }
-      });
-      return false;
-    }
+    return permissions[permission] || false;
   };
 
-  const requirePermission = (permission: keyof RolePermissions, fallback?: () => void): boolean => {
-    const hasAccess = hasPermission(permission);
-    
-    if (!hasAccess) {
+  const requirePermission = (permission: keyof RolePermissions, fallback?: () => void) => {
+    if (!hasPermission(permission)) {
       if (fallback) {
-        try {
-          fallback();
-        } catch (error) {
-          logger.error('Error executing permission fallback', error as Error, {
-            context: 'system',
-            component: 'useRoleBasedPermissions',
-            data: { permission }
-          });
-        }
+        fallback();
+        return false;
       }
-      return false;
+      throw new Error(`Permission denied: ${permission}`);
     }
-    
     return true;
   };
 
   const getMenuVisibility = () => {
-    try {
-      // Prevent updates after unmount
-      if (!mountedRef.current) {
-        return getEmergencyFallbackMenu();
-      }
+    // Prevent updates after unmount
+    if (!mountedRef.current) return {};
+    
+    // Para admins y super_admins, mostrar todo
+    const isAdminLevel = userRole === 'admin' || userRole === 'super_admin';
+    
+    return {
+      // Dashboard always visible
+      dashboard: true,
       
-      // Validate userRole is a known value
-      const safeUserRole = (userRole && userRole in ROLE_PERMISSIONS) ? userRole : 'none';
-      const isAdminLevel = safeUserRole === 'admin' || safeUserRole === 'super_admin';
+      // Lead management - Visible para admins, editors, y viewers
+      leadScoring: userRole !== 'none',
+      leadScoringRules: isAdminLevel,
+      contactLeads: userRole !== 'none',
+      contacts: userRole !== 'none',
+      contactLists: userRole !== 'none',
+      collaboratorApplications: userRole !== 'none',
+      alerts: userRole !== 'none',
+      proposals: userRole !== 'none',
       
-      return {
-        // Dashboard always visible (emergency fallback)
-        dashboard: true,
-        
-        // Lead management - Visible para admins, editors, y viewers
-        leadScoring: safeUserRole !== 'none',
-        leadScoringRules: isAdminLevel,
-        contactLeads: safeUserRole !== 'none',
-        contacts: safeUserRole !== 'none',
-        contactLists: safeUserRole !== 'none',
-        collaboratorApplications: safeUserRole !== 'none',
-        alerts: safeUserRole !== 'none',
-        proposals: safeUserRole !== 'none',
-        
-        // Email Marketing - Visible para admins y editors
-        emailMarketing: isAdminLevel,
-        
-        // Content management - Visible para admins y editors
-        blogV2: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        sectorReports: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        caseStudies: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        leadMagnets: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        landingPages: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        designResources: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        
-        // Company data - Visible para todos excepto 'none'
-        operations: safeUserRole !== 'none',
-        multiples: safeUserRole !== 'none',
-        statistics: safeUserRole !== 'none',
-        
-        // Team & testimonials - Visible para admins y editors
-        team: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        testimonials: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        carouselTestimonials: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        carouselLogos: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        
-        // Marketing & Analytics - Visible para todos excepto 'none'
-        marketingAutomation: isAdminLevel,
-        marketingIntelligence: safeUserRole !== 'none',
-        marketingHub: safeUserRole !== 'none',
-        integrations: isAdminLevel,
-        
-        // Tracking & Performance - Nuevas funcionalidades
-        contentPerformance: safeUserRole !== 'none',
-        contentStudio: safeUserRole !== 'none' && safeUserRole !== 'viewer',
-        trackingDashboard: safeUserRole !== 'none',
-        trackingConfig: isAdminLevel,
-        
-        // Configuration - Solo para super admins y admins respectivamente
-        adminUsers: safeUserRole === 'super_admin',
-        settings: isAdminLevel,
-      };
-    } catch (error) {
-      logger.error('Error calculating menu visibility', error as Error, {
-        context: 'system',
-        component: 'useRoleBasedPermissions',
-        data: { userRole }
-      });
-      return getEmergencyFallbackMenu();
-    }
+      // Email Marketing - Visible para admins y editors
+      emailMarketing: isAdminLevel,
+      
+      // Content management - Visible para admins y editors
+      blogV2: userRole !== 'none' && userRole !== 'viewer',
+      sectorReports: userRole !== 'none' && userRole !== 'viewer',
+      caseStudies: userRole !== 'none' && userRole !== 'viewer',
+      leadMagnets: userRole !== 'none' && userRole !== 'viewer',
+      landingPages: userRole !== 'none' && userRole !== 'viewer',
+      designResources: userRole !== 'none' && userRole !== 'viewer',
+      
+      // Company data - Visible para todos excepto 'none'
+      operations: userRole !== 'none',
+      multiples: userRole !== 'none',
+      statistics: userRole !== 'none',
+      
+      // Team & testimonials - Visible para admins y editors
+      team: userRole !== 'none' && userRole !== 'viewer',
+      testimonials: userRole !== 'none' && userRole !== 'viewer',
+      carouselTestimonials: userRole !== 'none' && userRole !== 'viewer',
+      carouselLogos: userRole !== 'none' && userRole !== 'viewer',
+      
+      // Marketing & Analytics - Visible para todos excepto 'none'
+      marketingAutomation: isAdminLevel,
+      marketingIntelligence: userRole !== 'none',
+      marketingHub: userRole !== 'none',
+      integrations: isAdminLevel,
+      
+      // Tracking & Performance - Nuevas funcionalidades
+      contentPerformance: userRole !== 'none',
+      contentStudio: userRole !== 'none' && userRole !== 'viewer',
+      trackingDashboard: userRole !== 'none',
+      trackingConfig: isAdminLevel,
+      
+      // Configuration - Solo para super admins y admins respectivamente
+      adminUsers: userRole === 'super_admin',
+      settings: isAdminLevel,
+    };
   };
-
-  // Emergency fallback menu - only dashboard visible
-  const getEmergencyFallbackMenu = () => ({
-    dashboard: true,
-    // All other menu items hidden for safety
-    leadScoring: false,
-    leadScoringRules: false,
-    contactLeads: false,
-    contacts: false,
-    contactLists: false,
-    collaboratorApplications: false,
-    alerts: false,
-    proposals: false,
-    emailMarketing: false,
-    blogV2: false,
-    sectorReports: false,
-    caseStudies: false,
-    leadMagnets: false,
-    landingPages: false,
-    designResources: false,
-    operations: false,
-    multiples: false,
-    statistics: false,
-    team: false,
-    testimonials: false,
-    carouselTestimonials: false,
-    carouselLogos: false,
-    marketingAutomation: false,
-    marketingIntelligence: false,
-    marketingHub: false,
-    integrations: false,
-    contentPerformance: false,
-    contentStudio: false,
-    trackingDashboard: false,
-    trackingConfig: false,
-    adminUsers: false,
-    settings: false,
-  });
 
   return {
     permissions,

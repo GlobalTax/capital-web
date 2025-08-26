@@ -3,6 +3,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { getQueryOptimizer } from '@/core/database/QueryOptimizer';
+import { getDbPool, getDbPoolSync } from '@/core/database/ConnectionPool';
 import type { 
   ContactLead, 
   LeadScore, 
@@ -15,12 +16,10 @@ export class SupabaseApi {
   
   // ============= PERFORMANCE MONITORING =============
   async getPerformanceMetrics() {
+    const dbPool = await getDbPool();
     return {
       queryOptimizer: getQueryOptimizer().generatePerformanceReport(),
-      supabaseClient: {
-        connected: true,
-        queries: 0
-      }
+      connectionPool: dbPool.getStats()
     };
   }
 

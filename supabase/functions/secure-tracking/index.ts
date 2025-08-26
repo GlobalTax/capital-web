@@ -7,39 +7,24 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // Configuración CORS específica por entorno
 const allowedOrigins = [
   'https://capittal.es',
-  'https://www.capittal.es',
-  'https://app.capittal.es', // Admin subdomain
-  'https://calculadoras.capittal.es', // Calculator subdomain for registered users
-  'https://calculadora.capittal.es', // Alternative calculator subdomain
+  'https://www.capittal.es', 
   'https://capittal-valuation.lovable.app',
   'http://localhost:5173', // Para desarrollo
   'https://lovable.dev', // Para preview
   'https://preview--webcapittal.lovable.app', // Preview específico del proyecto
   'https://webcapittal.lovable.app', // App principal en Lovable
-  'https://c1cd2940-10b7-4c6d-900a-07b0f572e7b9.sandbox.lovable.dev', // Sandbox legacy
-  'https://id-preview--c1cd2940-10b7-4c6d-900a-07b0f572e7b9.lovable.app' // Current sandbox format
+  'https://c1cd2940-10b7-4c6d-900a-07b0f572e7b9.sandbox.lovable.dev' // Sandbox actual
 ];
 
 // Función para verificar dominios sandbox dinámicamente
 const isSandboxDomain = (origin: string): boolean => {
-  // Nuevos patrones para lovable.app (preview y sandbox)
-  const lovableAppPattern = /^https:\/\/(id-preview--)?[a-f0-9-]+\.lovable\.app$/;
-  // Patrón legacy para lovable.dev
-  const lovableDevPattern = /^https:\/\/[a-f0-9-]+\.sandbox\.lovable\.dev$/;
-  
-  return lovableAppPattern.test(origin) || lovableDevPattern.test(origin);
+  return /^https:\/\/[a-f0-9-]+\.sandbox\.lovable\.dev$/.test(origin);
 };
 
 const getCorsHeaders = (origin: string | null) => {
   const isAllowed = origin && (allowedOrigins.includes(origin) || isSandboxDomain(origin));
-  
-  // Para desarrollo, permitir cualquier origen de Lovable, de lo contrario usar '*' para mayor compatibilidad
-  const allowOrigin = isAllowed ? origin : '*';
-  
-  console.log('CORS check:', { origin, isAllowed, allowOrigin });
-  
   return {
-    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Max-Age': '86400', // 24 horas
@@ -206,60 +191,30 @@ serve(async (req) => {
       }
     }
 
-    // Insertar evento en la base de datos con timeout y fallback
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 segundos timeout
+    // Insertar evento en la base de datos usando service role
+    const { error: insertError } = await supabaseClient
+      .from('lead_behavior_events')
+      .insert({
+        visitor_id: event.visitor_id,
+        session_id: event.session_id,
+        event_type: event.event_type,
+        page_path: event.page_path,
+        event_data: event.event_data || {},
+        company_domain: event.company_domain,
+        referrer: event.referrer,
+        utm_source: event.utm_source,
+        utm_medium: event.utm_medium,
+        utm_campaign: event.utm_campaign,
+        rule_id: event.rule_id,
+        user_agent: userAgent,
+        ip_address: ipAddress,
+        points_awarded: 0 // Se calculará con triggers
+      });
 
-    try {
-      const { error: insertError } = await supabaseClient
-        .from('lead_behavior_events')
-        .insert({
-          visitor_id: event.visitor_id,
-          session_id: event.session_id,
-          event_type: event.event_type,
-          page_path: event.page_path,
-          event_data: event.event_data || {},
-          company_domain: event.company_domain,
-          referrer: event.referrer,
-          utm_source: event.utm_source,
-          utm_medium: event.utm_medium,
-          utm_campaign: event.utm_campaign,
-          rule_id: event.rule_id,
-          user_agent: userAgent,
-          ip_address: ipAddress,
-          points_awarded: 0 // Se calculará con triggers
-        })
-        .abortSignal(controller.signal);
-
-      clearTimeout(timeoutId);
-
-      if (insertError) {
-        console.error('Database insert error:', insertError);
-        return new Response(
-          JSON.stringify({ error: 'Database error', details: insertError.message }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-    } catch (dbError: any) {
-      clearTimeout(timeoutId);
-      
-      if (dbError.name === 'AbortError') {
-        console.error('Database timeout - operation aborted after 2s');
-        return new Response(
-          JSON.stringify({ error: 'Database timeout' }),
-          { 
-            status: 408, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-      
-      console.error('Database operation failed:', dbError);
+    if (insertError) {
+      console.error('Database insert error:', insertError);
       return new Response(
-        JSON.stringify({ error: 'Database error', details: 'Operation failed' }),
+        JSON.stringify({ error: 'Database error' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

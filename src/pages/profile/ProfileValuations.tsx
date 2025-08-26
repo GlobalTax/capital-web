@@ -25,7 +25,7 @@ export const ProfileValuations: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('created_desc');
 
   const fetchValuations = async () => {
-    if (!user || isLoading) return;
+    if (!user) return;
 
     try {
       setIsLoading(true);
@@ -80,11 +80,7 @@ export const ProfileValuations: React.FC = () => {
   };
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchValuations();
-    }, 300); // 300ms debounce
-    
-    return () => clearTimeout(timeoutId);
+    fetchValuations();
   }, [user, statusFilter, sortBy]);
 
   const handleNewValuation = () => {

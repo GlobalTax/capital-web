@@ -1,11 +1,10 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
-import { useOptimizedAdminStatusQuery, useOptimizedRegistrationStatusQuery, getCachedAdminStatus, setCachedAdminStatus } from '@/services/auth-queries-optimized.service';
 
 interface RegistrationRequest {
   id: string;
@@ -24,6 +23,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  checkAdminStatus: (userId?: string) => Promise<boolean>;
+  checkRegistrationStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,137 +33,148 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [authInitialized, setAuthInitialized] = useState(false);
-  const registrationRequestAttempted = React.useRef(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [registrationRequest, setRegistrationRequest] = useState<RegistrationRequest | null>(null);
+  const [isApproved, setIsApproved] = useState(false);
   const { toast } = useToast();
 
-  // Enhanced queries with better error handling and caching
-  const { data: adminStatusData, isLoading: isLoadingAdmin, error: adminError } = useOptimizedAdminStatusQuery(
-    user?.id && authInitialized ? user.id : null
-  );
-  const { data: registrationStatusData, isLoading: isLoadingRegistration, error: registrationError } = useOptimizedRegistrationStatusQuery(
-    user?.id && authInitialized ? user.id : null
-  );
-
-  // Fallback to cached admin status if query fails
-  const cachedAdminStatus = user?.id ? getCachedAdminStatus(user.id) : null;
-  const isAdmin = adminStatusData?.isAdmin ?? cachedAdminStatus ?? false;
-  
-  // Cache successful admin status
-  React.useEffect(() => {
-    if (user?.id && adminStatusData?.isAdmin !== undefined) {
-      setCachedAdminStatus(user.id, adminStatusData.isAdmin);
+  const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
+    const targetUserId = userId || user?.id;
+    if (!targetUserId) {
+      setIsAdmin(false);
+      return false;
     }
-  }, [user?.id, adminStatusData?.isAdmin]);
-  
-  const registrationRequest = (registrationStatusData?.request as RegistrationRequest) ?? null;
-  // Only check registration status if NOT admin
-  const isApproved = isAdmin || (registrationStatusData?.isApproved ?? false);
+    
+    try {
+      // Only check for existing admin status - NO auto-creation
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, is_active')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
 
-  // Debug logging for infinite loop detection
-  React.useEffect(() => {
-    if (user?.id && authInitialized) {
-      console.log('AuthContext Debug:', {
-        userId: user.id,
-        isAdmin,
-        isLoadingAdmin,
-        isLoadingRegistration,
-        hasRegistrationRequest: !!registrationRequest,
-        adminError: !!adminError,
-        registrationError: !!registrationError,
-        registrationRequestAttempted: registrationRequestAttempted.current
+      if (error) {
+        logger.warn('Error checking admin status', { userId: targetUserId, error: error.message }, { context: 'auth', component: 'AuthContext' });
+        setIsAdmin(false);
+        return false;
+      }
+
+      const adminStatus = !!data?.is_active;
+      setIsAdmin(adminStatus);
+      return adminStatus;
+    } catch (error) {
+      logger.error('Failed to check admin status', error as Error, { 
+        context: 'auth', 
+        component: 'AuthContext',
+        userId: targetUserId 
       });
+      setIsAdmin(false);
+      return false;
     }
-  }, [user?.id, isAdmin, isLoadingAdmin, isLoadingRegistration, registrationRequest, adminError, registrationError]);
+  }, [user?.id]);
 
-  // FIXED: Simplified registration request creation with circuit breaker
-  useEffect(() => {
-    if (
-      user?.id && 
-      authInitialized && 
-      !isLoadingAdmin && 
-      !isAdmin && 
-      !registrationRequest && 
-      !registrationRequestAttempted.current &&
-      !adminError && // Don't create if admin query failed
-      !registrationError // Don't create if registration query failed
-    ) {
-      registrationRequestAttempted.current = true;
-      
-      const createRegistrationRequest = async () => {
-        try {
-          await supabase
+  // Check registration status for non-admin users
+  const checkRegistrationStatus = useCallback(async (): Promise<void> => {
+    if (!user?.id) {
+      setRegistrationRequest(null);
+      setIsApproved(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('user_registration_requests')
+        .select('id, status, requested_at, rejection_reason')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        // Si no hay solicitud de registro, crear una nueva
+        if (error.code === 'PGRST116') {
+          const { error: insertError } = await supabase
             .from('user_registration_requests')
             .insert({
               user_id: user.id,
               email: user.email || '',
               full_name: user.user_metadata?.full_name || user.email || '',
               user_agent: navigator.userAgent,
-              ip_address: null
+              ip_address: null // Se puede obtener del servidor si es necesario
             });
-          console.log('Registration request created for user:', user.id);
-        } catch (error: any) {
-          // Ignore duplicate key errors
-          if (error?.code !== '23505') {
-            console.error('Error creating registration request:', error);
-          }
-        }
-      };
 
-      createRegistrationRequest();
+          if (insertError) {
+            console.error('Error creating registration request:', insertError);
+          }
+
+          setRegistrationRequest({
+            id: '',
+            status: 'pending',
+            requested_at: new Date().toISOString()
+          });
+          setIsApproved(false);
+        }
+        return;
+      }
+
+      setRegistrationRequest(data as RegistrationRequest);
+      setIsApproved(data.status === 'approved');
+    } catch (error) {
+      console.error('Error checking registration status:', error);
     }
-  }, [user?.id, authInitialized, isLoadingAdmin, isAdmin, registrationRequest, adminError, registrationError]);
+  }, [user?.id, user?.email, user?.user_metadata]);
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         logger.info('Auth state changed', { event, hasUser: !!session?.user }, { context: 'auth', component: 'AuthContext' });
         setSession(session);
         setUser(session?.user ?? null);
-        setAuthInitialized(true);
-        setIsLoading(false); // Always stop loading after auth state change
+        
+        if (session?.user) {
+          // Check admin status directly with user ID
+          const adminStatus = await checkAdminStatus(session.user.id);
+          
+          // Solo verificar estado de registro si no es admin
+          if (!adminStatus) {
+            setTimeout(() => {
+              checkRegistrationStatus();
+            }, 0);
+          } else {
+            setIsApproved(true);
+          }
+        } else {
+          setIsAdmin(false);
+          setIsApproved(false);
+          setRegistrationRequest(null);
+        }
+        
+        setIsLoading(false);
       }
     );
 
-    // Check for existing session with timeout
-    const sessionTimeout = setTimeout(() => {
-      logger.warn('Session check timeout, proceeding without session', undefined, { context: 'auth', component: 'AuthContext' });
-      setIsLoading(false);
-      setAuthInitialized(true);
-    }, 5000);
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      clearTimeout(sessionTimeout);
+    // Check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setAuthInitialized(true);
+      
+      if (session?.user) {
+        const adminStatus = await checkAdminStatus(session.user.id);
+        
+        // Solo verificar estado de registro si no es admin
+        if (!adminStatus) {
+          setTimeout(() => {
+            checkRegistrationStatus();
+          }, 0);
+        } else {
+          setIsApproved(true);
+        }
+      }
+      
       setIsLoading(false);
-    }).catch((error) => {
-      clearTimeout(sessionTimeout);
-      logger.error('Failed to get session', error, { context: 'auth', component: 'AuthContext' });
-      setIsLoading(false);
-      setAuthInitialized(true);
     });
 
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(sessionTimeout);
-    };
-  }, []);
-
-  // Initialize loading timeout fallback
-  useEffect(() => {
-    const loadingTimeout = setTimeout(() => {
-      if (isLoading) {
-        logger.warn('Auth loading timeout reached, forcing completion', undefined, { context: 'auth', component: 'AuthContext' });
-        setIsLoading(false);
-        setAuthInitialized(true);
-      }
-    }, 10000); // 10 second timeout
-
-    return () => clearTimeout(loadingTimeout);
-  }, [isLoading]);
+    return () => subscription.unsubscribe();
+  }, [checkAdminStatus, checkRegistrationStatus]);
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
@@ -231,6 +243,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setIsAdmin(false);
+    setRegistrationRequest(null);
+    setIsApproved(false);
     setIsLoading(false);
     
     toast({
@@ -249,6 +264,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signUp,
     signOut,
+    checkAdminStatus,
+    checkRegistrationStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
