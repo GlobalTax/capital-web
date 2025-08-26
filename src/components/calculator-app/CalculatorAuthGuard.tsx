@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, CheckCircle, XCircle } from 'lucide-react';
@@ -10,9 +10,9 @@ interface CalculatorAuthGuardProps {
 }
 
 export const CalculatorAuthGuard: React.FC<CalculatorAuthGuardProps> = ({ children }) => {
-  const { user, isApproved, isLoading, registrationRequest } = useAuth();
+  const { user, isApproved, isLoadingUnified, registrationRequest } = useUnifiedAuth();
 
-  if (isLoading) {
+  if (isLoadingUnified) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

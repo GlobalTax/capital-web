@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
-import { useAdminStatusQuery, useRegistrationStatusQuery } from '@/services/auth-queries.service';
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
+import { useRegistrationStatusQuery } from '@/services/auth-queries.service';
 
 interface RegistrationRequest {
   id: string;
@@ -35,22 +36,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [authInitialized, setAuthInitialized] = useState(false);
   const { toast } = useToast();
 
-  // Use centralized queries with enabled condition
-  const { data: adminStatusData, isLoading: isLoadingAdmin } = useAdminStatusQuery(
-    user?.id && authInitialized ? user.id : null
-  );
+  // Use role-based permissions for unified permission system
+  const { userRole, isLoading: isLoadingRole } = useRoleBasedPermissions();
+  
+  // Use registration query only for non-admin users
+  const hasAdminRole = userRole && userRole !== 'none';
   const { data: registrationStatusData, isLoading: isLoadingRegistration } = useRegistrationStatusQuery(
-    user?.id && authInitialized && !adminStatusData?.isAdmin ? user.id : null
+    user?.id && authInitialized && !hasAdminRole ? user.id : null
   );
 
-  // Derived state from queries with fallbacks
-  const isAdmin = adminStatusData?.isAdmin ?? false;
+  // Derived state with unified logic
+  const isAdmin = hasAdminRole || false;
   const registrationRequest = (registrationStatusData?.request as RegistrationRequest) ?? null;
   const isApproved = registrationStatusData?.isApproved ?? isAdmin;
 
   // Auto-create registration request for non-admin users
   useEffect(() => {
-    if (user && !isLoadingAdmin && !isAdmin && !isLoadingRegistration && !registrationRequest) {
+    if (user && !isLoadingRole && !isAdmin && !isLoadingRegistration && !registrationRequest) {
       // Create registration request if it doesn't exist
       const createRegistrationRequest = async () => {
         try {
@@ -73,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       createRegistrationRequest();
     }
-  }, [user, isAdmin, isLoadingAdmin, isLoadingRegistration, registrationRequest]);
+  }, [user, isAdmin, isLoadingRole, isLoadingRegistration, registrationRequest]);
 
   useEffect(() => {
     // Set up auth state listener
