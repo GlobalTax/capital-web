@@ -72,11 +72,11 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
         <div className="border-t border-gray-200 pt-4 space-y-2">
           {user && (
             <Link
-              to="/mis-valoraciones"
+              to="/admin"
               className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
               onClick={closeMenu}
             >
-              Mis Valoraciones
+              Panel Admin
             </Link>
           )}
           <Link

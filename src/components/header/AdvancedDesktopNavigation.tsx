@@ -277,10 +277,10 @@ const AdvancedDesktopNavigation = () => {
       {/* User specific navigation */}
       {user ? (
         <Link
-          to="/perfil/valoraciones"
+          to="/admin"
           className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
         >
-          Mis Valoraciones
+          Panel Admin
         </Link>
       ) : (
         <Link

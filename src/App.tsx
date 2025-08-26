@@ -17,7 +17,6 @@ import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
-const MyValuations = lazy(() => import('@/pages/MyValuations'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
 const CalculadoraValoracion = lazy(() => import('@/pages/CalculadoraValoracion'));
@@ -37,7 +36,6 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Protected route component
 const ProtectedRoute = lazy(() => import('@/components/auth/ProtectedRoute'));
-const ProfileRouter = lazy(() => import('@/pages/profile/ProfileRouter'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 
 // Service pages - Create placeholder components for missing ones
@@ -233,15 +231,6 @@ function AppContent() {
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin/*" element={<Admin />} />
-          <Route 
-            path="/perfil/*" 
-            element={
-              <ProtectedRoute>
-                <ProfileRouter />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/mis-valoraciones" element={<Navigate to="/perfil/valoraciones" replace />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
           <Route path="/calculadora-valoracion" element={<Navigate to="/lp/calculadora" replace />} />

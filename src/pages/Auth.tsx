@@ -20,9 +20,9 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState('signin');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Si ya está autenticado, redirigir al perfil
+  // Si ya está autenticado, redirigir al admin
   if (!isLoading && user) {
-    return <Navigate to="/perfil/valoraciones" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   const handleAuth = async (e: React.FormEvent) => {
