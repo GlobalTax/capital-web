@@ -1,47 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 
 interface AdminWrapperProps {
   children: React.ReactNode;
 }
 
 /**
- * Wrapper seguro para el admin que verifica contextos antes de renderizar
+ * Wrapper simplificado para el admin - solo verifica permisos
  */
 export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
-  let authContext;
-  
-  // Intentar usar el hook de autenticación de forma segura
-  try {
-    authContext = useAuth();
-  } catch (error) {
-    console.error('AuthContext not available:', error);
-    
-    // Redirigir después de un momento
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-      return () => clearTimeout(timer);
-    }, []);
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Error de contexto de autenticación. Redirigiendo...
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
-  const { user, isLoading, isAdmin } = authContext;
+  const { user, isLoading, isAdmin } = useAuth();
 
   // Loading state
   if (isLoading) {
