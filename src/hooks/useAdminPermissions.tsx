@@ -12,11 +12,6 @@ interface UseAdminPermissionsReturn {
 
 export const useAdminPermissions = (): UseAdminPermissionsReturn => {
   const { isAdmin, isLoading: authLoading } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(authLoading);
-  }, [authLoading]);
 
   const checkPermission = (action: 'read' | 'write' | 'delete'): boolean => {
     // Para el carrusel, los permisos son:
@@ -34,7 +29,7 @@ export const useAdminPermissions = (): UseAdminPermissionsReturn => {
     canRead: checkPermission('read'),
     canWrite: isAdmin,
     canDelete: isAdmin,
-    isLoading,
+    isLoading: authLoading,
     checkPermission
   };
 };
