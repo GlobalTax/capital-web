@@ -10,12 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, UserPlus, CheckCircle, XCircle, Mail } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, UserPlus, CheckCircle, XCircle, Mail, Send } from 'lucide-react';
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { useForm } from 'react-hook-form';
 import { createBulkUsers, CAPITTAL_USERS, BulkCreationResult } from '@/utils/bulkUserCreation';
-import { resendCredentials, ResendResult, getCapittalTeamUsers } from '@/utils/resendCredentials';
+import { resendCredentials, resendSingleUserCredentials, ResendResult, getCapittalTeamUsers, ResendCredentialsData } from '@/utils/resendCredentials';
 import { useToast } from '@/hooks/use-toast';
 
 const ROLE_LABELS = {
@@ -47,6 +48,10 @@ const AdminUsersManager = () => {
   const [resendProgress, setResendProgress] = useState(0);
   const [currentResendUser, setCurrentResendUser] = useState('');
   const [resendResults, setResendResults] = useState<ResendResult[]>([]);
+  
+  // Multi-selection states
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [isIndividualResending, setIsIndividualResending] = useState(false);
 
   const {
     register: registerCreate,
@@ -153,12 +158,21 @@ const AdminUsersManager = () => {
   };
 
   const handleResendCredentials = async () => {
-    const capittalUsers = getCapittalTeamUsers(users);
+    const usersToResend = selectedUserIds.length > 0 
+      ? users.filter(user => selectedUserIds.includes(user.id)).map(user => ({
+          email: user.email || '',
+          full_name: user.full_name || user.email?.split('@')[0] || '',
+          role: user.role,
+          user_id: user.user_id
+        }))
+      : getCapittalTeamUsers(users);
     
-    if (capittalUsers.length === 0) {
+    if (usersToResend.length === 0) {
       toast({
-        title: "No hay usuarios del equipo Capittal",
-        description: "No se encontraron usuarios con emails @capittal.es",
+        title: "No hay usuarios seleccionados",
+        description: selectedUserIds.length > 0 
+          ? "Los usuarios seleccionados no tienen información completa"
+          : "No se encontraron usuarios con emails @capittal.es",
         variant: "destructive"
       });
       return;
@@ -170,7 +184,7 @@ const AdminUsersManager = () => {
     
     try {
       const results = await resendCredentials(
-        capittalUsers,
+        usersToResend,
         (current, total, currentUser) => {
           setResendProgress((current / total) * 100);
           setCurrentResendUser(currentUser);
@@ -189,6 +203,11 @@ const AdminUsersManager = () => {
         variant: failed > 0 ? "destructive" : "default"
       });
       
+      // Clear selection after successful resend
+      if (successful > 0) {
+        setSelectedUserIds([]);
+      }
+      
     } catch (error: any) {
       toast({
         title: "Error en reenvío de credenciales",
@@ -200,6 +219,73 @@ const AdminUsersManager = () => {
       setResendProgress(0);
       setCurrentResendUser('');
     }
+  };
+
+  const handleSingleUserResend = async (user: AdminUser) => {
+    if (!user.email) {
+      toast({
+        title: "Error",
+        description: "El usuario no tiene email configurado",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsIndividualResending(true);
+    
+    try {
+      const userData: ResendCredentialsData = {
+        email: user.email,
+        full_name: user.full_name || user.email.split('@')[0],
+        role: user.role,
+        user_id: user.user_id
+      };
+      
+      const result = await resendSingleUserCredentials(userData);
+      
+      if (result.success) {
+        toast({
+          title: "Credenciales reenviadas",
+          description: `Se enviaron las nuevas credenciales a ${user.email}`,
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Error al reenviar credenciales",
+          description: result.error || "Error inesperado",
+          variant: "destructive"
+        });
+      }
+      
+    } catch (error: any) {
+      toast({
+        title: "Error al reenviar credenciales",
+        description: error.message || "Error inesperado",
+        variant: "destructive"
+      });
+    } finally {
+      setIsIndividualResending(false);
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUserIds.length === users.length) {
+      setSelectedUserIds([]);
+    } else {
+      setSelectedUserIds(users.map(user => user.id));
+    }
+  };
+
+  const needsCredentials = (user: AdminUser) => {
+    return !user.last_login || !user.is_active;
   };
 
   if (isLoading || permissionsLoading) {
@@ -240,11 +326,18 @@ const AdminUsersManager = () => {
         </div>
         
         <div className="flex gap-2">
+          {selectedUserIds.length > 0 && (
+            <Button variant="outline" onClick={handleResendCredentials} disabled={isResending}>
+              <Send className="h-4 w-4 mr-2" />
+              Reenviar a Seleccionados ({selectedUserIds.length})
+            </Button>
+          )}
+          
           <Dialog open={isResendDialogOpen} onOpenChange={setIsResendDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Mail className="h-4 w-4 mr-2" />
-                Reenviar Credenciales
+                {selectedUserIds.length > 0 ? 'Reenvío Masivo' : 'Reenviar Credenciales'}
               </Button>
             </DialogTrigger>
           </Dialog>
@@ -372,6 +465,13 @@ const AdminUsersManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={selectedUserIds.length === users.length && users.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Seleccionar todos"
+                  />
+                </TableHead>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rol</TableHead>
@@ -386,10 +486,24 @@ const AdminUsersManager = () => {
                 const RoleIcon = roleInfo.icon;
                 
                 return (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.id} className={needsCredentials(user) ? 'bg-amber-50/50' : ''}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedUserIds.includes(user.id)}
+                        onCheckedChange={() => toggleUserSelection(user.id)}
+                        aria-label={`Seleccionar ${user.full_name || user.email}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{user.full_name || 'Sin nombre'}</div>
+                        <div className="font-medium flex items-center gap-2">
+                          {user.full_name || 'Sin nombre'}
+                          {needsCredentials(user) && (
+                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                              Necesita credenciales
+                            </Badge>
+                          )}
+                        </div>
                         <div className="text-sm text-gray-500">ID: {user.user_id.slice(0, 8)}...</div>
                       </div>
                     </TableCell>
@@ -412,13 +526,29 @@ const AdminUsersManager = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {user.last_login 
-                        ? new Date(user.last_login).toLocaleDateString()
-                        : 'Nunca'
-                      }
+                      <div>
+                        {user.last_login 
+                          ? new Date(user.last_login).toLocaleDateString()
+                          : 'Nunca'
+                        }
+                        {!user.last_login && (
+                          <div className="text-xs text-amber-600">Primer acceso pendiente</div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        {user.email && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSingleUserResend(user)}
+                            disabled={isIndividualResending}
+                            title="Reenviar credenciales a este usuario"
+                          >
+                            <Mail className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
@@ -522,17 +652,28 @@ const AdminUsersManager = () => {
           </DialogHeader>
           
           {!isResending && resendResults.length === 0 && (() => {
-            const capittalUsers = getCapittalTeamUsers(users);
+            const usersToShow = selectedUserIds.length > 0
+              ? users.filter(user => selectedUserIds.includes(user.id)).map(user => ({
+                  email: user.email || '',
+                  full_name: user.full_name || user.email?.split('@')[0] || '',
+                  role: user.role,
+                  user_id: user.user_id
+                }))
+              : getCapittalTeamUsers(users);
+            
             return (
               <div className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  Se reenviarán credenciales temporales a los siguientes usuarios del equipo Capittal:
+                  {selectedUserIds.length > 0 
+                    ? `Se reenviarán credenciales temporales a los ${selectedUserIds.length} usuarios seleccionados:`
+                    : 'Se reenviarán credenciales temporales a los siguientes usuarios del equipo Capittal:'
+                  }
                 </p>
                 
-                {capittalUsers.length > 0 ? (
+                {usersToShow.length > 0 ? (
                   <>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {capittalUsers.map((user, index) => (
+                      {usersToShow.map((user, index) => (
                         <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                           <div>
                             <span className="font-medium">{user.full_name}</span>
@@ -559,15 +700,21 @@ const AdminUsersManager = () => {
                         Cancelar
                       </Button>
                       <Button onClick={handleResendCredentials}>
-                        Reenviar Credenciales ({capittalUsers.length})
+                        Reenviar Credenciales ({usersToShow.length})
                       </Button>
                     </div>
                   </>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No hay usuarios del equipo Capittal</p>
-                    <p className="text-sm">No se encontraron usuarios con emails @capittal.es</p>
+                    <p>{selectedUserIds.length > 0 
+                      ? 'Los usuarios seleccionados no tienen información completa'
+                      : 'No hay usuarios del equipo Capittal'
+                    }</p>
+                    <p className="text-sm">{selectedUserIds.length > 0 
+                      ? 'Verifica que tengan email configurado'
+                      : 'No se encontraron usuarios con emails @capittal.es'
+                    }</p>
                     
                     <div className="flex justify-end mt-4">
                       <Button variant="outline" onClick={() => setIsResendDialogOpen(false)}>

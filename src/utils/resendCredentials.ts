@@ -36,6 +36,49 @@ const generateSecurePassword = (): string => {
   return password.split('').sort(() => Math.random() - 0.5).join('');
 };
 
+// Resend credentials to a single user
+export const resendSingleUserCredentials = async (user: ResendCredentialsData): Promise<ResendResult> => {
+  try {
+    // Generate new temporary password
+    const temporaryPassword = generateSecurePassword();
+    
+    // Send credentials email
+    const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
+      body: {
+        email: user.email,
+        fullName: user.full_name,
+        temporaryPassword,
+        role: user.role,
+        requiresPasswordChange: true
+      }
+    });
+    
+    if (emailError) {
+      return {
+        success: false,
+        email: user.email,
+        full_name: user.full_name,
+        error: `Error enviando email: ${emailError.message}`
+      };
+    }
+    
+    return {
+      success: true,
+      email: user.email,
+      full_name: user.full_name,
+      temporaryPassword
+    };
+    
+  } catch (error: any) {
+    return {
+      success: false,
+      email: user.email,
+      full_name: user.full_name,
+      error: `Error inesperado: ${error.message}`
+    };
+  }
+};
+
 export const resendCredentials = async (
   users: ResendCredentialsData[],
   onProgress?: (current: number, total: number, currentUser: string) => void
@@ -49,52 +92,8 @@ export const resendCredentials = async (
       onProgress(i + 1, users.length, user.full_name);
     }
     
-    try {
-      // Generate new temporary password
-      const temporaryPassword = generateSecurePassword();
-      
-      // Update user password in Supabase Auth (requires service role in edge function)
-      // For now, we'll just send the credentials email with the new password
-      // The password update will need to be handled by an edge function
-      
-      // Send credentials email
-      const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
-        body: {
-          email: user.email,
-          fullName: user.full_name,
-          temporaryPassword,
-          role: user.role,
-          requiresPasswordChange: true
-        }
-      });
-      
-      if (emailError) {
-        results.push({
-          success: false,
-          email: user.email,
-          full_name: user.full_name,
-          error: `Error enviando email: ${emailError.message}`
-        });
-        continue;
-      }
-      
-      // TODO: Also update password in auth system via edge function
-      
-      results.push({
-        success: true,
-        email: user.email,
-        full_name: user.full_name,
-        temporaryPassword
-      });
-      
-    } catch (error: any) {
-      results.push({
-        success: false,
-        email: user.email,
-        full_name: user.full_name,
-        error: `Error inesperado: ${error.message}`
-      });
-    }
+    const result = await resendSingleUserCredentials(user);
+    results.push(result);
     
     // Small delay to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 500));
