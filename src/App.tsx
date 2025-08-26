@@ -207,12 +207,14 @@ function AppContent() {
     const host = rawHost.replace(/^www\./, '');
     const path = window.location.pathname;
 
-    // Si están en app.capittal.es, mostrar solo admin
+    // Si están en app.capittal.es, mostrar solo admin con providers necesarios
     if (host === 'app.capittal.es') {
       return (
         <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
           <Suspense fallback={<PageLoadingSkeleton />}>
-            <AdminApp />
+            <AuthProvider>
+              <AdminApp />
+            </AuthProvider>
           </Suspense>
         </div>
       );
@@ -223,7 +225,9 @@ function AppContent() {
       return (
         <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
           <Suspense fallback={<PageLoadingSkeleton />}>
-            <CalculatorApp />
+            <AuthProvider>
+              <CalculatorApp />
+            </AuthProvider>
           </Suspense>
         </div>
       );
@@ -240,7 +244,9 @@ function AppContent() {
         return (
           <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
             <Suspense fallback={<PageLoadingSkeleton />}>
-              <AdminApp />
+              <AuthProvider>
+                <AdminApp />
+              </AuthProvider>
             </Suspense>
           </div>
         );
