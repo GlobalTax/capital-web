@@ -47,8 +47,9 @@ export const PerformanceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   });
 
   useEffect(() => {
-    // Performance monitoring
+    // Performance monitoring with proper async state updates
     const startTime = performance.now();
+    let isMounted = true;
     
     // Log initialization
     logger.info('Performance provider initialized', undefined, {
@@ -56,35 +57,47 @@ export const PerformanceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       component: 'PerformanceProvider'
     });
 
-    // Monitor query cache - use setTimeout to avoid setState during render
+    // Monitor query cache with proper async handling
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (!isMounted) return;
+      
       if (event.type === 'added') {
-        setTimeout(() => {
-          setMetrics(prev => ({ ...prev, queryCount: prev.queryCount + 1 }));
-        }, 0);
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
+          if (isMounted) {
+            setMetrics(prev => ({ ...prev, queryCount: prev.queryCount + 1 }));
+          }
+        });
       }
       
       if (event.type === 'updated' && event.query?.state.error) {
-        setTimeout(() => {
-          setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
-          logger.warn('Query error detected', event.query.queryKey, {
-            context: 'performance',
-            component: 'PerformanceProvider'
-          });
-        }, 0);
+        requestAnimationFrame(() => {
+          if (isMounted) {
+            setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
+            logger.warn('Query error detected', event.query.queryKey, {
+              context: 'performance',
+              component: 'PerformanceProvider'
+            });
+          }
+        });
       }
     });
 
-    // Defer initial metrics update
-    setTimeout(() => {
-      const endTime = performance.now();
-      setMetrics(prev => ({ 
-        ...prev, 
-        avgResponseTime: Math.round(endTime - startTime) 
-      }));
-    }, 0);
+    // Defer initial metrics update with proper cleanup check
+    requestAnimationFrame(() => {
+      if (isMounted) {
+        const endTime = performance.now();
+        setMetrics(prev => ({ 
+          ...prev, 
+          avgResponseTime: Math.round(endTime - startTime) 
+        }));
+      }
+    });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [queryClient]);
 
   const value = {

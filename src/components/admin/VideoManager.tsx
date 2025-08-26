@@ -11,6 +11,7 @@ import { useVideoUpload } from '@/hooks/useVideoUpload';
 import { useAdminVideos, AdminVideo } from '@/hooks/useAdminVideos';
 import { useToast } from '@/hooks/use-toast';
 import { devLogger } from '@/utils/devLogger';
+import { VideoErrorBoundary } from './VideoErrorBoundary';
 import {
   Dialog,
   DialogContent,
@@ -36,9 +37,12 @@ const VideoManager = () => {
   const { videos, isLoading } = useAdminVideos();
   const { toast } = useToast();
 
-  // Log component initialization without triggering setState during render
+  // Log component initialization with proper async handling
   React.useEffect(() => {
-    devLogger.info('VideoManager initialized', { videoCount: videos?.length }, 'component');
+    // Use requestAnimationFrame to avoid setState during render warnings
+    requestAnimationFrame(() => {
+      devLogger.info('VideoManager initialized', { videoCount: videos?.length }, 'component');
+    });
   }, [videos?.length]);
 
   const [uploadData, setUploadData] = useState({
@@ -238,16 +242,32 @@ const VideoManager = () => {
                           <DialogTitle>{video.title}</DialogTitle>
                           <DialogDescription>{video.description}</DialogDescription>
                         </DialogHeader>
-                        <div className="aspect-video">
-                          <video 
-                            src={video.file_url} 
-                            controls 
-                            className="w-full h-full rounded-lg"
-                            preload="metadata"
-                          >
-                            Tu navegador no soporta video HTML5.
-                          </video>
-                        </div>
+                        <VideoErrorBoundary>
+                          <div className="aspect-video">
+                            <video 
+                              src={video.file_url} 
+                              controls 
+                              className="w-full h-full rounded-lg"
+                              preload="metadata"
+                              onError={(e) => {
+                                console.error('Error loading video:', video.file_url);
+                                devLogger.error('Video load error', { videoId: video.id, url: video.file_url });
+                              }}
+                            >
+                              <p className="text-muted-foreground p-4">
+                                Error cargando el video. 
+                                <a 
+                                  href={video.file_url} 
+                                  className="text-primary underline ml-1"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  Abrir directamente
+                                </a>
+                              </p>
+                            </video>
+                          </div>
+                        </VideoErrorBoundary>
                       </DialogContent>
                     </Dialog>
 

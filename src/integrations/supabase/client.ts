@@ -1,3 +1,3 @@
 
-// Use singleton client to avoid multiple instances
-export { supabase } from './singletonClient';
+// Use consolidated singleton client to avoid multiple instances
+export { supabase } from '@/utils/supabaseClient';

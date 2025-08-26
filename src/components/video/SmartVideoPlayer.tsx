@@ -105,18 +105,22 @@ const SmartVideoPlayer: React.FC<SmartVideoPlayerProps> = ({
               preload="metadata"
               onPlay={() => setVideoPlaying(true)}
               onPause={() => setVideoPlaying(false)}
+              onError={(e) => {
+                console.error('Error loading video:', currentVideo.file_url);
+                e.currentTarget.style.display = 'none';
+              }}
               aria-label={`Video: ${currentVideo.title}`}
             >
               <source src={currentVideo.file_url} type={currentVideo.file_type} />
               <p className="text-muted-foreground p-4">
-                Tu navegador no soporta la reproducción de video.
+                Error cargando el video. 
                 <a 
                   href={currentVideo.file_url} 
                   className="text-primary underline ml-1"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Ver video
+                  Abrir directamente
                 </a>
               </p>
             </video>
