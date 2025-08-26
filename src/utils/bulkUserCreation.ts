@@ -106,6 +106,7 @@ export const createBulkUsers = async (
         email: user.email,
         password: temporaryPassword,
         options: {
+          emailRedirectTo: `${window.location.origin}/admin`,
           data: {
             full_name: user.full_name
           }
