@@ -12,11 +12,17 @@ const allowedOrigins = [
   'http://localhost:5173', // Para desarrollo
   'https://lovable.dev', // Para preview
   'https://preview--webcapittal.lovable.app', // Preview específico del proyecto
-  'https://webcapittal.lovable.app' // App principal en Lovable
+  'https://webcapittal.lovable.app', // App principal en Lovable
+  'https://c1cd2940-10b7-4c6d-900a-07b0f572e7b9.sandbox.lovable.dev' // Sandbox actual
 ];
 
+// Función para verificar dominios sandbox dinámicamente
+const isSandboxDomain = (origin: string): boolean => {
+  return /^https:\/\/[a-f0-9-]+\.sandbox\.lovable\.dev$/.test(origin);
+};
+
 const getCorsHeaders = (origin: string | null) => {
-  const isAllowed = origin && allowedOrigins.includes(origin);
+  const isAllowed = origin && (allowedOrigins.includes(origin) || isSandboxDomain(origin));
   return {
     'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
