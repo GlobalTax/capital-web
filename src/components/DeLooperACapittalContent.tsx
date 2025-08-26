@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ChevronRight, Calendar, Users, TrendingUp, Award, CheckCircle2, Play, Share2, Mail, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SmartVideoPlayer from '@/components/video/SmartVideoPlayer';
 
 const DeLooperACapittalContent = () => {
   const navigate = useNavigate();
@@ -145,48 +146,12 @@ const DeLooperACapittalContent = () => {
         <div className="max-w-4xl mx-auto">
           <Card className="overflow-hidden">
             <CardContent className="p-0">
-              <div className="aspect-video bg-muted relative">
-                <video
-                  className="w-full h-full object-cover"
-                  controls={videoPlaying}
-                  poster="/videos/looper-a-capittal-thumb.jpg"
-                  preload="metadata"
-                  onPlay={() => setVideoPlaying(true)}
-                  onPause={() => setVideoPlaying(false)}
-                  aria-label="Video explicativo de la evolución de Looper a Capittal"
-                >
-                  <source src="/videos/looper-a-capittal.mp4" type="video/mp4" />
-                  <p className="text-muted-foreground p-4">
-                    Tu navegador no soporta la reproducción de video. 
-                    <a href="/videos/looper-a-capittal.mp4" className="text-primary underline ml-1">
-                      Descargar video
-                    </a>
-                  </p>
-                </video>
-                
-                {!videoPlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 cursor-pointer"
-                       onClick={() => {
-                         const video = document.querySelector('video');
-                         if (video) {
-                           video.play();
-                           setVideoPlaying(true);
-                         }
-                       }}>
-                    <div className="text-center">
-                      <Button
-                        size="lg"
-                        className="mb-4 h-16 w-16 rounded-full p-0 shadow-lg hover:scale-105 transition-transform"
-                      >
-                        <Play className="h-6 w-6 ml-1" />
-                      </Button>
-                      <p className="text-muted-foreground text-sm font-medium">
-                        Haz clic para ver nuestro video explicativo
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <SmartVideoPlayer 
+                category="company-story"
+                poster="/videos/looper-a-capittal-thumb.jpg"
+                showSelector={false}
+                className=""
+              />
             </CardContent>
           </Card>
         </div>

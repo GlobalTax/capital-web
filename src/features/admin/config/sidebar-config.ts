@@ -16,7 +16,8 @@ import {
   Sparkles,
   Activity,
   Eye,
-  Palette
+  Palette,
+  Play
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -65,6 +66,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Sparkles, 
         badge: "AI",
         description: "Creación con IA"
+      },
+      { 
+        title: "Videos", 
+        url: "/admin/video-manager", 
+        icon: Play,
+        badge: "NEW",
+        description: "Gestión de videos"
       },
       { 
         title: "Recursos de Diseño", 

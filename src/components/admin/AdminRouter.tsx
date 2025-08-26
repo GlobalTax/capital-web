@@ -26,6 +26,7 @@ import ExternalLeadsDashboard from './leads/ExternalLeadsDashboard';
 import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
+import VideoManager from './VideoManager';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import ContactsPage from '@/pages/admin/ContactsPage';
@@ -71,6 +72,7 @@ const AdminRouter = () => {
       {/* Content Management */}
       <Route path="/content-performance" element={<ContentPerformancePage />} />
       <Route path="/content-studio" element={<ContentStudioPage />} />
+      <Route path="/video-manager" element={<VideoManager />} />
       <Route path="/design-resources" element={<DesignResourcesPage />} />
       <Route path="/lead-magnets" element={<LeadMagnetsPage />} />
       <Route path="/blog-v2" element={<ModernBlogManager />} />
