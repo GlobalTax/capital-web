@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminRouter from '@/components/admin/AdminRouter';
 import AdminLayout from '@/components/admin/AdminLayout';
+import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import AdminSetup from '@/components/admin/AdminSetup';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, AlertCircle, Lock } from 'lucide-react';
 
 const Admin = () => {
+  return (
+    <AdminWrapper>
+      <AdminContent />
+    </AdminWrapper>
+  );
+};
+
+const AdminContent = () => {
   const { user, isLoading, signIn, signUp, isAdmin } = useAuth();
   const [mode, setMode] = useState<'login' | 'register' | 'setup'>('login');
   const [email, setEmail] = useState('');
