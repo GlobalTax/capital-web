@@ -21,7 +21,11 @@ export const Footerdemo = () => {
             <div className="space-y-2">
               <div className="flex items-center text-gray-300">
                 <MapPin className="h-4 w-4 mr-2" />
-                <span>Carrer Ausias March, 36 Principal - P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid</span>
+                <span>Sede Central: Carrer Ausias March número 36, 08010. Barcelona</span>
+              </div>
+              <div className="flex items-center text-gray-300">
+                <MapPin className="h-4 w-4 mr-2" />
+                <span>Otras oficinas: Madrid - Girona - Lleida - Tarragona - Palma de Mallorca - Zaragoza - Valencia</span>
               </div>
               <div className="flex items-center text-gray-300">
                 <Phone className="h-4 w-4 mr-2" />
@@ -93,7 +97,7 @@ export const Footerdemo = () => {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © 2024 Capittal. Todos los derechos reservados.
+              © 2025 Capittal. Todos los derechos reservados.
             </div>
             <div className="flex space-x-6">
               <Link to="/politica-privacidad" className="text-gray-400 hover:text-white text-sm transition-colors">

@@ -79,13 +79,14 @@ const PoliticaPrivacidad = () => {
                 </p>
                 <div className="mt-4 text-gray-600">
                   <p>Email: privacy@capittal.com</p>
-                  <p>Dirección: Paseo de la Castellana 123, 28046 Madrid, España</p>
+                  <p>Sede Central: Carrer Ausias March número 36, 08010. Barcelona</p>
+                  <p>Otras oficinas: Madrid - Girona - Lleida - Tarragona - Palma de Mallorca - Zaragoza - Valencia</p>
                 </div>
               </div>
             </div>
 
             <p className="text-sm text-gray-500 mt-8">
-              Última actualización: Enero 2024
+              Última actualización: Enero 2025
             </p>
           </div>
         </div>
