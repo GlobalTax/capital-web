@@ -27,6 +27,7 @@ import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 import VideoManager from './VideoManager';
+import UserControlPanel from './UserControlPanel';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import ContactsPage from '@/pages/admin/ContactsPage';
@@ -105,6 +106,7 @@ const AdminRouter = () => {
       
       {/* Settings */}
       <Route path="/admin-users" element={<AdminUsersManager />} />
+      <Route path="/user-control" element={<UserControlPanel />} />
       <Route path="/settings" element={<AdminSettings />} />
       
       {/* Catch all */}
