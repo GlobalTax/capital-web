@@ -32,10 +32,7 @@ class StartupOrchestrator {
       {
         name: 'DatabasePool',
         initialize: async () => {
-          // Importación lazy para evitar dependencias circulares
-          const { getDbPool } = await import('@/core/database/ConnectionPool');
-          const pool = getDbPool();
-          // Esperar a que el pool se inicialice
+          // Database ya se inicializa automáticamente con el cliente singleton
           await new Promise(resolve => setTimeout(resolve, 100));
         },
         isRequired: false,

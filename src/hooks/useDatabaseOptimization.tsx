@@ -3,7 +3,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { queryOptimizer } from '@/core/database/QueryOptimizer';
-import { getDbPool, getDbPoolSync } from '@/core/database/ConnectionPool';
 import { logger } from '@/utils/logger';
 
 interface DatabaseMetrics {
@@ -28,7 +27,6 @@ interface DatabaseMetrics {
 
 interface OptimizationConfig {
   enableQueryCache: boolean;
-  enableConnectionPooling: boolean;
   enableIndexHints: boolean;
   performanceThreshold: number;
   monitoringInterval: number;
@@ -41,7 +39,6 @@ export const useDatabaseOptimization = (config: Partial<OptimizationConfig> = {}
 
   const defaultConfig: OptimizationConfig = {
     enableQueryCache: true,
-    enableConnectionPooling: true,
     enableIndexHints: true,
     performanceThreshold: 3000, // 3 segundos
     monitoringInterval: 30000, // 30 segundos
@@ -51,31 +48,23 @@ export const useDatabaseOptimization = (config: Partial<OptimizationConfig> = {}
   // Obtener métricas actuales
   const fetchMetrics = useCallback(async (): Promise<DatabaseMetrics> => {
     const queryReport = queryOptimizer.generatePerformanceReport();
-    const dbPool = getDbPoolSync();
-    const poolStats = dbPool ? dbPool.getStats() : {
-      activeConnections: 0,
-      idleConnections: 0,
-      totalQueries: 0,
-      avgQueryTime: 0,
-      failedQueries: 0
-    };
 
     return {
       queryPerformance: {
         averageQueryTime: queryReport.averageOptimization,
         slowQueries: queryReport.slowQueries.length,
         cacheHitRate: queryReport.cacheHitRate,
-        totalQueries: poolStats.totalQueries,
-        failedQueries: poolStats.failedQueries
+        totalQueries: 0,
+        failedQueries: 0
       },
       connectionPool: {
-        activeConnections: poolStats.activeConnections,
-        idleConnections: poolStats.idleConnections,
-        maxConnections: 10 // Valor fijo del pool
+        activeConnections: 1,
+        idleConnections: 0,
+        maxConnections: 1
       },
       optimization: {
-        rulesApplied: 0, // Calculado dinámicamente
-        estimatedSavings: 0, // Calculado dinámicamente
+        rulesApplied: 0,
+        estimatedSavings: 0,
         indexSuggestions: queryReport.indexSuggestions
       }
     };
@@ -180,17 +169,12 @@ export const useDatabaseOptimization = (config: Partial<OptimizationConfig> = {}
     }
 
     // Evaluar queries fallidas
-    const failureRate = metrics.queryPerformance.failedQueries / metrics.queryPerformance.totalQueries;
+    const failureRate = metrics.queryPerformance.totalQueries > 0 
+      ? metrics.queryPerformance.failedQueries / metrics.queryPerformance.totalQueries
+      : 0;
     if (failureRate > 0.1) {
       score -= 25;
       recommendations.push('Alta tasa de fallos - revisa políticas RLS y conexiones');
-    }
-
-    // Evaluar uso del pool de conexiones
-    const poolUsage = metrics.connectionPool.activeConnections / metrics.connectionPool.maxConnections;
-    if (poolUsage > 0.8) {
-      score -= 15;
-      recommendations.push('Pool de conexiones al límite - considera aumentar tamaño');
     }
 
     // Sugerencias de índices
