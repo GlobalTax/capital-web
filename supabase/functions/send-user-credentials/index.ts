@@ -121,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://app.capittal.com/auth" 
+              <a href="https://app.capittal.es/auth"
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                         color: white; 
                         text-decoration: none; 
