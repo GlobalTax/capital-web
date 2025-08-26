@@ -7,7 +7,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // Configuración CORS específica por entorno
 const allowedOrigins = [
   'https://capittal.es',
-  'https://www.capittal.es', 
+  'https://www.capittal.es',
+  'https://app.capittal.es', // Admin subdomain
   'https://capittal-valuation.lovable.app',
   'http://localhost:5173', // Para desarrollo
   'https://lovable.dev', // Para preview

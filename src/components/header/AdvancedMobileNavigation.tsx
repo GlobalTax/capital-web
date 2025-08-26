@@ -99,12 +99,12 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
         <div className="border-t border-gray-200 pt-4 space-y-3">
           {/* DEV ONLY - Admin access for development */}
           {process.env.NODE_ENV === 'development' && user && (
-            <Link to="/admin" onClick={closeMenu}>
+            <a href="https://app.capittal.es/admin" onClick={closeMenu}>
               <Button variant="outline" className="w-full justify-start opacity-50 hover:opacity-100">
                 <Shield className="h-4 w-4 mr-2" />
                 🔧 Admin (Dev)
               </Button>
-            </Link>
+            </a>
           )}
           
           <Link to="/contacto" onClick={closeMenu}>

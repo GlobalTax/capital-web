@@ -72,10 +72,10 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
                 {user?.email}
               </Badge>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/admin">
+                <a href="https://app.capittal.es/admin">
                   <Settings className="h-4 w-4 mr-2" />
                   Admin
-                </Link>
+                </a>
               </Button>
             </div>
           </div>
