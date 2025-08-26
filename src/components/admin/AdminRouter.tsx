@@ -37,22 +37,7 @@ import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 
 const AdminRouter = () => {
-  const { isAdmin } = useAuth();
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Acceso Restringido
-          </h2>
-          <p className="text-gray-600">
-            Necesitas permisos de administrador para acceder a esta sección.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // AdminApp ya maneja la verificación de permisos de admin
 
   return (
     <Routes>
