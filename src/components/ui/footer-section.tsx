@@ -75,6 +75,11 @@ export const Footerdemo = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/de-looper-a-capittal" className="text-gray-300 hover:text-white transition-colors">
+                  Nuestra Historia
+                </Link>
+              </li>
+              <li>
                 <Link to="/equipo" className="text-gray-300 hover:text-white transition-colors">
                   Equipo
                 </Link>

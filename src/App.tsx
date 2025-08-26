@@ -30,6 +30,7 @@ const Contacto = lazy(() => import('@/pages/Contacto'));
 const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
 const CasosExito = lazy(() => import('@/pages/CasosExito'));
 const Nosotros = lazy(() => import('@/pages/Nosotros'));
+const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
 const Equipo = lazy(() => import('@/pages/Equipo'));
 const DocumentacionMA = lazy(() => import('@/pages/DocumentacionMA'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
@@ -253,6 +254,7 @@ function AppContent() {
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           <Route path="/casos-exito" element={<CasosExito />} />
           <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/de-looper-a-capittal" element={<DeLooperACapittal />} />
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/documentacion-ma" element={<DocumentacionMA />} />
           
