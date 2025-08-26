@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
 import { useLocation } from 'react-router-dom';
@@ -14,23 +13,39 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
   enabled = true 
 }) => {
   const location = useLocation();
+  
+  // Disable tracking in admin routes for stability
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const trackingEnabled = enabled && !isAdminRoute;
+  
   const { trackPageView, trackCalculatorUsage, trackContactInterest } = useLeadTracking({
-    enablePageTracking: enabled,
-    enableTimeTracking: enabled,
-    enableCalculatorTracking: enabled,
-    enableContactTracking: enabled
+    enablePageTracking: trackingEnabled,
+    enableTimeTracking: trackingEnabled,
+    enableCalculatorTracking: trackingEnabled,
+    enableContactTracking: trackingEnabled
   });
 
-  // Track route changes
+  // Track route changes (skip admin routes)
   useEffect(() => {
-    if (!enabled) return;
+    if (!trackingEnabled) return;
     
-    logger.debug('Route change tracked', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
+    logger.debug('Route changed', { 
+      pathname: location.pathname,
+      search: location.search 
+    }, { context: 'marketing', component: 'LeadTrackingProvider' });
     
-    // Track page view on route change
-    trackPageView(location.pathname);
+    // Track page view with debounce
+    const timeoutId = setTimeout(() => {
+      trackPageView(location.pathname);
+    }, 300); // Increased debounce for stability
     
-    // Track specific high-value pages
+    return () => clearTimeout(timeoutId);
+  }, [location, trackPageView, trackingEnabled]);
+
+  // Track specific high-value pages
+  useEffect(() => {
+    if (!trackingEnabled) return;
+    
     if (location.pathname.includes('/lp/calculadora')) {
       trackCalculatorUsage('page_visit');
     }
@@ -45,12 +60,11 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
       logger.info('High-intent page visited', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
       trackPageView(location.pathname + '_high_intent');
     }
-    
-  }, [location.pathname, enabled, trackPageView, trackCalculatorUsage, trackContactInterest]);
+  }, [location.pathname, trackingEnabled, trackPageView, trackCalculatorUsage, trackContactInterest]);
 
-  // Expose tracking functions globally for manual tracking
+  // Expose tracking functions globally for manual tracking (only if enabled)
   useEffect(() => {
-    if (!enabled) return;
+    if (!trackingEnabled) return;
     
     // Make tracking available globally for forms and interactions
     (window as any).capittalTracking = {
@@ -62,7 +76,7 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
     return () => {
       delete (window as any).capittalTracking;
     };
-  }, [enabled, trackCalculatorUsage, trackContactInterest, trackPageView]);
+  }, [trackingEnabled, trackCalculatorUsage, trackContactInterest, trackPageView]);
 
   return <>{children}</>;
 };

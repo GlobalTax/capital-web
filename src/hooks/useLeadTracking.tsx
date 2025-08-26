@@ -24,7 +24,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableContactTracking = true
   } = options;
 
-  // Circuit breaker state
+  // Circuit breaker state - more aggressive for admin stability
   const [circuitState, setCircuitState] = useState<{
     isOpen: boolean;
     failureCount: number;
@@ -37,7 +37,8 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     isDisabled: false
   });
 
-  // Circuit breaker logic
+  const MAX_FAILURES = 2; // Reduced from 3
+  const CIRCUIT_RESET_TIME = 120000; // Reduced to 2 minutes
   const shouldAllowRequest = useCallback(() => {
     if (circuitState.isDisabled) {
       return false; // Tracking completely disabled
@@ -158,9 +159,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId.substring(0, 8) + '...');
       
-      // Use secure tracking edge function with timeout
+      // Use secure tracking edge function with shorter timeout for admin stability
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Tracking timeout')), 3000);
+        setTimeout(() => reject(new Error('Tracking timeout')), 1500); // Reduced from 3000ms
       });
 
       const requestPromise = supabase.functions.invoke('secure-tracking', {
