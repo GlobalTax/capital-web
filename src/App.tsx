@@ -16,6 +16,7 @@ import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
 const AdminApp = lazy(() => import('@/components/admin/AdminApp'));
+const CalculatorApp = lazy(() => import('@/components/calculator-app/CalculatorApp'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
 const MyValuations = lazy(() => import('@/pages/MyValuations'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
@@ -217,6 +218,17 @@ function AppContent() {
       );
     }
 
+    // Si están en calculadoras.capittal.es, mostrar app de calculadoras para usuarios registrados
+    if (host === 'calculadoras.capittal.es' || host === 'calculadora.capittal.es') {
+      return (
+        <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
+          <Suspense fallback={<PageLoadingSkeleton />}>
+            <CalculatorApp />
+          </Suspense>
+        </div>
+      );
+    }
+
     // Si están en capittal.es y van a /admin, redirigir a app.capittal.es
     if ((host === 'capittal.es' || host.includes('lovable.app')) && path.startsWith('/admin')) {
       if (host === 'capittal.es') {
@@ -232,15 +244,6 @@ function AppContent() {
             </Suspense>
           </div>
         );
-      }
-    }
-
-    // Si entran por calculadoras.capittal.es, forzamos dominio canónico capittal.es/lp/calculadora
-    if (host === 'calculadoras.capittal.es' || host === 'calculadora.capittal.es') {
-      const canonical = 'https://capittal.es/lp/calculadora';
-      if (window.location.href !== canonical) {
-        window.location.replace(canonical); // 302 en cliente (efecto similar a 301 para UX)
-        return null;
       }
     }
 

@@ -9,6 +9,8 @@ const allowedOrigins = [
   'https://capittal.es',
   'https://www.capittal.es',
   'https://app.capittal.es', // Admin subdomain
+  'https://calculadoras.capittal.es', // Calculator subdomain for registered users
+  'https://calculadora.capittal.es', // Alternative calculator subdomain
   'https://capittal-valuation.lovable.app',
   'http://localhost:5173', // Para desarrollo
   'https://lovable.dev', // Para preview
