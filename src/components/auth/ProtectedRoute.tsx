@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { RegistrationStatus } from './RegistrationStatus';
 import { Loader2 } from 'lucide-react';
 
@@ -9,9 +9,9 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, isLoadingUnified, isAnyAdmin, isApproved } = useUnifiedAuth();
+  const { user, isLoading, isAdmin, isApproved } = useAuth();
 
-  if (isLoadingUnified) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Si no es admin y no está aprobado, mostrar pantalla de estado
-  if (!isAnyAdmin && !isApproved) {
+  if (!isAdmin && !isApproved) {
     return <RegistrationStatus />;
   }
 

@@ -10,15 +10,17 @@ export const AUTH_QUERY_KEYS = {
   registrationRequests: () => ['registration-requests'],
 } as const;
 
-// Global rate limiting for auth queries
+// Enhanced rate limiting configuration to prevent infinite loops
 const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_WINDOW = 5000; // 5 seconds
+const RATE_LIMIT_WINDOW = 10000; // Increased to 10 seconds
+const MAX_REQUESTS_PER_WINDOW = 2; // Reduced to 2 requests max
 
 const checkRateLimit = (key: string): boolean => {
   const now = Date.now();
   const lastCall = rateLimitMap.get(key);
   
   if (lastCall && (now - lastCall) < RATE_LIMIT_WINDOW) {
+    console.warn(`Rate limited: ${key}`);
     return false; // Rate limited
   }
   
