@@ -6,16 +6,9 @@ import './index.css'
 
 console.log('Capittal App initializing...');
 
-// Inicialización optimizada y lazy
+// Simplified initialization
 const initializeApp = async () => {
   try {
-    // Inicializar orquestador de startup primero
-    const { startupOrchestrator } = await import('./core/startup/StartupOrchestrator');
-    await startupOrchestrator.initialize();
-
-    // Importar error handler optimizado de forma lazy
-    const { optimizedErrorHandler } = await import('./utils/optimizedErrorHandler');
-    
     // Verificar que el DOM está listo
     if (document.readyState === 'loading') {
       await new Promise(resolve => {
@@ -32,7 +25,7 @@ const initializeApp = async () => {
     const root = createRoot(rootElement);
     root.render(<App />);
 
-    console.log('Capittal App initialized successfully');
+    console.log('✅ Capittal App initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Capittal App:', error);
     
