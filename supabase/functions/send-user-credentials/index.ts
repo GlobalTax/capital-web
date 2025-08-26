@@ -81,7 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
     const roleName = roleTranslations[role] || role;
 
     const emailResponse = await resend.emails.send({
-      from: "Capittal <admin@capittal.com>",
+      from: "Capittal <admin@capittal.es>",
       to: [email],
       subject: "Acceso a la plataforma Capittal - Credenciales temporales",
       html: `
