@@ -32,15 +32,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
   const { toast } = useToast();
 
-  // Use centralized queries
-  const { data: adminStatusData, isLoading: isLoadingAdmin } = useAdminStatusQuery(user?.id);
+  // Use centralized queries with enabled condition
+  const { data: adminStatusData, isLoading: isLoadingAdmin } = useAdminStatusQuery(
+    user?.id && authInitialized ? user.id : null
+  );
   const { data: registrationStatusData, isLoading: isLoadingRegistration } = useRegistrationStatusQuery(
-    !adminStatusData?.isAdmin ? user?.id : null
+    user?.id && authInitialized && !adminStatusData?.isAdmin ? user.id : null
   );
 
-  // Derived state from queries
+  // Derived state from queries with fallbacks
   const isAdmin = adminStatusData?.isAdmin ?? false;
   const registrationRequest = (registrationStatusData?.request as RegistrationRequest) ?? null;
   const isApproved = registrationStatusData?.isApproved ?? isAdmin;
@@ -79,32 +82,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logger.info('Auth state changed', { event, hasUser: !!session?.user }, { context: 'auth', component: 'AuthContext' });
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Update loading state
-        if (!session?.user) {
-          setIsLoading(false);
-        }
+        setAuthInitialized(true);
+        setIsLoading(false); // Always stop loading after auth state change
       }
     );
 
-    // Check for existing session
+    // Check for existing session with timeout
+    const sessionTimeout = setTimeout(() => {
+      logger.warn('Session check timeout, proceeding without session', undefined, { context: 'auth', component: 'AuthContext' });
+      setIsLoading(false);
+      setAuthInitialized(true);
+    }, 5000);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(sessionTimeout);
       setSession(session);
       setUser(session?.user ?? null);
+      setAuthInitialized(true);
       setIsLoading(false);
+    }).catch((error) => {
+      clearTimeout(sessionTimeout);
+      logger.error('Failed to get session', error, { context: 'auth', component: 'AuthContext' });
+      setIsLoading(false);
+      setAuthInitialized(true);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(sessionTimeout);
+    };
   }, []);
 
-  // Update loading state based on query states
+  // Initialize loading timeout fallback
   useEffect(() => {
-    if (!user) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(isLoadingAdmin || (isAdmin ? false : isLoadingRegistration));
-    }
-  }, [user, isLoadingAdmin, isLoadingRegistration, isAdmin]);
+    const loadingTimeout = setTimeout(() => {
+      if (isLoading) {
+        logger.warn('Auth loading timeout reached, forcing completion', undefined, { context: 'auth', component: 'AuthContext' });
+        setIsLoading(false);
+        setAuthInitialized(true);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(loadingTimeout);
+  }, [isLoading]);
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
