@@ -60,59 +60,122 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // CRITICAL: Create the actual user in Supabase Auth
-    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password: temporaryPassword,
-      user_metadata: {
-        full_name: fullName,
-        role
-      },
-      email_confirm: true // Auto-confirm email so they can login immediately
+    // STEP 1: Check if user already exists in Auth
+    const { data: existingUsers } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000
     });
+    
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    let authUserId: string | null = null;
 
-    if (authError) {
-      console.error("Failed to create user in auth:", authError);
+    if (existingUser) {
+      // User exists - update their password and metadata
+      console.log("User already exists, updating password:", existingUser.id);
       
-      await supabase.from('security_events').insert({
-        event_type: 'AUTH_USER_CREATION_FAILED',
-        severity: 'high',
-        details: { 
-          email, 
-          error: authError.message,
-          timestamp: new Date().toISOString()
+      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
+        existingUser.id,
+        {
+          password: temporaryPassword,
+          user_metadata: {
+            full_name: fullName,
+            role,
+            password_updated_at: new Date().toISOString()
+          },
+          email_confirm: true
         }
-      });
-      
-      return new Response(
-        JSON.stringify({ error: `Failed to create user: ${authError.message}` }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
+
+      if (updateError) {
+        console.error("Failed to update existing user:", updateError);
+        
+        await supabase.from('security_events').insert({
+          event_type: 'AUTH_USER_UPDATE_FAILED',
+          severity: 'high',
+          details: { 
+            email, 
+            user_id: existingUser.id,
+            error: updateError.message,
+            timestamp: new Date().toISOString()
+          }
+        });
+        
+        return new Response(
+          JSON.stringify({ error: `Failed to update user credentials: ${updateError.message}` }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      authUserId = existingUser.id;
+      console.log("Successfully updated existing user credentials:", authUserId);
+      
+    } else {
+      // User doesn't exist - create new user
+      console.log("Creating new user in auth for:", email);
+      
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password: temporaryPassword,
+        user_metadata: {
+          full_name: fullName,
+          role,
+          created_at: new Date().toISOString()
+        },
+        email_confirm: true // Auto-confirm email so they can login immediately
+      });
+
+      if (authError) {
+        console.error("Failed to create new user in auth:", authError);
+        
+        await supabase.from('security_events').insert({
+          event_type: 'AUTH_USER_CREATION_FAILED',
+          severity: 'high',
+          details: { 
+            email, 
+            error: authError.message,
+            timestamp: new Date().toISOString()
+          }
+        });
+        
+        return new Response(
+          JSON.stringify({ error: `Failed to create user: ${authError.message}` }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      authUserId = authUser.user?.id || null;
+      console.log("Successfully created new user in auth:", authUserId);
     }
 
-    console.log("User created successfully in auth:", authUser.user?.id);
-
-    // Update the admin_users record with the correct user_id
-    if (authUser.user?.id) {
+    // STEP 2: Update or ensure admin_users record has correct user_id
+    if (authUserId) {
       const { error: updateError } = await supabase
         .from('admin_users')
-        .update({ user_id: authUser.user.id })
-        .eq('email', email);
+        .upsert({ 
+          user_id: authUserId, 
+          email, 
+          full_name: fullName, 
+          role,
+          is_active: true,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
         
       if (updateError) {
-        console.error("Failed to update admin_users with auth user_id:", updateError);
+        console.error("Failed to update/create admin_users record:", updateError);
         await supabase.from('security_events').insert({
-          event_type: 'ADMIN_USER_UPDATE_FAILED',
+          event_type: 'ADMIN_USER_RECORD_UPDATE_FAILED',
           severity: 'medium',
           details: { 
             email, 
-            auth_user_id: authUser.user.id,
+            auth_user_id: authUserId,
             error: updateError.message,
             timestamp: new Date().toISOString()
           }
         });
       } else {
-        console.log("Successfully linked auth user to admin record");
+        console.log("Successfully updated admin_users record for:", authUserId);
       }
     }
 
