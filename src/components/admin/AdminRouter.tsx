@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
 import AdminDashboard from './dashboard/AdminDashboard';
 import LeadScoringManager from './dashboard/LeadScoringManager';
 import LeadScoringRulesManager from './dashboard/LeadScoringRulesManager';
@@ -37,7 +37,7 @@ import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 
 const AdminRouter = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useAdminAuth();
 
   if (!isAdmin) {
     return (

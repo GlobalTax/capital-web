@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
@@ -8,10 +8,10 @@ interface AdminWrapperProps {
 }
 
 /**
- * Wrapper simplificado para el admin - solo verifica permisos
+ * Wrapper simplificado para el admin - usa AdminAuthProvider
  */
 export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
-  const { user, isLoading, isAdmin } = useAuth();
+  const { isAdmin, isLoading } = useAdminAuth();
 
   // Loading state
   if (isLoading) {
@@ -19,20 +19,15 @@ export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verificando autenticación...</p>
+          <p className="text-muted-foreground">Verificando permisos...</p>
         </div>
       </div>
     );
   }
 
-  // Redirect if not authenticated
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   // Redirect if not admin
   if (!isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;
