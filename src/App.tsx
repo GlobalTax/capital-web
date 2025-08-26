@@ -355,6 +355,12 @@ function AppContent() {
           <Route path="/documentacion-ma/customization" element={<Customization />} />
           <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
           
+          {/* Admin route fallbacks - redirect to admin subdomain */}
+          <Route path="/admin" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
+          <Route path="/admin/*" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
+          <Route path="/dashboard" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
+          <Route path="/leads" element={<Navigate to="https://app.capittal.es/admin/" replace />} />
+          
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

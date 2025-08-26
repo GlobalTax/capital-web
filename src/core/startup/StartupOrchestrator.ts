@@ -32,11 +32,18 @@ class StartupOrchestrator {
       {
         name: 'DatabasePool',
         initialize: async () => {
-          // Database ya se inicializa automáticamente con el cliente singleton
-          await new Promise(resolve => setTimeout(resolve, 100));
+          try {
+            // Try to initialize database pool if available
+            const { getQueryOptimizer } = await import('@/core/database/QueryOptimizer');
+            getQueryOptimizer();
+            console.log('Database pool initialized successfully');
+          } catch (error) {
+            console.warn('Database pool initialization skipped:', error.message);
+            // Don't throw - this is optional
+          }
         },
         isRequired: false,
-        timeout: 10000
+        timeout: 5000
       },
       {
         name: 'QueryOptimizer',
