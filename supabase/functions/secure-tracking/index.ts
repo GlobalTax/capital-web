@@ -13,18 +13,30 @@ const allowedOrigins = [
   'https://lovable.dev', // Para preview
   'https://preview--webcapittal.lovable.app', // Preview específico del proyecto
   'https://webcapittal.lovable.app', // App principal en Lovable
-  'https://c1cd2940-10b7-4c6d-900a-07b0f572e7b9.sandbox.lovable.dev' // Sandbox actual
+  'https://c1cd2940-10b7-4c6d-900a-07b0f572e7b9.sandbox.lovable.dev', // Sandbox legacy
+  'https://id-preview--c1cd2940-10b7-4c6d-900a-07b0f572e7b9.lovable.app' // Current sandbox format
 ];
 
 // Función para verificar dominios sandbox dinámicamente
 const isSandboxDomain = (origin: string): boolean => {
-  return /^https:\/\/[a-f0-9-]+\.sandbox\.lovable\.dev$/.test(origin);
+  // Nuevos patrones para lovable.app (preview y sandbox)
+  const lovableAppPattern = /^https:\/\/(id-preview--)?[a-f0-9-]+\.lovable\.app$/;
+  // Patrón legacy para lovable.dev
+  const lovableDevPattern = /^https:\/\/[a-f0-9-]+\.sandbox\.lovable\.dev$/;
+  
+  return lovableAppPattern.test(origin) || lovableDevPattern.test(origin);
 };
 
 const getCorsHeaders = (origin: string | null) => {
   const isAllowed = origin && (allowedOrigins.includes(origin) || isSandboxDomain(origin));
+  
+  // Para desarrollo, permitir cualquier origen de Lovable, de lo contrario usar '*' para mayor compatibilidad
+  const allowOrigin = isAllowed ? origin : '*';
+  
+  console.log('CORS check:', { origin, isAllowed, allowOrigin });
+  
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Max-Age': '86400', // 24 horas
