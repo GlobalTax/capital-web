@@ -33,25 +33,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const registrationRequestAttempted = React.useRef(false);
   const { toast } = useToast();
 
-  // Use centralized queries with enabled condition and circuit breaker
-  const { data: adminStatusData, isLoading: isLoadingAdmin } = useAdminStatusQuery(
+  // FIXED: Remove circular dependency - both queries run independently
+  const { data: adminStatusData, isLoading: isLoadingAdmin, error: adminError } = useAdminStatusQuery(
     user?.id && authInitialized ? user.id : null
   );
-  const { data: registrationStatusData, isLoading: isLoadingRegistration } = useRegistrationStatusQuery(
-    user?.id && authInitialized && !adminStatusData?.isAdmin ? user.id : null
+  const { data: registrationStatusData, isLoading: isLoadingRegistration, error: registrationError } = useRegistrationStatusQuery(
+    user?.id && authInitialized ? user.id : null
   );
 
-  // Derived state from queries with fallbacks
+  // Derived state from queries with fallbacks and circuit breaker
   const isAdmin = adminStatusData?.isAdmin ?? false;
   const registrationRequest = (registrationStatusData?.request as RegistrationRequest) ?? null;
-  const isApproved = registrationStatusData?.isApproved ?? isAdmin;
+  // Only check registration status if NOT admin
+  const isApproved = isAdmin || (registrationStatusData?.isApproved ?? false);
 
-  // Auto-create registration request for non-admin users
+  // Debug logging for infinite loop detection
+  React.useEffect(() => {
+    if (user?.id && authInitialized) {
+      console.log('AuthContext Debug:', {
+        userId: user.id,
+        isAdmin,
+        isLoadingAdmin,
+        isLoadingRegistration,
+        hasRegistrationRequest: !!registrationRequest,
+        adminError: !!adminError,
+        registrationError: !!registrationError,
+        registrationRequestAttempted: registrationRequestAttempted.current
+      });
+    }
+  }, [user?.id, isAdmin, isLoadingAdmin, isLoadingRegistration, registrationRequest, adminError, registrationError]);
+
+  // FIXED: Simplified registration request creation with circuit breaker
   useEffect(() => {
-    if (user && !isLoadingAdmin && !isAdmin && !isLoadingRegistration && !registrationRequest) {
-      // Create registration request if it doesn't exist
+    if (
+      user?.id && 
+      authInitialized && 
+      !isLoadingAdmin && 
+      !isAdmin && 
+      !registrationRequest && 
+      !registrationRequestAttempted.current &&
+      !adminError && // Don't create if admin query failed
+      !registrationError // Don't create if registration query failed
+    ) {
+      registrationRequestAttempted.current = true;
+      
       const createRegistrationRequest = async () => {
         try {
           await supabase
@@ -63,6 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               user_agent: navigator.userAgent,
               ip_address: null
             });
+          console.log('Registration request created for user:', user.id);
         } catch (error: any) {
           // Ignore duplicate key errors
           if (error?.code !== '23505') {
@@ -73,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       createRegistrationRequest();
     }
-  }, [user, isAdmin, isLoadingAdmin, isLoadingRegistration, registrationRequest]);
+  }, [user?.id, authInitialized, isLoadingAdmin, isAdmin, registrationRequest, adminError, registrationError]);
 
   useEffect(() => {
     // Set up auth state listener

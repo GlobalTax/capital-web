@@ -35,32 +35,38 @@ export const useAdminStatusQuery = (userId?: string | null) => {
     queryFn: async () => {
       if (!userId) return { isAdmin: false, adminData: null };
       
+      // FIXED: Don't throw on rate limit, return safe default instead
       if (!checkRateLimit(`admin-status-${userId}`)) {
-        throw new Error('Rate limited');
+        console.warn('Admin status query rate limited, returning safe default');
+        return { isAdmin: false, adminData: null, rateLimited: true };
       }
 
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('id, is_active, role')
-        .eq('user_id', userId)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('admin_users')
+          .select('id, is_active, role')
+          .eq('user_id', userId)
+          .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+        if (error && error.code !== 'PGRST116') {
+          console.error('Admin status query error:', error);
+          return { isAdmin: false, adminData: null, error: error.message };
+        }
+
+        const isAdmin = !!data?.is_active;
+        return { isAdmin, adminData: data };
+      } catch (error) {
+        console.error('Admin status query failed:', error);
+        return { isAdmin: false, adminData: null, error: (error as Error).message };
       }
-
-      const isAdmin = !!data?.is_active;
-      return { isAdmin, adminData: data };
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
-    retry: (failureCount, error: any) => {
-      if (error?.message === 'Rate limited') return false;
-      if (error?.status === 404 || error?.status === 403) return false;
-      return failureCount < 2;
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    staleTime: 10 * 60 * 1000, // FIXED: Increased to 10 minutes
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false, // FIXED: Prevent focus refetches
+    refetchOnReconnect: false, // FIXED: Prevent reconnect refetches
+    retry: false, // FIXED: Disable retries to prevent loops
+    networkMode: 'online',
   });
 };
 
@@ -71,32 +77,38 @@ export const useRegistrationStatusQuery = (userId?: string | null) => {
     queryFn: async () => {
       if (!userId) return { request: null, isApproved: false };
       
+      // FIXED: Don't throw on rate limit, return safe default instead
       if (!checkRateLimit(`registration-status-${userId}`)) {
-        throw new Error('Rate limited');
+        console.warn('Registration status query rate limited, returning safe default');
+        return { request: null, isApproved: false, rateLimited: true };
       }
 
-      const { data, error } = await supabase
-        .from('user_registration_requests')
-        .select('id, status, requested_at, rejection_reason')
-        .eq('user_id', userId)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('user_registration_requests')
+          .select('id, status, requested_at, rejection_reason')
+          .eq('user_id', userId)
+          .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+        if (error && error.code !== 'PGRST116') {
+          console.error('Registration status query error:', error);
+          return { request: null, isApproved: false, error: error.message };
+        }
+
+        const isApproved = data?.status === 'approved';
+        return { request: data, isApproved };
+      } catch (error) {
+        console.error('Registration status query failed:', error);
+        return { request: null, isApproved: false, error: (error as Error).message };
       }
-
-      const isApproved = data?.status === 'approved';
-      return { request: data, isApproved };
     },
     enabled: !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error: any) => {
-      if (error?.message === 'Rate limited') return false;
-      if (error?.status === 404 || error?.status === 403) return false;
-      return failureCount < 2;
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    staleTime: 10 * 60 * 1000, // FIXED: Increased to 10 minutes
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false, // FIXED: Prevent focus refetches
+    refetchOnReconnect: false, // FIXED: Prevent reconnect refetches
+    retry: false, // FIXED: Disable retries to prevent loops
+    networkMode: 'online',
   });
 };
 
