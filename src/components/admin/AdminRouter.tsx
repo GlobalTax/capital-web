@@ -108,7 +108,7 @@ const AdminRouter = () => {
       <Route path="/settings" element={<AdminSettings />} />
       
       {/* Catch all */}
-      <Route path="*" element={<Navigate to="/admin" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
