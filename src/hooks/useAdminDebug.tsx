@@ -1,11 +1,13 @@
 
 import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/shared/hooks';
+import { useAuth } from '@/shared/hooks';
 import { useRoleBasedPermissions } from './useRoleBasedPermissions';
 import { logger } from '@/utils/logger';
 
 export const useAdminDebug = () => {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
+  const { isAdmin, isLoading: authLoading } = useAdminAuth();
   const { userRole, permissions, isLoading: permissionsLoading } = useRoleBasedPermissions();
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyData } from '@/types/valuation';
 import { useLeadTracking } from './useLeadTracking';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/hooks';
 
 interface AutosaveState {
   uniqueToken: string | null;

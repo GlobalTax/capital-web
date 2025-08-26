@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/shared/hooks';
 
 interface UseAdminPermissionsReturn {
   canRead: boolean;
@@ -11,7 +11,7 @@ interface UseAdminPermissionsReturn {
 }
 
 export const useAdminPermissions = (): UseAdminPermissionsReturn => {
-  const { isAdmin, isLoading: authLoading } = useAuth();
+  const { isAdmin, isLoading: authLoading } = useAdminAuth();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
