@@ -15,7 +15,7 @@ export interface AdminUser {
   last_login: string | null;
 }
 
-export type AdminRole = 'super_admin' | 'admin' | 'editor';
+export type AdminRole = 'super_admin' | 'admin' | 'editor' | 'viewer';
 
 export interface AdminPermissions {
   canRead: boolean;

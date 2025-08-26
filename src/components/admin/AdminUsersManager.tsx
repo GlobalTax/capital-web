@@ -20,10 +20,10 @@ import { resendCredentials, resendSingleUserCredentials, ResendResult, getCapitt
 import { useToast } from '@/hooks/use-toast';
 
 const ROLE_LABELS = {
-  super_admin: { label: 'Super Admin', icon: Crown, color: 'destructive' },
-  admin: { label: 'Admin', icon: Shield, color: 'default' },
-  editor: { label: 'Editor', icon: PenTool, color: 'secondary' },
-  viewer: { label: 'Viewer', icon: Eye, color: 'outline' }
+  super_admin: { label: 'Super Admin', icon: Crown, color: 'destructive', badgeColor: 'destructive' },
+  admin: { label: 'Admin', icon: Shield, color: 'default', badgeColor: 'default' },
+  editor: { label: 'Editor', icon: PenTool, color: 'secondary', badgeColor: 'secondary' },
+  viewer: { label: 'Viewer', icon: Eye, color: 'outline', badgeColor: 'outline' }
 };
 
 const AdminUsersManager = () => {
@@ -65,6 +65,7 @@ const AdminUsersManager = () => {
     handleSubmit: handleEditSubmit,
     reset: resetEdit,
     setValue: setEditValue,
+    watch: watchEdit,
     formState: { errors: editErrors }
   } = useForm<Partial<AdminUser>>();
 
@@ -99,9 +100,11 @@ const AdminUsersManager = () => {
 
   const handleEdit = (user: AdminUser) => {
     setEditingUser(user);
-    setEditValue('full_name', user.full_name || '');
-    setEditValue('email', user.email || '');
-    setEditValue('role', user.role);
+    resetEdit({
+      full_name: user.full_name || '',
+      email: user.email || '',
+      role: user.role
+    });
     setIsEditDialogOpen(true);
   };
 
@@ -611,7 +614,10 @@ const AdminUsersManager = () => {
 
             <div className="space-y-2">
               <Label htmlFor="edit-role">Rol</Label>
-              <Select onValueChange={(value) => registerEdit('role').onChange({ target: { value } })}>
+              <Select 
+                value={watchEdit('role')} 
+                onValueChange={(value) => setEditValue('role', value as any)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un rol" />
                 </SelectTrigger>
