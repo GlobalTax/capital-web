@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useValuationCalculatorV4 } from '@/hooks/useValuationCalculatorV4';
 import { useV4Tracking } from '@/hooks/useV4Tracking';
 import { CompanyDataV4 } from '@/types/valuationV4';
@@ -16,8 +16,8 @@ interface ValuationCalculatorV4Props {
 }
 
 const ValuationCalculatorV4 = ({ companyData }: ValuationCalculatorV4Props) => {
-  const [showCalendar, setShowCalendar] = React.useState(false);
-  const [saleValue, setSaleValue] = React.useState(companyData.baseValuation);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [saleValue, setSaleValue] = useState(companyData.baseValuation);
   
   const {
     scenarioResults,

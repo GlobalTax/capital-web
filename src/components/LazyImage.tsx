@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLazyImage, useLazyLoad } from '@/hooks/useLazyLoad';
 
 interface LazyImageProps {
@@ -32,13 +32,13 @@ const LazyImage: React.FC<LazyImageProps> = ({
     error 
   } = useLazyImage(isVisible ? src : '', placeholder);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isLoading && !error && imageSrc === src) {
       onLoad?.();
     }
   }, [isLoading, error, imageSrc, src, onLoad]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       onError?.(error);
     }

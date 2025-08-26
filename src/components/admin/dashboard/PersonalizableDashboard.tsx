@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Grid, Plus, Settings, Save, LayoutDashboard, Share2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ export function PersonalizableDashboard() {
   const [localLayout, setLocalLayout] = useState(activeLayout);
 
   // Sincronizar layout local con el activo
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeLayout) {
       setLocalLayout(activeLayout);
     }

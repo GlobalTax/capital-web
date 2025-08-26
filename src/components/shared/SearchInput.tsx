@@ -1,7 +1,4 @@
-// ============= OPTIMIZED SEARCH INPUT =============
-// Input de búsqueda con debounce y throttle optimizado
-
-import React, { memo, useCallback, useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef, forwardRef, memo } from 'react';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,7 +46,7 @@ const SearchInputComponent = ({
   );
 
   // Efecto para ejecutar búsqueda cuando cambie el query debouncado
-  React.useEffect(() => {
+  useEffect(() => {
     debouncedSearch(debouncedQuery);
   }, [debouncedQuery, debouncedSearch]);
 

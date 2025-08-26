@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Quote } from 'lucide-react';
@@ -21,7 +21,7 @@ interface Testimonial {
 }
 
 const Testimonials = () => {
-  const fetchTestimonials = React.useCallback(async (): Promise<Testimonial[]> => {
+  const fetchTestimonials = useCallback(async (): Promise<Testimonial[]> => {
     const { data, error } = await supabase
       .from('testimonials')
       .select('*')

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TrackingOptions {
@@ -23,6 +23,59 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableCalculatorTracking = true,
     enableContactTracking = true
   } = options;
+
+  // Circuit breaker state
+  const [circuitState, setCircuitState] = useState<{
+    isOpen: boolean;
+    failureCount: number;
+    lastFailureTime: number;
+    isDisabled: boolean;
+  }>({
+    isOpen: false,
+    failureCount: 0,
+    lastFailureTime: 0,
+    isDisabled: false
+  });
+
+  // Circuit breaker logic
+  const shouldAllowRequest = useCallback(() => {
+    if (circuitState.isDisabled) {
+      return false; // Tracking completely disabled
+    }
+    
+    if (!circuitState.isOpen) {
+      return true; // Circuit closed, allow requests
+    }
+    
+    // Circuit is open, check if enough time has passed to try again
+    const now = Date.now();
+    const timeSinceLastFailure = now - circuitState.lastFailureTime;
+    const backoffTime = 10 * 60 * 1000; // 10 minutes
+    
+    return timeSinceLastFailure > backoffTime;
+  }, [circuitState]);
+
+  const recordSuccess = useCallback(() => {
+    setCircuitState(prev => ({
+      ...prev,
+      isOpen: false,
+      failureCount: 0
+    }));
+  }, []);
+
+  const recordFailure = useCallback(() => {
+    setCircuitState(prev => {
+      const newFailureCount = prev.failureCount + 1;
+      const shouldDisable = newFailureCount >= 10; // Disable after 10 failures
+      
+      return {
+        isOpen: newFailureCount >= 2, // Open circuit after 2 failures
+        failureCount: newFailureCount,
+        lastFailureTime: Date.now(),
+        isDisabled: shouldDisable
+      };
+    });
+  }, []);
 
   // Generar IDs únicos para sesión y visitante
   const getOrCreateVisitorId = useCallback(() => {
@@ -66,13 +119,19 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     return undefined;
   }, []);
 
-  // Función principal de tracking
+  // Función principal de tracking con circuit breaker
   const trackEvent = useCallback(async (
     eventType: string,
     pagePath: string,
     eventData: Record<string, any> = {},
     pointsAwarded: number = 0
   ) => {
+    // Check circuit breaker before attempting request
+    if (!shouldAllowRequest()) {
+      console.debug('🚫 Tracking blocked by circuit breaker');
+      return;
+    }
+
     try {
       const visitorId = getOrCreateVisitorId();
       const sessionId = getOrCreateSessionId();
@@ -97,25 +156,34 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
         utm_campaign: utmCampaign
       };
 
-      console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId);
+      console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId.substring(0, 8) + '...');
       
-      // Use secure tracking edge function instead of direct database insertion
-      const { error } = await supabase.functions.invoke('secure-tracking', {
+      // Use secure tracking edge function with timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Tracking timeout')), 3000);
+      });
+
+      const requestPromise = supabase.functions.invoke('secure-tracking', {
         body: { event: trackingEvent }
       });
+
+      const result = await Promise.race([requestPromise, timeoutPromise]);
       
-      if (error) {
-        console.error('❌ Lead tracking failed:', error);
-        throw error;
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        recordFailure();
+        console.error('❌ Lead tracking failed:', result.error);
+        throw result.error;
       }
       
+      recordSuccess();
       console.debug('✅ Event tracked successfully via secure endpoint:', eventType);
 
     } catch (error) {
+      recordFailure();
       console.error('❌ Lead tracking error:', error);
       // Fallar silenciosamente para no afectar UX pero logear el error
     }
-  }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain]);
+  }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain, shouldAllowRequest, recordSuccess, recordFailure]);
 
   // Tracking de páginas visitadas
   const trackPageView = useCallback(async (pagePath?: string) => {

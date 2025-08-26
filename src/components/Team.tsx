@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Carousel,
@@ -30,7 +30,7 @@ const Team = () => {
     rootMargin: '100px'
   });
 
-  const fetchTeamMembers = React.useCallback(async (): Promise<TeamMember[]> => {
+  const fetchTeamMembers = useCallback(async (): Promise<TeamMember[]> => {
     const { data, error } = await supabase
       .from('team_members')
       .select('*')
