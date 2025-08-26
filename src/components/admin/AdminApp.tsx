@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAdminAuth } from '@/shared/hooks';
+import { useAuth, useAdminAuth } from '@/shared/hooks';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
@@ -7,6 +7,7 @@ import { AdminConnectionStatus } from './AdminConnectionStatus';
 import { AdminOfflineMode } from './AdminOfflineMode';
 
 export const AdminApp: React.FC = () => {
+  const { user } = useAuth();
   const { isAdmin, isLoading } = useAdminAuth();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'online' | 'offline' | 'degraded'>('checking');

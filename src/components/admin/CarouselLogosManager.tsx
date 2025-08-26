@@ -6,7 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Plus, Edit, Save, X, MoveUp, MoveDown } from 'lucide-react';
 import ImageUploadField from './ImageUploadField';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/hooks';
+import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
 
 interface CarouselLogo {
   id: string;
@@ -31,7 +32,7 @@ const CarouselLogosManager = () => {
     is_active: true
   });
   const { toast } = useToast();
-  const { isAdmin, isLoading: authLoading } = useAuth();
+  const { isAdmin, isLoading: authLoading } = useAdminAuth();
 
   useEffect(() => {
     if (!authLoading && isAdmin) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/hooks';
+import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
 import { RegistrationStatus } from './RegistrationStatus';
 import { Loader2 } from 'lucide-react';
 
@@ -9,7 +10,8 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, isLoading, isAdmin, isApproved } = useAuth();
+  const { user, isLoading } = useAuth();
+  const { isAdmin, isApproved } = useAdminAuth();
 
   if (isLoading) {
     return (

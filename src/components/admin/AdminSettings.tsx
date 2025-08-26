@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/hooks';
 import { Settings, User, Shield, LogOut } from 'lucide-react';
 
 const AdminSettings = () => {

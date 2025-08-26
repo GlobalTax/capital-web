@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/hooks';
+import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminSetup = () => {
-  const { user, checkAdminStatus } = useAuth();
+  const { user } = useAuth();
+  const { checkAdminStatus } = useAdminAuth();
   const { toast } = useToast();
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
   const [adminExists, setAdminExists] = useState<boolean | null>(null);

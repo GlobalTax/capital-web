@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Phone, ChevronDown, ChevronRight, Shield } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/shared/hooks';
 import { serviciosData } from './data/serviciosData';
 import { sectoresData } from './data/sectoresData';
 import { nosotrosData } from './data/nosotrosData';
