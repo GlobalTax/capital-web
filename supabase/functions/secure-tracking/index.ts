@@ -10,7 +10,9 @@ const allowedOrigins = [
   'https://www.capittal.es', 
   'https://capittal-valuation.lovable.app',
   'http://localhost:5173', // Para desarrollo
-  'https://lovable.dev' // Para preview
+  'https://lovable.dev', // Para preview
+  'https://preview--webcapittal.lovable.app', // Preview específico del proyecto
+  'https://webcapittal.lovable.app' // App principal en Lovable
 ];
 
 const getCorsHeaders = (origin: string | null) => {

@@ -44,7 +44,7 @@ export const useCalendarBooking = () => {
 
       const { data, error } = await supabase
         .from('calendar_bookings')
-        .insert([insertData])
+        .insert(insertData)
         .select()
         .single();
 
