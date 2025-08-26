@@ -10,6 +10,7 @@ import { Upload, Play, Trash2, Edit, Eye, EyeOff } from 'lucide-react';
 import { useVideoUpload } from '@/hooks/useVideoUpload';
 import { useAdminVideos, AdminVideo } from '@/hooks/useAdminVideos';
 import { useToast } from '@/hooks/use-toast';
+import { devLogger } from '@/utils/devLogger';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,11 @@ const VideoManager = () => {
   const { uploadVideo, deleteVideo, updateVideo, isUploading } = useVideoUpload();
   const { videos, isLoading } = useAdminVideos();
   const { toast } = useToast();
+
+  // Log component initialization without triggering setState during render
+  React.useEffect(() => {
+    devLogger.info('VideoManager initialized', { videoCount: videos?.length }, 'component');
+  }, [videos?.length]);
 
   const [uploadData, setUploadData] = useState({
     title: '',

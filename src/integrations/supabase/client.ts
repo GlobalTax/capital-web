@@ -1,3 +1,3 @@
 
-// Simplified client without complex optimization
-export { supabase } from './simpleClient';
+// Use singleton client to avoid multiple instances
+export { supabase } from './singletonClient';

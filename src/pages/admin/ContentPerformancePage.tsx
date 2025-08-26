@@ -48,7 +48,8 @@ const ContentPerformancePage = () => {
   // Fetch all data in parallel for better performance
   useEffect(() => {
     const fetchAllData = async () => {
-      setIsLoading(true);
+      // Avoid setState during render by deferring
+      setTimeout(() => setIsLoading(true), 0);
       try {
         const [caseStudiesRes, metricsRes, topPostsRes] = await Promise.all([
           supabase
@@ -113,7 +114,8 @@ const ContentPerformancePage = () => {
       } catch (error) {
         console.error('Error fetching content data:', error);
       } finally {
-        setIsLoading(false);
+        // Defer setState to avoid render issues
+        setTimeout(() => setIsLoading(false), 0);
       }
     };
 

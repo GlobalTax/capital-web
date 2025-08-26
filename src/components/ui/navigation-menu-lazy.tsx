@@ -11,19 +11,12 @@ const NavigationMenuLoading = () => (
   </div>
 );
 
-// Lazy load del NavigationMenu original
-const NavigationMenuComponents = lazy(async () => {
-  // Asegurar que cva esté completamente cargado antes de importar
-  await import('class-variance-authority');
-  // Pequeña pausa para asegurar inicialización completa
-  await new Promise(resolve => setTimeout(resolve, 10));
-  
-  const components = await import('./navigation-menu');
-  return {
-    default: components.NavigationMenu,
-    ...components
-  };
-});
+// Simplified lazy load - fix TypeScript error
+const NavigationMenuComponents = lazy(() => 
+  import('./navigation-menu').then(module => ({ 
+    default: module.NavigationMenu 
+  }))
+);
 
 // Wrapper con Suspense para cada componente
 export const NavigationMenu = React.forwardRef<any, any>((props, ref) => (
@@ -32,17 +25,13 @@ export const NavigationMenu = React.forwardRef<any, any>((props, ref) => (
   </Suspense>
 ));
 
-// Crear lazy wrappers para cada componente exportado
+// Simplified lazy component creation
 const createLazyComponent = (componentName: string) => {
-  const LazyComponent = lazy(async () => {
-    await import('class-variance-authority');
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const components = await import('./navigation-menu');
-    return {
-      default: (components as any)[componentName]
-    };
-  });
+  const LazyComponent = lazy(() => 
+    import('./navigation-menu').then(module => ({
+      default: (module as any)[componentName]
+    }))
+  );
 
   return React.forwardRef((props: any, ref: any) => (
     <Suspense fallback={<Skeleton className="h-4 w-16" />}>
@@ -59,15 +48,9 @@ export const NavigationMenuLink = createLazyComponent('NavigationMenuLink');
 export const NavigationMenuIndicator = createLazyComponent('NavigationMenuIndicator');
 export const NavigationMenuViewport = createLazyComponent('NavigationMenuViewport');
 
-// Lazy wrapper para navigationMenuTriggerStyle
+// Simplified style function
 export const navigationMenuTriggerStyle = () => {
-  try {
-    const { navigationMenuTriggerStyle: originalStyle } = require('./navigation-menu');
-    return originalStyle;
-  } catch (error) {
-    console.warn('Fallback to basic navigation menu styles:', error);
-    return () => "inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium";
-  }
+  return "inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50";
 };
 
 NavigationMenu.displayName = "NavigationMenu";

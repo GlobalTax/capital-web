@@ -56,26 +56,33 @@ export const PerformanceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       component: 'PerformanceProvider'
     });
 
-    // Monitor query cache
+    // Monitor query cache - use setTimeout to avoid setState during render
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
       if (event.type === 'added') {
-        setMetrics(prev => ({ ...prev, queryCount: prev.queryCount + 1 }));
+        setTimeout(() => {
+          setMetrics(prev => ({ ...prev, queryCount: prev.queryCount + 1 }));
+        }, 0);
       }
       
       if (event.type === 'updated' && event.query?.state.error) {
-        setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
-        logger.warn('Query error detected', event.query.queryKey, {
-          context: 'performance',
-          component: 'PerformanceProvider'
-        });
+        setTimeout(() => {
+          setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
+          logger.warn('Query error detected', event.query.queryKey, {
+            context: 'performance',
+            component: 'PerformanceProvider'
+          });
+        }, 0);
       }
     });
 
-    const endTime = performance.now();
-    setMetrics(prev => ({ 
-      ...prev, 
-      avgResponseTime: Math.round(endTime - startTime) 
-    }));
+    // Defer initial metrics update
+    setTimeout(() => {
+      const endTime = performance.now();
+      setMetrics(prev => ({ 
+        ...prev, 
+        avgResponseTime: Math.round(endTime - startTime) 
+      }));
+    }, 0);
 
     return unsubscribe;
   }, [queryClient]);
