@@ -23,6 +23,8 @@ export const useRegistrationRequests = () => {
   const { toast } = useToast();
 
   const fetchRequests = async () => {
+    if (isLoading) return; // Prevent concurrent calls
+    
     try {
       setIsLoading(true);
       const { data, error } = await supabase

@@ -73,15 +73,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user?.id]);
 
-  // Check registration status for non-admin users
+  // Check registration status for non-admin users with debouncing
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState(false);
+  
   const checkRegistrationStatus = useCallback(async (): Promise<void> => {
-    if (!user?.id) {
-      setRegistrationRequest(null);
-      setIsApproved(false);
+    if (!user?.id || isCheckingRegistration) {
+      if (!user?.id) {
+        setRegistrationRequest(null);
+        setIsApproved(false);
+      }
       return;
     }
 
     try {
+      setIsCheckingRegistration(true);
       const { data, error } = await supabase
         .from('user_registration_requests')
         .select('id, status, requested_at, rejection_reason')
@@ -89,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (error) {
-        // Si no hay solicitud de registro, crear una nueva
+        // Si no hay solicitud de registro, crear una nueva (solo una vez)
         if (error.code === 'PGRST116') {
           const { error: insertError } = await supabase
             .from('user_registration_requests')
@@ -98,10 +103,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               email: user.email || '',
               full_name: user.user_metadata?.full_name || user.email || '',
               user_agent: navigator.userAgent,
-              ip_address: null // Se puede obtener del servidor si es necesario
+              ip_address: null
             });
 
-          if (insertError) {
+          if (insertError && insertError.code !== '23505') { // Ignorar duplicate key error
             console.error('Error creating registration request:', insertError);
           }
 
@@ -119,8 +124,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsApproved(data.status === 'approved');
     } catch (error) {
       console.error('Error checking registration status:', error);
+    } finally {
+      setIsCheckingRegistration(false);
     }
-  }, [user?.id, user?.email, user?.user_metadata]);
+  }, [user?.id, user?.email, user?.user_metadata, isCheckingRegistration]);
 
   useEffect(() => {
     // Set up auth state listener
@@ -134,11 +141,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Check admin status directly with user ID
           const adminStatus = await checkAdminStatus(session.user.id);
           
-          // Solo verificar estado de registro si no es admin
+          // Solo verificar estado de registro si no es admin (con debounce)
           if (!adminStatus) {
             setTimeout(() => {
               checkRegistrationStatus();
-            }, 0);
+            }, 1000); // 1 second debounce
           } else {
             setIsApproved(true);
           }
@@ -160,11 +167,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         const adminStatus = await checkAdminStatus(session.user.id);
         
-        // Solo verificar estado de registro si no es admin
+        // Solo verificar estado de registro si no es admin (con debounce)
         if (!adminStatus) {
           setTimeout(() => {
             checkRegistrationStatus();
-          }, 0);
+          }, 1000); // 1 second debounce
         } else {
           setIsApproved(true);
         }
@@ -174,7 +181,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [checkAdminStatus, checkRegistrationStatus]);
+  }, []); // Remove dependencies to prevent infinite loops
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
