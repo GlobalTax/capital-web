@@ -60,6 +60,62 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // CRITICAL: Create the actual user in Supabase Auth
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password: temporaryPassword,
+      user_metadata: {
+        full_name: fullName,
+        role
+      },
+      email_confirm: true // Auto-confirm email so they can login immediately
+    });
+
+    if (authError) {
+      console.error("Failed to create user in auth:", authError);
+      
+      await supabase.from('security_events').insert({
+        event_type: 'AUTH_USER_CREATION_FAILED',
+        severity: 'high',
+        details: { 
+          email, 
+          error: authError.message,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      return new Response(
+        JSON.stringify({ error: `Failed to create user: ${authError.message}` }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("User created successfully in auth:", authUser.user?.id);
+
+    // Update the admin_users record with the correct user_id
+    if (authUser.user?.id) {
+      const { error: updateError } = await supabase
+        .from('admin_users')
+        .update({ user_id: authUser.user.id })
+        .eq('email', email);
+        
+      if (updateError) {
+        console.error("Failed to update admin_users with auth user_id:", updateError);
+        await supabase.from('security_events').insert({
+          event_type: 'ADMIN_USER_UPDATE_FAILED',
+          severity: 'medium',
+          details: { 
+            email, 
+            auth_user_id: authUser.user.id,
+            error: updateError.message,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } else {
+        console.log("Successfully linked auth user to admin record");
+      }
+    }
+
     // Log security event
     await supabase.from('security_events').insert({
       event_type: 'USER_CREDENTIALS_SENT',
