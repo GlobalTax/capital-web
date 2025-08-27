@@ -86,12 +86,6 @@ const BasicInfoFormMaster: React.FC<BasicInfoFormMasterProps> = ({
       label: t(`industries.${industry}`)
     })), [t]);
 
-  const employeeOptions = useMemo(() => 
-    employeeRanges.map(range => ({
-      value: range.value,
-      label: t(`employees.${employeeRangeKey(range.value)}`)
-    })), [t]);
-
   const employeeRangeKey = useCallback((value: string) => {
     const keyMap: { [key: string]: string } = {
       '1-10': '1_10',
@@ -102,6 +96,12 @@ const BasicInfoFormMaster: React.FC<BasicInfoFormMasterProps> = ({
     };
     return keyMap[value] || value;
   }, []);
+
+  const employeeOptions = useMemo(() => 
+    employeeRanges.map(range => ({
+      value: range.value,
+      label: t(`employees.${employeeRangeKey(range.value)}`)
+    })), [t, employeeRangeKey]);
 
   const handlePhoneChange = useCallback((value: string | number) => {
     const phoneValue = String(value);
