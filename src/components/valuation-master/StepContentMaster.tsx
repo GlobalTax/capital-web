@@ -1,7 +1,5 @@
 import React from 'react';
 import Step1BasicInfoMaster from './Step1BasicInfoMaster';
-import Step2FinancialDataMaster from './Step2FinancialDataMaster';
-import Step3CharacteristicsMaster from './Step3CharacteristicsMaster';
 import Step4ResultsMaster from './Step4ResultsMaster';
 
 interface StepContentMasterProps {
@@ -47,22 +45,6 @@ const StepContentMaster: React.FC<StepContentMasterProps> = ({
         />
       );
     case 2:
-      return (
-        <Step2FinancialDataMaster 
-          companyData={companyData} 
-          updateField={updateField}
-          showValidation={showValidation}
-        />
-      );
-    case 3:
-      return (
-        <Step3CharacteristicsMaster 
-          companyData={companyData} 
-          updateField={updateField}
-          showValidation={showValidation}
-        />
-      );
-    case 4:
       return (
         <Step4ResultsMaster 
           result={result}

@@ -12,6 +12,7 @@ const initialCompanyDataMaster: CompanyDataMaster = {
   cif: '',
   email: '',
   phone: '',
+  phone_e164: '',
   whatsapp_opt_in: true,
   industry: '',
   activityDescription: '',
@@ -104,7 +105,7 @@ export const useValuationCalculatorMaster = () => {
     
     setShowValidation(false);
     setCurrentStep(prev => {
-      const newStep = Math.min(prev + 1, 4);
+      const newStep = Math.min(prev + 1, 2);
       console.log('Moving from step', prev, 'to step', newStep);
       return newStep;
     });
@@ -133,8 +134,8 @@ export const useValuationCalculatorMaster = () => {
     try {
       const valuationResult = await calculateCompanyValuationMaster(companyData, sectorMultiples);
       setResult(valuationResult);
-      setCurrentStep(4); // Ir al paso de resultados
-      console.log('Valuation calculated, moved to step 4');
+      setCurrentStep(2); // Ir al paso de resultados
+      console.log('Valuation calculated, moved to step 2');
     } catch (error) {
       console.error('Error calculating valuation:', error);
     } finally {

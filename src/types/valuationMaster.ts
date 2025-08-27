@@ -5,6 +5,7 @@ export interface CompanyDataMaster {
   cif: string;
   email: string;
   phone: string;
+  phone_e164: string;
   whatsapp_opt_in: boolean;
   industry: string;
   activityDescription: string;
@@ -52,6 +53,7 @@ export interface ValidationStateMaster {
   companyName: ValidationResultMaster;
   email: ValidationResultMaster;
   phone: ValidationResultMaster;
+  phone_e164: ValidationResultMaster;
   whatsapp_opt_in: ValidationResultMaster;
   cif: ValidationResultMaster;
   industry: ValidationResultMaster;

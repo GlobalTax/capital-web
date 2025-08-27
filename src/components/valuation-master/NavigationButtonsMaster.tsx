@@ -31,10 +31,10 @@ const NavigationButtonsMaster: React.FC<NavigationButtonsMasterProps> = ({
       </Button>
       
       <div className="text-sm text-gray-500">
-        {t('nav.step_of', { current: currentStep, total: 3 })}
+        {t('nav.step_of', { current: currentStep, total: 1 })}
       </div>
       
-      {currentStep === 3 && (
+      {currentStep === 1 && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-700 text-center sm:max-w-xs">
           Al calcular acepto que Capittal procese mis datos para la valoración y envío por WhatsApp si proporcioné mi teléfono.
         </div>
@@ -42,11 +42,11 @@ const NavigationButtonsMaster: React.FC<NavigationButtonsMasterProps> = ({
       
       <Button
         onClick={onNext}
-        aria-label={currentStep === 3 ? t('aria.calculate') : t('aria.next')}
+        aria-label={currentStep === 1 ? t('aria.calculate') : t('aria.next')}
         disabled={isNextDisabled}
         className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >
-        {currentStep === 3 ? (
+        {currentStep === 1 ? (
           <>
             <Calculator className="h-4 w-4 mr-2" />
             {t('nav.calculate')}
