@@ -166,9 +166,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
         return;
       }
       
-      // Use secure tracking edge function with shorter timeout for admin stability
+      // Use secure tracking edge function with optimized timeout
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Tracking timeout')), 3000); // Reduced timeout
+        setTimeout(() => reject(new Error('Tracking timeout')), 8000); // Increased timeout for stability
       });
 
       const requestPromise = supabase.functions.invoke('secure-tracking', {
@@ -179,8 +179,29 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       
       if (result && typeof result === 'object' && 'error' in result && result.error) {
         recordFailure();
-        console.error('❌ Lead tracking failed:', result.error);
-        throw result.error;
+        console.warn('⚠️ Lead tracking failed, retrying...', result.error);
+        
+        // Retry logic - intentar una vez más con timeout más largo
+        try {
+          const retryPromise = supabase.functions.invoke('secure-tracking', {
+            body: { event: trackingEvent }
+          });
+          const retryTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Retry tracking timeout')), 12000);
+          });
+          
+          const retryResult = await Promise.race([retryPromise, retryTimeoutPromise]);
+          if (retryResult && typeof retryResult === 'object' && 'error' in retryResult && retryResult.error) {
+            throw retryResult.error;
+          }
+          
+          recordSuccess();
+          console.debug('✅ Event tracked successfully after retry:', eventType);
+          return;
+        } catch (retryError) {
+          console.error('❌ Lead tracking failed after retry:', retryError);
+          throw result.error;
+        }
       }
       
       recordSuccess();

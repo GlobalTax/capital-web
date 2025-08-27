@@ -4,10 +4,24 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-console.log('Capittal App initializing...');
+// Declarar tipos globales para TypeScript
+declare global {
+  interface Window {
+    __CAPITTAL_INITIALIZED__?: boolean;
+    __CAPITTAL_INITIALIZING__?: boolean;
+  }
+}
 
-// Inicialización optimizada y lazy
+// Inicialización optimizada y lazy con singleton pattern
 const initializeApp = async () => {
+  // Doble verificación del flag
+  if (window.__CAPITTAL_INITIALIZED__) {
+    console.log('Capittal App already initialized during async load, skipping...');
+    return;
+  }
+  
+  // Marcar como inicializando inmediatamente
+  window.__CAPITTAL_INITIALIZING__ = true;
   try {
     // Inicializar orquestador de startup primero
     const { startupOrchestrator } = await import('./core/startup/StartupOrchestrator');
@@ -32,9 +46,16 @@ const initializeApp = async () => {
     const root = createRoot(rootElement);
     root.render(<App />);
 
+    // Marcar como completamente inicializado
+    window.__CAPITTAL_INITIALIZED__ = true;
+    window.__CAPITTAL_INITIALIZING__ = false;
     console.log('Capittal App initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Capittal App:', error);
+    
+    // Reset flags en caso de error
+    window.__CAPITTAL_INITIALIZED__ = false;
+    window.__CAPITTAL_INITIALIZING__ = false;
     
     // Fallback simple en caso de error crítico
     const rootElement = document.getElementById("root");
@@ -54,5 +75,17 @@ const initializeApp = async () => {
   }
 };
 
-// Inicializar la aplicación
-initializeApp();
+// Global flag para prevenir múltiples inicializaciones
+(() => {
+  if (window.__CAPITTAL_INITIALIZED__) {
+    console.log('Capittal App already initialized, skipping...');
+    return;
+  }
+  
+  console.log('Capittal App initializing...');
+  
+  // Inicializar la aplicación solo si no está ya inicializada o inicializándose
+  if (!window.__CAPITTAL_INITIALIZED__ && !window.__CAPITTAL_INITIALIZING__) {
+    initializeApp();
+  }
+})();

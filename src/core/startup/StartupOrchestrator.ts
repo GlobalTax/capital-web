@@ -54,8 +54,14 @@ class StartupOrchestrator {
   }
 
   async initialize(): Promise<void> {
-    if (this.initialized) return;
-    if (this.initPromise) return this.initPromise;
+    if (this.initialized) {
+      console.log('StartupOrchestrator already initialized, skipping...');
+      return;
+    }
+    if (this.initPromise) {
+      console.log('StartupOrchestrator initialization in progress, waiting...');
+      return this.initPromise;
+    }
 
     this.initPromise = this.performInitialization();
     return this.initPromise;
