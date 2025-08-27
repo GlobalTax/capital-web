@@ -74,7 +74,7 @@ const ValuationCalculatorV4 = ({ companyData, fiscalMode = false }: ValuationCal
           <div className="flex items-center justify-center gap-2 mb-4">
             <Zap className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">
-              {fiscalMode ? '💰 Calculadora Fiscal' : '⚡ Simulador Ultra-Rápido'}
+              {fiscalMode ? 'Calculadora Fiscal' : 'Simulador Ultra-Rápido'}
             </h1>
           </div>
           <h2 className="text-xl text-muted-foreground">
@@ -86,9 +86,6 @@ const ValuationCalculatorV4 = ({ companyData, fiscalMode = false }: ValuationCal
               : 'Cálculos en tiempo real • Todos los escenarios visibles'
             }
           </p>
-          <div className="mt-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
-            📍 Estás en: {fiscalMode ? '/lp/calculadora-fiscal (Modo Fiscal)' : '/lp/calculadora (Versión V4 Rápida)'}
-          </div>
         </div>
 
         {/* Información de la empresa compacta */}

@@ -43,15 +43,12 @@ const ValuationCalculatorMaster: React.FC = () => {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Calculator className="h-8 w-8 text-primary" />
               <CardTitle className="text-3xl font-bold text-foreground">
-                🎯 Calculadora MASTER de Valoración
+                Calculadora Master de Valoración
               </CardTitle>
             </div>
             <p className="text-muted-foreground">
-              Valoración completa por pasos • Versión Master Profesional
+              Valoración completa y detallada de empresas
             </p>
-            <div className="mt-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-              📍 Estás en: /calculadora-master (Versión por pasos 1-2-3)
-            </div>
           </CardHeader>
 
           <CardContent className="space-y-8">
