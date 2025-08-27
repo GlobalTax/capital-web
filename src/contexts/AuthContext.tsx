@@ -6,25 +6,15 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
 
-interface RegistrationRequest {
-  id: string;
-  status: 'pending' | 'approved' | 'rejected';
-  requested_at: string;
-  rejection_reason?: string;
-}
-
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
   isAdmin: boolean;
-  registrationRequest: RegistrationRequest | null;
-  isApproved: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   checkAdminStatus: (userId?: string) => Promise<boolean>;
-  checkRegistrationStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,8 +24,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [registrationRequest, setRegistrationRequest] = useState<RegistrationRequest | null>(null);
-  const [isApproved, setIsApproved] = useState(false);
   const { toast } = useToast();
 
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
@@ -73,54 +61,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user?.id]);
 
-  // Check registration status for non-admin users
-  const checkRegistrationStatus = useCallback(async (): Promise<void> => {
-    if (!user?.id) {
-      setRegistrationRequest(null);
-      setIsApproved(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('user_registration_requests')
-        .select('id, status, requested_at, rejection_reason')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) {
-        // Si no hay solicitud de registro, crear una nueva
-        if (error.code === 'PGRST116') {
-          const { error: insertError } = await supabase
-            .from('user_registration_requests')
-            .insert({
-              user_id: user.id,
-              email: user.email || '',
-              full_name: user.user_metadata?.full_name || user.email || '',
-              user_agent: navigator.userAgent,
-              ip_address: null // Se puede obtener del servidor si es necesario
-            });
-
-          if (insertError) {
-            console.error('Error creating registration request:', insertError);
-          }
-
-          setRegistrationRequest({
-            id: '',
-            status: 'pending',
-            requested_at: new Date().toISOString()
-          });
-          setIsApproved(false);
-        }
-        return;
-      }
-
-      setRegistrationRequest(data as RegistrationRequest);
-      setIsApproved(data.status === 'approved');
-    } catch (error) {
-      console.error('Error checking registration status:', error);
-    }
-  }, [user?.id, user?.email, user?.user_metadata]);
 
   useEffect(() => {
     let mounted = true;
@@ -164,17 +104,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
           }
           
-          if (!adminStatus) {
-            setTimeout(() => {
-              if (mounted) checkRegistrationStatus();
-            }, 0);
-          } else {
-            setIsApproved(true);
-          }
+          // Admin users have full access
+          // Non-admin users will be handled by route protection
         } else {
           setIsAdmin(false);
-          setIsApproved(false);
-          setRegistrationRequest(null);
         }
       } catch (error) {
         logger.error('Error in auth state change handler', error as Error, { context: 'auth', component: 'AuthContext' });
@@ -218,7 +151,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [checkAdminStatus, checkRegistrationStatus]);
+  }, [checkAdminStatus]);
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
@@ -288,8 +221,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setSession(null);
     setIsAdmin(false);
-    setRegistrationRequest(null);
-    setIsApproved(false);
     setIsLoading(false);
     
     toast({
@@ -303,13 +234,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     isLoading,
     isAdmin,
-    registrationRequest,
-    isApproved,
     signIn,
     signUp,
     signOut,
     checkAdminStatus,
-    checkRegistrationStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

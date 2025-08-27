@@ -48,35 +48,7 @@ export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
     );
   }
 
-  const { user, session, isLoading, isAdmin, checkAdminStatus } = authContext;
-
-  // Función de recuperación de sesión
-  const handleSessionRecovery = React.useCallback(async () => {
-    try {
-      // Intentar refrescar la sesión
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase.auth.refreshSession();
-      
-      if (error) {
-        setAuthError(`Error de sesión: ${error.message}`);
-        return false;
-      }
-      
-      if (data.session?.user) {
-        // Verificar estado de admin después del refresh
-        const adminStatus = await checkAdminStatus(data.session.user.id);
-        if (adminStatus) {
-          setAuthError(null);
-          return true;
-        }
-      }
-      
-      return false;
-    } catch (error) {
-      setAuthError(`Error de recuperación: ${error.message}`);
-      return false;
-    }
-  }, [checkAdminStatus]);
+  const { user, session, isLoading, isAdmin } = authContext;
 
   // Loading state mejorado
   if (isLoading) {
@@ -85,38 +57,7 @@ export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Verificando autenticación...</p>
-          {retryCount > 0 && (
-            <p className="text-sm text-gray-500">Reintento {retryCount}/3</p>
-          )}
         </div>
-      </div>
-    );
-  }
-
-  // Si hay error de autenticación, mostrar opciones de recuperación
-  if (authError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {authError}
-            <div className="mt-2 space-x-2">
-              <button 
-                onClick={handleSessionRecovery}
-                className="text-xs underline"
-              >
-                Intentar recuperar sesión
-              </button>
-              <button 
-                onClick={() => window.location.href = '/'}
-                className="text-xs underline"
-              >
-                Ir al inicio
-              </button>
-            </div>
-          </AlertDescription>
-        </Alert>
       </div>
     );
   }
@@ -126,25 +67,15 @@ export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Si no es admin pero hay sesión, mostrar información de debug
-  if (!isAdmin && user) {
+  // Si no es admin, mostrar acceso denegado
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Alert className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Usuario autenticado pero sin permisos de admin.
-            <div className="mt-2 text-xs text-gray-600">
-              Usuario: {user.email}<br/>
-              ID: {user.id}
-            </div>
-            <div className="mt-2 space-x-2">
-              <button 
-                onClick={() => checkAdminStatus(user.id)}
-                className="text-xs underline"
-              >
-                Verificar permisos
-              </button>
+            Acceso restringido. Solo administradores pueden acceder a esta área.
+            <div className="mt-2">
               <button 
                 onClick={() => window.location.href = '/'}
                 className="text-xs underline"
