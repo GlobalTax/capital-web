@@ -16,6 +16,7 @@ import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 // Lazy loading components - Core pages
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
+const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
@@ -230,6 +231,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/*" element={<Admin />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />

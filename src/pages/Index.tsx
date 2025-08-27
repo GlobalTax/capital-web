@@ -18,6 +18,8 @@ import OurGroup from '@/components/OurGroup';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 
+import AdminAccessButton from '@/components/AdminAccessButton';
+
 const Index = () => {
   return (
     <div className="min-h-screen bg-white">
@@ -42,6 +44,7 @@ const Index = () => {
       {/* Herramientas de accesibilidad flotantes */}
       <AccessibilityTools />
       <NotificationCenter className="mr-16" />
+      <AdminAccessButton />
       
       {/* Live region para anuncios de accesibilidad */}
       <div 

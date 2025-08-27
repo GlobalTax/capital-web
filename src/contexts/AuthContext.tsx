@@ -123,24 +123,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user?.id, user?.email, user?.user_metadata]);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Reduced logging verbosity for admin stability
-        if (event !== 'TOKEN_REFRESHED') {
-          logger.debug('Auth state changed', { event, hasUser: !!session?.user }, { context: 'auth', component: 'AuthContext' });
-        }
+    let mounted = true;
+    
+    // Function to handle auth state changes
+    const handleAuthStateChange = async (event: string, session: any) => {
+      if (!mounted) return;
+      
+      // Enhanced logging for debugging JWT issues
+      logger.debug('Auth state changed', { 
+        event, 
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        hasSession: !!session 
+      }, { context: 'auth', component: 'AuthContext' });
+      
+      try {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin status directly with user ID
-          const adminStatus = await checkAdminStatus(session.user.id);
+          // Add retry mechanism for admin status check
+          let adminStatus = false;
+          let attempts = 0;
+          const maxAttempts = 3;
           
-          // Solo verificar estado de registro si no es admin
+          while (!adminStatus && attempts < maxAttempts) {
+            try {
+              adminStatus = await checkAdminStatus(session.user.id);
+              if (adminStatus) break;
+              attempts++;
+              if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+              }
+            } catch (error) {
+              logger.warn(`Admin status check attempt ${attempts + 1} failed`, { error: error.message }, { context: 'auth', component: 'AuthContext' });
+              attempts++;
+              if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+              }
+            }
+          }
+          
           if (!adminStatus) {
             setTimeout(() => {
-              checkRegistrationStatus();
+              if (mounted) checkRegistrationStatus();
             }, 0);
           } else {
             setIsApproved(true);
@@ -150,33 +176,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setIsApproved(false);
           setRegistrationRequest(null);
         }
-        
-        setIsLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const adminStatus = await checkAdminStatus(session.user.id);
-        
-        // Solo verificar estado de registro si no es admin
-        if (!adminStatus) {
-          setTimeout(() => {
-            checkRegistrationStatus();
-          }, 0);
-        } else {
-          setIsApproved(true);
+      } catch (error) {
+        logger.error('Error in auth state change handler', error as Error, { context: 'auth', component: 'AuthContext' });
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
         }
       }
-      
-      setIsLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+
+    // Initial session check with retry mechanism
+    const initializeSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          logger.error('Error getting initial session', error, { context: 'auth', component: 'AuthContext' });
+          // Try to refresh session on error
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (!refreshError && refreshData.session) {
+            await handleAuthStateChange('INITIAL_SESSION_REFRESH', refreshData.session);
+            return;
+          }
+        }
+        
+        await handleAuthStateChange('INITIAL_SESSION', session);
+      } catch (error) {
+        logger.error('Failed to initialize session', error as Error, { context: 'auth', component: 'AuthContext' });
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [checkAdminStatus, checkRegistrationStatus]);
 
   const signIn = async (email: string, password: string) => {
