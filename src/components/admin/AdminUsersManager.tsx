@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, UserPlus, CheckCircle, XCircle, Mail, Send } from 'lucide-react';
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { createBulkUsers, CAPITTAL_USERS, BulkCreationResult } from '@/utils/bulkUserCreation';
 import { resendCredentials, resendSingleUserCredentials, ResendResult, getCapittalTeamUsers, ResendCredentialsData } from '@/utils/resendCredentials';
 import { useToast } from '@/hooks/use-toast';
@@ -57,6 +57,7 @@ const AdminUsersManager = () => {
     register: registerCreate,
     handleSubmit: handleCreateSubmit,
     reset: resetCreate,
+    control: controlCreate,
     formState: { errors: createErrors }
   } = useForm<CreateAdminUserData>();
 
@@ -66,6 +67,7 @@ const AdminUsersManager = () => {
     reset: resetEdit,
     setValue: setEditValue,
     watch: watchEdit,
+    control: controlEdit,
     formState: { errors: editErrors }
   } = useForm<Partial<AdminUser>>();
 
@@ -411,21 +413,28 @@ const AdminUsersManager = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="create-role">Rol</Label>
-                  <Select onValueChange={(value) => registerCreate('role').onChange({ target: { value } })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un rol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
-                        <SelectItem key={key} value={key}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            {label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="role"
+                    control={controlCreate}
+                    rules={{ required: 'El rol es obligatorio' }}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un rol" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
+                            <SelectItem key={key} value={key}>
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                {label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {createErrors.role && (
                     <p className="text-sm text-red-600">{createErrors.role.message}</p>
                   )}
@@ -614,24 +623,27 @@ const AdminUsersManager = () => {
 
             <div className="space-y-2">
               <Label htmlFor="edit-role">Rol</Label>
-              <Select 
-                value={watchEdit('role')} 
-                onValueChange={(value) => setEditValue('role', value as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un rol" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
-                    <SelectItem key={key} value={key}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" />
-                        {label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="role"
+                control={controlEdit}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un rol" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
