@@ -54,20 +54,50 @@
         try {
           if (/sandbox\.lovable\.dev$/.test(location.hostname)) {
             var OriginalWebSocket = window.WebSocket;
+            var connectionAttempts = {};
+            var maxAttempts = 3;
+            
+            // Enhanced HMR detection
+            var isHMRRelated = function(url) {
+              if (typeof url !== 'string') return false;
+              return url.includes('@vite') || 
+                     url.includes('@react-refresh') ||
+                     url.includes('/_vite/') ||
+                     url.includes('/__vite/') ||
+                     (url.includes(location.hostname) && !url.includes('/api/') && !url.includes('/ws/'));
+            };
+            
             window.WebSocket = function(url, protocols) {
-              // Check if URL contains Vite HMR routes
-              if (typeof url === 'string' && (url.includes('@vite') || url.includes('@react-refresh'))) {
-                // Return a mock WebSocket that does nothing
-                return {
-                  readyState: 3, // CLOSED
-                  close: function() {},
-                  send: function() {},
-                  addEventListener: function() {},
-                  removeEventListener: function() {}
-                };
+              // Check if URL is HMR-related
+              if (isHMRRelated(url)) {
+                // Track connection attempts to prevent spam
+                var key = typeof url === 'string' ? url : 'unknown';
+                connectionAttempts[key] = (connectionAttempts[key] || 0) + 1;
+                
+                if (connectionAttempts[key] > maxAttempts) {
+                  // Return a mock WebSocket that does nothing after max attempts
+                  return {
+                    readyState: 3, // CLOSED
+                    close: function() {},
+                    send: function() {},
+                    addEventListener: function() {},
+                    removeEventListener: function() {}
+                  };
+                }
               }
-              // For other URLs, use original WebSocket
+              
+              // For other URLs or initial attempts, use original WebSocket
               return new OriginalWebSocket(url, protocols);
+            };
+            
+            // Suppress console errors for known HMR failures
+            var originalConsoleError = console.error;
+            console.error = function() {
+              var message = Array.prototype.join.call(arguments, ' ');
+              if (message.includes('WebSocket') && message.includes('502')) {
+                return; // Suppress WebSocket 502 errors
+              }
+              originalConsoleError.apply(console, arguments);
             };
           }
         } catch (e) { /* noop */ }
