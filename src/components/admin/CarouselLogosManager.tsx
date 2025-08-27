@@ -204,7 +204,7 @@ const CarouselLogosManager = () => {
   if (authLoading || isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-black"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border border-gray-300"></div>
       </div>
     );
   }
@@ -226,7 +226,7 @@ const CarouselLogosManager = () => {
         <h2 className="text-2xl font-bold text-black">Logos del Carrusel</h2>
         <Button 
           onClick={() => setShowAddForm(true)}
-          className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+          className="bg-black text-white border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
         >
           <Plus className="w-4 h-4 mr-2" />
           Añadir Logo
@@ -234,7 +234,7 @@ const CarouselLogosManager = () => {
       </div>
 
       {showAddForm && (
-        <Card className="bg-white border-0.5 border-black rounded-lg shadow-sm">
+        <Card className="bg-white border border-gray-300 rounded-lg shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-black">Nuevo Logo</CardTitle>
           </CardHeader>
@@ -246,7 +246,7 @@ const CarouselLogosManager = () => {
               <Input
                 value={newLogo.company_name || ''}
                 onChange={(e) => setNewLogo({ ...newLogo, company_name: e.target.value })}
-                className="border-0.5 border-black rounded-lg"
+                className="border border-gray-300 rounded-lg"
                 placeholder="Nombre de la empresa"
               />
             </div>
@@ -268,7 +268,7 @@ const CarouselLogosManager = () => {
                 min="0"
                 value={newLogo.display_order || 0}
                 onChange={(e) => setNewLogo({ ...newLogo, display_order: parseInt(e.target.value) || 0 })}
-                className="border-0.5 border-black rounded-lg"
+                className="border border-gray-300 rounded-lg"
               />
             </div>
 
@@ -278,7 +278,7 @@ const CarouselLogosManager = () => {
                 id="newActive"
                 checked={newLogo.is_active}
                 onChange={(e) => setNewLogo({ ...newLogo, is_active: e.target.checked })}
-                className="rounded border-0.5 border-black"
+                className="rounded border border-gray-300"
               />
               <label htmlFor="newActive" className="text-sm text-black">
                 Activo
@@ -288,7 +288,7 @@ const CarouselLogosManager = () => {
             <div className="flex gap-2">
               <Button 
                 onClick={handleCreate}
-                className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                className="bg-black text-white border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Guardar
@@ -296,7 +296,7 @@ const CarouselLogosManager = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setShowAddForm(false)}
-                className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                className="border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancelar
@@ -308,7 +308,7 @@ const CarouselLogosManager = () => {
 
       <div className="grid gap-4">
         {logos.map((logo) => (
-          <Card key={logo.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <Card key={logo.id} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
             <CardContent className="p-6">
               {editingId === logo.id ? (
                 <div className="space-y-4">
@@ -319,7 +319,7 @@ const CarouselLogosManager = () => {
                     <Input
                       value={editForm.company_name || ''}
                       onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
-                      className="border-0.5 border-black rounded-lg"
+                      className="border border-gray-300 rounded-lg"
                     />
                   </div>
 
@@ -340,7 +340,7 @@ const CarouselLogosManager = () => {
                       min="0"
                       value={editForm.display_order || 0}
                       onChange={(e) => setEditForm({ ...editForm, display_order: parseInt(e.target.value) || 0 })}
-                      className="border-0.5 border-black rounded-lg"
+                      className="border border-gray-300 rounded-lg"
                     />
                   </div>
 
@@ -350,7 +350,7 @@ const CarouselLogosManager = () => {
                       id={`active-${logo.id}`}
                       checked={editForm.is_active}
                       onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
-                      className="rounded border-0.5 border-black"
+                      className="rounded border border-gray-300"
                     />
                     <label htmlFor={`active-${logo.id}`} className="text-sm text-black">
                       Activo
@@ -360,7 +360,7 @@ const CarouselLogosManager = () => {
                   <div className="flex gap-2">
                     <Button 
                       onClick={() => handleUpdate(logo.id)}
-                      className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      className="bg-black text-white border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Guardar
@@ -368,7 +368,7 @@ const CarouselLogosManager = () => {
                     <Button 
                       variant="outline" 
                       onClick={cancelEdit}
-                      className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      className="border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <X className="w-4 h-4 mr-2" />
                       Cancelar
@@ -397,7 +397,7 @@ const CarouselLogosManager = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleMoveUp(logo)}
-                      className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      className="border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <MoveUp className="w-4 h-4" />
                     </Button>
@@ -405,7 +405,7 @@ const CarouselLogosManager = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleMoveDown(logo)}
-                      className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      className="border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <MoveDown className="w-4 h-4" />
                     </Button>
@@ -413,7 +413,7 @@ const CarouselLogosManager = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => startEdit(logo)}
-                      className="border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      className="border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -421,7 +421,7 @@ const CarouselLogosManager = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(logo.id)}
-                      className="text-red-600 border-red-500 hover:bg-red-50 border-0.5 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      className="text-red-600 border-red-500 hover:bg-red-50 border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -434,7 +434,7 @@ const CarouselLogosManager = () => {
       </div>
 
       {logos.length === 0 && (
-        <Card className="bg-white border-0.5 border-black rounded-lg shadow-sm">
+        <Card className="bg-white border border-gray-300 rounded-lg shadow-sm">
           <CardContent className="p-8 text-center">
             <p className="text-gray-600">No hay logos configurados aún.</p>
           </CardContent>

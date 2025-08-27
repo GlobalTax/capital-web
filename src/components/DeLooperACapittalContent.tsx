@@ -109,13 +109,13 @@ const DeLooperACapittalContent = () => {
           <Badge variant="secondary" className="mb-4">
             Nuestra Evolución
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            De <span className="text-muted-foreground">Looper</span> a{' '}
+          <h1 className="text-4xl md:text-6xl font-bold text-black mb-6">
+            De <span className="text-gray-600">Looper</span> a{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Capittal
             </span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
             Descubre la historia detrás de nuestra transformación y por qué decidimos evolucionar 
             para seguir siendo líderes en valoración empresarial.
           </p>
@@ -160,10 +160,10 @@ const DeLooperACapittalContent = () => {
       {/* Timeline Section */}
       <section className="mb-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl font-bold text-black mb-4">
             Nuestra Línea de Tiempo
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Un viaje de crecimiento continuo y evolución constante
           </p>
         </div>
@@ -191,7 +191,7 @@ const DeLooperACapittalContent = () => {
                         <CardTitle className="text-xl">{event.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-muted-foreground">{event.description}</p>
+                        <p className="text-gray-600">{event.description}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -205,10 +205,10 @@ const DeLooperACapittalContent = () => {
       {/* Beneficios Section */}
       <section className="mb-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl font-bold text-black mb-4">
             ¿Qué Mejora con Capittal?
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Los mismos valores y compromiso, pero con mejoras significativas
           </p>
         </div>
@@ -223,7 +223,7 @@ const DeLooperACapittalContent = () => {
                 <CardTitle className="text-lg">{beneficio.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-sm">{beneficio.description}</p>
+                <p className="text-gray-600 text-sm">{beneficio.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -233,10 +233,10 @@ const DeLooperACapittalContent = () => {
       {/* FAQ Section */}
       <section className="mb-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl font-bold text-black mb-4">
             Preguntas Frecuentes
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Resolvemos todas tus dudas sobre la transición
           </p>
         </div>
@@ -248,7 +248,7 @@ const DeLooperACapittalContent = () => {
                 <AccordionTrigger className="text-left hover:no-underline py-6">
                   <span className="font-medium">{faq.question}</span>
                 </AccordionTrigger>
-                <AccordionContent className="pb-6 text-muted-foreground">
+                <AccordionContent className="pb-6 text-gray-600">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -261,10 +261,10 @@ const DeLooperACapittalContent = () => {
       <section className="text-center">
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="p-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl font-bold text-black mb-4">
               ¿Tienes Más Preguntas?
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
               Nuestro equipo está aquí para resolver cualquier duda sobre la transición 
               y explicarte cómo seguimos mejorando nuestros servicios.
             </p>

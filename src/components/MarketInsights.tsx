@@ -96,7 +96,7 @@ const MarketInsights = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {isLoading ?
         // Loading skeleton
-        [...Array(3)].map((_, index) => <Card key={index} className="bg-white border-0.5 border-black rounded-lg shadow-sm text-center">
+        [...Array(3)].map((_, index) => <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm text-center">
                 <CardContent className="p-6">
                   <div className="animate-pulse">
                     <div className="h-8 bg-gray-200 rounded w-20 mx-auto mb-2"></div>
@@ -104,7 +104,7 @@ const MarketInsights = () => {
                     <div className="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
                   </div>
                 </CardContent>
-              </Card>) : insights.map((insight, index) => <Card key={insight.id} className="bg-white border-0.2 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+              </Card>) : insights.map((insight, index) => <Card key={insight.id} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
                 <CardContent className="p-6">
                   <div className="text-2xl font-bold text-black mb-1">
                     {insight.metric_value}
@@ -121,7 +121,7 @@ const MarketInsights = () => {
         </div>
 
         {/* Market Intelligence CTA */}
-        <div className="bg-white border-0.5 border-black rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-8 text-center">
           <h3 className="text-2xl font-bold text-black mb-4">
             Inteligencia de Mercado Capittal
           </h3>
@@ -131,7 +131,7 @@ const MarketInsights = () => {
           </p>
           
           <div className="flex justify-center mb-8">
-            <Button className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
+            <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
               Acceder a Capittal Market
             </Button>
           </div>

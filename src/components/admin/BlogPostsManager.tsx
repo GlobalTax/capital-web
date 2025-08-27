@@ -208,7 +208,7 @@ const BlogPostsManager = memo(() => {
           <DialogTrigger asChild>
             <Button 
               onClick={resetForm}
-              className="bg-black text-white border-0.5 border-black rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+              className="bg-black text-white border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Post

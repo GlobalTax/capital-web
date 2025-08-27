@@ -113,7 +113,7 @@ const CompaniesForSale = () => {
         {operations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {operations.map((operation) => (
-              <Card key={operation.id} className="bg-white border-0.5 border-black rounded-lg shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 h-full">
+              <Card key={operation.id} className="bg-white border border-gray-300 rounded-lg shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 h-full">
                 <CardContent className="p-6">
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-3">
@@ -165,7 +165,7 @@ const CompaniesForSale = () => {
 
         <div className="text-center mt-12">
           <Link to="/compra-empresas">
-            <button className="bg-white text-black border-0.5 border-black rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+            <button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
               Ver Todas las Oportunidades
             </button>
           </Link>
