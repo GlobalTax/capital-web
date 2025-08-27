@@ -1,9 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
 import { useAdminDebug } from '@/hooks/useAdminDebug';
 import { AdminSidebar } from './sidebar/AdminSidebar';
+import { EmergencyNavigation } from './EmergencyNavigation';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
 import { ErrorBoundaryProvider } from './ErrorBoundaryProvider';
@@ -17,13 +18,11 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   const { breadcrumbs } = useAdminLayout();
   const { debugInfo } = useAdminDebug();
+  const [showEmergencyNav, setShowEmergencyNav] = useState(false);
 
-  // Reset WebSocket state on mount to clear any problematic connections
+  // Detect WebSocket issues and offer emergency navigation
   useEffect(() => {
-    // Check for persistent WebSocket errors in console
-    const hasWebSocketErrors = performance.getEntriesByType('navigation').length > 0;
-    
-    // Clear any existing WebSocket state that might be causing issues
+    // Clear any existing WebSocket state immediately
     try {
       const keys = Object.keys(localStorage);
       const hasRealtimeKeys = keys.some(key => 
@@ -43,10 +42,40 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
     } catch (error) {
       console.error('Error clearing WebSocket state:', error);
     }
+
+    // Monitor for WebSocket errors and show emergency navigation
+    const errorCount = localStorage.getItem('websocket-error-count');
+    if (errorCount && parseInt(errorCount) > 5) {
+      setShowEmergencyNav(true);
+    }
+
+    // Listen for WebSocket errors in console
+    const originalConsoleError = console.error;
+    console.error = (...args: any[]) => {
+      const errorMessage = args.join(' ');
+      if (errorMessage.includes('WebSocket') || errorMessage.includes('502')) {
+        setShowEmergencyNav(true);
+        const currentCount = parseInt(localStorage.getItem('websocket-error-count') || '0');
+        localStorage.setItem('websocket-error-count', (currentCount + 1).toString());
+      }
+      originalConsoleError.apply(console, args);
+    };
+
+    return () => {
+      console.error = originalConsoleError;
+    };
   }, []);
+
+  const handleForceNavigate = (path: string) => {
+    console.log(`🚀 Force navigating to: ${path}`);
+    window.location.href = path;
+  };
 
   return (
     <ErrorBoundaryProvider>
+      {showEmergencyNav && (
+        <EmergencyNavigation onForceNavigate={handleForceNavigate} />
+      )}
       <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full bg-background">
           <AdminSidebar />

@@ -31,11 +31,7 @@ class SupabaseClientSingleton {
               autoRefreshToken: true,
               detectSessionInUrl: true,
             },
-            realtime: {
-              params: {
-                eventsPerSecond: 10,
-              },
-            },
+            // Completely disable realtime by not configuring it
           }
         );
         
