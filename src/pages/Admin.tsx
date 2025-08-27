@@ -11,12 +11,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, AlertCircle, Lock } from 'lucide-react';
+import IframeSandboxGuard from '@/components/admin/IframeSandboxGuard';
 
 const Admin = () => {
   return (
-    <AdminWrapper>
-      <AdminContent />
-    </AdminWrapper>
+    <IframeSandboxGuard>
+      <AdminWrapper>
+        <AdminContent />
+      </AdminWrapper>
+    </IframeSandboxGuard>
   );
 };
 

@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
+import IframeSandboxGuard from '@/components/admin/IframeSandboxGuard';
 
 const AdminLogin = () => {
   const { user, isLoading, signIn, signUp, isAdmin, checkAdminStatus } = useAuth();
@@ -145,112 +146,114 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-            <Shield className="h-6 w-6" />
-            Panel de Administración
-          </CardTitle>
-          <p className="text-gray-600">
-            {mode === 'login' ? 'Inicia sesión para acceder' : 
-             mode === 'register' ? 'Regístrate como administrador' :
-             'Recuperar acceso de administrador'}
-          </p>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <IframeSandboxGuard>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+              <Shield className="h-6 w-6" />
+              Panel de Administración
+            </CardTitle>
+            <p className="text-gray-600">
+              {mode === 'login' ? 'Inicia sesión para acceder' : 
+               mode === 'register' ? 'Regístrate como administrador' :
+               'Recuperar acceso de administrador'}
+            </p>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-          {/* Opción de recuperación para admins existentes */}
-          {!recoveryAttempted && mode === 'login' && (
-            <Alert>
-              <RefreshCw className="h-4 w-4" />
-              <AlertDescription>
-                ¿Problemas para acceder después de un reinicio?
-                <Button 
-                  variant="link" 
-                  onClick={handleSessionRecovery}
+            {/* Opción de recuperación para admins existentes */}
+            {!recoveryAttempted && mode === 'login' && (
+              <Alert>
+                <RefreshCw className="h-4 w-4" />
+                <AlertDescription>
+                  ¿Problemas para acceder después de un reinicio?
+                  <Button 
+                    variant="link" 
+                    onClick={handleSessionRecovery}
+                    disabled={authLoading}
+                    className="p-0 h-auto text-sm underline ml-1"
+                  >
+                    Intentar recuperar acceso
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {mode !== 'recovery' && (
+              <form onSubmit={handleAuth} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="admin@capittal.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={authLoading}
-                  className="p-0 h-auto text-sm underline ml-1"
                 >
-                  Intentar recuperar acceso
+                  {authLoading ? "Procesando..." : mode === 'login' ? "Iniciar Sesión" : "Registrarse"}
                 </Button>
-              </AlertDescription>
-            </Alert>
-          )}
+              </form>
+            )}
 
-          {mode !== 'recovery' && (
-            <form onSubmit={handleAuth} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@capittal.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={authLoading}
-              >
-                {authLoading ? "Procesando..." : mode === 'login' ? "Iniciar Sesión" : "Registrarse"}
-              </Button>
-            </form>
-          )}
-
-          <div className="text-center space-y-2">
-            <Button
-              variant="link"
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-              className="text-sm"
-            >
-              {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
-            </Button>
-            
-            <div>
+            <div className="text-center space-y-2">
               <Button
                 variant="link"
-                onClick={() => navigate('/')}
-                className="text-sm text-gray-500"
+                onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                className="text-sm"
               >
-                Volver al inicio
+                {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
               </Button>
+              
+              <div>
+                <Button
+                  variant="link"
+                  onClick={() => navigate('/')}
+                  className="text-sm text-gray-500"
+                >
+                  Volver al inicio
+                </Button>
+              </div>
             </div>
-          </div>
 
-          <Alert>
-            <CheckCircle className="h-4 w-4" />
-            <AlertDescription>
-              Una vez autenticado, podrás acceder al panel de administración completo.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    </div>
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                Una vez autenticado, podrás acceder al panel de administración completo.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    </IframeSandboxGuard>
   );
 };
 
