@@ -67,7 +67,14 @@ export const useContactForm = () => {
           referral: 'STRICT'
         });
 
-        // ... keep existing code (validation and data processing)
+        // Validaciones individuales
+        validateContactName(sanitizedData.fullName);
+        validateCompanyName(sanitizedData.company);
+        validateEmail(sanitizedData.email);
+        
+        if (sanitizedData.phone) {
+          validateSpanishPhone(sanitizedData.phone);
+        }
 
         // Get UTM and referrer data
         const urlParams = new URLSearchParams(window.location.search);
@@ -76,9 +83,62 @@ export const useContactForm = () => {
         const utm_campaign = urlParams.get('utm_campaign') || undefined;
         const referrer = document.referrer || undefined;
         
-        // ... keep existing code (insert to contact_leads and form_submissions)
+        // Insert into contact_leads table
+        const { data: leadData, error: leadError } = await supabase
+          .from('contact_leads')
+          .insert([{
+            full_name: sanitizedData.fullName,
+            company: sanitizedData.company,
+            phone: sanitizedData.phone,
+            email: sanitizedData.email,
+            country: sanitizedData.country,
+            company_size: sanitizedData.companySize,
+            referral: sanitizedData.referral,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            referrer,
+            status: 'new'
+          }])
+          .select()
+          .single();
 
-        return data;
+        if (leadError) {
+          logger.error('❌ [ContactForm] Error insertando en contact_leads', leadError, { context: 'database', component: 'useContactForm' });
+          throw leadError;
+        }
+
+        // Insert into unified form_submissions table
+        const { data: submissionData, error: submissionError } = await supabase
+          .from('form_submissions')
+          .insert([{
+            form_type: 'contact_form',
+            form_data: sanitizedData,
+            metadata: {
+              utm_source,
+              utm_medium,
+              utm_campaign,
+              referrer,
+              user_agent: navigator.userAgent,
+              timestamp: new Date().toISOString()
+            },
+            status: 'new',
+            reference_id: leadData.id
+          }])
+          .select()
+          .single();
+
+        if (submissionError) {
+          logger.error('❌ [ContactForm] Error insertando en form_submissions', submissionError, { context: 'database', component: 'useContactForm' });
+          // No lanzar error aquí ya que el lead principal se guardó correctamente
+        }
+
+        logger.info('✅ [ContactForm] Formulario enviado correctamente', { 
+          leadId: leadData.id,
+          submissionId: submissionData?.id
+        }, { context: 'form', component: 'useContactForm' });
+
+        return leadData;
       }, 'contact-form');
 
       if (result === null) {
