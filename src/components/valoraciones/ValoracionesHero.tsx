@@ -30,7 +30,7 @@ const ValoracionesHero = () => {
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
               Descubre el Valor Real de tu Empresa
-              <span className="block text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
+              <span className="block font-bold text-primary">
                 en 5 Minutos
               </span>
             </h1>

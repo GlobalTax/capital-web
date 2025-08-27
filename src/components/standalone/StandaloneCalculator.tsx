@@ -100,7 +100,7 @@ Calculado con la herramienta de valoración standalone.`;
             <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
               <Calculator className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-foreground">
               Simulador de Valoración
             </h1>
           </div>
@@ -125,7 +125,7 @@ Calculado con la herramienta de valoración standalone.`;
               <div className="p-2 rounded-lg bg-primary/10">
                 <Building2 className="h-5 w-5 text-primary" />
               </div>
-              <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              <span className="font-bold text-foreground">
                 Resumen Ejecutivo
               </span>
               <Badge variant="outline" className="ml-auto">
@@ -166,7 +166,7 @@ Calculado con la herramienta de valoración standalone.`;
         {/* Escenarios Grid con animación */}
         <div className="mb-6 animate-fade-in">
           <div className="flex items-center gap-3 mb-6">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-bold text-foreground">
               Escenarios de Venta
             </h3>
             <Badge variant="secondary" className="px-3 py-1">
@@ -215,7 +215,7 @@ Calculado con la herramienta de valoración standalone.`;
                   <div className="p-2 rounded-full bg-primary text-primary-foreground">
                     <TrendingUp className="h-5 w-5" />
                   </div>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
+                  <h3 className="text-2xl font-bold text-foreground">
                     Mejor Resultado: {bestScenario.name}
                   </h3>
                   <Badge variant="success" className="animate-pulse">
