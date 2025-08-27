@@ -65,8 +65,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Evitar cachear APIs externas conocidas
   const url = new URL(request.url);
+  
+  // Filtrar esquemas no soportados (extensiones del navegador, etc.)
+  const unsupportedSchemes = ['chrome-extension:', 'moz-extension:', 'safari-extension:', 'ms-browser-extension:'];
+  if (unsupportedSchemes.some(scheme => request.url.startsWith(scheme))) {
+    console.log('[SW] Skipping unsupported scheme:', request.url);
+    return;
+  }
+  
+  // Solo procesar esquemas HTTP/HTTPS
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
+  
+  // Evitar cachear APIs externas conocidas
   const isExternalAPI = [
     'supabase.co',
     'googleapis.com',
@@ -97,14 +110,18 @@ self.addEventListener('fetch', (event) => {
             // Cachear recursos estáticos
             const shouldCache = isStaticResource(request.url);
             if (shouldCache) {
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME)
-                .then((cache) => {
-                  cache.put(request, responseToCache);
-                })
-                .catch((error) => {
-                  console.warn('[SW] Failed to cache resource:', error);
-                });
+              try {
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME)
+                  .then((cache) => {
+                    return cache.put(request, responseToCache);
+                  })
+                  .catch((error) => {
+                    console.warn('[SW] Failed to cache resource:', request.url, error);
+                  });
+              } catch (error) {
+                console.warn('[SW] Error during caching process:', request.url, error);
+              }
             }
             
             return response;
@@ -129,8 +146,21 @@ self.addEventListener('fetch', (event) => {
 
 // Función auxiliar para determinar si un recurso debe ser cacheado
 function isStaticResource(url) {
-  const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff', '.woff2'];
-  return staticExtensions.some(ext => url.includes(ext));
+  try {
+    const urlObj = new URL(url);
+    
+    // Solo recursos HTTP/HTTPS
+    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+      return false;
+    }
+    
+    // Verificar extensiones estáticas
+    const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff', '.woff2'];
+    return staticExtensions.some(ext => url.includes(ext));
+  } catch (error) {
+    console.warn('[SW] Invalid URL for static resource check:', url);
+    return false;
+  }
 }
 
 // Manejo de errores globales del service worker
