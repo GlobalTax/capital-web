@@ -26,15 +26,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
+
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
     const targetUserId = userId || user?.id;
-    if (!targetUserId) {
+    if (!targetUserId || isCheckingAdmin) {
       setIsAdmin(false);
       return false;
     }
     
+    setIsCheckingAdmin(true);
     try {
-      // Only check for existing admin status - NO auto-creation
+      // Single attempt - NO retries to prevent infinite loops
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, is_active')
@@ -58,8 +61,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       setIsAdmin(false);
       return false;
+    } finally {
+      setIsCheckingAdmin(false);
     }
-  }, [user?.id]);
+  }, [user?.id, isCheckingAdmin]);
 
 
   useEffect(() => {
@@ -82,30 +87,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Add retry mechanism for admin status check
-          let adminStatus = false;
-          let attempts = 0;
-          const maxAttempts = 3;
-          
-          while (!adminStatus && attempts < maxAttempts) {
-            try {
-              adminStatus = await checkAdminStatus(session.user.id);
-              if (adminStatus) break;
-              attempts++;
-              if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
-              }
-            } catch (error) {
-              logger.warn(`Admin status check attempt ${attempts + 1} failed`, { error: error.message }, { context: 'auth', component: 'AuthContext' });
-              attempts++;
-              if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
-              }
-            }
+          // Single admin status check - NO retries to prevent infinite loops
+          try {
+            await checkAdminStatus(session.user.id);
+          } catch (error) {
+            logger.warn('Admin status check failed', { error: error.message }, { context: 'auth', component: 'AuthContext' });
+            setIsAdmin(false);
           }
-          
-          // Admin users have full access
-          // Non-admin users will be handled by route protection
         } else {
           setIsAdmin(false);
         }
@@ -151,7 +139,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [checkAdminStatus]);
+  }, []); // Remove checkAdminStatus dependency to prevent infinite re-renders
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
