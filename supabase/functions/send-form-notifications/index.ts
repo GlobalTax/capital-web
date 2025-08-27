@@ -1,0 +1,233 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+);
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface FormNotificationRequest {
+  submissionId: string;
+  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar';
+  email: string;
+  fullName: string;
+  formData: any;
+}
+
+const ADMIN_EMAILS = ['samuel@capittal.es', 'lluis@capittal.es'];
+
+const getEmailTemplate = (formType: string, data: any) => {
+  const baseStyle = `
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
+      .content { padding: 20px; background: #f9f9f9; }
+      .info-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .label { font-weight: bold; color: #0f172a; }
+      .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    </style>
+  `;
+
+  switch (formType) {
+    case 'contact':
+      return {
+        subject: `🔥 Nuevo Lead de Contacto - ${data.fullName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>🎯 Nuevo Lead de Contacto</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Nombre:</span> ${data.fullName}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
+              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
+              <p><span class="label">País:</span> ${data.country || 'No especificado'}</p>
+              <p><span class="label">Tamaño de empresa:</span> ${data.companySize || 'No especificado'}</p>
+              <p><span class="label">Referencia:</span> ${data.referral || 'No especificada'}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Sistema de Gestión de Leads</p>
+          </div>
+        `
+      };
+
+    case 'collaborator':
+      return {
+        subject: `🤝 Nueva Solicitud de Colaborador - ${data.fullName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>🤝 Nueva Solicitud de Colaborador</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Nombre:</span> ${data.fullName}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Teléfono:</span> ${data.phone}</p>
+              <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
+              <p><span class="label">Profesión:</span> ${data.profession}</p>
+              <p><span class="label">Experiencia:</span> ${data.experience || 'No especificada'}</p>
+              <p><span class="label">Motivación:</span> ${data.motivation || 'No especificada'}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Programa de Colaboradores</p>
+          </div>
+        `
+      };
+
+    case 'newsletter':
+      return {
+        subject: `📧 Nueva Suscripción Newsletter - ${data.email}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>📧 Nueva Suscripción Newsletter</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES')}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Newsletter</p>
+          </div>
+        `
+      };
+
+    case 'calendar':
+      return {
+        subject: `📅 Nueva Reserva de Reunión - ${data.clientName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>📅 Nueva Reserva de Reunión</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Cliente:</span> ${data.clientName}</p>
+              <p><span class="label">Email:</span> ${data.clientEmail}</p>
+              <p><span class="label">Teléfono:</span> ${data.clientPhone || 'No especificado'}</p>
+              <p><span class="label">Empresa:</span> ${data.companyName || 'No especificada'}</p>
+              <p><span class="label">Fecha:</span> ${data.bookingDate}</p>
+              <p><span class="label">Hora:</span> ${data.bookingTime}</p>
+              <p><span class="label">Tipo de reunión:</span> ${data.meetingType}</p>
+              <p><span class="label">Formato:</span> ${data.meetingFormat}</p>
+              <p><span class="label">Notas:</span> ${data.notes || 'Sin notas'}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Sistema de Reservas</p>
+          </div>
+        `
+      };
+
+    default:
+      return {
+        subject: `📝 Nueva Submission - ${formType}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>📝 Nueva Submission</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Tipo:</span> ${formType}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Datos:</span> ${JSON.stringify(data, null, 2)}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Sistema de Formularios</p>
+          </div>
+        `
+      };
+  }
+};
+
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { submissionId, formType, email, fullName, formData }: FormNotificationRequest = await req.json();
+
+    console.log(`Processing form notification: ${formType} - ${email}`);
+
+    // Get email template
+    const template = getEmailTemplate(formType, { 
+      email, 
+      fullName, 
+      ...formData 
+    });
+
+    // Send notification emails to admins
+    const emailPromises = ADMIN_EMAILS.map(async (adminEmail) => {
+      return resend.emails.send({
+        from: "Capittal Forms <noreply@capittal.es>",
+        to: [adminEmail],
+        subject: template.subject,
+        html: template.html,
+      });
+    });
+
+    const emailResults = await Promise.allSettled(emailPromises);
+    
+    // Check if all emails were sent successfully
+    const allSuccessful = emailResults.every(result => result.status === 'fulfilled');
+    const firstSuccess = emailResults.find(result => result.status === 'fulfilled');
+
+    if (allSuccessful) {
+      // Update the form_submissions record with email sent status
+      await supabase
+        .from('form_submissions')
+        .update({
+          email_sent: true,
+          email_sent_at: new Date().toISOString(),
+          email_message_id: firstSuccess?.status === 'fulfilled' ? firstSuccess.value.data?.id : null
+        })
+        .eq('id', submissionId);
+
+      console.log(`Notification emails sent successfully for submission ${submissionId}`);
+    } else {
+      console.error("Some emails failed to send:", emailResults);
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: allSuccessful,
+        results: emailResults.map(r => r.status === 'fulfilled' ? r.value : r.reason)
+      }), 
+      {
+        status: allSuccessful ? 200 : 207, // 207 = Multi-Status for partial success
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+
+  } catch (error: any) {
+    console.error("Error in send-form-notifications function:", error);
+    
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+serve(handler);

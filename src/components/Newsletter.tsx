@@ -26,6 +26,17 @@ const Newsletter = () => {
     setIsLoading(true);
 
     try {
+      // Get UTM and referrer data
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm_source = urlParams.get('utm_source') || undefined;
+      const utm_medium = urlParams.get('utm_medium') || undefined;
+      const utm_campaign = urlParams.get('utm_campaign') || undefined;
+      const referrer = document.referrer || undefined;
+
+      // Get IP address
+      const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
+      const ipData = ipResponse ? await ipResponse.json() : null;
+
       // Guardar suscripción en newsletter_subscribers
       const { error } = await supabase.from('newsletter_subscribers').insert({
         email: email,
@@ -33,6 +44,21 @@ const Newsletter = () => {
       });
 
       if (error) throw error;
+
+      // Also insert into unified form_submissions table
+      await supabase
+        .from('form_submissions')
+        .insert({
+          form_type: 'newsletter',
+          email: email.trim(),
+          form_data: {},
+          ip_address: ipData?.ip,
+          user_agent: navigator.userAgent,
+          referrer,
+          utm_source,
+          utm_medium,
+          utm_campaign
+        });
 
       setIsSubscribed(true);
       setEmail('');

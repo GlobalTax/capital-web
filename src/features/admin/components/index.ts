@@ -10,3 +10,6 @@ export { default as RoleBasedSidebar } from '@/components/admin/RoleBasedSidebar
 
 // Layout components
 export { default as AdminLayout } from '@/components/admin/AdminLayout';
+
+// Form management components
+export { default as FormSubmissionsManager } from '@/components/admin/FormSubmissionsManager';

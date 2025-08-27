@@ -25,6 +25,13 @@ export const useCollaboratorApplications = () => {
       const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = ipResponse ? await ipResponse.json() : null;
       
+      // Get UTM and referrer data
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm_source = urlParams.get('utm_source') || undefined;
+      const utm_medium = urlParams.get('utm_medium') || undefined;
+      const utm_campaign = urlParams.get('utm_campaign') || undefined;
+      const referrer = document.referrer || undefined;
+
       // Insertar en Supabase principal
       const { data, error } = await supabase
         .from('collaborator_applications')
@@ -45,6 +52,28 @@ export const useCollaboratorApplications = () => {
       if (error) {
         throw error;
       }
+
+      // Also insert into unified form_submissions table
+      await supabase
+        .from('form_submissions')
+        .insert({
+          form_type: 'collaborator',
+          full_name: applicationData.fullName,
+          email: applicationData.email,
+          phone: applicationData.phone,
+          company: applicationData.company,
+          form_data: {
+            profession: applicationData.profession,
+            experience: applicationData.experience,
+            motivation: applicationData.motivation
+          },
+          ip_address: ipData?.ip,
+          user_agent: navigator.userAgent,
+          referrer,
+          utm_source,
+          utm_medium,
+          utm_campaign
+        });
 
       // Enviar a segunda base de datos
       try {

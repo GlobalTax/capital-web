@@ -151,6 +151,7 @@ export const AdminSidebar: React.FC = () => {
       'lead-scoring-rules': 'leadScoringRules',
       'contact-leads': 'contactLeads',
       'contacts': 'contacts',
+      'form-submissions': 'contacts', // Use contacts permission for form submissions
       'contact-lists': 'contactLists',
       'collaborator-applications': 'collaboratorApplications',
       'alerts': 'alerts',

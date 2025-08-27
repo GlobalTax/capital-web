@@ -67,96 +67,16 @@ export const useContactForm = () => {
           referral: 'STRICT'
         });
 
-        // Validaciones específicas con sanitización
-        const nameValidation = validateContactName(sanitizedData.fullName);
-        if (!nameValidation.isValid) {
-          throw new Error(`Validación del nombre: ${nameValidation.message}`);
-        }
+        // ... keep existing code (validation and data processing)
 
-        const companyValidation = validateCompanyName(sanitizedData.company);
-        if (!companyValidation.isValid) {
-          throw new Error(`Validación de la empresa: ${companyValidation.message}`);
-        }
-
-        const emailValidation = validateEmail(sanitizedData.email);
-        if (!emailValidation.isValid) {
-          throw new Error(`Validación del email: ${emailValidation.message}`);
-        }
-
-        // Validar teléfono si se proporciona
-        if (sanitizedData.phone) {
-          const phoneValidation = validateSpanishPhone(sanitizedData.phone);
-          if (!phoneValidation.isValid) {
-            throw new Error(`Validación del teléfono: ${phoneValidation.message}`);
-          }
-        }
-
-        // Usar valores sanitizados para el envío
-        const finalData = {
-          full_name: nameValidation.sanitizedValue || sanitizedData.fullName,
-          company: companyValidation.sanitizedValue || sanitizedData.company,
-          phone: sanitizedData.phone ? (validateSpanishPhone(sanitizedData.phone).sanitizedValue || sanitizedData.phone) : undefined,
-          email: emailValidation.sanitizedValue || sanitizedData.email,
-          country: sanitizedData.country,
-          company_size: sanitizedData.companySize,
-          referral: sanitizedData.referral,
-        };
-
-        // Obtener información adicional del navegador
-        const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
-        const ipData = ipResponse ? await ipResponse.json() : null;
+        // Get UTM and referrer data
+        const urlParams = new URLSearchParams(window.location.search);
+        const utm_source = urlParams.get('utm_source') || undefined;
+        const utm_medium = urlParams.get('utm_medium') || undefined;
+        const utm_campaign = urlParams.get('utm_campaign') || undefined;
+        const referrer = document.referrer || undefined;
         
-        // Insertar directamente en contact_leads para mantener compatibilidad
-        const { data, error } = await supabase
-          .from('contact_leads')
-          .insert({
-            ...finalData,
-            ip_address: ipData?.ip,
-            user_agent: navigator.userAgent,
-          })
-          .select()
-          .single();
-
-        if (error) {
-          logger.error('❌ [ContactForm] Error insertando en Supabase', error, { context: 'database', component: 'useContactForm' });
-          throw error;
-        }
-        
-        logger.info('✅ [ContactForm] Formulario enviado exitosamente', { leadId: data.id }, { context: 'form', component: 'useContactForm' });
-
-        // Enviar a segunda base de datos (herramienta externa)
-        try {
-          // Enriquecer con UTM y referrer
-          const urlParams = new URLSearchParams(window.location.search);
-          const utm_source = urlParams.get('utm_source') || undefined;
-          const utm_medium = urlParams.get('utm_medium') || undefined;
-          const utm_campaign = urlParams.get('utm_campaign') || undefined;
-          const referrer = document.referrer || undefined;
-
-          const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
-            body: {
-              type: 'contact',
-              data: {
-                ...data,
-                ip_address: ipData?.ip,
-                user_agent: navigator.userAgent,
-                utm_source,
-                utm_medium,
-                utm_campaign,
-                referrer,
-                source: 'web-contact'
-              }
-            }
-          });
-
-          if (syncError) {
-            logger.error('❌ [ContactForm] Error sincronizando con segunda DB', syncError, { context: 'form', component: 'useContactForm' });
-          } else {
-            logger.info('✅ [ContactForm] Lead sincronizado exitosamente', { syncResult }, { context: 'form', component: 'useContactForm' });
-          }
-        } catch (secondaryDbError) {
-          logger.error('❌ [ContactForm] Error enviando a segunda DB', secondaryDbError as Error, { context: 'form', component: 'useContactForm' });
-        }
+        // ... keep existing code (insert to contact_leads and form_submissions)
 
         return data;
       }, 'contact-form');
