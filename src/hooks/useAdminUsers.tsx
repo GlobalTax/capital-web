@@ -14,6 +14,8 @@ export interface AdminUser {
   created_at: string;
   updated_at?: string;
   last_login?: string;
+  needs_credentials?: boolean;
+  credentials_sent_at?: string;
 }
 
 export interface CreateAdminUserData {
@@ -25,6 +27,7 @@ export interface CreateAdminUserData {
 
 export const useAdminUsers = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -268,18 +271,129 @@ export const useAdminUsers = () => {
     await updateUser(userId, { is_active: isActive });
   }, [updateUser]);
 
+  const sendCredentials = useCallback(async (userId: string): Promise<void> => {
+    try {
+      const user = users.find(u => u.id === userId);
+      if (!user) throw new Error('Usuario no encontrado');
+
+      // Generate temporary password
+      const temporaryPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
+      
+      const { error } = await supabase.functions.invoke('send-user-credentials', {
+        body: {
+          email: user.email,
+          fullName: user.full_name,
+          temporaryPassword,
+          role: user.role,
+          requiresPasswordChange: true
+        }
+      });
+
+      if (error) throw error;
+
+      // Update user to mark credentials as sent
+      await updateUser(userId, { 
+        needs_credentials: false, 
+        credentials_sent_at: new Date().toISOString() 
+      });
+
+      toast({
+        title: "Credenciales enviadas",
+        description: `Las credenciales han sido enviadas a ${user.email}`,
+      });
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al enviar credenciales';
+      toast({
+        title: "Error al enviar credenciales",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw err;
+    }
+  }, [users, updateUser, toast]);
+
+  const sendMassCredentials = useCallback(async (userIds: string[]): Promise<void> => {
+    const results = { success: 0, failed: 0 };
+    
+    for (const userId of userIds) {
+      try {
+        await sendCredentials(userId);
+        results.success++;
+      } catch (error) {
+        results.failed++;
+      }
+    }
+
+    toast({
+      title: "Envío masivo completado",
+      description: `${results.success} credenciales enviadas, ${results.failed} fallaron`,
+    });
+  }, [sendCredentials, toast]);
+
+  const selectUser = useCallback((userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  }, []);
+
+  const selectAllUsers = useCallback(() => {
+    setSelectedUsers(users.map(u => u.id));
+  }, [users]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedUsers([]);
+  }, []);
+
+  const createCapittalTeam = useCallback(async (): Promise<void> => {
+    try {
+      // Create multiple users for Capittal team
+      const teamMembers = [
+        { email: 'director@capittal.com', full_name: 'Director Capittal', role: 'admin' as const },
+        { email: 'analista@capittal.com', full_name: 'Analista Senior', role: 'editor' as const },
+        { email: 'consultor@capittal.com', full_name: 'Consultor Financiero', role: 'editor' as const },
+      ];
+
+      for (const member of teamMembers) {
+        const password = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
+        await createUser({ ...member, password });
+      }
+
+      toast({
+        title: "Equipo Capittal creado",
+        description: "Se han creado las cuentas del equipo Capittal",
+      });
+
+    } catch (err) {
+      toast({
+        title: "Error al crear equipo",
+        description: "No se pudo crear el equipo Capittal",
+        variant: "destructive",
+      });
+    }
+  }, [createUser, toast]);
+
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
   return {
     users,
+    selectedUsers,
     isLoading,
     error,
     createUser,
     updateUser,
     deleteUser,
     toggleUserStatus,
+    sendCredentials,
+    sendMassCredentials,
+    selectUser,
+    selectAllUsers,
+    clearSelection,
+    createCapittalTeam,
     refetch: fetchUsers
   };
 };
