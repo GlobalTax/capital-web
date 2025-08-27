@@ -1,50 +1,23 @@
-import React, { useState } from 'react';
-import { Settings, Save, Eye, Code, Zap, Globe } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Settings, Save, Eye, Code, Zap, Globe, Facebook, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTrackingConfig } from '@/hooks/useTrackingConfig';
 
 const TrackingConfig = () => {
-  const [config, setConfig] = useState({
-    googleAnalyticsId: '',
-    facebookPixelId: '',
-    linkedInInsightTag: '',
-    hotjarId: '',
-    enableHeatmaps: true,
-    enableSessionRecording: false,
-    enableLeadTracking: true,
-    customTrackingCode: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { config, isLoading, isSaving, updateConfig, saveConfiguration } = useTrackingConfig();
 
   const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      // Simular guardado de configuración
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Configuración guardada",
-        description: "Los ajustes de tracking se han actualizado correctamente",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo guardar la configuración",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await saveConfiguration(config);
   };
 
   const handleConfigChange = (key: string, value: string | boolean) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    updateConfig(key as any, value);
   };
 
   return (
@@ -56,9 +29,9 @@ const TrackingConfig = () => {
             Configura las herramientas de seguimiento y análisis
           </p>
         </div>
-        <Button onClick={handleSave} disabled={isLoading}>
+        <Button onClick={handleSave} disabled={isSaving || isLoading}>
           <Save className="h-4 w-4 mr-2" />
-          {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+          {isSaving ? 'Guardando...' : 'Guardar Cambios'}
         </Button>
       </div>
 
@@ -79,7 +52,7 @@ const TrackingConfig = () => {
             <Input
               id="ga-id"
               placeholder="G-XXXXXXXXXX"
-              value={config.googleAnalyticsId}
+              value={config.googleAnalyticsId || ''}
               onChange={(e) => handleConfigChange('googleAnalyticsId', e.target.value)}
             />
             <p className="text-sm text-muted-foreground mt-1">
@@ -93,22 +66,32 @@ const TrackingConfig = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            Redes Sociales y Publicidad
+            <Facebook className="h-5 w-5" />
+            Meta Pixel (Facebook)
           </CardTitle>
           <CardDescription>
-            Pixels y tags para tracking de campañas publicitarias
+            Pixel de Meta para tracking de conversiones y audiencias personalizadas
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Alert>
+            <Zap className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Eventos automáticos para valoraciones:</strong> InitiateCheckout (inicio), Lead (completado), ViewContent (recursos)
+            </AlertDescription>
+          </Alert>
+          
           <div>
             <Label htmlFor="fb-pixel">Facebook Pixel ID</Label>
             <Input
               id="fb-pixel"
               placeholder="123456789012345"
-              value={config.facebookPixelId}
+              value={config.facebookPixelId || ''}
               onChange={(e) => handleConfigChange('facebookPixelId', e.target.value)}
             />
+            <p className="text-sm text-muted-foreground mt-1">
+              <strong>Cómo obtenerlo:</strong> Facebook Business → Administrador de eventos → Tu píxel → Configuración → ID del píxel
+            </p>
           </div>
           
           <div>
@@ -116,9 +99,12 @@ const TrackingConfig = () => {
             <Input
               id="linkedin-tag"
               placeholder="12345"
-              value={config.linkedInInsightTag}
+              value={config.linkedInInsightTag || ''}
               onChange={(e) => handleConfigChange('linkedInInsightTag', e.target.value)}
             />
+            <p className="text-sm text-muted-foreground mt-1">
+              Encuentra tu Partner ID en LinkedIn Campaign Manager → Herramientas → Insight Tag
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -140,7 +126,7 @@ const TrackingConfig = () => {
             <Input
               id="hotjar-id"
               placeholder="1234567"
-              value={config.hotjarId}
+              value={config.hotjarId || ''}
               onChange={(e) => handleConfigChange('hotjarId', e.target.value)}
             />
           </div>
@@ -152,7 +138,7 @@ const TrackingConfig = () => {
                 <p className="text-sm text-muted-foreground">Activar mapas de calor</p>
               </div>
               <Switch
-                checked={config.enableHeatmaps}
+                checked={config.enableHeatmaps || false}
                 onCheckedChange={(checked) => handleConfigChange('enableHeatmaps', checked)}
               />
             </div>
@@ -163,7 +149,7 @@ const TrackingConfig = () => {
                 <p className="text-sm text-muted-foreground">Grabar sesiones de usuarios</p>
               </div>
               <Switch
-                checked={config.enableSessionRecording}
+                checked={config.enableSessionRecording || false}
                 onCheckedChange={(checked) => handleConfigChange('enableSessionRecording', checked)}
               />
             </div>
@@ -174,7 +160,7 @@ const TrackingConfig = () => {
                 <p className="text-sm text-muted-foreground">Seguimiento avanzado de leads</p>
               </div>
               <Switch
-                checked={config.enableLeadTracking}
+                checked={config.enableLeadTracking || false}
                 onCheckedChange={(checked) => handleConfigChange('enableLeadTracking', checked)}
               />
             </div>
@@ -199,7 +185,7 @@ const TrackingConfig = () => {
             <Textarea
               id="custom-code"
               placeholder="// Tu código JavaScript personalizado aquí"
-              value={config.customTrackingCode}
+              value={config.customTrackingCode || ''}
               onChange={(e) => handleConfigChange('customTrackingCode', e.target.value)}
               rows={8}
               className="font-mono text-sm"

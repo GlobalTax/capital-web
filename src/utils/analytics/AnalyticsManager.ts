@@ -21,6 +21,7 @@ export interface AnalyticsConfig {
   ga4MeasurementId?: string;
   clarityProjectId?: string;
   leadfeederTrackingId?: string;
+  facebookPixelId?: string;
   enableCompanyTracking?: boolean;
   enableEnrichment?: boolean;
   enableAlerting?: boolean;
@@ -60,6 +61,10 @@ export class AnalyticsManager {
     
     if (this.config.clarityProjectId) {
       this.initClarity(this.config.clarityProjectId);
+    }
+
+    if (this.config.facebookPixelId) {
+      this.initFacebookPixel(this.config.facebookPixelId);
     }
 
     if (this.config.leadfeederTrackingId && this.config.enableCompanyTracking) {
@@ -109,6 +114,98 @@ export class AnalyticsManager {
     console.log('Microsoft Clarity initialized with ID:', projectId);
   }
 
+  // Facebook Pixel Integration
+  private initFacebookPixel(pixelId: string) {
+    // Initialize Facebook Pixel
+    (window as any).fbq = (window as any).fbq || function() {
+      ((window as any).fbq.q = (window as any).fbq.q || []).push(arguments);
+    };
+    (window as any)._fbq = (window as any).fbq;
+    (window as any).fbq.version = '2.0';
+    (window as any).fbq.queue = [];
+
+    // Load Facebook Pixel script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(script);
+
+    // Initialize pixel with ID
+    (window as any).fbq('init', pixelId);
+    
+    // Track PageView by default
+    (window as any).fbq('track', 'PageView');
+
+    console.log('Facebook Pixel initialized with ID:', pixelId);
+  }
+
+  // Facebook Pixel Event Tracking
+  private trackFacebookEvent(eventName: string, properties: Record<string, any>) {
+    if (!(window as any).fbq) return;
+
+    // Map generic events to Facebook Pixel standard events
+    let facebookEventName = eventName;
+    let eventData = { ...properties };
+
+    switch (eventName) {
+      case 'calculator_used':
+      case 'valuation_calculated':
+        facebookEventName = 'InitiateCheckout';
+        eventData = {
+          content_name: 'Calculadora de Valoración',
+          content_category: 'Herramientas',
+          value: properties.eventValue || 1500,
+          currency: 'EUR'
+        };
+        break;
+      
+      case 'form_submit':
+      case 'contact_form_submit':
+        facebookEventName = 'Lead';
+        eventData = {
+          content_name: 'Formulario de Contacto',
+          content_category: 'Leads',
+          value: properties.eventValue || 2000,
+          currency: 'EUR'
+        };
+        break;
+      
+      case 'pdf_download':
+      case 'resource_download':
+        facebookEventName = 'ViewContent';
+        eventData = {
+          content_name: properties.resourceName || 'Recurso descargado',
+          content_category: 'Recursos',
+          content_type: 'pdf'
+        };
+        break;
+      
+      case 'page_view':
+        facebookEventName = 'PageView';
+        eventData = {};
+        break;
+      
+      case 'contact_clicked':
+      case 'phone_clicked':
+        facebookEventName = 'Contact';
+        eventData = {
+          content_name: 'Contacto directo',
+          content_category: 'Contacto'
+        };
+        break;
+      
+      default:
+        // Use custom event for unmatched events
+        facebookEventName = eventName;
+        break;
+    }
+
+    // Track the event with Facebook Pixel
+    (window as any).fbq('track', facebookEventName, eventData);
+    
+    console.log('Facebook Pixel event tracked:', facebookEventName, eventData);
+  }
+
   // Company Intelligence Tracking
   private initCompanyTracking(trackingId: string) {
     // Simulate company detection based on IP/domain patterns
@@ -146,6 +243,11 @@ export class AnalyticsManager {
     // Send to Clarity
     if (this.config.clarityProjectId && (window as any).clarity) {
       (window as any).clarity('event', eventName);
+    }
+
+    // Send to Facebook Pixel
+    if (this.config.facebookPixelId && (window as any).fbq) {
+      this.trackFacebookEvent(eventName, properties);
     }
 
     console.log('Event tracked:', event);
