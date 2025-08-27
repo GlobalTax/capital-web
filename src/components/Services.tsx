@@ -76,7 +76,7 @@ const Services = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {coreServices.map((service, index) => (
               <div key={index} className="group">
-                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
                   {/* Title */}
                   <h3 className="text-xl font-bold text-black mb-4">
                     {service.title}
@@ -104,7 +104,7 @@ const Services = () => {
                       service.title === 'Vender Empresa' ? '/venta-empresas' : 
                       '/compra-empresas'
                     }>
-                      <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-base py-3">
+                      <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg transition-all duration-300 ease-out text-base py-3">
                         {service.title === 'Valoraciones' ? 'Calcular Ahora' : 'Más información'}
                       </Button>
                     </Link>
@@ -122,7 +122,7 @@ const Services = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {complementaryServices.map((service, index) => (
-              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group cursor-pointer">
+              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-out group cursor-pointer">
                 <CardContent className="p-6">
                   <h3 className="text-base font-semibold text-black mb-3">
                     {service.title}

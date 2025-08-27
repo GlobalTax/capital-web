@@ -153,7 +153,7 @@ const CaseStudies = () => {
         {filteredCases.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredCases.map((case_) => (
-              <Card key={case_.id} className="bg-card border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">
+              <Card key={case_.id} className="bg-card border shadow-sm hover:shadow-lg transition-all duration-300 ease-out group">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <Badge variant="secondary" className="rounded-lg">

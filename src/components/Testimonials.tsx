@@ -84,7 +84,7 @@ const Testimonials = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="bg-white border-0.5 border-border rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+            <Card key={testimonial.id} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <Quote className="w-8 h-8 text-gray-300" />
@@ -129,7 +129,7 @@ const Testimonials = () => {
         </div>
 
         <div className="text-center mt-12">
-          <button className="bg-white text-black border-0.5 border-border rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg transition-all duration-300 ease-out">
             Ver Más Testimonios
           </button>
         </div>

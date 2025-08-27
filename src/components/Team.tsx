@@ -63,7 +63,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
       className="group animate-fade-in"
       threshold={0.2}
     >
-      <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+      <div className="bg-card border border-gray-300 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
         <div className="relative aspect-[4/5] overflow-hidden">
           {member.image_url ? (
             <LazyImage
@@ -254,7 +254,7 @@ const Team = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 to="/contacto"
-                className="inline-flex items-center px-8 py-4 bg-primary-foreground text-primary rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 font-medium"
+                className="inline-flex items-center px-8 py-4 bg-primary-foreground text-primary rounded-lg hover:shadow-lg transition-all duration-300 font-medium"
               >
                 <Mail className="w-5 h-5 mr-2" />
                 Contactar con Nosotros
