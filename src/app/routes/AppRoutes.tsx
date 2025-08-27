@@ -64,6 +64,7 @@ export const AppRoutes = () => {
       <Route path="/lp/calculadora/*" element={<Pages.LandingCalculator />} />
       <Route path="/lp/calculadora-fiscal" element={<Pages.LandingCalculadoraFiscal />} />
       <Route path="/lp/calculadora-fiscal/*" element={<Pages.LandingCalculadoraFiscal />} />
+      <Route path="/lp/calculadora-simple" element={<Pages.CalculadoraSimple />} />
       <Route path="/lp/reservar-cita" element={<Pages.BookingPage />} />
       
       {/* Service routes */}
