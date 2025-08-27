@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Header from '@/components/Header';
+import { HomeLayout } from '@/shared';
 import Hero from '@/components/Hero';
 import LogoCarousel from '@/components/LogoCarousel';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel';
@@ -13,47 +13,25 @@ import CaseStudies from '@/components/CaseStudies';
 import Team from '@/components/Team';
 import BlogSection from '@/components/BlogSection';
 import Contact from '@/components/Contact';
-import Footer from '@/components/Footer';
 import OurGroup from '@/components/OurGroup';
-import AccessibilityTools from '@/components/AccessibilityTools';
-import NotificationCenter from '@/components/NotificationCenter';
-
-import AdminAccessButton from '@/components/AdminAccessButton';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <main role="main">
-        <Hero />
-        <LogoCarousel />
-        <TestimonialsCarousel />
-        <MarketInsights />
-        <WhyChooseCapittal />
-        <Services />
-        <CompaniesForSale />
-        <OurGroup />
-        <About />
-        <CaseStudies />
-        <Team />
-        <BlogSection />
-        <Contact />
-      </main>
-      <Footer />
-      
-      {/* Herramientas de accesibilidad flotantes */}
-      <AccessibilityTools />
-      <NotificationCenter className="mr-16" />
-      <AdminAccessButton />
-      
-      {/* Live region para anuncios de accesibilidad */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-        id="accessibility-announcements"
-      />
-    </div>
+    <HomeLayout>
+      <Hero />
+      <LogoCarousel />
+      <TestimonialsCarousel />
+      <MarketInsights />
+      <WhyChooseCapittal />
+      <Services />
+      <CompaniesForSale />
+      <OurGroup />
+      <About />
+      <CaseStudies />
+      <Team />
+      <BlogSection />
+      <Contact />
+    </HomeLayout>
   );
 };
 
