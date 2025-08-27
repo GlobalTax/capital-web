@@ -1,18 +1,14 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+import { Users, Award, TrendingUp, Mail, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLazyLoad } from '@/hooks/useLazyLoad';
 import { useCache } from '@/hooks/useCache';
+import { useCountAnimation } from '@/hooks/useCountAnimation';
 import LazyImage from '@/components/LazyImage';
+import LazySection from '@/components/LazySection';
+import { LoadingSkeleton } from '@/shared/components';
 import { globalCache } from '@/utils/cache';
 
 interface TeamMember {
@@ -23,6 +19,93 @@ interface TeamMember {
   is_active: boolean;
   display_order: number;
 }
+
+// Team Stats Component
+const TeamStats = () => {
+  const { count: experienceCount, ref: experienceRef } = useCountAnimation(15, 2000, '+');
+  const { count: transactionCount, ref: transactionRef } = useCountAnimation(200, 2500, '+');
+  const { count: clientCount, ref: clientRef } = useCountAnimation(150, 2000, '+');
+
+  return (
+    <LazySection className="py-16 bg-gradient-to-br from-secondary to-muted">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div ref={experienceRef} className="text-center">
+            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+              {experienceCount}
+            </div>
+            <p className="text-muted-foreground text-lg">Años de Experiencia</p>
+          </div>
+          <div ref={transactionRef} className="text-center">
+            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+              {transactionCount}
+            </div>
+            <p className="text-muted-foreground text-lg">Transacciones Completadas</p>
+          </div>
+          <div ref={clientRef} className="text-center">
+            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+              {clientCount}
+            </div>
+            <p className="text-muted-foreground text-lg">Clientes Asesorados</p>
+          </div>
+        </div>
+      </div>
+    </LazySection>
+  );
+};
+
+// Team Member Card Component
+const TeamMemberCard = ({ member }: { member: TeamMember }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  return (
+    <LazySection 
+      className="group animate-fade-in"
+      threshold={0.2}
+    >
+      <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+        <div className="relative aspect-[4/5] overflow-hidden">
+          {member.image_url ? (
+            <LazyImage
+              src={member.image_url}
+              alt={member.name}
+              className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+              placeholderClassName="w-full h-full animate-pulse bg-muted"
+              onLoad={() => setImageLoaded(true)}
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <Users className="w-16 h-16 text-muted-foreground" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </div>
+        
+        <div className="p-6">
+          <h3 className="text-xl font-semibold text-card-foreground mb-2 group-hover:text-primary transition-colors">
+            {member.name}
+          </h3>
+          {member.position && (
+            <p className="text-muted-foreground text-sm mb-4 font-medium">
+              {member.position}
+            </p>
+          )}
+          
+          {/* Placeholder for future bio/description */}
+          <div className="space-y-2 mb-4">
+            <div className="h-2 bg-muted rounded animate-pulse opacity-60" />
+            <div className="h-2 bg-muted rounded animate-pulse opacity-40 w-4/5" />
+          </div>
+          
+          <div className="flex items-center text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span>Ver perfil completo</span>
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+      </div>
+    </LazySection>
+  );
+};
 
 const Team = () => {
   const { ref, isVisible } = useLazyLoad<HTMLElement>({ 
@@ -49,87 +132,145 @@ const Team = () => {
     'team_members',
     fetchTeamMembers,
     globalCache,
-    15 * 60 * 1000 // 15 minutos de cache
+    15 * 60 * 1000
   );
 
   return (
-    <section ref={ref} id="equipo" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            Nuestro Equipo
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Profesionales con trayectorias excepcionales en las principales firmas 
-            de inversión y consultoría del mundo.
-          </p>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <LazySection className="relative py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-6 animate-fade-in-up">
+              Nuestro Equipo
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8 animate-fade-in-up">
+              Profesionales con trayectorias excepcionales en las principales firmas 
+              de inversión y consultoría del mundo, unidos por la pasión de crear valor.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 animate-fade-in">
+              <div className="flex items-center gap-2 text-primary font-medium">
+                <Award className="w-5 h-5" />
+                <span>Experiencia Global</span>
+              </div>
+              <div className="flex items-center gap-2 text-primary font-medium">
+                <TrendingUp className="w-5 h-5" />
+                <span>Resultados Probados</span>
+              </div>
+              <div className="flex items-center gap-2 text-primary font-medium">
+                <Users className="w-5 h-5" />
+                <span>Enfoque Colaborativo</span>
+              </div>
+            </div>
+          </div>
         </div>
+      </LazySection>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-0.5 border-border"></div>
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-red-600">Error al cargar el equipo: {error}</p>
-          </div>
-        ) : teamMembers && teamMembers.length > 0 && isVisible ? (
-          <div className="relative">
-            <Carousel
-              plugins={[
-                Autoplay({
-                  delay: 3000,
-                  stopOnInteraction: true,
-                }),
-              ]}
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2">
-                {teamMembers.map((member) => (
-                  <CarouselItem key={member.id} className="pl-2 basis-auto">
-                    <div className="w-64 h-64 overflow-hidden rounded-lg border-0.5 border-border">
-                      {member.image_url ? (
-                        <LazyImage
-                          src={member.image_url}
-                          alt={member.name}
-                          className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                          placeholderClassName="w-full h-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500 text-center font-medium">
-                            {member.name}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -left-12" />
-              <CarouselNext className="bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 -right-12" />
-            </Carousel>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No hay miembros del equipo disponibles.</p>
-          </div>
-        )}
+      {/* Team Stats */}
+      <TeamStats />
 
-        <div className="text-center mt-20">
-          <Link 
-            to="/equipo"
-            className="inline-flex items-center px-6 py-3 bg-white text-black border-0.5 border-border rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
-          >
-            Ver Equipo Completo
-          </Link>
+      {/* Team Members Grid */}
+      <section ref={ref} className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {isLoading ? (
+            <LoadingSkeleton cards={6} showHeader={false} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" />
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-destructive text-lg">Error al cargar el equipo: {error}</p>
+            </div>
+          ) : teamMembers && teamMembers.length > 0 && isVisible ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {teamMembers.map((member, index) => (
+                <div 
+                  key={member.id} 
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <TeamMemberCard member={member} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">No hay miembros del equipo disponibles.</p>
+            </div>
+          )}
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Team Philosophy */}
+      <LazySection className="py-20 bg-gradient-to-br from-muted/30 to-secondary/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8">
+              Nuestra Filosofía de Equipo
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-12">
+              Creemos que el éxito en M&A no solo requiere expertise técnico, sino también la capacidad 
+              de entender las particularidades de cada sector y las necesidades específicas de nuestros clientes. 
+              Nuestro enfoque colaborativo garantiza que cada transacción cuente con la perspectiva integral 
+              de especialistas dedicados.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-card-foreground mb-2">Excelencia</h3>
+                <p className="text-muted-foreground">Búsqueda constante de la perfección en cada detalle</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-card-foreground mb-2">Colaboración</h3>
+                <p className="text-muted-foreground">Trabajo en equipo para maximizar el valor</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-card-foreground mb-2">Innovación</h3>
+                <p className="text-muted-foreground">Soluciones creativas para desafíos complejos</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </LazySection>
+
+      {/* CTA Section */}
+      <LazySection className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 md:p-12 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-6">
+              ¿Interesado en unirte a nuestro equipo?
+            </h2>
+            <p className="text-lg text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
+              Siempre estamos buscando talento excepcional para expandir nuestro equipo. 
+              Si compartes nuestra pasión por la excelencia en M&A, nos encantaría conocerte.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link 
+                to="/contacto"
+                className="inline-flex items-center px-8 py-4 bg-primary-foreground text-primary rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 font-medium"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Contactar con Nosotros
+              </Link>
+              <Link 
+                to="/colabora"
+                className="inline-flex items-center px-8 py-4 border-2 border-primary-foreground text-primary-foreground rounded-lg hover:bg-primary-foreground hover:text-primary transition-all duration-300 font-medium"
+              >
+                Ver Oportunidades
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </LazySection>
+    </div>
   );
 };
 
