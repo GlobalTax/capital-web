@@ -39,7 +39,7 @@ export const useValuationCalculatorMaster = () => {
     const state = {} as ValidationStateMaster;
     Object.keys(validationRules).forEach(field => {
       const key = field as keyof ValidationStateMaster;
-      state[key] = validationRules[key](companyData);
+      state[key] = validationRules[key](companyData[key as keyof CompanyDataMaster]);
     });
     return state;
   }, [companyData, validationRules]);
