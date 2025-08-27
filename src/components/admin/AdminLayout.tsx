@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
 import { useAdminDebug } from '@/hooks/useAdminDebug';
@@ -7,6 +7,7 @@ import { AdminSidebar } from './sidebar/AdminSidebar';
 import AdminHeader from './AdminHeader';
 import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
 import { ErrorBoundaryProvider } from './ErrorBoundaryProvider';
+import { resetWebSocketState } from '@/utils/resetWebSocketState';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,33 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   const { breadcrumbs } = useAdminLayout();
   const { debugInfo } = useAdminDebug();
+
+  // Reset WebSocket state on mount to clear any problematic connections
+  useEffect(() => {
+    // Check for persistent WebSocket errors in console
+    const hasWebSocketErrors = performance.getEntriesByType('navigation').length > 0;
+    
+    // Clear any existing WebSocket state that might be causing issues
+    try {
+      const keys = Object.keys(localStorage);
+      const hasRealtimeKeys = keys.some(key => 
+        key.includes('realtime') || 
+        key.includes('websocket') || 
+        key.includes('push-state')
+      );
+      
+      if (hasRealtimeKeys) {
+        console.log('🧹 Clearing problematic WebSocket state...');
+        keys.forEach(key => {
+          if (key.includes('realtime') || key.includes('websocket') || key.includes('push-state')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error clearing WebSocket state:', error);
+    }
+  }, []);
 
   return (
     <ErrorBoundaryProvider>

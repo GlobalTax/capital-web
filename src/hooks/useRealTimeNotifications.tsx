@@ -101,9 +101,18 @@ export function useRealTimeNotifications(): UseRealTimeNotificationsReturn {
     }
   }, [generateId]);
 
-  // Configurar subscripciones en tiempo real
+  // Flag para deshabilitar real-time temporalmente
+  const REALTIME_ENABLED = false;
+
+  // Configurar subscripciones en tiempo real (temporalmente deshabilitado)
   useEffect(() => {
     loadInitialNotifications();
+
+    if (!REALTIME_ENABLED) {
+      console.log('Real-time notifications disabled for stability');
+      setIsConnected(false);
+      return;
+    }
 
     // Canal principal para notificaciones del dashboard
     const dashboardChannel = supabase

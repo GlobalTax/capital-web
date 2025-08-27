@@ -110,8 +110,17 @@ export const useRealTimeMetrics = (updateInterval = 5000) => {
     });
   }, []);
 
-  // Simular conexión en tiempo real
+  // Flag para deshabilitar real-time temporalmente
+  const REALTIME_ENABLED = false;
+
+  // Simular conexión en tiempo real (temporalmente deshabilitado)
   const startRealTimeUpdates = useCallback(() => {
+    if (!REALTIME_ENABLED) {
+      console.log('Real-time metrics disabled for stability');
+      setIsConnected(false);
+      return;
+    }
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
