@@ -275,19 +275,12 @@ const AdvancedDesktopNavigation = () => {
       </NavigationMenu>
 
       {/* User specific navigation */}
-      {user ? (
+      {user && (
         <Link
           to="/admin"
           className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
         >
           Panel Admin
-        </Link>
-      ) : (
-        <Link
-          to="/auth"
-          className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
-        >
-          Iniciar Sesión
         </Link>
       )}
 
