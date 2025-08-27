@@ -14,9 +14,10 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
 }) => {
   const location = useLocation();
   
-  // Completely disable tracking in admin routes and development
+  // Completely disable tracking in admin routes, development, and iframe contexts
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const trackingEnabled = enabled && !isAdminRoute && process.env.NODE_ENV === 'production';
+  const isInIframe = typeof window !== 'undefined' && window.top !== window.self;
+  const trackingEnabled = enabled && !isAdminRoute && process.env.NODE_ENV === 'production' && !isInIframe;
   
   const { trackPageView, trackCalculatorUsage, trackContactInterest } = useLeadTracking({
     enablePageTracking: trackingEnabled,
