@@ -1,9 +1,6 @@
 
 import React from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import AccessibilityTools from '@/components/AccessibilityTools';
-import NotificationCenter from '@/components/NotificationCenter';
+import { HomeLayout } from '@/shared';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
@@ -44,9 +41,8 @@ const Blog = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <section className="pt-32 pb-20 bg-white">
+      <HomeLayout>
+        <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
@@ -54,16 +50,13 @@ const Blog = () => {
             </div>
           </div>
         </section>
-        <Footer />
-      </div>
+      </HomeLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <main role="main">
-        <section className="pt-32 pb-20 bg-white">
+    <HomeLayout>
+      <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               {/* Contenido principal */}
@@ -250,21 +243,7 @@ const Blog = () => {
             </div>
           </div>
         </section>
-      </main>
-      <Footer />
-      
-      {/* Herramientas de accesibilidad flotantes */}
-      <AccessibilityTools />
-      <NotificationCenter className="mr-16" />
-      
-      {/* Live region para anuncios de accesibilidad */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-        id="accessibility-announcements"
-      />
-    </div>
+    </HomeLayout>
   );
 };
 

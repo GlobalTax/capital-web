@@ -1,8 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { HomeLayout } from '@/shared';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';
@@ -85,9 +84,8 @@ const BlogPost = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <section className="pt-32 pb-20 bg-white">
+      <HomeLayout>
+        <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
@@ -95,8 +93,7 @@ const BlogPost = () => {
             </div>
           </div>
         </section>
-        <Footer />
-      </div>
+      </HomeLayout>
     );
   }
 
@@ -105,9 +102,8 @@ const BlogPost = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32">
+    <HomeLayout>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <BlogBreadcrumbs 
           currentPage={{
@@ -127,8 +123,7 @@ const BlogPost = () => {
         {/* Posts relacionados */}
         <RelatedPosts posts={relatedPosts} />
       </div>
-      <Footer />
-    </div>
+    </HomeLayout>
   );
 };
 

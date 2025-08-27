@@ -1,14 +1,11 @@
 
 import React from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { HomeLayout } from '@/shared';
 
 const TerminosUso = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      
-      <section className="pt-32 pb-20 bg-white">
+    <HomeLayout>
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8">
             Términos de Uso
@@ -94,9 +91,7 @@ const TerminosUso = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </HomeLayout>
   );
 };
 

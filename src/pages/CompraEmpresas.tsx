@@ -1,9 +1,6 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import AccessibilityTools from '@/components/AccessibilityTools';
-import NotificationCenter from '@/components/NotificationCenter';
+import { HomeLayout } from '@/shared';
 import CompaniesForSale from '@/components/CompaniesForSale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -116,12 +113,10 @@ const CompraEmpresas = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
+    <HomeLayout>
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-br from-primary/5 to-secondary/5">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Adquisiciones Estratégicas
@@ -163,8 +158,8 @@ const CompraEmpresas = () => {
       <CompaniesForSale />
 
       {/* Success Stories Section */}
-      <section className="py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               Casos de Éxito Recientes
@@ -204,8 +199,8 @@ const CompraEmpresas = () => {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               Proceso de Adquisición
@@ -250,8 +245,8 @@ const CompraEmpresas = () => {
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -405,20 +400,7 @@ const CompraEmpresas = () => {
         </div>
       </section>
 
-      <Footer />
-      
-      {/* Herramientas de accesibilidad flotantes */}
-      <AccessibilityTools />
-      <NotificationCenter className="mr-16" />
-      
-      {/* Live region para anuncios de accesibilidad */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-        id="accessibility-announcements"
-      />
-    </div>
+    </HomeLayout>
   );
 };
 
