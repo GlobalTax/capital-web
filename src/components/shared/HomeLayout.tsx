@@ -27,17 +27,12 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main role="main" className={mainClassName}>
+      <main role="main" className={`pt-16 ${mainClassName}`}>
         {children}
       </main>
       <Footer />
-      
-      {/* Herramientas de accesibilidad flotantes */}
-      {showAccessibilityTools && <AccessibilityTools />}
-      {showNotificationCenter && <NotificationCenter className="mr-16" />}
-      {showAdminButton && <AdminAccessButton />}
-      
-      {/* Live region para anuncios de accesibilidad */}
+      <AccessibilityTools />
+      <NotificationCenter className="mr-16" />
       <div 
         aria-live="polite" 
         aria-atomic="true" 
