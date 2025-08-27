@@ -9,6 +9,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 // Calculator - only V4
 const CalculadoraValoracionV4 = lazy(() => import('@/pages/CalculadoraValoracionV4'));
 const CalculadoraMaster = lazy(() => import('@/pages/CalculadoraMaster'));
+const CalculadoraSimple = lazy(() => import('@/pages/CalculadoraSimple'));
 
 // Essential pages
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
@@ -59,6 +60,7 @@ export {
   NotFound,
   CalculadoraValoracionV4,
   CalculadoraMaster,
+  CalculadoraSimple,
   VentaEmpresas,
   CompraEmpresas,
   Contacto,

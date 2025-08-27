@@ -53,6 +53,7 @@ export const AppRoutes = () => {
       <Route path="/calculadora-valoracion-v3" element={<Navigate to="/lp/calculadora" replace />} />
       <Route path="/calculadora-standalone" element={<Navigate to="/lp/calculadora" replace />} />
       <Route path="/calculadora-master" element={<Pages.CalculadoraMaster />} />
+      <Route path="/calculadora-simple" element={<Pages.CalculadoraSimple />} />
       <Route path="/simulador-venta/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
       <Route path="/simulador-ultra-rapido/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
       
