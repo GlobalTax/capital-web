@@ -17,7 +17,8 @@ import {
   Activity,
   Eye,
   Palette,
-  Play
+  Play,
+  ClipboardList
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -153,6 +154,13 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/contacts", 
         icon: Users,
         description: "Base de contactos"
+      },
+      { 
+        title: "Form Submissions", 
+        url: "/admin/form-submissions", 
+        icon: ClipboardList,
+        badge: "NEW",
+        description: "Gestión de formularios"
       },
       { 
         title: "Leads Externos", 

@@ -23,6 +23,7 @@ import AdminUsersManager from './AdminUsersManager';
 import ProposalsManager from './ProposalsManager';
 import EnhancedLeadsDashboard from './leads/EnhancedLeadsDashboard';
 import ExternalLeadsDashboard from './leads/ExternalLeadsDashboard';
+import FormSubmissionsManager from './FormSubmissionsManager';
 import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
@@ -68,6 +69,7 @@ const AdminRouter = () => {
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsPage />} />
+      <Route path="/form-submissions" element={<FormSubmissionsManager />} />
       
       {/* Content Management */}
       <Route path="/content-performance" element={<ContentPerformancePage />} />
