@@ -291,8 +291,29 @@ class DatabaseQueryOptimizer {
 let queryOptimizerInstance: DatabaseQueryOptimizer | null = null;
 
 export const getQueryOptimizer = (): DatabaseQueryOptimizer => {
+  // TEMPORARILY DISABLED - Using direct supabase client instead
+  console.warn('QueryOptimizer temporarily disabled - using direct supabase client');
+  
   if (!queryOptimizerInstance) {
-    queryOptimizerInstance = new DatabaseQueryOptimizer();
+    // Create a simple mock instance to avoid breaking existing code
+    queryOptimizerInstance = {
+      executeOptimizedQuery: async () => { 
+        throw new Error('QueryOptimizer disabled - use direct supabase client'); 
+      },
+      generatePerformanceReport: () => ({
+        totalQueries: 0,
+        avgExecutionTime: 0,
+        cacheHitRate: 0,
+        slowQueries: [],
+        recommendations: ['Use direct supabase client instead of optimizer']
+      }),
+      clearCache: () => {},
+      getMetrics: () => ({
+        queriesExecuted: 0,
+        cacheSize: 0,
+        avgExecutionTime: 0
+      })
+    } as any;
   }
   return queryOptimizerInstance;
 };

@@ -160,9 +160,15 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId.substring(0, 8) + '...');
       
+      // Skip tracking in development or admin routes to prevent loops
+      if (process.env.NODE_ENV !== 'production' || window.location.pathname.startsWith('/admin')) {
+        console.debug('⏭️ Tracking skipped (dev mode or admin route)');
+        return;
+      }
+      
       // Use secure tracking edge function with shorter timeout for admin stability
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Tracking timeout')), 5000); // Increased timeout for stability
+        setTimeout(() => reject(new Error('Tracking timeout')), 3000); // Reduced timeout
       });
 
       const requestPromise = supabase.functions.invoke('secure-tracking', {

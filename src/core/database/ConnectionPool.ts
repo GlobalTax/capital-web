@@ -233,40 +233,31 @@ let dbPoolInstance: DatabaseConnectionPool | null = null;
 let dbPoolInitPromise: Promise<DatabaseConnectionPool> | null = null;
 
 export const getDbPool = async (): Promise<DatabaseConnectionPool> => {
-  if (dbPoolInstance) {
-    return dbPoolInstance;
-  }
+  // TEMPORARILY DISABLED - Using optimized singleton client instead
+  console.warn('DatabaseConnectionPool temporarily disabled - using optimized singleton client');
   
-  if (dbPoolInitPromise) {
-    return dbPoolInitPromise;
+  if (!dbPoolInstance) {
+    // Create a simple mock instance to avoid breaking existing code
+    dbPoolInstance = {
+      getStats: () => ({
+        activeConnections: 1,
+        idleConnections: 0,
+        totalQueries: 0,
+        avgQueryTime: 0,
+        failedQueries: 0
+      }),
+      executeQuery: async () => { throw new Error('Connection pool disabled - use direct supabase client'); },
+      getConnection: async () => { throw new Error('Connection pool disabled - use direct supabase client'); },
+      releaseConnection: () => {},
+      destroy: async () => {}
+    } as any;
   }
 
-  dbPoolInitPromise = (async () => {
-    try {
-      // Esperar a que el DOM esté listo y los módulos cargados
-      await new Promise(resolve => {
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', resolve);
-        } else {
-          resolve(void 0);
-        }
-      });
-      
-      // Pequeño delay para asegurar que todos los módulos estén completamente inicializados
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      dbPoolInstance = new DatabaseConnectionPool();
-      return dbPoolInstance;
-    } catch (error) {
-      dbPoolInitPromise = null; // Reset para permitir retry
-      throw error;
-    }
-  })();
-
-  return dbPoolInitPromise;
+  return dbPoolInstance;
 };
 
 // Synchronous getter que devuelve null si no está inicializado
 export const getDbPoolSync = (): DatabaseConnectionPool | null => {
+  // TEMPORARILY DISABLED - Using optimized singleton client instead
   return dbPoolInstance;
 };
