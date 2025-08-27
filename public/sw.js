@@ -16,12 +16,30 @@ self.addEventListener('install', (event) => {
   
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[SW] Caching critical resources');
-        return cache.addAll(CRITICAL_RESOURCES);
+        
+        // Cache resources individually with error handling
+        const cachePromises = CRITICAL_RESOURCES.map(async (resource) => {
+          try {
+            // Verify resource exists before caching
+            const response = await fetch(resource);
+            if (response.ok) {
+              await cache.put(resource, response);
+              console.log(`[SW] Cached: ${resource}`);
+            } else {
+              console.warn(`[SW] Resource not available: ${resource} (${response.status})`);
+            }
+          } catch (error) {
+            console.warn(`[SW] Failed to cache ${resource}:`, error.message);
+          }
+        });
+        
+        await Promise.allSettled(cachePromises);
+        console.log('[SW] Critical resources caching completed');
       })
       .catch((error) => {
-        console.error('[SW] Failed to cache critical resources:', error);
+        console.error('[SW] Failed to open cache:', error);
       })
   );
   
