@@ -15,6 +15,7 @@ import {
 import { useMarketingMetrics } from '@/features/dashboard/hooks/useMarketingMetrics';
 import { LoadingSkeleton, ErrorFallback } from '@/shared';
 import { devLogger } from '@/utils/devLogger';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Lazy loading para componentes pesados
 const MarketingOverview = React.lazy(() => import('@/features/dashboard/components/MarketingOverview').then(module => ({ default: module.MarketingOverview })));
@@ -61,7 +62,11 @@ KPICard.displayName = 'KPICard';
 
 // Componente principal memoizado
 const UnifiedDashboard = memo(() => {
-  const { metrics, isLoading, error } = useMarketingMetrics();
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { metrics, isLoading: metricsLoading, error } = useMarketingMetrics();
+  
+  // Combined loading state
+  const isLoading = authLoading || metricsLoading;
 
   // Memoizar los KPIs para evitar recalcular
   const kpis = useMemo(() => {
@@ -111,13 +116,77 @@ const UnifiedDashboard = memo(() => {
     return <LoadingSkeleton />;
   }
 
+  // Show authentication status for debugging
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-6 max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              No autenticado
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Debes iniciar sesión para acceder al dashboard de administración.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-6 max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Sin permisos de administrador
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Necesitas permisos de administrador para acceder a este dashboard.
+            </p>
+            <div className="mt-4 text-xs text-muted-foreground">
+              <p>Usuario: {user.email}</p>
+              <p>ID: {user.id}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (error) {
     return (
-      <ErrorFallback 
-        title="Error al cargar el dashboard"
-        message="Ha ocurrido un error al cargar los datos del dashboard."
-        onRetry={() => window.location.reload()}
-      />
+      <div className="space-y-4">
+        {/* Debug info for admin */}
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="h-5 w-5" />
+              Error de datos del dashboard
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <p className="text-red-600 mb-2">Error: {error?.message || 'Error desconocido'}</p>
+            <div className="text-xs text-red-500 space-y-1">
+              <p>Usuario: {user.email} (Admin: {isAdmin ? 'Sí' : 'No'})</p>
+              <p>Esto puede indicar un problema con las políticas RLS de la base de datos.</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <ErrorFallback 
+          title="Error al cargar el dashboard"
+          message="Ha ocurrido un error al cargar los datos del dashboard."
+          onRetry={() => window.location.reload()}
+        />
+      </div>
     );
   }
 

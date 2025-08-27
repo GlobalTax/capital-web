@@ -21,9 +21,24 @@ export const useMarketingMetrics = () => {
         
         try {
           const data = await supabaseApi.getUnifiedMarketingData();
+          devLogger.info('Successfully fetched marketing data', { 
+            contactLeads: data.contactLeads.length,
+            leadScores: data.leadScores.length,
+            companyValuations: data.companyValuations.length,
+            blogAnalytics: data.blogAnalytics.length,
+            blogPostMetrics: data.blogPostMetrics.length,
+            leadBehavior: data.leadBehavior.length
+          }, 'marketing', 'useMarketingMetrics');
           return data;
         } catch (error) {
           devLogger.error('Error fetching unified marketing data', error, 'marketing', 'useMarketingMetrics');
+          // Log specific error details for debugging
+          if (error instanceof Error) {
+            devLogger.error('Error details', { 
+              message: error.message, 
+              stack: error.stack 
+            }, 'marketing', 'useMarketingMetrics');
+          }
           throw error;
         }
       },
@@ -34,7 +49,14 @@ export const useMarketingMetrics = () => {
     staleTime: APP_CONFIG.PERFORMANCE.QUERY_STALE_TIME,
     gcTime: APP_CONFIG.PERFORMANCE.QUERY_GC_TIME,
     refetchOnWindowFocus: false,
-    retry: APP_CONFIG.PERFORMANCE.QUERY_RETRY_COUNT
+    retry: (failureCount, error) => {
+      // Don't retry RLS permission errors
+      if (error?.message?.includes('permission') || error?.message?.includes('policy')) {
+        devLogger.warn('RLS permission error - not retrying', { error: error.message }, 'marketing', 'useMarketingMetrics');
+        return false;
+      }
+      return failureCount < APP_CONFIG.PERFORMANCE.QUERY_RETRY_COUNT;
+    }
   });
 
   // Memoizar el cálculo de métricas

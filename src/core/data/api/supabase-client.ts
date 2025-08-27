@@ -125,6 +125,35 @@ export class SupabaseApi {
 
   // ============= UNIFIED QUERY =============
   async getUnifiedMarketingData() {
+    // Execute queries individually to handle failures gracefully
+    const results = await Promise.allSettled([
+      this.getContactLeads().catch(error => {
+        console.warn('Failed to fetch contact leads:', error.message);
+        return [];
+      }),
+      this.getLeadScores().catch(error => {
+        console.warn('Failed to fetch lead scores:', error.message);
+        return [];
+      }),
+      this.getCompanyValuations().catch(error => {
+        console.warn('Failed to fetch company valuations:', error.message);
+        return [];
+      }),
+      this.getBlogAnalytics().catch(error => {
+        console.warn('Failed to fetch blog analytics:', error.message);
+        return [];
+      }),
+      this.getBlogPostMetrics().catch(error => {
+        console.warn('Failed to fetch blog post metrics:', error.message);
+        return [];
+      }),
+      this.getLeadBehaviorEvents().catch(error => {
+        console.warn('Failed to fetch lead behavior events:', error.message);
+        return [];
+      })
+    ]);
+
+    // Extract successful results, use empty arrays for failed ones
     const [
       contactLeads,
       leadScores,
@@ -132,14 +161,20 @@ export class SupabaseApi {
       blogAnalytics,
       blogPostMetrics,
       leadBehavior
-    ] = await Promise.all([
-      this.getContactLeads(),
-      this.getLeadScores(),
-      this.getCompanyValuations(),
-      this.getBlogAnalytics(),
-      this.getBlogPostMetrics(),
-      this.getLeadBehaviorEvents()
-    ]);
+    ] = results.map(result => 
+      result.status === 'fulfilled' ? result.value : []
+    );
+
+    // Log which queries succeeded/failed
+    console.log('Marketing data fetch results:', {
+      contactLeads: contactLeads.length,
+      leadScores: leadScores.length,
+      companyValuations: companyValuations.length,
+      blogAnalytics: blogAnalytics.length,
+      blogPostMetrics: blogPostMetrics.length,
+      leadBehavior: leadBehavior.length,
+      failedQueries: results.filter(r => r.status === 'rejected').length
+    });
 
     return {
       contactLeads,
