@@ -187,7 +187,7 @@ const LandingCalculatorInner = () => {
           ebitda: 0,
           baseValuation: 0,
           whatsapp_opt_in: true
-        }} />
+        }} fiscalMode={false} />
         {/* Confidencialidad y privacidad de la herramienta */}
         <ConfidentialityBlock />
         {/* Breve descripción de Capittal */}

@@ -48,7 +48,7 @@ const LandingCalculadoraFiscal = () => {
       <LandingHeaderMinimal />
       <main className="pt-20">
         <h1 className="sr-only">Calculadora Fiscal de Venta de Empresas en España</h1>
-        <ValuationCalculatorV4 companyData={initialCompanyData} />
+        <ValuationCalculatorV4 companyData={initialCompanyData} fiscalMode={true} />
       </main>
       <LandingFooterMinimal />
       <Toaster />
