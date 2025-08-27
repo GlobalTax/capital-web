@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
-import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
+import { HomeLayout } from '@/shared';
 import ValuationCalculatorV4 from '@/components/ValuationCalculatorV4';
 import { CompanyDataV4 } from '@/types/valuationV4';
 import { Toaster } from '@/components/ui/sonner';
@@ -44,15 +43,11 @@ const LandingCalculadoraFiscal = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <LandingHeaderMinimal />
-      <main className="pt-20">
-        <h1 className="sr-only">Calculadora Fiscal de Venta de Empresas en España</h1>
-        <ValuationCalculatorV4 companyData={initialCompanyData} />
-      </main>
-      <LandingFooterMinimal />
+    <HomeLayout>
+      <h1 className="sr-only">Calculadora Fiscal de Venta de Empresas en España</h1>
+      <ValuationCalculatorV4 companyData={initialCompanyData} />
       <Toaster />
-    </div>
+    </HomeLayout>
   );
 };
 

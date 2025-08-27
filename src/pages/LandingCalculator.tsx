@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
-import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
+import { HomeLayout } from '@/shared';
 import ValuationCalculator from '@/components/ValuationCalculator';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
@@ -168,23 +167,19 @@ const LandingCalculatorInner = () => {
   }, [location.search]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <LandingHeaderMinimal />
-      <main className="pt-20">
-        {/* Selector de idioma */}
-        <div className="max-w-6xl mx-auto px-4 flex justify-end">
-          <LanguageSelector />
-        </div>
-        {/* H1 único para SEO, oculto visualmente */}
-        <h1 className="sr-only">{t('landing.h1')}</h1>
-        <ValuationCalculator />
-        {/* Confidencialidad y privacidad de la herramienta */}
-        <ConfidentialityBlock />
-        {/* Breve descripción de Capittal */}
-        <CapittalBrief />
-      </main>
-      <LandingFooterMinimal />
-    </div>
+    <HomeLayout>
+      {/* Selector de idioma */}
+      <div className="max-w-6xl mx-auto px-4 flex justify-end">
+        <LanguageSelector />
+      </div>
+      {/* H1 único para SEO, oculto visualmente */}
+      <h1 className="sr-only">{t('landing.h1')}</h1>
+      <ValuationCalculator />
+      {/* Confidencialidad y privacidad de la herramienta */}
+      <ConfidentialityBlock />
+      {/* Breve descripción de Capittal */}
+      <CapittalBrief />
+    </HomeLayout>
   );
 };
 
