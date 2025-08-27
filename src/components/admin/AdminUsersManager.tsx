@@ -135,7 +135,17 @@ const AdminUsersManager = () => {
 
   const isAllSelected = selectedUsers.length === users.length && users.length > 0;
 
+  console.log('🔍 [AdminUsersManager] Render state:', {
+    isLoading,
+    permissionsLoading,
+    usersCount: users.length,
+    hasPermission: hasPermission('canManageUsers'),
+    userRole,
+    error
+  });
+
   if (isLoading || permissionsLoading) {
+    console.log('⏳ [AdminUsersManager] Showing loading state');
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -148,6 +158,7 @@ const AdminUsersManager = () => {
 
   // Verificar permisos para acceder a esta página
   if (!hasPermission('canManageUsers')) {
+    console.log('🚫 [AdminUsersManager] Permission denied, showing restricted view');
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -160,6 +171,8 @@ const AdminUsersManager = () => {
       </div>
     );
   }
+
+  console.log('✅ [AdminUsersManager] Rendering main UI with users:', users.length);
 
   return (
     <div className="space-y-6">
