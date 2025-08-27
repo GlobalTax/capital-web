@@ -1,96 +1,284 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator } from 'lucide-react';
+import React, { useEffect } from 'react';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
+import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
+import { useValuationAutosave } from '@/hooks/useValuationAutosave';
+import { useValuationHeartbeat } from '@/hooks/useValuationHeartbeat';
+import { useValuationLoader } from '@/hooks/useValuationLoader';
+import { CompanyData } from '@/types/valuation';
+import StepIndicator from '@/components/valuation/StepIndicator';
+import StepContent from '@/components/valuation/StepContent';
+import NavigationButtons from '@/components/valuation/NavigationButtons';
+import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import StepIndicator from './valuation/StepIndicator';
-import StepContent from './valuation/StepContent';
-import NavigationButtons from './valuation/NavigationButtons';
-import LanguageSelector from './valuation/LanguageSelector';
 
-const ValuationCalculator: React.FC = () => {
-  const {
-    companyData,
+const ValuationCalculator = () => {
+  const { t } = useI18n();
+  
+  // Extract token from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlToken = urlParams.get('token');
+
+  // Load existing valuation if token provided
+  const { data: existingValuation, isLoading: isLoadingValuation } = useValuationLoader(urlToken);
+  
+  const { 
     currentStep,
-    result,
+    companyData, 
+    result, 
     isCalculating,
     showValidation,
-    isStepValid,
-    updateField,
-    handleFieldBlur,
+    errors,
     getFieldState,
-    validateStep,
-    goToStep,
+    handleFieldBlur,
+    updateField, 
     nextStep,
     prevStep,
-    resetCalculator
+    goToStep,
+    validateStep,
+    calculateValuation, 
+    resetCalculator 
   } = useValuationCalculator();
 
-  const { t } = useI18n();
+  const {
+    trackStepChange,
+    trackFieldUpdate,
+    trackValidationIssue,
+    trackCalculationStart,
+    trackCalculationComplete,
+    trackCalculationAbandon
+  } = useValuationCalculatorTracking();
 
-  const errors = React.useMemo(() => {
-    const errorMap: Record<string, string> = {};
-    Object.keys(companyData).forEach(field => {
-      const fieldState = getFieldState(field);
-      if (fieldState.hasError && fieldState.errorMessage) {
-        errorMap[field] = fieldState.errorMessage;
+  const {
+    uniqueToken,
+    lastSaved,
+    isSaving,
+    currentStep: autosaveStep,
+    timeSpent,
+    hasExistingSession,
+    initializeToken,
+    createInitialValuation,
+    createInitialValuationOnFirstField,
+    updateValuation,
+    updateValuationImmediate,
+    finalizeValuation,
+    updateStep,
+    clearAutosave,
+    flushPendingUpdates
+  } = useValuationAutosave();
+
+  // Setup heartbeat for activity tracking
+  useValuationHeartbeat({
+    uniqueToken,
+    currentStep,
+    timeSpent,
+    startTime: null, // We'll get this from autosave hook
+    isActive: currentStep < 4 // Only active during form steps, not results
+  });
+
+  // Initialize autosave token on mount or load existing valuation
+  useEffect(() => {
+    if (urlToken && existingValuation) {
+      // Pre-fill form with loaded data
+      Object.entries(existingValuation).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          updateField(key as keyof CompanyData, value);
+        }
+      });
+    } else {
+      initializeToken();
+    }
+  }, [initializeToken, urlToken, existingValuation, updateField]);
+
+  // Track step changes
+  useEffect(() => {
+    trackStepChange(currentStep);
+    updateStep(currentStep); // Update autosave step tracking
+  }, [currentStep, trackStepChange, updateStep]);
+
+  // Enhanced updateField with tracking y GUARDADO AUTOMÁTICO INMEDIATO desde el primer campo
+  const trackedUpdateField = async (field: keyof CompanyData, value: any) => {
+    updateField(field, value);
+    trackFieldUpdate(field, value);
+
+    // Obtener parámetros UTM del URL para el tracking
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmData = {
+      utm_source: urlParams.get('utm_source'),
+      utm_medium: urlParams.get('utm_medium'),
+      utm_campaign: urlParams.get('utm_campaign'),
+      referrer: document.referrer || null
+    };
+
+    try {
+      // CREAR valoración inicial si no existe token
+      if (!uniqueToken) {
+        console.log(`🔥 Primer campo detectado: ${field} = "${value}"`);
+        const newToken = await createInitialValuationOnFirstField(field, value, companyData, utmData);
+        if (newToken) {
+          console.log('✅ Sistema de guardado automático activado!');
+        }
+      } else {
+        // CAMPOS CRÍTICOS: guardado inmediato (email, companyName)
+        if (field === 'email' || field === 'companyName') {
+          console.log(`🔥 Campo crítico detectado: ${field}. Guardado inmediato...`);
+          await updateValuationImmediate({ [field]: value }, field);
+        } else {
+          // OTROS CAMPOS: guardado con debounce (300ms)
+          updateValuation({ [field]: value }, field);
+        }
       }
-    });
-    return errorMap;
-  }, [getFieldState, companyData]);
+    } catch (error) {
+      console.error('❌ Error en guardado automático:', error);
+    }
+  };
+
+  // Enhanced handleFieldBlur with tracking
+  const trackedHandleFieldBlur = (field: keyof CompanyData) => {
+    handleFieldBlur(field);
+    
+    // Track validation errors
+    const fieldErrors = errors[field];
+    if (fieldErrors) {
+      const errorMessage = Array.isArray(fieldErrors) 
+        ? fieldErrors.join(', ') 
+        : fieldErrors.toString();
+      trackValidationIssue(field, errorMessage);
+    }
+  };
+
+  const handleNext = async () => {
+    console.log('handleNext called, currentStep:', currentStep);
+    
+    if (currentStep === 1) {
+      // Step 1: Calculate valuation and move to results
+      console.log('In step 1, calculating valuation...');
+      trackCalculationStart();
+      
+      // Create initial valuation if not exists
+      if (!uniqueToken) {
+        console.log('Creating initial valuation for Step 1...');
+        const token = await createInitialValuation(companyData);
+        if (!token) {
+          console.warn('Failed to create initial valuation');
+        }
+      }
+      
+      try {
+        await calculateValuation();
+        
+        // Finalize autosave with calculation results if we have a token
+        if (uniqueToken && result) {
+          await finalizeValuation({
+            ...companyData,
+            finalValuation: result.finalValuation,
+            ebitdaMultipleUsed: result.multiples.ebitdaMultipleUsed,
+            valuationRangeMin: result.valuationRange.min,
+            valuationRangeMax: result.valuationRange.max,
+          });
+        }
+         
+        trackCalculationComplete();
+      } catch (error) {
+        trackCalculationAbandon(currentStep);
+      }
+    }
+  };
+
+  // Track abandon on unmount and handle page unload flush
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Flush any pending updates before leaving
+      flushPendingUpdates();
+    };
+
+    const handleUnload = () => {
+      if (currentStep < 4 && !result) {
+        trackCalculationAbandon(currentStep);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        updateValuationImmediate(companyData, 'flush_exit');
+      }
+    };
+
+    const handlePageHide = () => {
+      updateValuationImmediate(companyData, 'flush_exit');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      handleUnload();
+    };
+  }, [currentStep, result, trackCalculationAbandon, flushPendingUpdates, updateValuationImmediate, companyData]);
+
+  const isNextDisabled = isCalculating;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 mx-auto">
-                <Calculator className="h-8 w-8 text-primary" />
-                <CardTitle className="text-3xl font-bold text-foreground">
-                  {t('calc.title')}
-                </CardTitle>
+    <div className="min-h-screen bg-white py-12 overflow-x-hidden">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {t('calc.title')}
+          </h1>
+          <p className="text-lg text-gray-600">
+            {t('calc.subtitle')}
+          </p>
+          
+          <div className="flex items-center justify-center gap-4 mt-4">
+            {/* Save status indicator */}
+            <SaveStatus isSaving={isSaving} lastSaved={lastSaved} />
+            
+            {/* Existing session indicator */}
+            {hasExistingSession && (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-50 text-green-700 border border-green-200">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Sesión recuperada
               </div>
-              <LanguageSelector />
-            </div>
-            <p className="text-muted-foreground">
-              {t('calc.subtitle')}
-            </p>
-          </CardHeader>
-
-          <CardContent className="space-y-8">
-            {/* Step Indicator */}
-            <StepIndicator 
-              currentStep={currentStep}
-              goToStep={goToStep}
-              validateStep={validateStep}
-            />
-
-            {/* Step Content */}
-            <StepContent
-              currentStep={currentStep}
-              companyData={companyData}
-              updateField={updateField}
-              result={result}
-              isCalculating={isCalculating}
-              resetCalculator={resetCalculator}
-              showValidation={showValidation}
-              getFieldState={getFieldState}
-              handleFieldBlur={handleFieldBlur}
-              errors={errors}
-            />
-
-            {/* Navigation Buttons - Only show for step 1 */}
-            {currentStep === 1 && (
-              <NavigationButtons
-                currentStep={currentStep}
-                isNextDisabled={!isStepValid || isCalculating}
-                onPrev={prevStep}
-                onNext={nextStep}
-              />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        <StepIndicator 
+          currentStep={currentStep} 
+          goToStep={goToStep}
+          validateStep={validateStep}
+        />
+
+        <div className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
+          <StepContent
+            currentStep={currentStep}
+            companyData={companyData}
+            updateField={trackedUpdateField}
+            result={result}
+            isCalculating={isCalculating}
+            resetCalculator={resetCalculator}
+            showValidation={showValidation}
+            getFieldState={getFieldState}
+            handleFieldBlur={trackedHandleFieldBlur}
+            errors={errors}
+          />
+
+          {currentStep < 2 && (
+            <NavigationButtons
+              currentStep={currentStep}
+              isNextDisabled={isNextDisabled}
+              onPrev={prevStep}
+              onNext={handleNext}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

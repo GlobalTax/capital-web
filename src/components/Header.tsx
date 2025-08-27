@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Menu, X, Phone, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/shared/hooks';
+import { useAuth } from '@/contexts/AuthContext';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
 

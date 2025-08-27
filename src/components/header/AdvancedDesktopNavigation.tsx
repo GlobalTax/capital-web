@@ -9,7 +9,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu-lazy";
 import { ArrowRight } from 'lucide-react';
-import { useAuth } from '@/shared/hooks';
+import { useAuth } from '@/contexts/AuthContext';
 import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
 import LazyIcon from '@/components/ui/LazyIcon';
 

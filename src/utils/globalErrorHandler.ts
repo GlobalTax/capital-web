@@ -75,7 +75,8 @@ class GlobalErrorHandler {
     devLogger.error(
       `Global error: ${errorInfo.message}`,
       errorInfo.error,
-      { context: 'global', component: 'ErrorHandler' }
+      'global',
+      'ErrorHandler'
     );
 
     // Limpiar historial cada 10 minutos
@@ -90,7 +91,8 @@ class GlobalErrorHandler {
       devLogger.warn(
         `Resource loading failed: ${tagName}`,
         { src, tagName },
-        'resource'
+        'resource',
+        'ErrorHandler'
       );
     }
   }

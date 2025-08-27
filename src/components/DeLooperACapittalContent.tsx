@@ -111,7 +111,7 @@ const DeLooperACapittalContent = () => {
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
             De <span className="text-muted-foreground">Looper</span> a{' '}
-            <span className="font-bold text-primary">
+            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Capittal
             </span>
           </h1>

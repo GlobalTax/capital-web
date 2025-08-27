@@ -2,7 +2,6 @@
 import React, { ReactNode } from 'react';
 import ErrorBoundary from './ErrorBoundary';
 import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/utils/logger';
 
 interface ErrorBoundaryProviderProps {
   children: ReactNode;
@@ -19,17 +18,14 @@ const ErrorBoundaryProvider = ({ children }: ErrorBoundaryProviderProps) => {
       variant: "destructive",
     });
 
-    // Log estructurado usando logger
-    logger.error('Error Boundary caught error', error, {
-      context: 'system',
-      component: 'ErrorBoundaryProvider',
-      data: {
-        componentStack: errorInfo.componentStack,
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString()
-      }
-    });
+    // Log estructurado para debugging
+    console.group('🚨 Error Boundary - Error Details');
+    console.error('Error:', error);
+    console.error('Error Info:', errorInfo);
+    console.error('Timestamp:', new Date().toISOString());
+    console.error('URL:', window.location.href);
+    console.error('User Agent:', navigator.userAgent);
+    console.groupEnd();
   };
 
   return (

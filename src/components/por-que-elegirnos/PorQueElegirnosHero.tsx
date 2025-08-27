@@ -43,7 +43,7 @@ const PorQueElegirnosHero = () => {
           <div className="animate-fade-in">
             <h1 className="text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
               Por Qué Elegir
-              <span className="block font-bold text-foreground">
+              <span className="block text-transparent bg-gradient-to-r from-gray-600 to-black bg-clip-text">
                 Capittal
               </span>
             </h1>

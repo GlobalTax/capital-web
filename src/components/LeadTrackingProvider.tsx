@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
 import { useLocation } from 'react-router-dom';
@@ -13,63 +14,43 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
   enabled = true 
 }) => {
   const location = useLocation();
-  
-  // Disable tracking in admin routes for stability
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const trackingEnabled = enabled && !isAdminRoute;
-  
   const { trackPageView, trackCalculatorUsage, trackContactInterest } = useLeadTracking({
-    enablePageTracking: trackingEnabled,
-    enableTimeTracking: trackingEnabled,
-    enableCalculatorTracking: trackingEnabled,
-    enableContactTracking: trackingEnabled
+    enablePageTracking: enabled,
+    enableTimeTracking: enabled,
+    enableCalculatorTracking: enabled,
+    enableContactTracking: enabled
   });
 
-  // Track route changes (skip admin routes) with increased debounce
+  // Track route changes
   useEffect(() => {
-    if (!trackingEnabled) return;
+    if (!enabled) return;
     
-    logger.debug('Route changed', { 
-      pathname: location.pathname,
-      search: location.search 
-    }, { context: 'marketing', component: 'LeadTrackingProvider' });
+    logger.debug('Route change tracked', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
     
-    // Track page view with increased debounce for stability
-    const timeoutId = setTimeout(() => {
-      trackPageView(location.pathname);
-    }, 2000); // Increased debounce to 2 seconds
+    // Track page view on route change
+    trackPageView(location.pathname);
     
-    return () => clearTimeout(timeoutId);
-  }, [location, trackPageView, trackingEnabled]);
+    // Track specific high-value pages
+    if (location.pathname.includes('/lp/calculadora')) {
+      trackCalculatorUsage('page_visit');
+    }
+    
+    if (location.pathname.includes('/contacto')) {
+      trackContactInterest('page_visit');
+    }
+    
+    if (location.pathname.includes('/venta-empresas') || 
+        location.pathname.includes('/servicios/valoraciones') ||
+        location.pathname.includes('/servicios/due-diligence')) {
+      logger.info('High-intent page visited', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
+      trackPageView(location.pathname + '_high_intent');
+    }
+    
+  }, [location.pathname, enabled, trackPageView, trackCalculatorUsage, trackContactInterest]);
 
-  // Track specific high-value pages with debouncing
+  // Expose tracking functions globally for manual tracking
   useEffect(() => {
-    if (!trackingEnabled) return;
-    
-    // Debounce high-value page tracking to prevent spam
-    const timeoutId = setTimeout(() => {
-      if (location.pathname.includes('/lp/calculadora')) {
-        trackCalculatorUsage('page_visit');
-      }
-      
-      if (location.pathname.includes('/contacto')) {
-        trackContactInterest('page_visit');
-      }
-      
-      if (location.pathname.includes('/venta-empresas') || 
-          location.pathname.includes('/servicios/valoraciones') ||
-          location.pathname.includes('/servicios/due-diligence')) {
-        logger.info('High-intent page visited', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
-        trackPageView(location.pathname + '_high_intent');
-      }
-    }, 1500); // 1.5 second debounce for high-value pages
-    
-    return () => clearTimeout(timeoutId);
-  }, [location.pathname, trackingEnabled, trackPageView, trackCalculatorUsage, trackContactInterest]);
-
-  // Expose tracking functions globally for manual tracking (only if enabled)
-  useEffect(() => {
-    if (!trackingEnabled) return;
+    if (!enabled) return;
     
     // Make tracking available globally for forms and interactions
     (window as any).capittalTracking = {
@@ -81,7 +62,7 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
     return () => {
       delete (window as any).capittalTracking;
     };
-  }, [trackingEnabled, trackCalculatorUsage, trackContactInterest, trackPageView]);
+  }, [enabled, trackCalculatorUsage, trackContactInterest, trackPageView]);
 
   return <>{children}</>;
 };

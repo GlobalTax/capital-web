@@ -166,8 +166,8 @@ export const logSecurityEvent = (
     inputLength: details.input?.length || 0,
     sanitizedLength: details.sanitized?.length || 0,
     // No loguear el contenido completo por seguridad, solo indicadores
-    hadScript: (typeof details.input === 'string' && details.input.includes('<script')) || false,
-    hadOnEvent: (typeof details.input === 'string' && /on\w+\s*=/i.test(details.input)) || false
+    hadScript: details.input?.includes('<script') || false,
+    hadOnEvent: /on\w+\s*=/i.test(details.input || '') || false
   };
 
   console.warn(`[SECURITY] ${eventType}:`, event);

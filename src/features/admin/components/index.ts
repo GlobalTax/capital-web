@@ -1,10 +1,6 @@
 // ============= ADMIN COMPONENTS BARREL EXPORTS =============
 // Centralized exports for admin components
 
-// Core components
-export { AdminCard } from './AdminCard';
-export { AdminTable } from './AdminTable';
-
 // Dashboard components
 export { UnifiedDashboard } from '@/components/admin/UnifiedDashboard';
 

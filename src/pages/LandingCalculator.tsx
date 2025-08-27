@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
 import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
-import ValuationCalculatorV4 from '@/components/ValuationCalculatorV4';
+import ValuationCalculator from '@/components/ValuationCalculator';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useLocation } from 'react-router-dom';
@@ -177,17 +177,7 @@ const LandingCalculatorInner = () => {
         </div>
         {/* H1 único para SEO, oculto visualmente */}
         <h1 className="sr-only">{t('landing.h1')}</h1>
-        <ValuationCalculatorV4 companyData={{
-          contactName: '',
-          companyName: '',
-          email: '',
-          phone: '',
-          industry: '',
-          revenue: 0,
-          ebitda: 0,
-          baseValuation: 0,
-          whatsapp_opt_in: true
-        }} fiscalMode={false} />
+        <ValuationCalculator />
         {/* Confidencialidad y privacidad de la herramienta */}
         <ConfidentialityBlock />
         {/* Breve descripción de Capittal */}

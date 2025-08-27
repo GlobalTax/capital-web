@@ -173,7 +173,6 @@ export const AdminSidebar: React.FC = () => {
       'marketing-intelligence': 'marketingIntelligence',
       'marketing-hub': 'marketingHub',
       'integrations': 'integrations',
-      'user-control': 'adminUsers',
       'admin-users': 'adminUsers',
       'settings': 'settings',
       // Nuevas rutas de tracking

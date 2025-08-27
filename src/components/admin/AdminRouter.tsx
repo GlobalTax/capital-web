@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
+import { useAuth } from '@/contexts/AuthContext';
 import AdminDashboard from './dashboard/AdminDashboard';
 import LeadScoringManager from './dashboard/LeadScoringManager';
 import LeadScoringRulesManager from './dashboard/LeadScoringRulesManager';
@@ -27,7 +27,6 @@ import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 import VideoManager from './VideoManager';
-import UserControlPanel from './UserControlPanel';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import ContactsPage from '@/pages/admin/ContactsPage';
@@ -38,7 +37,7 @@ import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 
 const AdminRouter = () => {
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin } = useAuth();
 
   if (!isAdmin) {
     return (
@@ -106,7 +105,6 @@ const AdminRouter = () => {
       
       {/* Settings */}
       <Route path="/admin-users" element={<AdminUsersManager />} />
-      <Route path="/user-control" element={<UserControlPanel />} />
       <Route path="/settings" element={<AdminSettings />} />
       
       {/* Catch all */}

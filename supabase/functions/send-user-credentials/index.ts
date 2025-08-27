@@ -60,125 +60,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // STEP 1: Check if user already exists in Auth
-    const { data: existingUsers } = await supabase.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000
-    });
-    
-    const existingUser = existingUsers?.users?.find(u => u.email === email);
-    let authUserId: string | null = null;
-
-    if (existingUser) {
-      // User exists - update their password and metadata
-      console.log("User already exists, updating password:", existingUser.id);
-      
-      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
-        existingUser.id,
-        {
-          password: temporaryPassword,
-          user_metadata: {
-            full_name: fullName,
-            role,
-            password_updated_at: new Date().toISOString()
-          },
-          email_confirm: true
-        }
-      );
-
-      if (updateError) {
-        console.error("Failed to update existing user:", updateError);
-        
-        await supabase.from('security_events').insert({
-          event_type: 'AUTH_USER_UPDATE_FAILED',
-          severity: 'high',
-          details: { 
-            email, 
-            user_id: existingUser.id,
-            error: updateError.message,
-            timestamp: new Date().toISOString()
-          }
-        });
-        
-        return new Response(
-          JSON.stringify({ error: `Failed to update user credentials: ${updateError.message}` }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
-
-      authUserId = existingUser.id;
-      console.log("Successfully updated existing user credentials:", authUserId);
-      
-    } else {
-      // User doesn't exist - create new user
-      console.log("Creating new user in auth for:", email);
-      
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password: temporaryPassword,
-        user_metadata: {
-          full_name: fullName,
-          role,
-          created_at: new Date().toISOString()
-        },
-        email_confirm: true // Auto-confirm email so they can login immediately
-      });
-
-      if (authError) {
-        console.error("Failed to create new user in auth:", authError);
-        
-        await supabase.from('security_events').insert({
-          event_type: 'AUTH_USER_CREATION_FAILED',
-          severity: 'high',
-          details: { 
-            email, 
-            error: authError.message,
-            timestamp: new Date().toISOString()
-          }
-        });
-        
-        return new Response(
-          JSON.stringify({ error: `Failed to create user: ${authError.message}` }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
-
-      authUserId = authUser.user?.id || null;
-      console.log("Successfully created new user in auth:", authUserId);
-    }
-
-    // STEP 2: Update or ensure admin_users record has correct user_id
-    if (authUserId) {
-      const { error: updateError } = await supabase
-        .from('admin_users')
-        .upsert({ 
-          user_id: authUserId, 
-          email, 
-          full_name: fullName, 
-          role,
-          is_active: true,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-        
-      if (updateError) {
-        console.error("Failed to update/create admin_users record:", updateError);
-        await supabase.from('security_events').insert({
-          event_type: 'ADMIN_USER_RECORD_UPDATE_FAILED',
-          severity: 'medium',
-          details: { 
-            email, 
-            auth_user_id: authUserId,
-            error: updateError.message,
-            timestamp: new Date().toISOString()
-          }
-        });
-      } else {
-        console.log("Successfully updated admin_users record for:", authUserId);
-      }
-    }
-
     // Log security event
     await supabase.from('security_events').insert({
       event_type: 'USER_CREDENTIALS_SENT',
@@ -200,126 +81,66 @@ const handler = async (req: Request): Promise<Response> => {
     const roleName = roleTranslations[role] || role;
 
     const emailResponse = await resend.emails.send({
-      from: "Capittal <admin@capittal.es>",
+      from: "Capittal <admin@capittal.com>",
       to: [email],
       subject: "Acceso a la plataforma Capittal - Credenciales temporales",
       html: `
-        <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
-          <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:32px;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">Bienvenido a Capittal</h1>
+          </div>
+          
+          <div style="padding: 30px; background-color: #f9fafb;">
+            <h2 style="color: #1f2937;">Hola ${fullName || 'Usuario'},</h2>
             
-            <!-- Header -->
-            <div style="text-align: center; margin-bottom: 32px;">
-              <h1 style="margin:0 0 8px; color:#111827; font-size:24px; font-weight:700;">Bienvenido a Capittal</h1>
-              <p style="margin:0; color:#6b7280; font-size:16px;">Tu acceso a la plataforma está listo</p>
+            <p style="color: #4b5563; line-height: 1.6;">
+              Tu cuenta ha sido preparada en la plataforma Capittal. Aquí tienes tus credenciales de acceso temporal:
+            </p>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
+              <p style="margin: 0; color: #1f2937;"><strong>Email:</strong> ${email}</p>
+              <p style="margin: 10px 0 0 0; color: #1f2937;"><strong>Contraseña temporal:</strong> <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${temporaryPassword}</code></p>
+              <p style="margin: 10px 0 0 0; color: #1f2937;"><strong>Rol:</strong> ${roleName}</p>
             </div>
-
-            <!-- Saludo personalizado -->
-            <div style="margin-bottom: 24px;">
-              <h2 style="margin:0 0 12px; color:#111827; font-size:18px; font-weight:600;">Hola ${fullName || 'Usuario'},</h2>
-              <p style="margin:0; color:#374151; line-height:1.6;">
-                Tu cuenta ha sido creada exitosamente en la plataforma Capittal. Como parte del equipo de M&A líder en España, 
-                ahora tienes acceso a nuestras herramientas profesionales de valoración y análisis financiero.
+            
+            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+              <p style="margin: 0; color: #92400e; font-weight: bold;">⚠️ Importante:</p>
+              <p style="margin: 5px 0 0 0; color: #92400e;">
+                Esta es una contraseña temporal altamente segura. ${requiresPasswordChange ? 'Deberás cambiar la contraseña en tu primer inicio de sesión por seguridad.' : 'Guarda esta contraseña en un lugar seguro.'}
               </p>
             </div>
             
-            <!-- Credenciales -->
-            <div style="background: #f9fafb; padding: 24px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 24px 0;">
-              <h3 style="margin:0 0 16px; color:#111827; font-size:16px; font-weight:600;">📧 Tus credenciales de acceso</h3>
-              <table style="width:100%; border-collapse:collapse;">
-                <tr><td style="padding:8px 0; color:#374151; font-weight:500;">Email:</td><td style="padding:8px 0; color:#111827; font-weight:600;">${email}</td></tr>
-                <tr><td style="padding:8px 0; color:#374151; font-weight:500;">Contraseña temporal:</td><td style="padding:8px 0;"><code style="background: #e5e7eb; padding: 4px 8px; border-radius: 4px; font-family: 'Courier New', monospace; color:#111827; font-weight:600;">${temporaryPassword}</code></td></tr>
-                <tr><td style="padding:8px 0; color:#374151; font-weight:500;">Rol asignado:</td><td style="padding:8px 0; color:#111827; font-weight:600;">${roleName}</td></tr>
-              </table>
+            <div style="background: #fee2e2; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626; margin: 20px 0;">
+              <p style="margin: 0; color: #991b1b; font-weight: bold;">🔒 Medidas de Seguridad:</p>
+              <ul style="margin: 5px 0 0 0; color: #991b1b; padding-left: 20px;">
+                <li>No compartas estas credenciales con nadie</li>
+                <li>Accede solo desde dispositivos seguros</li>
+                <li>Cierra sesión al terminar de trabajar</li>
+                <li>Este email se elimina automáticamente por seguridad</li>
+              </ul>
             </div>
             
-            <!-- Advertencia importante -->
-            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 24px 0;">
-              <div style="display: flex; align-items: flex-start;">
-                <span style="font-size: 20px; margin-right: 8px;">⚠️</span>
-                <div>
-                  <p style="margin: 0 0 8px; color:#92400e; font-weight:700;">Contraseña temporal y segura</p>
-                  <p style="margin: 0; color:#92400e; line-height:1.5;">
-                    ${requiresPasswordChange ? 
-                      'Por tu seguridad, deberás cambiar esta contraseña en tu primer inicio de sesión. La contraseña actual es temporal y altamente segura.' : 
-                      'Esta contraseña ha sido generada de forma segura. Guárdala en un lugar protegido hasta que puedas cambiarla por una de tu elección.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Medidas de seguridad -->
-            <div style="background: #fee2e2; padding: 20px; border-radius: 8px; border-left: 4px solid #dc2626; margin: 24px 0;">
-              <div style="display: flex; align-items: flex-start;">
-                <span style="font-size: 20px; margin-right: 8px;">🔒</span>
-                <div>
-                  <p style="margin: 0 0 12px; color:#991b1b; font-weight:700;">Medidas de seguridad obligatorias</p>
-                  <ul style="margin: 0; color:#991b1b; padding-left: 20px; line-height:1.6;">
-                    <li>No compartas estas credenciales con terceros</li>
-                    <li>Accede únicamente desde dispositivos seguros y confiables</li>
-                    <li>Cierra siempre la sesión al finalizar tu trabajo</li>
-                    <li>Este email contiene información confidencial y se autoelimina por seguridad</li>
-                    <li>Reporta inmediatamente cualquier acceso sospechoso</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Botón de acceso -->
-            <div style="text-align: center; margin: 32px 0;">
-              <a href="https://app.capittal.es/auth"
-                 style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); 
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://app.capittal.com/auth" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                         color: white; 
                         text-decoration: none; 
-                        padding: 14px 32px; 
-                        border-radius: 8px; 
+                        padding: 12px 30px; 
+                        border-radius: 6px; 
                         display: inline-block; 
-                        font-weight: 600;
-                        font-size: 16px;
-                        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
-                🚀 Acceder a la plataforma Capittal
+                        font-weight: bold;">
+                Acceder a la plataforma
               </a>
             </div>
             
-            <!-- Información adicional sobre Capittal -->
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9; margin: 24px 0;">
-              <h3 style="margin:0 0 12px; color:#111827; font-size:16px; font-weight:600;">💼 Sobre Capittal</h3>
-              <p style="margin:0 0 12px; color:#374151; line-height:1.6;">
-                Capittal es la firma líder en M&A en España, especializada en valoración y venta de empresas. 
-                Nuestro equipo combina experiencia financiera con tecnología avanzada para ofrecer análisis precisos 
-                y asesoramiento estratégico de alta calidad.
-              </p>
-              <p style="margin:0; color:#374151; line-height:1.6;">
-                Como miembro del equipo, tendrás acceso a nuestras herramientas profesionales, bases de datos 
-                de valoraciones y sistemas de análisis que utilizamos para asesorar a empresarios y fondos de inversión.
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                Si tienes alguna pregunta o problemas de acceso, contactanos inmediatamente.<br>
+                <strong>Equipo Capittal</strong><br>
+                Carrer Ausias March número 36 principal<br>
+                P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid
               </p>
             </div>
-
-            <!-- Soporte y contacto -->
-            <div style="border-top: 1px solid #e5e7eb; padding-top: 24px; margin-top: 32px;">
-              <h3 style="margin:0 0 16px; color:#111827; font-size:16px; font-weight:600;">📞 Soporte técnico</h3>
-              <p style="margin:0 0 16px; color:#374151; line-height:1.6;">
-                Si tienes alguna pregunta sobre el acceso a la plataforma o necesitas asistencia técnica, 
-                nuestro equipo está disponible para ayudarte inmediatamente.
-              </p>
-              
-              <div style="background:#f9fafb; padding:16px; border-radius:6px; margin:16px 0;">
-                <p style="margin:0 0 8px; color:#111827; font-weight:600;">Equipo Capittal</p>
-                <p style="margin:0 0 4px; color:#6b7280; font-size:14px;">✉️ Email: admin@capittal.es</p>
-                <p style="margin:0 0 4px; color:#6b7280; font-size:14px;">📍 Oficinas:</p>
-                <p style="margin:0 0 2px; color:#6b7280; font-size:14px;">• Barcelona: Carrer Ausias March, 36 Principal</p>
-                <p style="margin:0; color:#6b7280; font-size:14px;">• Madrid: P.º de la Castellana, 11, B - A, Chamberí, 28046</p>
-              </div>
-            </div>
-
-            <!-- Footer legal -->
-            <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="margin:0; color:#9ca3af; font-size:12px; line-height:1.5;">
-                Este email contiene información confidencial destinada únicamente al usuario especificado.<br>
-                Si has recibido este mensaje por error, por favor elimínalo inmediatamente y notifícanos.<br>
-                <strong>Capittal</strong> - Especialistas en M&A | <a href="https://capittal.es" style="color:#9ca3af;">capittal.es</a>
-              </p>
-            </div>
-
           </div>
         </div>
       `,

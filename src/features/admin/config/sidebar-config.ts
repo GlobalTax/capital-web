@@ -200,13 +200,6 @@ export const sidebarSections: SidebarSection[] = [
     description: "Configuración del sistema",
     items: [
       { 
-        title: "Panel de Control", 
-        url: "/admin/user-control", 
-        icon: Activity,
-        badge: "NEW",
-        description: "Panel completo de usuarios"
-      },
-      { 
         title: "Usuarios Admin", 
         url: "/admin/admin-users", 
         icon: Users,

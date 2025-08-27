@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuthRedirect } from '@/shared/auth/hooks/useAuthRedirect';
-import { useAuth } from '@/shared/auth/AuthProvider';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,14 +11,14 @@ import { User, Mail, Lock, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-re
 import { Link } from 'react-router-dom';
 
 const Auth = () => {
-  const { user, isLoading } = useAuthRedirect();
+  const { user, isLoading, signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Use auth from context for sign in
-  const { signIn } = useAuth();
+  const [activeTab, setActiveTab] = useState('signin');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Si ya está autenticado, redirigir al admin
   if (!isLoading && user) {

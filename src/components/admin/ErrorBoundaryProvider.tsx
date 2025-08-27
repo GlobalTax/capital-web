@@ -16,11 +16,7 @@ class ErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    // Only log critical errors in production
-    if (process.env.NODE_ENV === 'production') {
-      // Send to logging service in production
-      console.error('Critical ErrorBoundary error:', error.message);
-    }
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
   render() {

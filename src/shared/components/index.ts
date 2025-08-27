@@ -1,5 +1,5 @@
-// ============= SHARED COMPONENTS BARREL =============
-// Centralized exports for shared components
+// ============= SHARED COMPONENTS EXPORTS =============
+// Punto de entrada para componentes compartidos
 
-export { FormField } from './FormField';
-export { LoadingButton } from './LoadingButton';
+export { ErrorFallback } from './ErrorFallback';
+export { LoadingSkeleton } from './LoadingSkeleton';

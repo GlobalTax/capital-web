@@ -77,25 +77,22 @@ interface ValidationResult {
 }
 
 // Email validation function with sanitization
-export const validateEmail = (email: any): ValidationResult => {
-  // Convertir a string si no lo es
-  const emailStr = String(email || '');
-  
+export const validateEmail = (email: string): ValidationResult => {
   // Detectar intentos de XSS
-  if (detectXSSAttempt(emailStr)) {
-    logSecurityEvent('XSS_ATTEMPT', { input: emailStr, context: 'email_validation' });
+  if (detectXSSAttempt(email)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: email, context: 'email_validation' });
     return {
       isValid: false,
       message: 'El email contiene caracteres no válidos'
     };
   }
 
-  const sanitizedEmail = sanitizeEmail(emailStr);
+  const sanitizedEmail = sanitizeEmail(email);
   const isValid = validationUtils.isValidEmail(sanitizedEmail);
   
-  if (sanitizedEmail !== emailStr) {
+  if (sanitizedEmail !== email) {
     logSecurityEvent('SANITIZATION_APPLIED', { 
-      input: emailStr, 
+      input: email, 
       sanitized: sanitizedEmail, 
       context: 'email_validation' 
     });
@@ -109,25 +106,22 @@ export const validateEmail = (email: any): ValidationResult => {
 };
 
 // Company name validation function with sanitization
-export const validateCompanyName = (name: any): ValidationResult => {
-  // Convertir a string si no lo es
-  const nameStr = String(name || '');
-  
+export const validateCompanyName = (name: string): ValidationResult => {
   // Detectar intentos de XSS
-  if (detectXSSAttempt(nameStr)) {
-    logSecurityEvent('XSS_ATTEMPT', { input: nameStr, context: 'company_name_validation' });
+  if (detectXSSAttempt(name)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: name, context: 'company_name_validation' });
     return {
       isValid: false,
       message: 'El nombre de la empresa contiene caracteres no válidos'
     };
   }
 
-  const sanitizedName = sanitizeCompanyName(nameStr);
+  const sanitizedName = sanitizeCompanyName(name);
   const isValid = validationUtils.isValidCompanyName(sanitizedName);
   
-  if (sanitizedName !== nameStr) {
+  if (sanitizedName !== name) {
     logSecurityEvent('SANITIZATION_APPLIED', { 
-      input: nameStr, 
+      input: name, 
       sanitized: sanitizedName, 
       context: 'company_name_validation' 
     });
@@ -141,25 +135,22 @@ export const validateCompanyName = (name: any): ValidationResult => {
 };
 
 // Contact name validation function with sanitization
-export const validateContactName = (name: any): ValidationResult => {
-  // Convertir a string si no lo es
-  const nameStr = String(name || '');
-  
+export const validateContactName = (name: string): ValidationResult => {
   // Detectar intentos de XSS
-  if (detectXSSAttempt(nameStr)) {
-    logSecurityEvent('XSS_ATTEMPT', { input: nameStr, context: 'contact_name_validation' });
+  if (detectXSSAttempt(name)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: name, context: 'contact_name_validation' });
     return {
       isValid: false,
       message: 'El nombre contiene caracteres no válidos'
     };
   }
 
-  const sanitizedName = sanitizePerson(nameStr);
+  const sanitizedName = sanitizePerson(name);
   const isValid = validationUtils.isRequired(sanitizedName);
   
-  if (sanitizedName !== nameStr) {
+  if (sanitizedName !== name) {
     logSecurityEvent('SANITIZATION_APPLIED', { 
-      input: nameStr, 
+      input: name, 
       sanitized: sanitizedName, 
       context: 'contact_name_validation' 
     });
@@ -173,25 +164,22 @@ export const validateContactName = (name: any): ValidationResult => {
 };
 
 // Spanish phone validation function with sanitization
-export const validateSpanishPhone = (phone: any): ValidationResult => {
-  // Convertir a string si no lo es
-  const phoneStr = String(phone || '');
-  
+export const validateSpanishPhone = (phone: string): ValidationResult => {
   // Detectar intentos de XSS
-  if (detectXSSAttempt(phoneStr)) {
-    logSecurityEvent('XSS_ATTEMPT', { input: phoneStr, context: 'phone_validation' });
+  if (detectXSSAttempt(phone)) {
+    logSecurityEvent('XSS_ATTEMPT', { input: phone, context: 'phone_validation' });
     return {
       isValid: false,
       message: 'El teléfono contiene caracteres no válidos'
     };
   }
 
-  const sanitizedPhone = sanitizePhone(phoneStr);
+  const sanitizedPhone = sanitizePhone(phone);
   const isValid = validationUtils.isValidPhone(sanitizedPhone);
   
-  if (sanitizedPhone !== phoneStr) {
+  if (sanitizedPhone !== phone) {
     logSecurityEvent('SANITIZATION_APPLIED', { 
-      input: phoneStr, 
+      input: phone, 
       sanitized: sanitizedPhone, 
       context: 'phone_validation' 
     });

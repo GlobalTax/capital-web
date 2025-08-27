@@ -13,10 +13,9 @@ import { Building2, Zap, MessageCircle, Calendar } from 'lucide-react';
 import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 interface ValuationCalculatorV4Props {
   companyData: CompanyDataV4;
-  fiscalMode?: boolean; // Nueva prop para modo fiscal
 }
 
-const ValuationCalculatorV4 = ({ companyData, fiscalMode = false }: ValuationCalculatorV4Props) => {
+const ValuationCalculatorV4 = ({ companyData }: ValuationCalculatorV4Props) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [saleValue, setSaleValue] = useState(companyData.baseValuation);
   
@@ -74,17 +73,14 @@ const ValuationCalculatorV4 = ({ companyData, fiscalMode = false }: ValuationCal
           <div className="flex items-center justify-center gap-2 mb-4">
             <Zap className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">
-              {fiscalMode ? 'Calculadora Fiscal' : 'Simulador Ultra-Rápido'}
+              Simulador Ultra-Rápido
             </h1>
           </div>
           <h2 className="text-xl text-muted-foreground">
             {companyData.companyName}
           </h2>
           <p className="text-sm text-muted-foreground mt-2">
-            {fiscalMode 
-              ? 'Análisis fiscal detallado • Impacto tributario en España'
-              : 'Cálculos en tiempo real • Todos los escenarios visibles'
-            }
+            Cálculos en tiempo real • Todos los escenarios visibles
           </p>
         </div>
 

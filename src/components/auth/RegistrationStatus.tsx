@@ -3,14 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Clock, CheckCircle, XCircle, Mail, User, Calendar } from 'lucide-react';
-import { useAuth } from '@/shared/hooks';
-import { useAdminAuth } from '@/features/admin/providers/AdminAuthProvider';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export const RegistrationStatus: React.FC = () => {
-  const { user, signOut } = useAuth();
-  const { registrationRequest } = useAdminAuth();
+  const { user, registrationRequest, signOut } = useAuth();
 
   if (!user || !registrationRequest) {
     return null;

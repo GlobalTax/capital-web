@@ -24,29 +24,20 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableContactTracking = true
   } = options;
 
-  // Circuit breaker state - optimized for stability
+  // Circuit breaker state
   const [circuitState, setCircuitState] = useState<{
     isOpen: boolean;
     failureCount: number;
     lastFailureTime: number;
     isDisabled: boolean;
-    backoffDelay: number;
   }>({
     isOpen: false,
     failureCount: 0,
     lastFailureTime: 0,
-    isDisabled: false,
-    backoffDelay: 10000 // Start with 10 seconds
+    isDisabled: false
   });
 
-  // Event queue for batching and deduplication
-  const [eventQueue, setEventQueue] = useState<Map<string, any>>(new Map());
-  const [lastEventTimestamp, setLastEventTimestamp] = useState<Map<string, number>>(new Map());
-
-  // Improved circuit breaker configuration
-  const MAX_FAILURES = 8; // Increased threshold
-  const CIRCUIT_RESET_TIME = 120000; // 2 minutes
-  const MAX_BACKOFF_DELAY = 300000; // 5 minutes max
+  // Circuit breaker logic
   const shouldAllowRequest = useCallback(() => {
     if (circuitState.isDisabled) {
       return false; // Tracking completely disabled
@@ -56,39 +47,35 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       return true; // Circuit closed, allow requests
     }
     
-    // Circuit is open, check if enough time has passed to try again (exponential backoff)
+    // Circuit is open, check if enough time has passed to try again
     const now = Date.now();
     const timeSinceLastFailure = now - circuitState.lastFailureTime;
+    const backoffTime = 10 * 60 * 1000; // 10 minutes
     
-    return timeSinceLastFailure > circuitState.backoffDelay;
+    return timeSinceLastFailure > backoffTime;
   }, [circuitState]);
 
   const recordSuccess = useCallback(() => {
     setCircuitState(prev => ({
       ...prev,
       isOpen: false,
-      failureCount: 0,
-      backoffDelay: 10000 // Reset backoff delay
+      failureCount: 0
     }));
   }, []);
 
   const recordFailure = useCallback(() => {
     setCircuitState(prev => {
       const newFailureCount = prev.failureCount + 1;
-      const shouldDisable = newFailureCount >= MAX_FAILURES;
-      
-      // Exponential backoff: double the delay up to max
-      const newBackoffDelay = Math.min(prev.backoffDelay * 2, MAX_BACKOFF_DELAY);
+      const shouldDisable = newFailureCount >= 10; // Disable after 10 failures
       
       return {
-        isOpen: newFailureCount >= 3, // Open circuit after 3 failures
+        isOpen: newFailureCount >= 2, // Open circuit after 2 failures
         failureCount: newFailureCount,
         lastFailureTime: Date.now(),
-        isDisabled: shouldDisable,
-        backoffDelay: newBackoffDelay
+        isDisabled: shouldDisable
       };
     });
-  }, [MAX_FAILURES, MAX_BACKOFF_DELAY]);
+  }, []);
 
   // Generar IDs únicos para sesión y visitante
   const getOrCreateVisitorId = useCallback(() => {
@@ -132,25 +119,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     return undefined;
   }, []);
 
-  // Debouncing and deduplication
-  const DEBOUNCE_DELAY = 1000; // 1 second debounce
-  const DEDUPLICATION_WINDOW = 30000; // 30 seconds for same event type
-
-  // Check if event should be debounced/deduplicated
-  const shouldDebounceEvent = useCallback((eventType: string, pagePath: string) => {
-    const eventKey = `${eventType}_${pagePath}`;
-    const now = Date.now();
-    const lastEventTime = lastEventTimestamp.get(eventKey) || 0;
-    
-    // Skip if same event happened recently (deduplication)
-    if (now - lastEventTime < DEDUPLICATION_WINDOW) {
-      console.debug('🚫 Event deduplicated:', eventKey);
-      return true;
-    }
-    
-    return false;
-  }, [lastEventTimestamp, DEDUPLICATION_WINDOW]);
-
+  // Función principal de tracking con circuit breaker
   const trackEvent = useCallback(async (
     eventType: string,
     pagePath: string,
@@ -163,27 +132,16 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       return;
     }
 
-    // Check deduplication
-    if (shouldDebounceEvent(eventType, pagePath)) {
-      return;
-    }
-
     try {
       const visitorId = getOrCreateVisitorId();
       const sessionId = getOrCreateSessionId();
       const companyDomain = detectCompanyDomain();
-
-      // Update last event timestamp for deduplication
-      const eventKey = `${eventType}_${pagePath}`;
-      setLastEventTimestamp(prev => new Map(prev.set(eventKey, Date.now())));
 
       // Obtener UTM parameters
       const urlParams = new URLSearchParams(window.location.search);
       const utmSource = urlParams.get('utm_source');
       const utmMedium = urlParams.get('utm_medium');
       const utmCampaign = urlParams.get('utm_campaign');
-      const utmContent = urlParams.get('utm_content');
-      const utmTerm = urlParams.get('utm_term');
 
       const trackingEvent = {
         visitor_id: visitorId,
@@ -195,16 +153,14 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
         referrer: document.referrer || null,
         utm_source: utmSource,
         utm_medium: utmMedium,
-        utm_campaign: utmCampaign,
-        utm_content: utmContent,
-        utm_term: utmTerm
+        utm_campaign: utmCampaign
       };
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId.substring(0, 8) + '...');
       
-      // Use secure tracking edge function with optimized timeout
+      // Use secure tracking edge function with timeout
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Tracking timeout')), 10000); // 10 second timeout
+        setTimeout(() => reject(new Error('Tracking timeout')), 3000);
       });
 
       const requestPromise = supabase.functions.invoke('secure-tracking', {
@@ -227,7 +183,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       console.error('❌ Lead tracking error:', error);
       // Fallar silenciosamente para no afectar UX pero logear el error
     }
-  }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain, shouldAllowRequest, shouldDebounceEvent, recordSuccess, recordFailure]);
+  }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain, shouldAllowRequest, recordSuccess, recordFailure]);
 
   // Tracking de páginas visitadas
   const trackPageView = useCallback(async (pagePath?: string) => {

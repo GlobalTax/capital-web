@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Building, TrendingUp } from 'lucide-react';
-import { devLogger } from '@/utils/devLogger';
 
 interface Operation {
   id: string;
@@ -37,7 +36,7 @@ const CompaniesForSale = () => {
         .limit(3);
 
       if (error) {
-        devLogger.dbError('Error fetching operations', error, 'company_operations');
+        console.error('Error fetching operations:', error);
         // Usar datos de respaldo si la consulta falla
         setOperations([
           {
@@ -78,7 +77,7 @@ const CompaniesForSale = () => {
         setOperations(data || []);
       }
     } catch (error) {
-      devLogger.error('Error loading operations', error, { context: 'ui', component: 'CompaniesForSale' });
+      console.error('Error:', error);
     } finally {
       setIsLoading(false);
     }

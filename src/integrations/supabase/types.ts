@@ -2337,63 +2337,6 @@ export type Database = {
         }
         Relationships: []
       }
-      tracking_events: {
-        Row: {
-          company_domain: string | null
-          created_at: string
-          event_data: Json | null
-          event_type: string
-          id: string
-          ip_address: unknown | null
-          page_path: string
-          referrer: string | null
-          session_id: string
-          user_agent: string | null
-          utm_campaign: string | null
-          utm_content: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          utm_term: string | null
-          visitor_id: string
-        }
-        Insert: {
-          company_domain?: string | null
-          created_at?: string
-          event_data?: Json | null
-          event_type: string
-          id?: string
-          ip_address?: unknown | null
-          page_path?: string
-          referrer?: string | null
-          session_id: string
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
-          visitor_id: string
-        }
-        Update: {
-          company_domain?: string | null
-          created_at?: string
-          event_data?: Json | null
-          event_type?: string
-          id?: string
-          ip_address?: unknown | null
-          page_path?: string
-          referrer?: string | null
-          session_id?: string
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
-          visitor_id?: string
-        }
-        Relationships: []
-      }
       user_dashboard_layouts: {
         Row: {
           created_at: string
@@ -2622,10 +2565,6 @@ export type Database = {
         Returns: string
       }
       cleanup_old_lead_data: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_old_tracking_events: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
