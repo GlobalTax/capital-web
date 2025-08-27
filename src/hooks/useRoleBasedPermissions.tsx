@@ -100,12 +100,12 @@ const ROLE_PERMISSIONS: Record<AdminRole, RolePermissions> = {
   },
   
   admin: {
-    // User Management - No access (only super_admin)
-    canManageUsers: false,
-    canCreateUsers: false,
-    canEditUsers: false,
-    canDeleteUsers: false,
-    canViewUsers: true, // Can view but not modify
+    // User Management - Full access (admins can manage users)
+    canManageUsers: true,
+    canCreateUsers: true,
+    canEditUsers: true,
+    canDeleteUsers: true,
+    canViewUsers: true,
     
     // Content Management - Full access
     canManageContent: true,
@@ -309,7 +309,9 @@ export const useRoleBasedPermissions = () => {
   }, [userRole]);
 
   const hasPermission = (permission: keyof RolePermissions): boolean => {
-    return permissions[permission] || false;
+    const result = permissions[permission] || false;
+    console.log(`🔐 [Permissions] ${permission}:`, result, 'for role:', userRole);
+    return result;
   };
 
   const requirePermission = (permission: keyof RolePermissions, fallback?: () => void) => {
@@ -378,8 +380,8 @@ export const useRoleBasedPermissions = () => {
       trackingDashboard: userRole !== 'none',
       trackingConfig: isAdminLevel,
       
-      // Configuration - Solo para super admins y admins respectivamente
-      adminUsers: userRole === 'super_admin',
+      // Configuration - Para super admins y admins
+      adminUsers: userRole === 'super_admin' || userRole === 'admin',
       settings: isAdminLevel,
     };
   };

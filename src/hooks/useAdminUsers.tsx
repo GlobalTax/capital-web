@@ -58,19 +58,29 @@ export const useAdminUsers = () => {
   }, [currentUser]);
 
   const fetchUsers = useCallback(async () => {
+    console.log('🔄 [useAdminUsers] Starting fetchUsers...');
     try {
       setIsLoading(true);
       setError(null);
-
+      
+      console.log('📡 [useAdminUsers] Making Supabase query...');
       const { data, error: fetchError } = await supabase
         .from('admin_users')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('📊 [useAdminUsers] Query result:', { 
+        hasError: !!fetchError, 
+        dataCount: data?.length, 
+        error: fetchError?.message 
+      });
+
       if (fetchError) {
+        console.error('❌ [useAdminUsers] Supabase error:', fetchError);
         throw fetchError;
       }
 
+      console.log('✅ [useAdminUsers] Setting users data:', data);
       setUsers(data || []);
       
       logger.info('Admin users fetched successfully', {
@@ -79,12 +89,14 @@ export const useAdminUsers = () => {
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar usuarios';
+      console.error('💥 [useAdminUsers] Fetch failed:', err);
       setError(errorMessage);
       logger.error('Failed to fetch admin users', err as Error, {
         context: 'system',
         component: 'useAdminUsers'
       });
     } finally {
+      console.log('🏁 [useAdminUsers] Fetch completed, setting loading false');
       setIsLoading(false);
     }
   }, []);
@@ -376,6 +388,7 @@ export const useAdminUsers = () => {
   }, [createUser, toast]);
 
   useEffect(() => {
+    console.log('🚀 [useAdminUsers] Component mounted, calling fetchUsers');
     fetchUsers();
   }, [fetchUsers]);
 
