@@ -108,22 +108,21 @@ export const useContactForm = () => {
           throw leadError;
         }
 
-        // Insert into unified form_submissions table
+        // Insert into unified form_submissions table with proper structure
         const { data: submissionData, error: submissionError } = await supabase
           .from('form_submissions')
           .insert([{
             form_type: 'contact_form',
-            form_data: sanitizedData,
-            metadata: {
-              utm_source,
-              utm_medium,
-              utm_campaign,
-              referrer,
-              user_agent: navigator.userAgent,
-              timestamp: new Date().toISOString()
-            },
-            status: 'new',
-            reference_id: leadData.id
+            email: sanitizedData.email,
+            full_name: sanitizedData.fullName,
+            phone: sanitizedData.phone,
+            company: sanitizedData.company,
+            form_data: sanitizedData as any, // Cast to any to match Json type
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            referrer,
+            status: 'new'
           }])
           .select()
           .single();
