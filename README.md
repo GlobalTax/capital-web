@@ -71,3 +71,25 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Lovable Sandbox Configuration
+
+### Disabling Hot Module Replacement (HMR)
+
+In some cases, particularly when testing admin panel functionality in Lovable's sandbox environment, you may want to disable Hot Module Replacement to ensure stable previews without WebSocket connection interference.
+
+To disable HMR, set the following environment variable:
+
+```bash
+VITE_DISABLE_HMR=1
+```
+
+This setting will:
+- Disable Hot Module Replacement in the development server
+- Disable the component tagger functionality
+- Provide more stable previews for `/admin` routes in sandbox environments
+
+**When to use this:**
+- Testing admin panel functionality in Lovable sandbox
+- When encountering WebSocket connection issues that interfere with app functionality
+- When you need consistent behavior across different sandbox sessions

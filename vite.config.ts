@@ -4,16 +4,25 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+export default defineConfig(({ mode }) => {
+  // Check if HMR should be disabled (useful for Lovable sandbox environments)
+  const disableHMR = process.env.VITE_DISABLE_HMR === '1';
+  
+  if (disableHMR) {
+    console.log('🔧 HMR disabled via VITE_DISABLE_HMR environment variable');
+  }
+  
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+      hmr: disableHMR ? false : undefined,
+    },
+    plugins: [
+      react(),
+      mode === 'development' && !disableHMR &&
+      componentTagger(),
+    ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -57,4 +66,5 @@ export default defineConfig(({ mode }) => ({
     include: ['react', 'react-dom', '@tanstack/react-query'],
     exclude: ['@vite/client', '@vite/env']
   }
-}));
+};
+});
