@@ -80,13 +80,19 @@ In some cases, particularly when testing admin panel functionality in Lovable's 
 
 To disable HMR, set the following environment variable:
 
+**In Lovable:**
+1. Go to your project settings
+2. Navigate to "Variables del proyecto" 
+3. Add: `VITE_DISABLE_HMR=1`
+
+**In local development:**
 ```bash
 VITE_DISABLE_HMR=1
 ```
 
 This setting will:
 - Disable Hot Module Replacement in the development server
-- Disable the component tagger functionality
+- Disable the component tagger functionality  
 - Provide more stable previews for `/admin` routes in sandbox environments
 
 **When to use this:**

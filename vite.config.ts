@@ -6,9 +6,9 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Check if HMR should be disabled (useful for Lovable sandbox environments)
-  const disableHMR = process.env.VITE_DISABLE_HMR === '1';
+  const disableHmr = process.env.VITE_DISABLE_HMR === '1';
   
-  if (disableHMR) {
+  if (disableHmr) {
     console.log('🔧 HMR disabled via VITE_DISABLE_HMR environment variable');
   }
   
@@ -16,11 +16,11 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
-      hmr: disableHMR ? false : undefined,
+      hmr: disableHmr ? false : undefined,
     },
     plugins: [
       react(),
-      mode === 'development' && !disableHMR &&
+      mode === 'development' && !disableHmr &&
       componentTagger(),
     ].filter(Boolean),
   resolve: {
