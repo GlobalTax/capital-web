@@ -25,7 +25,7 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
     enableContactTracking: trackingEnabled
   });
 
-  // Track route changes (skip admin routes)
+  // Track route changes (skip admin routes) with increased debounce
   useEffect(() => {
     if (!trackingEnabled) return;
     
@@ -34,32 +34,37 @@ export const LeadTrackingProvider: React.FC<LeadTrackingProviderProps> = ({
       search: location.search 
     }, { context: 'marketing', component: 'LeadTrackingProvider' });
     
-    // Track page view with debounce
+    // Track page view with increased debounce for stability
     const timeoutId = setTimeout(() => {
       trackPageView(location.pathname);
-    }, 300); // Increased debounce for stability
+    }, 2000); // Increased debounce to 2 seconds
     
     return () => clearTimeout(timeoutId);
   }, [location, trackPageView, trackingEnabled]);
 
-  // Track specific high-value pages
+  // Track specific high-value pages with debouncing
   useEffect(() => {
     if (!trackingEnabled) return;
     
-    if (location.pathname.includes('/lp/calculadora')) {
-      trackCalculatorUsage('page_visit');
-    }
+    // Debounce high-value page tracking to prevent spam
+    const timeoutId = setTimeout(() => {
+      if (location.pathname.includes('/lp/calculadora')) {
+        trackCalculatorUsage('page_visit');
+      }
+      
+      if (location.pathname.includes('/contacto')) {
+        trackContactInterest('page_visit');
+      }
+      
+      if (location.pathname.includes('/venta-empresas') || 
+          location.pathname.includes('/servicios/valoraciones') ||
+          location.pathname.includes('/servicios/due-diligence')) {
+        logger.info('High-intent page visited', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
+        trackPageView(location.pathname + '_high_intent');
+      }
+    }, 1500); // 1.5 second debounce for high-value pages
     
-    if (location.pathname.includes('/contacto')) {
-      trackContactInterest('page_visit');
-    }
-    
-    if (location.pathname.includes('/venta-empresas') || 
-        location.pathname.includes('/servicios/valoraciones') ||
-        location.pathname.includes('/servicios/due-diligence')) {
-      logger.info('High-intent page visited', { pathname: location.pathname }, { context: 'marketing', component: 'LeadTrackingProvider' });
-      trackPageView(location.pathname + '_high_intent');
-    }
+    return () => clearTimeout(timeoutId);
   }, [location.pathname, trackingEnabled, trackPageView, trackCalculatorUsage, trackContactInterest]);
 
   // Expose tracking functions globally for manual tracking (only if enabled)
