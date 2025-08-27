@@ -47,6 +47,33 @@
 
   <body>
     <div id="root"></div>
+    
+    <!-- WebSocket patching for sandbox environments (optional noise reduction) -->
+    <script>
+      (function() {
+        try {
+          if (/sandbox\.lovable\.dev$/.test(location.hostname)) {
+            var OriginalWebSocket = window.WebSocket;
+            window.WebSocket = function(url, protocols) {
+              // Check if URL contains Vite HMR routes
+              if (typeof url === 'string' && (url.includes('@vite') || url.includes('@react-refresh'))) {
+                // Return a mock WebSocket that does nothing
+                return {
+                  readyState: 3, // CLOSED
+                  close: function() {},
+                  send: function() {},
+                  addEventListener: function() {},
+                  removeEventListener: function() {}
+                };
+              }
+              // For other URLs, use original WebSocket
+              return new OriginalWebSocket(url, protocols);
+            };
+          }
+        } catch (e) { /* noop */ }
+      })();
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
