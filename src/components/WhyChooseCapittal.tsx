@@ -14,24 +14,9 @@ const WhyChooseCapittal = () => {
       highlight: "40% más valor"
     },
     {
-      title: "Equipo Dedicado",
-      description: "Un equipo senior exclusivo para tu operación, sin delegar en juniors.",
-      highlight: "100% senior"
-    },
-    {
-      title: "Confidencialidad Total",
-      description: "Proceso completamente confidencial que protege tu empresa durante toda la operación.",
-      highlight: "0 filtraciones"
-    },
-    {
       title: "Rapidez y Eficiencia",
       description: "Procesos optimizados que reducen los tiempos sin comprometer la calidad.",
       highlight: "6-8 meses"
-    },
-    {
-      title: "Enfoque Personalizado",
-      description: "Estrategia específica para tu sector y características únicas de tu empresa.",
-      highlight: "100% personalizado"
     }
   ];
 
@@ -55,7 +40,7 @@ const WhyChooseCapittal = () => {
         </div>
 
         {/* Main reasons grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {reasons.map((reason, index) => (
             <div 
               key={index} 

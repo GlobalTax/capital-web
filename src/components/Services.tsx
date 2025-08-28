@@ -115,26 +115,6 @@ const Services = () => {
           </div>
         </div>
 
-        {/* Complementary Services - Simplified Cards */}
-        <div>
-          <h3 className="text-xl font-bold text-black text-center mb-8">
-            Servicios Complementarios
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {complementaryServices.map((service, index) => (
-              <Card key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-out group cursor-pointer">
-                <CardContent className="p-6">
-                  <h3 className="text-base font-semibold text-black mb-3">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    {service.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
     </ErrorBoundary>

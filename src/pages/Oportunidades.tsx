@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import { HomeLayout } from '@/shared';
-import About from '@/components/About';
-import OurGroup from '@/components/OurGroup';
+import CompaniesForSale from '@/components/CompaniesForSale';
 
-const Nosotros = () => {
+const Oportunidades = () => {
   useEffect(() => {
-    document.title = 'Nosotros - Capittal';
+    document.title = 'Oportunidades de Inversión - Capittal';
     
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -13,7 +12,7 @@ const Nosotros = () => {
       metaDescription.setAttribute('name', 'description');
       document.head.appendChild(metaDescription);
     }
-    metaDescription.setAttribute('content', 'Conoce Capittal y el Grupo Navarro. Más de 15 años de experiencia en M&A con un ecosistema integral de servicios profesionales.');
+    metaDescription.setAttribute('content', 'Descubre oportunidades exclusivas de compra de empresas. Acceso privilegiado a transacciones seleccionadas en diversos sectores.');
   }, []);
 
   return (
@@ -23,20 +22,19 @@ const Nosotros = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                Nosotros
+                Oportunidades de Inversión
               </h1>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Especialistas en M&A con más de 15 años de experiencia, respaldados por el 
-                ecosistema integral del Grupo Navarro para garantizar el éxito de cada transacción.
+                Acceso exclusivo a empresas cuidadosamente seleccionadas para venta o inversión. 
+                Oportunidades de alto valor en sectores estratégicos.
               </p>
             </div>
           </div>
         </section>
-        <About />
-        <OurGroup />
+        <CompaniesForSale />
       </div>
     </HomeLayout>
   );
 };
 
-export default Nosotros;
+export default Oportunidades;
