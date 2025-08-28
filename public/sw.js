@@ -145,22 +145,7 @@ self.addEventListener('fetch', (event) => {
             return response;
           })
           .catch((error) => {
-            console.error('[SW] Fetch failed for:', request.url, error);
-            
-            // Fallback específico para assets JS/CSS faltantes
-            if (request.url.includes('.js')) {
-              return new Response('console.warn("Missing JS asset: ' + request.url + '");', {
-                status: 200,
-                headers: { 'Content-Type': 'application/javascript' }
-              });
-            }
-            
-            if (request.url.includes('.css')) {
-              return new Response('/* Missing CSS asset: ' + request.url + ' */', {
-                status: 200,
-                headers: { 'Content-Type': 'text/css' }
-              });
-            }
+            console.error('[SW] Fetch failed:', error);
             
             // Fallback para navegación
             if (request.destination === 'document') {

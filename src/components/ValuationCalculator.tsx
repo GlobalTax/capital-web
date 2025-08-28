@@ -10,7 +10,6 @@ import StepContent from '@/components/valuation/StepContent';
 import NavigationButtons from '@/components/valuation/NavigationButtons';
 import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import { logDebug, logError, logWarning } from '@/core/logging/ConditionalLogger';
 
 const ValuationCalculator = () => {
   const { t } = useI18n();
@@ -113,26 +112,15 @@ const ValuationCalculator = () => {
     try {
       // CREAR valoración inicial si no existe token
       if (!uniqueToken) {
-        logDebug(`Primer campo detectado: ${field} = "${value}"`, { 
-          context: 'valuation',
-          component: 'ValuationCalculator',
-          data: { field, value: value?.toString().substring(0, 50) }
-        });
+        console.log(`🔥 Primer campo detectado: ${field} = "${value}"`);
         const newToken = await createInitialValuationOnFirstField(field, value, companyData, utmData);
         if (newToken) {
-          logDebug('Sistema de guardado automático activado', {
-            context: 'valuation',
-            component: 'ValuationCalculator'
-          });
+          console.log('✅ Sistema de guardado automático activado!');
         }
       } else {
         // CAMPOS CRÍTICOS: guardado inmediato (email, companyName)
         if (field === 'email' || field === 'companyName') {
-          logDebug(`Campo crítico detectado: ${field}. Guardado inmediato`, {
-            context: 'valuation',
-            component: 'ValuationCalculator',
-            data: { field }
-          });
+          console.log(`🔥 Campo crítico detectado: ${field}. Guardado inmediato...`);
           await updateValuationImmediate({ [field]: value }, field);
         } else {
           // OTROS CAMPOS: guardado con debounce (300ms)
@@ -140,11 +128,7 @@ const ValuationCalculator = () => {
         }
       }
     } catch (error) {
-      logError('Error en guardado automático', error as Error, {
-        context: 'valuation',
-        component: 'ValuationCalculator',
-        data: { field, hasToken: !!uniqueToken }
-      });
+      console.error('❌ Error en guardado automático:', error);
     }
   };
 
@@ -163,32 +147,19 @@ const ValuationCalculator = () => {
   };
 
   const handleNext = async () => {
-    logDebug('handleNext called', { 
-      context: 'valuation',
-      component: 'ValuationCalculator',
-      data: { currentStep }
-    });
+    console.log('handleNext called, currentStep:', currentStep);
     
     if (currentStep === 1) {
       // Step 1: Calculate valuation and move to results
-      logDebug('In step 1, calculating valuation', {
-        context: 'valuation',
-        component: 'ValuationCalculator'
-      });
+      console.log('In step 1, calculating valuation...');
       trackCalculationStart();
       
       // Create initial valuation if not exists
       if (!uniqueToken) {
-        logDebug('Creating initial valuation for Step 1', {
-          context: 'valuation',
-          component: 'ValuationCalculator'
-        });
+        console.log('Creating initial valuation for Step 1...');
         const token = await createInitialValuation(companyData);
         if (!token) {
-          logWarning('Failed to create initial valuation', {
-            context: 'valuation',
-            component: 'ValuationCalculator'
-          });
+          console.warn('Failed to create initial valuation');
         }
       }
       

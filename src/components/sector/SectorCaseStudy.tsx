@@ -26,14 +26,14 @@ const SectorCaseStudy: React.FC<SectorCaseStudyProps> = ({
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           {title}
         </h2>
-        <p className="text-xl text-slate-200 mb-8 max-w-4xl mx-auto">
+        <p className="text-xl text-slate-300 mb-8 max-w-4xl mx-auto">
           {description}
         </p>
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {metrics.map((metric, index) => (
             <div key={index}>
               <div className="text-3xl font-bold text-white mb-2">{metric.value}</div>
-              <div className="text-lg text-slate-300">{metric.label}</div>
+              <div className="text-slate-400">{metric.label}</div>
             </div>
           ))}
         </div>

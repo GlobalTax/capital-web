@@ -1,5 +1,5 @@
 
-import type { IconName } from '@/components/ui/DirectIcon';
+import type { IconName } from '@/components/ui/icon-registry';
 
 export interface NavItem {
   id: string;

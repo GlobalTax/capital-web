@@ -107,7 +107,6 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-weight: 600;
   }
 
   html {

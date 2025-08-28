@@ -16,7 +16,6 @@ import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminU
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
-import { logDebug, logError, logWarning } from '@/core/logging/ConditionalLogger';
 
 const ROLE_LABELS = {
   super_admin: { label: 'Super Admin', icon: Crown, color: 'destructive' },
@@ -26,10 +25,7 @@ const ROLE_LABELS = {
 };
 
 const AdminUsersManager = () => {
-  logDebug('AdminUsersManager component initializing', {
-    context: 'admin',
-    component: 'AdminUsersManager'
-  });
+  console.log('🚀 [AdminUsersManager] Component initializing...');
   
   try {
     const { 
@@ -49,19 +45,11 @@ const AdminUsersManager = () => {
       createCapittalTeam
     } = useAdminUsers();
     
-    logDebug('useAdminUsers hook loaded successfully', {
-      context: 'admin',
-      component: 'AdminUsersManager',
-      data: { usersCount: users.length }
-    });
+    console.log('🔗 [AdminUsersManager] useAdminUsers hook loaded successfully - Users count:', users.length);
     
     const { hasPermission, userRole, isLoading: permissionsLoading } = useRoleBasedPermissions();
     
-    logDebug('useRoleBasedPermissions hook loaded', {
-      context: 'admin',
-      component: 'AdminUsersManager',
-      data: { userRole, canManageUsers: hasPermission('canManageUsers') }
-    });
+    console.log('🔐 [AdminUsersManager] useRoleBasedPermissions hook loaded - Role:', userRole, 'Can manage users:', hasPermission('canManageUsers'));
     
     const { toast } = useToast();
     
@@ -85,7 +73,7 @@ const AdminUsersManager = () => {
       formState: { errors: editErrors }
     } = useForm<Partial<AdminUser>>();
 
-    logDebug('All hooks and state initialized successfully', { context: 'admin', component: 'AdminUsersManager' });
+    console.log('🎯 [AdminUsersManager] All hooks and state initialized successfully');
 
     const onCreateUser = async (data: CreateAdminUserData) => {
       try {
@@ -159,21 +147,17 @@ const AdminUsersManager = () => {
 
     const isAllSelected = selectedUsers.length === users.length && users.length > 0;
 
-    logDebug('Render checks completed', {
-      context: 'admin',
-      component: 'AdminUsersManager',
-      data: {
-        isLoading,
-        permissionsLoading,
-        usersCount: users.length,
-        hasPermission: hasPermission('canManageUsers'),
-        userRole,
-        error
-      }
+    console.log('🔍 [AdminUsersManager] Render checks:', {
+      isLoading,
+      permissionsLoading,
+      usersCount: users.length,
+      hasPermission: hasPermission('canManageUsers'),
+      userRole,
+      error
     });
 
     if (isLoading || permissionsLoading) {
-      logDebug('Showing loading state', { context: 'admin', component: 'AdminUsersManager' });
+      console.log('⏳ [AdminUsersManager] Showing loading state');
       return (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -186,7 +170,7 @@ const AdminUsersManager = () => {
 
     // Verificar permisos para acceder a esta página
     if (!hasPermission('canManageUsers')) {
-      logWarning('Permission denied, showing restricted view', { context: 'admin', component: 'AdminUsersManager', data: { userRole } });
+      console.log('🚫 [AdminUsersManager] Permission denied, showing restricted view');
       return (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -200,7 +184,7 @@ const AdminUsersManager = () => {
       );
     }
 
-    logDebug('Rendering main UI', { context: 'admin', component: 'AdminUsersManager', data: { usersCount: users.length } });
+    console.log('✅ [AdminUsersManager] Rendering main UI with', users.length, 'users');
 
     return (
       <div className="space-y-6">
@@ -543,7 +527,7 @@ const AdminUsersManager = () => {
     );
 
   } catch (err) {
-    logError('Error during AdminUsersManager initialization', err as Error, { context: 'admin', component: 'AdminUsersManager' });
+    console.error('💥 [AdminUsersManager] Error during initialization:', err);
     return (
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-4 text-red-600">Error in AdminUsersManager</h1>

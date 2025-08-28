@@ -31,36 +31,29 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Vendor chunks optimizados y seguros
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'vendor-ui';
-            }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('@tanstack/react-query')) {
-              return 'vendor-query';
-            }
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            return 'vendor';
-          }
+        manualChunks: {
+          // Vendor chunks optimizados
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
+          routing: ['react-router-dom'],
+          query: ['@tanstack/react-query'],
+          charts: ['recharts'],
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
           
-          // Feature chunks más conservadores - solo admin por ahora
-          if (id.includes('/admin/') && !id.includes('LazyIcon') && !id.includes('icon-registry')) {
-            return 'admin';
-          }
-          
-          // No chunking para iconos - mantenerlos en el bundle principal
-          if (id.includes('icon-registry') || id.includes('LazyIcon')) {
-            return undefined; // Bundle principal
-          }
+          // Feature chunks
+          admin: [
+            './src/pages/Admin.tsx',
+            './src/components/admin/ModernBlogManager.tsx',
+            './src/components/admin/BlogPostsManager.tsx'
+          ],
+          dashboard: [
+            './src/features/dashboard/hooks/useMarketingMetrics.ts',
+            './src/hooks/useAdvancedDashboardStats.tsx'
+          ],
+          blog: [
+            './src/hooks/useBlogPosts.tsx',
+            './src/pages/Blog.tsx'
+          ]
         }
       }
     },

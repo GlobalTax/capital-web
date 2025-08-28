@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { dataService } from '@/core/data/DataService';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
@@ -37,7 +37,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     setIsCheckingAdmin(true);
     try {
-      const adminStatus = await dataService.checkAdminStatus(targetUserId);
+      // Single attempt - NO retries to prevent infinite loops
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, is_active')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+
+      if (error) {
+        logger.warn('Error checking admin status', { userId: targetUserId, error: error.message }, { context: 'auth', component: 'AuthContext' });
+        setIsAdmin(false);
+        return false;
+      }
+
+      const adminStatus = !!data?.is_active;
       setIsAdmin(adminStatus);
       return adminStatus;
     } catch (error) {
@@ -54,7 +67,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user?.id, isCheckingAdmin]);
 
 
-
   useEffect(() => {
     let mounted = true;
     
@@ -62,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!mounted) return;
       
+      // Enhanced logging for debugging JWT issues
       logger.debug('Auth state changed', { 
         event, 
         hasUser: !!session?.user,
@@ -74,11 +87,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin status when user signs in
+          // Single admin status check - NO retries to prevent infinite loops
           try {
             await checkAdminStatus(session.user.id);
           } catch (error) {
-            logger.warn('Admin status check failed', { error }, { context: 'auth', component: 'AuthContext' });
+            logger.warn('Admin status check failed', { error: error.message }, { context: 'auth', component: 'AuthContext' });
             setIsAdmin(false);
           }
         } else {
@@ -94,12 +107,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     // Set up auth state listener
-    const { data: { subscription } } = dataService.onAuthStateChange(handleAuthStateChange);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
 
-    // Initial session check
+    // Initial session check with retry mechanism
     const initializeSession = async () => {
       try {
-        const session = await dataService.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          logger.error('Error getting initial session', error, { context: 'auth', component: 'AuthContext' });
+          // Try to refresh session on error
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (!refreshError && refreshData.session) {
+            await handleAuthStateChange('INITIAL_SESSION_REFRESH', refreshData.session);
+            return;
+          }
+        }
+        
         await handleAuthStateChange('INITIAL_SESSION', session);
       } catch (error) {
         logger.error('Failed to initialize session', error as Error, { context: 'auth', component: 'AuthContext' });
@@ -115,11 +139,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [checkAdminStatus]);
+  }, []); // Remove checkAdminStatus dependency to prevent infinite re-renders
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    const { error } = await dataService.signIn(email, password);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
       const authError = new AuthenticationError('Sign in failed', { email, error: error.message });
@@ -143,8 +170,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string): Promise<{ error: Error | null }> => {
     setIsLoading(true);
+    const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await dataService.signUp(email, password, fullName);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          full_name: fullName
+        }
+      }
+    });
 
     if (error) {
       const authError = new AuthenticationError('Sign up failed', { email, error: error.message });
@@ -168,7 +205,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     setIsLoading(true);
-    await dataService.signOut();
+    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setIsAdmin(false);
