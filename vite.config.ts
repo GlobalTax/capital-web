@@ -31,29 +31,40 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks optimizados
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
-          routing: ['react-router-dom'],
-          query: ['@tanstack/react-query'],
-          charts: ['recharts'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui';
+            }
+            if (id.includes('react-router')) {
+              return 'routing';
+            }
+            if (id.includes('@tanstack/react-query')) {
+              return 'query';
+            }
+            if (id.includes('recharts')) {
+              return 'charts';
+            }
+            if (id.includes('react-hook-form') || id.includes('zod')) {
+              return 'forms';
+            }
+            return 'vendor';
+          }
           
-          // Feature chunks
-          admin: [
-            './src/pages/Admin.tsx',
-            './src/components/admin/ModernBlogManager.tsx',
-            './src/components/admin/BlogPostsManager.tsx'
-          ],
-          dashboard: [
-            './src/features/dashboard/hooks/useMarketingMetrics.ts',
-            './src/hooks/useAdvancedDashboardStats.tsx'
-          ],
-          blog: [
-            './src/hooks/useBlogPosts.tsx',
-            './src/pages/Blog.tsx'
-          ]
+          // Feature chunks basados en directorios
+          if (id.includes('/admin/') || id.includes('Admin.tsx')) {
+            return 'admin';
+          }
+          if (id.includes('/dashboard/') || id.includes('Dashboard')) {
+            return 'dashboard';
+          }
+          if (id.includes('/blog/') || id.includes('Blog.tsx')) {
+            return 'blog';
+          }
         }
       }
     },
