@@ -3,13 +3,9 @@ import React, { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Award, TrendingUp, Mail, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useLazyLoad } from '@/hooks/useLazyLoad';
-import { useCache } from '@/hooks/useCache';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
 import LazyImage from '@/components/LazyImage';
 import LazySection from '@/components/LazySection';
-import { LoadingSkeleton } from '@/shared/components';
-import { globalCache } from '@/utils/cache';
 
 interface TeamMember {
   id: string;
@@ -56,84 +52,75 @@ const TeamStats = () => {
 
 // Team Member Card Component
 const TeamMemberCard = ({ member }: { member: TeamMember }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   return (
-    <LazySection 
-      className="group animate-fade-in"
-      threshold={0.2}
-    >
-      <div className="bg-card border border-gray-300 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
-        <div className="relative aspect-[4/5] overflow-hidden">
-          {member.image_url ? (
-            <LazyImage
-              src={member.image_url}
-              alt={member.name}
-              className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-              placeholderClassName="w-full h-full animate-pulse bg-muted"
-              onLoad={() => setImageLoaded(true)}
-            />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <Users className="w-16 h-16 text-muted-foreground" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        </div>
+    <div className="group bg-card border border-gray-300 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+      <div className="relative aspect-[4/5] overflow-hidden">
+        {member.image_url && !imageError ? (
+          <img
+            src={member.image_url}
+            alt={member.name}
+            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
+            onError={() => setImageError(true)}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <Users className="w-16 h-16 text-muted-foreground" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </div>
+      
+      <div className="p-6">
+        <h3 className="text-xl font-semibold text-card-foreground mb-2 group-hover:text-primary transition-colors">
+          {member.name}
+        </h3>
+        {member.position && (
+          <p className="text-muted-foreground text-sm mb-4 font-medium">
+            {member.position}
+          </p>
+        )}
         
-        <div className="p-6">
-          <h3 className="text-xl font-semibold text-card-foreground mb-2 group-hover:text-primary transition-colors">
-            {member.name}
-          </h3>
-          {member.position && (
-            <p className="text-muted-foreground text-sm mb-4 font-medium">
-              {member.position}
-            </p>
-          )}
-          
-          {/* Placeholder for future bio/description */}
-          <div className="space-y-2 mb-4">
-            <div className="h-2 bg-muted rounded animate-pulse opacity-60" />
-            <div className="h-2 bg-muted rounded animate-pulse opacity-40 w-4/5" />
-          </div>
-          
-          <div className="flex items-center text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <span>Ver perfil completo</span>
-            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </div>
+        <div className="flex items-center text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span>Ver perfil completo</span>
+          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
-    </LazySection>
+    </div>
   );
 };
 
 const Team = () => {
-  const { ref, isVisible } = useLazyLoad<HTMLElement>({ 
-    threshold: 0.1,
-    rootMargin: '100px'
-  });
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchTeamMembers = useCallback(async (): Promise<TeamMember[]> => {
-    const { data, error } = await supabase
-      .from('team_members')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
+  const fetchTeamMembers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
-    if (error) throw error;
-    return data || [];
+      if (error) throw error;
+      setTeamMembers(data || []);
+    } catch (err) {
+      console.error('Error fetching team members:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const { 
-    data: teamMembers, 
-    isLoading, 
-    error 
-  } = useCache(
-    'team_members',
-    fetchTeamMembers,
-    globalCache,
-    15 * 60 * 1000
-  );
+  React.useEffect(() => {
+    fetchTeamMembers();
+  }, [fetchTeamMembers]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,15 +157,39 @@ const Team = () => {
       <TeamStats />
 
       {/* Team Members Grid */}
-      <section ref={ref} className="py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            <LoadingSkeleton cards={6} showHeader={false} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-card border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+                  <div className="aspect-[4/5] bg-muted animate-pulse" />
+                  <div className="p-6 space-y-4">
+                    <div className="h-6 bg-muted rounded animate-pulse" />
+                    <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+                    <div className="space-y-2">
+                      <div className="h-2 bg-muted rounded animate-pulse" />
+                      <div className="h-2 bg-muted rounded animate-pulse w-4/5" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-destructive text-lg">Error al cargar el equipo: {error}</p>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 max-w-md mx-auto">
+                <Users className="w-12 h-12 text-destructive mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-destructive mb-2">Error al cargar el equipo</h3>
+                <p className="text-destructive/80 text-sm mb-4">{error}</p>
+                <button 
+                  onClick={fetchTeamMembers}
+                  className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+                >
+                  Reintentar
+                </button>
+              </div>
             </div>
-          ) : teamMembers && teamMembers.length > 0 && isVisible ? (
+          ) : teamMembers && teamMembers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {teamMembers.map((member, index) => (
                 <div 
