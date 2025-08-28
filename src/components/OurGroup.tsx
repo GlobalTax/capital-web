@@ -1,6 +1,7 @@
 import React from 'react';
 import { Building2, Scale, TrendingUp, Shield } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { Badge } from '@/components/ui/badge';
 
 const OurGroup = () => {
   const groupServices = [
@@ -43,12 +44,17 @@ const OurGroup = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
+          <div className="mb-4">
+            <Badge variant="outline" className="mb-4 text-sm font-medium">
+              Grupo Navarro - Más de 70 Profesionales
+            </Badge>
+          </div>
           <h2 className="text-4xl font-bold text-foreground mb-6">
-            Servicios Complementarios
+            Capittal forma parte del Grupo Navarro
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            La sinergia perfecta entre expertise financiero y legal para operaciones de M&A exitosas. 
-            Dos marcas especializadas, un objetivo común: maximizar el valor de tu operación.
+            <strong>Servicio integral de M&A.</strong> La sinergia perfecta entre expertise financiero y legal para operaciones exitosas. 
+            Dos marcas especializadas, un ecosistema de más de 70 profesionales, un objetivo común: maximizar el valor de tu operación.
           </p>
         </div>
 
