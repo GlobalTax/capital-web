@@ -18,10 +18,10 @@ const SectorCTA: React.FC<SectorCTAProps> = ({
   return (
     <section className="py-20 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
           {title}
         </h2>
-        <p className="text-xl text-slate-600 mb-8">
+        <p className="text-xl text-muted-foreground mb-8">
           {description}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
