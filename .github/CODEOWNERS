@@ -1,0 +1,24 @@
+# Global code owners
+* @your-username
+
+# Security-related files require security team review
+/src/core/security/ @security-team
+/src/utils/securityMonitoring.ts @security-team
+/src/hooks/useCentralizedErrorHandler.tsx @security-team
+
+# Database and backend changes
+/supabase/ @backend-team @security-team
+*.sql @backend-team @security-team
+
+# CI/CD and deployment
+/.github/workflows/ @devops-team @security-team
+/package.json @devops-team
+
+# Configuration files
+/vite.config.ts @devops-team
+/tailwind.config.ts @frontend-team
+/tsconfig.json @devops-team
+
+# Landing pages and marketing
+/src/pages/Landing*.tsx @marketing-team @frontend-team
+/src/components/landing/ @marketing-team @frontend-team
