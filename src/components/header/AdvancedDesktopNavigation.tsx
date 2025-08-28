@@ -11,7 +11,7 @@ import {
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
-import LazyIcon from '@/components/ui/LazyIcon';
+import DirectIcon from '@/components/ui/DirectIcon';
 
 const ServiciosMenu = () => (
   <div className="grid gap-8 lg:grid-cols-4">
@@ -51,7 +51,7 @@ const ServiciosMenu = () => (
                   className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
                   <div className="flex-shrink-0">
-                    {item.icon && <LazyIcon name={item.icon} className="size-6 text-gray-600" />}
+                    {item.icon && <DirectIcon name={item.icon} className="size-6 text-gray-600" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 group-hover:text-black">
@@ -84,7 +84,7 @@ const SectoresMenu = () => (
         >
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0 p-2 bg-gray-100 rounded-lg">
-              {sector.icon && <LazyIcon name={sector.icon} className="size-6 text-gray-700" />}
+              {sector.icon && <DirectIcon name={sector.icon} className="size-6 text-gray-700" />}
             </div>
             <div className="flex-1">
               <div className="text-sm font-medium text-gray-900 group-hover:text-black">
@@ -144,7 +144,7 @@ const RecursosMenu = () => (
                   className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
                   <div className="flex-shrink-0">
-                    {item.icon && <LazyIcon name={item.icon} className="size-5 text-gray-600" />}
+                    {item.icon && <DirectIcon name={item.icon} className="size-5 text-gray-600" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 group-hover:text-black">
@@ -199,7 +199,7 @@ const NosotrosMenu = () => (
             className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
           >
             <div className="flex-shrink-0">
-              {item.icon && <LazyIcon name={item.icon} className="size-5 text-gray-600" />}
+              {item.icon && <DirectIcon name={item.icon} className="size-5 text-gray-600" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 group-hover:text-black">

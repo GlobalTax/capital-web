@@ -32,38 +32,34 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks optimizados
+          // Vendor chunks optimizados y seguros
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor';
+              return 'vendor-react';
             }
             if (id.includes('@radix-ui')) {
-              return 'ui';
+              return 'vendor-ui';
             }
-            if (id.includes('react-router')) {
-              return 'routing';
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
             }
             if (id.includes('@tanstack/react-query')) {
-              return 'query';
+              return 'vendor-query';
             }
             if (id.includes('recharts')) {
-              return 'charts';
-            }
-            if (id.includes('react-hook-form') || id.includes('zod')) {
-              return 'forms';
+              return 'vendor-charts';
             }
             return 'vendor';
           }
           
-          // Feature chunks basados en directorios
-          if (id.includes('/admin/') || id.includes('Admin.tsx')) {
+          // Feature chunks más conservadores - solo admin por ahora
+          if (id.includes('/admin/') && !id.includes('LazyIcon') && !id.includes('icon-registry')) {
             return 'admin';
           }
-          if (id.includes('/dashboard/') || id.includes('Dashboard')) {
-            return 'dashboard';
-          }
-          if (id.includes('/blog/') || id.includes('Blog.tsx')) {
-            return 'blog';
+          
+          // No chunking para iconos - mantenerlos en el bundle principal
+          if (id.includes('icon-registry') || id.includes('LazyIcon')) {
+            return undefined; // Bundle principal
           }
         }
       }
