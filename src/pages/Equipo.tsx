@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Team from '@/components/Team';
+import { HomeLayout } from '@/shared';
 
 const Equipo = () => {
   useEffect(() => {
@@ -14,7 +15,11 @@ const Equipo = () => {
     metaDescription.setAttribute('content', 'Conoce al equipo de expertos en M&A de Capittal. Profesionales con experiencia global y resultados probados en transacciones empresariales.');
   }, []);
 
-  return <Team />;
+  return (
+    <HomeLayout>
+      <Team />
+    </HomeLayout>
+  );
 };
 
 export default Equipo;
