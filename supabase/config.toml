@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.abandonment-detector]
 verify_jwt = false
+
+[functions.emergency-cleanup]
+verify_jwt = false
