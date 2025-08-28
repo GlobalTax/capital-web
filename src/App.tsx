@@ -4,11 +4,10 @@ import { Navigate } from 'react-router-dom';
 import { AppProviders } from '@/core/app/AppProviders';
 import { AppRouter } from '@/core/router/AppRouter';
 import { HostRedirectService } from '@/core/routing/HostRedirectService';
-import { AnalyticsBootstrap } from '@/core/analytics/AnalyticsBootstrap';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
-import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
+import { logError } from '@/core/logging/ConditionalLogger';
 
 // Core application components moved to separate modules
 
@@ -16,13 +15,6 @@ import { usePredictiveNavigation } from '@/hooks/usePredictiveNavigation';
 function AppContent() {
   const { isOnline } = useNetworkStatus();
   const { preferences } = useAccessibility();
-  
-  // Navegación predictiva (dentro del Router context)
-  usePredictiveNavigation({
-    enabled: true,
-    confidenceThreshold: 0.6,
-    maxPredictions: 3
-  });
 
   if (!isOnline) {
     return <OfflineState onRetry={() => window.location.reload()} />;
@@ -35,7 +27,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
+    <div className="min-h-screen bg-background font-sans antialiased">
       <AppRouter />
     </div>
   );
@@ -43,50 +35,28 @@ function AppContent() {
 
 function App() {
   useEffect(() => {
-    // Inicialización simplificada y optimizada
-    const initializeFeatures = async () => {
+    // Inicialización simplificada para evitar errores
+    const initializeApp = async () => {
       try {
-        // Solo en desarrollo: optimizaciones de bundle
-        if (process.env.NODE_ENV === 'development') {
-          const { logBundleSize, monitorResourceLoading } = await import('./utils/bundleAnalysis');
-          logBundleSize();
-          monitorResourceLoading();
-        }
-
         // Inicializar service worker de forma diferida
-        setTimeout(async () => {
-          try {
-            if ('serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator) {
+          setTimeout(async () => {
+            try {
               await navigator.serviceWorker.register('/sw.js');
+            } catch (error) {
+              // Silent fail for service worker
             }
-          } catch (error) {
-            // Silent fail for service worker
-          }
-        }, 2000);
-
-        // Precargar módulos críticos de forma diferida
-        setTimeout(async () => {
-          try {
-            Promise.all([
-              import('./components/admin/lazy'),
-              import('./features/dashboard/hooks/useMarketingMetrics'),
-            ]).catch(() => {
-              // Silent fail for module preloading
-            });
-          } catch (error) {
-            // Silent fail for preloading initialization
-          }
-        }, 3000);
-
-        // Inicializar analytics
-        await AnalyticsBootstrap.initialize();
-
+          }, 3000);
+        }
       } catch (error) {
-        // Silent fail for feature initialization
+        logError('Error during app initialization', error as Error, {
+          context: 'system',
+          component: 'App'
+        });
       }
     };
 
-    initializeFeatures();
+    initializeApp();
   }, []);
 
   return (
