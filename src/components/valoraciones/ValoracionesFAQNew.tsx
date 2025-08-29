@@ -44,30 +44,30 @@ const ValoracionesFAQNew = () => {
   };
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-12 bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6">
             Preguntas Frecuentes
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
             Resolvemos las dudas más comunes sobre valoraciones empresariales
           </p>
         </div>
 
-        <div className="space-y-4 mb-16">
+        <div className="space-y-3 mb-12">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div key={index} className="bg-white rounded-lg border border-slate-200 overflow-hidden">
               <button
-                className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-50 transition-colors"
+                className="w-full text-left p-4 focus:outline-none focus:ring-2 focus:ring-primary hover:bg-slate-50 transition-colors"
                 onClick={() => toggleAccordion(index)}
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-black pr-4">
+                  <h3 className="text-sm font-semibold text-slate-900 pr-4">
                     {faq.pregunta}
                   </h3>
                   <ChevronDown 
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 flex-shrink-0 ${
+                    className={`w-4 h-4 text-slate-500 transition-transform duration-200 flex-shrink-0 ${
                       activeIndex === index ? 'rotate-180' : ''
                     }`} 
                   />
@@ -75,9 +75,9 @@ const ValoracionesFAQNew = () => {
               </button>
               
               {activeIndex === index && (
-                <div className="px-6 pb-6 pt-0">
-                  <div className="border-t border-gray-200 pt-4">
-                    <p className="text-gray-600 leading-relaxed">
+                <div className="px-4 pb-4 pt-0">
+                  <div className="border-t border-slate-200 pt-3">
+                    <p className="text-slate-600 leading-relaxed text-sm">
                       {faq.respuesta}
                     </p>
                   </div>
@@ -88,27 +88,27 @@ const ValoracionesFAQNew = () => {
         </div>
 
         {/* Contact Section */}
-        <div className="bg-white rounded-lg p-8 shadow-md text-center">
-          <h3 className="text-2xl font-bold text-black mb-4">
+        <div className="bg-white rounded-lg p-6 border border-slate-200 text-center">
+          <h3 className="text-xl font-semibold text-slate-900 mb-4">
             ¿No encuentras tu respuesta?
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-slate-600 mb-6 text-sm">
             Nuestros expertos en valoración están disponibles para resolver cualquier duda específica sobre tu caso
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a 
               href="tel:+34912345678" 
-              className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm"
             >
-              <Phone className="w-5 h-5 mr-2" />
+              <Phone className="w-4 h-4 mr-2" />
               +34 91 234 5678
             </a>
             <a 
               href="mailto:valoraciones@capittal.com" 
-              className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm"
             >
-              <Mail className="w-5 h-5 mr-2" />
+              <Mail className="w-4 h-4 mr-2" />
               valoraciones@capittal.com
             </a>
           </div>

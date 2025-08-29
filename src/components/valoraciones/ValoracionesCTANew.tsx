@@ -159,48 +159,48 @@ const ValoracionesCTANew = () => {
         </div>
 
         {/* Comparison Table */}
-        <div className="mt-16 bg-gray-900 rounded-xl p-8">
-          <h3 className="text-2xl font-bold text-center mb-8">Comparación de Servicios</h3>
+        <div className="mt-12 bg-slate-900 rounded-lg p-6">
+          <h3 className="text-xl font-semibold text-center mb-6">Comparación de Servicios</h3>
           
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-4 text-gray-300">Característica</th>
-                  <th className="text-center py-4">Calculadora Gratuita</th>
-                  <th className="text-center py-4">Valoración Profesional</th>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left py-3 text-slate-300">Característica</th>
+                  <th className="text-center py-3">Calculadora Gratuita</th>
+                  <th className="text-center py-3">Valoración Profesional</th>
                 </tr>
               </thead>
-              <tbody className="space-y-2">
-                <tr className="border-b border-gray-800">
-                  <td className="py-3 text-gray-300">Tiempo de entrega</td>
-                  <td className="text-center py-3">5 minutos</td>
-                  <td className="text-center py-3">4-6 semanas</td>
+              <tbody>
+                <tr className="border-b border-slate-800">
+                  <td className="py-2 text-slate-300 text-sm">Tiempo de entrega</td>
+                  <td className="text-center py-2 text-sm">5 minutos</td>
+                  <td className="text-center py-2 text-sm">4-6 semanas</td>
                 </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="py-3 text-gray-300">Metodologías aplicadas</td>
-                  <td className="text-center py-3">Múltiplos sectoriales</td>
-                  <td className="text-center py-3">DCF + Múltiplos + Patrimonial</td>
+                <tr className="border-b border-slate-800">
+                  <td className="py-2 text-slate-300 text-sm">Metodologías aplicadas</td>
+                  <td className="text-center py-2 text-sm">Múltiplos sectoriales</td>
+                  <td className="text-center py-2 text-sm">DCF + Múltiplos + Patrimonial</td>
                 </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="py-3 text-gray-300">Precisión estimada</td>
-                  <td className="text-center py-3">±20-30%</td>
-                  <td className="text-center py-3">±5-10%</td>
+                <tr className="border-b border-slate-800">
+                  <td className="py-2 text-slate-300 text-sm">Precisión estimada</td>
+                  <td className="text-center py-2 text-sm">±20-30%</td>
+                  <td className="text-center py-2 text-sm">±5-10%</td>
                 </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="py-3 text-gray-300">Informe detallado</td>
-                  <td className="text-center py-3">PDF básico</td>
-                  <td className="text-center py-3">Completo + Certificado</td>
+                <tr className="border-b border-slate-800">
+                  <td className="py-2 text-slate-300 text-sm">Informe detallado</td>
+                  <td className="text-center py-2 text-sm">PDF básico</td>
+                  <td className="text-center py-2 text-sm">Completo + Certificado</td>
                 </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="py-3 text-gray-300">Válido legalmente</td>
-                  <td className="text-center py-3">No</td>
-                  <td className="text-center py-3">Sí</td>
+                <tr className="border-b border-slate-800">
+                  <td className="py-2 text-slate-300 text-sm">Válido legalmente</td>
+                  <td className="text-center py-2 text-sm">No</td>
+                  <td className="text-center py-2 text-sm">Sí</td>
                 </tr>
                 <tr>
-                  <td className="py-3 text-gray-300">Precio</td>
-                  <td className="text-center py-3 text-green-400 font-semibold">Gratuito</td>
-                  <td className="text-center py-3">Desde €3,000</td>
+                  <td className="py-2 text-slate-300 text-sm">Precio</td>
+                  <td className="text-center py-2 text-primary font-medium text-sm">Gratuito</td>
+                  <td className="text-center py-2 text-sm">Desde €3,000</td>
                 </tr>
               </tbody>
             </table>
@@ -208,21 +208,21 @@ const ValoracionesCTANew = () => {
         </div>
 
         {/* Contact Direct */}
-        <div className="mt-12 text-center">
-          <h3 className="text-xl font-bold mb-6">¿Prefieres hablar directamente?</h3>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-8 text-center">
+          <h3 className="text-lg font-semibold mb-4">¿Prefieres hablar directamente?</h3>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a 
               href="tel:+34912345678" 
-              className="inline-flex items-center justify-center px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 bg-white text-black rounded-lg hover:bg-slate-100 transition-colors text-sm"
             >
-              <Phone className="w-5 h-5 mr-2" />
+              <Phone className="w-4 h-4 mr-2" />
               +34 91 234 5678
             </a>
             <a 
               href="mailto:valoraciones@capittal.com" 
-              className="inline-flex items-center justify-center px-6 py-3 border border-gray-600 text-white rounded-lg hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 border border-slate-600 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm"
             >
-              <Mail className="w-5 h-5 mr-2" />
+              <Mail className="w-4 h-4 mr-2" />
               valoraciones@capittal.com
             </a>
           </div>

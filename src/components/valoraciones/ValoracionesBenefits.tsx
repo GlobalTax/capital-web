@@ -42,29 +42,29 @@ const ValoracionesBenefits = () => {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-12 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6">
             ¿Cuándo Necesitas una Valoración?
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
             Conocer el valor de tu empresa es fundamental en múltiples situaciones empresariales.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {casos.map((caso, index) => {
             const Icon = caso.icon;
             return (
               <div key={index} className="group text-center">
-                <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 h-full">
-                  <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-8 h-8 text-white" />
+                <div className="bg-white rounded-lg p-4 border border-slate-200 hover:border-primary transition-colors h-full">
+                  <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-black mb-3">{caso.titulo}</h3>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">{caso.descripcion}</p>
-                  <div className="bg-gray-100 text-black px-3 py-2 rounded-lg text-xs font-semibold">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3">{caso.titulo}</h3>
+                  <p className="text-slate-600 text-xs mb-4 leading-relaxed">{caso.descripcion}</p>
+                  <div className="bg-slate-50 text-slate-600 px-3 py-2 rounded text-xs font-medium">
                     {caso.beneficio}
                   </div>
                 </div>
@@ -73,17 +73,17 @@ const ValoracionesBenefits = () => {
           })}
         </div>
 
-        <div className="bg-white rounded-lg p-12 border border-gray-200">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="bg-white rounded-lg p-8 border border-slate-200">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div>
-              <h3 className="text-3xl font-bold text-black mb-6">
+              <h3 className="text-2xl font-semibold text-slate-900 mb-6">
                 ¿Qué Incluye tu Valoración Gratuita?
               </h3>
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 mb-6">
                 {ventajas.map((ventaja, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">{ventaja}</span>
+                    <CheckCircle className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <span className="text-slate-600 text-sm">{ventaja}</span>
                   </div>
                 ))}
               </div>
@@ -98,48 +98,44 @@ const ValoracionesBenefits = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-200">
-                <div className="flex items-center justify-between mb-6">
-                  <h4 className="text-xl font-bold text-black">Reporte de Valoración</h4>
-                  <span className="bg-black text-white px-3 py-1 rounded-full text-sm font-semibold">
+              <div className="bg-white rounded-lg p-6 border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-semibold text-slate-900">Reporte de Valoración</h4>
+                  <span className="bg-slate-900 text-white px-2 py-1 rounded text-xs font-medium">
                     Ejemplo
                   </span>
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="text-gray-600">Valor Estimado</span>
-                    <span className="text-2xl font-bold text-black">€2.8M - €3.4M</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-slate-600 text-sm">Valor Estimado</span>
+                    <span className="text-lg font-semibold text-slate-900">€2.8M - €3.4M</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="text-gray-600">Múltiplo EBITDA</span>
-                    <span className="font-semibold text-gray-800">6.2x</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-slate-600 text-sm">Múltiplo EBITDA</span>
+                    <span className="font-medium text-slate-700">6.2x</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="text-gray-600">Vs. Mediana Sector</span>
-                    <span className="text-green-600 font-semibold">+18%</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-slate-600 text-sm">Vs. Mediana Sector</span>
+                    <span className="text-primary font-medium">+18%</span>
                   </div>
-                  <div className="flex justify-between items-center py-3">
-                    <span className="text-gray-600">Puntuación</span>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-slate-600 text-sm">Puntuación</span>
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <div key={i} className={`w-3 h-3 rounded-full mr-1 ${i < 4 ? 'bg-yellow-400' : 'bg-gray-200'}`} />
+                        <div key={i} className={`w-2 h-2 rounded-full mr-1 ${i < 4 ? 'bg-slate-400' : 'bg-slate-200'}`} />
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="flex items-center justify-between text-sm text-gray-600">
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
                     <span>Próxima actualización</span>
                     <span>En 3 meses</span>
                   </div>
                 </div>
               </div>
-
-              {/* Elementos decorativos */}
-              <div className="absolute -top-4 -right-4 w-12 h-12 bg-black rounded-full opacity-20"></div>
-              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-gray-800 rounded-full opacity-30"></div>
             </div>
           </div>
         </div>
