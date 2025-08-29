@@ -86,7 +86,7 @@ const SuccessStories = () => {
                   {story.results.map((result, idx) => (
                     <div key={idx} className="text-center p-2 bg-white border border-slate-100 rounded-lg">
                       <div className="font-semibold text-slate-900 text-sm">{result.value}</div>
-                      <div className="text-xs text-slate-500">{result.metric}</div>
+                      <div className="text-xs text-slate-500">{result.label}</div>
                     </div>
                   ))}
                 </div>

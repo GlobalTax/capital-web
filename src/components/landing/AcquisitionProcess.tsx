@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Target, BarChart3, Handshake, Users } from 'lucide-react';
+import { Search, Target, BarChart3, Handshake, Users, Clock } from 'lucide-react';
 
 const AcquisitionProcess = () => {
   const steps = [
