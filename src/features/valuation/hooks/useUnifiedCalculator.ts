@@ -174,14 +174,33 @@ export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Par
 
   // ============= CALCULATION =============
   const calculateValuation = useCallback(async (): Promise<ValuationResult | ComprehensiveResult | null> => {
+    console.log('🚀 calculateValuation called', {
+      isFormValid,
+      version: config.version,
+      currentStep: state.currentStep,
+      configSteps: config.steps
+    });
+
     if (!isFormValid) {
+      console.log('🚀 Form not valid, showing validation');
       setState(prev => ({ ...prev, showValidation: true }));
       return null;
     }
 
+    console.log('🚀 Starting calculation process...');
     setState(prev => ({ ...prev, isCalculating: true }));
 
     return await handleAsyncError(async () => {
+      console.log('🚀 Calling calculateUnifiedValuation with data:', {
+        companyData: state.companyData,
+        sectorMultiples: sectorMultiples.length,
+        config: {
+          version: config.version,
+          includeTaxCalculation: config.features.taxCalculation,
+          includeScenarios: config.features.scenarios
+        }
+      });
+
       const result = await calculateUnifiedValuation(
         state.companyData,
         sectorMultiples,
@@ -193,11 +212,16 @@ export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Par
         }
       );
 
+      console.log('🚀 Calculation completed, result:', result);
+
+      const nextStep = config.steps + 1; // Move to results step
+      console.log('🚀 Moving to step:', nextStep);
+
       setState(prev => ({
         ...prev,
         result,
         isCalculating: false,
-        currentStep: config.steps + 1 // Move to results step
+        currentStep: nextStep
       }));
 
       // Finalize valuation if autosave enabled

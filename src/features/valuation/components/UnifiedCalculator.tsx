@@ -64,17 +64,28 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
 
   // Enhanced calculation with tracking
   const handleCalculation = async () => {
+    console.log('🔥 handleCalculation called', {
+      currentStep: calculator.currentStep,
+      configSteps: config.steps,
+      version: config.version,
+      isFormValid: calculator.isFormValid
+    });
+
     if (calculator.currentStep === config.steps) {
+      console.log('🔥 Starting calculation...');
       tracking.trackCalculationStart();
       try {
         const result = await calculator.calculateValuation();
+        console.log('🔥 Calculation result:', result);
         if (result) {
           tracking.trackCalculationComplete();
         }
       } catch (error) {
+        console.error('🔥 Calculation error:', error);
         tracking.trackCalculationAbandon(calculator.currentStep);
       }
     } else {
+      console.log('🔥 Moving to next step...');
       calculator.nextStep();
     }
   };
