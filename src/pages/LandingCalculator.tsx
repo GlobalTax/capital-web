@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { HomeLayout } from '@/shared';
+import LandingLayout from '@/components/shared/LandingLayout';
 import ValuationCalculator from '@/components/ValuationCalculator';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
@@ -167,7 +167,7 @@ const LandingCalculatorInner = () => {
   }, [location.search]);
 
   return (
-    <HomeLayout>
+    <LandingLayout>
       {/* Selector de idioma */}
       <div className="max-w-6xl mx-auto px-4 flex justify-end">
         <LanguageSelector />
@@ -179,7 +179,7 @@ const LandingCalculatorInner = () => {
       <ConfidentialityBlock />
       {/* Breve descripción de Capittal */}
       <CapittalBrief />
-    </HomeLayout>
+    </LandingLayout>
   );
 };
 
