@@ -31,80 +31,158 @@ const NuestroMetodoContent = () => {
 
       {/* Title Section */}
       <div className="mb-16">
-        <h1 className="text-5xl font-light text-black mb-6 leading-tight">
-          Nuestro método
+        <h1 className="text-4xl font-semibold text-slate-900 mb-6 leading-tight">
+          Metodología Integral M&A
         </h1>
-        <p className="text-xl text-black leading-relaxed mb-8 max-w-3xl font-light">
+        <p className="text-xl text-slate-600 leading-relaxed mb-8 max-w-3xl font-light">
           En <strong>Capittal</strong>, aplicamos una metodología integral que combina <strong>análisis riguroso</strong>, <strong>experiencia sectorial</strong> y <strong>enfoque personalizado</strong> para maximizar el valor en cada transacción de M&A.
         </p>
-        <div className="flex items-center gap-4 text-sm text-black">
-          <span>Last updated</span>
-          <span>June 10, 2025</span>
+        <div className="flex items-center gap-4 text-sm text-slate-500">
+          <span>Actualizado</span>
+          <span>Diciembre 29, 2024</span>
         </div>
       </div>
 
       {/* Rich Text Content */}
       <div className="prose prose-lg max-w-none">
-        <h2 className="text-3xl font-medium text-black mb-8">Nuestro Enfoque Metodológico</h2>
+        <h2 className="text-3xl font-semibold text-slate-900 mb-8">Los 4 Pilares de Nuestra Metodología</h2>
         
-        <p className="text-black mb-8 leading-relaxed">
-          Nuestro método se fundamenta en <strong>tres pilares esenciales</strong>: el <strong>análisis exhaustivo</strong> de cada oportunidad, la <strong>estructuración óptima</strong> de las operaciones y la <strong>ejecución impecable</strong> de cada fase del proceso.
+        <div className="grid md:grid-cols-2 gap-8 mb-12 not-prose">
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-slate-600 font-semibold">01</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Análisis Estratégico</h3>
+            <p className="text-slate-600 text-sm">Diagnóstico profundo del negocio, mercado y oportunidades de valor</p>
+          </div>
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-slate-600 font-semibold">02</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Valoración Rigurosa</h3>
+            <p className="text-slate-600 text-sm">Múltiples metodologías para establecer valor objetivo y defendible</p>
+          </div>
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-slate-600 font-semibold">03</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Ejecución Impecable</h3>
+            <p className="text-slate-600 text-sm">Gestión integral del proceso con foco en maximización de valor</p>
+          </div>
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-slate-600 font-semibold">04</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Seguimiento Continuo</h3>
+            <p className="text-slate-600 text-sm">Apoyo post-transacción para asegurar materialización de sinergias</p>
+          </div>
+        </div>
+
+        <h3 className="text-2xl font-semibold text-slate-900 mb-8">Fase 1: Análisis y Valoración</h3>
+        
+        <p className="text-slate-600 mb-6 leading-relaxed">
+          Iniciamos cada proyecto con un <strong>análisis exhaustivo</strong> que abarca todos los aspectos críticos del negocio. Esta fase es fundamental para identificar oportunidades de valor y establecer una estrategia de transacción óptima.
         </p>
 
-        <h4 className="text-xl font-medium text-black mb-6">Fase de Análisis y Diagnóstico</h4>
+        <div className="bg-slate-50 p-6 rounded-xl mb-8 not-prose">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Componentes del Análisis</h4>
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <div className="w-2 h-2 bg-slate-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <strong className="text-slate-900">Due Diligence Financiero</strong>
+                <p className="text-slate-600 text-sm">Análisis profundo de estados financieros, cash flow y proyecciones</p>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <div className="w-2 h-2 bg-slate-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <strong className="text-slate-900">Análisis de Mercado</strong>
+                <p className="text-slate-600 text-sm">Evaluación del posicionamiento competitivo y tendencias sectoriales</p>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <div className="w-2 h-2 bg-slate-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <strong className="text-slate-900">Identificación de Sinergias</strong>
+                <p className="text-slate-600 text-sm">Oportunidades de optimización y creación de valor</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="text-2xl font-semibold text-slate-900 mb-8">Metodologías de Valoración</h3>
         
-        <p className="text-black mb-6 leading-relaxed">
-          Iniciamos cada proyecto con un <strong>diagnóstico profundo</strong> que nos permite identificar las <strong>oportunidades de valor</strong> y los <strong>riesgos potenciales</strong>. Esta fase incluye el análisis financiero, comercial y estratégico de la empresa.
+        <p className="text-slate-600 mb-8 leading-relaxed">
+          Aplicamos un enfoque multi-metodológico para asegurar valoraciones <strong>precisas y defendibles</strong>. Cada metodología aporta una perspectiva única del valor, permitiendo un análisis integral.
         </p>
 
-        <ol className="list-decimal list-inside mb-8 space-y-2 text-black ml-4">
-          <li><strong>Análisis financiero</strong>: Evaluación exhaustiva de estados financieros y proyecciones</li>
-          <li><strong>Due diligence comercial</strong>: Análisis del mercado, competencia y posicionamiento</li>
-        </ol>
+        <div className="grid md:grid-cols-3 gap-6 mb-12 not-prose">
+          <div className="text-center p-6">
+            <div className="text-3xl font-semibold text-slate-900 mb-2">DCF</div>
+            <div className="text-sm text-slate-600 mb-3">Descuento de Flujos</div>
+            <p className="text-slate-600 text-sm">Valoración intrínseca basada en capacidad de generación de caja futura</p>
+          </div>
+          <div className="text-center p-6">
+            <div className="text-3xl font-semibold text-slate-900 mb-2">Múltiplos</div>
+            <div className="text-sm text-slate-600 mb-3">Comparables</div>
+            <p className="text-slate-600 text-sm">Análisis de empresas similares cotizadas y transacciones precedentes</p>
+          </div>
+          <div className="text-center p-6">
+            <div className="text-3xl font-semibold text-slate-900 mb-2">LBO</div>
+            <div className="text-sm text-slate-600 mb-3">Leveraged Buyout</div>
+            <p className="text-slate-600 text-sm">Análisis desde perspectiva de fondo de private equity</p>
+          </div>
+        </div>
 
-        <h4 className="text-xl font-medium text-black mb-6">Estructuración de la Operación</h4>
-        
-        <p className="text-black mb-6 leading-relaxed">
-          Una vez completado el análisis, diseñamos la <strong>estructura óptima</strong> para la transacción, considerando aspectos <strong>fiscales</strong>, <strong>legales</strong> y <strong>financieros</strong> que maximicen el valor para todas las partes involucradas.
-        </p>
-
-        <ol className="list-decimal list-inside mb-12 space-y-2 text-black ml-4">
-          <li><strong>Optimización fiscal</strong>: Estructuras que minimizan la carga tributaria</li>
-          <li><strong>Negociación estratégica</strong>: Términos que protegen y maximizan valor</li>
-        </ol>
-
-        <h3 className="text-2xl font-medium text-black mb-8">Metodología de Valoración</h3>
-        
-        <p className="text-black mb-8 leading-relaxed">
-          Aplicamos <strong>múltiples metodologías de valoración</strong> para obtener un rango de valor preciso y fundamentado. Utilizamos el <strong>método DCF</strong>, <strong>múltiplos comparables</strong> y <strong>transacciones precedentes</strong> para asegurar la objetividad del proceso.
-        </p>
-
-        <blockquote className="border-l-4 border-gray-200 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
-          "La precisión en la <strong>valoración</strong> es fundamental para el éxito de cualquier operación de M&A. Nuestro enfoque multi-metodológico garantiza resultados <strong>objetivos y defendibles</strong>."
+        <blockquote className="border-l-4 border-slate-200 pl-6 py-4 mb-12 italic text-slate-600 bg-slate-50/30">
+          "Nuestro enfoque multi-metodológico nos permite capturar <strong>diferentes perspectivas de valor</strong> y proporcionar a nuestros clientes una visión completa y objetiva del potencial de su empresa."
         </blockquote>
 
-        <h3 className="text-2xl font-medium text-black mb-8">Proceso de Ejecución</h3>
+        <h3 className="text-2xl font-semibold text-slate-900 mb-8">Gestión del Proceso</h3>
         
-        <p className="text-black mb-8 leading-relaxed">
-          La <strong>ejecución impecable</strong> distingue las operaciones exitosas. Coordinamos todos los aspectos del proceso, desde la <strong>preparación de documentación</strong> hasta el <strong>cierre de la transacción</strong>, asegurando que cada detalle esté perfectamente alineado.
+        <p className="text-slate-600 mb-8 leading-relaxed">
+          La <strong>ejecución impecable</strong> es lo que distingue las operaciones exitosas. Coordinamos todos los aspectos del proceso manteniendo los más altos estándares de confidencialidad y profesionalidad.
         </p>
 
-        <h4 className="text-xl font-medium text-black mb-6">Gestión del Proceso</h4>
-        
-        <p className="text-black mb-6 leading-relaxed">
-          Nuestro equipo gestiona <strong>cada fase del proceso</strong> con precisión milimétrica, manteniendo la <strong>confidencialidad</strong> y asegurando el <strong>cumplimiento regulatorio</strong> en todo momento.
-        </p>
-
-        <ol className="list-decimal list-inside mb-8 space-y-2 text-black ml-4">
-          <li><strong>Preparación de data room</strong>: Organización exhaustiva de información</li>
-          <li><strong>Coordinación con asesores</strong>: Gestión integral del equipo profesional</li>
-        </ol>
-
-        <h5 className="text-lg font-medium text-black mb-6">Seguimiento Post-Transacción</h5>
-        
-        <p className="text-black mb-12 leading-relaxed">
-          Nuestro compromiso se extiende más allá del cierre. Proporcionamos <strong>seguimiento continuo</strong> para asegurar la <strong>integración exitosa</strong> y la <strong>materialización de sinergias</strong> identificadas durante el proceso.
-        </p>
+        <div className="space-y-6 mb-12 not-prose">
+          <div className="flex items-start">
+            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <span className="text-slate-600 text-sm font-semibold">1</span>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Preparación de Materiales</h4>
+              <p className="text-slate-600 text-sm">Teaser, Information Memorandum, modelo financiero y presentaciones</p>
+            </div>
+          </div>
+          <div className="flex items-start">
+            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <span className="text-slate-600 text-sm font-semibold">2</span>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Identificación de Compradores</h4>
+              <p className="text-slate-600 text-sm">Mapeo exhaustivo de compradores estratégicos y financieros relevantes</p>
+            </div>
+          </div>
+          <div className="flex items-start">
+            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <span className="text-slate-600 text-sm font-semibold">3</span>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Proceso Competitivo</h4>
+              <p className="text-slate-600 text-sm">Gestión de proceso de subasta para maximizar valor y términos</p>
+            </div>
+          </div>
+          <div className="flex items-start">
+            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <span className="text-slate-600 text-sm font-semibold">4</span>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Negociación y Cierre</h4>
+              <p className="text-slate-600 text-sm">Estructuración óptima y coordinación hasta cierre exitoso</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Related Articles */}

@@ -31,65 +31,151 @@ const ConoceEquipoContent = () => {
 
       {/* Title Section */}
       <div className="mb-16">
-        <h1 className="text-5xl font-light text-black mb-6 leading-tight">
-          Conoce al equipo
+        <h1 className="text-4xl font-semibold text-slate-900 mb-6 leading-tight">
+          El Equipo Capittal
         </h1>
-        <p className="text-xl text-black leading-relaxed mb-8 max-w-3xl font-light">
-          Nuestro equipo está formado por <strong>profesionales altamente especializados</strong> en M&A con amplia experiencia en diferentes sectores y tipos de transacciones.
+        <p className="text-xl text-slate-600 leading-relaxed mb-8 max-w-3xl font-light">
+          Nuestro equipo está formado por <strong>profesionales senior</strong> con experiencia combinada superior a <strong>100 años en M&A</strong>, procedentes de las mejores firmas de banca de inversión y consultoría estratégica.
         </p>
-        <div className="flex items-center gap-4 text-sm text-black">
-          <span>Last updated</span>
-          <span>June 20, 2025</span>
+        <div className="flex items-center gap-4 text-sm text-slate-500">
+          <span>Actualizado</span>
+          <span>Diciembre 29, 2024</span>
         </div>
       </div>
 
       {/* Rich Text Content */}
       <div className="prose prose-lg max-w-none">
-        <h2 className="text-3xl font-medium text-black mb-8">Experiencia y Especialización</h2>
+        <h2 className="text-3xl font-semibold text-slate-900 mb-12">Nuestro Enfoque de Equipo</h2>
         
-        <p className="text-black mb-8 leading-relaxed">
-          En <strong>Capittal</strong>, contamos con un equipo multidisciplinar que combina experiencia en <strong>banca de inversión</strong>, <strong>consultoría estratégica</strong> y <strong>asesoramiento financiero</strong> para ofrecer un servicio integral en cada transacción.
-        </p>
-
-        <h4 className="text-xl font-medium text-black mb-6">Nuestro Enfoque de Equipo</h4>
-        
-        <p className="text-black mb-6 leading-relaxed">
-          Cada operación es gestionada por un <strong>equipo dedicado</strong> que incluye especialistas en valoración, due diligence, aspectos legales y fiscales, garantizando una perspectiva integral de cada transacción.
-        </p>
-
-        <ul className="list-disc list-inside mb-8 space-y-2 text-black ml-4">
-          <li><strong>Partners Senior</strong>: Con más de 15 años de experiencia en M&A</li>
-          <li><strong>Directors</strong>: Especialistas sectoriales y funcionales</li>
-          <li><strong>Associates</strong>: Analistas especializados en modelización financiera</li>
-        </ul>
-
-        <h3 className="text-2xl font-medium text-black mb-8">Sectores de Especialización</h3>
-        
-        <p className="text-black mb-8 leading-relaxed">
-          Nuestro equipo tiene <strong>experiencia profunda</strong> en múltiples sectores, lo que nos permite aportar <strong>conocimiento específico</strong> y <strong>insights únicos</strong> en cada industria.
-        </p>
-
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
-          <div className="bg-gray-50/30 p-6 rounded-lg">
-            <h4 className="text-lg font-medium text-black mb-4">Tecnología y Software</h4>
-            <p className="text-black">Experiencia en SaaS, fintech, e-commerce y plataformas digitales.</p>
+        <div className="grid md:grid-cols-3 gap-8 mb-16 not-prose">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl font-bold text-slate-900">100+</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Años de Experiencia</h3>
+            <p className="text-slate-600 text-sm">Combinada del equipo senior</p>
           </div>
-          <div className="bg-gray-50/30 p-6 rounded-lg">
-            <h4 className="text-lg font-medium text-black mb-4">Servicios Financieros</h4>
-            <p className="text-black">Especialización en banca, seguros, gestión de activos y pagos.</p>
+          <div className="text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl font-bold text-slate-900">€2.5B+</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Volumen Gestionado</h3>
+            <p className="text-slate-600 text-sm">En operaciones M&A completadas</p>
           </div>
-          <div className="bg-gray-50/30 p-6 rounded-lg">
-            <h4 className="text-lg font-medium text-black mb-4">Industrial y Manufacturing</h4>
-            <p className="text-black">Conocimiento profundo en procesos industriales y cadenas de suministro.</p>
-          </div>
-          <div className="bg-gray-50/30 p-6 rounded-lg">
-            <h4 className="text-lg font-medium text-black mb-4">Retail y Consumo</h4>
-            <p className="text-black">Experiencia en marcas de consumo, retail y distribución.</p>
+          <div className="text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl font-bold text-slate-900">15+</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Sectores</h3>
+            <p className="text-slate-600 text-sm">Experiencia especializada</p>
           </div>
         </div>
 
-        <blockquote className="border-l-4 border-gray-200 pl-6 py-4 mb-12 italic text-black bg-gray-50/30">
-          "Nuestro equipo no solo aporta <strong>expertise técnico</strong>, sino también la capacidad de entender las particularidades de cada sector y las necesidades específicas de nuestros clientes."
+        <h3 className="text-2xl font-semibold text-slate-900 mb-8">Estructura del Equipo</h3>
+        
+        <div className="space-y-6 mb-12 not-prose">
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="flex items-start">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                <span className="text-slate-600 font-semibold">MD</span>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Managing Directors</h4>
+                <p className="text-slate-600 text-sm mb-3">Partners senior con más de 20 años de experiencia. Lideran las relaciones cliente y supervisan la estrategia de cada transacción.</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">Goldman Sachs</span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">McKinsey</span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">JP Morgan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="flex items-start">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                <span className="text-slate-600 font-semibold">D</span>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Directors</h4>
+                <p className="text-slate-600 text-sm mb-3">Profesionales con 10-15 años de experiencia. Gestionan el día a día de las operaciones y lideran workstreams específicos.</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">BCG</span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">Deutsche Bank</span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">Lazard</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <div className="flex items-start">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                <span className="text-slate-600 font-semibold">VP</span>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Vice Presidents</h4>
+                <p className="text-slate-600 text-sm mb-3">Ejecutivos con 6-10 años de experiencia. Coordinan análisis, modelización y preparación de materiales.</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">IESE</span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">EY</span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">PwC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="text-2xl font-semibold text-slate-900 mb-8">Especialización Sectorial</h3>
+        
+        <p className="text-slate-600 mb-8 leading-relaxed">
+          Nuestro enfoque se basa en el <strong>conocimiento sectorial profundo</strong>. Cada miembro del equipo tiene experiencia específica en determinados sectores, lo que nos permite aportar insights únicos y maximizar el valor en cada transacción.
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-12 not-prose">
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <h4 className="text-lg font-semibold text-slate-900 mb-4">Tecnología y Software</h4>
+            <p className="text-slate-600 text-sm mb-4">45+ operaciones en SaaS, fintech, e-commerce y plataformas digitales</p>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div>• Valoración de métricas SaaS (ARR, LTV, CAC)</div>
+              <div>• Due diligence técnico y de producto</div>
+              <div>• Análisis de escalabilidad y defensibilidad</div>
+            </div>
+          </div>
+          
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <h4 className="text-lg font-semibold text-slate-900 mb-4">Servicios Financieros</h4>
+            <p className="text-slate-600 text-sm mb-4">30+ operaciones en banca, seguros, gestión de activos y pagos</p>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div>• Regulación y compliance especializado</div>
+              <div>• Modelos de riesgo y capital</div>
+              <div>• Valoración de carteras de activos</div>
+            </div>
+          </div>
+          
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <h4 className="text-lg font-semibold text-slate-900 mb-4">Industrial y Manufacturing</h4>
+            <p className="text-slate-600 text-sm mb-4">25+ operaciones en manufacturing, logística y supply chain</p>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div>• Análisis de procesos productivos</div>
+              <div>• Evaluación de activos industriales</div>
+              <div>• Optimización de cadenas de suministro</div>
+            </div>
+          </div>
+          
+          <div className="p-6 border border-slate-200 rounded-xl">
+            <h4 className="text-lg font-semibold text-slate-900 mb-4">Retail y Consumo</h4>
+            <p className="text-slate-600 text-sm mb-4">20+ operaciones en marcas de consumo, retail y distribución</p>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div>• Valoración de marcas y customer base</div>
+              <div>• Análisis de canales de distribución</div>
+              <div>• Tendencias de consumo y demografía</div>
+            </div>
+          </div>
+        </div>
+
+        <blockquote className="border-l-4 border-slate-200 pl-6 py-4 mb-12 italic text-slate-600 bg-slate-50/30">
+          "La <strong>especialización sectorial</strong> nos permite no solo valorar correctamente cada oportunidad, sino también identificar los compradores más estratégicos y estructurar las operaciones de manera óptima."
         </blockquote>
       </div>
 
