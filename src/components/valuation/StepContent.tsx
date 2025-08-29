@@ -1,6 +1,8 @@
 
 import React from 'react';
 import Step1BasicInfo from './Step1BasicInfo';
+import Step2FinancialData from './Step2FinancialData';
+import Step3Characteristics from './Step3Characteristics';
 import Step4Results from './Step4Results';
 
 interface StepContentProps {
@@ -46,6 +48,28 @@ const StepContent: React.FC<StepContentProps> = ({
         />
       );
     case 2:
+      return (
+        <Step2FinancialData 
+          companyData={companyData} 
+          updateField={updateField}
+          showValidation={showValidation}
+          getFieldState={getFieldState}
+          handleFieldBlur={handleFieldBlur}
+          errors={errors}
+        />
+      );
+    case 3:
+      return (
+        <Step3Characteristics 
+          companyData={companyData} 
+          updateField={updateField}
+          showValidation={showValidation}
+          getFieldState={getFieldState}
+          handleFieldBlur={handleFieldBlur}
+          errors={errors}
+        />
+      );
+    case 4:
       return (
         <Step4Results 
           result={result}

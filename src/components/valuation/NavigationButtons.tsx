@@ -32,7 +32,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       </Button>
       
       <div className="text-sm text-gray-500">
-        {t('nav.step_of', { current: currentStep, total: 2 })}
+        {t('nav.step_of', { current: currentStep, total: 3 })}
       </div>
       
       <Button
@@ -41,7 +41,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         disabled={isNextDisabled}
         className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >
-        {currentStep === 1 ? (
+        {currentStep === 3 ? (
           <>
             <Calculator className="h-4 w-4 mr-2" />
             {t('nav.calculate')}

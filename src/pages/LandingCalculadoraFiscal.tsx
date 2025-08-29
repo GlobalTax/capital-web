@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { HomeLayout } from '@/shared';
-import BasicValuationForm from '@/components/BasicValuationForm';
+import ValuationCalculator from '@/components/ValuationCalculator';
 import { Toaster } from '@/components/ui/sonner';
 
 const LandingCalculadoraFiscal = () => {
@@ -33,7 +33,7 @@ const LandingCalculadoraFiscal = () => {
   return (
     <HomeLayout>
       <h1 className="sr-only">Calculadora Fiscal de Venta de Empresas en España</h1>
-      <BasicValuationForm />
+      <ValuationCalculator />
       <Toaster />
     </HomeLayout>
   );

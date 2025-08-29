@@ -425,151 +425,21 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         </div>
       </div>
 
-      {/* Financial Data Section */}
-      <div className="space-y-6 mt-8 pt-8 border-t border-gray-200">
-        <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {t('form.financial_data_title')}
-          </h3>
-          <p className="text-sm text-gray-600">
-            {t('form.financial_data_subtitle')}
-          </p>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          {/* Revenue */}
-          <div className="h-[110px] flex flex-col">
-            <Label htmlFor="revenue" className="text-sm font-medium text-gray-700">
-              {t('form.revenue')} <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative mt-2 flex-1">
-              <Input
-                id="revenue"
-                type="number"
-                placeholder="500000"
-                value={companyData.revenue || ''}
-                onChange={(e) => {
-                  const value = Math.round(parseFloat(e.target.value) || 0);
-                  updateField('revenue', value);
-                }}
-                onBlur={() => handleBlur('revenue')}
-                className={getFieldClassName('revenue')}
-                min="0"
-                step="1"
-              />
-              {shouldShowCheckIcon('revenue') && (
-                <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-              )}
-            </div>
-            <div className="h-[40px] mt-1 space-y-1">
-              <p className={`text-xs text-gray-500 transition-opacity duration-200 ${companyData.revenue > 0 ? 'opacity-100' : 'opacity-0'}`}>
-                {companyData.revenue > 0 ? formatCurrency(companyData.revenue) : '\u00A0'}
-              </p>
-              <p className={`text-sm text-red-600 transition-opacity duration-200 ${showValidation && !isFieldValid('revenue', companyData.revenue) ? 'opacity-100' : 'opacity-0'}`}>
-                {t('validation.revenue_required')}
-              </p>
-            </div>
-          </div>
-
-          {/* EBITDA */}
-          <div className="h-[110px] flex flex-col">
-            <Label htmlFor="ebitda" className="text-sm font-medium text-gray-700">
-              {t('form.ebitda')} <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative mt-2 flex-1">
-              <Input
-                id="ebitda"
-                type="number"
-                placeholder="75000"
-                value={companyData.ebitda || ''}
-                onChange={(e) => {
-                  const value = Math.round(parseFloat(e.target.value) || 0);
-                  updateField('ebitda', value);
-                }}
-                onBlur={() => handleBlur('ebitda')}
-                className={getFieldClassName('ebitda')}
-                min="0"
-                step="1"
-              />
-              {shouldShowCheckIcon('ebitda') && (
-                <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-              )}
-            </div>
-            <div className="h-[40px] mt-1 space-y-1">
-              <p className={`text-xs text-gray-500 transition-opacity duration-200 ${companyData.ebitda > 0 ? 'opacity-100' : 'opacity-0'}`}>
-                {companyData.ebitda > 0 ? formatCurrency(companyData.ebitda) : '\u00A0'}
-              </p>
-              <p className={`text-sm text-red-600 transition-opacity duration-200 ${showValidation && !isFieldValid('ebitda', companyData.ebitda) ? 'opacity-100' : 'opacity-0'}`}>
-                {t('validation.ebitda_required')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Adjustments */}
-        <div className="space-y-4">
-          <Label className="text-sm font-medium text-gray-700">
-            {t('form.has_adjustments')}
+      {/* WhatsApp consent section */}
+      <div className="flex items-start space-x-3 p-4 bg-green-50 border border-green-200 rounded-lg mt-6">
+        <Checkbox 
+          id="whatsapp_opt_in" 
+          checked={companyData.whatsapp_opt_in || false}
+          onCheckedChange={(checked) => updateField('whatsapp_opt_in', checked)}
+          className="mt-0.5"
+        />
+        <div className="flex-1">
+          <Label htmlFor="whatsapp_opt_in" className="text-sm text-gray-700 cursor-pointer">
+            {t('consent.whatsapp_title')}
           </Label>
-          <RadioGroup
-            value={companyData.hasAdjustments ? 'yes' : 'no'}
-            onValueChange={(value) => updateField('hasAdjustments', value === 'yes')}
-            className="flex flex-row space-x-6"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="no" id="no-adjustments" />
-              <Label htmlFor="no-adjustments" className="text-sm text-gray-700">
-                {t('form.no')}
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="yes" id="yes-adjustments" />
-              <Label htmlFor="yes-adjustments" className="text-sm text-gray-700">
-                {t('form.yes')}
-              </Label>
-            </div>
-          </RadioGroup>
-
-          {companyData.hasAdjustments && (
-            <div className="space-y-2">
-              <Label htmlFor="adjustmentAmount" className="text-sm font-medium text-gray-700">
-                {t('form.adjustment_amount')}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="adjustmentAmount"
-                  type="number"
-                  placeholder="15000"
-                  value={companyData.adjustmentAmount || ''}
-                  onChange={(e) => {
-                    const value = Math.round(parseFloat(e.target.value) || 0);
-                    updateField('adjustmentAmount', value);
-                  }}
-                  onBlur={() => handleBlur('adjustmentAmount')}
-                  className={getFieldClassName('adjustmentAmount', false)}
-                  min="0"
-                  step="1"
-                />
-                {shouldShowCheckIcon('adjustmentAmount') && (
-                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                )}
-              </div>
-              {companyData.adjustmentAmount > 0 && (
-                <p className="text-xs text-gray-500">
-                  {formatCurrency(companyData.adjustmentAmount)}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">{t('form.financial_info_title')}</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• {t('form.financial_info_revenue')}</li>
-            <li>• {t('form.financial_info_ebitda')}</li>
-            <li>• {t('form.financial_info_adjustments')}</li>
-          </ul>
+          <p className="text-xs text-gray-600 mt-1">
+            {t('consent.whatsapp_desc')}
+          </p>
         </div>
       </div>
     </div>

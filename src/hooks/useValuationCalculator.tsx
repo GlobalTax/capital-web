@@ -106,7 +106,7 @@ export const useValuationCalculator = () => {
     
     setShowValidation(false);
     setCurrentStep(prev => {
-      const newStep = Math.min(prev + 1, 2);
+      const newStep = Math.min(prev + 1, 4);
       console.log('Moving from step', prev, 'to step', newStep);
       return newStep;
     });
@@ -135,8 +135,8 @@ export const useValuationCalculator = () => {
     try {
       const valuationResult = await calculateCompanyValuation(companyData, sectorMultiples);
       setResult(valuationResult);
-      setCurrentStep(2); // Ir al paso de resultados
-      console.log('Valuation calculated, moved to step 2');
+      setCurrentStep(4); // Ir al paso de resultados
+      console.log('Valuation calculated, moved to step 4');
     } catch (error) {
       console.error('Error calculating valuation:', error);
     } finally {
