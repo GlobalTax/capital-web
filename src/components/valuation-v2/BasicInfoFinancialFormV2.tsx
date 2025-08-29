@@ -126,7 +126,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">WhatsApp (opcional)</Label>
+            <Label htmlFor="phone">Teléfono *</Label>
             <Input
               id="phone"
               type="tel"

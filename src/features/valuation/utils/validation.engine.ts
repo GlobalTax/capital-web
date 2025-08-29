@@ -38,9 +38,9 @@ const validationRules: Record<string, ValidationRule> = {
   },
   
   phone: {
-    required: false,
+    required: true,
     pattern: /^[+]?[0-9\s.()-]+$/,
-    message: 'Introduce un teléfono válido'
+    message: 'El teléfono es obligatorio e introduce un formato válido'
   },
   
   industry: {
