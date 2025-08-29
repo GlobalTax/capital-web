@@ -69,10 +69,9 @@ Deno.serve(async (req) => {
     const generateToken = () => Math.random().toString(36).substring(2, 15) + 
                                 Math.random().toString(36).substring(2, 15);
     const token = generateToken();
-      return new Response(
-        JSON.stringify({ error: "No se pudo generar el token" }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+    
+    console.log("📝 Generated token for valuation:", token);
+    console.log("📋 Processing data for:", body.company_name, body.email);
 
     const insertPayload = {
       ...body,
