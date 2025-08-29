@@ -19,7 +19,7 @@ const validationRules: Record<string, ValidationRule> = {
     required: true,
     minLength: 2,
     maxLength: 100,
-    pattern: /^[a-zA-ZÀ-ÿñÑ\s.-]+$/,
+    pattern: /^[a-zA-ZÀ-ÿñÑ\s.\-]+$/,
     message: 'El nombre debe tener entre 2 y 100 caracteres y solo contener letras'
   },
   
@@ -39,7 +39,7 @@ const validationRules: Record<string, ValidationRule> = {
   
   phone: {
     required: false,
-    pattern: /^[+]?[0-9\s.-()]{9,20}$/,
+    pattern: /^[+]?[0-9\s.()-]+$/,
     message: 'Introduce un teléfono válido'
   },
   
