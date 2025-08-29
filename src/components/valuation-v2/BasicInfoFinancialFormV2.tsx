@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 // Opciones de formulario inline
 const industryOptions = [
@@ -110,7 +111,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">Email corporativo *</Label>
             <Input
               id="email"
               type="email"
@@ -126,7 +127,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Teléfono *</Label>
+            <Label htmlFor="phone">Teléfono (WhatsApp)</Label>
             <Input
               id="phone"
               type="tel"
@@ -184,7 +185,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="industry">Sector *</Label>
+            <Label htmlFor="industry">Sector de actividad *</Label>
             <Select value={companyData.industry || ''} onValueChange={(value) => updateField('industry', value)}>
               <SelectTrigger className={getFieldClass('industry')}>
                 <SelectValue placeholder="Selecciona el sector" />
@@ -222,7 +223,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="activityDescription">Descripción de la actividad</Label>
+            <Label htmlFor="activityDescription">Descripción de actividad *</Label>
             <Textarea
               id="activityDescription"
               value={companyData.activityDescription || ''}
@@ -242,9 +243,11 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
       {/* Datos Financieros */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Datos Financieros</h3>
+        <p className="text-sm text-gray-600 mb-4">Información del último ejercicio fiscal completo</p>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="revenue">Facturación anual (€) *</Label>
+            <Label htmlFor="revenue">Facturación anual *</Label>
             <Input
               id="revenue"
               type="number"
@@ -262,7 +265,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ebitda">EBITDA anual (€) *</Label>
+            <Label htmlFor="ebitda">EBITDA *</Label>
             <Input
               id="ebitda"
               type="number"
@@ -271,13 +274,42 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
               value={companyData.ebitda || ''}
               onChange={(e) => updateField('ebitda', parseFloat(e.target.value) || 0)}
               onBlur={() => handleFieldBlur?.('ebitda')}
-              placeholder="100000"
+              placeholder="75000"
               className={getFieldClass('ebitda')}
             />
             {getFieldError('ebitda') && (
               <p className="text-sm text-red-600">{getFieldError('ebitda')}</p>
             )}
           </div>
+        </div>
+
+        {/* Pregunta sobre ajustes al EBITDA */}
+        <div className="mt-6 space-y-4">
+          <Label className="text-base font-medium">¿Tienes ajustes al EBITDA?</Label>
+          <RadioGroup
+            value={companyData.hasAdjustments ? 'si' : 'no'}
+            onValueChange={(value) => updateField('hasAdjustments', value === 'si')}
+            className="flex gap-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="no-adjustments" />
+              <Label htmlFor="no-adjustments">No</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="si" id="si-adjustments" />
+              <Label htmlFor="si-adjustments">Sí</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Información sobre datos financieros */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="text-sm font-medium text-blue-900 mb-2">Información sobre estos datos financieros</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• Los ingresos incluyen todas las ventas y servicios facturados</li>
+            <li>• El EBITDA es el beneficio antes de intereses, impuestos, depreciación y amortización</li>
+            <li>• Los ajustes pueden incluir gastos extraordinarios o ingresos no recurrentes</li>
+          </ul>
         </div>
       </div>
 
@@ -286,7 +318,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Características de la Empresa</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="location">Ubicación</Label>
+            <Label htmlFor="location">Ubicación principal *</Label>
             <Select value={companyData.location || ''} onValueChange={(value) => updateField('location', value)}>
               <SelectTrigger className={getFieldClass('location')}>
                 <SelectValue placeholder="Selecciona la ubicación" />
