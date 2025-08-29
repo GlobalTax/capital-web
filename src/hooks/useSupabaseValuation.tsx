@@ -254,7 +254,7 @@ export const useSupabaseValuation = () => {
 
         const { data: emailResp, error: emailError } = await supabase.functions.invoke('send-valuation-email', {
           body: {
-            recipientEmail: 'samuel@capittal.es',
+            recipientEmail: companyData.email,
             companyData: companyData,
             result: result,
             pdfBase64,
