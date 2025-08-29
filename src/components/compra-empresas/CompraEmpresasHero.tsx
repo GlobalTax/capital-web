@@ -3,18 +3,18 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 
 const CompraEmpresasHero = () => {
   const benefits = [
-    'Identificación de oportunidades exclusivas',
-    'Due diligence completa incluida',
-    'Negociación experta y representación',
-    'Asesoramiento en integración post-compra'
+    'Deal sourcing especializado en sectores industriales',
+    'Red exclusiva de empresas familiares en transición',
+    'Análisis sectorial para fondos de Private Equity',
+    'Expertise en consolidación y sinergias industriales'
   ];
 
   // Mock dashboard data
   const oportunidades = [
-    { nombre: "SaaS Analytics", valor: "8.2M€", sector: "Tecnología", rentabilidad: "+18%" },
-    { nombre: "Distribución Industrial", valor: "12.5M€", sector: "Industrial", rentabilidad: "+22%" },
-    { nombre: "Servicios Profesionales", valor: "4.8M€", sector: "Servicios", rentabilidad: "+15%" },
-    { nombre: "E-commerce B2B", valor: "6.1M€", sector: "Digital", rentabilidad: "+25%" }
+    { nombre: "Manufactura Industrial", valor: "18.5M€", sector: "Componentes", ebitda: "8.2x EBITDA" },
+    { nombre: "Logística Regional", valor: "12.8M€", sector: "Logística", ebitda: "7.5x EBITDA" },
+    { nombre: "Metalurgia Especializada", valor: "25.2M€", sector: "Metalurgia", ebitda: "9.1x EBITDA" },
+    { nombre: "Distribución B2B", valor: "8.9M€", sector: "Distribución", ebitda: "6.8x EBITDA" }
   ];
 
   return (
@@ -24,11 +24,11 @@ const CompraEmpresasHero = () => {
           {/* Left Content */}
           <div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              Adquisiciones Estratégicas
+              Adquisiciones para Empresas Industriales y Private Equity
             </h1>
             <p className="text-xl text-slate-700 mb-8 leading-relaxed">
-              Identificamos, evaluamos y ejecutamos adquisiciones que impulsan el crecimiento de tu empresa. 
-              Acceso exclusivo a oportunidades fuera del mercado público con asesoramiento integral.
+              Conectamos grupos industriales en procesos de consolidación y fondos de Private Equity con oportunidades exclusivas. 
+              Red especializada de empresas familiares industriales en transición generacional y procesos de expansión.
             </p>
             
             {/* Benefits List */}
@@ -62,7 +62,7 @@ const CompraEmpresasHero = () => {
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 relative z-10">
               {/* Dashboard Header */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                <h3 className="text-lg font-bold text-slate-900">Oportunidades Disponibles</h3>
+                <h3 className="text-lg font-bold text-slate-900">Oportunidades Industriales</h3>
                 <div className="text-sm text-emerald-600 font-medium">🟢 Actualizado hoy</div>
               </div>
 
@@ -78,7 +78,7 @@ const CompraEmpresasHero = () => {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-slate-900">{oportunidad.valor}</div>
-                      <div className="text-xs text-emerald-600">{oportunidad.rentabilidad}</div>
+                      <div className="text-xs text-emerald-600">{oportunidad.ebitda}</div>
                     </div>
                   </div>
                 ))}
@@ -87,22 +87,22 @@ const CompraEmpresasHero = () => {
               {/* Summary Stats */}
               <div className="mt-6 pt-4 border-t border-gray-100 grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">24</div>
-                  <div className="text-xs text-slate-600">Oportunidades activas</div>
+                  <div className="text-2xl font-bold text-slate-900">16</div>
+                  <div className="text-xs text-slate-600">Empresas industriales</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">€85M</div>
-                  <div className="text-xs text-slate-600">Valor total disponible</div>
+                  <div className="text-2xl font-bold text-slate-900">€180M</div>
+                  <div className="text-xs text-slate-600">Valor total portfolio</div>
                 </div>
               </div>
             </div>
 
             {/* Floating Indicators */}
             <div className="absolute -top-4 -right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium z-20">
-              Acceso Exclusivo
+              Especialistas en Industrial
             </div>
             <div className="absolute -bottom-4 -left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium z-20">
-              Due Diligence Incluida
+              Network Private Equity
             </div>
           </div>
         </div>
