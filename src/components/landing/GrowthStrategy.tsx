@@ -26,58 +26,57 @@ const GrowthStrategy = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-            ¿Por qué Crecer por <span className="text-primary">Adquisiciones</span>?
+    <section className="py-16 bg-slate-25">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-semibold text-slate-900 mb-4">
+            Crecimiento a través de <span className="text-primary">Adquisiciones</span>
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Las adquisiciones estratégicas son el camino más eficiente para acelerar el crecimiento, 
-            diversificar riesgos y crear valor sostenible en el largo plazo.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Las adquisiciones estratégicas aceleran el crecimiento, 
+            crean ventajas competitivas y diversifican el riesgo empresarial.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {benefits.map((benefit, index) => {
-            const IconComponent = benefit.icon;
-            return (
-              <div 
-                key={index}
-                className="group p-8 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-slate-200"
-              >
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <IconComponent className="w-8 h-8 text-primary" />
-                  </div>
-                </div>
-                
-                <h3 className="text-xl font-semibold text-slate-900 mb-4">
-                  {benefit.title}
-                </h3>
-                
-                <p className="text-slate-600 leading-relaxed">
-                  {benefit.description}
-                </p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {benefits.map((benefit, index) => (
+            <div 
+              key={index} 
+              className="group bg-white p-6 rounded-xl border border-slate-100 hover:border-primary/20 transition-all duration-200"
+            >
+              <div className="w-10 h-10 bg-primary/5 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+                <benefit.icon className="w-5 h-5 text-primary" />
               </div>
-            );
-          })}
+              <h3 className="font-semibold text-slate-900 mb-2">
+                {benefit.title}
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                {benefit.description}
+              </p>
+            </div>
+          ))}
         </div>
 
-        {/* Stats row */}
-        <div className="mt-16 p-8 bg-gradient-to-r from-primary/5 to-blue-50 rounded-2xl">
-          <div className="grid md:grid-cols-3 gap-8 text-center">
+        {/* Statistics */}
+        <div className="bg-white border border-slate-100 rounded-xl p-8">
+          <div className="grid md:grid-cols-3 gap-6 text-center">
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">3-5x</div>
-              <div className="text-slate-600">Más rápido que crecimiento orgánico</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">5x</div>
+              <div className="text-slate-500 text-sm">
+                Más rápido que crecimiento orgánico
+              </div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">85%</div>
-              <div className="text-slate-600">De las empresas del Fortune 500 crecen por M&A</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">70%</div>
+              <div className="text-slate-500 text-sm">
+                Fortune 500 crecen vía M&A
+              </div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">12-18%</div>
-              <div className="text-slate-600">ROI promedio en adquisiciones bien ejecutadas</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">325%</div>
+              <div className="text-slate-500 text-sm">
+                ROI promedio en adquisiciones
+              </div>
             </div>
           </div>
         </div>

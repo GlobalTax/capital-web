@@ -41,89 +41,65 @@ const AcquisitionProcess = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-slate-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-            Nuestro <span className="text-primary">Proceso de Adquisición</span>
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-semibold text-slate-900 mb-4">
+            Proceso de <span className="text-primary">Adquisición</span>
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
-            Un proceso estructurado y probado que maximiza las probabilidades de éxito 
-            y minimiza los riesgos en cada adquisición.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Metodología probada que garantiza transparencia, eficiencia y 
+            resultados óptimos en cada transacción.
           </p>
-          
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-8 text-sm font-medium">
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-              Duración total: 3-6 meses
-            </div>
-            <div className="flex items-center gap-2 text-green-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              95% tasa de éxito
-            </div>
-          </div>
         </div>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Connection line */}
-          <div className="hidden lg:block absolute top-20 left-20 right-20 h-0.5 bg-slate-300"></div>
-          
-          <div className="grid lg:grid-cols-5 gap-8">
-            {steps.map((step, index) => {
-              const IconComponent = step.icon;
-              return (
-                <div key={index} className="relative">
-                  {/* Step number for mobile */}
-                  <div className="lg:hidden text-center mb-4">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full text-sm font-bold">
-                      {index + 1}
-                    </span>
-                  </div>
-                  
-                  <div className="text-center">
-                    {/* Icon circle */}
-                    <div className="relative mx-auto mb-6">
-                      <div className={`w-16 h-16 ${step.color} rounded-full flex items-center justify-center shadow-lg relative z-10`}>
-                        <IconComponent className="w-8 h-8 text-white" />
-                      </div>
-                      {/* Step number overlay for desktop */}
-                      <div className="hidden lg:block absolute -top-2 -right-2 w-6 h-6 bg-white border-2 border-slate-300 rounded-full flex items-center justify-center text-xs font-bold text-slate-600">
-                        {index + 1}
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                      {step.title}
-                    </h3>
-                    
-                    <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                      {step.description}
-                    </p>
-                    
-                    <div className="inline-flex items-center px-3 py-1 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200">
-                      {step.duration}
-                    </div>
-                  </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {steps.map((step, index) => (
+            <div key={index} className="relative">
+              {/* Step number */}
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                  {index + 1}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+              
+              {/* Content */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <step.icon className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-slate-900">
+                    {step.title}
+                  </h3>
+                </div>
+                
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  {step.description}
+                </p>
+                
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <Clock className="w-3 h-3" />
+                  {step.duration}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Success metrics */}
-        <div className="mt-16 grid md:grid-cols-3 gap-8">
-          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div className="text-2xl font-bold text-slate-900 mb-2">100%</div>
-            <div className="text-slate-600">Transparencia en el proceso</div>
-          </div>
-          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div className="text-2xl font-bold text-slate-900 mb-2">€15M</div>
-            <div className="text-slate-600">Ahorro promedio en negociación</div>
-          </div>
-          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div className="text-2xl font-bold text-slate-900 mb-2">24/7</div>
-            <div className="text-slate-600">Soporte durante el proceso</div>
+        {/* Process summary */}
+        <div className="bg-slate-25 border border-slate-100 rounded-xl p-8">
+          <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">100%</div>
+              <div className="text-slate-500 text-sm">Transparencia en el proceso</div>
+            </div>
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">15%</div>
+              <div className="text-slate-500 text-sm">Ahorro promedio en costes</div>
+            </div>
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">24/7</div>
+              <div className="text-slate-500 text-sm">Soporte durante el proceso</div>
+            </div>
           </div>
         </div>
       </div>

@@ -45,95 +45,83 @@ const SuccessStories = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-semibold text-slate-900 mb-4">
             Casos de <span className="text-primary">Éxito</span>
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Descubre cómo hemos ayudado a nuestros clientes a crear valor 
-            a través de adquisiciones estratégicas exitosas.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Descubre cómo hemos ayudado a conseguir 
+            adquisiciones exitosas y crear valor sostenible.
           </p>
         </div>
 
-        <div className="space-y-8">
-          {stories.map((story, index) => {
-            const IconComponent = story.icon;
-            return (
-              <div 
-                key={index}
-                className="group p-8 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-slate-200"
-              >
-                <div className="grid lg:grid-cols-3 gap-8 items-center">
-                  {/* Left - Icon and Title */}
-                  <div className="flex items-center gap-6">
-                    <div className={`w-16 h-16 ${story.color} rounded-2xl flex items-center justify-center shadow-lg`}>
-                      <IconComponent className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-slate-500 mb-1">
-                        {story.sector}
-                      </div>
-                      <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                        {story.title}
-                      </h3>
-                      <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                        <Award className="w-3 h-3 mr-1" />
-                        {story.highlight}
-                      </div>
-                    </div>
+        <div className="grid lg:grid-cols-2 gap-6 mb-12">
+          {stories.map((story, index) => (
+            <div key={index} className="group">
+              <div className="bg-primary/5 p-6 rounded-xl mb-4 hover:bg-primary/10 transition-colors duration-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-white/60 rounded-lg flex items-center justify-center">
+                    <story.icon className="w-5 h-5 text-primary" />
                   </div>
-
-                  {/* Center - Description */}
                   <div>
-                    <p className="text-slate-600 leading-relaxed">
-                      {story.description}
-                    </p>
-                  </div>
-
-                  {/* Right - Results */}
-                  <div className="grid grid-cols-1 gap-4">
-                    {story.results.map((result, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-200">
-                        <span className="text-sm text-slate-600">{result.label}</span>
-                        <span className="font-semibold text-slate-900">{result.value}</span>
-                      </div>
-                    ))}
+                    <h3 className="font-semibold text-slate-900">{story.sector}</h3>
+                    <p className="text-slate-600 text-sm">{story.title}</p>
                   </div>
                 </div>
+                
+                <div className="text-center p-3 bg-white/60 rounded-lg mb-4">
+                  <div className="text-xl font-semibold text-primary">{story.highlight}</div>
+                  <div className="text-slate-600 text-sm">Resultado principal</div>
+                </div>
               </div>
-            );
-          })}
+              
+              <div className="bg-slate-25 border border-slate-100 p-6 rounded-xl">
+                <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+                  {story.description}
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {story.results.map((result, idx) => (
+                    <div key={idx} className="text-center p-2 bg-white border border-slate-100 rounded-lg">
+                      <div className="font-semibold text-slate-900 text-sm">{result.value}</div>
+                      <div className="text-xs text-slate-500">{result.metric}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Summary metrics */}
-        <div className="mt-16 p-8 bg-gradient-to-r from-primary/5 to-blue-50 rounded-2xl">
-          <div className="text-center mb-8">
+        {/* Overall impact */}
+        <div className="bg-slate-25 border border-slate-100 rounded-xl p-8">
+          <div className="text-center mb-6">
             <h3 className="text-xl font-semibold text-slate-900 mb-2">
-              Impacto Agregado de Nuestras Transacciones
+              Nuestro Impacto Global
             </h3>
-            <p className="text-slate-600">
-              Resultados acumulados de las últimas 50 adquisiciones gestionadas
+            <p className="text-slate-500 text-sm">
+              El valor agregado a través de nuestras intervenciones estratégicas
             </p>
           </div>
           
-          <div className="grid md:grid-cols-4 gap-8 text-center">
+          <div className="grid md:grid-cols-4 gap-6 text-center">
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">€180M+</div>
-              <div className="text-slate-600">Valor creado</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">€180M</div>
+              <div className="text-slate-500 text-sm">Valor creado</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">1,200+</div>
-              <div className="text-slate-600">Empleos preservados</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">2,450</div>
+              <div className="text-slate-500 text-sm">Empleos preservados</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">95%</div>
-              <div className="text-slate-600">Integraciones exitosas</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">47</div>
+              <div className="text-slate-500 text-sm">Integraciones exitosas</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-900 mb-2">4.2x</div>
-              <div className="text-slate-600">ROI promedio</div>
+              <div className="text-2xl font-semibold text-slate-900 mb-1">285%</div>
+              <div className="text-slate-500 text-sm">ROI promedio</div>
             </div>
           </div>
         </div>

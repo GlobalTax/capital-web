@@ -34,90 +34,82 @@ const WhyChooseUs = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-slate-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-            ¿Por qué <span className="text-primary">Elegirnos</span>?
+    <section className="py-16 bg-slate-25">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-semibold text-slate-900 mb-4">
+            Por qué elegir <span className="text-primary">Capittal</span>
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Combinamos acceso exclusivo a oportunidades, experiencia multisectorial 
-            y un enfoque integral que va más allá de la transacción.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Combinamos experiencia, metodología probada y enfoque personalizado 
+            para maximizar el valor en cada transacción.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {advantages.map((advantage, index) => {
-            const IconComponent = advantage.icon;
-            return (
-              <div 
-                key={index}
-                className="group p-8 bg-white rounded-2xl hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-primary/20"
-              >
-                <div className="flex items-start gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                      <IconComponent className="w-8 h-8 text-primary" />
-                    </div>
+        <div className="grid lg:grid-cols-2 gap-8 mb-12">
+          {advantages.map((advantage, index) => (
+            <div key={index} className="group">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 hover:border-primary/20 transition-all duration-200 h-full">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary/5 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+                    <advantage.icon className="w-6 h-6 text-primary" />
                   </div>
                   
                   <div className="flex-1">
                     <div className="mb-4">
-                      <h3 className="text-xl font-semibold text-slate-900 mb-1">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-1">
                         {advantage.title}
                       </h3>
-                      <p className="text-primary font-medium text-sm">
+                      <p className="text-primary text-sm">
                         {advantage.subtitle}
                       </p>
                     </div>
                     
-                    <p className="text-slate-600 leading-relaxed mb-4">
+                    <p className="text-slate-600 text-sm leading-relaxed mb-4">
                       {advantage.description}
                     </p>
                     
-                    <div className="inline-flex items-center px-4 py-2 bg-slate-50 rounded-lg">
-                      <span className="text-sm font-medium text-slate-700">
-                        {advantage.metrics}
-                      </span>
+                    <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-600">
+                      {advantage.metrics}
                     </div>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
-        {/* Additional trust indicators */}
-        <div className="mt-16 p-8 bg-white rounded-2xl border border-slate-200">
-          <div className="text-center mb-8">
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">
-              Resultados que Hablan por Sí Solos
-            </h3>
-            <p className="text-slate-600">
-              Nuestro track record demuestra la efectividad de nuestro enfoque
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-5 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-slate-900">€2.8B</div>
-              <div className="text-sm text-slate-600">Transacciones cerradas</div>
+        {/* Results section */}
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-semibold text-slate-900 mb-2">
+            Nuestros Resultados Hablan
+          </h3>
+          <p className="text-slate-600 max-w-xl mx-auto">
+            Más de una década creando valor y cerrando operaciones exitosas
+          </p>
+        </div>
+
+        <div className="bg-white border border-slate-100 rounded-xl p-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">47</div>
+              <div className="text-slate-500 text-sm">Transacciones</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-slate-900">150+</div>
-              <div className="text-sm text-slate-600">Deals completados</div>
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">23</div>
+              <div className="text-slate-500 text-sm">Deals completados</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-slate-900">95%</div>
-              <div className="text-sm text-slate-600">Tasa de éxito</div>
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">92%</div>
+              <div className="text-slate-500 text-sm">Tasa de éxito</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-slate-900">4.2x</div>
-              <div className="text-sm text-slate-600">ROI promedio</div>
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">285%</div>
+              <div className="text-slate-500 text-sm">ROI promedio</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-slate-900">18</div>
-              <div className="text-sm text-slate-600">Años experiencia</div>
+            <div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">12</div>
+              <div className="text-slate-500 text-sm">Años experiencia</div>
             </div>
           </div>
         </div>

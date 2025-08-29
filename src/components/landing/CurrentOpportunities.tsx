@@ -39,64 +39,63 @@ const CurrentOpportunities = () => {
   ];
 
   return (
-    <section id="opportunities" className="py-20 px-4 bg-white">
+    <section id="opportunities" className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-semibold text-slate-900 mb-4">
             Oportunidades <span className="text-primary">Actuales</span>
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
             Descubre nuestro pipeline exclusivo de empresas en venta, 
-            seleccionadas por su potencial de crecimiento y sinergias estratégicas.
+            seleccionadas por su potencial de crecimiento.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 text-sm">
-            <div className="flex items-center gap-2 text-green-600 font-medium">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-sm">
+            <div className="flex items-center gap-2 text-green-600">
               <Clock className="w-4 h-4" />
               Actualizado hoy
             </div>
-            <div className="flex items-center gap-2 text-slate-600">
+            <div className="flex items-center gap-2 text-slate-500">
               <TrendingUp className="w-4 h-4" />
-              Portfolio gestionado: +€180M
+              Portfolio: +€180M
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid lg:grid-cols-2 gap-6 mb-12">
           {opportunities.map((opp, index) => (
             <div 
               key={index}
-              className="group p-8 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-slate-200"
+              className="group p-6 border border-slate-100 rounded-xl hover:border-primary/20 transition-all duration-200"
             >
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
                     {opp.sector}
                   </h3>
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="text-2xl font-bold text-primary">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl font-semibold text-primary">
                       {opp.valuation}
                     </span>
-                    <span className="text-slate-600 text-sm">
+                    <span className="text-slate-500 text-sm">
                       {opp.multiple}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                  <TrendingUp className="w-3 h-3" />
+                <div className="px-2 py-1 bg-green-50 text-green-600 rounded text-sm font-medium">
                   {opp.growth}
                 </div>
               </div>
               
-              <p className="text-slate-600 mb-6 leading-relaxed">
+              <p className="text-slate-600 mb-4 leading-relaxed text-sm">
                 {opp.description}
               </p>
               
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {opp.highlights.map((highlight, idx) => (
                   <span 
                     key={idx}
-                    className="px-3 py-1 bg-white text-slate-600 rounded-lg text-xs border border-slate-200"
+                    className="px-2 py-1 bg-slate-50 text-slate-600 rounded text-xs border border-slate-100"
                   >
                     {highlight}
                   </span>
@@ -104,41 +103,41 @@ const CurrentOpportunities = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">Más información disponible</span>
-                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+                <span className="text-sm text-slate-400">Información disponible</span>
+                <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Summary stats */}
-        <div className="bg-gradient-to-r from-primary/5 to-blue-50 rounded-2xl p-8">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
+        <div className="bg-slate-25 border border-slate-100 rounded-xl p-8">
+          <div className="grid md:grid-cols-4 gap-6 text-center">
             <div>
-              <div className="text-2xl font-bold text-slate-900 mb-2">47</div>
-              <div className="text-slate-600 text-sm">Oportunidades activas</div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">47</div>
+              <div className="text-slate-500 text-sm">Oportunidades activas</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-900 mb-2">€5-25M</div>
-              <div className="text-slate-600 text-sm">Rango de valoración</div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">€5-25M</div>
+              <div className="text-slate-500 text-sm">Rango de valoración</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-900 mb-2">6.8x</div>
-              <div className="text-slate-600 text-sm">Múltiplo EBITDA promedio</div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">6.8x</div>
+              <div className="text-slate-500 text-sm">Múltiplo EBITDA promedio</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-900 mb-2">80%</div>
-              <div className="text-slate-600 text-sm">Deals off-market</div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">80%</div>
+              <div className="text-slate-500 text-sm">Deals off-market</div>
             </div>
           </div>
           
-          <div className="text-center mt-8">
+          <div className="text-center mt-6">
             <InteractiveHoverButton
               text="Ver Todas las Oportunidades"
               variant="primary"
               size="lg"
               className="bg-primary text-white hover:bg-primary/90"
-              onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = '/oportunidades'}
             />
           </div>
         </div>

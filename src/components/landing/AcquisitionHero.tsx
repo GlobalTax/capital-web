@@ -4,113 +4,104 @@ import { Search, Phone } from 'lucide-react';
 
 const AcquisitionHero = () => {
   return (
-    <section className="relative bg-gradient-to-br from-slate-50 to-white py-20 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="relative bg-white py-16 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column - Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-tight">
-                Compra de Empresas y{' '}
-                <span className="text-primary">Oportunidades de Inversión</span>{' '}
-                Exclusivas
-              </h1>
-              
-              <p className="text-xl text-slate-600 leading-relaxed max-w-2xl">
-                Conectamos empresas en crecimiento, grupos estratégicos y fondos de Private Equity 
-                con compañías familiares en transición y sectores con alto potencial de consolidación.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
+          <div className="space-y-6">
+            <h1 className="text-4xl lg:text-5xl font-semibold text-slate-900 leading-tight">
+              Conectamos empresas con 
+              <span className="text-primary"> oportunidades</span> de crecimiento
+            </h1>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Facilitamos adquisiciones estratégicas que impulsan el crecimiento empresarial 
+              y crean valor sostenible.
+            </p>
+            
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <InteractiveHoverButton
-                text="🔍 Ver Oportunidades"
+                text="Ver Oportunidades"
                 variant="primary"
                 size="lg"
                 className="bg-primary text-white hover:bg-primary/90"
-                onClick={() => document.getElementById('opportunities')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => window.location.href = '/oportunidades'}
               />
               <InteractiveHoverButton
-                text="📞 Solicitar Consulta"
+                text="Solicitar Consulta"
                 variant="outline"
                 size="lg"
                 onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
               />
             </div>
-
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap gap-8 pt-8 border-t border-slate-200">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900">150+</div>
-                <div className="text-sm text-slate-600">Adquisiciones cerradas</div>
+            
+            {/* Trust indicators */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-8 border-t border-slate-100">
+              <div>
+                <div className="text-xl font-semibold text-slate-900 mb-2">47</div>
+                <div className="text-sm text-slate-500">Adquisiciones cerradas</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900">€2.8B</div>
-                <div className="text-sm text-slate-600">Valor gestionado</div>
+              <div>
+                <div className="text-xl font-semibold text-slate-900 mb-2">€180M</div>
+                <div className="text-sm text-slate-500">Valor gestionado</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900">4.2x</div>
-                <div className="text-sm text-slate-600">ROI promedio</div>
+              <div>
+                <div className="text-xl font-semibold text-slate-900 mb-2">285%</div>
+                <div className="text-sm text-slate-500">ROI promedio</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900">95%</div>
-                <div className="text-sm text-slate-600">Tasa de éxito</div>
+              <div>
+                <div className="text-xl font-semibold text-slate-900 mb-2">92%</div>
+                <div className="text-sm text-slate-500">Tasa de éxito</div>
               </div>
             </div>
           </div>
-
-          {/* Right Column - Visual */}
+          
+          {/* Right Column - Pipeline */}
           <div className="relative">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-200">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">Pipeline Actual</h3>
-                  <span className="text-sm text-green-600 font-medium">Actualizado hoy</span>
+            <div className="bg-slate-25 border border-slate-100 rounded-xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
+                <h3 className="font-semibold text-slate-900">Pipeline Actual</h3>
+                <p className="text-sm text-slate-500">Actualizado en tiempo real</p>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-white border border-slate-100 rounded-lg">
+                    <div className="text-lg font-semibold text-primary">47</div>
+                    <div className="text-xs text-slate-500">Oportunidades</div>
+                  </div>
+                  <div className="text-center p-3 bg-white border border-slate-100 rounded-lg">
+                    <div className="text-lg font-semibold text-slate-900">€325M</div>
+                    <div className="text-xs text-slate-500">Valor total</div>
+                  </div>
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-lg">
                     <div>
-                      <div className="font-medium text-slate-900">Oportunidades activas</div>
-                      <div className="text-sm text-slate-600">Multi-sector</div>
+                      <div className="font-medium text-slate-900 text-sm">Tecnología SaaS</div>
+                      <div className="text-xs text-slate-500">€12M • 8.5x EBITDA</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary">47</div>
-                      <div className="text-sm text-slate-600">empresas</div>
-                    </div>
+                    <div className="text-xs text-green-600 font-medium">Activa</div>
                   </div>
                   
-                  <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-lg">
                     <div>
-                      <div className="font-medium text-slate-900">Valor total disponible</div>
-                      <div className="text-sm text-slate-600">Portfolio gestionado</div>
+                      <div className="font-medium text-slate-900 text-sm">Distribución</div>
+                      <div className="text-xs text-slate-500">€8.5M • 6.2x EBITDA</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary">€180M+</div>
-                      <div className="text-sm text-slate-600">en activos</div>
-                    </div>
+                    <div className="text-xs text-blue-600 font-medium">En proceso</div>
                   </div>
                   
-                  <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-lg">
                     <div>
-                      <div className="font-medium text-slate-900">Múltiplo promedio</div>
-                      <div className="text-sm text-slate-600">EBITDA</div>
+                      <div className="font-medium text-slate-900 text-sm">Servicios B2B</div>
+                      <div className="text-xs text-slate-500">€5.2M • 4.8x EBITDA</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary">6.8x</div>
-                      <div className="text-sm text-slate-600">múltiplo</div>
-                    </div>
+                    <div className="text-xs text-slate-400 font-medium">Valoración</div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Floating badges */}
-            <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
-              Deal sourcing exclusivo
-            </div>
-            <div className="absolute -bottom-4 -left-4 bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
-              Red Private Equity
             </div>
           </div>
         </div>
