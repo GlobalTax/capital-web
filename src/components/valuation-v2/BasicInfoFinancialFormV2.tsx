@@ -5,6 +5,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
+// Utility function for number formatting
+const formatNumberWithDots = (value: number | string): string => {
+  if (!value) return '';
+  const numValue = typeof value === 'string' ? parseFloat(value.replace(/\./g, '')) : value;
+  if (isNaN(numValue)) return '';
+  return numValue.toLocaleString('es-ES');
+};
+
+const parseFormattedNumber = (value: string): number => {
+  if (!value) return 0;
+  return parseFloat(value.replace(/\./g, '')) || 0;
+};
+
 // Opciones de formulario inline
 const industryOptions = [
   { value: 'tecnologia', label: 'Tecnología' },
@@ -127,7 +140,7 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Teléfono (WhatsApp)</Label>
+            <Label htmlFor="phone">Teléfono (WhatsApp) *</Label>
             <Input
               id="phone"
               type="tel"
@@ -250,13 +263,14 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
             <Label htmlFor="revenue">Facturación anual *</Label>
             <Input
               id="revenue"
-              type="number"
-              min="0"
-              step="1000"
-              value={companyData.revenue || ''}
-              onChange={(e) => updateField('revenue', parseFloat(e.target.value) || 0)}
+              type="text"
+              value={formatNumberWithDots(companyData.revenue)}
+              onChange={(e) => {
+                const numValue = parseFormattedNumber(e.target.value);
+                updateField('revenue', numValue);
+              }}
               onBlur={() => handleFieldBlur?.('revenue')}
-              placeholder="500000"
+              placeholder="500.000"
               className={getFieldClass('revenue')}
             />
             {getFieldError('revenue') && (
@@ -268,13 +282,14 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
             <Label htmlFor="ebitda">EBITDA *</Label>
             <Input
               id="ebitda"
-              type="number"
-              min="0"
-              step="1000"
-              value={companyData.ebitda || ''}
-              onChange={(e) => updateField('ebitda', parseFloat(e.target.value) || 0)}
+              type="text"
+              value={formatNumberWithDots(companyData.ebitda)}
+              onChange={(e) => {
+                const numValue = parseFormattedNumber(e.target.value);
+                updateField('ebitda', numValue);
+              }}
               onBlur={() => handleFieldBlur?.('ebitda')}
-              placeholder="75000"
+              placeholder="75.000"
               className={getFieldClass('ebitda')}
             />
             {getFieldError('ebitda') && (
@@ -302,6 +317,39 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </RadioGroup>
         </div>
 
+        {/* Campo de ajustes EBITDA cuando se selecciona "Sí" */}
+        {companyData.hasAdjustments && (
+          <div className="mt-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="ebitdaAdjustments">Ajustes al EBITDA</Label>
+              <Input
+                id="ebitdaAdjustments"
+                type="text"
+                value={formatNumberWithDots(companyData.ebitdaAdjustments || 0)}
+                onChange={(e) => {
+                  const numValue = parseFormattedNumber(e.target.value);
+                  updateField('ebitdaAdjustments', numValue);
+                }}
+                onBlur={() => handleFieldBlur?.('ebitdaAdjustments')}
+                placeholder="10.000"
+                className={getFieldClass('ebitdaAdjustments')}
+              />
+              {getFieldError('ebitdaAdjustments') && (
+                <p className="text-sm text-red-600">{getFieldError('ebitdaAdjustments')}</p>
+              )}
+            </div>
+            
+            {/* EBITDA Corregido */}
+            {companyData.ebitda && companyData.ebitdaAdjustments && (
+              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-sm font-medium text-green-900">
+                  EBITDA Corregido: {formatNumberWithDots((companyData.ebitda || 0) + (companyData.ebitdaAdjustments || 0))} €
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Información sobre datos financieros */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h4 className="text-sm font-medium text-blue-900 mb-2">Información sobre estos datos financieros</h4>
@@ -313,68 +361,6 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
         </div>
       </div>
 
-      {/* Características de la Empresa */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Características de la Empresa</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="location">Ubicación principal *</Label>
-            <Select value={companyData.location || ''} onValueChange={(value) => updateField('location', value)}>
-              <SelectTrigger className={getFieldClass('location')}>
-                <SelectValue placeholder="Selecciona la ubicación" />
-              </SelectTrigger>
-              <SelectContent>
-                {locationOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {getFieldError('location') && (
-              <p className="text-sm text-red-600">{getFieldError('location')}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ownershipParticipation">Participación del propietario</Label>
-            <Select value={companyData.ownershipParticipation || ''} onValueChange={(value) => updateField('ownershipParticipation', value)}>
-              <SelectTrigger className={getFieldClass('ownershipParticipation')}>
-                <SelectValue placeholder="Selecciona el porcentaje" />
-              </SelectTrigger>
-              <SelectContent>
-                {ownershipOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {getFieldError('ownershipParticipation') && (
-              <p className="text-sm text-red-600">{getFieldError('ownershipParticipation')}</p>
-            )}
-          </div>
-
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="competitiveAdvantage">Ventaja competitiva</Label>
-            <Select value={companyData.competitiveAdvantage || ''} onValueChange={(value) => updateField('competitiveAdvantage', value)}>
-              <SelectTrigger className={getFieldClass('competitiveAdvantage')}>
-                <SelectValue placeholder="Selecciona la principal ventaja" />
-              </SelectTrigger>
-              <SelectContent>
-                {competitiveAdvantageOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {getFieldError('competitiveAdvantage') && (
-              <p className="text-sm text-red-600">{getFieldError('competitiveAdvantage')}</p>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
