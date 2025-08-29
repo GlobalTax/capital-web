@@ -342,8 +342,7 @@ if (pdfToAttach) {
       const pdfUrlFinal = (enlaces && enlaces.pdfUrl) || pdfPublicUrl || '';
       const enlacesUtiles = [
         pdfUrlFinal ? `<p style="margin:0 0 6px;"><strong>📄 Re-descargar el PDF:</strong> <a href="${pdfUrlFinal}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Haga clic aquí</a></p>` : '',
-        enlaces?.escenariosUrl ? `<p style="margin:0 0 6px;"><strong>🔢 Generar nuevos escenarios:</strong> <a href="${enlaces.escenariosUrl}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Acceder a la calculadora</a></p>` : '',
-        enlaces?.calculadoraFiscalUrl ? `<p style="margin:0 0 6px;"><strong>💰 Calculadora del impacto fiscal:</strong> <a href="${enlaces.calculadoraFiscalUrl}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Calcular impactos fiscales</a></p>` : ''
+        `<p style="margin:0 0 6px;"><strong>🔢 Volver a hacer la calculadora:</strong> <a href="https://capittal.es/lp/calculadora" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Acceder a la calculadora</a></p>`
       ].filter(Boolean).join('');
 
       const userText = `${saludo}\n` +
