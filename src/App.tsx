@@ -20,12 +20,8 @@ const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
-const CalculadoraValoracion = lazy(() => import('@/pages/CalculadoraValoracion'));
-const CalculadoraValoracionV2 = lazy(() => import('@/pages/CalculadoraValoracionV2'));
-const CalculadoraValoracionV3 = lazy(() => import('@/pages/CalculadoraValoracionV3'));
 const CalculadoraValoracionV4 = lazy(() => import('@/pages/CalculadoraValoracionV4'));
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
-const CalculadoraMaster = lazy(() => import('@/pages/CalculadoraMaster'));
 const Contacto = lazy(() => import('@/pages/Contacto'));
 const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
 const CasosExito = lazy(() => import('@/pages/CasosExito'));
@@ -238,7 +234,6 @@ function AppContent() {
           <Route path="/simulador-venta/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/simulador-ultra-rapido/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/calculadora-standalone" element={<CalculadoraStandalone />} />
-          <Route path="/calculadora-master" element={<CalculadoraMaster />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           <Route path="/casos-exito" element={<CasosExito />} />
