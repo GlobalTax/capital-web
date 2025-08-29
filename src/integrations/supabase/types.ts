@@ -887,6 +887,7 @@ export type Database = {
           final_valuation: number | null
           form_submitted_at: string | null
           growth_rate: number | null
+          has_adjustments: boolean | null
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
           id: string
@@ -937,6 +938,7 @@ export type Database = {
           final_valuation?: number | null
           form_submitted_at?: string | null
           growth_rate?: number | null
+          has_adjustments?: boolean | null
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
@@ -987,6 +989,7 @@ export type Database = {
           final_valuation?: number | null
           form_submitted_at?: string | null
           growth_rate?: number | null
+          has_adjustments?: boolean | null
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string

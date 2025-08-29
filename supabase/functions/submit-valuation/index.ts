@@ -20,6 +20,7 @@ interface InsertData {
   revenue: number | null;
   ebitda: number | null;
   adjustment_amount?: number | null;
+  has_adjustments?: boolean | null;
   net_profit_margin: number | null;
   growth_rate: number | null;
   location: string | null;
@@ -32,6 +33,27 @@ interface InsertData {
   referrer?: string | null;
   ip_address?: string | null;
   user_agent?: string | null;
+  // Status and activity fields
+  valuation_status?: string | null;
+  completion_percentage?: number | null;
+  current_step?: number | null;
+  last_activity_at?: string | null;
+  form_submitted_at?: string | null;
+  time_spent_seconds?: number | null;
+  // Communication tracking fields
+  email_sent?: boolean | null;
+  whatsapp_sent?: boolean | null;
+  hubspot_sent?: boolean | null;
+  email_sent_at?: string | null;
+  whatsapp_sent_at?: string | null;
+  hubspot_sent_at?: string | null;
+  email_opened?: boolean | null;
+  email_opened_at?: string | null;
+  email_message_id?: string | null;
+  // User tracking
+  user_id?: string | null;
+  unique_token?: string | null;
+  last_modified_field?: string | null;
 }
 
 function getClient() {
