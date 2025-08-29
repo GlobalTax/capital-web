@@ -39,10 +39,8 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const ProtectedRoute = lazy(() => import('@/components/auth/ProtectedRoute'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 
-// Service pages - Create placeholder components for missing ones
-const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones').catch(() => 
-  import('@/pages/VentaEmpresas') // Fallback to existing page
-));
+// Service pages
+const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones'));
 const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
