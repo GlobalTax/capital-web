@@ -1,0 +1,52 @@
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, Calculator } from 'lucide-react';
+
+interface NavigationButtonsProps {
+  currentStep: number;
+  isNextDisabled: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+}
+
+const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
+  currentStep,
+  isNextDisabled,
+  onPrev,
+  onNext
+}) => {
+  return (
+    <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+      <Button
+        onClick={onPrev}
+        variant="outline"
+        disabled={currentStep === 1}
+        className="flex items-center border-gray-900 text-gray-900 hover:bg-gray-100"
+      >
+        <ChevronLeft className="h-4 w-4 mr-2" />
+        Anterior
+      </Button>
+      
+      <div className="text-sm text-gray-500">
+        Paso {currentStep} de 2
+      </div>
+      
+      {currentStep === 1 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-700 text-center max-w-xs">
+          Al calcular acepto que Capittal procese mis datos para la valoración y envío por WhatsApp si proporcioné mi teléfono.
+        </div>
+      )}
+      
+      <Button
+        onClick={onNext}
+        disabled={isNextDisabled}
+        className="flex items-center bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
+      >
+        <Calculator className="h-4 w-4 mr-2" />
+        Calcular Valoración
+      </Button>
+    </div>
+  );
+};
+
+export default NavigationButtonsV2;

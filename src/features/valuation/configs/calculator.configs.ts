@@ -25,7 +25,7 @@ export const V1_CONFIG: CalculatorConfig = {
 // ============= V2 CONFIG =============
 export const V2_CONFIG: CalculatorConfig = {
   version: 'v2',
-  steps: 3,
+  steps: 2, // Solo 2 pasos reales: datos combinados + resultados
   features: {
     autosave: false,
     tracking: true,

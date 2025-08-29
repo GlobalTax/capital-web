@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { HomeLayout } from '@/shared';
-import ValuationCalculator from '@/components/ValuationCalculator';
+import { UnifiedCalculator } from '@/features/valuation/components/UnifiedCalculator';
+import { V2_CONFIG } from '@/features/valuation/configs/calculator.configs';
 import { Toaster } from '@/components/ui/sonner';
 
 const LandingCalculadoraFiscal = () => {
@@ -33,7 +34,7 @@ const LandingCalculadoraFiscal = () => {
   return (
     <HomeLayout>
       <h1 className="sr-only">Calculadora Fiscal de Venta de Empresas en España</h1>
-      <ValuationCalculator />
+      <UnifiedCalculator config={V2_CONFIG} />
       <Toaster />
     </HomeLayout>
   );
