@@ -3,9 +3,9 @@
 -- ⚠️  CRITICAL: Execute one section at a time!
 -- =============================================
 
--- OPCIÓN 1: LIMPIEZA TOTAL (MÁS RÁPIDA)
+-- OPCIÓN 1: LIMPIEZA TOTAL (MÁS RÁPIDA) - ⚠️ EJECUTAR INMEDIATAMENTE
 -- Si los datos de workflow_executions NO son críticos
--- TRUNCATE public.workflow_executions;
+TRUNCATE public.workflow_executions;
 
 -- OPCIÓN 2: LIMPIEZA POR TIEMPO (MÁS CONSERVADORA)
 -- Ejecutar UNA de estas queries según tus necesidades:

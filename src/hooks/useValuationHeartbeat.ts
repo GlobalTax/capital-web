@@ -61,15 +61,18 @@ export const useValuationHeartbeat = ({
       return;
     }
 
-    // Send heartbeat every 60 seconds
-    heartbeatRef.current = setInterval(() => {
-      const timeSinceActivity = Date.now() - lastActivityRef.current.getTime();
-      
-      // Only send heartbeat if user was active in the last 5 minutes
-      if (timeSinceActivity < 5 * 60 * 1000) {
-        sendHeartbeat();
-      }
-    }, 60 * 1000); // 60 seconds
+    // ⚠️ EMERGENCY: Heartbeat DISABLED to stop edge function invocations
+    // TODO: Re-enable with proper rate limiting once billing crisis is resolved
+    console.log('Heartbeat system temporarily disabled due to billing emergency');
+    return; // Exit early - no heartbeat interval created
+    
+    // ORIGINAL CODE (commented out):
+    // heartbeatRef.current = setInterval(() => {
+    //   const timeSinceActivity = Date.now() - lastActivityRef.current.getTime();
+    //   if (timeSinceActivity < 5 * 60 * 1000) {
+    //     sendHeartbeat();
+    //   }
+    // }, 60 * 1000);
 
     // Send initial heartbeat
     sendHeartbeat();
