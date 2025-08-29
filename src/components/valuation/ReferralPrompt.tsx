@@ -61,7 +61,7 @@ const ReferralPrompt: React.FC<ReferralPromptProps> = ({ companyData }) => {
 
       <footer className="mt-4 text-sm text-blue-700 flex items-center gap-2">
         <Share2 className="h-4 w-4" />
-        Enlace de la calculadora: {shareUrl}
+        Enlace de la calculadora: <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">{shareUrl}</a>
       </footer>
     </section>
   );
