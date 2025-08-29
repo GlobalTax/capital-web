@@ -787,7 +787,6 @@ export type Database = {
       }
       company_valuations: {
         Row: {
-          abandonment_detected_at: string | null
           cif: string | null
           company_name: string
           competitive_advantage: string | null
@@ -811,8 +810,6 @@ export type Database = {
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
           id: string
-          immediate_alert_sent: boolean | null
-          immediate_alert_sent_at: string | null
           industry: string
           ip_address: unknown | null
           is_deleted: boolean | null
@@ -823,8 +820,6 @@ export type Database = {
           ownership_participation: string | null
           phone: string | null
           phone_e164: string | null
-          recovery_link_sent: boolean | null
-          recovery_link_sent_at: string | null
           revenue: number | null
           time_spent_seconds: number | null
           unique_token: string | null
@@ -846,7 +841,6 @@ export type Database = {
           years_of_operation: number | null
         }
         Insert: {
-          abandonment_detected_at?: string | null
           cif?: string | null
           company_name: string
           competitive_advantage?: string | null
@@ -870,8 +864,6 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
-          immediate_alert_sent?: boolean | null
-          immediate_alert_sent_at?: string | null
           industry: string
           ip_address?: unknown | null
           is_deleted?: boolean | null
@@ -882,8 +874,6 @@ export type Database = {
           ownership_participation?: string | null
           phone?: string | null
           phone_e164?: string | null
-          recovery_link_sent?: boolean | null
-          recovery_link_sent_at?: string | null
           revenue?: number | null
           time_spent_seconds?: number | null
           unique_token?: string | null
@@ -905,7 +895,6 @@ export type Database = {
           years_of_operation?: number | null
         }
         Update: {
-          abandonment_detected_at?: string | null
           cif?: string | null
           company_name?: string
           competitive_advantage?: string | null
@@ -929,8 +918,6 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
-          immediate_alert_sent?: boolean | null
-          immediate_alert_sent_at?: string | null
           industry?: string
           ip_address?: unknown | null
           is_deleted?: boolean | null
@@ -941,8 +928,6 @@ export type Database = {
           ownership_participation?: string | null
           phone?: string | null
           phone_e164?: string | null
-          recovery_link_sent?: boolean | null
-          recovery_link_sent_at?: string | null
           revenue?: number | null
           time_spent_seconds?: number | null
           unique_token?: string | null
@@ -1225,57 +1210,6 @@ export type Database = {
           widget_config?: Json
           widget_name?: string
           widget_type?: string
-        }
-        Relationships: []
-      }
-      daily_incomplete_reports: {
-        Row: {
-          created_at: string
-          email_id: string | null
-          email_sent: boolean
-          email_subject: string | null
-          error_message: string | null
-          execution_time_ms: number | null
-          id: string
-          incomplete_count: number
-          incomplete_valuations: Json
-          period_end: string
-          period_start: string
-          report_date: string
-          report_status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email_id?: string | null
-          email_sent?: boolean
-          email_subject?: string | null
-          error_message?: string | null
-          execution_time_ms?: number | null
-          id?: string
-          incomplete_count?: number
-          incomplete_valuations?: Json
-          period_end: string
-          period_start: string
-          report_date: string
-          report_status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email_id?: string | null
-          email_sent?: boolean
-          email_subject?: string | null
-          error_message?: string | null
-          execution_time_ms?: number | null
-          id?: string
-          incomplete_count?: number
-          incomplete_valuations?: Json
-          period_end?: string
-          period_start?: string
-          report_date?: string
-          report_status?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -2727,14 +2661,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
-      comprehensive_cleanup_daily: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          records_deleted: number
-          space_info: string
-          table_name: string
-        }[]
-      }
       create_temporary_user: {
         Args: {
           p_email: string
@@ -2746,10 +2672,6 @@ export type Database = {
       current_user_is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
-      }
-      detect_abandoned_valuations: {
-        Args: Record<PropertyKey, never>
-        Returns: number
       }
       disk_usage_monitor: {
         Args: Record<PropertyKey, never>
@@ -2851,10 +2773,6 @@ export type Database = {
       reject_user_registration: {
         Args: { reason?: string; request_id: string }
         Returns: boolean
-      }
-      send_recovery_emails: {
-        Args: Record<PropertyKey, never>
-        Returns: number
       }
       validate_data_access_security: {
         Args: Record<PropertyKey, never>
