@@ -866,6 +866,7 @@ export type Database = {
       company_valuations: {
         Row: {
           activity_description: string | null
+          adjustment_amount: number | null
           cif: string | null
           company_name: string
           competitive_advantage: string | null
@@ -915,6 +916,7 @@ export type Database = {
         }
         Insert: {
           activity_description?: string | null
+          adjustment_amount?: number | null
           cif?: string | null
           company_name: string
           competitive_advantage?: string | null
@@ -964,6 +966,7 @@ export type Database = {
         }
         Update: {
           activity_description?: string | null
+          adjustment_amount?: number | null
           cif?: string | null
           company_name?: string
           competitive_advantage?: string | null

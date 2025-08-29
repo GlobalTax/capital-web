@@ -11,11 +11,15 @@ interface InsertData {
   cif: string | null;
   email: string;
   phone: string | null;
+  phone_e164?: string | null;
+  whatsapp_opt_in?: boolean | null;
   industry: string;
+  activity_description?: string | null;
   years_of_operation: number | null;
   employee_range: string;
   revenue: number | null;
   ebitda: number | null;
+  adjustment_amount?: number | null;
   net_profit_margin: number | null;
   growth_rate: number | null;
   location: string | null;
@@ -25,6 +29,7 @@ interface InsertData {
   ebitda_multiple_used: number | null;
   valuation_range_min: number | null;
   valuation_range_max: number | null;
+  referrer?: string | null;
   ip_address?: string | null;
   user_agent?: string | null;
 }
