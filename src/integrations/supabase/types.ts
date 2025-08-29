@@ -2727,6 +2727,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      comprehensive_cleanup_daily: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          records_deleted: number
+          space_info: string
+          table_name: string
+        }[]
+      }
       create_temporary_user: {
         Args: {
           p_email: string
@@ -2742,6 +2750,15 @@ export type Database = {
       detect_abandoned_valuations: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      disk_usage_monitor: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          largest_tables: string[]
+          recommendations: string[]
+          storage_buckets_info: Json
+          total_database_size: string
+        }[]
       }
       enhanced_rate_limit_check: {
         Args: {
