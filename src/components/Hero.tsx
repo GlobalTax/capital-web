@@ -4,11 +4,11 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 const Hero = () => {
-  const { isOnline } = useNetworkStatus();
-  
-  return (
-    <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
-      <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm">
+  const {
+    isOnline
+  } = useNetworkStatus();
+  return <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
+      <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm py-[100px]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Left Column - Content */}
@@ -37,21 +37,11 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-6">
               <Link to="/lp/calculadora">
-                <InteractiveHoverButton 
-                  text="Valorar mi empresa" 
-                  variant="primary" 
-                  size="lg" 
-                  disabled={!isOnline}
-                />
+                <InteractiveHoverButton text="Valorar mi empresa" variant="primary" size="lg" disabled={!isOnline} />
               </Link>
               
               <Link to="/casos-exito">
-                <InteractiveHoverButton 
-                  text="Ver Casos de Éxito" 
-                  variant="secondary" 
-                  size="lg"
-                  disabled={!isOnline}
-                />
+                <InteractiveHoverButton text="Ver Casos de Éxito" variant="secondary" size="lg" disabled={!isOnline} />
               </Link>
             </div>
           </div>
@@ -108,7 +98,6 @@ const Hero = () => {
         </div>
       </div>
     </section>
-    </ErrorBoundary>
-  );
+    </ErrorBoundary>;
 };
 export default Hero;
