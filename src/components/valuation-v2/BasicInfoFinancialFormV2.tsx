@@ -321,29 +321,29 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
         {companyData.hasAdjustments && (
           <div className="mt-4 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="ebitdaAdjustments">Ajustes al EBITDA</Label>
+              <Label htmlFor="adjustmentAmount">Ajustes al EBITDA</Label>
               <Input
-                id="ebitdaAdjustments"
+                id="adjustmentAmount"
                 type="text"
-                value={formatNumberWithDots(companyData.ebitdaAdjustments || 0)}
+                value={formatNumberWithDots(companyData.adjustmentAmount || 0)}
                 onChange={(e) => {
                   const numValue = parseFormattedNumber(e.target.value);
-                  updateField('ebitdaAdjustments', numValue);
+                  updateField('adjustmentAmount', numValue);
                 }}
-                onBlur={() => handleFieldBlur?.('ebitdaAdjustments')}
+                onBlur={() => handleFieldBlur?.('adjustmentAmount')}
                 placeholder="10.000"
-                className={getFieldClass('ebitdaAdjustments')}
+                className={getFieldClass('adjustmentAmount')}
               />
-              {getFieldError('ebitdaAdjustments') && (
-                <p className="text-sm text-red-600">{getFieldError('ebitdaAdjustments')}</p>
+              {getFieldError('adjustmentAmount') && (
+                <p className="text-sm text-red-600">{getFieldError('adjustmentAmount')}</p>
               )}
             </div>
             
             {/* EBITDA Corregido */}
-            {companyData.ebitda && companyData.ebitdaAdjustments && (
+            {companyData.ebitda && companyData.adjustmentAmount && (
               <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                 <p className="text-sm font-medium text-green-900">
-                  EBITDA Corregido: {formatNumberWithDots((companyData.ebitda || 0) + (companyData.ebitdaAdjustments || 0))} €
+                  EBITDA Corregido: {formatNumberWithDots((companyData.ebitda || 0) + (companyData.adjustmentAmount || 0))} €
                 </p>
               </div>
             )}

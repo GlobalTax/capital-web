@@ -79,6 +79,13 @@ const validationRules: Record<string, ValidationRule> = {
     required: false,
     pattern: /^[A-HJ-NP-SUVW][0-9]{7}[0-9A-J]$/,
     message: 'CIF no válido (formato: A12345674)'
+  },
+  
+  activityDescription: {
+    required: true,
+    minLength: 10,
+    maxLength: 500,
+    message: 'La descripción debe tener entre 10 y 500 caracteres'
   }
 };
 
@@ -96,9 +103,8 @@ const getFieldsForStep = (step: number, config: CalculatorConfig): (keyof Extend
     
     case 'v2':
       switch (step) {
-        case 1: return ['contactName', 'companyName', 'email', 'phone', 'industry'];
-        case 2: return ['revenue', 'ebitda', 'employeeRange'];
-        case 3: return ['location'];
+        case 1: return ['contactName', 'companyName', 'email', 'phone', 'industry', 'activityDescription', 'employeeRange', 'revenue', 'ebitda'];
+        case 2: return ['location', 'ownershipParticipation', 'competitiveAdvantage'];
         default: return [];
       }
     
