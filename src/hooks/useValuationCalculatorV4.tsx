@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CompanyDataV4, TaxDataV4, ScenarioResultV4, DistributionData } from '@/types/valuationV4';
-import { calculateSpanishTaxImpact } from '@/utils/taxCalculationV2';
+import { calculateSpanishTaxImpact } from '@/utils/taxCalculation';
 
 const initialTaxData: TaxDataV4 = {
   acquisitionValue: 0,

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import LandingLayout from '@/components/shared/LandingLayout';
-import ValuationCalculator from '@/components/ValuationCalculator';
+import ValuationCalculatorV4 from '@/components/ValuationCalculatorV4';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useLocation } from 'react-router-dom';
