@@ -865,6 +865,7 @@ export type Database = {
       }
       company_valuations: {
         Row: {
+          activity_description: string | null
           cif: string | null
           company_name: string
           competitive_advantage: string | null
@@ -898,6 +899,7 @@ export type Database = {
           ownership_participation: string | null
           phone: string | null
           phone_e164: string | null
+          referrer: string | null
           revenue: number | null
           time_spent_seconds: number | null
           unique_token: string | null
@@ -912,6 +914,7 @@ export type Database = {
           years_of_operation: number | null
         }
         Insert: {
+          activity_description?: string | null
           cif?: string | null
           company_name: string
           competitive_advantage?: string | null
@@ -945,6 +948,7 @@ export type Database = {
           ownership_participation?: string | null
           phone?: string | null
           phone_e164?: string | null
+          referrer?: string | null
           revenue?: number | null
           time_spent_seconds?: number | null
           unique_token?: string | null
@@ -959,6 +963,7 @@ export type Database = {
           years_of_operation?: number | null
         }
         Update: {
+          activity_description?: string | null
           cif?: string | null
           company_name?: string
           competitive_advantage?: string | null
@@ -992,6 +997,7 @@ export type Database = {
           ownership_participation?: string | null
           phone?: string | null
           phone_e164?: string | null
+          referrer?: string | null
           revenue?: number | null
           time_spent_seconds?: number | null
           unique_token?: string | null
