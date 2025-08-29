@@ -9,7 +9,7 @@ const items = [
   },
   {
     title: 'Cumplimiento RGPD',
-    desc: 'Tratamos la información conforme al RGPD. Al hacer clic en "Calcular valoración" consientes el procesamiento de tus datos para generar tu valoración y su uso con fines comerciales relacionados con nuestros servicios. Puedes solicitar la eliminación cuando lo desees.',
+    desc: 'Tratamos la información conforme al RGPD. Al hacer clic en "Calcular valoración" consientes el procesamiento de tus datos para generar tu valoración y su uso con fines comerciales relacionados con nuestros servicios. Si proporcionas tu teléfono, aceptas que Capittal procese tus datos para la valoración y envío por WhatsApp. Puedes solicitar la eliminación cuando lo desees.',
     Icon: ShieldCheck,
   },
   {
