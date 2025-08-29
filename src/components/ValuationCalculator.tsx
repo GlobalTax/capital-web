@@ -29,66 +29,17 @@ const ValuationCalculator: React.FC = () => {
     errors
   } = useValuationCalculator();
 
-  // Función para verificar si tenemos datos mínimos para auto-guardado
-  const hasMinimalData = useCallback(() => {
-    return companyData.contactName?.trim() && 
-           companyData.email?.trim() && 
-           companyData.companyName?.trim() &&
-           companyData.email.includes('@');
-  }, [companyData.contactName, companyData.email, companyData.companyName]);
+  const saveExecutedRef = useRef(false);
 
-  // Auto-guardado progresivo con debounce
-  const autoSaveValuation = useCallback(async () => {
-    if (!hasMinimalData()) return;
-
-    try {
-      // Si no tenemos token, crear registro inicial
-      if (!uniqueTokenRef.current) {
-        console.log('🟡 Creando registro inicial para auto-guardado...');
-        const result = await createInitialValuation({
-          contactName: companyData.contactName,
-          companyName: companyData.companyName,
-          cif: companyData.cif,
-          email: companyData.email,
-          phone: companyData.phone,
-          industry: companyData.industry,
-          employeeRange: companyData.employeeRange
-        });
-        
-        if (result.success && result.uniqueToken) {
-          uniqueTokenRef.current = result.uniqueToken;
-          console.log('✅ Registro inicial creado con token:', result.uniqueToken);
-        }
-      } else {
-        // Actualizar registro existente
-        console.log('🟡 Actualizando registro existente...');
-        const success = await updateValuation(uniqueTokenRef.current, {
-          contactName: companyData.contactName,
-          companyName: companyData.companyName,
-          cif: companyData.cif,
-          email: companyData.email,
-          phone: companyData.phone,
-          industry: companyData.industry,
-          employeeRange: companyData.employeeRange,
-          revenue: companyData.revenue,
-          ebitda: companyData.ebitda,
-          location: companyData.location,
-          ownershipParticipation: companyData.ownershipParticipation,
-          competitiveAdvantage: companyData.competitiveAdvantage
-        });
-        
-        if (success) {
-          console.log('✅ Registro actualizado correctamente');
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error en auto-guardado:', error);
-    }
-  }, [companyData, hasMinimalData, createInitialValuation, updateValuation]);
-
-  // Effect para auto-guardado con debounce
+  // Effect para auto-guardado con debounce - SOLO usando campos específicos como dependencias
   useEffect(() => {
-    if (!hasMinimalData()) return;
+    // Verificar si tenemos datos mínimos directamente en el effect
+    const hasMinimalDataNow = companyData.contactName?.trim() && 
+                             companyData.email?.trim() && 
+                             companyData.companyName?.trim() &&
+                             companyData.email.includes('@');
+
+    if (!hasMinimalDataNow) return;
 
     // Limpiar timeout anterior
     if (autoSaveTimeoutRef.current) {
@@ -96,8 +47,60 @@ const ValuationCalculator: React.FC = () => {
     }
 
     // Configurar nuevo timeout (debounce de 2 segundos)
-    autoSaveTimeoutRef.current = setTimeout(() => {
-      autoSaveValuation();
+    autoSaveTimeoutRef.current = setTimeout(async () => {
+      // Evitar ejecuciones múltiples con la misma data
+      if (saveExecutedRef.current) return;
+      
+      try {
+        saveExecutedRef.current = true;
+        
+        // Si no tenemos token, crear registro inicial
+        if (!uniqueTokenRef.current) {
+          console.log('🟡 Creando registro inicial para auto-guardado...');
+          const result = await createInitialValuation({
+            contactName: companyData.contactName,
+            companyName: companyData.companyName,
+            cif: companyData.cif,
+            email: companyData.email,
+            phone: companyData.phone,
+            industry: companyData.industry,
+            employeeRange: companyData.employeeRange
+          });
+          
+          if (result.success && result.uniqueToken) {
+            uniqueTokenRef.current = result.uniqueToken;
+            console.log('✅ Registro inicial creado con token:', result.uniqueToken);
+          }
+        } else {
+          // Actualizar registro existente
+          console.log('🟡 Actualizando registro existente...');
+          const success = await updateValuation(uniqueTokenRef.current, {
+            contactName: companyData.contactName,
+            companyName: companyData.companyName,
+            cif: companyData.cif,
+            email: companyData.email,
+            phone: companyData.phone,
+            industry: companyData.industry,
+            employeeRange: companyData.employeeRange,
+            revenue: companyData.revenue,
+            ebitda: companyData.ebitda,
+            location: companyData.location,
+            ownershipParticipation: companyData.ownershipParticipation,
+            competitiveAdvantage: companyData.competitiveAdvantage
+          });
+          
+          if (success) {
+            console.log('✅ Registro actualizado correctamente');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error en auto-guardado:', error);
+      } finally {
+        // Reset flag después de un tiempo para permitir nuevos guardados
+        setTimeout(() => {
+          saveExecutedRef.current = false;
+        }, 1000);
+      }
     }, 2000);
 
     // Cleanup
@@ -106,7 +109,23 @@ const ValuationCalculator: React.FC = () => {
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [companyData, autoSaveValuation, hasMinimalData]);
+  }, [
+    // Solo usar campos específicos como dependencias para evitar loops
+    companyData.contactName,
+    companyData.email, 
+    companyData.companyName,
+    companyData.cif,
+    companyData.phone,
+    companyData.industry,
+    companyData.employeeRange,
+    companyData.revenue,
+    companyData.ebitda,
+    companyData.location,
+    companyData.ownershipParticipation,
+    companyData.competitiveAdvantage,
+    createInitialValuation,
+    updateValuation
+  ]);
 
   const getStepTitle = (step: number) => {
     switch (step) {
