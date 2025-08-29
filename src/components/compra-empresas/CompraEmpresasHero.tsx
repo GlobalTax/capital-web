@@ -3,33 +3,32 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 
 const CompraEmpresasHero = () => {
   const benefits = [
-    'Oportunidades en consolidación industrial',
-    'Deal sourcing para fondos de Private Equity',
-    'Análisis sectorial especializado',
-    'Red exclusiva de empresas familiares en transición'
+    'Identificación de oportunidades exclusivas',
+    'Due diligence completa incluida',
+    'Negociación experta y representación',
+    'Asesoramiento en integración post-compra'
   ];
 
-  // Mock dashboard data - Industrial & PE focused
+  // Mock dashboard data
   const oportunidades = [
-    { nombre: "Componentes Automoción", valor: "15.2M€", sector: "Industrial", rentabilidad: "8.5x EBITDA" },
-    { nombre: "Distribución Química", valor: "22.8M€", sector: "Manufactura", rentabilidad: "6.2x EBITDA" },
-    { nombre: "Logística Especializada", valor: "18.5M€", sector: "Logística", rentabilidad: "7.8x EBITDA" },
-    { nombre: "Servicios Industriales", valor: "12.1M€", sector: "B2B Services", rentabilidad: "9.1x EBITDA" }
+    { nombre: "SaaS Analytics", valor: "8.2M€", sector: "Tecnología", rentabilidad: "+18%" },
+    { nombre: "Distribución Industrial", valor: "12.5M€", sector: "Industrial", rentabilidad: "+22%" },
+    { nombre: "Servicios Profesionales", valor: "4.8M€", sector: "Servicios", rentabilidad: "+15%" },
+    { nombre: "E-commerce B2B", valor: "6.1M€", sector: "Digital", rentabilidad: "+25%" }
   ];
 
   return (
-    <section className="py-[120px] bg-white relative overflow-hidden">
+    <section className="py-20 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              Adquisiciones para Empresas Industriales y Private Equity
+              Adquisiciones Estratégicas
             </h1>
             <p className="text-xl text-slate-700 mb-8 leading-relaxed">
-              Especialistas en identificar y ejecutar adquisiciones estratégicas para empresas industriales, 
-              fondos de Private Equity y family offices. Acceso exclusivo a empresas familiares en transición 
-              y oportunidades de consolidación sectorial.
+              Identificamos, evaluamos y ejecutamos adquisiciones que impulsan el crecimiento de tu empresa. 
+              Acceso exclusivo a oportunidades fuera del mercado público con asesoramiento integral.
             </p>
             
             {/* Benefits List */}
