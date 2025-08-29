@@ -14,12 +14,16 @@ const steps = [
 ];
 
 const StepIndicatorV2: React.FC<StepIndicatorProps> = ({ currentStep, goToStep, validateStep }) => {
+  console.log('🎯 StepIndicatorV2 - currentStep:', currentStep);
+  
   return (
     <div className="flex items-center justify-center mb-8">
       {steps.map((step, index) => {
         const isCompleted = currentStep > step.number;
         const isCurrent = currentStep === step.number;
         const isClickable = step.number < currentStep || (step.number === currentStep + 1 && validateStep(currentStep));
+        
+        console.log(`📍 Step ${step.number} - isCompleted: ${isCompleted}, isCurrent: ${isCurrent}, currentStep: ${currentStep}`);
         
         return (
           <div key={step.number} className="flex items-center">
