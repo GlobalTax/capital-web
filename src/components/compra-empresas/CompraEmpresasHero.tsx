@@ -1,29 +1,12 @@
 import React from 'react';
-import { Search, Target, Users, Award } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const CompraEmpresasHero = () => {
   const benefits = [
-    {
-      icon: Search,
-      title: 'Identificación de Oportunidades',
-      description: 'Acceso exclusivo a empresas en venta que no están en el mercado público'
-    },
-    {
-      icon: Target,
-      title: 'Due Diligence Completa',
-      description: 'Análisis exhaustivo financiero, legal y operacional antes de la compra'
-    },
-    {
-      icon: Users,
-      title: 'Negociación Experta',
-      description: 'Representación profesional para obtener las mejores condiciones de compra'
-    },
-    {
-      icon: Award,
-      title: 'Integración Post-Compra',
-      description: 'Asesoramiento en la integración y optimización de la empresa adquirida'
-    }
+    'Identificación de oportunidades exclusivas',
+    'Due diligence completa incluida',
+    'Negociación experta y representación',
+    'Asesoramiento en integración post-compra'
   ];
 
   // Mock dashboard data
@@ -35,7 +18,7 @@ const CompraEmpresasHero = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+    <section className="py-20 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
@@ -49,21 +32,13 @@ const CompraEmpresasHero = () => {
             </p>
             
             {/* Benefits List */}
-            <div className="space-y-4 mb-8">
-              {benefits.map((benefit, index) => {
-                const Icon = benefit.icon;
-                return (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="bg-blue-100 rounded-full p-2 mt-0.5">
-                      <Icon className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 text-sm">{benefit.title}</h3>
-                      <p className="text-slate-600 text-sm">{benefit.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="space-y-3 mb-8">
+              {benefits.map((benefit, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-slate-900 rounded-full"></div>
+                  <span className="text-slate-700 font-medium">{benefit}</span>
+                </div>
+              ))}
             </div>
 
             {/* CTA Buttons */}
