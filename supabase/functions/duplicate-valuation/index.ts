@@ -96,24 +96,12 @@ serve(async (req) => {
       );
     }
 
-    // Generate new unique token using the database function
-    const { data: tokenData, error: tokenError } = await supabase
-      .rpc('generate_unique_v4_token');
+    // Generate new unique token using standard method
+    const generateToken = () => Math.random().toString(36).substring(2, 15) + 
+                                Math.random().toString(36).substring(2, 15);
+    const token = generateToken();
 
-    if (tokenError) {
-      console.error('Error generating unique token:', tokenError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to generate unique token' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    const newToken = tokenData;
-
-    // Calculate completion percentage based on available data
+    // Prepare the duplicated valuation data
     const calculateCompletionPercentage = (valuation: any): number => {
       let score = 0;
       const weights = {
@@ -177,7 +165,7 @@ serve(async (req) => {
       user_id: originalValuation.user_id,
       
       // Reset process-related fields
-      unique_token: newToken,
+      unique_token: token,
       valuation_status: 'in_progress',
       current_step: currentStep,
       completion_percentage: completionPercentage,
@@ -209,15 +197,6 @@ serve(async (req) => {
       abandonment_detected_at: null,
       immediate_alert_sent: false,
       immediate_alert_sent_at: null,
-      
-      // Reset V4 specific fields
-      v4_link_sent: false,
-      v4_link_sent_at: null,
-      v4_accessed: false,
-      v4_accessed_at: null,
-      v4_engagement_score: 0,
-      v4_scenarios_viewed: [],
-      v4_time_spent: 0,
       
       // Reset metadata
       last_activity_at: new Date().toISOString(),
@@ -252,7 +231,7 @@ serve(async (req) => {
     console.log('Successfully duplicated valuation:', {
       originalId: valuationId,
       newId: newId,
-      token: newToken,
+      token: token,
       completionPercentage,
       currentStep
     });
@@ -260,7 +239,7 @@ serve(async (req) => {
     const response: DuplicateResponse = {
       success: true,
       newId: newId,
-      token: newToken
+      token: token
     };
 
     return new Response(

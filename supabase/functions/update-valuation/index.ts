@@ -46,10 +46,6 @@ const ALLOWED_FIELDS = new Set([
   "ebitda_multiple_used",
   "valuation_range_min",
   "valuation_range_max",
-  // Engagement (optional future use)
-  "v4_engagement_score",
-  "v4_scenarios_viewed",
-  "v4_time_spent",
   // Tracking fields
   "current_step",
   "completion_percentage",

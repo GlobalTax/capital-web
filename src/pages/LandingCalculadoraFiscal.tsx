@@ -1,22 +1,10 @@
 import React, { useEffect } from 'react';
 import { HomeLayout } from '@/shared';
-import ValuationCalculatorV4 from '@/components/ValuationCalculatorV4';
-import { CompanyDataV4 } from '@/types/valuationV4';
+import BasicValuationForm from '@/components/BasicValuationForm';
 import { Toaster } from '@/components/ui/sonner';
 
 const LandingCalculadoraFiscal = () => {
-  // Initial data for V4 calculator focused on fiscal calculations
-  const initialCompanyData: CompanyDataV4 = {
-    contactName: '',
-    companyName: '',
-    email: '',
-    phone: '',
-    industry: '',
-    revenue: 0,
-    ebitda: 0,
-    baseValuation: 0,
-    whatsapp_opt_in: false
-  };
+  // Basic calculator for fiscal calculations
 
   useEffect(() => {
     const title = 'Calculadora Fiscal de Venta de Empresas (España) | Capittal';
@@ -45,7 +33,7 @@ const LandingCalculadoraFiscal = () => {
   return (
     <HomeLayout>
       <h1 className="sr-only">Calculadora Fiscal de Venta de Empresas en España</h1>
-      <ValuationCalculatorV4 companyData={initialCompanyData} />
+      <BasicValuationForm />
       <Toaster />
     </HomeLayout>
   );

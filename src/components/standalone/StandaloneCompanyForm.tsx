@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CompanyDataV4 } from '@/types/valuationV4';
+import { BasicCompanyData } from '@/types/basicCompany';
 import { Building2, Calculator, TrendingUp } from 'lucide-react';
 import { 
   validateEmail, 
@@ -18,7 +18,7 @@ import {
 import { sanitizeObject } from '@/utils/sanitization';
 
 interface StandaloneCompanyFormProps {
-  onSubmit: (data: CompanyDataV4) => void;
+  onSubmit: (data: BasicCompanyData) => void;
 }
 
 const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
@@ -139,7 +139,7 @@ const StandaloneCompanyForm = ({ onSubmit }: StandaloneCompanyFormProps) => {
       baseValuation = ebitda * 4;
     }
 
-    const processedData: CompanyDataV4 = {
+    const processedData: BasicCompanyData = {
       contactName: sanitizedData.contactName || 'Usuario',
       companyName: sanitizedData.companyName || 'Mi Empresa',
       email: sanitizedData.email || 'contacto@empresa.com',

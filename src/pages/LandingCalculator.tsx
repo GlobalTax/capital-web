@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import LandingLayout from '@/components/shared/LandingLayout';
-import ValuationCalculatorV4 from '@/components/ValuationCalculatorV4';
+import BasicValuationForm from '@/components/BasicValuationForm';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useLocation } from 'react-router-dom';
@@ -174,17 +174,7 @@ const LandingCalculatorInner = () => {
       </div>
       {/* H1 único para SEO, oculto visualmente */}
       <h1 className="sr-only">{t('landing.h1')}</h1>
-      <ValuationCalculatorV4 companyData={{
-        contactName: '',
-        companyName: '',
-        email: '',
-        phone: '',
-        industry: 'tecnologia',
-        revenue: 1000000,
-        ebitda: 200000,
-        baseValuation: 800000,
-        whatsapp_opt_in: false
-      }} />
+      <BasicValuationForm />
       {/* Confidencialidad y privacidad de la herramienta */}
       <ConfidentialityBlock />
       {/* Breve descripción de Capittal */}

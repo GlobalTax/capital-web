@@ -4,11 +4,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
 import type { CompanyData } from '@/types/valuation';
-import type { CompanyDataV4 } from '@/types/valuationV4';
+// Remove V4 reference - type union updated
 import type { ExtendedCompanyData } from '@/features/valuation/types/unified.types';
 
 // ============= TYPES =============
-export type AnyCompanyData = CompanyData | CompanyDataV4 | ExtendedCompanyData;
+export type AnyCompanyData = CompanyData | ExtendedCompanyData;
 
 export interface SectorMultiple {
   sector_name: string;

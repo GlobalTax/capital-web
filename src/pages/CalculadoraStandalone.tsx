@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { CompanyDataV4 } from '@/types/valuationV4';
+import { BasicCompanyData } from '@/types/basicCompany';
 import StandaloneCompanyForm from '@/components/standalone/StandaloneCompanyForm';
-import StandaloneCalculator from '@/components/standalone/StandaloneCalculator';
+import BasicStandaloneCalculator from '@/components/standalone/BasicStandaloneCalculator';
 
 const CalculadoraStandalone = () => {
-  const [companyData, setCompanyData] = useState<CompanyDataV4 | null>(null);
+  const [companyData, setCompanyData] = useState<BasicCompanyData | null>(null);
 
-  const handleFormSubmit = (data: CompanyDataV4) => {
+  const handleFormSubmit = (data: BasicCompanyData) => {
     setCompanyData(data);
   };
 
@@ -19,7 +19,7 @@ const CalculadoraStandalone = () => {
       {!companyData ? (
         <StandaloneCompanyForm onSubmit={handleFormSubmit} />
       ) : (
-        <StandaloneCalculator companyData={companyData} onReset={handleReset} />
+        <BasicStandaloneCalculator companyData={companyData} onReset={handleReset} />
       )}
     </>
   );

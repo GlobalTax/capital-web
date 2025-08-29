@@ -20,7 +20,7 @@ const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
-const CalculadoraValoracionV4 = lazy(() => import('@/pages/CalculadoraValoracionV4'));
+// V4 Calculator removed
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
 const Contacto = lazy(() => import('@/pages/Contacto'));
 const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));

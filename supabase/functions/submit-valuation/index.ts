@@ -65,21 +65,18 @@ Deno.serve(async (req) => {
     const ip = getIp(req);
     const ua = req.headers.get("user-agent") || null;
 
-    // Generate a unique token for V4 links
-    const { data: tokenData, error: tokenError } = await supabase.rpc<string>(
-      "generate_unique_v4_token"
-    );
-    if (tokenError || !tokenData) {
-      console.error("Error generating unique token", tokenError);
+    // Generate a unique token
+    const generateToken = () => Math.random().toString(36).substring(2, 15) + 
+                                Math.random().toString(36).substring(2, 15);
+    const token = generateToken();
       return new Response(
         JSON.stringify({ error: "No se pudo generar el token" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
-    }
 
     const insertPayload = {
       ...body,
-      unique_token: tokenData,
+      unique_token: token,
       ip_address: body.ip_address ?? ip,
       user_agent: body.user_agent ?? ua,
     } as Record<string, any>;
