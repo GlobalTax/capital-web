@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import LandingLayout from '@/components/shared/LandingLayout';
 import ValuationCalculatorV4 from '@/components/ValuationCalculatorV4';
-import { CompanyDataV4 } from '@/types/valuationV4';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useLocation } from 'react-router-dom';
@@ -14,20 +13,6 @@ import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
 const LandingCalculatorInner = () => {
   const location = useLocation();
   const { t } = useI18n();
-
-  // Datos por defecto para la calculadora
-  const defaultCompanyData: CompanyDataV4 = {
-    id: 'landing-demo',
-    contactName: 'Demo Calculadora',
-    companyName: 'Tu Empresa S.L.',
-    email: 'demo@capittal.es',
-    phone: '600 000 000',
-    industry: 'Servicios',
-    revenue: 1000000,
-    ebitda: 200000,
-    baseValuation: 1500000,
-    whatsapp_opt_in: false
-  };
 
   // SEO dinámico según idioma con canonical fijo y hreflang
   useEffect(() => {
@@ -189,7 +174,17 @@ const LandingCalculatorInner = () => {
       </div>
       {/* H1 único para SEO, oculto visualmente */}
       <h1 className="sr-only">{t('landing.h1')}</h1>
-      <ValuationCalculatorV4 companyData={defaultCompanyData} />
+      <ValuationCalculatorV4 companyData={{
+        contactName: '',
+        companyName: '',
+        email: '',
+        phone: '',
+        industry: 'tecnologia',
+        revenue: 1000000,
+        ebitda: 200000,
+        baseValuation: 800000,
+        whatsapp_opt_in: false
+      }} />
       {/* Confidencialidad y privacidad de la herramienta */}
       <ConfidentialityBlock />
       {/* Breve descripción de Capittal */}
