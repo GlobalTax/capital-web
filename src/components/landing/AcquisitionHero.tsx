@@ -25,7 +25,7 @@ const AcquisitionHero = () => {
                 variant="primary"
                 size="lg"
                 className="bg-primary text-white hover:bg-primary/90"
-                onClick={() => window.location.href = '/oportunidades'}
+                onClick={() => window.location.href = '/compra-empresas'}
               />
               <InteractiveHoverButton
                 text="Solicitar Consulta"
