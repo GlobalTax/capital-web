@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      acquisition_leads: {
+        Row: {
+          acquisition_type: string | null
+          additional_details: string | null
+          company: string
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          investment_range: string | null
+          ip_address: unknown | null
+          phone: string | null
+          referrer: string | null
+          sectors_of_interest: string | null
+          status: string
+          target_timeline: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          acquisition_type?: string | null
+          additional_details?: string | null
+          company: string
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          investment_range?: string | null
+          ip_address?: unknown | null
+          phone?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string
+          target_timeline?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          acquisition_type?: string | null
+          additional_details?: string | null
+          company?: string
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          investment_range?: string | null
+          ip_address?: unknown | null
+          phone?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string
+          target_timeline?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       ad_conversions: {
         Row: {
           company_domain: string | null
