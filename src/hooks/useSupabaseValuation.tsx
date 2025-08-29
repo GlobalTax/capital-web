@@ -1,36 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { getPreferredLang } from '@/shared/i18n/locale';
-
-interface CompanyData {
-  contactName: string;
-  companyName: string;
-  cif: string;
-  email: string;
-  phone: string;
-  industry: string;
-  yearsOfOperation: number;
-  employeeRange: string;
-  revenue: number;
-  ebitda: number;
-  netProfitMargin: number;
-  growthRate: number;
-  location: string;
-  ownershipParticipation: string;
-  competitiveAdvantage: string;
-}
-
-interface ValuationResult {
-  ebitdaMultiple: number;
-  finalValuation: number;
-  valuationRange: {
-    min: number;
-    max: number;
-  };
-  multiples: {
-    ebitdaMultipleUsed: number;
-  };
-}
+import { CompanyData, ValuationResult } from '@/types/valuation';
 
 export const useSupabaseValuation = () => {
 
@@ -46,9 +17,14 @@ export const useSupabaseValuation = () => {
         cif: stepOneData.cif || null,
         email: stepOneData.email || '',
         phone: stepOneData.phone || null,
+        phone_e164: stepOneData.phone_e164 || null,
+        whatsapp_opt_in: stepOneData.whatsapp_opt_in || false,
         industry: stepOneData.industry || '',
+        activity_description: stepOneData.activityDescription || null,
         employee_range: stepOneData.employeeRange || '',
-        // Note: activityDescription is not in the CompanyData interface but may be needed
+        valuation_status: 'in_progress',
+        completion_percentage: 25,
+        current_step: 1
       };
 
       const { data, error } = await supabase.functions.invoke('submit-valuation', {
@@ -71,19 +47,50 @@ export const useSupabaseValuation = () => {
   // Update existing valuation
   const updateValuation = async (uniqueToken: string, partialData: Partial<CompanyData>): Promise<boolean> => {
     try {
+      console.log('=== ACTUALIZANDO VALORACIÓN ===');
+      console.log('Token:', uniqueToken);
+      console.log('Datos parciales:', partialData);
+
+      // Mapear datos al formato esperado por la base de datos
+      const updateData: any = {};
+      
+      if (partialData.contactName !== undefined) updateData.contact_name = partialData.contactName;
+      if (partialData.companyName !== undefined) updateData.company_name = partialData.companyName;
+      if (partialData.cif !== undefined) updateData.cif = partialData.cif;
+      if (partialData.email !== undefined) updateData.email = partialData.email;
+      if (partialData.phone !== undefined) updateData.phone = partialData.phone;
+      if (partialData.phone_e164 !== undefined) updateData.phone_e164 = partialData.phone_e164;
+      if (partialData.whatsapp_opt_in !== undefined) updateData.whatsapp_opt_in = partialData.whatsapp_opt_in;
+      if (partialData.industry !== undefined) updateData.industry = partialData.industry;
+      if (partialData.activityDescription !== undefined) updateData.activity_description = partialData.activityDescription;
+      if (partialData.employeeRange !== undefined) updateData.employee_range = partialData.employeeRange;
+      if (partialData.revenue !== undefined) updateData.revenue = partialData.revenue;
+      if (partialData.ebitda !== undefined) updateData.ebitda = partialData.ebitda;
+      if (partialData.hasAdjustments !== undefined) updateData.has_adjustments = partialData.hasAdjustments;
+      if (partialData.adjustmentAmount !== undefined) updateData.adjustment_amount = partialData.adjustmentAmount;
+      if (partialData.location !== undefined) updateData.location = partialData.location;
+      if (partialData.ownershipParticipation !== undefined) updateData.ownership_participation = partialData.ownershipParticipation;
+      if (partialData.competitiveAdvantage !== undefined) updateData.competitive_advantage = partialData.competitiveAdvantage;
+
+      // Calcular estado de progreso
+      const completedFields = Object.values(partialData).filter(v => v !== undefined && v !== null && v !== '').length;
+      const progressPercentage = Math.min(Math.max(completedFields * 8, 10), 75); // Entre 10% y 75%
+      updateData.completion_percentage = progressPercentage;
+      updateData.valuation_status = 'in_progress';
+
       const { data, error } = await supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken,
-          data: partialData
+          data: updateData
         }
       });
 
       if (error) {
-        console.error('Error actualizando valoración:', error);
+        console.error('❌ Error actualizando valoración:', error);
         return false;
       }
 
-      console.log('Valoración actualizada:', data);
+      console.log('✅ Valoración actualizada:', data);
       return true;
     } catch (error) {
       console.error('Exception actualizando valoración:', error);
@@ -100,20 +107,22 @@ export const useSupabaseValuation = () => {
 
       if (uniqueToken) {
         // Actualizar registro existente con datos finales
-        const finalData = {
+        const finalData: any = {
           // Update any missing basic data
           contact_name: companyData.contactName || '',
           company_name: companyData.companyName || '',
           cif: companyData.cif || null,
           email: companyData.email || '',
           phone: companyData.phone || null,
+          phone_e164: companyData.phone_e164 || null,
+          whatsapp_opt_in: companyData.whatsapp_opt_in || false,
           industry: companyData.industry || '',
-          years_of_operation: companyData.yearsOfOperation || null,
+          activity_description: companyData.activityDescription || null,
           employee_range: companyData.employeeRange || '',
           revenue: companyData.revenue || null,
           ebitda: companyData.ebitda || null,
-          net_profit_margin: companyData.netProfitMargin || null,
-          growth_rate: companyData.growthRate || null,
+          has_adjustments: companyData.hasAdjustments || false,
+          adjustment_amount: companyData.adjustmentAmount || null,
           location: companyData.location || null,
           ownership_participation: companyData.ownershipParticipation || null,
           competitive_advantage: companyData.competitiveAdvantage || null,
@@ -122,14 +131,22 @@ export const useSupabaseValuation = () => {
           ebitda_multiple_used: result.multiples.ebitdaMultipleUsed || null,
           valuation_range_min: result.valuationRange.min || null,
           valuation_range_max: result.valuationRange.max || null,
+          valuation_status: 'completed',
+          completion_percentage: 100
         };
 
-        const updateSuccess = await updateValuation(uniqueToken, finalData);
-        if (!updateSuccess) {
+        const { data, error } = await supabase.functions.invoke('update-valuation', {
+          body: {
+            uniqueToken,
+            data: finalData
+          }
+        });
+
+        if (error) {
           throw new Error('Failed to update existing valuation');
         }
         
-        console.log('✅ Valoración actualizada con datos finales');
+        console.log('✅ Valoración actualizada con datos finales:', data);
       } else {
         // Legacy: crear nuevo registro completo (si no hay token)
         // Obtener información del cliente para legacy insert
@@ -151,13 +168,15 @@ export const useSupabaseValuation = () => {
           cif: companyData.cif || null,
           email: companyData.email || '',
           phone: companyData.phone || null,
+          phone_e164: companyData.phone_e164 || null,
+          whatsapp_opt_in: companyData.whatsapp_opt_in || false,
           industry: companyData.industry || '',
-          years_of_operation: companyData.yearsOfOperation || null,
+          activity_description: companyData.activityDescription || null,
           employee_range: companyData.employeeRange || '',
           revenue: companyData.revenue || null,
           ebitda: companyData.ebitda || null,
-          net_profit_margin: companyData.netProfitMargin || null,
-          growth_rate: companyData.growthRate || null,
+          has_adjustments: companyData.hasAdjustments || false,
+          adjustment_amount: companyData.adjustmentAmount || null,
           location: companyData.location || null,
           ownership_participation: companyData.ownershipParticipation || null,
           competitive_advantage: companyData.competitiveAdvantage || null,
@@ -169,7 +188,9 @@ export const useSupabaseValuation = () => {
           user_agent: userAgent,
           email_sent: false,
           whatsapp_sent: false,
-          hubspot_sent: false
+          hubspot_sent: false,
+          valuation_status: 'completed',
+          completion_percentage: 100
         };
 
         const { data, error } = await supabase.functions.invoke('submit-valuation', {
@@ -199,13 +220,15 @@ export const useSupabaseValuation = () => {
           cif: companyData.cif || null,
           email: companyData.email || '',
           phone: companyData.phone || null,
+          phone_e164: companyData.phone_e164 || null,
+          whatsapp_opt_in: companyData.whatsapp_opt_in || false,
           industry: companyData.industry || '',
-          years_of_operation: companyData.yearsOfOperation || null,
+          activity_description: companyData.activityDescription || null,
           employee_range: companyData.employeeRange || '',
           revenue: companyData.revenue || null,
           ebitda: companyData.ebitda || null,
-          net_profit_margin: companyData.netProfitMargin || null,
-          growth_rate: companyData.growthRate || null,
+          has_adjustments: companyData.hasAdjustments || false,
+          adjustment_amount: companyData.adjustmentAmount || null,
           location: companyData.location || null,
           ownership_participation: companyData.ownershipParticipation || null,
           competitive_advantage: companyData.competitiveAdvantage || null,
@@ -239,8 +262,28 @@ export const useSupabaseValuation = () => {
       // Enviar email con los datos + adjuntar el MISMO PDF del frontend
       try {
         const lang = getPreferredLang();
+        
+        // Mapear datos para compatibilidad con la función PDF (que usa interfaz diferente)
+        const pdfCompanyData = {
+          contactName: companyData.contactName,
+          companyName: companyData.companyName,
+          cif: companyData.cif,
+          email: companyData.email,
+          phone: companyData.phone,
+          industry: companyData.industry,
+          yearsOfOperation: 5, // Valor por defecto, no disponible en el tipo actual
+          employeeRange: companyData.employeeRange,
+          revenue: companyData.revenue,
+          ebitda: companyData.ebitda,
+          netProfitMargin: 10, // Valor por defecto calculado aproximado
+          growthRate: 5, // Valor por defecto
+          location: companyData.location,
+          ownershipParticipation: companyData.ownershipParticipation,
+          competitiveAdvantage: companyData.competitiveAdvantage
+        };
+        
         // Generar PDF (React-PDF) y convertir a Base64
-        const blob = await generateValuationPDFWithReactPDF(companyData, result, lang);
+        const blob = await generateValuationPDFWithReactPDF(pdfCompanyData, result, lang);
         const pdfBase64: string = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => {
