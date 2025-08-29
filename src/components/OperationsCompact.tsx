@@ -121,7 +121,7 @@ const OperationsCompact = () => {
             </div>
 
             <div className="text-center">
-              <Link to="/oportunidades">
+              <Link to="/compra-empresas">
                 <Button variant="outline" size="lg" className="border border-gray-300 text-black hover:bg-gray-50">
                   Ver Todas las Oportunidades
                 </Button>
