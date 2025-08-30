@@ -8,34 +8,36 @@ const Hero = () => {
     isOnline
   } = useNetworkStatus();
   return <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
-      <section className="pt-32 pb-20 bg-white min-h-screen flex items-center rounded-sm py-[100px]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+    <section className="py-20 md:py-32 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Content */}
-          <div className="lg:col-span-7">
-            <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-8">
+          <div>
+            <div className="inline-flex items-center bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
               Líderes en M&A desde 2008
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-12 leading-tight tracking-tight">Especialistas en compraventa de empresas</h1>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+              Especialistas en compraventa de empresas
+            </h1>
             
-            <p className="text-xl md:text-2xl text-gray-700 mb-16 leading-relaxed max-w-3xl font-medium">
+            <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
               Maximizamos el valor de tu empresa con resultados garantizados
             </p>
 
             {/* Stats Row - Simplified */}
-            <div className="grid grid-cols-2 gap-16 mb-16 py-12">
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-black mb-4">€1.0B+</div>
-                <div className="text-base text-gray-600 font-medium">Valor Transaccional</div>
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              <div>
+                <div className="text-3xl font-bold text-black mb-2">€1.0B+</div>
+                <div className="text-gray-600">Valor Transaccional</div>
               </div>
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-black mb-4">95%</div>
-                <div className="text-base text-gray-600 font-medium">Tasa de Éxito</div>
+              <div>
+                <div className="text-3xl font-bold text-black mb-2">95%</div>
+                <div className="text-gray-600">Tasa de Éxito</div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/lp/calculadora">
                 <InteractiveHoverButton text="Valorar mi empresa" variant="primary" size="lg" disabled={!isOnline} />
               </Link>
@@ -47,7 +49,7 @@ const Hero = () => {
           </div>
 
           {/* Right Column - Interactive Dashboard */}
-          <div className="lg:col-span-5">
+          <div>
             <div className="relative">
               {/* Minimalist Dashboard Card */}
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
