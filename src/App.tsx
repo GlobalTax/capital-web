@@ -38,6 +38,7 @@ const AuthPage = lazy(() => import('@/pages/Auth'));
 
 // Service pages
 const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones'));
+const VentaEmpresasServicio = lazy(() => import('@/pages/servicios/VentaEmpresas'));
 const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
@@ -252,7 +253,7 @@ function AppContent() {
           
           {/* Service routes */}
           <Route path="/servicios/valoraciones" element={<Valoraciones />} />
-          <Route path="/servicios/venta-empresas" element={<VentaEmpresas />} />
+          <Route path="/servicios/venta-empresas" element={<VentaEmpresasServicio />} />
           <Route path="/servicios/due-diligence" element={<DueDiligence />} />
           <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
           <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
