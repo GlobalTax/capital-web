@@ -19,16 +19,39 @@ const Nosotros = () => {
   return (
     <HomeLayout>
       <div className="pt-16">
-        <section className="py-20 bg-white">
+        <section className="py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-24">
               <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
                 Nosotros
               </h1>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Especialistas en M&A con más de 15 años de experiencia, respaldados por el 
-                ecosistema integral del Grupo Navarro para garantizar el éxito de cada transacción.
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-16">
+                Especialistas en M&A respaldados por el ecosistema integral del Grupo Navarro 
+                para garantizar el éxito de cada transacción con más de dos décadas de experiencia.
               </p>
+              
+              {/* Unified Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="text-center">
+                  <div className="text-4xl font-light text-black mb-2">25+</div>
+                  <div className="text-sm text-gray-600 uppercase tracking-wide">Años Experiencia</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-4xl font-light text-black mb-2">500+</div>
+                  <div className="text-sm text-gray-600 uppercase tracking-wide">Transacciones</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-4xl font-light text-black mb-2">€5B+</div>
+                  <div className="text-sm text-gray-600 uppercase tracking-wide">Valor Gestionado</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-4xl font-light text-black mb-2">95%</div>
+                  <div className="text-sm text-gray-600 uppercase tracking-wide">Tasa Éxito</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
