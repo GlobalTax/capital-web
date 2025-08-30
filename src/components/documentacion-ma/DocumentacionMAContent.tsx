@@ -1,254 +1,347 @@
-import React from 'react';
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
-import { 
-  BookOpen, 
-  TrendingUp, 
-  Users, 
-  FileText, 
-  Calculator, 
-  Shield,
-  Target,
-  BarChart3,
-  Briefcase,
-  CheckCircle,
-  Download,
-  PlayCircle
-} from "lucide-react";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Phone, Calculator, FileText, Building, FileSignature, Search, Handshake, GitMerge, HelpCircle } from 'lucide-react';
+import { MAResourcesFilter, MACategory } from './MAResourcesFilter';
+import { MAContentSection } from './MAContentSection';
+import { MAResourcesForm } from './MAResourcesForm';
+import { DownloadPackButton } from './DownloadPackButton';
+
+// Content data for each M&A category
+const maContentData = [
+  {
+    id: 'preparacion' as MACategory,
+    title: 'Preparación',
+    description: 'Cuándo comprar vs crecer, tipos de comprador, criterios estratégicos',
+    icon: FileText,
+    color: 'bg-blue-50 text-blue-700 border-blue-200',
+    content: {
+      overview: 'La fase de preparación es crucial para determinar si una adquisición es la estrategia correcta para alcanzar los objetivos empresariales. Incluye el análisis de alternativas, la definición de criterios y la preparación del equipo.',
+      keyPoints: [
+        'Evaluación de crecimiento orgánico vs inorgánico según objetivos estratégicos',
+        'Identificación del perfil de comprador: estratégico, financiero o industrial',
+        'Definición de criterios de inversión: sector, tamaño, geografía, rentabilidad',
+        'Preparación del equipo interno y selección de asesores externos',
+        'Establecimiento de presupuesto y estructura de financiación disponible'
+      ],
+      resources: [
+        { title: 'Template de Criterios de Inversión', type: 'template', downloadable: true },
+        { title: 'Checklist de Preparación M&A', type: 'checklist', downloadable: true },
+        { title: 'Guía de Selección de Asesores', type: 'guide', downloadable: true }
+      ],
+      examples: [
+        'Empresa tecnológica busca adquirir competidores para acelerar expansión internacional',
+        'Grupo industrial evalúa comprar proveedores para integración vertical'
+      ]
+    }
+  },
+  {
+    id: 'valoracion' as MACategory,
+    title: 'Valoración',
+    description: 'EBITDA múltiplos, DCF, metodologías para defender el valor',
+    icon: Calculator,
+    color: 'bg-green-50 text-green-700 border-green-200',
+    content: {
+      overview: 'La valoración es el proceso de determinar el valor justo de una empresa utilizando múltiples metodologías. Es fundamental para tomar decisiones informadas sobre el precio de la oferta y estructura del deal.',
+      keyPoints: [
+        'Análisis DCF (Discounted Cash Flow) con proyecciones detalladas a 5-10 años',
+        'Múltiplos de transacciones comparables por sector y tamaño de empresa',
+        'Valoración por suma de partes para empresas diversificadas',
+        'Análisis de sensibilidad para evaluar rangos de valor',
+        'Benchmarking con empresas cotizadas similares',
+        'Ajustes por control, liquidez y tamaño'
+      ],
+      resources: [
+        { title: 'Modelo DCF Avanzado', type: 'template', downloadable: true },
+        { title: 'Base de Datos de Múltiplos', type: 'template', downloadable: true },
+        { title: 'Calculadora de Valoración', type: 'template', url: '/calculadora' },
+        { title: 'Guía de Análisis Comparables', type: 'guide', downloadable: true }
+      ],
+      examples: [
+        'SaaS con ARR de €5M valorada entre 6-12x ingresos según crecimiento y retención',
+        'Empresa industrial madura valorada 5-7x EBITDA ajustado por normalización'
+      ]
+    }
+  },
+  {
+    id: 'estructura' as MACategory,
+    title: 'Estructura del Deal',
+    description: 'Cash vs earn-out vs seller financing, optimización fiscal',
+    icon: Building,
+    color: 'bg-purple-50 text-purple-700 border-purple-200',
+    content: {
+      overview: 'La estructura del deal determina cómo se pagará el precio, se asignarán los riesgos y se optimizarán los aspectos fiscales. Una buena estructuración alinea los intereses de comprador y vendedor.',
+      keyPoints: [
+        'Cash vs stock: ventajas fiscales y de liquidez para cada parte',
+        'Earn-out: vinculación del precio final al rendimiento futuro',
+        'Seller financing: financiación del vendedor para facilitar la transacción',
+        'Escrow accounts: garantías para cubrir contingencias post-cierre',
+        'Consideraciones fiscales: estructuras tax-efficient',
+        'Mecanismos de ajuste de precio basados en working capital y deuda neta'
+      ],
+      resources: [
+        { title: 'Guía de Estructuras de Deal', type: 'guide', downloadable: true },
+        { title: 'Template de Earn-out', type: 'template', downloadable: true },
+        { title: 'Calculadora Fiscal M&A', type: 'template', downloadable: true },
+        { title: 'Modelos de Escrow', type: 'example', downloadable: true }
+      ],
+      examples: [
+        '70% cash al cierre + 30% earn-out basado en EBITDA años 1-2',
+        '80% en acciones + 20% cash para optimizar fiscalidad del vendedor'
+      ]
+    }
+  },
+  {
+    id: 'loi' as MACategory,
+    title: 'LOI (Letter of Intent)',
+    description: 'Qué debe contener una LOI y qué cláusulas evitar',
+    icon: FileSignature,
+    color: 'bg-orange-50 text-orange-700 border-orange-200',
+    content: {
+      overview: 'La Letter of Intent (LOI) es el primer documento formal que establece los términos básicos de la transacción. Debe ser lo suficientemente específica para guiar la negociación pero flexible para permitir ajustes post-due diligence.',
+      keyPoints: [
+        'Precio indicativo y estructura de pago propuesta',
+        'Condiciones precedentes: due diligence, financiación, aprobaciones',
+        'Período de exclusividad y confidencialidad',
+        'Cronograma de la transacción con hitos clave',
+        'Tratamiento de empleos clave y management',
+        'Aspectos no vinculantes vs vinculantes claramente definidos'
+      ],
+      resources: [
+        { title: 'Template LOI Estándar', type: 'template', downloadable: true },
+        { title: 'Checklist de Términos LOI', type: 'checklist', downloadable: true },
+        { title: 'Cláusulas Problemáticas a Evitar', type: 'guide', downloadable: true }
+      ],
+      examples: [
+        'LOI con precio €50M sujeto a confirmación en due diligence',
+        'Exclusividad de 60 días con opción de extensión 30 días adicionales'
+      ]
+    }
+  },
+  {
+    id: 'due-diligence' as MACategory,
+    title: 'Due Diligence',
+    description: 'Checklist multisector: financiera, legal, comercial, operacional',
+    icon: Search,
+    color: 'bg-red-50 text-red-700 border-red-200',
+    content: {
+      overview: 'La due diligence es la investigación exhaustiva de la empresa objetivo para validar los supuestos de valoración, identificar riesgos y oportunidades, y confirmar la información proporcionada por el vendedor.',
+      keyPoints: [
+        'Due diligence financiera: calidad de earnings, working capital, deuda',
+        'Análisis comercial: mercado, competencia, posicionamiento, clientes',
+        'Revisión legal: contratos, litigios, compliance, propiedad intelectual',
+        'Evaluación operacional: procesos, sistemas, capacidades, sinergias',
+        'Due diligence fiscal: exposiciones, optimizaciones, estructuras',
+        'Análisis de RRHH: organización, talento clave, cultura, retención'
+      ],
+      resources: [
+        { title: 'Checklist Due Diligence Completa', type: 'checklist', downloadable: true },
+        { title: 'Template Data Room Index', type: 'template', downloadable: true },
+        { title: 'Red Flags Financieros', type: 'guide', downloadable: true },
+        { title: 'Análisis de Contratos Clave', type: 'checklist', downloadable: true }
+      ],
+      examples: [
+        'DD financiera revela ajustes de €2M por normalización de EBITDA',
+        'DD comercial confirma dependencia del 40% de ingresos en top 3 clientes'
+      ]
+    }
+  },
+  {
+    id: 'cierre' as MACategory,
+    title: 'Cierre',
+    description: 'SPA, ajustes de precio, escrow, condiciones precedentes',
+    icon: Handshake,
+    color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    content: {
+      overview: 'El cierre incluye la negociación final del SPA (Stock/Share Purchase Agreement), el cumplimiento de condiciones precedentes y la transferencia formal de la propiedad con todos los ajustes de precio correspondientes.',
+      keyPoints: [
+        'Negociación del SPA: términos definitivos, representaciones y garantías',
+        'Cumplimiento de condiciones precedentes: financiación, aprobaciones, otros',
+        'Cálculo de ajustes de precio: working capital, caja, deuda neta',
+        'Establecimiento de escrow account y mecanismos de indemnización',
+        'Coordinación con autoridades: registros mercantiles, fiscales, laborales',
+        'Comunicación a stakeholders: empleados, clientes, proveedores'
+      ],
+      resources: [
+        { title: 'Template SPA Estándar', type: 'template', downloadable: true },
+        { title: 'Checklist de Closing', type: 'checklist', downloadable: true },
+        { title: 'Calculadora de Ajustes', type: 'template', downloadable: true },
+        { title: 'Comunicación a Stakeholders', type: 'template', downloadable: true }
+      ],
+      examples: [
+        'Ajuste de precio: +€1.5M por working capital superior al normalizado',
+        'Escrow del 10% del precio por 18 meses para cubrir contingencias'
+      ]
+    }
+  },
+  {
+    id: 'integracion' as MACategory,
+    title: 'Integración',
+    description: 'Plan 100 días, seguimiento de sinergias, retención de talento',
+    icon: GitMerge,
+    color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    content: {
+      overview: 'La integración post-adquisición es crítica para realizar las sinergias proyectadas. Un plan estructurado de 100 días establece las bases para una integración exitosa y la captura de valor.',
+      keyPoints: [
+        'Plan de integración 100 días con hitos y responsables definidos',
+        'Integración de sistemas: IT, financiero, operacional, comercial',
+        'Retención de talento clave y comunicación de cambios organizacionales',
+        'Seguimiento y medición de sinergias de ingresos y costes',
+        'Integración cultural y alineación de valores y procesos',
+        'Reporting y comunicación regular del progreso a stakeholders'
+      ],
+      resources: [
+        { title: 'Template Plan 100 Días', type: 'template', downloadable: true },
+        { title: 'KPIs de Integración', type: 'checklist', downloadable: true },
+        { title: 'Plan de Retención de Talento', type: 'template', downloadable: true },
+        { title: 'Dashboard de Sinergias', type: 'template', downloadable: true }
+      ],
+      examples: [
+        'Integración de sistemas ERP completada en 90 días con 0% pérdida de datos',
+        'Retención del 95% del management clave mediante plan de incentivos'
+      ]
+    }
+  },
+  {
+    id: 'faqs' as MACategory,
+    title: 'FAQs / Glosario',
+    description: 'Definiciones de términos clave y preguntas frecuentes',
+    icon: HelpCircle,
+    color: 'bg-gray-50 text-gray-700 border-gray-200',
+    content: {
+      overview: 'Glosario completo de términos M&A y respuestas a las preguntas más frecuentes en procesos de fusiones y adquisiciones, desde la perspectiva tanto del comprador como del vendedor.',
+      keyPoints: [
+        'Términos financieros: EBITDA, Enterprise Value, Equity Value, Working Capital',
+        'Estructura legal: SPA, LOI, Due Diligence, Escrow, Earn-out',
+        'Procesos: Data Room, Management Presentation, Q&A process',
+        'Valoración: DCF, Multiple, Comparable, Precedent transactions',
+        'Fiscalidad: Tax efficiency, Step-up, Depreciation, Amortization',
+        'Post-cierre: Integration, Synergies, PMI, Carve-out'
+      ],
+      resources: [
+        { title: 'Glosario M&A Completo', type: 'guide', downloadable: true },
+        { title: 'FAQs del Comprador', type: 'guide', downloadable: true },
+        { title: 'FAQs del Vendedor', type: 'guide', downloadable: true },
+        { title: 'Términos Legales M&A', type: 'guide', downloadable: true }
+      ],
+      examples: [
+        'EBITDA: Earnings Before Interest, Taxes, Depreciation and Amortization',
+        'Earn-out: Pago adicional basado en el rendimiento futuro de la empresa'
+      ]
+    }
+  }
+];
 
 const DocumentacionMAContent = () => {
-  const heroStats = [
-    { value: "€2.5B+", label: "Volumen Transaccionado" },
-    { value: "150+", label: "Operaciones Completadas" },
-    { value: "95%", label: "Tasa de Éxito" },
-    { value: "15+", label: "Años de Experiencia" }
-  ];
+  const [activeCategory, setActiveCategory] = useState<MACategory>('all');
+  const [openSections, setOpenSections] = useState<Set<MACategory>>(new Set());
 
-  const processSteps = [
-    { icon: Target, title: "Análisis y Preparación", description: "Due diligence exhaustivo y preparación de materiales" },
-    { icon: Users, title: "Búsqueda de Compradores", description: "Identificación y contacto con potenciales inversores" },
-    { icon: TrendingUp, title: "Proceso de Subasta", description: "Gestión del proceso competitivo de ofertas" },
-    { icon: CheckCircle, title: "Negociación y Cierre", description: "Estructuración final y cierre de la transacción" }
-  ];
+  const handleCategoryChange = (category: MACategory) => {
+    setActiveCategory(category);
+    
+    // If selecting a specific category, open that section
+    if (category !== 'all') {
+      setOpenSections(prev => new Set([...prev, category]));
+    }
+  };
 
-  const resources = [
-    { title: "Guía Completa de M&A", description: "Todo lo que necesitas saber sobre fusiones y adquisiciones", icon: BookOpen, downloadable: true },
-    { title: "Template Due Diligence", description: "Checklist completo para procesos de due diligence", icon: FileText, downloadable: true },
-    { title: "Calculadora de Valoración", description: "Herramienta interactiva para valorar tu empresa", icon: Calculator, interactive: true },
-    { title: "Casos de Estudio", description: "Ejemplos reales de operaciones exitosas", icon: BarChart3, downloadable: false }
-  ];
+  const toggleSection = (categoryId: MACategory) => {
+    setOpenSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  };
 
-  const sectors = [
-    { name: "Tecnología y Software", deals: "45+", focus: "SaaS, Fintech, E-commerce" },
-    { name: "Servicios Financieros", deals: "30+", focus: "Banca, Seguros, Pagos" },
-    { name: "Industrial", deals: "25+", focus: "Manufacturing, Logística" },
-    { name: "Retail y Consumo", deals: "20+", focus: "Marcas, Distribución" }
-  ];
+  const filteredContent = activeCategory === 'all' 
+    ? maContentData 
+    : maContentData.filter(item => item.id === activeCategory);
 
   return (
-    <div className="max-w-none">
-      {/* Breadcrumbs */}
-      <Breadcrumb className="mb-8">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/" className="text-slate-600 hover:text-slate-900">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-slate-900">Documentación M&A</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
+    <div className="space-y-8">
       {/* Hero Section */}
-      <div className="mb-20">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-semibold text-slate-900 mb-6 leading-tight">
-            Guía Completa de Fusiones y Adquisiciones
-          </h1>
-          <p className="text-xl text-slate-600 leading-relaxed mb-8 max-w-4xl mx-auto font-light">
-            Todo lo que necesitas saber sobre procesos M&A, desde la preparación inicial hasta el cierre exitoso. 
-            Metodología probada, casos reales y herramientas prácticas para maximizar el valor de tu transacción.
-          </p>
+      <section className="text-center max-w-4xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
+          Guía de Conocimiento M&A
+        </h1>
+        <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+          Recursos clave para dominar cada fase de una adquisición: valoración, LOI, due diligence, cierre e integración.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <DownloadPackButton size="lg" />
+          <Button size="lg" variant="outline">
+            <Phone className="h-4 w-4 mr-2" />
+            Solicitar Consulta
+          </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          {heroStats.map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-3xl font-semibold text-slate-900 mb-2">{stat.value}</div>
-              <div className="text-sm text-slate-600">{stat.label}</div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-foreground mb-2">€2.8B+</div>
+            <p className="text-muted-foreground">Valor en transacciones</p>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-foreground mb-2">450+</div>
+            <p className="text-muted-foreground">Operaciones completadas</p>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-foreground mb-2">15+</div>
+            <p className="text-muted-foreground">Años de experiencia</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Filter Section */}
+      <MAResourcesFilter 
+        activeCategory={activeCategory}
+        onCategoryChange={handleCategoryChange}
+      />
+
+      {/* Content Sections */}
+      <section className="max-w-4xl mx-auto">
+        <div className="space-y-4">
+          {filteredContent.map((item) => (
+            <MAContentSection
+              key={item.id}
+              item={item}
+              isOpen={openSections.has(item.id)}
+              onToggle={() => toggleSection(item.id)}
+            />
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Main Navigation Cards */}
-      <div className="mb-20">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-12 text-center">Explora Nuestra Metodología</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <a href="/documentacion-ma/nuestro-metodo" className="group p-6 border border-slate-200 rounded-xl hover:border-slate-300 transition-all duration-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-slate-200 transition-colors">
-                <Briefcase className="w-5 h-5 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">Nuestro Método</h3>
-            </div>
-            <p className="text-slate-600 text-sm">Metodología integral que combina análisis riguroso y experiencia sectorial</p>
-          </a>
+      {/* CTA Form Section */}
+      <section className="py-16">
+        <MAResourcesForm />
+      </section>
 
-          <a href="/documentacion-ma/conoce-equipo" className="group p-6 border border-slate-200 rounded-xl hover:border-slate-300 transition-all duration-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-slate-200 transition-colors">
-                <Users className="w-5 h-5 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">Conoce al Equipo</h3>
-            </div>
-            <p className="text-slate-600 text-sm">Profesionales especializados con experiencia en diferentes sectores</p>
-          </a>
-
-          <a href="/documentacion-ma/resultados" className="group p-6 border border-slate-200 rounded-xl hover:border-slate-300 transition-all duration-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-slate-200 transition-colors">
-                <BarChart3 className="w-5 h-5 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">Resultados</h3>
-            </div>
-            <p className="text-slate-600 text-sm">Casos de éxito y métricas de performance de nuestras operaciones</p>
-          </a>
-
-          <a href="/documentacion-ma/fase-1" className="group p-6 border border-slate-200 rounded-xl hover:border-slate-300 transition-all duration-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-slate-200 transition-colors">
-                <Target className="w-5 h-5 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">Fase 1: Preparación</h3>
-            </div>
-            <p className="text-slate-600 text-sm">Análisis exhaustivo y preparación de materiales para la transacción</p>
-          </a>
-
-          <a href="/documentacion-ma/fase-2-lucha" className="group p-6 border border-slate-200 rounded-xl hover:border-slate-300 transition-all duration-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-slate-200 transition-colors">
-                <TrendingUp className="w-5 h-5 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">Fase 2: Ejecución</h3>
-            </div>
-            <p className="text-slate-600 text-sm">Proceso de subasta, negociación y estructuración de la operación</p>
-          </a>
-
-          <a href="/valoraciones" className="group p-6 border border-slate-200 rounded-xl hover:border-slate-300 transition-all duration-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-slate-200 transition-colors">
-                <Calculator className="w-5 h-5 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">Valoración</h3>
-            </div>
-            <p className="text-slate-600 text-sm">Metodologías de valoración y herramientas interactivas</p>
-          </a>
-        </div>
-      </div>
-
-      {/* Process Overview */}
-      <div className="mb-20">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-12 text-center">Nuestro Proceso M&A</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {processSteps.map((step, index) => (
-            <div key={index} className="text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <step.icon className="w-8 h-8 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
-              <p className="text-slate-600 text-sm">{step.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sectors */}
-      <div className="mb-20">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-12 text-center">Sectores de Especialización</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {sectors.map((sector, index) => (
-            <div key={index} className="p-6 border border-slate-200 rounded-xl">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-semibold text-slate-900">{sector.name}</h3>
-                <span className="text-sm font-semibold text-slate-600">{sector.deals} operaciones</span>
-              </div>
-              <p className="text-slate-600 text-sm">{sector.focus}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Resources */}
-      <div className="mb-20">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-12 text-center">Recursos y Herramientas</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {resources.map((resource, index) => (
-            <div key={index} className="p-6 border border-slate-200 rounded-xl">
-              <div className="flex items-start mb-4">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                  <resource.icon className="w-5 h-5 text-slate-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{resource.title}</h3>
-                  <p className="text-slate-600 text-sm mb-4">{resource.description}</p>
-                  <div className="flex items-center gap-3">
-                    {resource.downloadable && (
-                      <InteractiveHoverButton 
-                        text="Descargar"
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                      </InteractiveHoverButton>
-                    )}
-                    {resource.interactive && (
-                      <InteractiveHoverButton 
-                        text="Probar"
-                        variant="primary"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <PlayCircle className="w-4 h-4" />
-                      </InteractiveHoverButton>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="text-center bg-slate-50 rounded-2xl p-12">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-4">¿Listo para tu próxima operación M&A?</h2>
-        <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-          Nuestro equipo está preparado para acompañarte en cada paso del proceso, desde la valoración inicial hasta el cierre exitoso.
+      {/* Final CTA */}
+      <section className="bg-muted/30 rounded-2xl p-8 text-center">
+        <h2 className="text-3xl font-bold text-foreground mb-4">
+          ¿Listo para tu próxima operación?
+        </h2>
+        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Nuestro equipo de expertos en M&A está preparado para acompañarte en cada fase de tu operación.
         </p>
+        
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <InteractiveHoverButton 
-            text="Solicitar Valoración"
-            variant="primary"
-            size="lg"
-          />
-          <InteractiveHoverButton 
-            text="Agendar Consulta"
-            variant="outline"
-            size="lg"
-          />
+          <Button size="lg">
+            <Phone className="h-4 w-4 mr-2" />
+            Solicitar Consulta
+          </Button>
+          <Button size="lg" variant="outline">
+            <Calculator className="h-4 w-4 mr-2" />
+            Iniciar Valoración
+          </Button>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

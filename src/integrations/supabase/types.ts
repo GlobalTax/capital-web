@@ -2023,6 +2023,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ma_resources_requests: {
+        Row: {
+          company: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          ip_address: unknown | null
+          operation_type: string | null
+          phone: string | null
+          referrer: string | null
+          sectors_of_interest: string[] | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          ip_address?: unknown | null
+          operation_type?: string | null
+          phone?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string[] | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          ip_address?: unknown | null
+          operation_type?: string | null
+          phone?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string[] | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       message_logs: {
         Row: {
           created_at: string
