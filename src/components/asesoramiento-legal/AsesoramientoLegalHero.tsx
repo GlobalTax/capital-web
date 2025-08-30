@@ -51,10 +51,11 @@ const AsesoramientoLegalHero = () => {
               </InteractiveHoverButton>
               
               <InteractiveHoverButton
-                text="Descargar Pack Legal M&A"
+                text="Ver Documentación Técnica"
                 variant="secondary"
                 size="lg"
                 className="flex items-center gap-2"
+                onClick={() => window.location.href = '/servicios/asesoramiento-legal/tecnico'}
               >
                 <Download className="w-5 h-5" />
               </InteractiveHoverButton>

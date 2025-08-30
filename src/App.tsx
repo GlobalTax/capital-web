@@ -45,6 +45,9 @@ const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence').catch((
 const AsesoramientoLegal = lazy(() => import('@/pages/servicios/AsesoramientoLegal').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
+const AsesoramientoLegalTecnico = lazy(() => import('@/pages/servicios/AsesoramientoLegalTecnico').catch(() => 
+  import('@/pages/VentaEmpresas')
+));
 const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuraciones').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
@@ -256,6 +259,7 @@ function AppContent() {
           <Route path="/servicios/venta-empresas" element={<VentaEmpresasServicio />} />
           <Route path="/servicios/due-diligence" element={<DueDiligence />} />
           <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
+          <Route path="/servicios/asesoramiento-legal/tecnico" element={<AsesoramientoLegalTecnico />} />
           <Route path="/servicios/reestructuraciones" element={<Reestructuraciones />} />
           <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
           

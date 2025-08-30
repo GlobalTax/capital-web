@@ -37,20 +37,29 @@ const AsesoramientoLegalCTA = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <Link to="/contacto">
-              <InteractiveHoverButton
-                text="Consulta Legal Gratuita"
-                variant="secondary"
-                size="lg"
-                className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
-              />
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/contacto">
+                <InteractiveHoverButton
+                  text="Consulta Legal Gratuita"
+                  variant="secondary"
+                  size="lg"
+                  className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
+                />
+              </Link>
+              
+              <Link to="/servicios/asesoramiento-legal/tecnico">
+                <InteractiveHoverButton
+                  text="Documentación Técnica"
+                  variant="outline"
+                  size="lg"
+                  className="border-white text-white hover:bg-white hover:text-black text-lg px-8 py-4"
+                />
+              </Link>
+            </div>
             
             <p className="text-gray-400 text-sm">
               Consulta inicial gratuita • Respuesta en 24h • 100% confidencial
             </p>
-          </div>
 
           <div className="pt-8 border-t border-gray-700">
             <p className="text-gray-400 mb-4">

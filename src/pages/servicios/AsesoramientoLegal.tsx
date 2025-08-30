@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
-import LegalServiceTechnical from '@/components/asesoramiento-legal/LegalServiceTechnical';
-import LegalStickyFooter from '@/components/asesoramiento-legal/LegalStickyFooter';
+import { HomeLayout } from '@/shared';
+import AsesoramientoLegalHero from '@/components/asesoramiento-legal/AsesoramientoLegalHero';
+import AsesoramientoLegalWhyChoose from '@/components/asesoramiento-legal/AsesoramientoLegalWhyChoose';
+import AsesoramientoLegalServices from '@/components/asesoramiento-legal/AsesoramientoLegalServices';
+import AsesoramientoLegalProcess from '@/components/asesoramiento-legal/AsesoramientoLegalProcess';
+import AsesoramientoLegalBenefits from '@/components/asesoramiento-legal/AsesoramientoLegalBenefits';
+import AsesoramientoLegalExperience from '@/components/asesoramiento-legal/AsesoramientoLegalExperience';
+import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/AsesoramientoLegalFAQ';
+import AsesoramientoLegalCTA from '@/components/asesoramiento-legal/AsesoramientoLegalCTA';
 
 const AsesoramientoLegal = () => {
   useEffect(() => {
@@ -25,10 +32,16 @@ const AsesoramientoLegal = () => {
   }, []);
 
   return (
-    <>
-      <LegalServiceTechnical />
-      <LegalStickyFooter />
-    </>
+    <HomeLayout>
+      <AsesoramientoLegalHero />
+      <AsesoramientoLegalWhyChoose />
+      <AsesoramientoLegalServices />
+      <AsesoramientoLegalProcess />
+      <AsesoramientoLegalBenefits />
+      <AsesoramientoLegalExperience />
+      <AsesoramientoLegalFAQ />
+      <AsesoramientoLegalCTA />
+    </HomeLayout>
   );
 };
 
