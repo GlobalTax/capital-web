@@ -30,20 +30,43 @@ const differentiators = [
   ];
 
   return (
-    <section className="py-24 bg-white border-t border-gray-200">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12">
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
+            Nuestras Ventajas Competitivas
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+            Lo Que Nos Diferencia
+          </h2>
+          
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            No somos una consultora generalista. Somos especialistas en M&A que vivimos 
+            y respiramos compraventa de empresas todos los días.
+          </p>
+        </div>
+
+        {/* Differentiators grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {differentiators.map((item, index) => (
-            <div key={index} className="text-center">
-              <div className="text-lg font-medium text-black mb-4 border border-black px-4 py-2 inline-block">
-                {item.metric}
+            <div 
+              key={index} 
+              className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group"
+            >
+              {/* Highlight metric */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-bold border-0.5 border-border">
+                  {item.metric}
+                </div>
               </div>
               
-              <h3 className="text-xl font-medium text-black mb-6">
+              <h3 className="text-xl font-bold text-black mb-4">
                 {item.title}
               </h3>
               
-              <p className="text-black leading-relaxed">
+              <p className="text-gray-600 leading-relaxed">
                 {item.description}
               </p>
             </div>
