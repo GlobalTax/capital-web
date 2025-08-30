@@ -73,50 +73,54 @@ const VentaEmpresasCaseStudies = () => {
           <CarouselContent className="-ml-1">
             {caseStudies.map((study, index) => (
               <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3">
-                <Card className="h-full bg-card border-border shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <Card className="h-full bg-gradient-to-br from-card to-card/80 border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group">
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <Badge variant="secondary" className="bg-muted text-foreground">
+                    {/* Header with sector and ROI */}
+                    <div className="flex items-center justify-between mb-6">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-medium">
                         {study.sector}
                       </Badge>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">ROI</div>
-                        <div className="font-bold text-success">{study.roi}</div>
+                      <div className="text-right bg-success/10 rounded-lg px-3 py-1.5">
+                        <div className="text-xs text-success/70 font-medium">ROI</div>
+                        <div className="text-lg font-bold text-success">{study.roi}</div>
                       </div>
                     </div>
                     
-                    <h3 className="text-lg font-bold text-foreground mb-4">
+                    <h3 className="text-xl font-bold text-foreground mb-6 group-hover:text-primary transition-colors">
                       {study.company}
                     </h3>
                     
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="bg-muted rounded-lg p-3">
-                          <div className="text-sm text-muted-foreground mb-1">Valoración</div>
-                          <div className="font-bold text-foreground">{study.valuation}</div>
+                    <div className="space-y-6">
+                      {/* Key metrics */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-muted/50 rounded-xl p-4 text-center border border-border/50 hover:bg-muted/70 transition-colors">
+                          <div className="text-xs text-muted-foreground mb-1 font-medium">Valoración</div>
+                          <div className="text-lg font-bold text-foreground">{study.valuation}</div>
                         </div>
-                        <div className="bg-muted rounded-lg p-3">
-                          <div className="text-sm text-muted-foreground mb-1">Múltiplo</div>
-                          <div className="font-bold text-foreground">{study.multiple}</div>
+                        <div className="bg-muted/50 rounded-xl p-4 text-center border border-border/50 hover:bg-muted/70 transition-colors">
+                          <div className="text-xs text-muted-foreground mb-1 font-medium">Múltiplo</div>
+                          <div className="text-lg font-bold text-foreground">{study.multiple}</div>
                         </div>
                       </div>
                       
-                      <div className="bg-muted rounded-lg p-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-muted-foreground">Antes:</span>
-                          <span className="text-sm font-medium text-foreground">{study.before}</span>
+                      {/* Before/After */}
+                      <div className="bg-gradient-to-r from-muted/30 to-success/10 rounded-xl p-4 border border-border/50">
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-sm text-muted-foreground font-medium">Situación inicial</span>
+                          <span className="text-sm font-semibold text-foreground bg-background/80 px-2 py-1 rounded">{study.before}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Resultado:</span>
-                          <span className="text-sm font-medium text-success">{study.after}</span>
+                          <span className="text-sm text-muted-foreground font-medium">Resultado final</span>
+                          <span className="text-sm font-semibold text-success bg-success/10 px-2 py-1 rounded border border-success/20">{study.after}</span>
                         </div>
                       </div>
                       
+                      {/* Key factors */}
                       <div>
-                        <div className="text-sm font-medium text-foreground mb-2">Factores Clave:</div>
+                        <div className="text-sm font-semibold text-foreground mb-3">Factores de Éxito</div>
                         <div className="flex flex-wrap gap-2">
                           {study.highlights.map((highlight, idx) => (
-                            <span key={idx} className="text-xs bg-card border border-border rounded-full px-2 py-1 text-muted-foreground">
+                            <span key={idx} className="text-xs bg-primary/5 border border-primary/20 text-primary rounded-full px-3 py-1.5 font-medium hover:bg-primary/10 transition-colors">
                               {highlight}
                             </span>
                           ))}

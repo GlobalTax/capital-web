@@ -42,33 +42,6 @@ const VentaEmpresasBenefits = () => {
     }
   ];
 
-  // Casos de éxito recientes (anónimos por confidencialidad)
-  const casos = [
-    {
-      tipo: "Empresa de Software",
-      detalle: "SaaS B2B - 15 empleados",
-      resultado: "Vendida por €12M (6.2x EBITDA)",
-      highlight: true
-    },
-    {
-      tipo: "Distribuidora Industrial",
-      detalle: "B2B - 45 empleados",
-      resultado: "Vendida por €8.5M (4.1x EBITDA)",
-      highlight: false
-    },
-    {
-      tipo: "Consultora Tecnológica",
-      detalle: "Servicios IT - 22 empleados", 
-      resultado: "Vendida por €6.2M (5.8x EBITDA)",
-      highlight: false
-    },
-    {
-      tipo: "E-commerce Especializado",
-      detalle: "Retail online - 8 empleados",
-      resultado: "Vendida por €4.8M (7.1x EBITDA)",
-      highlight: true
-    }
-  ];
 
   return (
     <section id="beneficios" className="py-24 bg-muted/30">
@@ -113,33 +86,18 @@ const VentaEmpresasBenefits = () => {
           })}
         </div>
 
-        {/* Success Cases */}
+        {/* Company Track Record */}
         <div className="bg-card border border-border rounded-lg p-8">
-          <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
-            Casos de Éxito Recientes
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {casos.map((caso, index) => (
-              <div key={index} className="border border-border rounded-lg p-6 hover:shadow-md transition-all duration-300 bg-card">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-foreground">{caso.tipo}</h4>
-                  {caso.highlight && (
-                    <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-                      Destacado
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{caso.detalle}</p>
-                <p className="text-sm font-medium text-success bg-success/10 rounded px-3 py-1">
-                  {caso.resultado}
-                </p>
-              </div>
-            ))}
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-foreground mb-4">
+              Nuestro Historial
+            </h3>
+            <p className="text-muted-foreground">
+              Una década de experiencia respaldando nuestro compromiso con la excelencia
+            </p>
           </div>
-
-          {/* Overall Results */}
-          <div className="grid grid-cols-4 gap-8 text-center border-t border-border pt-8">
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-foreground mb-2">200+</div>
               <div className="text-sm text-muted-foreground">Empresas Vendidas</div>
