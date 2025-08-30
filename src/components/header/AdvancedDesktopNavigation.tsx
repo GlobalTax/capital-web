@@ -274,15 +274,6 @@ const AdvancedDesktopNavigation = () => {
         </NavigationMenuList>
       </NavigationMenu>
 
-      {/* User specific navigation */}
-      {isAdmin && (
-        <Link
-          to="/admin"
-          className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
-        >
-          Panel Admin
-        </Link>
-      )}
 
       {colaboradoresData.map((item) => (
         <Link

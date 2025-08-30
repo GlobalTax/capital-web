@@ -15,7 +15,7 @@ import { AdminDebugPanel } from '@/components/admin/AdminDebugPanel';
 const AdminLogin = () => {
   const { user, isLoading, signIn, signUp, isAdmin, checkAdminStatus, forceAdminReload } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'register' | 'recovery' | 'debug'>('login');
+  const [mode, setMode] = useState<'login' | 'debug'>('login');
   const [email, setEmail] = useState('s.navarro@obn.es'); // Pre-fill for debugging
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -75,13 +75,11 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const { error } = mode === 'login' 
-        ? await signIn(email, password)
-        : await signUp(email, password, 'Admin User');
+      const { error } = await signIn(email, password);
 
       if (error) {
         setError(error.message);
-      } else if (mode === 'login') {
+      } else {
         // Después del login exitoso, verificar si es admin
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
@@ -156,9 +154,7 @@ const AdminLogin = () => {
               Panel de Administración
             </CardTitle>
             <p className="text-gray-600">
-              {mode === 'login' ? 'Inicia sesión para acceder' : 
-               mode === 'register' ? 'Regístrate como administrador' :
-               'Recuperar acceso de administrador'}
+              {mode === 'login' ? 'Inicia sesión para acceder' : 'Panel de Debug'}
             </p>
           </CardHeader>
           
@@ -211,7 +207,7 @@ const AdminLogin = () => {
               </Alert>
             )}
 
-            {mode !== 'recovery' && (
+            {mode === 'login' && (
               <form onSubmit={handleAuth} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -243,32 +239,20 @@ const AdminLogin = () => {
                   className="w-full"
                   disabled={authLoading}
                 >
-                  {authLoading ? "Procesando..." : mode === 'login' ? "Iniciar Sesión" : "Registrarse"}
+                  {authLoading ? "Procesando..." : "Iniciar Sesión"}
                 </Button>
               </form>
             )}
 
             <div className="text-center space-y-2">
-              {mode !== 'debug' && (
-                <>
-                  <Button
-                    variant="link"
-                    onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                    className="text-sm"
-                  >
-                    {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
-                  </Button>
-                  
-                  <div>
-                    <Button
-                      variant="link"
-                      onClick={() => setMode('debug')}
-                      className="text-sm text-blue-600"
-                    >
-                      Panel de Debug
-                    </Button>
-                  </div>
-                </>
+              {mode === 'login' && (
+                <Button
+                  variant="link"
+                  onClick={() => setMode('debug')}
+                  className="text-sm text-blue-600"
+                >
+                  Panel de Debug
+                </Button>
               )}
               
               {mode === 'debug' && (
@@ -295,7 +279,7 @@ const AdminLogin = () => {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                Una vez autenticado, podrás acceder al panel de administración completo.
+                Solo usuarios autorizados con cuentas existentes pueden acceder al panel de administración.
               </AlertDescription>
             </Alert>
           </CardContent>
