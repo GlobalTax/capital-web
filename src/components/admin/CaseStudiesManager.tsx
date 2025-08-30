@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import CaseStudyPreview from './preview/CaseStudyPreview';
 import SectorSelect from './shared/SectorSelect';
+import { Plus, X } from 'lucide-react';
 
 interface CaseStudy {
   id: string;
@@ -39,6 +40,19 @@ const availableLocations = [
   { value: 'venta-empresas', label: 'Venta de Empresas' },
   { value: 'compra-empresas', label: 'Compra de Empresas' },
   { value: 'servicios', label: 'Servicios' }
+];
+
+const commonHighlights = [
+  'Valoración 12x ARR',
+  'Due diligence tecnológica',
+  'Estructuración fiscal optimizada',
+  'Múltiplo de 8x EBITDA',
+  'ROI del 300%',
+  'Proceso completado en 6 meses',
+  'Buyer internacional',
+  'Sinergias operativas',
+  'Incremento de valor 40%',
+  'Exit estratégico'
 ];
 
 const CaseStudiesManager = () => {
@@ -201,6 +215,32 @@ const CaseStudiesManager = () => {
     }
   };
 
+  const addHighlight = (highlight: string = '') => {
+    const currentHighlights = formData.highlights || [];
+    setFormData({
+      ...formData,
+      highlights: [...currentHighlights, highlight]
+    });
+  };
+
+  const updateHighlight = (index: number, value: string) => {
+    const currentHighlights = formData.highlights || [];
+    const updatedHighlights = [...currentHighlights];
+    updatedHighlights[index] = value;
+    setFormData({
+      ...formData,
+      highlights: updatedHighlights
+    });
+  };
+
+  const removeHighlight = (index: number) => {
+    const currentHighlights = formData.highlights || [];
+    setFormData({
+      ...formData,
+      highlights: currentHighlights.filter((_, i) => i !== index)
+    });
+  };
+
   if (isLoading) {
     return <div className="p-6">Cargando casos de éxito...</div>;
   }
@@ -292,6 +332,70 @@ const CaseStudiesManager = () => {
                 rows={3}
                 required
               />
+            </div>
+
+            {/* Sección de Highlights */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Highlights / Características Destacadas
+                <span className="text-sm text-gray-500 ml-2">(Elementos clave que aparecerán con viñetas verdes)</span>
+              </label>
+              
+              {/* Highlights actuales */}
+              <div className="space-y-2 mb-3">
+                {(formData.highlights || []).map((highlight, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Input
+                      value={highlight}
+                      onChange={(e) => updateHighlight(index, e.target.value)}
+                      className="border border-gray-300 rounded-lg flex-1"
+                      placeholder="Ej: Valoración 12x ARR"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeHighlight(index)}
+                      className="border border-red-300 text-red-600 rounded-lg p-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Botón para agregar highlight personalizado */}
+              <div className="flex space-x-2 mb-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => addHighlight('')}
+                  className="border border-gray-300 rounded-lg flex items-center space-x-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Agregar Highlight</span>
+                </Button>
+              </div>
+
+              {/* Highlights predeterminados */}
+              <div>
+                <span className="text-sm font-medium text-gray-700 mb-2 block">Agregar highlights comunes:</span>
+                <div className="flex flex-wrap gap-2">
+                  {commonHighlights.map((commonHighlight) => (
+                    <Button
+                      key={commonHighlight}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addHighlight(commonHighlight)}
+                      className="border border-blue-300 text-blue-600 text-xs rounded-lg"
+                      disabled={(formData.highlights || []).includes(commonHighlight)}
+                    >
+                      {commonHighlight}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
@@ -436,6 +540,18 @@ const CaseStudiesManager = () => {
                   )}
                   {caseStudy.year && <span>{caseStudy.year}</span>}
                 </div>
+                {caseStudy.highlights && caseStudy.highlights.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-sm font-medium text-gray-700">Highlights: </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {caseStudy.highlights.map((highlight, index) => (
+                        <span key={index} className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
+                          • {highlight}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="mb-2">
                   <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
                   <div className="flex flex-wrap gap-1 mt-1">
