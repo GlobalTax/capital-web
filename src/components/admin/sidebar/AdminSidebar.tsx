@@ -195,8 +195,10 @@ export const AdminSidebar: React.FC = () => {
       
       <SidebarContent>
         {sidebarSections.map((section) => {
-          // Filtrar items visibles según permisos
-          const visibleItems = section.items.filter(item => getItemVisibility(item.url));
+          // Filtrar items visibles según permisos y configuración
+          const visibleItems = section.items.filter(item => 
+            getItemVisibility(item.url) && (item.visible !== false)
+          );
           
           return (
             <SidebarSection 

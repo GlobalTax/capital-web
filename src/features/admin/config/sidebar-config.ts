@@ -67,7 +67,8 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/content-studio", 
         icon: Sparkles, 
         badge: "AI",
-        description: "Creación con IA"
+        description: "Creación con IA",
+        visible: false
       },
       { 
         title: "Videos", 
@@ -77,23 +78,19 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de videos"
       },
       { 
-        title: "Recursos de Diseño", 
-        url: "/admin/design-resources", 
-        icon: Palette,
-        description: "Materiales y assets web"
-      },
-      { 
         title: "Lead Magnets", 
         url: "/admin/lead-magnets", 
         icon: Zap,
-        description: "Recursos descargables"
+        description: "Recursos descargables",
+        visible: false
       },
       { 
         title: "Landing Pages", 
         url: "/admin/landing-pages", 
         icon: LayoutDashboard,
         badge: "NEW",
-        description: "Páginas de conversión"
+        description: "Páginas de conversión",
+        visible: false
       },
       { 
         title: "Blog & Contenido", 
@@ -220,6 +217,12 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/admin-users", 
         icon: Users,
         description: "Gestión de administradores"
+      },
+      { 
+        title: "Recursos de Diseño", 
+        url: "/admin/design-resources", 
+        icon: Palette,
+        description: "Materiales y assets web"
       },
       { 
         title: "Ajustes", 
