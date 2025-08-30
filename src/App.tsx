@@ -210,7 +210,8 @@ function AppContent() {
 
     // Si entran por app.capittal.es, redirigir al login de admin
     if (host === 'app.capittal.es') {
-      return <Navigate to="/admin/login" replace />;
+      window.location.href = '/admin/login';
+      return null;
     }
 
     // Redirecciones internas por host -> ruta (si en el mismo dominio)
