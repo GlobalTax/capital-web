@@ -197,43 +197,68 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
   };
 
   const handlePublish = async () => {
+    console.log("🚀 STARTING PUBLISH PROCESS");
+    
     const publishData = { ...formData, is_published: true, published_at: new Date().toISOString() };
     
     console.log("🚀 PUBLISHING POST:", {
       title: publishData.title,
       slug: publishData.slug,
       is_published: publishData.is_published,
-      published_at: publishData.published_at
+      published_at: publishData.published_at,
+      postId: post?.id
     });
+
+    // Simplified validation - only check essential fields
+    const validationErrors = [];
     
-    if (!validatePost(publishData as any)) {
+    if (!publishData.title?.trim()) {
+      validationErrors.push("título");
+    }
+    if (!publishData.content?.trim()) {
+      validationErrors.push("contenido");
+    }
+    if (!publishData.category?.trim()) {
+      validationErrors.push("categoría");
+    }
+    if (!publishData.slug?.trim()) {
+      validationErrors.push("slug");
+    }
+
+    if (validationErrors.length > 0) {
+      console.log("❌ VALIDATION FAILED:", validationErrors);
       toast({
         title: "No se puede publicar",
-        description: "Completa todos los campos requeridos antes de publicar",
+        description: `Campos requeridos faltantes: ${validationErrors.join(", ")}`,
         variant: "destructive",
       });
       return;
     }
 
-    // Update form data immediately and save with published status
-    setFormData(publishData);
+    console.log("✅ VALIDATION PASSED, SAVING TO DATABASE");
     
     setSaving(true);
     try {
       if (post && post.id && post.id.trim() !== '') {
+        console.log("📝 UPDATING EXISTING POST:", post.id);
         await updatePost(post.id, publishData);
       } else {
+        console.log("📝 CREATING NEW POST");
         await createPost(publishData);
       }
 
+      // Update local state
+      setFormData(publishData);
       clearErrors();
+      
+      console.log("🎉 POST PUBLISHED SUCCESSFULLY!");
       toast({
         title: "¡Post publicado!",
         description: `Tu post está ahora visible en /blog/${publishData.slug}`,
       });
       onSave();
     } catch (error) {
-      console.error('💥 Error publishing post:', error);
+      console.error('💥 ERROR PUBLISHING POST:', error);
       toast({
         title: "Error al publicar",
         description: `No se pudo publicar el post: ${error?.message || 'Error desconocido'}`,
@@ -336,11 +361,12 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
 
             <Button
               onClick={handlePublish}
-              disabled={saving || formData.is_published}
+              disabled={saving}
+              variant={formData.is_published ? "secondary" : "default"}
               className="flex items-center gap-2"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-              {formData.is_published ? 'Publicado' : 'Publicar Ahora'}
+              {formData.is_published ? 'Republicar' : 'Publicar Ahora'}
             </Button>
           </div>
         </div>
