@@ -175,7 +175,12 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
         throw error;
       }
 
-      console.log('✅ Post updated successfully:', data);
+          console.log("✅ Post updated successfully:", data);
+          
+          // If published, show success message with link
+          if (data.is_published) {
+            console.log(`🌐 Post published and available at: /blog/${data.slug}`);
+          }
 
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BLOG_POSTS] });

@@ -197,7 +197,15 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
   };
 
   const handlePublish = async () => {
-    const publishData = { ...formData, is_published: true };
+    const publishData = { ...formData, is_published: true, published_at: new Date().toISOString() };
+    
+    console.log("🚀 PUBLISHING POST:", {
+      title: publishData.title,
+      slug: publishData.slug,
+      is_published: publishData.is_published,
+      published_at: publishData.published_at
+    });
+    
     if (!validatePost(publishData as any)) {
       toast({
         title: "No se puede publicar",
@@ -207,8 +215,33 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
       return;
     }
 
-    setFormData(prev => ({ ...prev, is_published: true }));
-    await handleSave();
+    // Update form data immediately and save with published status
+    setFormData(publishData);
+    
+    setSaving(true);
+    try {
+      if (post && post.id && post.id.trim() !== '') {
+        await updatePost(post.id, publishData);
+      } else {
+        await createPost(publishData);
+      }
+
+      clearErrors();
+      toast({
+        title: "¡Post publicado!",
+        description: `Tu post está ahora visible en /blog/${publishData.slug}`,
+      });
+      onSave();
+    } catch (error) {
+      console.error('💥 Error publishing post:', error);
+      toast({
+        title: "Error al publicar",
+        description: `No se pudo publicar el post: ${error?.message || 'Error desconocido'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAIContentGenerated = (content: string, type: 'title' | 'content' | 'excerpt' | 'seo' | 'tags') => {
