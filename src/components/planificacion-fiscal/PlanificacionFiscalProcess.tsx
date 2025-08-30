@@ -7,27 +7,33 @@ const PlanificacionFiscalProcess = () => {
   const processSteps = [
     {
       icon: <Calculator size={32} />,
-      title: "Análisis Fiscal",
-      description: "Evaluación completa de la situación fiscal actual y identificación de oportunidades de optimización.",
-      duration: "1 semana"
-    },
-    {
-      icon: <FileText size={32} />,
-      title: "Estrategia Personalizada",
-      description: "Diseño de estrategias fiscales específicas adaptadas a tu operación y objetivos empresariales.",
+      title: "Diagnóstico Inicial",
+      description: "Análisis de la situación fiscal actual y objetivos. Identificación de oportunidades de optimización y estructuración.",
       duration: "1-2 semanas"
     },
     {
-      icon: <TrendingUp size={32} />,
-      title: "Implementación",
-      description: "Ejecución de las estrategias fiscales con coordinación entre equipos legales, contables y financieros.",
+      icon: <FileText size={32} />,
+      title: "Diseño de Estrategia",
+      description: "Propuesta de estructuras y beneficios fiscales. Modelado del impacto fiscal y alternativas de optimización.",
       duration: "2-3 semanas"
     },
     {
+      icon: <TrendingUp size={32} />,
+      title: "Due Diligence Fiscal",
+      description: "Identificación de contingencias y oportunidades. Análisis exhaustivo de riesgos fiscales y estrategias de mitigación.",
+      duration: "2-4 semanas"
+    },
+    {
       icon: <Shield size={32} />,
-      title: "Monitoreo y Compliance",
-      description: "Seguimiento continuo para asegurar el cumplimiento normativo y maximizar los beneficios fiscales.",
-      duration: "Continuo"
+      title: "Implementación y Negociación", 
+      description: "Coordinación con asesores legales y financieros. Estructuración final y negociación de términos fiscales.",
+      duration: "3-5 semanas"
+    },
+    {
+      icon: <Shield size={32} />,
+      title: "Cierre y Cumplimiento",
+      description: "Formalización, reporting y seguimiento de obligaciones. Aseguramiento del cumplimiento post-operación.",
+      duration: "1 semana"
     }
   ];
 
@@ -44,7 +50,7 @@ const PlanificacionFiscalProcess = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           {processSteps.map((step, index) => (
             <Card key={index} className="border border-gray-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center h-full">
               <CardContent className="p-6">
@@ -65,35 +71,30 @@ const PlanificacionFiscalProcess = () => {
           ))}
         </div>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <h3 className="text-xl font-bold text-black mb-4">
-              Ahorro Promedio
+        <div className="mt-16 text-center">
+          <div className="bg-white border border-gray-300 rounded-lg p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-black mb-6">
+              Duración Total del Proceso
             </h3>
-            <div className="text-3xl font-bold text-green-600 mb-2">23%</div>
-            <p className="text-gray-600">
-              Reducción media de la carga fiscal
+            <div className="text-4xl font-bold text-black mb-2">6-12 semanas</div>
+            <p className="text-gray-600 mb-8">
+              Dependiendo de la complejidad de la operación y estructura fiscal requerida
             </p>
-          </div>
-          
-          <div className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <h3 className="text-xl font-bold text-black mb-4">
-              Cumplimiento
-            </h3>
-            <div className="text-3xl font-bold text-black mb-2">100%</div>
-            <p className="text-gray-600">
-              Garantía de compliance fiscal
-            </p>
-          </div>
-          
-          <div className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <h3 className="text-xl font-bold text-black mb-4">
-              ROI del Servicio
-            </h3>
-            <div className="text-3xl font-bold text-green-600 mb-2">15:1</div>
-            <p className="text-gray-600">
-              Retorno por cada euro invertido
-            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 mb-2">23%</div>
+                <div className="text-gray-600 text-sm">Ahorro promedio</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-black mb-2">100%</div>
+                <div className="text-gray-600 text-sm">Compliance garantizado</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 mb-2">15:1</div>
+                <div className="text-gray-600 text-sm">ROI del servicio</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

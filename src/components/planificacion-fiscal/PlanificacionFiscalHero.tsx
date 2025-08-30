@@ -14,12 +14,12 @@ const PlanificacionFiscalHero = () => {
                 Optimización Fiscal desde 2008
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
-                Planificación{' '}
-                <span className="text-gray-600">Fiscal Estratégica</span>
+                Planificación y{' '}
+                <span className="text-gray-600">Optimización Fiscal en M&A</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Maximiza el valor de tu operación con estrategias fiscales avanzadas. 
-                Nuestros expertos optimizan la carga tributaria sin comprometer el cumplimiento.
+                Reducimos la carga fiscal en operaciones corporativas diseñando estructuras 
+                eficientes y cumpliendo con la normativa. Maximiza el valor de tu transacción.
               </p>
             </div>
 

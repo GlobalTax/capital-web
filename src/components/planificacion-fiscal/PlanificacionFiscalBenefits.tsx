@@ -102,6 +102,21 @@ const PlanificacionFiscalBenefits = () => {
               Casos de Optimización Fiscal
             </h3>
             <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                <h4 className="text-lg font-bold text-green-800 mb-2">
+                  💡 Testimonios de Clientes
+                </h4>
+                <div className="space-y-4">
+                  <blockquote className="text-green-700">
+                    <p className="italic">"Gracias a Capittal ahorramos €2.8M en impuestos en nuestra venta. Su planificación fiscal fue clave para maximizar el valor de la transacción."</p>
+                    <footer className="text-sm font-medium mt-2">— CEO, Empresa Tecnológica (Venta €45M)</footer>
+                  </blockquote>
+                  <blockquote className="text-green-700">
+                    <p className="italic">"El diferimiento fiscal que estructuraron nos permitió reinvertir inmediatamente en crecimiento. Altamente recomendables."</p>
+                    <footer className="text-sm font-medium mt-2">— Fundador, Empresa Industrial (Fusión €25M)</footer>
+                  </blockquote>
+                </div>
+              </div>
               {casosExito.map((caso, index) => (
                 <div key={index} className={`border-l-4 ${caso.highlight ? 'border-green-500 bg-green-50' : 'border-gray-300'} pl-6 py-4 rounded-r-lg`}>
                   <div className="flex justify-between items-start mb-2">
