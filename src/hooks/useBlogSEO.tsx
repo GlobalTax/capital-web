@@ -85,7 +85,7 @@ export const useBlogSEO = () => {
     try {
       let query = supabase
         .from('blog_posts')
-        .select('id')
+        .select('id') // Keep specific column for efficiency
         .eq('slug', slug);
       
       if (currentPostId) {

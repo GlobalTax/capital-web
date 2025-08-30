@@ -142,6 +142,13 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
         published_at: formData.is_published ? new Date().toISOString() : null,
       };
 
+      console.log("💾 Saving blog post:", {
+        postData: postData,
+        isUpdate: !!post,
+        postId: post?.id,
+        operation: formData.is_published ? 'PUBLISH' : 'DRAFT'
+      }); // Debug log to identify query issues
+
       if (post) {
         await updatePost(post.id, postData);
       } else {
@@ -157,11 +164,19 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
         onSave();
       }
     } catch (error) {
-      console.error('Error saving post:', error);
+      console.error('💥 Error saving post:', {
+        error: error,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        errorDetails: error?.details,
+        formData: formData,
+        operation: formData.is_published ? 'PUBLISH' : 'DRAFT'
+      });
+      
       if (!isAutoSave) {
         toast({
           title: "Error",
-          description: "No se pudo guardar el post",
+          description: `No se pudo guardar el post: ${error?.message || 'Error desconocido'}`,
           variant: "destructive",
         });
       }

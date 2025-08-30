@@ -10,43 +10,31 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Query estándar para obtener todos los posts
+  // Query estándar para obtener todos los posts - FIXED: Simplified select query
   const { data: posts = [], isLoading, error } = useQuery<BlogPost[]>({
     queryKey: [QUERY_KEYS.BLOG_POSTS, publishedOnly.toString()],
     queryFn: async (): Promise<BlogPost[]> => {
-      let query = supabase.from('blog_posts').select(`
-        id,
-        title,
-        slug,
-        excerpt,
-        content,
-        featured_image_url,
-        author_name,
-        author_avatar_url,
-        category,
-        tags,
-        reading_time,
-        is_published,
-        is_featured,
-        meta_title,
-        meta_description,
-        published_at,
-        created_at,
-        updated_at
-      `);
-      
-      if (publishedOnly) {
-        query = query.eq('is_published', true);
-      }
-      
-      const { data, error } = await query.order('published_at', { ascending: false, nullsFirst: false });
+      try {
+        let query = supabase
+          .from('blog_posts')
+          .select('*'); // Simplified to avoid query conflicts
+        
+        if (publishedOnly) {
+          query = query.eq('is_published', true);
+        }
+        
+        const { data, error } = await query.order('published_at', { ascending: false, nullsFirst: false });
 
-      if (error) {
-        console.error('Error fetching blog posts:', error);
+        if (error) {
+          console.error('Error fetching blog posts:', error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error('Unexpected error in blog posts query:', error);
         throw error;
       }
-      
-      return data || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
     retry: 2
@@ -68,26 +56,7 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
     try {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select(`
-          id,
-          title,
-          slug,
-          excerpt,
-          content,
-          featured_image_url,
-          author_name,
-          author_avatar_url,
-          category,
-          tags,
-          reading_time,
-          is_published,
-          is_featured,
-          meta_title,
-          meta_description,
-          published_at,
-          created_at,
-          updated_at
-        `)
+        .select('*') // Simplified to avoid query conflicts
         .eq('slug', slug)
         .eq('is_published', true)
         .maybeSingle();
