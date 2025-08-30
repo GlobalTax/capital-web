@@ -1,5 +1,5 @@
-// ============= STARTUP ORCHESTRATOR =============
-// Coordinador de inicialización para evitar dependencias circulares
+// ============= STARTUP ORCHESTRATOR SIMPLIFICADO =============
+// Solo configuración esencial de Supabase
 
 import { validateSupabaseConfig } from '@/config/supabase';
 
@@ -27,27 +27,6 @@ class StartupOrchestrator {
           validateSupabaseConfig();
         },
         isRequired: true,
-        timeout: 5000
-      },
-      {
-        name: 'DatabasePool',
-        initialize: async () => {
-          // Importación lazy para evitar dependencias circulares
-          const { getDbPool } = await import('@/core/database/ConnectionPool');
-          const pool = getDbPool();
-          // Esperar a que el pool se inicialice
-          await new Promise(resolve => setTimeout(resolve, 100));
-        },
-        isRequired: false,
-        timeout: 10000
-      },
-      {
-        name: 'QueryOptimizer',
-        initialize: async () => {
-          const { getQueryOptimizer } = await import('@/core/database/QueryOptimizer');
-          getQueryOptimizer();
-        },
-        isRequired: false,
         timeout: 5000
       }
     ];
