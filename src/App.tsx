@@ -36,8 +36,8 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const ProtectedRoute = lazy(() => import('@/components/auth/ProtectedRoute'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 
-// Service pages
-const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones'));
+// Service pages - Valoraciones converted to static import to fix module loading issues
+import Valoraciones from '@/pages/servicios/Valoraciones';
 const VentaEmpresasServicio = lazy(() => import('@/pages/servicios/VentaEmpresas'));
 const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence').catch(() => 
   import('@/pages/VentaEmpresas')
@@ -351,20 +351,7 @@ function App() {
         }, 2000);
 
         // Precarga diferida desactivada: evitamos preloads a chunks inexistentes en Vite
-        // Mantener solo el preloading de módulos críticos vía dynamic import cuando sea necesario
-        setTimeout(async () => {
-          try {
-            // Precargar módulos críticos reales (hash gestionado por Vite)
-            Promise.all([
-              import('./components/admin/lazy'),
-              import('./features/dashboard/hooks/useMarketingMetrics'),
-            ]).catch(error => {
-              console.warn('Failed to preload some modules:', error);
-            });
-          } catch (error) {
-            console.warn('Failed to initialize preloading:', error);
-          }
-        }, 3000);
+        // Eliminado el preloading dinámico para evitar errores de carga de módulos
 
         // Inicializar analytics de rendimiento de forma diferida
         setTimeout(async () => {
