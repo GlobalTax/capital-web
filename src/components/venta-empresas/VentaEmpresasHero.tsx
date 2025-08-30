@@ -43,7 +43,7 @@ const VentaEmpresasHero = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <InteractiveHoverButton 
-                text="Solicitar Valoración Gratuita" 
+                text="Valorar" 
                 variant="primary" 
                 size="lg"
                 onClick={() => {
@@ -54,7 +54,7 @@ const VentaEmpresasHero = () => {
                 }}
               />
               <InteractiveHoverButton 
-                text="Hablar con un Experto" 
+                text="Contactar" 
                 variant="secondary" 
                 size="lg"
                 onClick={() => window.open('tel:+34912345678', '_self')}

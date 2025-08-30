@@ -52,12 +52,12 @@ export const EnhancedHeroSection = () => {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <InteractiveHoverButton 
-                  text="Aplicar Ahora"
+                  text="Aplicar"
                   variant="primary"
                   size="lg"
                 />
                 <InteractiveHoverButton 
-                  text="Ver Requisitos"
+                  text="Requisitos"
                   variant="outline"
                   size="lg"
                 />

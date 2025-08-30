@@ -59,7 +59,7 @@ const VentaEmpresasHeroLanding = () => {
                 size="lg"
                 onClick={scrollToContact}
               >
-                Solicitar Valoración Gratuita
+                Valorar
               </InteractiveHoverButton>
               
               <InteractiveHoverButton 
@@ -68,7 +68,7 @@ const VentaEmpresasHeroLanding = () => {
                 onClick={callExpert}
               >
                 <Phone className="mr-2 h-4 w-4" />
-                Hablar con un Experto
+                Contactar
               </InteractiveHoverButton>
             </div>
 

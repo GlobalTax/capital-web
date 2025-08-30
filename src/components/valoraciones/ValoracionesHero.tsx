@@ -74,13 +74,13 @@ const ValoracionesHero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/lp/calculadora">
                 <InteractiveHoverButton 
-                  text="Calculadora Gratuita" 
+                  text="Calcular" 
                   variant="primary" 
                   size="lg" 
                 />
               </Link>
               <InteractiveHoverButton 
-                text="Valoración Profesional" 
+                text="Valorar" 
                 variant="secondary" 
                 size="lg" 
               />

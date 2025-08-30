@@ -26,7 +26,7 @@ const MinimalistCTA = () => {
 
           <div className="flex justify-center">
             <InteractiveHoverButton 
-              text="Evaluación Gratuita"
+              text="Evaluar"
               variant="primary"
               size="lg"
               onClick={handleContactClick}

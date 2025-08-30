@@ -83,7 +83,7 @@ const VentaEmpresasHeroService = () => {
                 className="text-base px-6 py-3"
               >
                 <Phone className="mr-2 h-5 w-5" />
-                Hablar con Especialista
+                Especialista
               </InteractiveHoverButton>
             </div>
 

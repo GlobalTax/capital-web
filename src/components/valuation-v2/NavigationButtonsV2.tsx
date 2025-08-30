@@ -43,7 +43,7 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
         className="flex items-center bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
       >
         <Calculator className="h-4 w-4 mr-2" />
-        Calcular Valoración
+        Calcular
       </Button>
     </div>
   );

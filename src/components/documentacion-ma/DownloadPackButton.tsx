@@ -75,7 +75,7 @@ export const DownloadPackButton: React.FC<DownloadPackButtonProps> = ({
       ) : (
         <>
           <Download className="h-4 w-4 mr-2" />
-          Descargar Pack M&A
+          Pack M&A
         </>
       )}
       

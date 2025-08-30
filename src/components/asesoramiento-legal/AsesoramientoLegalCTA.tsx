@@ -40,7 +40,7 @@ const AsesoramientoLegalCTA = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/contacto">
                 <InteractiveHoverButton
-                  text="Consulta Legal Gratuita"
+                  text="Consulta"
                   variant="secondary"
                   size="lg"
                   className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
@@ -49,7 +49,7 @@ const AsesoramientoLegalCTA = () => {
               
               <Link to="/servicios/asesoramiento-legal/tecnico">
                 <InteractiveHoverButton
-                  text="Documentación Técnica"
+                  text="Documentos"
                   variant="outline"
                   size="lg"
                   className="border-white text-white hover:bg-white hover:text-black text-lg px-8 py-4"

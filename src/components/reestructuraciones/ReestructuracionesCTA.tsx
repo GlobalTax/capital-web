@@ -40,7 +40,7 @@ const ReestructuracionesCTA = () => {
           <div className="space-y-6">
             <Link to="/contacto">
               <InteractiveHoverButton
-                text="Evaluación Gratuita"
+                text="Evaluar"
                 variant="secondary"
                 size="lg"
                 className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"

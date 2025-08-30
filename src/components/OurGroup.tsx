@@ -76,7 +76,7 @@ const OurGroup = () => {
           <Button 
             className="bg-black text-white hover:bg-gray-800 px-12 py-4 text-lg font-medium border-0"
           >
-            Evaluación Gratuita
+            Evaluar
           </Button>
           
           <p className="text-sm text-gray-600 mt-6">
