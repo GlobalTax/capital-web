@@ -14,149 +14,125 @@ const VentaEmpresasProcessLanding = () => {
     {
       number: "1",
       icon: <Search className="h-8 w-8" />,
-      title: "¡VALORACIÓN GRATUITA!",
-      description: "En 48h sabrás EXACTAMENTE cuánto vale tu empresa. ¡Sin compromisos!",
-      duration: "48 horas",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200"
+      title: "Valoración Inicial",
+      description: "Análisis completo de tu empresa para determinar su valor de mercado real y potencial de optimización.",
+      duration: "48-72 horas"
     },
     {
-      number: "2",
+      number: "2", 
       icon: <FileText className="h-8 w-8" />,
-      title: "PREPARACIÓN PERFECTA",
-      description: "Optimizamos tu empresa para conseguir el MÁXIMO precio. ¡Cada detalle cuenta!",
-      duration: "2-4 semanas",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200"
+      title: "Preparación y Optimización",
+      description: "Preparamos tu empresa para maximizar su atractivo y valor ante potenciales compradores.",
+      duration: "2-4 semanas"
     },
     {
       number: "3",
       icon: <Users className="h-8 w-8" />,
-      title: "BÚSQUEDA DE COMPRADORES",
-      description: "Encontramos a los compradores perfectos que pagarán MÁS por tu empresa.",
-      duration: "4-8 semanas",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200"
+      title: "Identificación de Compradores",
+      description: "Búsqueda y calificación de compradores estratégicos que valoren al máximo tu empresa.",
+      duration: "4-8 semanas"
     },
     {
       number: "4",
       icon: <Handshake className="h-8 w-8" />,
-      title: "NEGOCIACIÓN EXPERTA",
-      description: "Negociamos como leones para conseguir las MEJORES condiciones para ti.",
-      duration: "2-4 semanas",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      borderColor: "border-orange-200"
+      title: "Negociación y Estructuración",
+      description: "Gestión profesional de ofertas y negociación de términos óptimos para la transacción.",
+      duration: "2-4 semanas"
     },
     {
       number: "5",
       icon: <CheckCircle className="h-8 w-8" />,
-      title: "¡CIERRE EXITOSO!",
-      description: "¡Cobras tu dinero y celebramos juntos el éxito! Misión cumplida.",
-      duration: "2-3 semanas",
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200"
+      title: "Cierre de Operación",
+      description: "Finalización de due diligence y firma de acuerdos definitivos para el cierre exitoso.",
+      duration: "2-3 semanas"
     }
   ];
 
   return (
-    <section id="proceso" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section id="proceso" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            ¡Proceso <span className="text-blue-600">Súper Fácil</span>!
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            Nuestro <span className="text-primary">Proceso</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            <strong>¡Solo 5 pasos sencillos!</strong> En 6-9 meses tendrás tu dinero en el banco. 
-            Nosotros nos encargamos de TODO para que tú solo tengas que firmar y cobrar.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Un proceso estructurado y profesional que maximiza el valor de tu empresa 
+            y asegura una transacción exitosa en el menor tiempo posible.
           </p>
-          
-          {/* Time Guarantee */}
-          <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-lg font-bold">
-            ⚡ GARANTÍA: ¡Proceso completo en 6-9 meses o NO COBRAS! ⚡
-          </div>
         </div>
 
         {/* Process Steps */}
-        <div className="relative">
-          {/* Connection Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-300 to-purple-300 hidden lg:block"></div>
-
-          <div className="space-y-12">
+        <div className="relative max-w-4xl mx-auto">
+          <div className="space-y-8">
             {steps.map((step, index) => (
               <div key={index} className="relative">
-                <div className={`flex flex-col lg:flex-row items-center gap-8 ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
+                <div className="flex items-start space-x-6">
+                  {/* Step Number */}
+                  <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold shadow-lg">
+                    {step.number}
+                  </div>
                   
                   {/* Step Content */}
                   <div className="flex-1">
-                    <div className={`p-8 rounded-2xl border-2 ${step.borderColor} ${step.bgColor} shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer`}>
+                    <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow duration-300">
                       <div className="flex items-start space-x-4">
-                        <div className={`flex-shrink-0 w-16 h-16 ${step.bgColor} ${step.color} rounded-full flex items-center justify-center border-2 ${step.borderColor} group-hover:scale-110 transition-transform duration-300`}>
+                        <div className="flex-shrink-0 w-12 h-12 bg-muted text-primary rounded-lg flex items-center justify-center">
                           {step.icon}
                         </div>
                         
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-3">
-                            <h3 className="text-2xl font-bold text-gray-900">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-xl font-bold text-foreground">
                               {step.title}
                             </h3>
-                            <span className={`px-3 py-1 ${step.bgColor} ${step.color} rounded-full text-sm font-bold border ${step.borderColor}`}>
+                            <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm font-medium">
                               {step.duration}
                             </span>
                           </div>
                           
-                          <p className="text-gray-700 text-lg leading-relaxed">
+                          <p className="text-muted-foreground leading-relaxed">
                             {step.description}
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Step Number (Center) */}
-                  <div className="flex-shrink-0 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                      {step.number}
-                    </div>
-                  </div>
-
-                  {/* Spacer for alternating layout */}
-                  <div className="flex-1 hidden lg:block"></div>
                 </div>
+                
+                {/* Connecting Line */}
+                {index < steps.length - 1 && (
+                  <div className="absolute left-6 top-12 w-0.5 h-8 bg-border"></div>
+                )}
               </div>
             ))}
           </div>
         </div>
 
         {/* Success Summary */}
-        <div className="mt-16 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white text-center">
-          <h3 className="text-3xl font-bold mb-6">¡Resultados que Hablan por Sí Solos!</h3>
+        <div className="mt-16 bg-card border border-border rounded-xl p-8 text-center">
+          <h3 className="text-2xl font-bold text-foreground mb-6">Resultados Comprobados</h3>
           
           <div className="grid md:grid-cols-4 gap-6 mb-8">
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-green-400">6-9</div>
-              <div className="text-lg font-semibold">Meses promedio</div>
-              <div className="text-sm text-gray-300">Proceso completo</div>
+              <div className="text-2xl font-bold text-primary">6-9</div>
+              <div className="text-lg font-semibold text-foreground">Meses</div>
+              <div className="text-sm text-muted-foreground">Proceso promedio</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-blue-400">95%</div>
-              <div className="text-lg font-semibold">Tasa de éxito</div>
-              <div className="text-sm text-gray-300">Operaciones cerradas</div>
+              <div className="text-2xl font-bold text-primary">95%</div>
+              <div className="text-lg font-semibold text-foreground">Éxito</div>
+              <div className="text-sm text-muted-foreground">Operaciones completadas</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-purple-400">+35%</div>
-              <div className="text-lg font-semibold">Más dinero</div>
-              <div className="text-sm text-gray-300">Vs. competencia</div>
+              <div className="text-2xl font-bold text-primary">+25%</div>
+              <div className="text-lg font-semibold text-foreground">Valor adicional</div>
+              <div className="text-sm text-muted-foreground">Vs. mercado</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-yellow-400">48h</div>
-              <div className="text-lg font-semibold">Valoración</div>
-              <div className="text-sm text-gray-300">Completamente gratis</div>
+              <div className="text-2xl font-bold text-primary">48h</div>
+              <div className="text-lg font-semibold text-foreground">Valoración</div>
+              <div className="text-sm text-muted-foreground">Sin compromiso</div>
             </div>
           </div>
 
@@ -164,9 +140,8 @@ const VentaEmpresasProcessLanding = () => {
             variant="primary"
             size="lg"
             onClick={scrollToContact}
-            className="text-lg px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-xl"
           >
-            🚀 ¡EMPEZAR AHORA - VALORACIÓN GRATUITA!
+            Comenzar Proceso de Venta
           </InteractiveHoverButton>
         </div>
       </div>
