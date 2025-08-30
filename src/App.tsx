@@ -79,7 +79,7 @@ const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(()
 ));
 
 // Resource pages - Create placeholder components for missing ones
-const Blog = lazy(() => import('@/pages/Blog').catch(() => 
+const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => 
   import('@/pages/VentaEmpresas')
 ));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => 
@@ -274,6 +274,7 @@ function AppContent() {
           <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
           
           {/* Resource routes */}
+          <Route path="/blog" element={<Navigate to="/recursos/blog" replace />} />
           <Route path="/recursos/blog" element={<Blog />} />
           <Route path="/recursos/case-studies" element={<CaseStudies />} />
           <Route path="/recursos/market-reports" element={<MarketReports />} />

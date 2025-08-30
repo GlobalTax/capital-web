@@ -50,7 +50,7 @@ const BlogSection = () => {
           <h1 className="text-2xl font-semibold md:text-4xl text-black">
             Artículos Especializados
           </h1>
-          <Link to="/blog">
+          <Link to="/recursos/blog">
             <Button
               variant="outline"
               className="md:h-10 md:px-4 md:py-2 bg-white text-black border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
