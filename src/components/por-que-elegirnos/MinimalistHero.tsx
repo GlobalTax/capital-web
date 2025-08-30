@@ -38,8 +38,8 @@ const MinimalistHero = () => {
         </h1>
         
         <p className="text-xl text-black max-w-2xl mx-auto mb-20 leading-relaxed">
-          Más de dos décadas de experiencia nos avalan como líderes en asesoramiento 
-          de fusiones y adquisiciones.
+          Especialistas en M&A respaldados por el ecosistema integral del Grupo Navarro. 
+          Más de dos décadas de experiencia garantizando el éxito de cada transacción.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16">

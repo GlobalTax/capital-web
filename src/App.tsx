@@ -250,7 +250,7 @@ function AppContent() {
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
           <Route path="/casos-exito" element={<CasosExito />} />
-          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/nosotros" element={<Navigate to="/por-que-elegirnos" replace />} />
           <Route path="/de-looper-a-capittal" element={<DeLooperACapittal />} />
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/documentacion-ma" element={<DocumentacionMA />} />
