@@ -41,7 +41,7 @@ export const useRoutePreloader = (options: PreloadOptions = {}): RoutePreloader 
     const startTime = performance.now();
 
     try {
-      // Handle special route mappings
+      // Handle special route mappings for better UX
       const routeMap: Record<string, string> = {
         '/blog': '/recursos/blog',
         '/recursos/blog': '/recursos/blog'
@@ -49,17 +49,19 @@ export const useRoutePreloader = (options: PreloadOptions = {}): RoutePreloader 
       
       const mappedPath = routeMap[path] || path;
       
-      // Simular precarga de componente lazy - handle different path structures
+      // Preload route module with proper extension handling
       let routeModule = null;
-      try {
-        routeModule = await import(`@/pages${mappedPath}.tsx`);
-      } catch (e) {
-        // Try without .tsx extension for dynamic routes
+      
+      // For known route patterns, try specific imports
+      if (mappedPath === '/recursos/blog') {
         try {
-          routeModule = await import(`@/pages${mappedPath}`);
-        } catch (e2) {
-          console.warn(`Could not preload route: ${path}`);
+          routeModule = await import('@/pages/recursos/Blog.tsx');
+        } catch (e) {
+          console.warn(`Could not preload blog route: ${path}`);
         }
+      } else {
+        // For other routes, try a more generic approach
+        console.warn(`Route preloading not configured for: ${path}`);
       }
       
       if (routeModule) {

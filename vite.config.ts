@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
           ],
           blog: [
             './src/hooks/useBlogPosts.tsx',
-            './src/pages/Blog.tsx'
+            './src/pages/recursos/Blog.tsx'
           ]
         }
       }
