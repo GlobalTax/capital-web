@@ -120,22 +120,6 @@ const Team = () => {
         </div>
       </section>
 
-      {/* Team Experience Section */}
-      <section className="py-16 bg-white border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-8">
-            Experiencia en las Mejores Firmas
-          </h2>
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-            <div className="text-lg font-medium text-gray-700">Goldman Sachs</div>
-            <div className="text-lg font-medium text-gray-700">Morgan Stanley</div>
-            <div className="text-lg font-medium text-gray-700">McKinsey</div>
-            <div className="text-lg font-medium text-gray-700">Deloitte</div>
-            <div className="text-lg font-medium text-gray-700">EY</div>
-            <div className="text-lg font-medium text-gray-700">PwC</div>
-          </div>
-        </div>
-      </section>
 
       {/* Team Members */}
       <section className="py-20">
