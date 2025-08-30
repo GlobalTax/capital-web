@@ -41,8 +41,26 @@ export const useRoutePreloader = (options: PreloadOptions = {}): RoutePreloader 
     const startTime = performance.now();
 
     try {
-      // Simular precarga de componente lazy
-      const routeModule = await import(`@/pages${path}.tsx`).catch(() => null);
+      // Handle special route mappings
+      const routeMap: Record<string, string> = {
+        '/blog': '/recursos/blog',
+        '/recursos/blog': '/recursos/blog'
+      };
+      
+      const mappedPath = routeMap[path] || path;
+      
+      // Simular precarga de componente lazy - handle different path structures
+      let routeModule = null;
+      try {
+        routeModule = await import(`@/pages${mappedPath}.tsx`);
+      } catch (e) {
+        // Try without .tsx extension for dynamic routes
+        try {
+          routeModule = await import(`@/pages${mappedPath}`);
+        } catch (e2) {
+          console.warn(`Could not preload route: ${path}`);
+        }
+      }
       
       if (routeModule) {
         preloadedRoutes.current.add(path);

@@ -99,25 +99,7 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
   const currentUrl = window.location.href;
 
   return (
-    <section className="py-32">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">
-                <Home className="h-4 w-4" />
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/recursos/blog">Blog</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{post.category}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{/* Breadcrumbs removed - handled by BlogBreadcrumbs component */}
 
         <h1 className="mb-6 mt-7 max-w-4xl text-3xl font-semibold md:text-5xl">
           {post.title}
@@ -168,8 +150,8 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
         <Separator className="mb-16 mt-8" />
 
-        <div className="relative grid grid-cols-12 gap-6 lg:grid">
-          <div className="col-span-12 lg:col-span-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8">
             <div className="prose dark:prose-invert max-w-none">
               <div 
                 dangerouslySetInnerHTML={{ 
@@ -195,7 +177,8 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
             )}
           </div>
 
-          <div className="sticky top-8 col-span-3 col-start-10 hidden h-fit lg:block">
+          <div className="lg:col-span-4">
+            <div className="sticky top-8 space-y-6">
             {sections.length > 0 && (
               <>
                 <span className="text-lg font-medium">En esta página</span>
@@ -258,24 +241,24 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
               </ul>
             </div>
             
-            <div className="mt-6">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth',
-                  })
-                }
-              >
-                <ArrowUp className="h-4 w-4" />
-                Volver arriba
-              </Button>
+              <div className="mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    window.scrollTo({
+                      top: 0,
+                      behavior: 'smooth',
+                    })
+                  }
+                >
+                  <ArrowUp className="h-4 w-4" />
+                  Volver arriba
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
   );
 };
 
