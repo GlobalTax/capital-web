@@ -2997,6 +2997,176 @@ export type Database = {
         }
         Relationships: []
       }
+      webinar_registrations: {
+        Row: {
+          attended: boolean | null
+          attended_at: string | null
+          company: string | null
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          id: string
+          ip_address: unknown | null
+          job_title: string | null
+          phone: string | null
+          referrer: string | null
+          reminder_sent: boolean | null
+          reminder_sent_at: string | null
+          sector: string | null
+          specific_interests: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          webinar_id: string
+          years_experience: string | null
+        }
+        Insert: {
+          attended?: boolean | null
+          attended_at?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          id?: string
+          ip_address?: unknown | null
+          job_title?: string | null
+          phone?: string | null
+          referrer?: string | null
+          reminder_sent?: boolean | null
+          reminder_sent_at?: string | null
+          sector?: string | null
+          specific_interests?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          webinar_id: string
+          years_experience?: string | null
+        }
+        Update: {
+          attended?: boolean | null
+          attended_at?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          id?: string
+          ip_address?: unknown | null
+          job_title?: string | null
+          phone?: string | null
+          referrer?: string | null
+          reminder_sent?: boolean | null
+          reminder_sent_at?: string | null
+          sector?: string | null
+          specific_interests?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          webinar_id?: string
+          years_experience?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webinar_registrations_webinar_id_fkey"
+            columns: ["webinar_id"]
+            isOneToOne: false
+            referencedRelation: "webinars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webinars: {
+        Row: {
+          attendee_count: number | null
+          category: string
+          created_at: string
+          description: string
+          duration_minutes: number
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          key_takeaways: string[] | null
+          materials_url: string | null
+          max_capacity: number | null
+          recording_url: string | null
+          registration_url: string | null
+          sector: string | null
+          short_description: string | null
+          speaker_avatar_url: string | null
+          speaker_company: string | null
+          speaker_name: string
+          speaker_title: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          webinar_date: string
+        }
+        Insert: {
+          attendee_count?: number | null
+          category: string
+          created_at?: string
+          description: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          key_takeaways?: string[] | null
+          materials_url?: string | null
+          max_capacity?: number | null
+          recording_url?: string | null
+          registration_url?: string | null
+          sector?: string | null
+          short_description?: string | null
+          speaker_avatar_url?: string | null
+          speaker_company?: string | null
+          speaker_name: string
+          speaker_title: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          webinar_date: string
+        }
+        Update: {
+          attendee_count?: number | null
+          category?: string
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          key_takeaways?: string[] | null
+          materials_url?: string | null
+          max_capacity?: number | null
+          recording_url?: string | null
+          registration_url?: string | null
+          sector?: string | null
+          short_description?: string | null
+          speaker_avatar_url?: string | null
+          speaker_company?: string | null
+          speaker_name?: string
+          speaker_title?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          webinar_date?: string
+        }
+        Relationships: []
+      }
       workflow_executions: {
         Row: {
           completed_actions: number | null
