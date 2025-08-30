@@ -1,8 +1,8 @@
 // Service Worker optimizado para Capittal
 // Versión simplificada para evitar problemas de inicialización
 
-const CACHE_NAME = 'capittal-v2';
-const STATIC_CACHE = 'capittal-static-v2';
+const CACHE_NAME = 'capittal-v3';
+const STATIC_CACHE = 'capittal-static-v3';
 
 // Recursos críticos para cachear
 const CRITICAL_RESOURCES = [

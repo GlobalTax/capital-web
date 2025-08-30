@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Search, Bell, Settings, Command } from 'lucide-react';
+import { Search, Bell, Settings, Command, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { RoleIndicator } from './RoleIndicator';
 import UserDropdown from './header/UserDropdown';
 import NotificationCenter from './header/NotificationCenter';
+import { clearAllCaches } from '@/utils/resetWebSocketState';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdminHeaderProps {
   onLogout: () => void;
@@ -14,6 +16,25 @@ interface AdminHeaderProps {
 
 const AdminHeader = ({ onLogout }: AdminHeaderProps) => {
   const [searchValue, setSearchValue] = useState('');
+  const { toast } = useToast();
+
+  const handleClearCache = async () => {
+    toast({
+      title: "Limpiando caché...",
+      description: "Se están eliminando todos los datos en caché. La página se recargará automáticamente.",
+    });
+    
+    try {
+      await clearAllCaches();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un error al limpiar el caché. Intenta recargar la página manualmente.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shadow-sm">
@@ -55,6 +76,16 @@ const AdminHeader = ({ onLogout }: AdminHeaderProps) => {
         
         <div className="flex items-center gap-1">
           <NotificationCenter />
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground hover:text-foreground hover:bg-accent"
+            onClick={handleClearCache}
+            title="Limpiar caché completo"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
           
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent">
             <Settings className="h-4 w-4" />
