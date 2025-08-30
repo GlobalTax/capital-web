@@ -220,7 +220,7 @@ const NosotrosMenu = () => (
 );
 
 const AdvancedDesktopNavigation = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   
   return (
     <nav className="hidden md:flex items-center space-x-6">
@@ -275,7 +275,7 @@ const AdvancedDesktopNavigation = () => {
       </NavigationMenu>
 
       {/* User specific navigation */}
-      {user && (
+      {isAdmin && (
         <Link
           to="/admin"
           className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"

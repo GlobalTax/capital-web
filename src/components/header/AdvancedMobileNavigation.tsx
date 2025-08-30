@@ -16,7 +16,7 @@ interface AdvancedMobileNavigationProps {
 }
 
 const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileNavigationProps) => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
@@ -70,7 +70,7 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
 
         {/* Enlaces directos */}
         <div className="border-t border-gray-200 pt-4 space-y-2">
-          {user && (
+          {isAdmin && (
             <Link
               to="/admin"
               className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
