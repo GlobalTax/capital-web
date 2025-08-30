@@ -99,9 +99,9 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
   const currentUrl = window.location.href;
 
   return (
-    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{/* Breadcrumbs removed - handled by BlogBreadcrumbs component */}
+    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <h1 className="mb-6 mt-7 max-w-4xl text-3xl font-semibold md:text-5xl">
+        <h1 className="mb-8 mt-12 max-w-4xl text-3xl font-semibold md:text-5xl">
           {post.title}
         </h1>
 
@@ -148,9 +148,9 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
           </div>
         )}
 
-        <Separator className="mb-16 mt-8" />
+        <Separator className="mb-20 mt-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
           <div className="lg:col-span-8">
             <div className="prose dark:prose-invert max-w-none">
               <div 
