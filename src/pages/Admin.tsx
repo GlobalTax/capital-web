@@ -140,7 +140,7 @@ const AdminContent = () => {
             </Button>
           </form>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Button
               variant="link"
               onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
@@ -148,6 +148,15 @@ const AdminContent = () => {
             >
               {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
             </Button>
+            <div>
+              <Button
+                variant="link"
+                onClick={() => window.location.href = '/admin/recovery'}
+                className="text-sm text-orange-600"
+              >
+                ¿Problemas de acceso? Recuperar cuenta de admin
+              </Button>
+            </div>
           </div>
 
           <Alert>
