@@ -17,8 +17,8 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="text-center">
-      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-48">
+    <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-32 rounded-lg">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
@@ -28,17 +28,17 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <Users className="w-16 h-16 text-gray-400" />
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg">
+            <Users className="w-12 h-12 text-gray-400" />
           </div>
         )}
       </div>
       
-      <h3 className="text-lg font-medium text-black mb-2">
+      <h3 className="text-lg font-bold text-black mb-2">
         {member.name}
       </h3>
       {member.position && (
-        <p className="text-sm text-gray-600">
+        <p className="text-gray-600 text-sm">
           {member.position}
         </p>
       )}
@@ -77,41 +77,46 @@ const Team = () => {
   }, [fetchTeamMembers]);
 
   return (
-    <div className="py-32 bg-white">
+    <div className="py-20 bg-white">
       {/* Header */}
-      <section className="mb-24">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-light text-black mb-8">
+      <section className="mb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
             Nuestro Equipo
-          </h2>
-          <p className="text-xl text-black max-w-3xl mx-auto leading-relaxed mb-16">
-            Expertos en M&A con trayectorias internacionales y resultados probados en las mejores firmas del mundo.
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl font-bold text-black mb-6">
+            Expertos en M&A
+          </h1>
+          
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-16">
+            Profesionales con trayectorias internacionales y resultados probados en las mejores firmas del mundo.
           </p>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-light text-black mb-2">25+</div>
-              <div className="text-sm text-gray-600 uppercase tracking-wide">Años Experiencia</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+              <div className="text-3xl font-bold text-black mb-2">25+</div>
+              <div className="text-sm text-gray-600 font-medium">Años Experiencia</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-light text-black mb-2">500+</div>
-              <div className="text-sm text-gray-600 uppercase tracking-wide">Transacciones</div>
+            <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+              <div className="text-3xl font-bold text-black mb-2">500+</div>
+              <div className="text-sm text-gray-600 font-medium">Transacciones</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-light text-black mb-2">€5B+</div>
-              <div className="text-sm text-gray-600 uppercase tracking-wide">Valor Gestionado</div>
+            <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+              <div className="text-3xl font-bold text-black mb-2">€5B+</div>
+              <div className="text-sm text-gray-600 font-medium">Valor Gestionado</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-light text-black mb-2">95%</div>
-              <div className="text-sm text-gray-600 uppercase tracking-wide">Tasa Éxito</div>
+            <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+              <div className="text-3xl font-bold text-black mb-2">95%</div>
+              <div className="text-sm text-gray-600 font-medium">Tasa Éxito</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Team Members */}
-      <section className="border-t border-gray-200 pt-24">
-        <div className="max-w-4xl mx-auto px-4">
+      <section>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {Array.from({ length: 6 }).map((_, i) => (
