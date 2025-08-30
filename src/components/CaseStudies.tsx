@@ -6,51 +6,29 @@ import { useCaseStudies } from '@/hooks/useCaseStudies';
 const CaseStudies = () => {
   const { caseStudies, isLoading } = useCaseStudies();
 
-  // Featured cases for display - limit to 6 most important
-  const featuredCases = [
-    {
-      title: "Venta Empresa Tecnológica",
-      sector: "Tecnología",
-      value: "12",
-      year: "2024",
-      description: "Exitosa venta de empresa de software con valoración 45% superior a expectativas iniciales."
-    },
-    {
-      title: "Adquisición Industrial",  
-      sector: "Industrial",
-      value: "28",
-      year: "2023", 
-      description: "Proceso de venta completo en 7 meses con múltiplo superior al mercado."
-    },
-    {
-      title: "Fusión Sector Servicios",
-      sector: "Servicios",
-      value: "35", 
-      year: "2023",
-      description: "Operación estratégica que superó las expectativas más optimistas del cliente."
-    },
-    {
-      title: "Venta Empresa Sanitaria",
-      sector: "Sanidad",
-      value: "15",
-      year: "2024",
-      description: "Transacción exitosa en sector regulado con comprador internacional."
-    },
-    {
-      title: "Adquisición Retail",
-      sector: "Retail", 
-      value: "22",
-      year: "2023",
-      description: "Proceso competitivo que maximizó el valor para los accionistas vendedores."
-    },
-    {
-      title: "Fusión Financiera",
-      sector: "Finanzas",
-      value: "18",
-      year: "2024", 
-      description: "Operación compleja con estructuración fiscal optimizada para ambas partes."
-    }
-  ];
+  // Get featured cases from database, fallback to all cases if no featured ones
+  const featuredCases = React.useMemo(() => {
+    if (!caseStudies || caseStudies.length === 0) return [];
+    
+    // First try to get featured cases, then all cases, limit to 6
+    const featured = caseStudies.filter(case_ => case_.is_featured);
+    const displayCases = featured.length > 0 ? featured : caseStudies;
+    
+    return displayCases
+      .slice(0, 6)
+      .map(case_ => ({
+        id: case_.id,
+        title: case_.title,
+        sector: case_.sector,
+        value: case_.value_amount ? Math.round(case_.value_amount / 1000000).toString() : "N/A",
+        currency: case_.value_currency || "€",
+        year: case_.year?.toString() || "N/A",
+        description: case_.description,
+        logo_url: case_.logo_url,
+        featured_image_url: case_.featured_image_url,
+        highlights: case_.highlights || []
+      }));
+  }, [caseStudies]);
 
   if (isLoading) {
     return (
@@ -116,25 +94,78 @@ const CaseStudies = () => {
 
         {/* Cases Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredCases.map((case_, index) => (
-            <div key={index} className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-              <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium mb-4">
-                {case_.sector} • {case_.year}
+          {featuredCases.length > 0 ? (
+            featuredCases.map((case_) => (
+              <div key={case_.id} className="bg-white border-0.5 border-border rounded-lg overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+                {/* Featured Image */}
+                {case_.featured_image_url && (
+                  <div className="w-full h-48 bg-gray-100 overflow-hidden">
+                    <img 
+                      src={case_.featured_image_url} 
+                      alt={case_.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                
+                <div className="p-6">
+                  <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium mb-4">
+                    {case_.sector} • {case_.year}
+                  </div>
+                  
+                  {/* Logo if available */}
+                  {case_.logo_url && (
+                    <div className="w-12 h-12 mb-4 bg-gray-50 rounded-lg p-2 overflow-hidden">
+                      <img 
+                        src={case_.logo_url} 
+                        alt={`${case_.title} logo`}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.parentElement.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  <h3 className="text-xl font-bold text-black mb-4">
+                    {case_.title}
+                  </h3>
+                  
+                  <div className="text-2xl font-bold text-black mb-4 bg-black text-white px-4 py-2 rounded-lg inline-block">
+                    {case_.currency}{case_.value}M
+                  </div>
+                  
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    {case_.description}
+                  </p>
+                  
+                  {/* Highlights */}
+                  {case_.highlights && case_.highlights.length > 0 && (
+                    <div className="space-y-2">
+                      {case_.highlights.slice(0, 3).map((highlight, idx) => (
+                        <div key={idx} className="text-sm text-gray-500 flex items-center">
+                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
+                          {highlight}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              
-              <h3 className="text-xl font-bold text-black mb-4">
-                {case_.title}
-              </h3>
-              
-              <div className="text-2xl font-bold text-black mb-4 bg-black text-white px-4 py-2 rounded-lg inline-block">
-                €{case_.value}M
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <div className="text-gray-500 text-lg">
+                No hay casos de éxito disponibles en este momento.
               </div>
-              
-              <p className="text-gray-600 leading-relaxed">
-                {case_.description}
-              </p>
+              <div className="text-gray-400 text-sm mt-2">
+                Los casos se mostrarán una vez que se agreguen desde el panel administrativo.
+              </div>
             </div>
-          ))}
+          )}
         </div>
 
         {/* CTA */}
