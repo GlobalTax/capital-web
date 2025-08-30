@@ -119,21 +119,23 @@ export const useValuationAutosave = () => {
     }
   }, [saveTokenToStorage]);
 
-  // Crear valuación automáticamente en el primer campo completado
+  // Crear valuación SOLO en campos críticos para reducir Edge Functions
   const createInitialValuationOnFirstField = useCallback(async (
     field: keyof CompanyData, 
     value: any, 
     allData: CompanyData,
     utmData?: { utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; referrer?: string | null }
   ): Promise<string | null> => {
-    // Mejorar condición: crear si no existe token y el valor tiene al menos 2 caracteres
-    if (state.uniqueToken) {
+    // Solo crear en campos críticos para reducir consumo
+    const criticalFields: (keyof CompanyData)[] = ['email', 'companyName', 'contactName'];
+    
+    if (state.uniqueToken || !criticalFields.includes(field)) {
       return state.uniqueToken;
     }
 
     // Verificar que el valor tenga contenido significativo
     if (!value || 
-        (typeof value === 'string' && value.trim().length < 2) ||
+        (typeof value === 'string' && value.trim().length < 3) ||
         (typeof value === 'number' && value <= 0)) {
       return null;
     }
@@ -272,7 +274,7 @@ export const useValuationAutosave = () => {
       } finally {
         setState(prev => ({ ...prev, isSaving: false }));
       }
-    }, 300); // 300ms debounce para guardado más rápido
+    }, 3000); // 3 segundos debounce - optimizado para reducir consumo
   }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
   // Guardado inmediato para campos críticos (email, company name)

@@ -281,11 +281,12 @@ export const usePredictiveAnalytics = () => {
     return insightsGenerator.analyzeTextIntent(text);
   }, [insightsGenerator]);
 
-  // Auto-refresh cada 10 minutos
+  // Auto-refresh reducido para ahorrar Edge Functions
   useEffect(() => {
     refreshPredictiveData();
     
-    const interval = setInterval(refreshPredictiveData, 10 * 60 * 1000);
+    // Reduced from 10 minutes to 30 minutes to save Edge Function calls
+    const interval = setInterval(refreshPredictiveData, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, [refreshPredictiveData]);
 

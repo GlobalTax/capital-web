@@ -61,14 +61,14 @@ export const useValuationHeartbeat = ({
       return;
     }
 
-    // Heartbeat system is now active again - system was cleaned up
+    // Optimized heartbeat - reduced frequency to save Edge Function calls
     heartbeatRef.current = setInterval(() => {
       const timeSinceActivity = Date.now() - lastActivityRef.current.getTime();
-      // Only send heartbeat if user was active in the last 5 minutes
-      if (timeSinceActivity < 5 * 60 * 1000) {
+      // Only send heartbeat if user was active in the last 3 minutes
+      if (timeSinceActivity < 3 * 60 * 1000) {
         sendHeartbeat();
       }
-    }, 60 * 1000); // Send every minute
+    }, 5 * 60 * 1000); // Send every 5 minutes (vs 1 minute)
 
     // Send initial heartbeat
     sendHeartbeat();

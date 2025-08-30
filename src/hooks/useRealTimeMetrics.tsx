@@ -110,7 +110,7 @@ export const useRealTimeMetrics = (updateInterval = 5000) => {
     });
   }, []);
 
-  // Flag para deshabilitar real-time temporalmente
+  // Disabled permanently to reduce Edge Function consumption
   const REALTIME_ENABLED = false;
 
   // Simular conexión en tiempo real (temporalmente deshabilitado)

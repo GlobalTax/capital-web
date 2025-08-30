@@ -37,9 +37,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     isDisabled: false
   });
 
-  // Reduce circuit breaker verbosity for admin routes 
-  const MAX_FAILURES = 3; // Increased back for stability
-  const CIRCUIT_RESET_TIME = 300000; // 5 minutes
+  // Aggressive circuit breaker to reduce Edge Function consumption
+  const MAX_FAILURES = 2; // Reduced for faster circuit opening
+  const CIRCUIT_RESET_TIME = 600000; // 10 minutes
   const shouldAllowRequest = useCallback(() => {
     if (circuitState.isDisabled) {
       return false; // Tracking completely disabled
@@ -160,9 +160,11 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
 
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId.substring(0, 8) + '...');
       
-      // Skip tracking in development or admin routes to prevent loops
-      if (process.env.NODE_ENV !== 'production' || window.location.pathname.startsWith('/admin')) {
-        console.debug('⏭️ Tracking skipped (dev mode or admin route)');
+      // Skip tracking in development, admin routes, or when circuit is open
+      if (process.env.NODE_ENV !== 'production' || 
+          window.location.pathname.startsWith('/admin') ||
+          circuitState.isOpen) {
+        console.debug('⏭️ Tracking skipped (dev/admin/circuit-open)');
         return;
       }
       
