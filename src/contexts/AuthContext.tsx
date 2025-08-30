@@ -15,6 +15,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   checkAdminStatus: (userId?: string) => Promise<boolean>;
+  forceAdminReload: () => Promise<void>;
+  getDebugInfo: () => any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,43 +32,97 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
     const targetUserId = userId || user?.id;
+    
+    console.log('🔐🔍 ADMIN CHECK START:', {
+      targetUserId,
+      hasUser: !!user,
+      currentIsAdmin: isAdmin,
+      isCheckingAdmin,
+      timestamp: new Date().toISOString()
+    });
+    
     if (!targetUserId) {
-      console.log('🔐 Admin check: No user ID provided');
+      console.log('🔐❌ Admin check: No user ID provided');
       setIsAdmin(false);
       return false;
     }
     
     if (isCheckingAdmin) {
-      console.log('🔐 Admin check: Already checking, skipping to prevent loops');
+      console.log('🔐⏳ Admin check: Already checking, skipping to prevent loops');
       return isAdmin;
     }
     
     setIsCheckingAdmin(true);
-    console.log('🔐 Starting admin status check for user:', targetUserId);
     
     try {
-      const { data, error } = await supabase
+      console.log('🔐📊 Executing admin query for user:', targetUserId);
+      
+      // Enhanced query with debugging
+      const { data, error, status, statusText } = await supabase
         .from('admin_users')
-        .select('id, role, is_active, needs_credentials')
+        .select('id, user_id, email, role, is_active, needs_credentials, created_at, updated_at')
         .eq('user_id', targetUserId)
         .maybeSingle();
 
+      console.log('🔐📈 Query response:', {
+        data,
+        error,
+        status,
+        statusText,
+        hasData: !!data,
+        timestamp: new Date().toISOString()
+      });
+
       if (error) {
-        console.error('🔐 Admin check error:', error.message);
-        logger.warn('Error checking admin status', { userId: targetUserId, error: error.message }, { context: 'auth', component: 'AuthContext' });
+        console.error('🔐💥 Admin check error:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        logger.warn('Error checking admin status', { 
+          userId: targetUserId, 
+          error: error.message,
+          errorCode: error.code 
+        }, { context: 'auth', component: 'AuthContext' });
         setIsAdmin(false);
         return false;
       }
 
-      console.log('🔐 Admin data retrieved:', data);
+      // Detailed status determination
+      const adminStatus = !!(data && data.is_active === true);
       
-      const adminStatus = !!data?.is_active;
-      console.log('🔐 Admin status determined:', adminStatus);
+      console.log('🔐✅ Admin status determination:', {
+        hasRecord: !!data,
+        isActive: data?.is_active,
+        needsCredentials: data?.needs_credentials,
+        role: data?.role,
+        finalStatus: adminStatus,
+        userEmail: data?.email
+      });
       
       setIsAdmin(adminStatus);
+      
+      // Log successful admin verification
+      if (adminStatus) {
+        console.log('🔐🎉 ADMIN ACCESS GRANTED:', {
+          userId: targetUserId,
+          email: data?.email,
+          role: data?.role
+        });
+        logger.info('Admin access granted', {
+          userId: targetUserId,
+          role: data?.role
+        }, { context: 'auth', component: 'AuthContext' });
+      }
+      
       return adminStatus;
     } catch (error) {
-      console.error('🔐 Admin check failed:', error);
+      console.error('🔐💀 Admin check failed with exception:', {
+        error,
+        message: error?.message,
+        stack: error?.stack
+      });
       logger.error('Failed to check admin status', error as Error, { 
         context: 'auth', 
         component: 'AuthContext',
@@ -76,6 +132,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     } finally {
       setIsCheckingAdmin(false);
+      console.log('🔐🏁 ADMIN CHECK END:', {
+        targetUserId,
+        finalIsAdmin: isAdmin,
+        timestamp: new Date().toISOString()
+      });
     }
   }, [user?.id, isCheckingAdmin, isAdmin]);
 
@@ -238,6 +299,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  // Force admin reload for debugging
+  const forceAdminReload = useCallback(async () => {
+    console.log('🔐🔄 FORCE ADMIN RELOAD INITIATED');
+    setIsAdmin(false);
+    setIsCheckingAdmin(false);
+    
+    if (user?.id) {
+      console.log('🔐🔄 Force checking admin status for:', user.id);
+      await checkAdminStatus(user.id);
+    } else {
+      console.log('🔐🔄 No user to check admin status for');
+    }
+  }, [user?.id, checkAdminStatus]);
+
+  // Get debug information
+  const getDebugInfo = useCallback(() => {
+    return {
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        authenticated: !!user
+      } : null,
+      session: session ? {
+        hasSession: !!session,
+        accessToken: !!session.access_token,
+        refreshToken: !!session.refresh_token,
+        expiresAt: session.expires_at
+      } : null,
+      auth: {
+        isLoading,
+        isAdmin,
+        isCheckingAdmin
+      },
+      timestamp: new Date().toISOString()
+    };
+  }, [user, session, isLoading, isAdmin, isCheckingAdmin]);
+
   const value = {
     user,
     session,
@@ -247,6 +345,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signOut,
     checkAdminStatus,
+    forceAdminReload,
+    getDebugInfo,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

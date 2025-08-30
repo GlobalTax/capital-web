@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Shield, CheckCircle, AlertCircle, RefreshCw, Bug } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 import IframeSandboxGuard from '@/components/admin/IframeSandboxGuard';
+import { AdminDebugPanel } from '@/components/admin/AdminDebugPanel';
 
 const AdminLogin = () => {
-  const { user, isLoading, signIn, signUp, isAdmin, checkAdminStatus } = useAuth();
+  const { user, isLoading, signIn, signUp, isAdmin, checkAdminStatus, forceAdminReload } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'register' | 'recovery'>('login');
-  const [email, setEmail] = useState('');
+  const [mode, setMode] = useState<'login' | 'register' | 'recovery' | 'debug'>('login');
+  const [email, setEmail] = useState('s.navarro@obn.es'); // Pre-fill for debugging
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
@@ -169,6 +170,11 @@ const AdminLogin = () => {
               </Alert>
             )}
 
+            {/* Debug Mode */}
+            {mode === 'debug' && (
+              <AdminDebugPanel />
+            )}
+
             {/* Opción de recuperación para admins existentes */}
             {!recoveryAttempted && mode === 'login' && (
               <Alert>
@@ -182,6 +188,24 @@ const AdminLogin = () => {
                     className="p-0 h-auto text-sm underline ml-1"
                   >
                     Intentar recuperar acceso
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Force Admin Reload Button */}
+            {mode === 'login' && user && !isAdmin && (
+              <Alert>
+                <Bug className="h-4 w-4" />
+                <AlertDescription>
+                  ¿Usuario autenticado pero sin acceso admin?
+                  <Button 
+                    variant="link" 
+                    onClick={forceAdminReload}
+                    disabled={authLoading}
+                    className="p-0 h-auto text-sm underline ml-1"
+                  >
+                    Forzar recarga admin
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -225,13 +249,37 @@ const AdminLogin = () => {
             )}
 
             <div className="text-center space-y-2">
-              <Button
-                variant="link"
-                onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                className="text-sm"
-              >
-                {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
-              </Button>
+              {mode !== 'debug' && (
+                <>
+                  <Button
+                    variant="link"
+                    onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                    className="text-sm"
+                  >
+                    {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
+                  </Button>
+                  
+                  <div>
+                    <Button
+                      variant="link"
+                      onClick={() => setMode('debug')}
+                      className="text-sm text-blue-600"
+                    >
+                      Panel de Debug
+                    </Button>
+                  </div>
+                </>
+              )}
+              
+              {mode === 'debug' && (
+                <Button
+                  variant="link"
+                  onClick={() => setMode('login')}
+                  className="text-sm"
+                >
+                  Volver al login
+                </Button>
+              )}
               
               <div>
                 <Button
