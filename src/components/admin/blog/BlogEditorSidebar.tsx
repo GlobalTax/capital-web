@@ -3,9 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { BlogPost } from '@/types/blog';
-import { Book, Settings, Globe, Image } from 'lucide-react';
+import { Book, Settings, Globe, Image, Plus } from 'lucide-react';
 import ImageUploadField from '@/components/admin/ImageUploadField';
+import AuthorSelector from './AuthorSelector';
+import { useBlogCategories } from '@/hooks/useBlogCategories';
+import { useState } from 'react';
 
 interface BlogEditorSidebarProps {
   post: BlogPost;
@@ -17,11 +21,28 @@ interface BlogEditorSidebarProps {
 }
 
 const BlogEditorSidebar = ({ post, updatePost, errors = {} }: BlogEditorSidebarProps) => {
-  const categories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal'];
+  const { categories } = useBlogCategories();
+  const [newCategory, setNewCategory] = useState('');
+  const [showAddCategory, setShowAddCategory] = useState(false);
   
   const handleTagsChange = (tagsString: string) => {
     const tags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     updatePost({ tags });
+  };
+
+  const handleAuthorChange = (name: string, avatarUrl?: string) => {
+    updatePost({ 
+      author_name: name,
+      author_avatar_url: avatarUrl || ''
+    });
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      updatePost({ category: newCategory.trim() });
+      setNewCategory('');
+      setShowAddCategory(false);
+    }
   };
 
   return (
@@ -37,34 +58,69 @@ const BlogEditorSidebar = ({ post, updatePost, errors = {} }: BlogEditorSidebarP
         <CardContent className="space-y-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground">Categoría *</label>
-            <Select 
-              value={post.category} 
-              onValueChange={(value) => updatePost({ category: value })}
-            >
-              <SelectTrigger className={`mt-1 ${errors.category ? 'border-destructive' : ''}`}>
-                <SelectValue placeholder="Selecciona..." />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Select 
+                value={post.category} 
+                onValueChange={(value) => updatePost({ category: value })}
+              >
+                <SelectTrigger className={`mt-1 ${errors.category ? 'border-destructive' : ''}`}>
+                  <SelectValue placeholder="Selecciona..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {showAddCategory ? (
+                <div className="flex gap-2">
+                  <Input
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Nueva categoría..."
+                    className="text-xs"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleAddCategory}
+                    disabled={!newCategory.trim()}
+                  >
+                    Añadir
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setShowAddCategory(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAddCategory(true)}
+                  className="w-full"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Añadir categoría
+                </Button>
+              )}
+            </div>
             {errors.category && (
               <p className="text-xs text-destructive mt-1">{errors.category}</p>
             )}
           </div>
 
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Autor</label>
-            <Input
-              value={post.author_name}
-              onChange={(e) => updatePost({ author_name: e.target.value })}
-              className="mt-1"
-            />
-          </div>
+          <AuthorSelector
+            authorName={post.author_name}
+            authorAvatarUrl={post.author_avatar_url}
+            onAuthorChange={handleAuthorChange}
+          />
 
           <div>
             <label className="text-xs font-medium text-muted-foreground">Tiempo de lectura (min)</label>

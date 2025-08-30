@@ -2,9 +2,13 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { BlogPost } from '@/types/blog';
-import { Book, Settings, Globe, Image } from 'lucide-react';
+import { Book, Settings, Globe, Image, Plus } from 'lucide-react';
 import ImageUploadField from '@/components/admin/ImageUploadField';
+import AuthorSelector from './AuthorSelector';
+import { useBlogCategories } from '@/hooks/useBlogCategories';
+import { useState } from 'react';
 
 interface SimpleBlogEditorSidebarProps {
   post: BlogPost;
@@ -16,7 +20,9 @@ interface SimpleBlogEditorSidebarProps {
 }
 
 const SimpleBlogEditorSidebar = ({ post, updatePost, errors = {} }: SimpleBlogEditorSidebarProps) => {
-  const categories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal'];
+  const { categories } = useBlogCategories();
+  const [newCategory, setNewCategory] = useState('');
+  const [showAddCategory, setShowAddCategory] = useState(false);
   
   const handleTagsChange = (tagsString: string) => {
     const tags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
@@ -25,6 +31,21 @@ const SimpleBlogEditorSidebar = ({ post, updatePost, errors = {} }: SimpleBlogEd
 
   const handleCategoryChange = (category: string) => {
     updatePost({ category });
+  };
+
+  const handleAuthorChange = (name: string, avatarUrl?: string) => {
+    updatePost({ 
+      author_name: name,
+      author_avatar_url: avatarUrl || ''
+    });
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      updatePost({ category: newCategory.trim() });
+      setNewCategory('');
+      setShowAddCategory(false);
+    }
   };
 
   return (
@@ -40,34 +61,69 @@ const SimpleBlogEditorSidebar = ({ post, updatePost, errors = {} }: SimpleBlogEd
         <CardContent className="space-y-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Categoría *</label>
-            <div className="grid grid-cols-2 gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => handleCategoryChange(category)}
-                  className={`p-2 text-xs rounded border text-left transition-colors ${
-                    post.category === category
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background border-border hover:bg-muted'
-                  }`}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryChange(category)}
+                    className={`p-2 text-xs rounded border text-left transition-colors ${
+                      post.category === category
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background border-border hover:bg-muted'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+              
+              {showAddCategory ? (
+                <div className="flex gap-2">
+                  <Input
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Nueva categoría..."
+                    className="text-xs"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleAddCategory}
+                    disabled={!newCategory.trim()}
+                  >
+                    Añadir
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setShowAddCategory(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAddCategory(true)}
+                  className="w-full"
                 >
-                  {category}
-                </button>
-              ))}
+                  <Plus className="h-3 w-3 mr-1" />
+                  Añadir categoría
+                </Button>
+              )}
             </div>
             {errors.category && (
               <p className="text-xs text-destructive mt-1">{errors.category}</p>
             )}
           </div>
 
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-2 block">Autor</label>
-            <Input
-              value={post.author_name}
-              onChange={(e) => updatePost({ author_name: e.target.value })}
-              className="mt-1"
-            />
-          </div>
+          <AuthorSelector
+            authorName={post.author_name}
+            authorAvatarUrl={post.author_avatar_url}
+            onAuthorChange={handleAuthorChange}
+          />
 
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Tiempo de lectura (min)</label>
