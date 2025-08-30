@@ -14,34 +14,34 @@ import {
 const VentaEmpresasCaseStudies = () => {
   const caseStudies = [
     {
-      sector: "SaaS B2B",
-      company: "TechFlow Solutions",
+      sector: "Industrial y Manufacturero",
+      company: "Componentes Mecánicos SA",
       valuation: "€12.5M",
       multiple: "6.2x EBITDA",
       roi: "+320%",
       before: "€2M EBITDA",
       after: "Vendida a grupo internacional",
-      highlights: ["Escalabilidad demostrada", "ARR recurrente 95%", "Expansión internacional"]
+      highlights: ["Empresa familiar 3ª generación", "Contratos a largo plazo", "Expansión europea"]
     },
     {
-      sector: "E-commerce",
-      company: "RetailMax Pro", 
+      sector: "Retail y Consumo",
+      company: "Cadena Tiendas Familiar", 
       valuation: "€8.7M",
       multiple: "4.8x EBITDA",
       roi: "+280%",
       before: "€1.8M EBITDA",
       after: "Adquirida por competidor estratégico", 
-      highlights: ["Base de clientes leal", "Márgenes optimizados", "Logística automatizada"]
+      highlights: ["Red de 15 tiendas", "Marca reconocida", "Sin problemas de sucesión"]
     },
     {
-      sector: "HealthTech",
-      company: "MedDevice Innovation",
+      sector: "Construcción",
+      company: "Constructora Regional SL",
       valuation: "€15.2M", 
       multiple: "7.1x EBITDA",
       roi: "+450%",
       before: "€2.1M EBITDA",
       after: "Vendida a fondo de private equity",
-      highlights: ["Tecnología patentada", "Regulación CE", "Pipeline robusto"]
+      highlights: ["Cartera de obra pública", "Equipo experimentado", "Diversificación geográfica"]
     },
     {
       sector: "Servicios B2B", 

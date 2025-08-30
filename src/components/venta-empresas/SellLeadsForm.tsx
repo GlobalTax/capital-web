@@ -246,11 +246,14 @@ const SellLeadsForm = () => {
                       className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                     >
                       <option value="">Selecciona un sector</option>
-                      <option value="Tecnología">Tecnología</option>
-                      <option value="Salud">Salud</option>
+                      <option value="Industrial y Manufacturero">Industrial y Manufacturero</option>
+                      <option value="Retail y Consumo">Retail y Consumo</option>
+                      <option value="Construcción">Construcción</option>
+                      <option value="Alimentación y Bebidas">Alimentación y Bebidas</option>
+                      <option value="Automoción">Automoción</option>
+                      <option value="Logística y Transporte">Logística y Transporte</option>
                       <option value="Servicios">Servicios</option>
-                      <option value="Manufactura">Manufactura</option>
-                      <option value="Retail">Retail</option>
+                      <option value="Tecnología">Tecnología</option>
                       <option value="Otros">Otros</option>
                     </select>
                   </div>

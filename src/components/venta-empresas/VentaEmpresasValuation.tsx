@@ -36,12 +36,12 @@ const VentaEmpresasValuation = () => {
   ];
 
   const multiples = [
-    { sector: 'Salud', range: '3.6x - 8.3x', median: '7.2x', description: 'Múltiplos más altos del mercado' },
-    { sector: 'Tecnología', range: '3.4x - 7.8x', median: '6.8x', description: 'Sector de alto crecimiento' },
-    { sector: 'Finanzas', range: '3.2x - 7.5x', median: '6.3x', description: 'Estabilidad y regulación' },
-    { sector: 'Manufactura', range: '3.3x - 7.2x', median: '6.2x', description: 'Capital intensivo' },
-    { sector: 'Servicios', range: '2.9x - 6.7x', median: '5.8x', description: 'Amplio espectro' },
-    { sector: 'Retail', range: '2.6x - 6.4x', median: '5.2x', description: 'Competencia intensa' }
+    { sector: 'Manufactura', range: '3.3x - 7.2x', median: '6.2x', description: 'Empresas familiares sólidas' },
+    { sector: 'Servicios', range: '2.9x - 6.7x', median: '5.8x', description: 'Base amplia de PyMEs' },
+    { sector: 'Construcción', range: '2.8x - 6.2x', median: '5.5x', description: 'Sector tradicional español' },
+    { sector: 'Retail', range: '2.6x - 6.4x', median: '5.2x', description: 'Comercio familiar' },
+    { sector: 'Alimentación', range: '3.1x - 6.8x', median: '5.9x', description: 'Industria agroalimentaria' },
+    { sector: 'Tecnología', range: '3.4x - 7.8x', median: '6.8x', description: 'Sector de alto crecimiento' }
   ];
 
   const optimizaciones = [

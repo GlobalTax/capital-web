@@ -89,7 +89,7 @@ const VentaEmpresasHero = () => {
                 <div className="border-t border-border pt-4">
                   <div className="text-sm font-medium text-foreground mb-2">Sectores Principales</div>
                   <div className="flex flex-wrap gap-2">
-                    {['SaaS', 'HealthTech', 'FinTech', 'CleanTech'].map((sector) => (
+                    {['Industrial y Manufacturero', 'Retail y Consumo', 'Construcción', 'Alimentación y Bebidas'].map((sector) => (
                       <span key={sector} className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-xs font-medium">
                         {sector}
                       </span>
