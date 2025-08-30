@@ -208,6 +208,11 @@ function AppContent() {
       }
     }
 
+    // Si entran por app.capittal.es, redirigir al login de admin
+    if (host === 'app.capittal.es') {
+      return <Navigate to="/admin/login" replace />;
+    }
+
     // Redirecciones internas por host -> ruta (si en el mismo dominio)
     const hostRedirects: Record<string, string> = {
       'webcapittal.lovable.app': '/lp/calculadora',
