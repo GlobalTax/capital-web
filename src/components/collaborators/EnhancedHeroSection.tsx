@@ -25,27 +25,27 @@ export const EnhancedHeroSection = () => {
                 ⭐ Programa Exclusivo
               </Badge>
               
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+              <h1 className="text-5xl md:text-6xl font-bold text-black leading-tight">
                 Únete al equipo de expertos en M&A
               </h1>
               
-              <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
+              <p className="text-xl text-black leading-relaxed max-w-lg">
                 Forma parte de nuestra red de profesionales y accede a oportunidades exclusivas de valoración y transacciones
               </p>
 
               {/* Statistics */}
               <div className="grid grid-cols-3 gap-6 py-8">
                 <div>
-                  <div className="text-3xl font-bold text-foreground">50+</div>
-                  <div className="text-sm text-muted-foreground">Colaboradores Activos</div>
+                  <div className="text-3xl font-bold text-black">50+</div>
+                  <div className="text-sm text-black">Colaboradores Activos</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-foreground">€1.2B</div>
-                  <div className="text-sm text-muted-foreground">Valor Gestionado</div>
+                  <div className="text-3xl font-bold text-black">€1.2B</div>
+                  <div className="text-sm text-black">Valor Gestionado</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-foreground">95%</div>
-                  <div className="text-sm text-muted-foreground">Satisfacción</div>
+                  <div className="text-3xl font-bold text-black">95%</div>
+                  <div className="text-sm text-black">Satisfacción</div>
                 </div>
               </div>
 
@@ -76,27 +76,27 @@ export const EnhancedHeroSection = () => {
               <div className="p-6 border-b">
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">50+</div>
-                    <div className="text-sm text-muted-foreground">Colaboradores Activos</div>
+                    <div className="text-2xl font-bold text-black">50+</div>
+                    <div className="text-sm text-black">Colaboradores Activos</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-foreground">€1.2B</div>
-                    <div className="text-sm text-muted-foreground">Valor Gestionado</div>
+                    <div className="text-2xl font-bold text-black">€1.2B</div>
+                    <div className="text-sm text-black">Valor Gestionado</div>
                   </div>
                 </div>
               </div>
               
               {/* Recent Activity */}
               <div className="p-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-4">Actividad Reciente</h4>
+                <h4 className="text-sm font-medium text-black mb-4">Actividad Reciente</h4>
                 <div className="space-y-4">
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`w-3 h-3 rounded-full ${activity.color}`}></div>
                         <div>
-                          <div className="font-medium text-foreground text-sm">{activity.name}</div>
-                          <div className="text-xs text-muted-foreground">{activity.value}</div>
+                          <div className="font-medium text-black text-sm">{activity.name}</div>
+                          <div className="text-xs text-black">{activity.value}</div>
                         </div>
                       </div>
                       <div className={`font-medium text-xs ${activity.statusColor}`}>
@@ -108,8 +108,8 @@ export const EnhancedHeroSection = () => {
                 
                 {/* Footer Stats */}
                 <div className="mt-6 pt-4 border-t flex justify-between text-sm">
-                  <span className="text-muted-foreground">95% Satisfacción</span>
-                  <span className="text-muted-foreground">23 activos</span>
+                  <span className="text-black">95% Satisfacción</span>
+                  <span className="text-black">23 activos</span>
                 </div>
               </div>
             </div>
@@ -121,12 +121,12 @@ export const EnhancedHeroSection = () => {
       <section className="pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-lg font-medium text-muted-foreground">Confían en Nosotros</h2>
+            <h2 className="text-lg font-medium text-black">Confían en Nosotros</h2>
           </div>
           
           <div className="flex flex-wrap justify-center items-center gap-12 opacity-70">
             {trustedLogos.map((logo, index) => (
-              <div key={index} className="text-lg font-bold text-muted-foreground uppercase tracking-wider">
+              <div key={index} className="text-lg font-bold text-black uppercase tracking-wider">
                 {logo}
               </div>
             ))}

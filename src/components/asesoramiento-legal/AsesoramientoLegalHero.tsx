@@ -16,12 +16,12 @@ const AsesoramientoLegalHero = () => {
                 En partnership con Navarro Legal
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight">
                 Asesoramiento Legal
                 <span className="block text-primary">M&A Especializado</span>
               </h1>
               
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <p className="text-xl text-black leading-relaxed">
                 Protege tu transacción con la experiencia combinada de nuestros consultores de M&A 
                 y Navarro Legal. Gestionamos todos los aspectos legales para que tu operación sea un éxito.
               </p>
@@ -30,12 +30,12 @@ const AsesoramientoLegalHero = () => {
             {/* Key Metrics */}
             <div className="grid grid-cols-2 gap-6">
               <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-foreground mb-2">200+</div>
-                <div className="text-sm text-muted-foreground">Operaciones Asesoradas</div>
+                <div className="text-3xl font-bold text-black mb-2">200+</div>
+                <div className="text-sm text-black">Operaciones Asesoradas</div>
               </div>
               <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-foreground mb-2">€2.5B</div>
-                <div className="text-sm text-muted-foreground">Valor Total Protegido</div>
+                <div className="text-3xl font-bold text-black mb-2">€2.5B</div>
+                <div className="text-sm text-black">Valor Total Protegido</div>
               </div>
             </div>
 

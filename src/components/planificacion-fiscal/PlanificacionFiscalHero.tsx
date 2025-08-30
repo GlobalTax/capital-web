@@ -17,20 +17,20 @@ const PlanificacionFiscalHero = () => {
                 Planificación y{' '}
                 <span className="text-gray-600">Optimización Fiscal en M&A</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Reducimos la carga fiscal en operaciones corporativas diseñando estructuras 
-                eficientes y cumpliendo con la normativa. Maximiza el valor de tu transacción.
-              </p>
+          <p className="text-lg text-black leading-relaxed">
+            Reducimos la carga fiscal en operaciones corporativas diseñando estructuras 
+            eficientes y cumpliendo con la normativa. Maximiza el valor de tu transacción.
+          </p>
             </div>
 
             <div className="grid grid-cols-2 gap-8 mb-8">
               <div>
                 <div className="text-3xl font-bold text-black mb-2">€180M</div>
-                <div className="text-gray-600">Ahorro Fiscal Generado</div>
+                <div className="text-black">Ahorro Fiscal Generado</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-black mb-2">23%</div>
-                <div className="text-gray-600">Ahorro Promedio</div>
+                <div className="text-black">Ahorro Promedio</div>
               </div>
             </div>
 
@@ -62,15 +62,15 @@ const PlanificacionFiscalHero = () => {
               
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Valor de la Operación</span>
+                  <span className="text-black">Valor de la Operación</span>
                   <span className="font-bold text-black">€15.000.000</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Fiscalidad Estándar</span>
+                  <span className="text-black">Fiscalidad Estándar</span>
                   <span className="text-red-600 font-bold">€3.450.000</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Con Planificación Fiscal</span>
+                  <span className="text-black">Con Planificación Fiscal</span>
                   <span className="text-green-600 font-bold">€2.250.000</span>
                 </div>
                 
@@ -83,11 +83,11 @@ const PlanificacionFiscalHero = () => {
               </div>
 
               <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600 mb-2">Optimización Fiscal</div>
+                <div className="text-sm text-black mb-2">Optimización Fiscal</div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div className="bg-green-500 h-2 rounded-full" style={{width: '80%'}}></div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1">80% de Eficiencia Fiscal</div>
+                <div className="text-xs text-black mt-1">80% de Eficiencia Fiscal</div>
               </div>
             </div>
           </div>

@@ -31,11 +31,11 @@ const VentaEmpresasHeroService = () => {
                 Servicio Integral de
                 <span className="text-blue-600"> Venta de Empresas</span>
               </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
-                Metodología probada en <strong>más de 200 operaciones</strong> exitosas. 
-                Asesoramiento completo desde la valoración inicial hasta el cierre de la transacción, 
-                maximizando el valor y minimizando los riesgos para nuestros clientes.
-              </p>
+            <p className="text-xl text-black leading-relaxed">
+              Metodología probada en <strong>más de 200 operaciones</strong> exitosas. 
+              Asesoramiento completo desde la valoración inicial hasta el cierre de la transacción, 
+              maximizando el valor y minimizando los riesgos para nuestros clientes.
+            </p>
             </div>
 
             {/* Service Highlights */}
@@ -60,7 +60,7 @@ const VentaEmpresasHeroService = () => {
               ].map((item, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   {item.icon}
-                  <span className="text-gray-700">{item.text}</span>
+                  <span className="text-black">{item.text}</span>
                 </div>
               ))}
             </div>
@@ -105,30 +105,30 @@ const VentaEmpresasHeroService = () => {
                   <span className="text-2xl text-white font-bold">M&A</span>
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900">Resultados Profesionales</h3>
+                <h3 className="text-2xl font-bold text-black">Resultados Profesionales</h3>
                 
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">200+</div>
-                    <div className="text-sm text-gray-600">Operaciones</div>
+                    <div className="text-2xl font-bold text-black">200+</div>
+                    <div className="text-sm text-black">Operaciones</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">€2.5B+</div>
-                    <div className="text-sm text-gray-600">Volumen gestionado</div>
+                    <div className="text-2xl font-bold text-black">€2.5B+</div>
+                    <div className="text-sm text-black">Volumen gestionado</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">95%</div>
-                    <div className="text-sm text-gray-600">Tasa de éxito</div>
+                    <div className="text-2xl font-bold text-black">95%</div>
+                    <div className="text-sm text-black">Tasa de éxito</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-900">7.5x</div>
-                    <div className="text-sm text-gray-600">Múltiplo promedio</div>
+                    <div className="text-2xl font-bold text-black">7.5x</div>
+                    <div className="text-sm text-black">Múltiplo promedio</div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900">Sectores de Especialización</h4>
-                  <div className="text-sm text-gray-600 space-y-1">
+                  <h4 className="font-semibold text-black">Sectores de Especialización</h4>
+                  <div className="text-sm text-black space-y-1">
                     <div>• Tecnología y Software</div>
                     <div>• E-commerce y Retail</div>
                     <div>• Servicios Profesionales</div>

@@ -57,7 +57,7 @@ const ValoracionesHero = () => {
               Valoración Profesional de Empresas
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-black mb-8 leading-relaxed">
               Valoraciones precisas con metodologías reconocidas internacionalmente. 
               Más de 15 años de experiencia en M&A y valoraciones corporativas.
             </p>
@@ -66,7 +66,7 @@ const ValoracionesHero = () => {
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                  <span className="text-gray-600">{benefit}</span>
+                  <span className="text-black">{benefit}</span>
                 </div>
               ))}
             </div>
@@ -96,7 +96,7 @@ const ValoracionesHero = () => {
                   <h3 className="text-lg font-semibold text-black">Metodologías de Valoración</h3>
                   <p className="text-gray-500 text-sm">Análisis multimetodológico</p>
                 </div>
-                <div className="bg-gray-100 rounded px-3 py-1 text-sm font-medium text-gray-600">
+                <div className="bg-gray-100 rounded px-3 py-1 text-sm font-medium text-black">
                   ±5% Precisión
                 </div>
               </div>
