@@ -210,7 +210,7 @@ function AppContent() {
 
     // Si entran por app.capittal.es, redirigir al login de admin
     if (host === 'app.capittal.es') {
-      window.location.href = '/admin/login';
+      window.location.href = 'https://capittal.es/admin/login';
       return null;
     }
 
