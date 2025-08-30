@@ -4,6 +4,7 @@ import { HomeLayout } from '@/shared';
 import Hero from '@/components/Hero';
 import SocialProofCompact from '@/components/SocialProofCompact';
 import Services from '@/components/Services';
+import EcosistemaIntegral from '@/components/EcosistemaIntegral';
 import CaseStudiesCompact from '@/components/CaseStudiesCompact';
 import OperationsCompact from '@/components/OperationsCompact';
 import WhyChooseCapittal from '@/components/WhyChooseCapittal';
@@ -15,6 +16,7 @@ const Index = () => {
       <Hero />
       <SocialProofCompact />
       <Services />
+      <EcosistemaIntegral />
       <CaseStudiesCompact />
       <OperationsCompact />
       <WhyChooseCapittal />
