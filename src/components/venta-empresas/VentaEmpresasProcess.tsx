@@ -6,7 +6,7 @@ const VentaEmpresasProcess = () => {
     {
       title: 'Análisis Inicial',
       description: 'Evaluación completa de tu empresa, incluyendo situación financiera, posición en el mercado y potencial de crecimiento.',
-      duration: '1-2 semanas'
+      duration: '2 semanas'
     },
     {
       title: 'Preparación de Documentación',
@@ -84,8 +84,8 @@ const VentaEmpresasProcess = () => {
             Duración Total del Proceso
           </h3>
           <p className="text-gray-600 mb-8">
-            El proceso completo suele durar entre <strong>4 a 6 meses</strong>, 
-            dependiendo de la complejidad de la empresa y las condiciones del mercado.
+            El proceso completo suele durar entre <strong>8-12 meses (hasta 1 año)</strong>, 
+            desde que entra hasta que se firma la compraventa en el notario.
           </p>
           <div className="grid grid-cols-3 gap-8">
             <div>
@@ -97,7 +97,7 @@ const VentaEmpresasProcess = () => {
               <div className="text-sm text-gray-600">Múltiplo promedio</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black mb-2">120</div>
+              <div className="text-2xl font-bold text-black mb-2">300</div>
               <div className="text-sm text-gray-600">Días promedio</div>
             </div>
           </div>
