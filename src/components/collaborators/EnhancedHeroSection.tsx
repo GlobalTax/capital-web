@@ -3,10 +3,10 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 import { Badge } from '@/components/ui/badge';
 
 export const EnhancedHeroSection = () => {
-  const companies = [
-    { name: 'TechCorp Solutions', value: '€12.5M', change: '+8.2%', color: 'bg-green-500' },
-    { name: 'Industrial Partners', value: '€25.8M', change: '+12.4%', color: 'bg-blue-500' },
-    { name: 'Digital Ventures', value: '€18.3M', change: '+6.1%', color: 'bg-purple-500' }
+  const recentActivity = [
+    { name: 'TechCorp Valuation', value: '€25M', status: 'Completado', color: 'bg-green-500', statusColor: 'text-green-600' },
+    { name: 'Industrial M&A', value: '€45M', status: 'En Progreso', color: 'bg-blue-500', statusColor: 'text-blue-600' },
+    { name: 'Retail DD', value: '€18M', status: 'Iniciado', color: 'bg-slate-800', statusColor: 'text-slate-600' }
   ];
 
   const trustedLogos = [
@@ -22,67 +22,95 @@ export const EnhancedHeroSection = () => {
             {/* Left Content */}
             <div className="space-y-8">
               <Badge className="bg-primary text-primary-foreground px-4 py-1.5">
-                Líderes en M&A desde 2008
+                ⭐ Programa Exclusivo
               </Badge>
               
               <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-                Especialistas en compraventa de empresas
+                Únete al equipo de expertos en M&A
               </h1>
               
               <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
-                Maximizamos el valor de tu empresa con resultados garantizados
+                Forma parte de nuestra red de profesionales y accede a oportunidades exclusivas de valoración y transacciones
               </p>
 
               {/* Statistics */}
-              <div className="grid grid-cols-2 gap-8 py-8">
+              <div className="grid grid-cols-3 gap-6 py-8">
                 <div>
-                  <div className="text-4xl font-bold text-foreground">€1.0B+</div>
-                  <div className="text-muted-foreground">Valor gestionado</div>
+                  <div className="text-3xl font-bold text-foreground">50+</div>
+                  <div className="text-sm text-muted-foreground">Colaboradores Activos</div>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold text-foreground">95%</div>
-                  <div className="text-muted-foreground">Tasa de éxito</div>
+                  <div className="text-3xl font-bold text-foreground">€1.2B</div>
+                  <div className="text-sm text-muted-foreground">Valor Gestionado</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-foreground">95%</div>
+                  <div className="text-sm text-muted-foreground">Satisfacción</div>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <InteractiveHoverButton 
-                  text="Valorar mi empresa"
+                  text="Aplicar Ahora"
                   variant="primary"
                   size="lg"
                 />
                 <InteractiveHoverButton 
-                  text="Ver Casos de Éxito"
+                  text="Ver Requisitos"
                   variant="outline"
                   size="lg"
                 />
               </div>
             </div>
 
-            {/* Right Capital Market Panel */}
+            {/* Right Collaborators Dashboard Panel */}
             <div className="bg-card border rounded-lg shadow-sm">
               {/* Header */}
-              <div className="bg-slate-900 text-white px-6 py-4 rounded-t-lg">
-                <h3 className="text-lg font-medium">Capital Market</h3>
+              <div className="bg-slate-900 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+                <h3 className="text-lg font-medium">Capital Collaborators - Network Dashboard</h3>
+                <Badge className="bg-blue-600 text-white px-2 py-1 text-xs">+12 Nuevos</Badge>
               </div>
               
-              {/* Companies List */}
-              <div className="p-6 space-y-4">
-                {companies.map((company, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${company.color}`}></div>
-                      <div>
-                        <div className="font-medium text-foreground">{company.name}</div>
-                        <div className="text-sm text-muted-foreground">{company.value}</div>
+              {/* Top Stats */}
+              <div className="p-6 border-b">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">50+</div>
+                    <div className="text-sm text-muted-foreground">Colaboradores Activos</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">€1.2B</div>
+                    <div className="text-sm text-muted-foreground">Valor Gestionado</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Recent Activity */}
+              <div className="p-6">
+                <h4 className="text-sm font-medium text-muted-foreground mb-4">Actividad Reciente</h4>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${activity.color}`}></div>
+                        <div>
+                          <div className="font-medium text-foreground text-sm">{activity.name}</div>
+                          <div className="text-xs text-muted-foreground">{activity.value}</div>
+                        </div>
+                      </div>
+                      <div className={`font-medium text-xs ${activity.statusColor}`}>
+                        {activity.status}
                       </div>
                     </div>
-                    <div className="text-green-600 font-medium text-sm">
-                      {company.change}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                
+                {/* Footer Stats */}
+                <div className="mt-6 pt-4 border-t flex justify-between text-sm">
+                  <span className="text-muted-foreground">95% Satisfacción</span>
+                  <span className="text-muted-foreground">23 activos</span>
+                </div>
               </div>
             </div>
           </div>
