@@ -1,236 +1,141 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, TrendingUp, Award, Search, Filter, Star } from 'lucide-react';
 import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 const CaseStudies = () => {
-  const { filteredCases, isLoading, filterCaseStudies, getUniqueSectors, getUniqueYears } = useCaseStudies();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState<string>('all');
-  const [selectedYear, setSelectedYear] = useState<string>('all');
-  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+  const { caseStudies, isLoading } = useCaseStudies();
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    applyFilters(value, selectedSector, selectedYear, showFeaturedOnly);
-  };
-
-  const handleSectorFilter = (value: string) => {
-    setSelectedSector(value);
-    applyFilters(searchTerm, value, selectedYear, showFeaturedOnly);
-  };
-
-  const handleYearFilter = (value: string) => {
-    setSelectedYear(value);
-    applyFilters(searchTerm, selectedSector, value, showFeaturedOnly);
-  };
-
-  const handleFeaturedToggle = () => {
-    const newFeaturedState = !showFeaturedOnly;
-    setShowFeaturedOnly(newFeaturedState);
-    applyFilters(searchTerm, selectedSector, selectedYear, newFeaturedState);
-  };
-
-  const applyFilters = (search: string, sector: string, year: string, featured: boolean) => {
-    filterCaseStudies({
-      search: search || undefined,
-      sector: sector && sector !== 'all' ? sector : undefined,
-      year: year && year !== 'all' ? parseInt(year) : undefined,
-      featured: featured || undefined,
-    });
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedSector('all');
-    setSelectedYear('all');
-    setShowFeaturedOnly(false);
-    filterCaseStudies({});
-  };
-
-  const sectors = getUniqueSectors();
-  const years = getUniqueYears();
+  // Featured cases for display - limit to 6 most important
+  const featuredCases = [
+    {
+      title: "Venta Empresa Tecnológica",
+      sector: "Tecnología",
+      value: "12",
+      year: "2024",
+      description: "Exitosa venta de empresa de software con valoración 45% superior a expectativas iniciales."
+    },
+    {
+      title: "Adquisición Industrial",  
+      sector: "Industrial",
+      value: "28",
+      year: "2023", 
+      description: "Proceso de venta completo en 7 meses con múltiplo superior al mercado."
+    },
+    {
+      title: "Fusión Sector Servicios",
+      sector: "Servicios",
+      value: "35", 
+      year: "2023",
+      description: "Operación estratégica que superó las expectativas más optimistas del cliente."
+    },
+    {
+      title: "Venta Empresa Sanitaria",
+      sector: "Sanidad",
+      value: "15",
+      year: "2024",
+      description: "Transacción exitosa en sector regulado con comprador internacional."
+    },
+    {
+      title: "Adquisición Retail",
+      sector: "Retail", 
+      value: "22",
+      year: "2023",
+      description: "Proceso competitivo que maximizó el valor para los accionistas vendedores."
+    },
+    {
+      title: "Fusión Financiera",
+      sector: "Finanzas",
+      value: "18",
+      year: "2024", 
+      description: "Operación compleja con estructuración fiscal optimizada para ambas partes."
+    }
+  ];
 
   if (isLoading) {
-  return (
-    <section id="casos" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 mx-auto mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="bg-gray-200 h-80 rounded-lg"></div>
-              ))}
+    return (
+      <section className="py-32 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-96 mx-auto mb-16"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="bg-gray-200 h-64 rounded-lg"></div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  );
+      </section>
+    );
   }
 
   return (
-    <section id="casos" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            Casos de Éxito
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Nuestro historial habla por sí mismo. Descubra cómo hemos ayudado a empresas 
-            a alcanzar sus objetivos estratégicos.
-          </p>
+    <section className="py-32 bg-white">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Hero Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
+          <div className="text-center">
+            <div className="text-4xl font-light text-black mb-2">500+</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Transacciones</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-4xl font-light text-black mb-2">€5B+</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Valor Gestionado</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-4xl font-light text-black mb-2">25+</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Años Experiencia</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-4xl font-light text-black mb-2">95%</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Tasa Éxito</div>
+          </div>
         </div>
 
-        {/* Filtros */}
-        <div className="mb-12 space-y-6">
-          <div className="flex flex-wrap gap-4 items-center justify-center">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 w-4 h-4" />
-              <Input
-                placeholder="Buscar casos..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10 w-64"
-              />
+        {/* Cases Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featuredCases.map((case_, index) => (
+            <div key={index} className="text-center border-t border-gray-200 pt-8">
+              <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                {case_.sector} • {case_.year}
+              </div>
+              
+              <h3 className="text-lg font-medium text-black mb-4">
+                {case_.title}
+              </h3>
+              
+              <div className="text-2xl font-light text-black mb-4 border border-black px-3 py-1 inline-block">
+                €{case_.value}M
+              </div>
+              
+              <p className="text-sm text-black leading-relaxed">
+                {case_.description}
+              </p>
             </div>
-            
-            <Select value={selectedSector} onValueChange={handleSectorFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filtrar por sector" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los sectores</SelectItem>
-                {sectors.map((sector) => (
-                  <SelectItem key={sector} value={sector}>
-                    {sector}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedYear} onValueChange={handleYearFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Año" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year!.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant={showFeaturedOnly ? "default" : "outline"}
-              onClick={handleFeaturedToggle}
-              className="gap-2"
-            >
-              <Star className="w-4 h-4" />
-              Destacados
-            </Button>
-
-            <Button variant="ghost" onClick={clearFilters} className="gap-2">
-              <Filter className="w-4 h-4" />
-              Limpiar filtros
-            </Button>
-          </div>
-
-          <div className="text-center text-sm text-gray-600">
-            Mostrando {filteredCases.length} caso{filteredCases.length !== 1 ? 's' : ''} de éxito
-          </div>
+          ))}
         </div>
 
-        {filteredCases.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredCases.map((case_) => (
-              <Card key={case_.id} className="bg-card border shadow-sm hover:shadow-lg transition-all duration-300 ease-out group">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <Badge variant="secondary" className="rounded-lg">
-                      {case_.sector}
-                    </Badge>
-                    {case_.is_featured && (
-                      <Award className="w-5 h-5 text-yellow-500" />
-                    )}
-                  </div>
-                  
-                  <h3 className="text-lg font-semibold text-black mb-3 leading-tight">
-                    {case_.title}
-                  </h3>
-                  
-                  <p className="text-gray-600 mb-4 leading-relaxed text-sm">
-                    {case_.description}
-                  </p>
-
-                  <div className="space-y-3 mb-4">
-                    {case_.value_amount && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Valoración:</span>
-                        <span className="text-xl font-bold text-primary">
-                          {case_.value_amount}M{case_.value_currency}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {case_.year && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          Año:
-                        </span>
-                        <span className="font-medium text-black">{case_.year}</span>
-                      </div>
-                    )}
-
-                    {case_.company_size && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Tamaño:</span>
-                        <span className="font-medium text-black">{case_.company_size}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {case_.highlights && case_.highlights.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-black mb-2">Destacados:</h4>
-                      {case_.highlights.slice(0, 3).map((highlight, idx) => (
-                        <div key={idx} className="flex items-start text-sm text-gray-600">
-                          <TrendingUp className="w-3 h-3 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                          <span className="leading-relaxed">{highlight}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <p className="text-gray-600 text-lg">No se encontraron casos de éxito con los filtros aplicados.</p>
-            <Button variant="outline" onClick={clearFilters} className="mt-4">
-              Limpiar filtros
-            </Button>
-          </div>
-        )}
-
-        <div className="text-center mt-16">
-          <p className="text-lg text-gray-600 mb-6">
-            ¿Quiere conocer más detalles sobre nuestros casos de éxito?
-          </p>
-          <Button variant="outline" size="lg">
-            Descargar Case Studies
+        {/* CTA */}
+        <div className="text-center mt-32 border-t border-gray-200 pt-24">
+          <h3 className="text-2xl font-light text-black mb-8">
+            ¿Listo para ser nuestro próximo caso de éxito?
+          </h3>
+          
+          <Button 
+            className="bg-black text-white hover:bg-gray-800 px-12 py-4 text-lg font-medium border-0"
+          >
+            Evaluación Gratuita
           </Button>
+          
+          <p className="text-sm text-gray-600 mt-6">
+            Sin compromiso • Confidencial • Resultados en 48h
+          </p>
         </div>
       </div>
     </section>

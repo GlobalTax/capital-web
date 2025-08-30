@@ -20,23 +20,23 @@ const About = () => {
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20">
           <div className="text-center">
-            <div className="text-3xl font-bold text-black mb-2">70+</div>
-            <div className="text-gray-600 font-medium text-base">Profesionales</div>
+            <div className="text-4xl font-light text-black mb-2">25+</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Años Experiencia</div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold text-black mb-2">15+</div>
-            <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
+            <div className="text-4xl font-light text-black mb-2">500+</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Transacciones</div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold text-black mb-2">4</div>
-            <div className="text-gray-600 font-medium text-base">Especialidades</div>
+            <div className="text-4xl font-light text-black mb-2">€5B+</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Valor Gestionado</div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold text-black mb-2">100%</div>
-            <div className="text-gray-600 font-medium text-base">Dedicación</div>
+            <div className="text-4xl font-light text-black mb-2">95%</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide">Tasa Éxito</div>
           </div>
         </div>
 

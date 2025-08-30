@@ -17,8 +17,8 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-8 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-      <div className="w-56 h-56 mx-auto mb-6 rounded-full overflow-hidden bg-gray-100 shadow-lg">
+    <div className="text-center">
+      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-48">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
@@ -28,30 +28,20 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center bg-gray-200">
             <Users className="w-16 h-16 text-gray-400" />
           </div>
         )}
       </div>
       
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <h3 className="text-lg font-medium text-black mb-2">
         {member.name}
       </h3>
       {member.position && (
-        <p className="text-base text-gray-600 font-medium mb-4">
+        <p className="text-sm text-gray-600">
           {member.position}
         </p>
       )}
-      
-      {/* Add experience badges if available */}
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
-        <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-          M&A Expert
-        </span>
-        <span className="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">
-          Investment Banking
-        </span>
-      </div>
     </div>
   );
 };
@@ -87,76 +77,70 @@ const Team = () => {
   }, [fetchTeamMembers]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Enhanced Header */}
-      <section className="pt-24 pb-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+    <div className="py-32 bg-white">
+      {/* Header */}
+      <section className="mb-24">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl font-light text-black mb-8">
             Nuestro Equipo
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12">
-            Profesionales especializados en M&A con experiencia en las principales firmas de inversión globales.
+          </h2>
+          <p className="text-xl text-black max-w-3xl mx-auto leading-relaxed mb-16">
+            Expertos en M&A con trayectorias internacionales y resultados probados en las mejores firmas del mundo.
           </p>
           
-          {/* Team Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">15+</div>
-              <div className="text-sm text-gray-600">Años de Experiencia</div>
+              <div className="text-4xl font-light text-black mb-2">25+</div>
+              <div className="text-sm text-gray-600 uppercase tracking-wide">Años Experiencia</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">100+</div>
-              <div className="text-sm text-gray-600">Transacciones</div>
+              <div className="text-4xl font-light text-black mb-2">500+</div>
+              <div className="text-sm text-gray-600 uppercase tracking-wide">Transacciones</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">€2B+</div>
-              <div className="text-sm text-gray-600">Valor Gestionado</div>
+              <div className="text-4xl font-light text-black mb-2">€5B+</div>
+              <div className="text-sm text-gray-600 uppercase tracking-wide">Valor Gestionado</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">95%</div>
-              <div className="text-sm text-gray-600">Tasa de Éxito</div>
+              <div className="text-4xl font-light text-black mb-2">95%</div>
+              <div className="text-sm text-gray-600 uppercase tracking-wide">Tasa Éxito</div>
             </div>
           </div>
         </div>
       </section>
 
-
       {/* Team Members */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="border-t border-gray-200 pt-24">
+        <div className="max-w-4xl mx-auto px-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-xl border border-gray-100 p-8 text-center">
-                  <div className="w-56 h-56 mx-auto mb-6 rounded-full bg-gray-100 animate-pulse" />
-                  <div className="h-6 bg-gray-100 rounded animate-pulse mb-3 mx-auto max-w-40" />
-                  <div className="h-5 bg-gray-100 rounded animate-pulse mb-4 mx-auto max-w-32" />
-                  <div className="flex justify-center gap-2">
-                    <div className="h-6 w-20 bg-gray-100 rounded-full animate-pulse" />
-                    <div className="h-6 w-24 bg-gray-100 rounded-full animate-pulse" />
-                  </div>
+                <div key={i} className="animate-pulse text-center">
+                  <div className="bg-gray-200 aspect-square mb-6 mx-auto w-48"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2 mx-auto w-32"></div>
+                  <div className="h-3 bg-gray-200 rounded mx-auto w-24"></div>
                 </div>
               ))}
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">Error al cargar el equipo</p>
+              <p className="text-black mb-4">Error al cargar el equipo</p>
               <button 
                 onClick={fetchTeamMembers}
-                className="mt-6 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                className="bg-black text-white px-6 py-2 hover:bg-gray-800"
               >
                 Reintentar
               </button>
             </div>
           ) : teamMembers && teamMembers.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {teamMembers.map((member) => (
                 <TeamMemberCard key={member.id} member={member} />
               ))}
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">No hay miembros del equipo disponibles.</p>
+              <p className="text-black">No hay miembros del equipo disponibles.</p>
             </div>
           )}
         </div>
