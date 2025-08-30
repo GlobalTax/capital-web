@@ -17,8 +17,8 @@ const InteractiveHoverButton = React.forwardRef<
   
   const variantClasses = {
     primary: "bg-black text-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1",
-    secondary: "bg-white text-black border-0.5 border-black hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50",
-    outline: "bg-transparent text-black border-0.5 border-black hover:shadow-md hover:-translate-y-0.5 hover:bg-gray-50"
+    secondary: "bg-white text-black border-0.5 border-black hover:shadow-lg hover:-translate-y-1",
+    outline: "bg-transparent text-black border-0.5 border-black hover:shadow-md hover:-translate-y-0.5"
   };
 
   const sizeClasses = {

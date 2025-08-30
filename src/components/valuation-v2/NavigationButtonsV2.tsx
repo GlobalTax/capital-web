@@ -21,7 +21,7 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
         onClick={onPrev}
         variant="outline"
         disabled={currentStep === 1}
-        className="flex items-center border-gray-900 text-gray-900 hover:bg-gray-100"
+        className="flex items-center border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
         Anterior
@@ -40,7 +40,7 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
       <Button
         onClick={onNext}
         disabled={isNextDisabled}
-        className="flex items-center bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
+        className="flex items-center bg-white text-gray-900 border border-gray-900 hover:shadow-md hover:-translate-y-0.5"
       >
         <Calculator className="h-4 w-4 mr-2" />
         Calcular

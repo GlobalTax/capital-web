@@ -25,7 +25,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         aria-label={t('aria.prev')}
         variant="outline"
         disabled={currentStep === 1}
-        className="flex items-center h-11 border-gray-900 text-gray-900 hover:bg-gray-100"
+        className="flex items-center h-11 border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
         {t('nav.prev')}
@@ -39,7 +39,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         onClick={onNext}
         aria-label={currentStep === 1 ? t('aria.calculate') : t('aria.next')}
         disabled={isNextDisabled}
-        className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:bg-gray-100"
+        className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:shadow-md hover:-translate-y-0.5"
       >
         {currentStep === 3 ? (
           <>
