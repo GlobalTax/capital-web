@@ -2393,6 +2393,59 @@ export type Database = {
         }
         Relationships: []
       }
+      sectors: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name_en: string | null
+          name_es: string
+          parent_id: string | null
+          slug: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name_en?: string | null
+          name_es: string
+          parent_id?: string | null
+          slug: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name_en?: string | null
+          name_es?: string
+          parent_id?: string | null
+          slug?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sectors_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_events: {
         Row: {
           action_attempted: string | null

@@ -360,6 +360,7 @@ export const useRoleBasedPermissions = () => {
       // Company data - Visible para todos excepto 'none'
       operations: userRole !== 'none',
       multiples: userRole !== 'none',
+      sectors: userRole !== 'none',
       statistics: userRole !== 'none',
       
       // Team & testimonials - Visible para admins y editors

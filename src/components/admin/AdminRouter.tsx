@@ -28,6 +28,7 @@ import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 import VideoManager from './VideoManager';
+import SectorsPage from '@/pages/admin/SectorsPage';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import ContactsPage from '@/pages/admin/ContactsPage';
@@ -81,6 +82,7 @@ const AdminRouter = () => {
       <Route path="/blog/new" element={<BlogEditorPage />} />
       <Route path="/blog/edit/:id" element={<BlogEditorPage />} />
       <Route path="/sector-reports" element={<SectorReportsGenerator />} />
+      <Route path="/sectors" element={<SectorsPage />} />
       <Route path="/case-studies" element={<CaseStudiesManager />} />
       <Route path="/landing-pages" element={<LandingPagesPage />} />
       

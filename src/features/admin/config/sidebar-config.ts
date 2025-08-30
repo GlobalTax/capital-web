@@ -18,7 +18,8 @@ import {
   Eye,
   Palette,
   Play,
-  ClipboardList
+  ClipboardList,
+  Tags
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -112,6 +113,13 @@ export const sidebarSections: SidebarSection[] = [
     title: "🏢 GESTIONAR DATOS",
     description: "Información corporativa",
     items: [
+      { 
+        title: "Sectores", 
+        url: "/admin/sectors", 
+        icon: Tags,
+        badge: "NEW",
+        description: "Gestión de sectores empresariales"
+      },
       { 
         title: "Operaciones", 
         url: "/admin/operations", 
