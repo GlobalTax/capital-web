@@ -2023,6 +2023,84 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_leads: {
+        Row: {
+          company: string
+          company_size: string | null
+          consultation_type: string | null
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          ip_address: unknown | null
+          message: string | null
+          phone: string | null
+          referrer: string | null
+          sector: string | null
+          status: string
+          transaction_stage: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          company: string
+          company_size?: string | null
+          consultation_type?: string | null
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string | null
+          phone?: string | null
+          referrer?: string | null
+          sector?: string | null
+          status?: string
+          transaction_stage?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          company?: string
+          company_size?: string | null
+          consultation_type?: string | null
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string | null
+          phone?: string | null
+          referrer?: string | null
+          sector?: string | null
+          status?: string
+          transaction_stage?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       ma_resources_requests: {
         Row: {
           company: string

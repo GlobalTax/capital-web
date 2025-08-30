@@ -1,91 +1,126 @@
 
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-import { Link } from 'react-router-dom';
+import { Phone, Download } from 'lucide-react';
 
 const AsesoramientoLegalHero = () => {
   return (
-    <section className="py-20 bg-white">
+    <section className="relative py-20 bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7">
-            <div className="mb-8">
-              <div className="inline-flex items-center bg-black text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-                Asesoramiento Legal desde 2008
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Content */}
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <div className="inline-flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
+                En partnership con Navarro Legal
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
-                Asesoramiento Legal en{' '}
-                <span className="text-gray-600">Compraventas</span>
+              
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                Asesoramiento Legal
+                <span className="block text-primary">M&A Especializado</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Protegemos tus intereses en cada operación. Nuestro equipo legal especializado 
-                en M&A te acompaña desde la estructuración hasta el cierre exitoso.
+              
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Protege tu transacción con la experiencia combinada de nuestros consultores de M&A 
+                y Navarro Legal. Gestionamos todos los aspectos legales para que tu operación sea un éxito.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-8 mb-8">
-              <div>
-                <div className="text-3xl font-bold text-black mb-2">200+</div>
-                <div className="text-gray-600">Operaciones Asesoradas</div>
+            {/* Key Metrics */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="text-center p-4 bg-card border rounded-lg">
+                <div className="text-3xl font-bold text-foreground mb-2">200+</div>
+                <div className="text-sm text-muted-foreground">Operaciones Asesoradas</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-black mb-2">€2.5B</div>
-                <div className="text-gray-600">Valor Total Protegido</div>
+              <div className="text-center p-4 bg-card border rounded-lg">
+                <div className="text-3xl font-bold text-foreground mb-2">€2.5B</div>
+                <div className="text-sm text-muted-foreground">Valor Total Protegido</div>
               </div>
             </div>
 
+            {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/contacto">
-                <InteractiveHoverButton
-                  text="Consulta Legal Gratuita"
-                  variant="primary"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                />
-              </Link>
-              <Link to="/lp/calculadora">
-                <InteractiveHoverButton
-                  text="Ver Casos de Éxito"
-                  variant="secondary"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                />
-              </Link>
+              <InteractiveHoverButton
+                text="Solicitar Consulta Gratuita"
+                variant="primary"
+                size="lg"
+                className="flex items-center gap-2"
+              >
+                <Phone className="w-5 h-5" />
+              </InteractiveHoverButton>
+              
+              <InteractiveHoverButton
+                text="Descargar Pack Legal M&A"
+                variant="secondary"
+                size="lg"
+                className="flex items-center gap-2"
+              >
+                <Download className="w-5 h-5" />
+              </InteractiveHoverButton>
             </div>
           </div>
 
-          <div className="lg:col-span-5">
-            <div className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-              <h3 className="text-lg font-bold text-black mb-4">
-                Caso Legal en Progreso
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Due Diligence Legal</span>
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Completado</span>
+          {/* Legal Case Progress Visualization */}
+          <div className="relative">
+            <Card className="max-w-md mx-auto">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Progreso Legal - Operación TECH-2024</span>
+                  <span className="text-primary font-mono">85%</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  {[
+                    { phase: 'Due Diligence Legal', status: 'completed', progress: 100 },
+                    { phase: 'Revisión Contractual', status: 'completed', progress: 100 },
+                    { phase: 'Negociación SPA', status: 'active', progress: 75 },
+                    { phase: 'Compliance Check', status: 'pending', progress: 20 },
+                    { phase: 'Cierre Legal', status: 'pending', progress: 0 }
+                  ].map((item, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className={
+                          item.status === 'completed' ? 'text-green-600' :
+                          item.status === 'active' ? 'text-primary' :
+                          'text-muted-foreground'
+                        }>
+                          {item.phase}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {item.progress}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            item.status === 'completed' ? 'bg-green-500' :
+                            item.status === 'active' ? 'bg-primary' :
+                            'bg-muted'
+                          }`}
+                          style={{ width: `${item.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Revisión Contractual</span>
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">En Proceso</span>
+                
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Próximo Hito:</span>
+                    <span className="text-muted-foreground">Firma SPA - 3 días</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Estructuración Legal</span>
-                  <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm">Pendiente</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Cierre Legal</span>
-                  <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm">Pendiente</span>
-                </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600 mb-2">Progreso del Caso</div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-black h-2 rounded-full" style={{width: '60%'}}></div>
-                </div>
-                <div className="text-xs text-gray-500 mt-1">60% Completado</div>
-              </div>
+            {/* Floating indicators */}
+            <div className="absolute -top-4 -right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+              Sin Contingencias
+            </div>
+            <div className="absolute -bottom-4 -left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+              Riesgo: Bajo
             </div>
           </div>
         </div>
