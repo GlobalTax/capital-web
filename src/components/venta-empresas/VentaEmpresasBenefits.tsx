@@ -47,10 +47,10 @@ const VentaEmpresasBenefits = () => {
     <section id="beneficios" className="py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             ¿Por qué elegir Capittal?
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-lg text-black max-w-3xl mx-auto">
             Somos la boutique M&A líder en España. Nuestro enfoque personalizado y 
             experiencia demostrada garantizan los mejores resultados para tu empresa.
           </p>
@@ -64,19 +64,19 @@ const VentaEmpresasBenefits = () => {
               <div key={index} className="group">
                 <div className="bg-card border border-border rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                   <div className="bg-muted rounded-lg p-3 w-12 h-12 flex items-center justify-center mb-6">
-                    <IconComponent className="h-6 w-6 text-foreground" />
+                    <IconComponent className="h-6 w-6 text-black" />
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                  <h3 className="text-lg font-semibold text-black mb-4">
                     {benefit.title}
                   </h3>
                   
-                  <p className="text-muted-foreground mb-4 leading-relaxed text-sm">
+                  <p className="text-black mb-4 leading-relaxed text-sm">
                     {benefit.description}
                   </p>
                   
                   <div className="bg-muted rounded-lg px-3 py-1.5">
-                    <span className="text-sm font-medium text-foreground">
+                    <span className="text-sm font-medium text-black">
                       {benefit.stats}
                     </span>
                   </div>
@@ -89,30 +89,30 @@ const VentaEmpresasBenefits = () => {
         {/* Company Track Record */}
         <div className="bg-card border border-border rounded-lg p-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Nuestro Historial
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-black">
               Una década de experiencia respaldando nuestro compromiso con la excelencia
             </p>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold text-foreground mb-2">200+</div>
-              <div className="text-sm text-muted-foreground">Empresas Vendidas</div>
+              <div className="text-3xl font-bold text-black mb-2">200+</div>
+              <div className="text-sm text-black">Empresas Vendidas</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-foreground mb-2">€2.1B</div>
-              <div className="text-sm text-muted-foreground">Valor Total</div>
+              <div className="text-3xl font-bold text-black mb-2">€2.1B</div>
+              <div className="text-sm text-black">Valor Total</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-foreground mb-2">95%</div>
-              <div className="text-sm text-muted-foreground">Tasa de Éxito</div>
+              <div className="text-3xl font-bold text-black mb-2">95%</div>
+              <div className="text-sm text-black">Tasa de Éxito</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-foreground mb-2">5.2x</div>
-              <div className="text-sm text-muted-foreground">Múltiplo Promedio</div>
+              <div className="text-3xl font-bold text-black mb-2">5.2x</div>
+              <div className="text-sm text-black">Múltiplo Promedio</div>
             </div>
           </div>
         </div>

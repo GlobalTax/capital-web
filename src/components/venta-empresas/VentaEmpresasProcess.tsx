@@ -42,7 +42,7 @@ const VentaEmpresasProcess = () => {
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Nuestro Proceso de Venta
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-black max-w-3xl mx-auto">
             Un método probado que garantiza los mejores resultados. Cada paso está diseñado 
             para maximizar el valor de tu empresa y asegurar un proceso eficiente.
           </p>
@@ -54,15 +54,15 @@ const VentaEmpresasProcess = () => {
               <div key={index} className="relative">
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="bg-gray-50 text-gray-400 rounded-lg w-8 h-8 flex items-center justify-center">
+                    <div className="bg-gray-50 text-black rounded-lg w-8 h-8 flex items-center justify-center">
                       <span className="text-xs font-medium">{index + 1}</span>
                     </div>
-                    <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-gray-600">
+                    <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-black">
                       {step.duration}
                     </div>
                   </div>
                   
-                  <div className="text-xs font-medium text-gray-400 mb-2">
+                  <div className="text-xs font-medium text-black mb-2">
                     Paso {index + 1}
                   </div>
                   
@@ -70,7 +70,7 @@ const VentaEmpresasProcess = () => {
                     {step.title}
                   </h3>
                   
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-black leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -83,22 +83,22 @@ const VentaEmpresasProcess = () => {
           <h3 className="text-xl font-bold text-black mb-6">
             Duración Total del Proceso
           </h3>
-          <p className="text-gray-600 mb-8">
+          <p className="text-black mb-8">
             El proceso completo suele durar entre <strong>8-12 meses (hasta 1 año)</strong>, 
             desde que entra hasta que se firma la compraventa en el notario.
           </p>
           <div className="grid grid-cols-3 gap-8">
             <div>
               <div className="text-2xl font-bold text-black mb-2">85%</div>
-              <div className="text-sm text-gray-600">Tasa de éxito</div>
+              <div className="text-sm text-black">Tasa de éxito</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-black mb-2">4.2x</div>
-              <div className="text-sm text-gray-600">Múltiplo promedio</div>
+              <div className="text-sm text-black">Múltiplo promedio</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-black mb-2">300</div>
-              <div className="text-sm text-gray-600">Días promedio</div>
+              <div className="text-sm text-black">Días promedio</div>
             </div>
           </div>
         </div>

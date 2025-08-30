@@ -43,7 +43,7 @@ const VentaEmpresasFAQ = () => {
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Preguntas Frecuentes
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-black">
             Resolvemos las dudas más comunes sobre el proceso de venta de empresas
           </p>
         </div>
@@ -65,7 +65,7 @@ const VentaEmpresasFAQ = () => {
               
               {openIndex === index && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-black leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
@@ -75,7 +75,7 @@ const VentaEmpresasFAQ = () => {
         </div>
 
         <div className="text-center">
-          <p className="text-gray-600 mb-6">
+          <p className="text-black mb-6">
             ¿No encuentras la respuesta que buscas?
           </p>
           <Button className="bg-card text-foreground border border-border rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">

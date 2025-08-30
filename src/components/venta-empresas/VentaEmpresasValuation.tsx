@@ -59,7 +59,7 @@ const VentaEmpresasValuation = () => {
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
             Factores que Determinan la Valoración
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-black max-w-3xl mx-auto">
             Entender qué factores influyen en el valor de tu empresa te ayudará a 
             prepararte mejor para la venta y maximizar el precio final.
           </p>
@@ -85,10 +85,10 @@ const VentaEmpresasValuation = () => {
                             <div className="px-3 py-1 rounded-full text-xs font-medium bg-muted text-foreground">
                               {factor.impact}
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">{factor.weight}</div>
+                            <div className="text-xs text-black mt-1">{factor.weight}</div>
                           </div>
                         </div>
-                        <p className="text-gray-600 text-sm">{factor.description}</p>
+                        <p className="text-black text-sm">{factor.description}</p>
                       </div>
                     </div>
                   </div>
@@ -107,11 +107,11 @@ const VentaEmpresasValuation = () => {
                   <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
                     <div>
                       <div className="font-semibold text-black">{multiple.sector}</div>
-                      <div className="text-sm text-gray-600">{multiple.description}</div>
+                      <div className="text-sm text-black">{multiple.description}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-lg text-black">{multiple.median}</div>
-                      <div className="text-sm text-gray-600">{multiple.range}</div>
+                      <div className="text-sm text-black">{multiple.range}</div>
                     </div>
                   </div>
                 ))}
@@ -126,7 +126,7 @@ const VentaEmpresasValuation = () => {
                 {optimizaciones.map((opt, index) => (
                   <li key={index} className="flex items-center space-x-3">
                     <div className="w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0" />
-                    <span className="text-gray-600">{opt}</span>
+                    <span className="text-black">{opt}</span>
                   </li>
                 ))}
               </ul>
