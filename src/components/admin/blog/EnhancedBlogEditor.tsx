@@ -13,7 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useBlogValidation } from '@/hooks/useBlogValidation';
 import RichTextEditor from './RichTextEditor';
 import AuthorSelector from './AuthorSelector';
-import AIContentAssistant from './AIContentAssistant';
+import AIAssistantModal from './AIAssistantModal';
+import BlogEditorSidebar from './BlogEditorSidebar';
+import BlogSEOPanel from './BlogSEOPanel';
 import ReactMarkdown from 'react-markdown';
 
 interface EnhancedBlogEditorProps {
@@ -45,8 +47,16 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
   });
 
   const [saving, setSaving] = useState(false);
-  const [showAI, setShowAI] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+
+  // Convert formData to BlogPost for components that need it
+  const formDataAsBlogPost: BlogPost = {
+    id: post?.id || '',
+    created_at: post?.created_at || new Date().toISOString(),
+    updated_at: post?.updated_at || new Date().toISOString(),
+    published_at: formData.is_published ? (post?.published_at || new Date().toISOString()) : null,
+    ...formData
+  };
 
   const categories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal'];
 
@@ -147,9 +157,10 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
         isUpdate: !!post,
         postId: post?.id,
         operation: formData.is_published ? 'PUBLISH' : 'DRAFT'
-      }); // Debug log to identify query issues
+      });
 
-      if (post) {
+      // FIXED: Better validation before saving
+      if (post && post.id && post.id.trim() !== '') {
         await updatePost(post.id, postData);
       } else {
         await createPost(postData);
@@ -254,15 +265,20 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
           </div>
 
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAI(!showAI)}
-              className="flex items-center gap-2"
+            <AIAssistantModal
+              onContentGenerated={handleAIContentGenerated}
+              currentTitle={formData.title}
+              currentContent={formData.content}
             >
-              <Sparkles className="h-4 w-4" />
-              {showAI ? 'Ocultar IA' : 'Asistente IA'}
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Asistente IA
+              </Button>
+            </AIAssistantModal>
 
             {formData.is_published && formData.slug && (
               <Button
@@ -300,178 +316,91 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
       <div className="flex">
         {/* Main Content */}
         <main className="flex-1 max-w-4xl mx-auto p-6">
-          <Tabs defaultValue="editor" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="editor">Editor</TabsTrigger>
-              <TabsTrigger value="preview">Vista previa</TabsTrigger>
-              <TabsTrigger value="seo">SEO & Meta</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="editor" className="flex-1">
+          <TabsList className="mb-6">
+            <TabsTrigger value="editor">Editor</TabsTrigger>
+            <TabsTrigger value="preview">Vista Previa</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="editor" className="space-y-6">
-              {/* Title */}
-              <div>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  placeholder="Título del post..."
-                  className={`text-3xl font-bold border-none p-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground ${
-                    errors.title ? 'border-destructive' : ''
-                  }`}
-                />
-                {errors.title && (
-                  <p className="text-sm text-destructive mt-1">{errors.title}</p>
-                )}
-              </div>
-
-              {/* Slug */}
-              <div>
-                <Label className="text-sm text-muted-foreground">URL del post:</Label>
-                <Input
-                  value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  placeholder="url-del-post"
-                  className="font-mono text-sm mt-1"
-                />
-              </div>
-
-              {/* Excerpt */}
-              <div>
-                <Label className="text-base font-medium">Extracto</Label>
-                <Textarea
-                  value={formData.excerpt}
-                  onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                  placeholder="Breve descripción del post..."
-                  rows={3}
-                  className="mt-2"
-                />
-              </div>
-
-              {/* Rich Text Editor */}
-              <RichTextEditor
-                label="Contenido"
-                value={formData.content}
-                onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
-                placeholder="Escribe tu contenido aquí..."
-                error={errors.content}
+          <TabsContent value="editor" className="space-y-6">
+            {/* Title */}
+            <div>
+              <Input
+                value={formData.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Título del post..."
+                className="text-xl font-bold border-0 px-0 shadow-none focus-visible:ring-0"
               />
-            </TabsContent>
+            </div>
 
-            <TabsContent value="preview">
-              <article className="prose prose-lg max-w-none dark:prose-invert">
-                <header className="mb-8">
-                  <h1 className="mb-4">{formData.title || 'Título del post'}</h1>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                    <span>Por {formData.author_name}</span>
-                    <span>•</span>
-                    <span>{formData.reading_time} min de lectura</span>
-                    {formData.category && (
-                      <>
-                        <span>•</span>
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded">
-                          {formData.category}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  {formData.excerpt && (
-                    <p className="text-lg text-muted-foreground italic border-l-4 border-primary pl-4">
-                      {formData.excerpt}
-                    </p>
-                  )}
-                </header>
-                <div dangerouslySetInnerHTML={{ __html: formData.content }} />
-              </article>
-            </TabsContent>
+            {/* Slug */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>URL:</span>
+              <Input
+                value={formData.slug}
+                onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                placeholder="url-del-post"
+                className="font-mono text-xs h-8 max-w-xs"
+              />
+            </div>
 
-            <TabsContent value="seo" className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Optimización SEO</h3>
-                <div>
-                  <Label>Meta Título ({formData.meta_title.length}/60)</Label>
-                  <Input
-                    value={formData.meta_title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value.substring(0, 60) }))}
-                    placeholder="Título para buscadores..."
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label>Meta Descripción ({formData.meta_description.length}/160)</Label>
-                  <Textarea
-                    value={formData.meta_description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value.substring(0, 160) }))}
-                    placeholder="Descripción para buscadores..."
-                    rows={3}
-                    className="mt-1"
-                  />
-                </div>
+            {/* Excerpt */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">Extracto</Label>
+              <Textarea
+                value={formData.excerpt}
+                onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+                placeholder="Breve descripción del post..."
+                className="mt-2 resize-none"
+                rows={3}
+              />
+            </div>
+
+            {/* Rich Text Editor */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">Contenido</Label>
+              <div className="mt-2 border rounded-lg">
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                  placeholder="Escribe tu contenido aquí..."
+                />
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="preview" className="prose max-w-none">
+            {formData.featured_image_url && (
+              <img 
+                src={formData.featured_image_url} 
+                alt={formData.title}
+                className="w-full h-64 object-cover rounded-lg mb-6"
+              />
+            )}
+            <h1>{formData.title || 'Título del post'}</h1>
+            {formData.excerpt && (
+              <p className="lead text-lg text-muted-foreground">{formData.excerpt}</p>
+            )}
+            <ReactMarkdown>{formData.content || 'Contenido del post...'}</ReactMarkdown>
+          </TabsContent>
+
+          <TabsContent value="seo">
+            <BlogSEOPanel
+              post={formDataAsBlogPost}
+              updatePost={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
+            />
+          </TabsContent>
+        </Tabs>
         </main>
 
         {/* Sidebar */}
-        <aside className="w-80 border-l border-border bg-muted/20 p-6 space-y-6">
-          {/* Author Selector */}
-          <AuthorSelector
-            authorName={formData.author_name}
-            authorAvatarUrl={formData.author_avatar_url}
-            onAuthorChange={(name, avatarUrl) => 
-              setFormData(prev => ({ ...prev, author_name: name, author_avatar_url: avatarUrl || '' }))
-            }
+        <aside className="w-80 bg-muted/30 border-l overflow-y-auto">
+          <BlogEditorSidebar
+            post={formDataAsBlogPost}
+            updatePost={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
+            errors={errors}
           />
-
-          {/* Post Settings */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Configuración</h3>
-            
-            <div>
-              <Label>Categoría</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selecciona categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Tags</Label>
-              <Input
-                value={formData.tags.join(', ')}
-                onChange={(e) => handleTagsChange(e.target.value)}
-                placeholder="tag1, tag2, tag3..."
-                className="mt-1"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label>Destacado</Label>
-              <Switch
-                checked={formData.is_featured}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
-              />
-            </div>
-          </div>
-
-          {/* AI Assistant */}
-          {showAI && (
-            <AIContentAssistant
-              onContentGenerated={handleAIContentGenerated}
-              currentTitle={formData.title}
-              currentContent={formData.content}
-              className="border-t pt-6"
-            />
-          )}
         </aside>
       </div>
     </div>

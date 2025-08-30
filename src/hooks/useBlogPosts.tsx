@@ -128,7 +128,20 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
   };
 
   const updatePost = async (id: string, postData: Partial<BlogPost>) => {
+    // FIXED: Validate ID before attempting query
+    if (!id || id.trim() === '') {
+      console.error('💥 INVALID ID - Cannot update post with empty ID:', { id, postData });
+      toast({
+        title: "Error",
+        description: "ID de post inválido - no se puede actualizar",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     try {
+      console.log('🔄 Updating post:', { id, postData });
+      
       const updateData: any = {};
       
       // Solo actualizar campos que están presentes
@@ -158,9 +171,11 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
         .single();
 
       if (error) {
-        console.error('Supabase error updating post:', error);
+        console.error('💥 Supabase error updating post:', error);
         throw error;
       }
+
+      console.log('✅ Post updated successfully:', data);
 
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BLOG_POSTS] });
@@ -172,7 +187,7 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
 
       return data;
     } catch (error) {
-      console.error('Error updating blog post:', error);
+      console.error('💥 Error updating blog post:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Error al actualizar el post.",
