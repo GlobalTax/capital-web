@@ -42,7 +42,7 @@ export const useRoutePreloader = (options: PreloadOptions = {}): RoutePreloader 
 
     try {
       // Simular precarga de componente lazy
-      const routeModule = await import(`@/pages${path}`).catch(() => null);
+      const routeModule = await import(`@/pages${path}.tsx`).catch(() => null);
       
       if (routeModule) {
         preloadedRoutes.current.add(path);

@@ -31,10 +31,8 @@ const BlogPost = () => {
   // RSS y Open Graph
   const { applyOpenGraphTags } = useBlogRSS();
 
-  // Activar tracking de scroll para este post
-  if (post) {
-    useScrollTracking(post.id, post.slug);
-  }
+  // Activar tracking de scroll para este post - moved outside conditional
+  const scrollTrackingResult = useScrollTracking(post?.id || '', post?.slug || '');
 
   useEffect(() => {
     const fetchPost = async () => {
