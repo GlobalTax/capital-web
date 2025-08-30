@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Phone, Calculator, FileText, Building, FileSignature, Search, Handshake, GitMerge, HelpCircle } from 'lucide-react';
 import { MAResourcesFilter, MACategory } from './MAResourcesFilter';
-import { MAContentSection } from './MAContentSection';
+import { MAContentSection, MAResource } from './MAContentSection';
 import { MAResourcesForm } from './MAResourcesForm';
 import { DownloadPackButton } from './DownloadPackButton';
 
@@ -25,9 +25,9 @@ const maContentData = [
         'Establecimiento de presupuesto y estructura de financiación disponible'
       ],
       resources: [
-        { title: 'Template de Criterios de Inversión', type: 'template', downloadable: true },
-        { title: 'Checklist de Preparación M&A', type: 'checklist', downloadable: true },
-        { title: 'Guía de Selección de Asesores', type: 'guide', downloadable: true }
+        { title: 'Template de Criterios de Inversión', type: 'template' as const, downloadable: true },
+        { title: 'Checklist de Preparación M&A', type: 'checklist' as const, downloadable: true },
+        { title: 'Guía de Selección de Asesores', type: 'guide' as const, downloadable: true }
       ],
       examples: [
         'Empresa tecnológica busca adquirir competidores para acelerar expansión internacional',
@@ -52,10 +52,10 @@ const maContentData = [
         'Ajustes por control, liquidez y tamaño'
       ],
       resources: [
-        { title: 'Modelo DCF Avanzado', type: 'template', downloadable: true },
-        { title: 'Base de Datos de Múltiplos', type: 'template', downloadable: true },
-        { title: 'Calculadora de Valoración', type: 'template', url: '/calculadora' },
-        { title: 'Guía de Análisis Comparables', type: 'guide', downloadable: true }
+        { title: 'Modelo DCF Avanzado', type: 'template' as const, downloadable: true },
+        { title: 'Base de Datos de Múltiplos', type: 'template' as const, downloadable: true },
+        { title: 'Calculadora de Valoración', type: 'template' as const, url: '/calculadora' },
+        { title: 'Guía de Análisis Comparables', type: 'guide' as const, downloadable: true }
       ],
       examples: [
         'SaaS con ARR de €5M valorada entre 6-12x ingresos según crecimiento y retención',
@@ -80,10 +80,10 @@ const maContentData = [
         'Mecanismos de ajuste de precio basados en working capital y deuda neta'
       ],
       resources: [
-        { title: 'Guía de Estructuras de Deal', type: 'guide', downloadable: true },
-        { title: 'Template de Earn-out', type: 'template', downloadable: true },
-        { title: 'Calculadora Fiscal M&A', type: 'template', downloadable: true },
-        { title: 'Modelos de Escrow', type: 'example', downloadable: true }
+        { title: 'Guía de Estructuras de Deal', type: 'guide' as const, downloadable: true },
+        { title: 'Template de Earn-out', type: 'template' as const, downloadable: true },
+        { title: 'Calculadora Fiscal M&A', type: 'template' as const, downloadable: true },
+        { title: 'Modelos de Escrow', type: 'example' as const, downloadable: true }
       ],
       examples: [
         '70% cash al cierre + 30% earn-out basado en EBITDA años 1-2',
@@ -108,9 +108,9 @@ const maContentData = [
         'Aspectos no vinculantes vs vinculantes claramente definidos'
       ],
       resources: [
-        { title: 'Template LOI Estándar', type: 'template', downloadable: true },
-        { title: 'Checklist de Términos LOI', type: 'checklist', downloadable: true },
-        { title: 'Cláusulas Problemáticas a Evitar', type: 'guide', downloadable: true }
+        { title: 'Template LOI Estándar', type: 'template' as const, downloadable: true },
+        { title: 'Checklist de Términos LOI', type: 'checklist' as const, downloadable: true },
+        { title: 'Cláusulas Problemáticas a Evitar', type: 'guide' as const, downloadable: true }
       ],
       examples: [
         'LOI con precio €50M sujeto a confirmación en due diligence',
@@ -135,10 +135,10 @@ const maContentData = [
         'Análisis de RRHH: organización, talento clave, cultura, retención'
       ],
       resources: [
-        { title: 'Checklist Due Diligence Completa', type: 'checklist', downloadable: true },
-        { title: 'Template Data Room Index', type: 'template', downloadable: true },
-        { title: 'Red Flags Financieros', type: 'guide', downloadable: true },
-        { title: 'Análisis de Contratos Clave', type: 'checklist', downloadable: true }
+        { title: 'Checklist Due Diligence Completa', type: 'checklist' as const, downloadable: true },
+        { title: 'Template Data Room Index', type: 'template' as const, downloadable: true },
+        { title: 'Red Flags Financieros', type: 'guide' as const, downloadable: true },
+        { title: 'Análisis de Contratos Clave', type: 'checklist' as const, downloadable: true }
       ],
       examples: [
         'DD financiera revela ajustes de €2M por normalización de EBITDA',
@@ -163,10 +163,10 @@ const maContentData = [
         'Comunicación a stakeholders: empleados, clientes, proveedores'
       ],
       resources: [
-        { title: 'Template SPA Estándar', type: 'template', downloadable: true },
-        { title: 'Checklist de Closing', type: 'checklist', downloadable: true },
-        { title: 'Calculadora de Ajustes', type: 'template', downloadable: true },
-        { title: 'Comunicación a Stakeholders', type: 'template', downloadable: true }
+        { title: 'Template SPA Estándar', type: 'template' as const, downloadable: true },
+        { title: 'Checklist de Closing', type: 'checklist' as const, downloadable: true },
+        { title: 'Calculadora de Ajustes', type: 'template' as const, downloadable: true },
+        { title: 'Comunicación a Stakeholders', type: 'template' as const, downloadable: true }
       ],
       examples: [
         'Ajuste de precio: +€1.5M por working capital superior al normalizado',
@@ -191,10 +191,10 @@ const maContentData = [
         'Reporting y comunicación regular del progreso a stakeholders'
       ],
       resources: [
-        { title: 'Template Plan 100 Días', type: 'template', downloadable: true },
-        { title: 'KPIs de Integración', type: 'checklist', downloadable: true },
-        { title: 'Plan de Retención de Talento', type: 'template', downloadable: true },
-        { title: 'Dashboard de Sinergias', type: 'template', downloadable: true }
+        { title: 'Template Plan 100 Días', type: 'template' as const, downloadable: true },
+        { title: 'KPIs de Integración', type: 'checklist' as const, downloadable: true },
+        { title: 'Plan de Retención de Talento', type: 'template' as const, downloadable: true },
+        { title: 'Dashboard de Sinergias', type: 'template' as const, downloadable: true }
       ],
       examples: [
         'Integración de sistemas ERP completada en 90 días con 0% pérdida de datos',
@@ -219,10 +219,10 @@ const maContentData = [
         'Post-cierre: Integration, Synergies, PMI, Carve-out'
       ],
       resources: [
-        { title: 'Glosario M&A Completo', type: 'guide', downloadable: true },
-        { title: 'FAQs del Comprador', type: 'guide', downloadable: true },
-        { title: 'FAQs del Vendedor', type: 'guide', downloadable: true },
-        { title: 'Términos Legales M&A', type: 'guide', downloadable: true }
+        { title: 'Glosario M&A Completo', type: 'guide' as const, downloadable: true },
+        { title: 'FAQs del Comprador', type: 'guide' as const, downloadable: true },
+        { title: 'FAQs del Vendedor', type: 'guide' as const, downloadable: true },
+        { title: 'Términos Legales M&A', type: 'guide' as const, downloadable: true }
       ],
       examples: [
         'EBITDA: Earnings Before Interest, Taxes, Depreciation and Amortization',
