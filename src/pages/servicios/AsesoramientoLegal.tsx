@@ -1,16 +1,10 @@
 import React, { useEffect } from 'react';
-import LandingLayout from '@/components/shared/LandingLayout';
-import AsesoramientoLegalHero from '@/components/asesoramiento-legal/AsesoramientoLegalHero';
-import AsesoramientoLegalServices from '@/components/asesoramiento-legal/AsesoramientoLegalServices';
-import AsesoramientoLegalProcess from '@/components/asesoramiento-legal/AsesoramientoLegalProcess';
-import AsesoramientoLegalExperience from '@/components/asesoramiento-legal/AsesoramientoLegalExperience';
-import AsesoramientoLegalBenefits from '@/components/asesoramiento-legal/AsesoramientoLegalBenefits';
-import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/AsesoramientoLegalFAQ';
-import LegalConsultationForm from '@/components/asesoramiento-legal/LegalConsultationForm';
+import LegalServiceTechnical from '@/components/asesoramiento-legal/LegalServiceTechnical';
+import LegalStickyFooter from '@/components/asesoramiento-legal/LegalStickyFooter';
 
 const AsesoramientoLegal = () => {
   useEffect(() => {
-    document.title = 'Asesoramiento Legal Especializado M&A | Capittal';
+    document.title = 'Asesoramiento Legal M&A | Capittal';
     
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
@@ -18,7 +12,7 @@ const AsesoramientoLegal = () => {
       meta.setAttribute('name', 'description');
       document.head.appendChild(meta);
     }
-    meta.setAttribute('content', 'Asesoramiento legal especializado en operaciones M&A. Protege tu transacción con la experiencia combinada de Capittal y Navarro Legal. Consulta gratuita.');
+    meta.setAttribute('content', 'Servicio legal especializado en compraventa de empresas: due diligence, contratos, disclosure, mitigación de riesgos y post‑closing.');
     
     // Canonical URL
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -31,15 +25,10 @@ const AsesoramientoLegal = () => {
   }, []);
 
   return (
-    <LandingLayout>
-      <AsesoramientoLegalHero />
-      <AsesoramientoLegalServices />
-      <AsesoramientoLegalProcess />
-      <AsesoramientoLegalExperience />
-      <AsesoramientoLegalBenefits />
-      <AsesoramientoLegalFAQ />
-      <LegalConsultationForm />
-    </LandingLayout>
+    <>
+      <LegalServiceTechnical />
+      <LegalStickyFooter />
+    </>
   );
 };
 
