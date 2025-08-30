@@ -113,10 +113,12 @@ export const useAttributionAnalytics = () => {
     // Initial load
     refreshAnalytics();
     
-    // Set up periodic refresh
-    const interval = setInterval(refreshAnalytics, 5 * 60 * 1000); // Every 5 minutes
+    // DISABLED - Periodic refresh consuming too many Edge Functions
+    console.debug('🚫 Attribution analytics auto-refresh disabled');
     
-    return () => clearInterval(interval);
+    // Manual refresh only on user action
+    // const interval = setInterval(refreshAnalytics, 5 * 60 * 1000);
+    // return () => clearInterval(interval);
   }, [refreshAnalytics]);
 
   return {

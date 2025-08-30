@@ -36,14 +36,17 @@ export const useMarketingIntelligence = (config?: AnalyticsConfig) => {
 
     window.addEventListener('marketing-intelligence-alert', handleAlerts as EventListener);
 
-    // Actualizar datos cada 30 segundos
-    const interval = setInterval(() => {
-      updateData();
-    }, 30000);
+    // DISABLED - Frequent updates consuming too many resources
+    console.debug('🚫 Marketing intelligence auto-update disabled to reduce Edge Function consumption');
+    
+    // Manual refresh only on user action
+    // const interval = setInterval(() => {
+    //   updateData();
+    // }, 30000);
 
     return () => {
       window.removeEventListener('marketing-intelligence-alert', handleAlerts as EventListener);
-      clearInterval(interval);
+      // clearInterval(interval);
     };
   }, [config]);
 

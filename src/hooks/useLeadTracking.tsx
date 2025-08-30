@@ -216,9 +216,13 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     }
   }, [getOrCreateVisitorId, getOrCreateSessionId, detectCompanyDomain, shouldAllowRequest, recordSuccess, recordFailure]);
 
-  // Tracking de páginas visitadas
+  // Tracking de páginas visitadas - DISABLED to reduce Edge Function consumption
   const trackPageView = useCallback(async (pagePath?: string) => {
     if (!enablePageTracking) return;
+    
+    // TEMPORARILY DISABLED - consuming too many Edge Functions
+    console.debug('📄 Page view tracking disabled to reduce consumption');
+    return;
     
     const currentPath = pagePath || window.location.pathname;
     const timeOnPage = Date.now();
@@ -253,9 +257,16 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     };
   }, [enableTimeTracking, trackEvent]);
 
-  // Tracking específico para calculadora
+  // Tracking específico para calculadora - REDUCED
   const trackCalculatorUsage = useCallback(async (action: string, data: any = {}) => {
     if (!enableCalculatorTracking) return;
+    
+    // Only track critical calculator events to reduce consumption
+    const criticalActions = ['completed', 'email_submitted'];
+    if (!criticalActions.includes(action)) {
+      console.debug('📊 Non-critical calculator event skipped:', action);
+      return;
+    }
     
     await trackEvent('calculator_usage', '/calculadora-valoracion', {
       action,
@@ -303,24 +314,22 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     }
   }, [trackEvent]);
 
-  // Auto-tracking al montar el componente
+  // Auto-tracking DISABLED al montar el componente
   useEffect(() => {
-    // Track page view automáticamente
-    trackPageView();
+    // TEMPORARILY DISABLED - Auto tracking was consuming too many Edge Functions
+    console.debug('🚫 Auto-tracking disabled to reduce Edge Function consumption');
     
-    // Track time on page automáticamente
-    let cleanup: (() => void) | undefined;
+    // Track only initial page view in critical pages
+    if (window.location.pathname.includes('/lp/calculadora') || 
+        window.location.pathname.includes('/contacto')) {
+      trackPageView();
+    }
     
-    const setupTimeTracking = async () => {
-      cleanup = await trackTimeOnPage();
-    };
-    
-    setupTimeTracking();
-    
+    // No time tracking setup to save resources
     return () => {
-      if (cleanup) cleanup();
+      // Cleanup if needed
     };
-  }, [trackPageView, trackTimeOnPage]);
+  }, [trackPageView]);
 
   return {
     trackEvent,
