@@ -24,7 +24,7 @@ interface UserBehavior {
 }
 
 export const useRoutePreloader = (options: PreloadOptions = {}): RoutePreloader => {
-  const { prefetchDelay = 200, hoverDelay = 100, enabled = true } = options;
+  const { prefetchDelay = 200, hoverDelay = 100, enabled = false } = options;
   const navigate = useNavigate();
   const preloadedRoutes = useRef<Set<string>>(new Set());
   const hoverTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());

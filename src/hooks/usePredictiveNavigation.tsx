@@ -22,7 +22,7 @@ interface PredictiveConfig {
 
 export const usePredictiveNavigation = (config: PredictiveConfig = {}) => {
   const {
-    enabled = true,
+    enabled = false,
     confidenceThreshold = 0.6,
     maxPredictions = 3,
     updateInterval = 5000
