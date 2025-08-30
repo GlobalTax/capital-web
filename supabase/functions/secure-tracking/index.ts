@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,6 +43,12 @@ serve(async (req) => {
         );
       }
 
+      // Create Supabase client
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
       // Create a simplified tracking event for storage
       const trackingData = {
         visitor_id: event.visitor_id,
@@ -63,7 +70,22 @@ serve(async (req) => {
         page: event.page_path
       });
 
-      // Return success response immediately (fire-and-forget approach)
+      // Save to database
+      try {
+        const { error: insertError } = await supabase
+          .from('tracking_events')
+          .insert([trackingData]);
+
+        if (insertError) {
+          console.error('❌ Failed to save tracking event:', insertError);
+        } else {
+          console.log('✅ Tracking event saved successfully');
+        }
+      } catch (dbError) {
+        console.error('❌ Database error:', dbError);
+      }
+
+      // Return success response
       return new Response(
         JSON.stringify({ success: true, timestamp: trackingData.created_at }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
