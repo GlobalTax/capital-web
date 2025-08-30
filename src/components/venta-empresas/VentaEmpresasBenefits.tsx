@@ -4,34 +4,28 @@ import React from 'react';
 const VentaEmpresasBenefits = () => {
   const benefits = [
     {
-      title: 'Máxima Valoración',
+      title: '+25% incremento de valoración promedio',
       description: 'Utilizamos técnicas avanzadas de valoración y posicionamiento estratégico para obtener el mejor precio posible.',
-      stats: '+25% valoración promedio'
+      icon: '📈',
+      stats: '+25%'
     },
     {
-      title: 'Confidencialidad Total',
+      title: 'Confidencialidad total en todas las fases',
       description: 'Proceso completamente confidencial que protege tu empresa, empleados y clientes durante toda la operación.',
-      stats: '100% confidencial'
+      icon: '🔒',
+      stats: '100%'
     },
     {
-      title: 'Red de Compradores',
+      title: 'Más de 500 compradores activos en nuestra red',
       description: 'Acceso a nuestra extensa red de compradores estratégicos, fondos de inversión y family offices.',
-      stats: '+500 contactos'
+      icon: '🌐',
+      stats: '+500'
     },
     {
-      title: 'Eficiencia Temporal',
-      description: 'Proceso optimizado que minimiza las distracciones en tu negocio y acelera los tiempos de cierre.',
-      stats: '4-6 meses promedio'
-    },
-    {
-      title: 'Optimización Fiscal',
+      title: 'Optimización fiscal y legal para cada operación',
       description: 'Estructuración de la operación para minimizar el impacto fiscal y maximizar el beneficio neto.',
-      stats: 'Hasta 15% ahorro'
-    },
-    {
-      title: 'Asesoramiento Post-Venta',
-      description: 'Acompañamiento en la transición y asesoramiento para futuras inversiones del capital obtenido.',
-      stats: '12 meses seguimiento'
+      icon: '⚖️',
+      stats: '15% ahorro'
     }
   ];
 
@@ -57,42 +51,33 @@ const VentaEmpresasBenefits = () => {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section id="beneficios" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             ¿Por Qué Elegir Capittal?
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Más de 15 años de experiencia nos avalan. Hemos ayudado a cientos de empresarios 
-            a obtener el máximo valor por sus negocios.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Nuestros resultados hablan por sí solos. Descubre por qué somos la 
+            elección preferida de empresarios exitosos.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {benefits.map((benefit, index) => {
-            return (
-              <div key={index} className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group">
-                <div className="bg-gray-50 text-gray-300 rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-100 transition-colors duration-300">
-                  <span className="text-sm font-medium">{index + 1}</span>
-                </div>
-                
-                <h3 className="text-lg font-bold text-black mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+          {benefits.map((benefit, index) => (
+            <div key={index} className="text-center group">
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="text-4xl mb-4">{benefit.icon}</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">{benefit.stats}</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
                   {benefit.title}
                 </h3>
-                
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <p className="text-gray-600 text-sm leading-relaxed">
                   {benefit.description}
                 </p>
-                
-                <div className="bg-gray-50 rounded-lg py-3 px-4 border border-gray-200">
-                  <span className="text-sm font-bold text-black">
-                    {benefit.stats}
-                  </span>
-                </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

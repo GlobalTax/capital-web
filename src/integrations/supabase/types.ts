@@ -2354,6 +2354,84 @@ export type Database = {
         }
         Relationships: []
       }
+      sell_leads: {
+        Row: {
+          company: string
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          ip_address: unknown | null
+          message: string | null
+          phone: string | null
+          referrer: string | null
+          revenue_range: string
+          sector: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string | null
+          phone?: string | null
+          referrer?: string | null
+          revenue_range: string
+          sector?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string | null
+          phone?: string | null
+          referrer?: string | null
+          revenue_range?: string
+          sector?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           bio: string | null
