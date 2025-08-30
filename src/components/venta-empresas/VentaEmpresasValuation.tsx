@@ -82,9 +82,7 @@ const VentaEmpresasValuation = () => {
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="text-base font-bold text-black">{factor.title}</h4>
                           <div className="text-right">
-                            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              factor.impact === 'Alto' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                            }`}>
+                            <div className="px-3 py-1 rounded-full text-xs font-medium bg-muted text-foreground">
                               {factor.impact}
                             </div>
                             <div className="text-xs text-gray-500 mt-1">{factor.weight}</div>

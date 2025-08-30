@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Phone } from 'lucide-react';
 
 interface FormData {
   full_name: string;
@@ -32,8 +27,9 @@ const SellLeadsForm = () => {
     message: ''
   });
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,7 +51,7 @@ const SellLeadsForm = () => {
         utm_term: new URLSearchParams(window.location.search).get('utm_term'),
         utm_content: new URLSearchParams(window.location.search).get('utm_content'),
         referrer: document.referrer,
-        ip_address: null, // Will be set by the database
+        ip_address: null,
         user_agent: navigator.userAgent
       });
 
@@ -66,7 +62,6 @@ const SellLeadsForm = () => {
         description: "Nos pondremos en contacto contigo en las próximas 24 horas para discutir la valoración de tu empresa.",
       });
 
-      // Reset form
       setFormData({
         full_name: '',
         company: '',
@@ -90,193 +85,201 @@ const SellLeadsForm = () => {
   };
 
   return (
-    <section id="contacto" className="py-20 bg-gray-900 text-white">
+    <section id="contacto" className="py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Solicita una valoración gratuita y descubre el valor real de tu empresa
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+            Solicita tu Valoración <span className="text-primary">Gratuita</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Nuestros expertos analizarán tu empresa y te proporcionarán una valoración 
-            detallada sin compromiso. El primer paso hacia la venta exitosa de tu negocio.
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Obtén una valoración profesional de tu empresa sin compromiso. 
+            Nuestros expertos analizarán tu caso de forma confidencial.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-start">
-          {/* Form */}
-          <Card className="bg-white text-gray-900 border-0 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center text-gray-900">
-                Solicitar Valoración Gratuita
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* Left Content */}
+          <div>
+            {/* Benefits */}
+            <div className="space-y-4 mb-8">
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Análisis Personalizado</h3>
+                  <p className="text-muted-foreground text-sm">Evaluación detallada basada en tu sector y situación específica</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <div>
+                  <h3 className="font-semibold text-foreground">100% Confidencial</h3>
+                  <p className="text-muted-foreground text-sm">Tu información está protegida por acuerdos de confidencialidad</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Sin Compromiso</h3>
+                  <p className="text-muted-foreground text-sm">Valoración gratuita sin obligaciones ni costes ocultos</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="font-semibold text-foreground mb-4">¿Prefieres hablar directamente?</h3>
+              <div className="space-y-3">
+                <a href="tel:+34912345678" className="flex items-center text-primary hover:text-primary/80 transition-colors">
+                  <span className="mr-2">📞</span>
+                  +34 912 345 678
+                </a>
+                <a href="mailto:info@capittal.es" className="flex items-center text-primary hover:text-primary/80 transition-colors">
+                  <span className="mr-2">✉️</span>
+                  info@capittal.es
+                </a>
+                <a href="#" className="flex items-center text-primary hover:text-primary/80 transition-colors">
+                  <span className="mr-2">📅</span>
+                  Agendar Reunión
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Form */}
+          <Card className="bg-card border border-border shadow-lg">
+            <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="full_name">Nombre y Apellidos *</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => handleInputChange('full_name', e.target.value)}
-                    placeholder="Tu nombre completo"
-                    required
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="company">Empresa *</Label>
-                  <Input
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                    placeholder="Nombre de tu empresa"
-                    required
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="tu@email.com"
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Nombre completo *
+                    </label>
+                    <input
+                      type="text"
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleInputChange}
                       required
-                      className="mt-1"
+                      className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                      placeholder="Tu nombre y apellidos"
                     />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="phone">Teléfono</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="600 000 000"
-                      className="mt-1"
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Empresa *
+                    </label>
+                    <input
+                      type="text"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                      placeholder="Nombre de tu empresa"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="revenue_range">Rango de Facturación *</Label>
-                  <Select value={formData.revenue_range} onValueChange={(value) => handleInputChange('revenue_range', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona un rango" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="<1M">Menos de 1M€</SelectItem>
-                      <SelectItem value="1-5M">1M€ - 5M€</SelectItem>
-                      <SelectItem value="5-10M">5M€ - 10M€</SelectItem>
-                      <SelectItem value=">10M">Más de 10M€</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                      placeholder="tu@email.com"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                      placeholder="+34 600 000 000"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Facturación anual *
+                    </label>
+                    <select
+                      name="revenue_range"
+                      value={formData.revenue_range}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                    >
+                      <option value="">Selecciona un rango</option>
+                      <option value="< 1M">Menos de €1M</option>
+                      <option value="1M - 5M">€1M - €5M</option>
+                      <option value="5M - 10M">€5M - €10M</option>
+                      <option value="10M - 25M">€10M - €25M</option>
+                      <option value="25M - 50M">€25M - €50M</option>
+                      <option value="> 50M">Más de €50M</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Sector *
+                    </label>
+                    <select
+                      name="sector"
+                      value={formData.sector}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                    >
+                      <option value="">Selecciona un sector</option>
+                      <option value="Tecnología">Tecnología</option>
+                      <option value="Salud">Salud</option>
+                      <option value="Servicios">Servicios</option>
+                      <option value="Manufactura">Manufactura</option>
+                      <option value="Retail">Retail</option>
+                      <option value="Otros">Otros</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="sector">Sector</Label>
-                  <Input
-                    id="sector"
-                    value={formData.sector}
-                    onChange={(e) => handleInputChange('sector', e.target.value)}
-                    placeholder="Ej: Tecnología, Retail, Industrial..."
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="message">Mensaje (opcional)</Label>
-                  <Textarea
-                    id="message"
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Mensaje adicional
+                  </label>
+                  <textarea
+                    name="message"
                     value={formData.message}
-                    onChange={(e) => handleInputChange('message', e.target.value)}
-                    placeholder="Cuéntanos más sobre tu empresa y objetivos..."
-                    className="mt-1 h-24 resize-none"
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
+                    placeholder="Cuéntanos más sobre tu empresa y tus objetivos..."
                   />
                 </div>
 
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? '📊 Enviando...' : '📊 Recibir Valoración Gratuita'}
+                  {isSubmitting ? 'Enviando...' : 'Solicitar Valoración Gratuita'}
                 </Button>
-
-                <p className="text-sm text-gray-500 text-center">
-                  Al enviar este formulario, aceptas que nos pongamos en contacto contigo 
-                  para discutir la venta de tu empresa de forma confidencial.
-                </p>
               </form>
             </CardContent>
           </Card>
-
-          {/* Alternative contact options */}
-          <div className="space-y-8">
-            <div className="bg-gray-800 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold mb-6">¿Prefieres hablar directamente?</h3>
-              
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-blue-600 rounded-full p-3">
-                    <Phone className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg">Llamada telefónica</h4>
-                    <p className="text-gray-300">+34 620 27 35 52</p>
-                    <p className="text-sm text-gray-400">L-V 9:00 - 18:00</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="bg-green-600 rounded-full p-3">
-                    <Calendar className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg">Agendar reunión</h4>
-                    <p className="text-gray-300">Videollamada 30 min</p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-2 border-gray-600 text-gray-300 hover:bg-gray-700"
-                    >
-                      Agendar ahora
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Benefits of free valuation */}
-            <div className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 rounded-2xl p-8">
-              <h3 className="text-xl font-bold mb-6">¿Qué incluye tu valoración gratuita?</h3>
-              <ul className="space-y-3 text-gray-300">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3" />
-                  Análisis financiero detallado
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3" />
-                  Comparación con múltiplos de mercado
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3" />
-                  Identificación de puntos de mejora
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3" />
-                  Estrategia de maximización de valor
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3" />
-                  Timeline estimado de venta
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </section>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -15,160 +16,143 @@ const VentaEmpresasCaseStudies = () => {
     {
       sector: "SaaS B2B",
       company: "TechFlow Solutions",
-      valuation: "12M€",
-      multiple: "4.2x EBITDA",
-      roi: "25% primer año",
-      beforeAfter: {
-        before: "Empresa familiar con crecimiento limitado",
-        after: "Adquirida por grupo internacional, expansión europea"
-      },
-      highlights: ["Diversificación de ingresos", "Escalabilidad tecnológica", "Equipo directivo consolidado"]
+      valuation: "€12.5M",
+      multiple: "6.2x EBITDA",
+      roi: "+320%",
+      before: "€2M EBITDA",
+      after: "Vendida a grupo internacional",
+      highlights: ["Escalabilidad demostrada", "ARR recurrente 95%", "Expansión internacional"]
     },
     {
-      sector: "Distribución Industrial",
-      company: "Industrial Parts Group",
-      valuation: "8.5M€",
-      multiple: "3.8x EBITDA",
-      roi: "+2M€ en sinergias",
-      beforeAfter: {
-        before: "Distribución regional con márgenes comprimidos",
-        after: "Integración con red nacional, optimización logística"
-      },
-      highlights: ["Red de distribución ampliada", "Sinergias logísticas", "Diversificación geográfica"]
+      sector: "E-commerce",
+      company: "RetailMax Pro", 
+      valuation: "€8.7M",
+      multiple: "4.8x EBITDA",
+      roi: "+280%",
+      before: "€1.8M EBITDA",
+      after: "Adquirida por competidor estratégico", 
+      highlights: ["Base de clientes leal", "Márgenes optimizados", "Logística automatizada"]
     },
     {
-      sector: "Retail & Consumo",
-      company: "Premium Retail Chain",
-      valuation: "10M€",
-      multiple: "4.0x EBITDA",
-      roi: "Expansión internacional",
-      beforeAfter: {
-        before: "Cadena regional con potencial sin explotar",
-        after: "Plataforma para expansión en mercados emergentes"
-      },
-      highlights: ["Marca consolidada", "Ubicaciones premium", "Sistema de gestión escalable"]
+      sector: "HealthTech",
+      company: "MedDevice Innovation",
+      valuation: "€15.2M", 
+      multiple: "7.1x EBITDA",
+      roi: "+450%",
+      before: "€2.1M EBITDA",
+      after: "Vendida a fondo de private equity",
+      highlights: ["Tecnología patentada", "Regulación CE", "Pipeline robusto"]
     },
     {
-      sector: "Servicios Profesionales",
-      company: "Consulting Excellence",
-      valuation: "6.2M€",
-      multiple: "3.5x EBITDA",
-      roi: "30% crecimiento anual",
-      beforeAfter: {
-        before: "Consultora boutique con dependencia de fundadores",
-        after: "Integrada en grupo multinacional, procesos estandarizados"
-      },
-      highlights: ["Metodología diferenciada", "Cartera de clientes fidelizada", "Equipo especializado"]
+      sector: "Servicios B2B", 
+      company: "ConsultPro Group",
+      valuation: "€6.3M",
+      multiple: "5.5x EBITDA", 
+      roi: "+190%",
+      before: "€1.1M EBITDA",
+      after: "Integración con grupo consultor",
+      highlights: ["Contratos recurrentes", "Equipo especializado", "Diversificación sectorial"]
     }
   ];
 
   return (
-    <section id="casos" className="py-20 bg-gray-50">
+    <section id="casos-exito" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            Casos de Éxito Reales
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+            Casos de Éxito
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Descubre cómo hemos ayudado a empresarios a maximizar el valor de sus negocios 
-            y conseguir resultados excepcionales en la venta.
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Descubre cómo hemos ayudado a empresas como la tuya a maximizar su valor y 
+            completar transacciones exitosas.
           </p>
         </div>
 
-        <div className="relative">
-          <Carousel className="w-full">
-            <CarouselContent>
-              {caseStudies.map((study, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                  <Card className="h-full border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
-                          {study.sector}
-                        </span>
-                        <div className="flex items-center text-green-600">
-                          <TrendingUp className="w-4 h-4 mr-1" />
-                          <span className="text-sm font-medium">{study.roi}</span>
-                        </div>
+        {/* Case Studies Carousel */}
+        <Carousel className="w-full max-w-6xl mx-auto mb-16">
+          <CarouselContent className="-ml-1">
+            {caseStudies.map((study, index) => (
+              <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                <Card className="h-full bg-card border-border shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <Badge variant="secondary" className="bg-muted text-foreground">
+                        {study.sector}
+                      </Badge>
+                      <div className="text-right">
+                        <div className="text-xs text-muted-foreground">ROI</div>
+                        <div className="font-bold text-success">{study.roi}</div>
                       </div>
-                      <CardTitle className="text-xl text-gray-900">
-                        {study.company}
-                      </CardTitle>
-                    </CardHeader>
+                    </div>
                     
-                    <CardContent className="space-y-6">
-                      {/* Key Metrics */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-gray-900">{study.valuation}</div>
-                          <div className="text-sm text-gray-600">Valoración</div>
+                    <h3 className="text-lg font-bold text-foreground mb-4">
+                      {study.company}
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-center">
+                        <div className="bg-muted rounded-lg p-3">
+                          <div className="text-sm text-muted-foreground mb-1">Valoración</div>
+                          <div className="font-bold text-foreground">{study.valuation}</div>
                         </div>
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-lg font-bold text-gray-900">{study.multiple}</div>
-                          <div className="text-sm text-gray-600">Múltiplo</div>
-                        </div>
-                      </div>
-
-                      {/* Before/After */}
-                      <div className="space-y-3">
-                        <div>
-                          <div className="text-sm font-medium text-gray-500 mb-1">Antes:</div>
-                          <p className="text-sm text-gray-700">{study.beforeAfter.before}</p>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-500 mb-1">Después:</div>
-                          <p className="text-sm text-gray-700">{study.beforeAfter.after}</p>
+                        <div className="bg-muted rounded-lg p-3">
+                          <div className="text-sm text-muted-foreground mb-1">Múltiplo</div>
+                          <div className="font-bold text-foreground">{study.multiple}</div>
                         </div>
                       </div>
-
-                      {/* Key Highlights */}
+                      
+                      <div className="bg-muted rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground">Antes:</span>
+                          <span className="text-sm font-medium text-foreground">{study.before}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Resultado:</span>
+                          <span className="text-sm font-medium text-success">{study.after}</span>
+                        </div>
+                      </div>
+                      
                       <div>
-                        <div className="text-sm font-medium text-gray-500 mb-2">Factores clave:</div>
-                        <ul className="space-y-1">
+                        <div className="text-sm font-medium text-foreground mb-2">Factores Clave:</div>
+                        <div className="flex flex-wrap gap-2">
                           {study.highlights.map((highlight, idx) => (
-                            <li key={idx} className="flex items-center text-sm text-gray-600">
-                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2 flex-shrink-0" />
+                            <span key={idx} className="text-xs bg-card border border-border rounded-full px-2 py-1 text-muted-foreground">
                               {highlight}
-                            </li>
+                            </span>
                           ))}
-                        </ul>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-          </Carousel>
-        </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
 
-        {/* Global Results */}
-        <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
-          <div className="bg-white p-8 rounded-2xl shadow-lg">
-            <div className="text-4xl font-bold text-blue-600 mb-2">+200</div>
-            <div className="text-lg font-medium text-gray-900 mb-1">Empresas Vendidas</div>
-            <div className="text-sm text-gray-600">Desde 2018</div>
+        {/* Global Success Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="text-center bg-card border border-border rounded-lg p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="text-4xl font-bold text-foreground mb-2">200+</div>
+            <div className="text-muted-foreground">Empresas Vendidas</div>
           </div>
-          <div className="bg-white p-8 rounded-2xl shadow-lg">
-            <div className="text-4xl font-bold text-green-600 mb-2">€2.5B</div>
-            <div className="text-lg font-medium text-gray-900 mb-1">Valor Total</div>
-            <div className="text-sm text-gray-600">En transacciones</div>
+          <div className="text-center bg-card border border-border rounded-lg p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="text-4xl font-bold text-foreground mb-2">€2.1B</div>
+            <div className="text-muted-foreground">Valor Total</div>
           </div>
-          <div className="bg-white p-8 rounded-2xl shadow-lg">
-            <div className="text-4xl font-bold text-purple-600 mb-2">4.2x</div>
-            <div className="text-lg font-medium text-gray-900 mb-1">Múltiplo Promedio</div>
-            <div className="text-sm text-gray-600">EBITDA</div>
+          <div className="text-center bg-card border border-border rounded-lg p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="text-4xl font-bold text-foreground mb-2">5.2x</div>
+            <div className="text-muted-foreground">Múltiplo Promedio</div>
           </div>
         </div>
 
-        <div className="text-center mt-12">
-          <Button 
-            variant="outline" 
-            className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3"
-          >
-            Ver más casos de éxito
-            <ArrowRight className="w-4 h-4 ml-2" />
+        {/* CTA */}
+        <div className="text-center">
+          <Button className="bg-card text-foreground border border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            Ver Más Casos de Éxito
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </div>

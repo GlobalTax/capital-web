@@ -78,7 +78,7 @@ const VentaEmpresasFAQ = () => {
           <p className="text-gray-600 mb-6">
             ¿No encuentras la respuesta que buscas?
           </p>
-          <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <Button className="bg-card text-foreground border border-border rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
             Contacta con Nuestros Expertos
           </Button>
         </div>
