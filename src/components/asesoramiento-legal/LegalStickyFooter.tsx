@@ -46,7 +46,7 @@ const LegalStickyFooter = () => {
                 className="flex-1 sm:flex-none"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
-                Solicitar Propuesta
+                Propuesta
               </Button>
             </div>
           </div>

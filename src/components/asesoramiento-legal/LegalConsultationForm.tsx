@@ -101,7 +101,7 @@ const LegalConsultationForm = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                Solicitar Consulta Gratuita
+                Consulta
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -229,7 +229,7 @@ const LegalConsultationForm = () => {
                   className="w-full" 
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Enviando...' : 'Obtener Consulta Legal Gratuita'}
+                  {isSubmitting ? 'Enviando...' : 'Obtener Consulta'}
                 </Button>
               </form>
             </CardContent>

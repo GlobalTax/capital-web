@@ -140,7 +140,7 @@ const Resultados = () => {
                 Únete a los cientos de empresarios que han confiado en nosotros
               </p>
               <button className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
-                Solicitar Consulta Gratuita
+                Consulta
               </button>
             </div>
           </div>

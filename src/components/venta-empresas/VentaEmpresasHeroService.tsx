@@ -73,7 +73,7 @@ const VentaEmpresasHeroService = () => {
                 onClick={scrollToContact}
                 className="text-base px-6 py-3"
               >
-                Solicitar Consulta Profesional
+                Consulta
               </InteractiveHoverButton>
               
               <InteractiveHoverButton

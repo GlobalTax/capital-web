@@ -42,7 +42,7 @@ const AsesoramientoLegalHero = () => {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
               <InteractiveHoverButton
-                text="Solicitar Consulta Gratuita"
+                text="Consulta"
                 variant="primary"
                 size="lg"
                 className="flex items-center gap-2"
@@ -51,7 +51,7 @@ const AsesoramientoLegalHero = () => {
               </InteractiveHoverButton>
               
               <InteractiveHoverButton
-                text="Ver Documentación Técnica"
+                text="Documentación"
                 variant="secondary"
                 size="lg"
                 className="flex items-center gap-2"

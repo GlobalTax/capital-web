@@ -85,7 +85,7 @@ const LegalLeadModal: React.FC<LegalLeadModalProps> = ({ isOpen, onClose }) => {
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
-            Solicitar Propuesta Legal M&A
+            Propuesta
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Completa el formulario y te contactaremos para discutir tus necesidades legales específicas.
@@ -218,7 +218,7 @@ const LegalLeadModal: React.FC<LegalLeadModalProps> = ({ isOpen, onClose }) => {
               ) : (
                 <>
                   <Send className="w-4 h-4 mr-2" />
-                  Solicitar Propuesta
+                  Propuesta
                 </>
               )}
             </Button>
