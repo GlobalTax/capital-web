@@ -24,12 +24,14 @@ const MinimalistCTA = () => {
             Solicita una evaluación gratuita y descubre el verdadero potencial de tu negocio.
           </p>
 
-          <InteractiveHoverButton 
-            text="Evaluación Gratuita"
-            variant="primary"
-            size="lg"
-            onClick={handleContactClick}
-          />
+          <div className="flex justify-center">
+            <InteractiveHoverButton 
+              text="Evaluación Gratuita"
+              variant="primary"
+              size="lg"
+              onClick={handleContactClick}
+            />
+          </div>
           
           <p className="text-sm text-gray-500 mt-4">
             Sin compromiso • Confidencial • Resultados en 48h
