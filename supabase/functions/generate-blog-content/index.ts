@@ -72,12 +72,12 @@ Estructura requerida:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemMessage },
           { role: 'user', content: userMessage }
         ],
-        max_completion_tokens: type === 'content' ? 3000 : 500,
+        max_tokens: type === 'content' ? 3000 : 500,
       }),
     });
 
