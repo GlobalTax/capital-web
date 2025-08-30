@@ -32,28 +32,11 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks optimizados
+          // Solo vendor chunks grandes para evitar conflictos
           vendor: ['react', 'react-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
           routing: ['react-router-dom'],
-          query: ['@tanstack/react-query'],
-          charts: ['recharts'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
-          
-          // Feature chunks
-          admin: [
-            './src/pages/Admin.tsx',
-            './src/components/admin/ModernBlogManager.tsx',
-            './src/components/admin/BlogPostsManager.tsx'
-          ],
-          dashboard: [
-            './src/features/dashboard/hooks/useMarketingMetrics.ts',
-            './src/hooks/useAdvancedDashboardStats.tsx'
-          ],
-          blog: [
-            './src/hooks/useBlogPosts.tsx',
-            './src/pages/recursos/Blog.tsx'
-          ]
+          query: ['@tanstack/react-query']
         }
       }
     },

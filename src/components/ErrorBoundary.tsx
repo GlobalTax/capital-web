@@ -52,6 +52,15 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
+    const errorType = this.getErrorType(this.state.error);
+    
+    // Para errores de carga de módulos, forzar recarga completa de la página
+    if (errorType === 'module-loading') {
+      window.location.reload();
+      return;
+    }
+    
+    // Para otros errores, intentar rerender del componente
     this.setState({ 
       hasError: false, 
       error: null,
@@ -67,6 +76,7 @@ class ErrorBoundary extends Component<Props, State> {
     if (!error) return 'unknown';
     
     const message = error.message.toLowerCase();
+    if (message.includes('failed to fetch dynamically imported module')) return 'module-loading';
     if (message.includes('network') || message.includes('fetch')) return 'network';
     if (message.includes('chunk') || message.includes('loading')) return 'loading';
     if (message.includes('permission') || message.includes('unauthorized')) return 'permission';
@@ -75,6 +85,8 @@ class ErrorBoundary extends Component<Props, State> {
 
   getErrorTitle = (errorType: string) => {
     switch (errorType) {
+      case 'module-loading':
+        return 'Error de Carga de Módulos';
       case 'network':
         return 'Problema de Conexión';
       case 'loading':
@@ -88,6 +100,8 @@ class ErrorBoundary extends Component<Props, State> {
 
   getErrorDescription = (errorType: string) => {
     switch (errorType) {
+      case 'module-loading':
+        return 'No se pudieron cargar algunos módulos de la aplicación. Esto suele resolverse recargando la página.';
       case 'network':
         return 'No se pudo conectar con el servidor. Verifica tu conexión a internet e inténtalo de nuevo.';
       case 'loading':
