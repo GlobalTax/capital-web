@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building, Euro, Calendar, Users, TrendingUp, Phone, Mail } from 'lucide-react';
-import ContactFormOperation from '@/components/operations/ContactFormOperation';
+// import ContactFormOperation from '@/components/operations/ContactFormOperation';
 
 interface Operation {
   id: string;
@@ -230,7 +230,14 @@ const OperacionDetalle = () => {
                       Solicitar Información
                     </Button>
                   ) : (
-                    <ContactFormOperation operationId={operation.id} companyName={operation.company_name} />
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-600 mb-4">
+                        Contacta con nosotros para obtener más información sobre esta oportunidad.
+                      </p>
+                      <a href="/contacto" className="text-primary hover:underline">
+                        Ir al formulario de contacto
+                      </a>
+                    </div>
                   )}
                 </CardContent>
               </Card>
