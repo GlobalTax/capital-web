@@ -2,6 +2,8 @@ import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Badge } from '@/components/ui/badge';
 
+// Force recompilation - debugging undefined variable error
+
 export const EnhancedHeroSection = () => {
   const recentActivity = [
     { name: 'TechCorp Valuation', value: '€25M', status: 'Completado', color: 'bg-green-500', statusColor: 'text-green-600' },
