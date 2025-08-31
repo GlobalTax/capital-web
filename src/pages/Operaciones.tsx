@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import OperationsList from '@/components/operations/OperationsList';
+import OperationsSection from '@/components/operations/OperationsSection';
 import { Building, TrendingUp, Users, Globe } from 'lucide-react';
 
 const Operaciones = () => {
@@ -59,7 +59,13 @@ const Operaciones = () => {
         {/* Operations List */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <OperationsList showFilters={true} displayLocation="operaciones" />
+            <OperationsSection 
+              variant="full" 
+              showFilters={true}
+              showStats={false}
+              showCTA={false}
+              displayLocation="operaciones"
+            />
           </div>
         </section>
 

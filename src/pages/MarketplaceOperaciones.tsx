@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import HomeLayout from '@/components/shared/HomeLayout';
-import OperationsList from '@/components/operations/OperationsList';
+import OperationsSection from '@/components/operations/OperationsSection';
 import { Building, TrendingUp, Users, Globe } from 'lucide-react';
 
 const MarketplaceOperaciones = () => {
@@ -98,7 +98,13 @@ const MarketplaceOperaciones = () => {
         {/* Operations List - Sin límites para marketplace */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <OperationsList showFilters={true} displayLocation="marketplace" />
+            <OperationsSection 
+              variant="marketplace" 
+              showFilters={true}
+              showStats={false}
+              showCTA={false}
+              displayLocation="marketplace"
+            />
           </div>
         </section>
 

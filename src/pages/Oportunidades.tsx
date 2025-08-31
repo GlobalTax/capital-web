@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import HomeLayout from '@/components/shared/HomeLayout';
-import CompaniesForSale from '@/components/CompaniesForSale';
+import OperationsSection from '@/components/operations/OperationsSection';
 
 const Oportunidades = () => {
   useEffect(() => {
@@ -31,7 +31,12 @@ const Oportunidades = () => {
             </div>
           </div>
         </section>
-        <CompaniesForSale />
+        <OperationsSection 
+          variant="full" 
+          showFilters={true}
+          showStats={false}
+          showCTA={true}
+        />
       </div>
     </HomeLayout>
   );

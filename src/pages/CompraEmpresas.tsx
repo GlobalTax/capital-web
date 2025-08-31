@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import AcquisitionHero from '@/components/landing/AcquisitionHero';
 import GrowthStrategy from '@/components/landing/GrowthStrategy';
 import AcquisitionProcess from '@/components/landing/AcquisitionProcess';
-import CurrentOpportunities from '@/components/landing/CurrentOpportunities';
+import OperationsSection from '@/components/operations/OperationsSection';
 import WhyChooseUs from '@/components/landing/WhyChooseUs';
 import SuccessStories from '@/components/landing/SuccessStories';
 import AcquisitionCTA from '@/components/landing/AcquisitionCTA';
@@ -18,7 +18,13 @@ const CompraEmpresas = () => {
         <AcquisitionHero />
         <GrowthStrategy />
         <AcquisitionProcess />
-        <CurrentOpportunities />
+        <OperationsSection 
+          variant="full" 
+          showFilters={true}
+          showStats={true}
+          showCTA={true}
+          displayLocation="compra-empresas"
+        />
         <WhyChooseUs />
         <SuccessStories />
         <AcquisitionCTA />

@@ -6,7 +6,7 @@ import SocialProofCompact from '@/components/SocialProofCompact';
 import Services from '@/components/Services';
 import EcosistemaIntegral from '@/components/EcosistemaIntegral';
 import CaseStudiesCompact from '@/components/CaseStudiesCompact';
-import OperationsTeaser from '@/components/operations/OperationsTeaser';
+import OperationsSection from '@/components/operations/OperationsSection';
 import WhyChooseCapittal from '@/components/WhyChooseCapittal';
 import Contact from '@/components/Contact';
 
@@ -18,7 +18,13 @@ const Index = () => {
       <Services />
       <EcosistemaIntegral />
       <CaseStudiesCompact />
-      <OperationsTeaser />
+      <OperationsSection 
+        variant="homepage" 
+        limit={3} 
+        showFilters={false}
+        showStats={false}
+        showCTA={true}
+      />
       <WhyChooseCapittal />
       <Contact />
     </HomeLayout>
