@@ -104,7 +104,7 @@ const OperationsTeaser = () => {
                     Valoración:
                   </span>
                   <span className="text-lg font-bold text-primary">
-                    {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency || 'EUR')}
+                    {formatCurrency(operation.valuation_amount, operation.valuation_currency || 'EUR')}
                   </span>
                 </div>
 

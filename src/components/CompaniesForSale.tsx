@@ -138,7 +138,7 @@ const CompaniesForSale = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Valoración:</span>
                       <span className="font-bold text-black text-lg">
-                        {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency || 'EUR')}
+                        {formatCurrency(operation.valuation_amount, operation.valuation_currency || 'EUR')}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

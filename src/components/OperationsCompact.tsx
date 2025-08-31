@@ -104,7 +104,7 @@ const OperationsCompact = () => {
                           Valoración:
                         </span>
                         <span className="text-xl font-bold text-black">
-                          {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency || 'EUR')}
+                          {formatCurrency(operation.valuation_amount, operation.valuation_currency || 'EUR')}
                         </span>
                       </div>
                       
