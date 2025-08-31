@@ -75,9 +75,9 @@ const OperationsList: React.FC<OperationsListProps> = ({
       if (displayLocation) {
         console.log('🔍 OperationsList - Filtering by displayLocation:', displayLocation);
         if (displayLocation === 'compra-empresas') {
-          query = query.or('display_locations.cs.{"compra-empresas"},display_locations.cs.{"operaciones"}');
+          query = query.or('display_locations.cs.{compra-empresas},display_locations.cs.{operaciones}');
         } else if (displayLocation === 'marketplace' || displayLocation === 'operaciones') {
-          query = query.or('display_locations.cs.{"operaciones"},display_locations.cs.{"marketplace"}');
+          query = query.or('display_locations.cs.{operaciones},display_locations.cs.{marketplace}');
         } else {
           query = query.contains('display_locations', [displayLocation]);
         }
