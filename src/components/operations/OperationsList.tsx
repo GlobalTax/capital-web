@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building, Euro, Calendar, Search, Filter } from 'lucide-react';
+import { OperationCard } from '@/components/operations/OperationCard';
 
 interface Operation {
   id: string;
@@ -15,9 +16,20 @@ interface Operation {
   valuation_currency: string;
   year: number;
   description: string;
+  short_description?: string;
   is_featured: boolean;
   is_active: boolean;
   display_locations: string[];
+  ebitda_multiple?: number;
+  growth_percentage?: number;
+  revenue_amount?: number;
+  ebitda_amount?: number;
+  company_size_employees?: string;
+  highlights?: string[];
+  status?: string;
+  deal_type?: string;
+  logo_url?: string;
+  featured_image_url?: string;
 }
 
 interface OperationsListProps {
@@ -45,7 +57,18 @@ const OperationsList: React.FC<OperationsListProps> = ({
     try {
       let query = supabase
         .from('company_operations')
-        .select('*')
+        .select(`
+          *,
+          ebitda_multiple,
+          growth_percentage,
+          revenue_amount,
+          ebitda_amount,
+          company_size_employees,
+          short_description,
+          highlights,
+          status,
+          deal_type
+        `)
         .eq('is_active', true);
 
       // Filtrar por ubicación de display si se especifica
@@ -194,61 +217,14 @@ const OperationsList: React.FC<OperationsListProps> = ({
       )}
 
       {operations.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {operations.map((operation) => (
-            <Card key={operation.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 group">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <Badge variant="secondary" className="rounded-lg">
-                    {operation.sector}
-                  </Badge>
-                  <div className="flex items-center gap-2">
-                    {operation.is_featured && (
-                      <Badge variant="default" className="rounded-lg bg-yellow-100 text-yellow-800">
-                        Destacado
-                      </Badge>
-                    )}
-                    <Building className="w-5 h-5 text-blue-500" />
-                  </div>
-                </div>
-                
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 leading-tight">
-                  {operation.company_name}
-                </h3>
-                
-                <p className="text-gray-600 mb-4 leading-relaxed text-sm line-clamp-3">
-                  {operation.description}
-                </p>
-
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 flex items-center">
-                      <Euro className="w-4 h-4 mr-1" />
-                      Valoración:
-                    </span>
-                    <span className="text-xl font-bold text-gray-900">
-                      {operation.valuation_amount}M{operation.valuation_currency}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 flex items-center">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      Año:
-                    </span>
-                    <span className="font-medium text-gray-900">{operation.year}</span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-gray-100">
-                  <a href={`/operacion/${operation.id}`} className="block">
-                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white transition-colors">
-                      Ver Detalles
-                    </Button>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {operations.map((operation, index) => (
+            <OperationCard 
+              key={operation.id} 
+              operation={operation}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 0.05}s` } as React.CSSProperties}
+            />
           ))}
         </div>
       ) : (

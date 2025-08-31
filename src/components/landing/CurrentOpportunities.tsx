@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ExternalLink, Clock, TrendingUp } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { supabase } from '@/integrations/supabase/client';
+import { OperationCard } from '@/components/operations/OperationCard';
 
 interface Operation {
   id: string;
@@ -11,9 +12,20 @@ interface Operation {
   valuation_currency: string;
   year: number;
   description: string;
+  short_description?: string;
   is_featured: boolean;
   is_active: boolean;
   display_locations: string[];
+  ebitda_multiple?: number;
+  growth_percentage?: number;
+  revenue_amount?: number;
+  ebitda_amount?: number;
+  company_size_employees?: string;
+  highlights?: string[];
+  status?: string;
+  deal_type?: string;
+  logo_url?: string;
+  featured_image_url?: string;
 }
 
 const CurrentOpportunities = () => {
@@ -33,12 +45,23 @@ const CurrentOpportunities = () => {
     try {
       const { data, error } = await supabase
         .from('company_operations')
-        .select('*')
+        .select(`
+          *,
+          ebitda_multiple,
+          growth_percentage,
+          revenue_amount,
+          ebitda_amount,
+          company_size_employees,
+          short_description,
+          highlights,
+          status,
+          deal_type
+        `)
         .eq('is_active', true)
         .contains('display_locations', ['compra-empresas'])
         .order('is_featured', { ascending: false })
         .order('year', { ascending: false })
-        .limit(4);
+        .limit(3);
 
       if (error) {
         console.error('Error fetching operations:', error);
@@ -158,52 +181,63 @@ const CurrentOpportunities = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 mb-12">
-          {opportunities.map((opp, index) => (
-            <div 
-              key={index}
-              className="group p-6 border border-slate-100 rounded-xl hover:border-primary/20 transition-all duration-200"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    {opp.sector}
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl font-semibold text-primary">
-                      {opp.valuation}
-                    </span>
-                    <span className="text-slate-500 text-sm">
-                      {opp.multiple}
-                    </span>
+        <div className="grid grid-cols-1 xl:grid-cols-1 gap-6 mb-12">
+          {operations.length > 0 ? (
+            operations.slice(0, 3).map((operation, index) => (
+              <OperationCard 
+                key={operation.id} 
+                operation={operation}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+              />
+            ))
+          ) : (
+            opportunities.slice(0, 3).map((opp, index) => (
+              <div 
+                key={index}
+                className="group p-6 border border-slate-100 rounded-xl hover:border-primary/20 transition-all duration-200"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      {opp.sector}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl font-semibold text-primary">
+                        {opp.valuation}
+                      </span>
+                      <span className="text-slate-500 text-sm">
+                        {opp.multiple}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="px-2 py-1 bg-green-50 text-green-600 rounded text-sm font-medium">
+                    {opp.growth}
                   </div>
                 </div>
-                <div className="px-2 py-1 bg-green-50 text-green-600 rounded text-sm font-medium">
-                  {opp.growth}
+                
+                <p className="text-slate-600 mb-4 leading-relaxed text-sm">
+                  {opp.description}
+                </p>
+                
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {opp.highlights.map((highlight, idx) => (
+                    <span 
+                      key={idx}
+                      className="px-2 py-1 bg-slate-50 text-slate-600 rounded text-xs border border-slate-100"
+                    >
+                      {highlight}
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Información disponible</span>
+                  <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
                 </div>
               </div>
-              
-              <p className="text-slate-600 mb-4 leading-relaxed text-sm">
-                {opp.description}
-              </p>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                {opp.highlights.map((highlight, idx) => (
-                  <span 
-                    key={idx}
-                    className="px-2 py-1 bg-slate-50 text-slate-600 rounded text-xs border border-slate-100"
-                  >
-                    {highlight}
-                  </span>
-                ))}
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-400">Información disponible</span>
-                <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Summary stats */}

@@ -889,15 +889,24 @@ export type Database = {
       company_operations: {
         Row: {
           company_name: string
+          company_size_employees: string | null
           created_at: string
+          deal_type: string | null
           description: string
           display_locations: string[] | null
+          ebitda_amount: number | null
+          ebitda_multiple: number | null
           featured_image_url: string | null
+          growth_percentage: number | null
+          highlights: string[] | null
           id: string
           is_active: boolean | null
           is_featured: boolean | null
           logo_url: string | null
+          revenue_amount: number | null
           sector: string
+          short_description: string | null
+          status: string | null
           updated_at: string
           valuation_amount: number
           valuation_currency: string | null
@@ -905,15 +914,24 @@ export type Database = {
         }
         Insert: {
           company_name: string
+          company_size_employees?: string | null
           created_at?: string
+          deal_type?: string | null
           description: string
           display_locations?: string[] | null
+          ebitda_amount?: number | null
+          ebitda_multiple?: number | null
           featured_image_url?: string | null
+          growth_percentage?: number | null
+          highlights?: string[] | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
+          revenue_amount?: number | null
           sector: string
+          short_description?: string | null
+          status?: string | null
           updated_at?: string
           valuation_amount: number
           valuation_currency?: string | null
@@ -921,15 +939,24 @@ export type Database = {
         }
         Update: {
           company_name?: string
+          company_size_employees?: string | null
           created_at?: string
+          deal_type?: string | null
           description?: string
           display_locations?: string[] | null
+          ebitda_amount?: number | null
+          ebitda_multiple?: number | null
           featured_image_url?: string | null
+          growth_percentage?: number | null
+          highlights?: string[] | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
+          revenue_amount?: number | null
           sector?: string
+          short_description?: string | null
+          status?: string | null
           updated_at?: string
           valuation_amount?: number
           valuation_currency?: string | null
