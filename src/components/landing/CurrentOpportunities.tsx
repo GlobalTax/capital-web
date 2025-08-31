@@ -186,22 +186,25 @@ const CurrentOpportunities = () => {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12">
-          {operations.length > 0 ? (
-            operations.slice(0, 3).map((operation, index) => {
-              console.log(`🎯 CurrentOpportunities - Rendering operation ${index}:`, operation);
-              return (
-                <OperationCard 
-                  key={operation.id} 
-                  operation={operation}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
-                />
-              );
-            })
-          ) : (
-            // Placeholder cards using OperationCard format
-            Array.from({ length: 3 }).map((_, index) => {
-              const placeholderOperation = {
+          {(() => {
+            console.log('🔄 CurrentOpportunities - About to render operations, count:', operations.length);
+            return operations.length > 0 ? 
+              operations.slice(0, 3).map((operation, index) => {
+                console.log(`🎯 CurrentOpportunities - Rendering operation ${index}:`, operation);
+                return (
+                  <div key={operation.id} className="w-full">
+                    <OperationCard 
+                      operation={operation}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+                    />
+                  </div>
+                );
+              })
+            : (() => {
+              console.log('🔄 CurrentOpportunities - Rendering placeholder cards since no operations found');
+              return Array.from({ length: 3 }).map((_, index) => {
+                const placeholderOperation = {
                 id: `placeholder-${index}`,
                 company_name: index === 0 ? 'Empresa Tecnológica' : index === 1 ? 'Distribuidora Regional' : 'Consultora Especializada',
                 sector: index === 0 ? 'Software & Tecnología' : index === 1 ? 'Distribución' : 'Consultoría',
@@ -231,16 +234,19 @@ const CurrentOpportunities = () => {
                 deal_type: 'sale'
               };
               
+              console.log(`🎯 CurrentOpportunities - Rendering placeholder ${index}:`, placeholderOperation);
               return (
-                <OperationCard
-                  key={placeholderOperation.id}
-                  operation={placeholderOperation}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
-                />
+                <div key={placeholderOperation.id} className="w-full">
+                  <OperationCard
+                    operation={placeholderOperation}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+                  />
+                </div>
               );
-            })
-          )}
+              });
+            })();
+          })()}
         </div>
 
         {/* Summary stats */}

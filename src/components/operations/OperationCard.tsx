@@ -32,6 +32,7 @@ interface OperationCardProps {
 }
 
 export const OperationCard: React.FC<OperationCardProps> = ({ operation, className = "", style }) => {
+  console.log('🏗️ OperationCard - Rendering with operation:', operation);
   const displayDescription = operation.short_description || operation.description.substring(0, 120) + '...';
   
   const getStatusColor = (status?: string) => {
@@ -51,6 +52,8 @@ export const OperationCard: React.FC<OperationCardProps> = ({ operation, classNa
     }
   };
 
+  console.log('🎨 OperationCard - About to render card for:', operation.company_name);
+  
   return (
     <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${className}`} style={style}>
       <div className="p-6">
