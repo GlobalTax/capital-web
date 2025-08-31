@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
 
 export interface Operation {
   id: string;
@@ -53,10 +54,15 @@ export const useOperations = (filters: OperationsFilters = {}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   
   // Refs para cancelar requests pendientes
   const abortControllerRef = useRef<AbortController | null>(null);
   const sectorsLoadedRef = useRef(false);
+  const lastSuccessfulDataRef = useRef<Operation[]>([]);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { handleAsyncError, logError } = useCentralizedErrorHandler();
   
   // Memoize filters para evitar re-renders innecesarios
   const memoizedFilters = useMemo(() => filters, [
@@ -68,7 +74,36 @@ export const useOperations = (filters: OperationsFilters = {}) => {
     filters.sortBy
   ]);
 
-  const fetchOperations = useCallback(async () => {
+  // Función para serializar errores correctamente
+  const serializeError = (error: any): string => {
+    if (!error) return 'Error desconocido';
+    if (typeof error === 'string') return error;
+    if (error.message) return error.message;
+    if (error.error_description) return error.error_description;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  };
+
+  // Función para determinar si es un error temporal
+  const isTemporaryError = (error: any): boolean => {
+    const errorMsg = serializeError(error).toLowerCase();
+    return errorMsg.includes('network') || 
+           errorMsg.includes('timeout') || 
+           errorMsg.includes('fetch') ||
+           errorMsg.includes('connection') ||
+           error?.status >= 500 ||
+           error?.name === 'NetworkError';
+  };
+
+  // Función para calcular delay de retry con backoff exponencial
+  const getRetryDelay = (attempt: number): number => {
+    return Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10 segundos
+  };
+
+  const fetchOperationsWithRetry = useCallback(async (attempt: number = 0): Promise<void> => {
     // Cancelar request anterior si existe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -81,6 +116,10 @@ export const useOperations = (filters: OperationsFilters = {}) => {
     try {
       setIsLoading(true);
       setError(null);
+      
+      if (attempt > 0) {
+        setIsRetrying(true);
+      }
 
       let query = supabase
         .from('company_operations')
@@ -130,27 +169,68 @@ export const useOperations = (filters: OperationsFilters = {}) => {
       }
 
       if (error) {
-        const errorMessage = error.message || 'Error desconocido';
-        console.error('❌ Error fetching operations:', errorMessage, error);
-        setError(`Error al cargar las operaciones: ${errorMessage}`);
-        setOperations([]);
-        setRetryCount(prev => prev + 1);
+        const serializedError = serializeError(error);
+        
+        // Log del error con contexto mejorado
+        logError(new Error(serializedError), {
+          component: 'useOperations',
+          action: 'fetchOperations',
+          metadata: { 
+            attempt: attempt + 1, 
+            filters: memoizedFilters,
+            errorCode: error.code,
+            errorDetails: error.details
+          }
+        });
+
+        // Si es error temporal y no hemos alcanzado el máximo de reintentos
+        if (isTemporaryError(error) && attempt < 3) {
+          const delay = getRetryDelay(attempt);
+          setRetryCount(attempt + 1);
+          
+          retryTimeoutRef.current = setTimeout(() => {
+            fetchOperationsWithRetry(attempt + 1);
+          }, delay);
+          return;
+        }
+
+        // Error permanente o máximo de reintentos alcanzado
+        setError(`Error al cargar las operaciones: ${serializedError}`);
+        
+        // Si tenemos datos previos exitosos, mostrarlos
+        if (lastSuccessfulDataRef.current.length > 0) {
+          setOperations(lastSuccessfulDataRef.current);
+        } else {
+          setOperations([]);
+        }
+        
+        setRetryCount(attempt + 1);
       } else {
         console.log('✅ Operations loaded successfully:', data?.length || 0, 'operations');
-        setOperations(data || []);
-        setRetryCount(0); // Reset retry count on success
+        const loadedOperations = data || [];
+        setOperations(loadedOperations);
+        lastSuccessfulDataRef.current = loadedOperations; // Guardar datos exitosos
+        setRetryCount(0);
         
         // Update stats if we have data
         if (data && data.length > 0) {
-          const totalCount = await supabase
-            .from('company_operations')
-            .select('*', { count: 'exact', head: true })
-            .eq('is_active', true);
-          
-          setStats(prev => ({
-            ...prev,
-            totalOperations: totalCount.count || data.length
-          }));
+          try {
+            const totalCount = await supabase
+              .from('company_operations')
+              .select('*', { count: 'exact', head: true })
+              .eq('is_active', true);
+            
+            setStats(prev => ({
+              ...prev,
+              totalOperations: totalCount.count || data.length
+            }));
+          } catch (statsError) {
+            // Si falla la estadística, no es crítico
+            logError(new Error(serializeError(statsError)), {
+              component: 'useOperations',
+              action: 'fetchStats'
+            });
+          }
         }
       }
     } catch (err: any) {
@@ -159,17 +239,53 @@ export const useOperations = (filters: OperationsFilters = {}) => {
         return;
       }
       
-      const errorMessage = err.message || 'Error inesperado';
-      console.error('❌ Unexpected error:', errorMessage, err);
-      setError(`Error inesperado: ${errorMessage}`);
-      setOperations([]);
-      setRetryCount(prev => prev + 1);
+      const serializedError = serializeError(err);
+      
+      logError(err, {
+        component: 'useOperations',
+        action: 'fetchOperations',
+        metadata: { attempt: attempt + 1, filters: memoizedFilters }
+      });
+
+      // Si es error temporal y no hemos alcanzado el máximo de reintentos
+      if (isTemporaryError(err) && attempt < 3) {
+        const delay = getRetryDelay(attempt);
+        setRetryCount(attempt + 1);
+        
+        retryTimeoutRef.current = setTimeout(() => {
+          fetchOperationsWithRetry(attempt + 1);
+        }, delay);
+        return;
+      }
+
+      // Error permanente o máximo de reintentos alcanzado
+      setError(`Error inesperado: ${serializedError}`);
+      
+      // Si tenemos datos previos exitosos, mostrarlos
+      if (lastSuccessfulDataRef.current.length > 0) {
+        setOperations(lastSuccessfulDataRef.current);
+      } else {
+        setOperations([]);
+      }
+      
+      setRetryCount(attempt + 1);
     } finally {
       if (!abortController.signal.aborted) {
         setIsLoading(false);
+        setIsRetrying(false);
       }
     }
-  }, [memoizedFilters]);
+  }, [memoizedFilters, logError]);
+
+  const fetchOperations = useCallback(() => {
+    // Limpiar timeout anterior si existe
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+    
+    fetchOperationsWithRetry(0);
+  }, [fetchOperationsWithRetry]);
 
   const fetchSectors = useCallback(async () => {
     // Solo cargar sectores una vez
@@ -177,7 +293,7 @@ export const useOperations = (filters: OperationsFilters = {}) => {
       return;
     }
     
-    try {
+    await handleAsyncError(async () => {
       console.log('📊 Loading sectors...');
       const { data, error } = await supabase
         .from('company_operations')
@@ -186,18 +302,18 @@ export const useOperations = (filters: OperationsFilters = {}) => {
         .not('sector', 'is', null);
       
       if (error) {
-        console.error('❌ Error fetching sectors:', error);
-        return;
+        throw new Error(serializeError(error));
       }
       
       const uniqueSectors = [...new Set(data?.map(item => item.sector) || [])];
       setSectors(uniqueSectors);
       sectorsLoadedRef.current = true;
       console.log('✅ Sectors loaded:', uniqueSectors.length, 'sectors');
-    } catch (error) {
-      console.error('❌ Unexpected error fetching sectors:', error);
-    }
-  }, []);
+    }, {
+      component: 'useOperations',
+      action: 'fetchSectors'
+    });
+  }, [handleAsyncError]);
 
   useEffect(() => {
     fetchOperations();
@@ -213,11 +329,22 @@ export const useOperations = (filters: OperationsFilters = {}) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, []);
 
   const refresh = useCallback(() => {
+    // Limpiar timeouts y estados
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+    
     setRetryCount(0);
+    setError(null);
+    setIsRetrying(false);
     sectorsLoadedRef.current = false; // Permitir reload de sectores
     fetchOperations();
     fetchSectors();
@@ -230,6 +357,7 @@ export const useOperations = (filters: OperationsFilters = {}) => {
     isLoading,
     error,
     refresh,
-    retryCount
+    retryCount,
+    isRetrying
   };
 };
