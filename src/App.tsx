@@ -351,49 +351,24 @@ function App() {
           monitorResourceLoading();
         }
 
-        // Service Worker con kill-switch para compatibilidad multi-navegador
+        // Service Worker TEMPORARILY DISABLED to fix 404 errors
         setTimeout(async () => {
           try {
             if ('serviceWorker' in navigator) {
-              const swDisabled = import.meta.env.VITE_DISABLE_SW === '1' || import.meta.env.VITE_ENABLE_SW === '0';
+              console.log('🔧 Service Worker TEMPORARILY DISABLED - Clearing all caches');
               
-              if (swDisabled) {
-                console.log('🔧 Service Worker DISABLED via environment variable');
-                
-                // Unregister todos los service workers existentes
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                for (const registration of registrations) {
-                  await registration.unregister();
-                  console.log('✅ Service worker unregistered:', registration.scope);
-                }
-                
-                // Clear todos los caches
-                if ('caches' in window) {
-                  const cacheNames = await caches.keys();
-                  await Promise.all(cacheNames.map(name => caches.delete(name)));
-                  console.log('✅ All caches cleared');
-                }
-              } else {
-                console.log('🔧 Service Worker ENABLED - Registering /sw.js');
-                
-                // Registrar service worker normalmente
-                const registration = await navigator.serviceWorker.register('/sw.js', {
-                  scope: '/'
-                });
-                
-                registration.addEventListener('updatefound', () => {
-                  const newWorker = registration.installing;
-                  if (newWorker) {
-                    newWorker.addEventListener('statechange', () => {
-                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        console.log('🔄 New service worker available');
-                        // No force reload here - let user decide
-                      }
-                    });
-                  }
-                });
-                
-                console.log('✅ Service worker registered:', registration.scope);
+              // Unregister todos los service workers existentes
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (const registration of registrations) {
+                await registration.unregister();
+                console.log('✅ Service worker unregistered:', registration.scope);
+              }
+              
+              // Clear todos los caches
+              if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log('✅ All caches cleared');
               }
             }
           } catch (error) {
