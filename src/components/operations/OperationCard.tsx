@@ -31,9 +31,9 @@ interface OperationCardProps {
   style?: React.CSSProperties;
 }
 
-export const OperationCard = memo<OperationCardProps>(({ operation, className = "", style }) => {
-  console.log('🏗️ OperationCard - Rendering with operation:', operation);
-  console.log('💰 OperationCard - Currency data:', {
+const OperationCard = memo<OperationCardProps>(({ operation, className = "", style }) => {
+  console.log('🏗️ OperationCard v2 - Rendering with operation:', operation);
+  console.log('💰 OperationCard v2 - Currency data:', {
     valuation_currency: operation.valuation_currency,
     valuation_amount: operation.valuation_amount
   });
@@ -56,7 +56,7 @@ export const OperationCard = memo<OperationCardProps>(({ operation, className = 
     }
   };
 
-  console.log('🎨 OperationCard - About to render card for:', operation.company_name);
+  console.log('🎨 OperationCard v2 - About to render card for:', operation.company_name);
   
   return (
     <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${className}`} style={style}>
@@ -199,4 +199,5 @@ export const OperationCard = memo<OperationCardProps>(({ operation, className = 
 
 OperationCard.displayName = 'OperationCard';
 
+// Fixed: Using only default export to resolve "Component is not a function" error
 export default OperationCard;

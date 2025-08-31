@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { ExternalLink, Clock, TrendingUp } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { supabase } from '@/integrations/supabase/client';
-import { OperationCard } from '@/components/operations/OperationCard';
+import OperationCard from '@/components/operations/OperationCard';
 import { formatCurrency } from '@/utils/formatters';
 
 interface Operation {

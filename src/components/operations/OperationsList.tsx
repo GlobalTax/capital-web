@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building, Euro, Calendar, Search, Filter } from 'lucide-react';
-import { OperationCard } from '@/components/operations/OperationCard';
+import OperationCard from '@/components/operations/OperationCard';
 
 interface Operation {
   id: string;
