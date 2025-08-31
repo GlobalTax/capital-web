@@ -3,6 +3,7 @@ import { ExternalLink, Clock, TrendingUp } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { supabase } from '@/integrations/supabase/client';
 import { OperationCard } from '@/components/operations/OperationCard';
+import { formatCurrency } from '@/utils/formatters';
 
 interface Operation {
   id: string;
@@ -43,6 +44,7 @@ const CurrentOpportunities = () => {
 
   const fetchOperations = async () => {
     try {
+      console.log('🔍 CurrentOpportunities - Fetching operations...');
       const { data, error } = await supabase
         .from('company_operations')
         .select(`
@@ -64,10 +66,11 @@ const CurrentOpportunities = () => {
         .limit(3);
 
       if (error) {
-        console.error('Error fetching operations:', error);
+        console.error('❌ CurrentOpportunities - Error fetching operations:', error);
         // Usar datos de respaldo si la consulta falla
         setOperations([]);
       } else {
+        console.log('✅ CurrentOpportunities - Operations fetched:', data);
         setOperations(data || []);
         
         // Actualizar estadísticas basadas en datos reales
@@ -83,9 +86,10 @@ const CurrentOpportunities = () => {
         }
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ CurrentOpportunities - Error:', error);
       setOperations([]);
     } finally {
+      console.log('🏁 CurrentOpportunities - Loading finished');
       setIsLoading(false);
     }
   };
@@ -93,7 +97,7 @@ const CurrentOpportunities = () => {
   // Función para formatear datos de operaciones reales
   const formatOperation = (operation: Operation) => ({
     sector: operation.sector,
-    valuation: `${operation.valuation_amount}M${operation.valuation_currency}`,
+    valuation: formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency),
     multiple: "N/A", // Se podría calcular si tuviéramos EBITDA
     description: operation.description,
     highlights: [`Año ${operation.year}`, operation.is_featured ? "Destacado" : "Verificado", "Información disponible"],
@@ -183,14 +187,17 @@ const CurrentOpportunities = () => {
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12">
           {operations.length > 0 ? (
-            operations.slice(0, 3).map((operation, index) => (
-              <OperationCard 
-                key={operation.id} 
-                operation={operation}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
-              />
-            ))
+            operations.slice(0, 3).map((operation, index) => {
+              console.log(`🎯 CurrentOpportunities - Rendering operation ${index}:`, operation);
+              return (
+                <OperationCard 
+                  key={operation.id} 
+                  operation={operation}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+                />
+              );
+            })
           ) : (
             // Placeholder cards using OperationCard format
             Array.from({ length: 3 }).map((_, index) => {
@@ -199,7 +206,7 @@ const CurrentOpportunities = () => {
                 company_name: index === 0 ? 'Empresa Tecnológica' : index === 1 ? 'Distribuidora Regional' : 'Consultora Especializada',
                 sector: index === 0 ? 'Software & Tecnología' : index === 1 ? 'Distribución' : 'Consultoría',
                 valuation_amount: index === 0 ? 2800000 : index === 1 ? 1500000 : 950000,
-                valuation_currency: 'EUR',
+                valuation_currency: '€',
                 year: 2024,
                 description: index === 0 
                   ? 'Empresa con soluciones tecnológicas innovadoras, crecimiento sostenido y cartera de clientes diversificada en el sector B2B.'

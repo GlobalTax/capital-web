@@ -17,13 +17,24 @@ const mapCurrencySymbolToCode = (currency: string | null | undefined): string =>
 };
 
 export const formatCurrency = (value: number, currency: string = 'EUR'): string => {
+  console.log('💰 formatCurrency called with:', { value, currency });
   const mappedCurrency = mapCurrencySymbolToCode(currency);
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: mappedCurrency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+  console.log('💱 Currency mapped from', currency, 'to', mappedCurrency);
+  
+  try {
+    const result = new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: mappedCurrency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+    console.log('✅ formatCurrency result:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ formatCurrency error:', error, { value, currency, mappedCurrency });
+    // Fallback to basic formatting
+    return `${value.toLocaleString('es-ES')} €`;
+  }
 };
 
 export const formatNumber = (value: number): string => {
