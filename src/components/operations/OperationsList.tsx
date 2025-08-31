@@ -241,9 +241,11 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
-                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white transition-colors">
-                    Ver Detalles
-                  </Button>
+                  <a href={`/operacion/${operation.id}`} className="block">
+                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white transition-colors">
+                      Ver Detalles
+                    </Button>
+                  </a>
                 </div>
               </CardContent>
             </Card>
