@@ -60,7 +60,7 @@ const CurrentOpportunities = () => {
           deal_type
         `)
         .eq('is_active', true)
-        .or('display_locations.cs.{"compra-empresas"},display_locations.cs.{"operaciones"}')
+        .or('display_locations.cs.{compra-empresas},display_locations.cs.{operaciones}')
         .order('is_featured', { ascending: false })
         .order('year', { ascending: false })
         .limit(3);
