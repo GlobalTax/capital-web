@@ -1,12 +1,11 @@
 // Service Worker optimizado para Capittal
 // Versión simplificada para evitar problemas de inicialización
 
-const CACHE_NAME = 'capittal-v3';
-const STATIC_CACHE = 'capittal-static-v3';
+const CACHE_NAME = 'capittal-v4';
+const STATIC_CACHE = 'capittal-static-v4';
 
-// Recursos críticos para cachear
+// Recursos críticos para cachear (eliminado '/' del precache)
 const CRITICAL_RESOURCES = [
-  '/',
   '/manifest.json'
 ];
 
@@ -47,6 +46,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// Manejo de mensajes para forzar actualización
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] Received SKIP_WAITING message');
+    self.skipWaiting();
+  }
+});
+
 // Activación del service worker
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker');
@@ -74,7 +81,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Estrategia de fetch simplificada
+// Estrategia de fetch mejorada - Network-first para navegación, Cache-first para estáticos
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   
@@ -97,67 +104,118 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Evitar cachear APIs externas conocidas
+  // No interceptar APIs externas conocidas
   const isExternalAPI = [
     'supabase.co',
     'googleapis.com',
     'lovable-api.com',
-    'cloudfront.net'
+    'cloudfront.net',
+    'lovable.dev'
   ].some(domain => url.hostname.includes(domain));
   
   if (isExternalAPI) {
     return;
   }
   
-  event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        // Si está en caché, devolverlo
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        
-        // Si no está en caché, fetch y cachear si es necesario
-        return fetch(request)
-          .then((response) => {
-            // Solo cachear respuestas exitosas
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
+  // Estrategia Network-first para navegación (documentos)
+  if (request.destination === 'document') {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .then((response) => {
+          // Cachear respuesta exitosa
+          if (response && response.status === 200 && response.type === 'basic') {
+            try {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  return cache.put(request, responseToCache);
+                })
+                .catch((error) => {
+                  console.warn('[SW] Failed to cache document:', request.url, error);
+                });
+            } catch (error) {
+              console.warn('[SW] Error during document caching process:', request.url, error);
+            }
+          }
+          return response;
+        })
+        .catch((error) => {
+          console.error('[SW] Network fetch failed for document:', error);
+          
+          // Fallback a caché para navegación
+          return caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
             }
             
-            // Cachear recursos estáticos
-            const shouldCache = isStaticResource(request.url);
-            if (shouldCache) {
+            // Último fallback - página offline
+            return new Response('<!DOCTYPE html><html><head><title>Offline</title></head><body><h1>Sin conexión</h1><p>Por favor, verifica tu conexión a internet.</p></body></html>', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'text/html' }
+            });
+          });
+        })
+    );
+    return;
+  }
+  
+  // Estrategia Cache-first para recursos estáticos
+  if (isStaticResource(request.url)) {
+    event.respondWith(
+      caches.match(request)
+        .then((cachedResponse) => {
+          // Si está en caché, devolverlo inmediatamente
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          // Si no está en caché, fetch y cachear
+          return fetch(request)
+            .then((response) => {
+              // Solo cachear respuestas exitosas
+              if (!response || response.status !== 200 || response.type !== 'basic') {
+                return response;
+              }
+              
               try {
                 const responseToCache = response.clone();
-                caches.open(CACHE_NAME)
+                caches.open(STATIC_CACHE)
                   .then((cache) => {
                     return cache.put(request, responseToCache);
                   })
                   .catch((error) => {
-                    console.warn('[SW] Failed to cache resource:', request.url, error);
+                    console.warn('[SW] Failed to cache static resource:', request.url, error);
                   });
               } catch (error) {
-                console.warn('[SW] Error during caching process:', request.url, error);
+                console.warn('[SW] Error during static resource caching process:', request.url, error);
               }
-            }
-            
-            return response;
-          })
-          .catch((error) => {
-            console.error('[SW] Fetch failed:', error);
-            
-            // Fallback para navegación
-            if (request.destination === 'document') {
-              return caches.match('/');
-            }
-            
-            // Fallback para otros recursos
-            return new Response('Offline', {
-              status: 503,
-              statusText: 'Service Unavailable'
+              
+              return response;
+            })
+            .catch((error) => {
+              console.error('[SW] Fetch failed for static resource:', error);
+              
+              // Fallback para recursos estáticos
+              return new Response('Resource not available offline', {
+                status: 503,
+                statusText: 'Service Unavailable'
+              });
             });
-          });
+        })
+    );
+    return;
+  }
+  
+  // Para otros requests no específicos, usar estrategia por defecto
+  event.respondWith(
+    fetch(request)
+      .catch((error) => {
+        console.error('[SW] Default fetch failed:', error);
+        return new Response('Request failed', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
       })
   );
 });

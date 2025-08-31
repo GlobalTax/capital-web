@@ -355,8 +355,36 @@ function App() {
         setTimeout(async () => {
           try {
             if ('serviceWorker' in navigator) {
-              await navigator.serviceWorker.register('/sw.js');
-              console.log('Service worker registered successfully');
+              // Desregistrar service workers existentes para forzar recarga
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (const registration of registrations) {
+                await registration.unregister();
+                console.log('Service worker unregistered:', registration.scope);
+              }
+              
+              // Re-registrar con la nueva versión v4
+              const registration = await navigator.serviceWorker.register('/sw.js', {
+                scope: '/'
+              });
+              
+              // Forzar actualización inmediata si hay una nueva versión
+              if (registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+              }
+              
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // Forzar recarga para activar nueva versión
+                      window.location.reload();
+                    }
+                  });
+                }
+              });
+              
+              console.log('Service worker registered successfully with v4 cache');
             }
           } catch (error) {
             console.warn('Service worker registration failed:', error);
