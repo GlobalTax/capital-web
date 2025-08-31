@@ -73,7 +73,14 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
       // Filtrar por ubicación de display si se especifica
       if (displayLocation) {
-        query = query.contains('display_locations', [displayLocation]);
+        console.log('🔍 OperationsList - Filtering by displayLocation:', displayLocation);
+        if (displayLocation === 'compra-empresas') {
+          query = query.or('display_locations.cs.{"compra-empresas"},display_locations.cs.{"operaciones"}');
+        } else if (displayLocation === 'marketplace' || displayLocation === 'operaciones') {
+          query = query.or('display_locations.cs.{"operaciones"},display_locations.cs.{"marketplace"}');
+        } else {
+          query = query.contains('display_locations', [displayLocation]);
+        }
       }
 
       // Filtrar por sector
@@ -115,9 +122,14 @@ const OperationsList: React.FC<OperationsListProps> = ({
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching operations:', error);
+        console.error('❌ OperationsList - Error fetching operations:', error);
         setOperations([]);
       } else {
+        console.log('✅ OperationsList - Operations fetched:', {
+          count: data?.length,
+          displayLocation,
+          firstOperation: data?.[0]?.company_name
+        });
         setOperations(data || []);
       }
     } catch (error) {

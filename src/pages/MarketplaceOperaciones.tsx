@@ -98,7 +98,7 @@ const MarketplaceOperaciones = () => {
         {/* Operations List - Sin límites para marketplace */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <OperationsList showFilters={true} displayLocation="operaciones" />
+            <OperationsList showFilters={true} displayLocation="marketplace" />
           </div>
         </section>
 

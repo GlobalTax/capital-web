@@ -33,6 +33,10 @@ interface OperationCardProps {
 
 export const OperationCard: React.FC<OperationCardProps> = ({ operation, className = "", style }) => {
   console.log('🏗️ OperationCard - Rendering with operation:', operation);
+  console.log('💰 OperationCard - Currency data:', {
+    valuation_currency: operation.valuation_currency,
+    valuation_amount: operation.valuation_amount
+  });
   const displayDescription = operation.short_description || operation.description.substring(0, 120) + '...';
   
   const getStatusColor = (status?: string) => {

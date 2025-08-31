@@ -60,10 +60,12 @@ const CurrentOpportunities = () => {
           deal_type
         `)
         .eq('is_active', true)
-        .contains('display_locations', ['compra-empresas'])
+        .or('display_locations.cs.{"compra-empresas"},display_locations.cs.{"operaciones"}')
         .order('is_featured', { ascending: false })
         .order('year', { ascending: false })
         .limit(3);
+      
+      console.log('🎯 CurrentOpportunities - Query executed, results:', { data: data?.length, error });
 
       if (error) {
         console.error('❌ CurrentOpportunities - Error fetching operations:', error);
