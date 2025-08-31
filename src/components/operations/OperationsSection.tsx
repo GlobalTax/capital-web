@@ -9,7 +9,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import OperationCard from '@/components/operations/OperationCard';
 
 export interface OperationsSectionProps {
-  variant?: 'homepage' | 'full' | 'marketplace' | 'compact';
+  variant?: 'homepage' | 'full' | 'compact';
   showFilters?: boolean;
   showStats?: boolean;
   showCTA?: boolean;
@@ -33,12 +33,12 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedSector, setSelectedSector] = React.useState<string>('');
-  const [sortBy, setSortBy] = React.useState<'year' | 'valuation' | 'featured'>('featured');
+  const [sortBy, setSortBy] = React.useState<string>('featured');
 
   // Debounce search term to prevent excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Memoize filters to prevent infinite loops
+  // Simple filters object
   const filters: OperationsFilters = React.useMemo(() => ({
     searchTerm: debouncedSearchTerm || undefined,
     sector: selectedSector || undefined,
@@ -50,36 +50,25 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   const { operations, sectors, stats, isLoading, error, refresh } = useOperations(filters);
 
-  // Variant-specific configurations
+  // Simplified variant configurations
   const config = {
     homepage: {
       title: title || 'Oportunidades de Inversión',
-      description: description || 'Oportunidades exclusivas de inversión y adquisición seleccionadas por nuestro equipo',
-      bgClass: 'bg-white',
+      description: description || 'Oportunidades exclusivas seleccionadas por nuestro equipo',
       gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
       ctaText: 'Ver Todas las Oportunidades',
-      ctaLink: '/compra-empresas'
+      ctaLink: '/operaciones'
     },
     full: {
       title: title || 'Todas las Oportunidades',
       description: description || 'Explore nuestra cartera completa de oportunidades de inversión',
-      bgClass: 'bg-gray-50',
       gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
       ctaText: 'Contactar Equipo',
-      ctaLink: '/contacto'
-    },
-    marketplace: {
-      title: title || 'Marketplace de Operaciones',
-      description: description || 'Descubre oportunidades verificadas en el mercado',
-      bgClass: 'bg-white',
-      gridCols: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
-      ctaText: 'Más Información',
       ctaLink: '/contacto'
     },
     compact: {
       title: title || 'Operaciones Destacadas',
       description: description || 'Selección de nuestras mejores oportunidades',
-      bgClass: 'bg-gray-50',
       gridCols: 'grid-cols-1 md:grid-cols-3',
       ctaText: 'Ver Todas',
       ctaLink: '/operaciones'
@@ -96,7 +85,7 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   if (isLoading) {
     return (
-      <section className={`py-20 ${currentConfig.bgClass} ${className}`}>
+      <section className={`py-20 bg-white ${className}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="animate-pulse">
@@ -116,7 +105,7 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   if (error) {
     return (
-      <section className={`py-20 ${currentConfig.bgClass} ${className}`}>
+      <section className={`py-20 bg-white ${className}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
@@ -133,7 +122,7 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
   }
 
   return (
-    <section className={`py-20 ${currentConfig.bgClass} ${className}`}>
+    <section className={`py-20 bg-white ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -207,7 +196,7 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
                 </SelectContent>
               </Select>
 
-              <Select value={sortBy} onValueChange={(value: 'year' | 'valuation' | 'featured') => setSortBy(value)}>
+              <Select value={sortBy} onValueChange={(value: string) => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
