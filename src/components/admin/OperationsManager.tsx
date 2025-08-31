@@ -19,8 +19,6 @@ interface Operation {
   id: string;
   company_name: string;
   sector: string;
-  valuation_amount: number;
-  valuation_currency: string;
   year: number;
   description: string;
   is_featured: boolean;
@@ -30,7 +28,6 @@ interface Operation {
   display_locations?: string[];
   revenue_amount?: number;
   ebitda_amount?: number;
-  ebitda_multiple?: number;
   growth_percentage?: number;
   company_size_employees?: string;
   short_description?: string;
@@ -57,8 +54,6 @@ const OperationsManager = () => {
   const emptyOperation: Omit<Operation, 'id'> = {
     company_name: '',
     sector: '',
-    valuation_amount: 0,
-    valuation_currency: '€',
     year: new Date().getFullYear(),
     description: '',
     is_featured: false,
@@ -68,7 +63,6 @@ const OperationsManager = () => {
     display_locations: ['home', 'operaciones'],
     revenue_amount: 0,
     ebitda_amount: 0,
-    ebitda_multiple: 0,
     growth_percentage: 0,
     company_size_employees: '',
     short_description: '',
@@ -112,7 +106,11 @@ const OperationsManager = () => {
     const dataToSubmit = {
       ...formData,
       is_active: !isDraft,
-      display_locations: formData.display_locations || []
+      display_locations: formData.display_locations || [],
+      // Add default values for database required fields we don't want in the form
+      valuation_amount: 0,
+      valuation_currency: '€',
+      ebitda_multiple: null
     };
     
     try {
@@ -241,26 +239,6 @@ const OperationsManager = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-black mb-2">Valoración (millones)</label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={formData.valuation_amount}
-                  onChange={(e) => setFormData({...formData, valuation_amount: parseFloat(e.target.value)})}
-                  className="border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">Moneda</label>
-                <Input
-                  value={formData.valuation_currency}
-                  onChange={(e) => setFormData({...formData, valuation_currency: e.target.value})}
-                  className="border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-black mb-2">Año</label>
                 <Input
                   type="number"
@@ -292,17 +270,6 @@ const OperationsManager = () => {
                   step="0.1"
                   value={formData.ebitda_amount || ''}
                   onChange={(e) => setFormData({...formData, ebitda_amount: parseFloat(e.target.value) || 0})}
-                  className="border border-gray-300 rounded-lg"
-                  placeholder="0.0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">Múltiplo EBITDA</label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={formData.ebitda_multiple || ''}
-                  onChange={(e) => setFormData({...formData, ebitda_multiple: parseFloat(e.target.value) || 0})}
                   className="border border-gray-300 rounded-lg"
                   placeholder="0.0"
                 />
@@ -504,7 +471,6 @@ const OperationsManager = () => {
                 <p className="text-gray-600 mb-2">{operation.description}</p>
                 <div className="text-sm text-gray-500">
                   <span className="mr-4">{operation.sector}</span>
-                  <span className="mr-4">{operation.valuation_amount}M{operation.valuation_currency}</span>
                   <span className="mr-4">{operation.year}</span>
                   {operation.revenue_amount && operation.revenue_amount > 0 && (
                     <span className="mr-4">Facturación: {operation.revenue_amount}M€</span>
@@ -512,8 +478,8 @@ const OperationsManager = () => {
                   {operation.ebitda_amount && operation.ebitda_amount > 0 && (
                     <span className="mr-4">EBITDA: {operation.ebitda_amount}M€</span>
                   )}
-                  {operation.ebitda_multiple && operation.ebitda_multiple > 0 && (
-                    <span className="mr-4">Múltiplo: {operation.ebitda_multiple}x</span>
+                  {operation.growth_percentage && operation.growth_percentage > 0 && (
+                    <span className="mr-4">Crecimiento: {operation.growth_percentage}%</span>
                   )}
                 </div>
                 <div className="mb-2">

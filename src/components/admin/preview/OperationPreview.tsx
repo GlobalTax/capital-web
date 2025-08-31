@@ -7,11 +7,12 @@ interface OperationPreviewProps {
   operation: {
     company_name: string;
     sector: string;
-    valuation_amount: number;
-    valuation_currency: string;
     year: number;
     description: string;
     is_featured: boolean;
+    revenue_amount?: number;
+    ebitda_amount?: number;
+    growth_percentage?: number;
   };
 }
 
@@ -40,15 +41,27 @@ const OperationPreview = ({ operation }: OperationPreviewProps) => {
 
           <div className="space-y-3 mb-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Valoración:</span>
-              <span className="font-bold text-black text-lg">
-                {operation.valuation_amount}M{operation.valuation_currency}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Año:</span>
               <span className="font-medium text-black">{operation.year}</span>
             </div>
+            {operation.revenue_amount && operation.revenue_amount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Facturación:</span>
+                <span className="font-bold text-black">{operation.revenue_amount}M€</span>
+              </div>
+            )}
+            {operation.ebitda_amount && operation.ebitda_amount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">EBITDA:</span>
+                <span className="font-bold text-black">{operation.ebitda_amount}M€</span>
+              </div>
+            )}
+            {operation.growth_percentage && operation.growth_percentage > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Crecimiento:</span>
+                <span className="font-bold text-black">{operation.growth_percentage}%</span>
+              </div>
+            )}
           </div>
 
           <p className="text-sm text-gray-600 leading-relaxed mb-4">
