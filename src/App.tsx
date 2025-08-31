@@ -21,6 +21,7 @@ const AdminRecovery = lazy(() => import('@/pages/AdminRecovery'));
 const Perfil = lazy(() => import('@/pages/Perfil'));
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
+const Operaciones = lazy(() => import('@/pages/Operaciones'));
 // V4 Calculator removed
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
 const Contacto = lazy(() => import('@/pages/Contacto'));
@@ -242,6 +243,7 @@ function AppContent() {
           <Route path="/admin/*" element={<Admin />} />
           <Route path="/venta-empresas" element={<VentaEmpresas />} />
           <Route path="/compra-empresas" element={<CompraEmpresas />} />
+          <Route path="/operaciones" element={<Operaciones />} />
           <Route path="/calculadora-valoracion" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/calculadora-valoracion-v2" element={<Navigate to="/lp/calculadora" replace />} />
           <Route path="/simulador-venta/:clientId" element={<Navigate to="/lp/calculadora" replace />} />
