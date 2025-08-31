@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { ExternalLink, Clock, TrendingUp } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,7 +29,7 @@ interface Operation {
   featured_image_url?: string;
 }
 
-const CurrentOpportunities = () => {
+const CurrentOpportunities = memo(() => {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -159,9 +159,9 @@ const CurrentOpportunities = () => {
               <div className="h-4 bg-gray-200 rounded w-96 mx-auto"></div>
             </div>
           </div>
-          <div className="grid lg:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-gray-200 h-64 rounded-xl animate-pulse"></div>
+          <div className="grid lg:grid-cols-2 gap-6" style={{ minHeight: '400px' }}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-gray-200 h-64 rounded-xl animate-pulse will-change-[opacity]" style={{ contain: 'layout' }}></div>
             ))}
           </div>
         </div>
@@ -193,26 +193,22 @@ const CurrentOpportunities = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12">
-          {(() => {
-            console.log('🔄 CurrentOpportunities - About to render operations, count:', operations.length);
-            return operations.length > 0 ? 
-              operations.slice(0, 3).map((operation, index) => {
-                console.log(`🎯 CurrentOpportunities - Rendering operation ${index}:`, operation);
-                return (
-                  <div key={operation.id} className="w-full">
-                    <OperationCard 
-                      operation={operation}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
-                    />
-                  </div>
-                );
-              })
-            : (() => {
-              console.log('🔄 CurrentOpportunities - Rendering placeholder cards since no operations found');
-              return Array.from({ length: 3 }).map((_, index) => {
-                const placeholderOperation = {
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12" style={{ minHeight: '400px', contain: 'layout' }}>
+          {operations.length > 0 ? 
+            operations.slice(0, 3).map((operation, index) => (
+              <div key={operation.id} className="w-full">
+                <OperationCard 
+                  operation={operation}
+                  className="animate-fade-in-mobile will-change-[transform,opacity]"
+                  style={{ 
+                    animationDelay: `${index * 0.05}s`,
+                    transform: 'translateZ(0)'
+                  } as React.CSSProperties}
+                />
+              </div>
+            ))
+          : Array.from({ length: 3 }).map((_, index) => {
+              const placeholderOperation = {
                 id: `placeholder-${index}`,
                 company_name: index === 0 ? 'Empresa Tecnológica' : index === 1 ? 'Distribuidora Regional' : 'Consultora Especializada',
                 sector: index === 0 ? 'Software & Tecnología' : index === 1 ? 'Distribución' : 'Consultoría',
@@ -242,19 +238,20 @@ const CurrentOpportunities = () => {
                 deal_type: 'sale'
               };
               
-              console.log(`🎯 CurrentOpportunities - Rendering placeholder ${index}:`, placeholderOperation);
               return (
                 <div key={placeholderOperation.id} className="w-full">
                   <OperationCard
                     operation={placeholderOperation}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+                    className="animate-fade-in-mobile will-change-[transform,opacity]"
+                    style={{ 
+                      animationDelay: `${index * 0.05}s`,
+                      transform: 'translateZ(0)'
+                    } as React.CSSProperties}
                   />
                 </div>
               );
-              });
-            })();
-          })()}
+            })
+          }
         </div>
 
         {/* Summary stats */}
@@ -291,6 +288,8 @@ const CurrentOpportunities = () => {
       </div>
     </section>
   );
-};
+});
+
+CurrentOpportunities.displayName = 'CurrentOpportunities';
 
 export default CurrentOpportunities;

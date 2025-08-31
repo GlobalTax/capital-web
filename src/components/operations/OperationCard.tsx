@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ interface OperationCardProps {
   style?: React.CSSProperties;
 }
 
-export const OperationCard: React.FC<OperationCardProps> = ({ operation, className = "", style }) => {
+export const OperationCard = memo<OperationCardProps>(({ operation, className = "", style }) => {
   console.log('🏗️ OperationCard - Rendering with operation:', operation);
   console.log('💰 OperationCard - Currency data:', {
     valuation_currency: operation.valuation_currency,
@@ -195,6 +195,8 @@ export const OperationCard: React.FC<OperationCardProps> = ({ operation, classNa
       </div>
     </Card>
   );
-};
+});
+
+OperationCard.displayName = 'OperationCard';
 
 export default OperationCard;

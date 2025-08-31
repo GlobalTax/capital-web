@@ -161,11 +161,11 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in': 'fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-        'fade-in-up': 'fade-in-up 1s cubic-bezier(0.4, 0, 0.2, 1)',
-        'scale-in': 'scale-in 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-        'slide-in': 'slide-in 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        'slide-up': 'slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        'fade-in': 'fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        'scale-in': 'scale-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        'slide-in': 'slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        'slide-up': 'slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite'
       }
 		}
