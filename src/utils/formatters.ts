@@ -4,22 +4,42 @@ const mapCurrencySymbolToCode = (currency: string | null | undefined): string =>
   
   // Clean and normalize the currency string
   const cleanCurrency = currency.trim();
+  const normalizedCurrency = cleanCurrency.toLowerCase();
   
   const currencyMap: Record<string, string> = {
+    // Symbols
     '€': 'EUR',
     'â¬': 'EUR', // Handle corrupted euro symbol
     '$': 'USD',
     '£': 'GBP',
     '¥': 'JPY',
+    // ISO codes
     'EUR': 'EUR',
     'USD': 'USD',
     'GBP': 'GBP',
-    'JPY': 'JPY'
+    'JPY': 'JPY',
+    // Aliases (case-insensitive)
+    'eur': 'EUR',
+    'euro': 'EUR',
+    'euros': 'EUR',
+    'usd': 'USD',
+    'dollar': 'USD',
+    'dollars': 'USD',
+    'gbp': 'GBP',
+    'pound': 'GBP',
+    'pounds': 'GBP',
+    'jpy': 'JPY',
+    'yen': 'JPY'
   };
   
-  // Try exact match first
+  // Try exact match first (for symbols and uppercase codes)
   if (currencyMap[cleanCurrency]) {
     return currencyMap[cleanCurrency];
+  }
+  
+  // Try case-insensitive match for aliases
+  if (currencyMap[normalizedCurrency]) {
+    return currencyMap[normalizedCurrency];
   }
   
   // Handle corrupted euro symbols by checking if string contains euro-like characters
