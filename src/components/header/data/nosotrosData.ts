@@ -6,6 +6,13 @@ export const nosotrosData: MenuCategory[] = [
     title: "Conócenos",
     items: [
       {
+        id: "de-looper-a-capittal",
+        label: "De Looper a Capittal",
+        href: "/de-looper-a-capittal",
+        icon: 'refresh-ccw',
+        description: "Nuestra evolución y mejoras"
+      },
+      {
         id: "por-que-elegirnos",
         label: "Por Qué Elegirnos",
         href: "/por-que-elegirnos",

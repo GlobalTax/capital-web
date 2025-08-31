@@ -13,8 +13,13 @@ const Hero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Content */}
           <div>
-            <div className="inline-flex items-center bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              Líderes en M&A desde 2008
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
+                Antes Looper · Ahora Capittal
+              </div>
+              <div className="inline-flex items-center bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">
+                Líderes en M&A desde 2008
+              </div>
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
