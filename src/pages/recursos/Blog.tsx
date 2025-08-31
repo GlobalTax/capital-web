@@ -6,7 +6,7 @@ import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogFilters } from '@/hooks/useBlogFilters';
 import BlogFilters from '@/components/blog/BlogFilters';
-import SimpleBlogPopularPosts from '@/components/blog/SimpleBlogPopularPosts';
+
 import { Link } from 'react-router-dom';
 
 const Blog = () => {
@@ -57,10 +57,7 @@ const Blog = () => {
   return (
     <HomeLayout>
       <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-              {/* Contenido principal */}
-              <div className="lg:col-span-3">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                   <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
                     Blog Capittal
@@ -141,7 +138,7 @@ const Blog = () => {
 
                 {/* Grid de Artículos */}
                 {regularPosts.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {regularPosts.map((article) => (
                       <Link key={article.id} to={`/blog/${article.slug}`}>
                         <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer">
@@ -231,16 +228,6 @@ const Blog = () => {
                     Suscríbete al Newsletter
                   </Button>
                 </div>
-              </div>
-
-              {/* Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-32 space-y-8">
-                  {/* Posts populares */}
-                  <SimpleBlogPopularPosts limit={5} />
-                </div>
-              </div>
-            </div>
           </div>
         </section>
     </HomeLayout>
