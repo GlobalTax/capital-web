@@ -2,6 +2,7 @@
 import React, { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Star, Quote } from 'lucide-react';
 import { useCache } from '@/hooks/useCache';
 import { globalCache } from '@/utils/cache';
@@ -129,9 +130,9 @@ const Testimonials = () => {
         </div>
 
         <div className="text-center mt-12">
-          <button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg transition-all duration-300 ease-out">
+          <Button variant="outline" className="px-6 py-3 text-base font-medium hover:bg-gray-50 hover:text-black hover:shadow-lg transition-all duration-300 ease-out">
             Ver Más Testimonios
-          </button>
+          </Button>
         </div>
       </div>
     </section>

@@ -131,7 +131,7 @@ const MarketInsights = () => {
           </p>
           
           <div className="flex justify-center mb-8">
-            <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-lg font-medium hover:shadow-lg transition-all duration-300 ease-out" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
+            <Button variant="outline" className="px-6 py-3 text-lg font-medium hover:bg-gray-50 hover:text-black hover:shadow-lg transition-all duration-300 ease-out" onClick={() => window.open('https://capittalmarket.com', '_blank')}>
               Acceder a Capittal Market
             </Button>
           </div>

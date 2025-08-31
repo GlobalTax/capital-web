@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { MapPin, Building, TrendingUp } from 'lucide-react';
 
 interface Operation {
@@ -165,9 +166,9 @@ const CompaniesForSale = () => {
 
         <div className="text-center mt-12">
           <Link to="/compra-empresas">
-            <button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 text-base font-medium hover:shadow-lg transition-all duration-300 ease-out">
+            <Button variant="outline" className="px-6 py-3 text-base font-medium hover:bg-gray-50 hover:text-black hover:shadow-lg transition-all duration-300 ease-out">
               Ver Todas las Oportunidades
-            </button>
+            </Button>
           </Link>
         </div>
       </div>

@@ -53,7 +53,7 @@ const BlogSection = () => {
           <Link to="/recursos/blog">
             <Button
               variant="outline"
-              className="md:h-10 md:px-4 md:py-2 bg-white text-black border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
+              className="md:h-10 md:px-4 md:py-2 hover:bg-gray-50 hover:text-black hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out font-medium"
               size="sm"
             >
               Ver Todos los Artículos

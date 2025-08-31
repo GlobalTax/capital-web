@@ -104,7 +104,7 @@ const Services = () => {
                       service.title === 'Vender Empresa' ? '/venta-empresas' : 
                       '/compra-empresas'
                     }>
-                      <Button className="bg-white text-black border border-gray-300 rounded-lg w-full hover:shadow-lg transition-all duration-300 ease-out text-base py-3">
+                      <Button variant="outline" className="w-full hover:bg-gray-50 hover:text-black transition-all duration-300 ease-out text-base py-3">
                         {service.title === 'Valoraciones' ? 'Calcular Ahora' : 'Más información'}
                       </Button>
                     </Link>
