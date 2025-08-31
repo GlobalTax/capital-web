@@ -1,3 +1,19 @@
+// Normalize valuation amounts to handle mixed data formats
+export const normalizeValuationAmount = (rawValue: number): number => {
+  // Si rawValue >= 1,000,000 o >= 10,000, asumimos que ya está en unidades
+  if (rawValue >= 1_000_000 || rawValue >= 10_000) {
+    return rawValue;
+  }
+  
+  // Si 0 < rawValue < 10,000, interpretamos como millones
+  if (rawValue > 0 && rawValue < 10_000) {
+    return rawValue * 1_000_000;
+  }
+  
+  // En cualquier otro caso, devolver tal cual
+  return rawValue;
+};
+
 // Helper function to map currency symbols to ISO codes
 const mapCurrencySymbolToCode = (currency: string | null | undefined): string => {
   if (!currency) return 'EUR';
@@ -51,7 +67,9 @@ const mapCurrencySymbolToCode = (currency: string | null | undefined): string =>
 };
 
 export const formatCurrency = (value: number, currency: string = 'EUR'): string => {
-  console.log('💰 formatCurrency called with:', { value, currency });
+  // Normalize the value to handle mixed valuation formats
+  const normalizedValue = normalizeValuationAmount(value);
+  console.log('💰 formatCurrency called with:', { original: value, normalized: normalizedValue, currency });
   const mappedCurrency = mapCurrencySymbolToCode(currency);
   console.log('💱 Currency mapped from', currency, 'to', mappedCurrency);
   
@@ -61,13 +79,13 @@ export const formatCurrency = (value: number, currency: string = 'EUR'): string 
       currency: mappedCurrency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value);
+    }).format(normalizedValue);
     console.log('✅ formatCurrency result:', result);
     return result;
   } catch (error) {
-    console.error('❌ formatCurrency error:', error, { value, currency, mappedCurrency });
+    console.error('❌ formatCurrency error:', error, { original: value, normalized: normalizedValue, currency, mappedCurrency });
     // Fallback to basic formatting
-    return `${value.toLocaleString('es-ES')} €`;
+    return `${normalizedValue.toLocaleString('es-ES')} €`;
   }
 };
 
