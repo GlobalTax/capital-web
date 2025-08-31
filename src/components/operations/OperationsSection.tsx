@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, Building, TrendingUp, Users, Globe } from 'lucide-react';
 import { useOperations, OperationsFilters } from '@/shared/hooks/useOperations';
+import { useDebounce } from '@/hooks/useDebounce';
 import OperationCard from '@/components/operations/OperationCard';
 
 export interface OperationsSectionProps {
@@ -34,16 +35,20 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
   const [selectedSector, setSelectedSector] = React.useState<string>('');
   const [sortBy, setSortBy] = React.useState<'year' | 'valuation' | 'featured'>('featured');
 
-  const filters: OperationsFilters = {
-    searchTerm: searchTerm || undefined,
+  // Debounce search term to prevent excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // Memoize filters to prevent infinite loops
+  const filters: OperationsFilters = React.useMemo(() => ({
+    searchTerm: debouncedSearchTerm || undefined,
     sector: selectedSector || undefined,
     displayLocation,
     limit,
     sortBy,
     ...(variant === 'homepage' && { featured: true })
-  };
+  }), [debouncedSearchTerm, selectedSector, displayLocation, limit, sortBy, variant]);
 
-  const { operations, sectors, stats, isLoading, error } = useOperations(filters);
+  const { operations, sectors, stats, isLoading, error, refresh } = useOperations(filters);
 
   // Variant-specific configurations
   const config = {
@@ -115,8 +120,11 @@ const OperationsSection: React.FC<OperationsSectionProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
+            <Button onClick={refresh} className="mr-2">
               Reintentar
+            </Button>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Recargar Página
             </Button>
           </div>
         </div>

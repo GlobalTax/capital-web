@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Operation {
@@ -52,8 +52,32 @@ export const useOperations = (filters: OperationsFilters = {}) => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  
+  // Refs para cancelar requests pendientes
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const sectorsLoadedRef = useRef(false);
+  
+  // Memoize filters para evitar re-renders innecesarios
+  const memoizedFilters = useMemo(() => filters, [
+    filters.searchTerm,
+    filters.sector,
+    filters.displayLocation,
+    filters.featured,
+    filters.limit,
+    filters.sortBy
+  ]);
 
   const fetchOperations = useCallback(async () => {
+    // Cancelar request anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Crear nuevo AbortController
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    
     try {
       setIsLoading(true);
       setError(null);
@@ -64,26 +88,26 @@ export const useOperations = (filters: OperationsFilters = {}) => {
         .eq('is_active', true);
 
       // Apply filters
-      if (filters.featured !== undefined) {
-        query = query.eq('is_featured', filters.featured);
+      if (memoizedFilters.featured !== undefined) {
+        query = query.eq('is_featured', memoizedFilters.featured);
       }
 
-      if (filters.displayLocation) {
-        query = query.contains('display_locations', [filters.displayLocation]);
+      if (memoizedFilters.displayLocation) {
+        query = query.contains('display_locations', [memoizedFilters.displayLocation]);
       }
 
-      if (filters.sector) {
-        query = query.eq('sector', filters.sector);
+      if (memoizedFilters.sector) {
+        query = query.eq('sector', memoizedFilters.sector);
       }
 
-      if (filters.searchTerm) {
+      if (memoizedFilters.searchTerm) {
         query = query.or(
-          `company_name.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`
+          `company_name.ilike.%${memoizedFilters.searchTerm}%,description.ilike.%${memoizedFilters.searchTerm}%`
         );
       }
 
       // Apply sorting
-      switch (filters.sortBy) {
+      switch (memoizedFilters.sortBy) {
         case 'valuation':
           query = query.order('valuation_amount', { ascending: false });
           break;
@@ -94,18 +118,27 @@ export const useOperations = (filters: OperationsFilters = {}) => {
           query = query.order('year', { ascending: false });
       }
 
-      if (filters.limit) {
-        query = query.limit(filters.limit);
+      if (memoizedFilters.limit) {
+        query = query.limit(memoizedFilters.limit);
       }
 
       const { data, error } = await query;
 
+      // Verificar si el request fue cancelado
+      if (abortController.signal.aborted) {
+        return;
+      }
+
       if (error) {
-        console.error('Error fetching operations:', error);
-        setError('Error al cargar las operaciones');
+        const errorMessage = error.message || 'Error desconocido';
+        console.error('❌ Error fetching operations:', errorMessage, error);
+        setError(`Error al cargar las operaciones: ${errorMessage}`);
         setOperations([]);
+        setRetryCount(prev => prev + 1);
       } else {
+        console.log('✅ Operations loaded successfully:', data?.length || 0, 'operations');
         setOperations(data || []);
+        setRetryCount(0); // Reset retry count on success
         
         // Update stats if we have data
         if (data && data.length > 0) {
@@ -120,36 +153,72 @@ export const useOperations = (filters: OperationsFilters = {}) => {
           }));
         }
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-      setError('Error inesperado al cargar las operaciones');
+    } catch (err: any) {
+      // No mostrar error si fue cancelado
+      if (err.name === 'AbortError' || abortController.signal.aborted) {
+        return;
+      }
+      
+      const errorMessage = err.message || 'Error inesperado';
+      console.error('❌ Unexpected error:', errorMessage, err);
+      setError(`Error inesperado: ${errorMessage}`);
       setOperations([]);
+      setRetryCount(prev => prev + 1);
     } finally {
-      setIsLoading(false);
+      if (!abortController.signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  }, [filters]);
+  }, [memoizedFilters]);
 
   const fetchSectors = useCallback(async () => {
+    // Solo cargar sectores una vez
+    if (sectorsLoadedRef.current) {
+      return;
+    }
+    
     try {
-      const { data } = await supabase
+      console.log('📊 Loading sectors...');
+      const { data, error } = await supabase
         .from('company_operations')
         .select('sector')
         .eq('is_active', true)
         .not('sector', 'is', null);
       
+      if (error) {
+        console.error('❌ Error fetching sectors:', error);
+        return;
+      }
+      
       const uniqueSectors = [...new Set(data?.map(item => item.sector) || [])];
       setSectors(uniqueSectors);
+      sectorsLoadedRef.current = true;
+      console.log('✅ Sectors loaded:', uniqueSectors.length, 'sectors');
     } catch (error) {
-      console.error('Error fetching sectors:', error);
+      console.error('❌ Unexpected error fetching sectors:', error);
     }
   }, []);
 
   useEffect(() => {
     fetchOperations();
+  }, [fetchOperations]);
+  
+  useEffect(() => {
     fetchSectors();
-  }, [fetchOperations, fetchSectors]);
+  }, []); // Solo cargar sectores al montar el componente
+
+  // Cleanup: cancelar requests pendientes al desmontar
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const refresh = useCallback(() => {
+    setRetryCount(0);
+    sectorsLoadedRef.current = false; // Permitir reload de sectores
     fetchOperations();
     fetchSectors();
   }, [fetchOperations, fetchSectors]);
@@ -160,6 +229,7 @@ export const useOperations = (filters: OperationsFilters = {}) => {
     stats,
     isLoading,
     error,
-    refresh
+    refresh,
+    retryCount
   };
 };
