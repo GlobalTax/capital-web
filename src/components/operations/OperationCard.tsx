@@ -5,6 +5,24 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, Users, MapPin, ExternalLink } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
 
+// Helper function to map currency symbols to ISO codes
+const mapCurrencySymbolToCode = (currency: string | null | undefined): string => {
+  if (!currency) return 'EUR';
+  
+  const currencyMap: Record<string, string> = {
+    '€': 'EUR',
+    '$': 'USD',
+    '£': 'GBP',
+    '¥': 'JPY',
+    'EUR': 'EUR',
+    'USD': 'USD',
+    'GBP': 'GBP',
+    'JPY': 'JPY'
+  };
+  
+  return currencyMap[currency] || 'EUR';
+};
+
 interface OperationCardProps {
   operation: {
     id: string;
@@ -139,7 +157,7 @@ export const OperationCard: React.FC<OperationCardProps> = ({ operation, classNa
               {operation.revenue_amount ? (
                 <>
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {formatCurrency(operation.revenue_amount, operation.valuation_currency || 'EUR')}
+                    {formatCurrency(operation.revenue_amount, mapCurrencySymbolToCode(operation.valuation_currency))}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Facturación {operation.year}
@@ -147,7 +165,7 @@ export const OperationCard: React.FC<OperationCardProps> = ({ operation, classNa
                   {operation.ebitda_amount && (
                     <div className="mt-2">
                       <div className="text-lg font-semibold text-foreground">
-                        {formatCurrency(operation.ebitda_amount, operation.valuation_currency || 'EUR')}
+                        {formatCurrency(operation.ebitda_amount, mapCurrencySymbolToCode(operation.valuation_currency))}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         EBITDA {operation.year}
