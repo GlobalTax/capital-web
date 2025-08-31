@@ -2,8 +2,12 @@
 const mapCurrencySymbolToCode = (currency: string | null | undefined): string => {
   if (!currency) return 'EUR';
   
+  // Clean and normalize the currency string
+  const cleanCurrency = currency.trim();
+  
   const currencyMap: Record<string, string> = {
     '€': 'EUR',
+    'â¬': 'EUR', // Handle corrupted euro symbol
     '$': 'USD',
     '£': 'GBP',
     '¥': 'JPY',
@@ -13,7 +17,17 @@ const mapCurrencySymbolToCode = (currency: string | null | undefined): string =>
     'JPY': 'JPY'
   };
   
-  return currencyMap[currency] || 'EUR';
+  // Try exact match first
+  if (currencyMap[cleanCurrency]) {
+    return currencyMap[cleanCurrency];
+  }
+  
+  // Handle corrupted euro symbols by checking if string contains euro-like characters
+  if (cleanCurrency.includes('â') || cleanCurrency.includes('¬') || cleanCurrency.length > 3) {
+    return 'EUR';
+  }
+  
+  return 'EUR'; // Default fallback
 };
 
 export const formatCurrency = (value: number, currency: string = 'EUR'): string => {
