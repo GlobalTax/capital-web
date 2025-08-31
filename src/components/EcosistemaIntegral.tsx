@@ -1,18 +1,18 @@
 import React from 'react';
-import { TrendingUp, Calculator, Building2, FileSearch } from 'lucide-react';
+import { TrendingUp, Calculator, Building2, FileSearch, Scale, Receipt, Users, BarChart3, Briefcase, GraduationCap } from 'lucide-react';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
 
 const EcosistemaIntegral = () => {
-  const { count: yearsCount, ref: yearsRef } = useCountAnimation(15, 2000, '+');
+  const { count: professionalsCount, ref: professionalsRef } = useCountAnimation(60, 2000, '+');
   const { count: operationsCount, ref: operationsRef } = useCountAnimation(200, 2000, '+');
-  const { count: specialtiesCount, ref: specialtiesRef } = useCountAnimation(6, 1500);
+  const { count: yearsCount, ref: yearsRef } = useCountAnimation(15, 2000, '+');
   const { count: successCount, ref: successRef } = useCountAnimation(95, 2000, '%');
 
   const statistics = [
     {
-      value: yearsCount,
-      label: "Años de Experiencia",
-      ref: yearsRef
+      value: professionalsCount,
+      label: "Profesionales Especializados",
+      ref: professionalsRef
     },
     {
       value: operationsCount,
@@ -20,9 +20,9 @@ const EcosistemaIntegral = () => {
       ref: operationsRef
     },
     {
-      value: specialtiesCount,
-      label: "Especialidades Sectoriales",
-      ref: specialtiesRef
+      value: yearsCount,
+      label: "Años de Experiencia",
+      ref: yearsRef
     },
     {
       value: successCount,
@@ -43,6 +43,16 @@ const EcosistemaIntegral = () => {
       icon: Calculator
     },
     {
+      title: "Asesoramiento Legal",
+      description: "Apoyo jurídico especializado en derecho mercantil y operaciones M&A",
+      icon: Scale
+    },
+    {
+      title: "Planificación Fiscal",
+      description: "Optimización tributaria y estructuración fiscal estratégica",
+      icon: Receipt
+    },
+    {
       title: "Corporate Finance",
       description: "Estructuración financiera y levantamiento de capital estratégico",
       icon: Building2
@@ -51,6 +61,29 @@ const EcosistemaIntegral = () => {
       title: "Due Diligence",
       description: "Análisis exhaustivo de riesgos y oportunidades de inversión",
       icon: FileSearch
+    }
+  ];
+
+  const professionalProfiles = [
+    {
+      title: "Analistas Financieros",
+      description: "Expertos en modelado financiero y análisis de valoración",
+      icon: BarChart3
+    },
+    {
+      title: "Abogados",
+      description: "Especialistas en derecho mercantil y asesoramiento legal M&A",
+      icon: Scale
+    },
+    {
+      title: "Economistas",
+      description: "Expertos en análisis sectorial y evaluación macroeconómica",
+      icon: TrendingUp
+    },
+    {
+      title: "Fiscalistas",
+      description: "Especialistas en optimización tributaria y planificación fiscal",
+      icon: Receipt
     }
   ];
 
@@ -68,8 +101,9 @@ const EcosistemaIntegral = () => {
           </h2>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Formamos parte de un ecosistema más amplio de servicios financieros especializados, 
-            ofreciendo soluciones integrales para todas tus necesidades empresariales.
+            Contamos con un equipo multidisciplinario de más de <strong className="text-black">60 profesionales especializados</strong>: 
+            analistas financieros, abogados, economistas y fiscalistas que trabajan de forma integrada 
+            para ofrecer soluciones completas en todas tus necesidades empresariales de M&A.
           </p>
         </div>
 
@@ -92,7 +126,7 @@ const EcosistemaIntegral = () => {
         </div>
 
         {/* Ecosystem Services */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {ecosystemServices.map((service, index) => {
             const IconComponent = service.icon;
             return (
@@ -116,14 +150,52 @@ const EcosistemaIntegral = () => {
           })}
         </div>
 
+        {/* Professional Profiles */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
+              Equipo Multidisciplinario
+            </h3>
+            <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Nuestro equipo de más de 60 profesionales combina diferentes especialidades 
+              para ofrecer una perspectiva integral en cada proyecto.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {professionalProfiles.map((profile, index) => {
+              const IconComponent = profile.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="bg-gray-100 rounded-lg p-6 border border-gray-200 hover:bg-white hover:shadow-lg transition-all duration-300 ease-out"
+                >
+                  <div className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-lg mb-4">
+                    <IconComponent className="w-5 h-5 text-white" />
+                  </div>
+                  
+                  <h4 className="text-base font-bold text-black mb-2">
+                    {profile.title}
+                  </h4>
+                  
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {profile.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Commitment Message */}
         <div className="text-center bg-white rounded-lg p-8 shadow-sm border border-gray-200">
           <h3 className="text-xl font-bold text-black mb-4">
             Nuestro Compromiso
           </h3>
           <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Creamos valor a través de un enfoque integral y personalizado, combinando experiencia sectorial 
-            con metodologías probadas para garantizar el éxito de cada operación.
+            Creamos valor a través de un <strong className="text-black">enfoque integral y multidisciplinario</strong>, 
+            donde nuestro equipo de analistas financieros, abogados, economistas y fiscalistas trabajan 
+            de forma coordinada para garantizar el éxito de cada operación y maximizar el valor para nuestros clientes.
           </p>
         </div>
       </div>
