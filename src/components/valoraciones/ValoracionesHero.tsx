@@ -80,7 +80,7 @@ const ValoracionesHero = () => {
                 />
               </Link>
               <InteractiveHoverButton 
-                text="Valorar" 
+                text="Valorar Empresa" 
                 variant="secondary" 
                 size="lg" 
               />

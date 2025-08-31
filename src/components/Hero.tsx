@@ -39,11 +39,11 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/lp/calculadora">
-                <InteractiveHoverButton text="Valorar" variant="primary" size="lg" disabled={!isOnline} />
+                <InteractiveHoverButton text="Valorar Empresa" variant="primary" size="lg" disabled={!isOnline} />
               </Link>
               
               <Link to="/casos-exito">
-                <InteractiveHoverButton text="Casos" variant="secondary" size="lg" disabled={!isOnline} />
+                <InteractiveHoverButton text="Ver Casos" variant="secondary" size="lg" disabled={!isOnline} />
               </Link>
             </div>
           </div>
