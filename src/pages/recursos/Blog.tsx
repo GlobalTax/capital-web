@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';

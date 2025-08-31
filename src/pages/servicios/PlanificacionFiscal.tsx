@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import PlanificacionFiscalHero from '@/components/planificacion-fiscal/PlanificacionFiscalHero';
 import PlanificacionFiscalWhyOptimize from '@/components/planificacion-fiscal/PlanificacionFiscalWhyOptimize';
 import PlanificacionFiscalServices from '@/components/planificacion-fiscal/PlanificacionFiscalServices';

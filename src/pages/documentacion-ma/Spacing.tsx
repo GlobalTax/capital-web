@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SidebarLayout } from '@/shared';
+import SidebarLayout from '@/components/shared/SidebarLayout';
 import SpacingContent from '@/components/documentacion-ma/content/SpacingContent';
 
 const Spacing = () => {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 
 const Cookies = () => {
   return (

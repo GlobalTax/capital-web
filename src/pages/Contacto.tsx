@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import Contact from '@/components/Contact';
 
 const Contacto = () => {

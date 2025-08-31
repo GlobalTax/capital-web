@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';

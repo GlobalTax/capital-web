@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 
 const TerminosUso = () => {
   useEffect(() => {

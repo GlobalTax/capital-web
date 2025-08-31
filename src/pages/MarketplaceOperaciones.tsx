@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { Building, TrendingUp, Users, Globe } from 'lucide-react';
 

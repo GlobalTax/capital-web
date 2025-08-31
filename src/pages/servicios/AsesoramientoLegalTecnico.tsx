@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import LegalServiceTechnical from '@/components/asesoramiento-legal/LegalServiceTechnical';
 
 const AsesoramientoLegalTecnico = () => {

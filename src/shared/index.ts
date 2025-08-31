@@ -5,10 +5,6 @@
 export { LoadingSkeleton } from './components/LoadingSkeleton';
 export { ErrorFallback } from './components/ErrorFallback';
 
-// Layouts
-export { default as HomeLayout } from '../components/shared/HomeLayout';
-export { default as SidebarLayout } from '../components/shared/SidebarLayout';
-
 // Services
 export { performanceMonitor } from './services/performance-monitor.service';
 export { useCachePersistence } from './services/cache-persistence.service';

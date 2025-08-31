@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HomeLayout } from '@/shared';
+import HomeLayout from '@/components/shared/HomeLayout';
 import Hero from '@/components/Hero';
 import SocialProofCompact from '@/components/SocialProofCompact';
 import Services from '@/components/Services';
