@@ -23,6 +23,7 @@ import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useLeadMagnets } from '@/hooks/useLeadMagnets';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchContentMetrics, fetchTopPerformingPosts } from '@/utils/analytics/contentMetrics';
+import { formatCurrency } from '@/utils/formatters';
 
 interface ContentMetrics {
   totalViews: number;
@@ -395,7 +396,7 @@ const ContentPerformancePage = () => {
                     <div>
                       <h3 className="font-medium text-sm line-clamp-2">{cs.title}</h3>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {cs.valuation_amount ? `${cs.valuation_amount.toLocaleString()}${cs.valuation_currency || '€'}` : 'N/A'}
+                        {cs.valuation_amount ? formatCurrency(cs.valuation_amount, cs.valuation_currency || 'EUR') : 'N/A'}
                       </p>
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">

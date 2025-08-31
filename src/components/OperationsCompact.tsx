@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Euro, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { formatCurrency } from '@/utils/formatters';
 
 interface Operation {
   id: string;
@@ -103,7 +104,7 @@ const OperationsCompact = () => {
                           Valoración:
                         </span>
                         <span className="text-xl font-bold text-black">
-                          {operation.valuation_amount}M{operation.valuation_currency}
+                          {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency || 'EUR')}
                         </span>
                       </div>
                       

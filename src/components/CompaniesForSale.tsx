@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Building, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '@/utils/formatters';
 
 interface Operation {
   id: string;
@@ -137,7 +138,7 @@ const CompaniesForSale = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Valoración:</span>
                       <span className="font-bold text-black text-lg">
-                        {operation.valuation_amount}M{operation.valuation_currency}
+                        {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency || 'EUR')}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

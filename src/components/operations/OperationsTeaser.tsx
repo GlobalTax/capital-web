@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Building, Euro, ExternalLink, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '@/utils/formatters';
 
 interface Operation {
   id: string;
@@ -103,7 +104,7 @@ const OperationsTeaser = () => {
                     Valoración:
                   </span>
                   <span className="text-lg font-bold text-primary">
-                    {operation.valuation_amount}M{operation.valuation_currency}
+                    {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency || 'EUR')}
                   </span>
                 </div>
 
