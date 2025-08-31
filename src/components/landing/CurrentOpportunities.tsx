@@ -97,14 +97,20 @@ const CurrentOpportunities = () => {
   };
 
   // Función para formatear datos de operaciones reales
-  const formatOperation = (operation: Operation) => ({
-    sector: operation.sector,
-    valuation: formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency),
-    multiple: "N/A", // Se podría calcular si tuviéramos EBITDA
-    description: operation.description,
-    highlights: [`Año ${operation.year}`, operation.is_featured ? "Destacado" : "Verificado", "Información disponible"],
-    growth: "N/A" // Se podría agregar este campo a la BD
-  });
+  const formatOperation = (operation: Operation) => {
+    console.log('Raw operation data:', operation);
+    console.log('Valuation amount:', operation.valuation_amount);
+    console.log('Currency before format:', operation.valuation_currency);
+    
+    return {
+      sector: operation.sector,
+      valuation: formatCurrency(operation.valuation_amount, operation.valuation_currency),
+      multiple: "N/A", // Se podría calcular si tuviéramos EBITDA
+      description: operation.description,
+      highlights: [`Año ${operation.year}`, operation.is_featured ? "Destacado" : "Verificado", "Información disponible"],
+      growth: "N/A" // Se podría agregar este campo a la BD
+    };
+  };
 
   const opportunities = operations.length > 0 
     ? operations.map(formatOperation)

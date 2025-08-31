@@ -119,7 +119,7 @@ const OperacionDetalle = () => {
               <div className="flex items-center gap-2">
                 <Euro className="w-5 h-5" />
                 <span className="text-xl font-semibold">
-                  {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency)}
+                  {formatCurrency(operation.valuation_amount, operation.valuation_currency)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ const OperacionDetalle = () => {
                       <div>
                         <div className="text-sm text-gray-600">Valoración</div>
                         <div className="font-semibold">
-                          {formatCurrency(operation.valuation_amount * 1000000, operation.valuation_currency)}
+                          {formatCurrency(operation.valuation_amount, operation.valuation_currency)}
                         </div>
                       </div>
                     </div>
