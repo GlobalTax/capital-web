@@ -1,7 +1,26 @@
+// Helper function to map currency symbols to ISO codes
+const mapCurrencySymbolToCode = (currency: string | null | undefined): string => {
+  if (!currency) return 'EUR';
+  
+  const currencyMap: Record<string, string> = {
+    '€': 'EUR',
+    '$': 'USD',
+    '£': 'GBP',
+    '¥': 'JPY',
+    'EUR': 'EUR',
+    'USD': 'USD',
+    'GBP': 'GBP',
+    'JPY': 'JPY'
+  };
+  
+  return currencyMap[currency] || 'EUR';
+};
+
 export const formatCurrency = (value: number, currency: string = 'EUR'): string => {
+  const mappedCurrency = mapCurrencySymbolToCode(currency);
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency,
+    currency: mappedCurrency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
