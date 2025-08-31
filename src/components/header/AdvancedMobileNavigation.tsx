@@ -28,9 +28,9 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
   if (!isMenuOpen) return null;
 
   const navSections = [
-    { id: 'servicios', title: 'Servicios', items: serviciosData },
-    { id: 'nosotros', title: 'Nosotros', items: nosotrosData },
-    { id: 'recursos', title: 'Recursos', items: recursosData },
+    { id: 'servicios', title: 'Servicios', items: serviciosData.flatMap(category => category.items) },
+    { id: 'nosotros', title: 'Nosotros', items: nosotrosData.flatMap(category => category.items) },
+    { id: 'recursos', title: 'Recursos', items: recursosData.flatMap(category => category.items) },
     { id: 'colaboradores', title: 'Colaboradores', items: colaboradoresData },
   ];
 
@@ -68,23 +68,37 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
           </div>
         ))}
 
-        {/* Enlaces directos */}
-        <div className="border-t border-gray-200 pt-4 space-y-2">
-          <Link
-            to="/casos-exito"
-            className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
-            onClick={closeMenu}
-          >
-            Casos de Éxito
-          </Link>
-          <Link
-            to="/por-que-elegirnos"
-            className="block text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200 py-2"
-            onClick={closeMenu}
-          >
-            Por Qué Elegirnos
-          </Link>
-        </div>
+
+        {/* Sectores */}
+        {sectoresData?.[0]?.items?.length > 0 && (
+          <div>
+            <button
+              onClick={() => toggleSection('sectores')}
+              className="flex items-center justify-between w-full text-left text-black text-sm font-medium py-2 hover:text-gray-600 transition-colors"
+            >
+              <span>Sectores</span>
+              {expandedSection === 'sectores' ? 
+                <ChevronDown className="h-4 w-4" /> : 
+                <ChevronRight className="h-4 w-4" />
+              }
+            </button>
+            
+            {expandedSection === 'sectores' && (
+              <div className="pl-4 space-y-2 mt-2 border-l-2 border-gray-100">
+                {sectoresData[0].items.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200 py-1"
+                    onClick={closeMenu}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Botones de acción */}
         <div className="border-t border-gray-200 pt-4 space-y-3">

@@ -192,7 +192,7 @@ const NosotrosMenu = () => (
     </div>
 
     <div className="space-y-4">
-      {nosotrosData[0].items.slice(1).map((item) => (
+      {nosotrosData[0].items.map((item) => (
         <NavigationMenuLink key={item.id} asChild>
           <Link
             to={item.href}
