@@ -42,6 +42,12 @@ export interface OperationsStats {
   offMarketDeals: number;
 }
 
+// Circuit Breaker y singleton request management
+let globalRequestLock = false;
+let globalCacheData: { operations: Operation[]; sectors: string[]; timestamp: number } | null = null;
+const CACHE_TTL = 30000; // 30 segundos
+const REQUEST_THROTTLE_MS = 1000; // 1 segundo entre requests
+
 export const useOperations = (filters: OperationsFilters = {}) => {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [sectors, setSectors] = useState<string[]>([]);
@@ -56,299 +62,248 @@ export const useOperations = (filters: OperationsFilters = {}) => {
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   
-  // Refs para cancelar requests pendientes
+  // Refs para control de requests
   const abortControllerRef = useRef<AbortController | null>(null);
-  const sectorsLoadedRef = useRef(false);
-  const lastSuccessfulDataRef = useRef<Operation[]>([]);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastRequestTimeRef = useRef(0);
+  const mountedRef = useRef(true);
+  const filtersStringRef = useRef<string>('');
   
-  const { handleAsyncError, logError } = useCentralizedErrorHandler();
-  
-  // Memoize filters para evitar re-renders innecesarios
-  const memoizedFilters = useMemo(() => filters, [
-    filters.searchTerm,
-    filters.sector,
-    filters.displayLocation,
-    filters.featured,
-    filters.limit,
-    filters.sortBy
-  ]);
+  const { logError } = useCentralizedErrorHandler();
 
-  // Función para serializar errores correctamente
-  const serializeError = (error: any): string => {
+  // Crear string estable de filtros para evitar loops
+  const filtersString = JSON.stringify({
+    searchTerm: filters.searchTerm || '',
+    sector: filters.sector || '',
+    displayLocation: filters.displayLocation || '',
+    featured: filters.featured,
+    limit: filters.limit,
+    sortBy: filters.sortBy || 'year'
+  });
+
+  // Circuit breaker: verificar cache válido
+  const getCachedData = useCallback(() => {
+    if (globalCacheData && (Date.now() - globalCacheData.timestamp) < CACHE_TTL) {
+      return globalCacheData;
+    }
+    return null;
+  }, []);
+
+  // Función para serializar errores
+  const serializeError = useCallback((error: any): string => {
     if (!error) return 'Error desconocido';
     if (typeof error === 'string') return error;
     if (error.message) return error.message;
     if (error.error_description) return error.error_description;
-    try {
-      return JSON.stringify(error);
-    } catch {
-      return String(error);
+    return 'Error de conexión';
+  }, []);
+
+  // Circuit breaker: función principal de fetch con protección
+  const fetchData = useCallback(async () => {
+    // Prevenir loop infinito - verificar si ya hay request en curso
+    if (globalRequestLock) {
+      console.log('🚫 Request bloqueado por Circuit Breaker');
+      return;
     }
-  };
 
-  // Función para determinar si es un error temporal
-  const isTemporaryError = (error: any): boolean => {
-    const errorMsg = serializeError(error).toLowerCase();
-    return errorMsg.includes('network') || 
-           errorMsg.includes('timeout') || 
-           errorMsg.includes('fetch') ||
-           errorMsg.includes('connection') ||
-           error?.status >= 500 ||
-           error?.name === 'NetworkError';
-  };
-
-  // Función para calcular delay de retry con backoff exponencial
-  const getRetryDelay = (attempt: number): number => {
-    return Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10 segundos
-  };
-
-  const fetchOperationsWithRetry = useCallback(async (attempt: number = 0): Promise<void> => {
-    // Cancelar request anterior si existe
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    // Verificar throttling
+    const now = Date.now();
+    if (now - lastRequestTimeRef.current < REQUEST_THROTTLE_MS) {
+      console.log('⏰ Request throttleado');
+      return;
     }
-    
-    // Crear nuevo AbortController
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
-    
+
+    // Verificar cache válido
+    const cached = getCachedData();
+    if (cached) {
+      console.log('📦 Usando datos del cache');
+      setOperations(cached.operations);
+      setSectors(cached.sectors);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    // Solo proceder si el componente está montado
+    if (!mountedRef.current) return;
+
+    // Activar circuit breaker
+    globalRequestLock = true;
+    lastRequestTimeRef.current = now;
+
     try {
+      // Cancelar request anterior
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+      
       setIsLoading(true);
       setError(null);
-      
-      if (attempt > 0) {
-        setIsRetrying(true);
-      }
 
-      let query = supabase
+      // Construir query con timeout
+      const signal = AbortSignal.timeout ? AbortSignal.timeout(10000) : abortController.signal;
+      
+      let operationsQuery = supabase
         .from('company_operations')
         .select('*')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .abortSignal(signal);
 
-      // Apply filters
-      if (memoizedFilters.featured !== undefined) {
-        query = query.eq('is_featured', memoizedFilters.featured);
+      // Aplicar filtros solo si existen
+      const parsedFilters = JSON.parse(filtersString);
+      
+      if (parsedFilters.featured !== undefined) {
+        operationsQuery = operationsQuery.eq('is_featured', parsedFilters.featured);
       }
 
-      if (memoizedFilters.displayLocation) {
-        query = query.contains('display_locations', [memoizedFilters.displayLocation]);
+      if (parsedFilters.displayLocation) {
+        operationsQuery = operationsQuery.contains('display_locations', [parsedFilters.displayLocation]);
       }
 
-      if (memoizedFilters.sector) {
-        query = query.eq('sector', memoizedFilters.sector);
+      if (parsedFilters.sector) {
+        operationsQuery = operationsQuery.eq('sector', parsedFilters.sector);
       }
 
-      if (memoizedFilters.searchTerm) {
-        query = query.or(
-          `company_name.ilike.%${memoizedFilters.searchTerm}%,description.ilike.%${memoizedFilters.searchTerm}%`
+      if (parsedFilters.searchTerm) {
+        operationsQuery = operationsQuery.or(
+          `company_name.ilike.%${parsedFilters.searchTerm}%,description.ilike.%${parsedFilters.searchTerm}%`
         );
       }
 
-      // Apply sorting
-      switch (memoizedFilters.sortBy) {
+      // Aplicar sorting
+      switch (parsedFilters.sortBy) {
         case 'valuation':
-          query = query.order('valuation_amount', { ascending: false });
+          operationsQuery = operationsQuery.order('valuation_amount', { ascending: false });
           break;
         case 'featured':
-          query = query.order('is_featured', { ascending: false }).order('year', { ascending: false });
+          operationsQuery = operationsQuery.order('is_featured', { ascending: false }).order('year', { ascending: false });
           break;
         default:
-          query = query.order('year', { ascending: false });
+          operationsQuery = operationsQuery.order('year', { ascending: false });
       }
 
-      if (memoizedFilters.limit) {
-        query = query.limit(memoizedFilters.limit);
+      if (parsedFilters.limit) {
+        operationsQuery = operationsQuery.limit(parsedFilters.limit);
       }
 
-      const { data, error } = await query;
+      // Fetch paralelo de operaciones y sectores
+      const [operationsResult, sectorsResult] = await Promise.all([
+        operationsQuery,
+        supabase
+          .from('company_operations')
+          .select('sector')
+          .eq('is_active', true)
+          .not('sector', 'is', null)
+          .abortSignal(signal)
+      ]);
 
-      // Verificar si el request fue cancelado
-      if (abortController.signal.aborted) {
+      // Verificar cancelación
+      if (abortController.signal.aborted || !mountedRef.current) {
         return;
       }
 
-      if (error) {
-        const serializedError = serializeError(error);
-        
-        // Log del error con contexto mejorado
-        logError(new Error(serializedError), {
-          component: 'useOperations',
-          action: 'fetchOperations',
-          metadata: { 
-            attempt: attempt + 1, 
-            filters: memoizedFilters,
-            errorCode: error.code,
-            errorDetails: error.details
-          }
-        });
-
-        // Si es error temporal y no hemos alcanzado el máximo de reintentos
-        if (isTemporaryError(error) && attempt < 3) {
-          const delay = getRetryDelay(attempt);
-          setRetryCount(attempt + 1);
-          
-          retryTimeoutRef.current = setTimeout(() => {
-            fetchOperationsWithRetry(attempt + 1);
-          }, delay);
-          return;
-        }
-
-        // Error permanente o máximo de reintentos alcanzado
-        setError(`Error al cargar las operaciones: ${serializedError}`);
-        
-        // Si tenemos datos previos exitosos, mostrarlos
-        if (lastSuccessfulDataRef.current.length > 0) {
-          setOperations(lastSuccessfulDataRef.current);
-        } else {
-          setOperations([]);
-        }
-        
-        setRetryCount(attempt + 1);
-      } else {
-        console.log('✅ Operations loaded successfully:', data?.length || 0, 'operations');
-        const loadedOperations = data || [];
-        setOperations(loadedOperations);
-        lastSuccessfulDataRef.current = loadedOperations; // Guardar datos exitosos
-        setRetryCount(0);
-        
-        // Update stats if we have data
-        if (data && data.length > 0) {
-          try {
-            const totalCount = await supabase
-              .from('company_operations')
-              .select('*', { count: 'exact', head: true })
-              .eq('is_active', true);
-            
-            setStats(prev => ({
-              ...prev,
-              totalOperations: totalCount.count || data.length
-            }));
-          } catch (statsError) {
-            // Si falla la estadística, no es crítico
-            logError(new Error(serializeError(statsError)), {
-              component: 'useOperations',
-              action: 'fetchStats'
-            });
-          }
-        }
+      if (operationsResult.error) {
+        throw new Error(serializeError(operationsResult.error));
       }
-    } catch (err: any) {
-      // No mostrar error si fue cancelado
-      if (err.name === 'AbortError' || abortController.signal.aborted) {
-        return;
+
+      if (sectorsResult.error) {
+        console.warn('Error cargando sectores:', serializeError(sectorsResult.error));
       }
+
+      const loadedOperations = operationsResult.data || [];
+      const uniqueSectors = [...new Set(sectorsResult.data?.map(item => item.sector).filter(Boolean) || [])];
+
+      // Actualizar cache global
+      globalCacheData = {
+        operations: loadedOperations,
+        sectors: uniqueSectors,
+        timestamp: Date.now()
+      };
+
+      console.log('✅ Datos cargados exitosamente:', loadedOperations.length, 'operaciones,', uniqueSectors.length, 'sectores');
       
-      const serializedError = serializeError(err);
+      if (mountedRef.current) {
+        setOperations(loadedOperations);
+        setSectors(uniqueSectors);
+        setError(null);
+        setRetryCount(0);
+      }
+
+    } catch (err: any) {
+      if (err.name === 'AbortError' || !mountedRef.current) {
+        return;
+      }
+
+      const errorMessage = serializeError(err);
+      console.error('❌ Error fetching data:', errorMessage);
       
       logError(err, {
         component: 'useOperations',
-        action: 'fetchOperations',
-        metadata: { attempt: attempt + 1, filters: memoizedFilters }
+        action: 'fetchData'
       });
 
-      // Si es error temporal y no hemos alcanzado el máximo de reintentos
-      if (isTemporaryError(err) && attempt < 3) {
-        const delay = getRetryDelay(attempt);
-        setRetryCount(attempt + 1);
+      if (mountedRef.current) {
+        setError(`Error de conexión: ${errorMessage}`);
         
-        retryTimeoutRef.current = setTimeout(() => {
-          fetchOperationsWithRetry(attempt + 1);
-        }, delay);
-        return;
+        // Usar cache si está disponible aunque sea viejo
+        if (globalCacheData) {
+          setOperations(globalCacheData.operations);
+          setSectors(globalCacheData.sectors);
+        }
       }
-
-      // Error permanente o máximo de reintentos alcanzado
-      setError(`Error inesperado: ${serializedError}`);
-      
-      // Si tenemos datos previos exitosos, mostrarlos
-      if (lastSuccessfulDataRef.current.length > 0) {
-        setOperations(lastSuccessfulDataRef.current);
-      } else {
-        setOperations([]);
-      }
-      
-      setRetryCount(attempt + 1);
     } finally {
-      if (!abortController.signal.aborted) {
+      // Liberar circuit breaker después de un delay
+      setTimeout(() => {
+        globalRequestLock = false;
+      }, 500);
+      
+      if (mountedRef.current) {
         setIsLoading(false);
         setIsRetrying(false);
       }
     }
-  }, [memoizedFilters, logError]);
+  }, [filtersString, getCachedData, serializeError, logError]);
 
-  const fetchOperations = useCallback(() => {
-    // Limpiar timeout anterior si existe
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
+  // Effect principal - solo ejecutar cuando cambien los filtros
+  useEffect(() => {
+    if (filtersStringRef.current !== filtersString) {
+      filtersStringRef.current = filtersString;
+      fetchData();
     }
-    
-    fetchOperationsWithRetry(0);
-  }, [fetchOperationsWithRetry]);
+  }, [filtersString, fetchData]);
 
-  const fetchSectors = useCallback(async () => {
-    // Solo cargar sectores una vez
-    if (sectorsLoadedRef.current) {
-      return;
+  // Effect de montaje - ejecutar solo una vez
+  useEffect(() => {
+    mountedRef.current = true;
+    
+    // Cargar datos inmediatamente si no hay cache
+    if (!getCachedData()) {
+      fetchData();
+    } else {
+      const cached = getCachedData()!;
+      setOperations(cached.operations);
+      setSectors(cached.sectors);
+      setIsLoading(false);
     }
-    
-    await handleAsyncError(async () => {
-      console.log('📊 Loading sectors...');
-      const { data, error } = await supabase
-        .from('company_operations')
-        .select('sector')
-        .eq('is_active', true)
-        .not('sector', 'is', null);
-      
-      if (error) {
-        throw new Error(serializeError(error));
-      }
-      
-      const uniqueSectors = [...new Set(data?.map(item => item.sector) || [])];
-      setSectors(uniqueSectors);
-      sectorsLoadedRef.current = true;
-      console.log('✅ Sectors loaded:', uniqueSectors.length, 'sectors');
-    }, {
-      component: 'useOperations',
-      action: 'fetchSectors'
-    });
-  }, [handleAsyncError]);
 
-  useEffect(() => {
-    fetchOperations();
-  }, [fetchOperations]);
-  
-  useEffect(() => {
-    fetchSectors();
-  }, []); // Solo cargar sectores al montar el componente
-
-  // Cleanup: cancelar requests pendientes al desmontar
-  useEffect(() => {
     return () => {
+      mountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
-      }
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
       }
     };
   }, []);
 
   const refresh = useCallback(() => {
-    // Limpiar timeouts y estados
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
-    }
-    
+    globalCacheData = null; // Limpiar cache
+    filtersStringRef.current = ''; // Forzar recarga
     setRetryCount(0);
     setError(null);
     setIsRetrying(false);
-    sectorsLoadedRef.current = false; // Permitir reload de sectores
-    fetchOperations();
-    fetchSectors();
-  }, [fetchOperations, fetchSectors]);
+    fetchData();
+  }, [fetchData]);
 
   return {
     operations,
