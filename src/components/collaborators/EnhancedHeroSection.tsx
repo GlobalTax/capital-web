@@ -2,7 +2,7 @@ import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Badge } from '@/components/ui/badge';
 
-// Force recompilation - debugging undefined variable error
+// Fixed: Removed undefined variable reference that was causing crashes
 
 export const EnhancedHeroSection = () => {
   const recentActivity = [

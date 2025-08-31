@@ -37,6 +37,16 @@ const adminNavItems = [
     href: '/admin/sector-calculators'
   },
   {
+    title: 'Gestión de Páginas',
+    icon: <BookOpen className="h-5 w-5" />,
+    href: '/admin/pages'
+  },
+  {
+    title: 'Editor de Contenido',
+    icon: <FileText className="h-5 w-5" />,
+    href: '/admin/content-editor'
+  },
+  {
     title: 'Leads',
     icon: <Users className="h-5 w-5" />,
     href: '/admin/leads'

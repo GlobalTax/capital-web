@@ -29,6 +29,8 @@ import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
 import VideoManager from './VideoManager';
 import SectorsPage from '@/pages/admin/SectorsPage';
+import { PageManager } from './pages/PageManager';
+import { ContentEditor } from './content/ContentEditor';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import ContactsPage from '@/pages/admin/ContactsPage';
@@ -106,6 +108,10 @@ const AdminRouter = () => {
       
       {/* Valuations */}
       <Route path="/valuations/:id" element={<ValuationDetailPage />} />
+      
+      {/* Page Management */}
+      <Route path="/pages" element={<PageManager />} />
+      <Route path="/content-editor" element={<ContentEditor />} />
       
       {/* Settings */}
       <Route path="/admin-users" element={<AdminUsersManager />} />
