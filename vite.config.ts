@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    target: 'esnext',
+    target: ['es2019', 'safari13'],
     minify: 'esbuild',
     sourcemap: mode === 'development',
     chunkSizeWarningLimit: 1000

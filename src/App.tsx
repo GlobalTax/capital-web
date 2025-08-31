@@ -351,45 +351,55 @@ function App() {
           monitorResourceLoading();
         }
 
-        // Inicializar service worker de forma diferida
+        // Service Worker con kill-switch para compatibilidad multi-navegador
         setTimeout(async () => {
           try {
             if ('serviceWorker' in navigator) {
-              // Desregistrar service workers existentes para forzar recarga
-              const registrations = await navigator.serviceWorker.getRegistrations();
-              for (const registration of registrations) {
-                await registration.unregister();
-                console.log('Service worker unregistered:', registration.scope);
-              }
+              const swDisabled = import.meta.env.VITE_DISABLE_SW === '1' || import.meta.env.VITE_ENABLE_SW === '0';
               
-              // Re-registrar con la nueva versión v4
-              const registration = await navigator.serviceWorker.register('/sw.js', {
-                scope: '/'
-              });
-              
-              // Forzar actualización inmediata si hay una nueva versión
-              if (registration.waiting) {
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-              }
-              
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                if (newWorker) {
-                  newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                      // Forzar recarga para activar nueva versión
-                      window.location.reload();
-                    }
-                  });
+              if (swDisabled) {
+                console.log('🔧 Service Worker DISABLED via environment variable');
+                
+                // Unregister todos los service workers existentes
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                  await registration.unregister();
+                  console.log('✅ Service worker unregistered:', registration.scope);
                 }
-              });
-              
-              console.log('Service worker registered successfully with v4 cache');
+                
+                // Clear todos los caches
+                if ('caches' in window) {
+                  const cacheNames = await caches.keys();
+                  await Promise.all(cacheNames.map(name => caches.delete(name)));
+                  console.log('✅ All caches cleared');
+                }
+              } else {
+                console.log('🔧 Service Worker ENABLED - Registering /sw.js');
+                
+                // Registrar service worker normalmente
+                const registration = await navigator.serviceWorker.register('/sw.js', {
+                  scope: '/'
+                });
+                
+                registration.addEventListener('updatefound', () => {
+                  const newWorker = registration.installing;
+                  if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('🔄 New service worker available');
+                        // No force reload here - let user decide
+                      }
+                    });
+                  }
+                });
+                
+                console.log('✅ Service worker registered:', registration.scope);
+              }
             }
           } catch (error) {
-            console.warn('Service worker registration failed:', error);
+            console.warn('⚠️ Service worker operation failed:', error);
           }
-        }, 2000);
+        }, 1000);
 
         // Precarga diferida desactivada: evitamos preloads a chunks inexistentes en Vite
         // Eliminado el preloading dinámico para evitar errores de carga de módulos
