@@ -28,6 +28,15 @@ interface Operation {
   logo_url?: string;
   featured_image_url?: string;
   display_locations?: string[];
+  revenue_amount?: number;
+  ebitda_amount?: number;
+  ebitda_multiple?: number;
+  growth_percentage?: number;
+  company_size_employees?: string;
+  short_description?: string;
+  highlights?: string[];
+  status?: string;
+  deal_type?: string;
 }
 
 const availableLocations = [
@@ -56,7 +65,16 @@ const OperationsManager = () => {
     is_active: true,
     logo_url: undefined,
     featured_image_url: undefined,
-    display_locations: ['home', 'operaciones']
+    display_locations: ['home', 'operaciones'],
+    revenue_amount: 0,
+    ebitda_amount: 0,
+    ebitda_multiple: 0,
+    growth_percentage: 0,
+    company_size_employees: '',
+    short_description: '',
+    highlights: [],
+    status: 'available',
+    deal_type: 'sale'
   };
 
   const [formData, setFormData] = useState(emptyOperation);
@@ -254,6 +272,90 @@ const OperationsManager = () => {
               </div>
             </div>
 
+            {/* Campos Financieros */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Facturación (millones)</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.revenue_amount || ''}
+                  onChange={(e) => setFormData({...formData, revenue_amount: parseFloat(e.target.value) || 0})}
+                  className="border border-gray-300 rounded-lg"
+                  placeholder="0.0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">EBITDA (millones)</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.ebitda_amount || ''}
+                  onChange={(e) => setFormData({...formData, ebitda_amount: parseFloat(e.target.value) || 0})}
+                  className="border border-gray-300 rounded-lg"
+                  placeholder="0.0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Múltiplo EBITDA</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.ebitda_multiple || ''}
+                  onChange={(e) => setFormData({...formData, ebitda_multiple: parseFloat(e.target.value) || 0})}
+                  className="border border-gray-300 rounded-lg"
+                  placeholder="0.0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Crecimiento (%)</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.growth_percentage || ''}
+                  onChange={(e) => setFormData({...formData, growth_percentage: parseFloat(e.target.value) || 0})}
+                  className="border border-gray-300 rounded-lg"
+                  placeholder="0.0"
+                />
+              </div>
+            </div>
+
+            {/* Información Adicional */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Tamaño de Empresa (empleados)</label>
+                <Input
+                  value={formData.company_size_employees || ''}
+                  onChange={(e) => setFormData({...formData, company_size_employees: e.target.value})}
+                  className="border border-gray-300 rounded-lg"
+                  placeholder="Ej: 50-100, 100-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">Estado</label>
+                <select
+                  value={formData.status || 'available'}
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="available">Disponible</option>
+                  <option value="in_negotiation">En negociación</option>
+                  <option value="sold">Vendida</option>
+                  <option value="reserved">Reservada</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">Descripción Corta</label>
+              <Input
+                value={formData.short_description || ''}
+                onChange={(e) => setFormData({...formData, short_description: e.target.value})}
+                className="border border-gray-300 rounded-lg"
+                placeholder="Descripción breve para listados"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-black mb-2">Descripción</label>
               <Textarea
@@ -403,7 +505,16 @@ const OperationsManager = () => {
                 <div className="text-sm text-gray-500">
                   <span className="mr-4">{operation.sector}</span>
                   <span className="mr-4">{operation.valuation_amount}M{operation.valuation_currency}</span>
-                  <span>{operation.year}</span>
+                  <span className="mr-4">{operation.year}</span>
+                  {operation.revenue_amount && operation.revenue_amount > 0 && (
+                    <span className="mr-4">Facturación: {operation.revenue_amount}M€</span>
+                  )}
+                  {operation.ebitda_amount && operation.ebitda_amount > 0 && (
+                    <span className="mr-4">EBITDA: {operation.ebitda_amount}M€</span>
+                  )}
+                  {operation.ebitda_multiple && operation.ebitda_multiple > 0 && (
+                    <span className="mr-4">Múltiplo: {operation.ebitda_multiple}x</span>
+                  )}
                 </div>
                 <div className="mb-2">
                   <span className="text-sm font-medium text-gray-700">Ubicaciones: </span>
