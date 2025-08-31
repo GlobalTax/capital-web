@@ -164,11 +164,11 @@ export const OperationCard: React.FC<OperationCardProps> = ({ operation, classNa
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-primary mb-1">
-                    Información disponible
+                  <div className="text-3xl font-bold text-primary mb-1">
+                    {formatCurrency(operation.valuation_amount, operation.valuation_currency || 'EUR')}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Datos financieros bajo solicitud
+                    Valoración de la operación
                   </div>
                 </>
               )}
