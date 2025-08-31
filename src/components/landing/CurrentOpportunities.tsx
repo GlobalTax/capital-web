@@ -181,7 +181,7 @@ const CurrentOpportunities = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-1 gap-6 mb-12">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-12">
           {operations.length > 0 ? (
             operations.slice(0, 3).map((operation, index) => (
               <OperationCard 
@@ -192,51 +192,47 @@ const CurrentOpportunities = () => {
               />
             ))
           ) : (
-            opportunities.slice(0, 3).map((opp, index) => (
-              <div 
-                key={index}
-                className="group p-6 border border-slate-100 rounded-xl hover:border-primary/20 transition-all duration-200"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                      {opp.sector}
-                    </h3>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl font-semibold text-primary">
-                        {opp.valuation}
-                      </span>
-                      <span className="text-slate-500 text-sm">
-                        {opp.multiple}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="px-2 py-1 bg-green-50 text-green-600 rounded text-sm font-medium">
-                    {opp.growth}
-                  </div>
-                </div>
-                
-                <p className="text-slate-600 mb-4 leading-relaxed text-sm">
-                  {opp.description}
-                </p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {opp.highlights.map((highlight, idx) => (
-                    <span 
-                      key={idx}
-                      className="px-2 py-1 bg-slate-50 text-slate-600 rounded text-xs border border-slate-100"
-                    >
-                      {highlight}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Información disponible</span>
-                  <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
-                </div>
-              </div>
-            ))
+            // Placeholder cards using OperationCard format
+            Array.from({ length: 3 }).map((_, index) => {
+              const placeholderOperation = {
+                id: `placeholder-${index}`,
+                company_name: index === 0 ? 'Empresa Tecnológica' : index === 1 ? 'Distribuidora Regional' : 'Consultora Especializada',
+                sector: index === 0 ? 'Software & Tecnología' : index === 1 ? 'Distribución' : 'Consultoría',
+                valuation_amount: index === 0 ? 2800000 : index === 1 ? 1500000 : 950000,
+                valuation_currency: 'EUR',
+                year: 2024,
+                description: index === 0 
+                  ? 'Empresa con soluciones tecnológicas innovadoras, crecimiento sostenido y cartera de clientes diversificada en el sector B2B.'
+                  : index === 1 
+                  ? 'Distribuidora establecida con red comercial consolidada, presencia regional fuerte y oportunidades de expansión.'
+                  : 'Consultora especializada con expertise técnico reconocido, clientes recurrentes y potencial de escalabilidad.',
+                short_description: index === 0 
+                  ? 'Empresa con soluciones tecnológicas innovadoras, crecimiento sostenido y cartera de clientes diversificada.'
+                  : index === 1 
+                  ? 'Distribuidora establecida con red comercial consolidada y oportunidades de expansión.'
+                  : 'Consultora especializada con expertise técnico reconocido y potencial de escalabilidad.',
+                is_featured: true,
+                ebitda_multiple: index === 0 ? 8.5 : index === 1 ? 6.2 : 7.1,
+                growth_percentage: index === 0 ? 35 : index === 1 ? 22 : 28,
+                company_size_employees: index === 0 ? '25-50' : index === 1 ? '10-25' : '5-10',
+                highlights: index === 0 
+                  ? ['SaaS', 'B2B', 'Escalable']
+                  : index === 1 
+                  ? ['Red establecida', 'Crecimiento', 'Regional']
+                  : ['Especialización', 'Recurrente', 'Expertise'],
+                status: 'available',
+                deal_type: 'sale'
+              };
+              
+              return (
+                <OperationCard
+                  key={placeholderOperation.id}
+                  operation={placeholderOperation}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+                />
+              );
+            })
           )}
         </div>
 
