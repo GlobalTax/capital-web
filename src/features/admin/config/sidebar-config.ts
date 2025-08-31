@@ -19,7 +19,8 @@ import {
   Palette,
   Play,
   ClipboardList,
-  Tags
+  Tags,
+  Image
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -140,6 +141,13 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/testimonials", 
         icon: MessageSquare,
         description: "Reseñas de clientes"
+      },
+      { 
+        title: "Logos Carousel", 
+        url: "/admin/carousel-logos", 
+        icon: Image,
+        badge: "NEW",
+        description: "Gestión de logos del carrusel"
       },
     ]
   },
