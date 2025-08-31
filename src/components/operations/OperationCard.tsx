@@ -133,15 +133,38 @@ export const OperationCard: React.FC<OperationCardProps> = ({ operation, classNa
             </div>
           </div>
 
-          {/* Right column - Valuation and CTA */}
+          {/* Right column - Financial data and CTA */}
           <div className="lg:col-span-1 flex flex-col justify-between">
             <div className="text-center lg:text-right mb-4">
-              <div className="text-3xl font-bold text-primary mb-1">
-                {formatCurrency(operation.valuation_amount, operation.valuation_currency || 'EUR')}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Valoración {operation.year}
-              </div>
+              {operation.revenue_amount ? (
+                <>
+                  <div className="text-3xl font-bold text-primary mb-1">
+                    {formatCurrency(operation.revenue_amount, operation.valuation_currency || 'EUR')}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Facturación {operation.year}
+                  </div>
+                  {operation.ebitda_amount && (
+                    <div className="mt-2">
+                      <div className="text-lg font-semibold text-foreground">
+                        {formatCurrency(operation.ebitda_amount, operation.valuation_currency || 'EUR')}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        EBITDA {operation.year}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    Información disponible
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Datos financieros bajo solicitud
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="space-y-3">
