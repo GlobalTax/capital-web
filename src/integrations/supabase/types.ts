@@ -3378,6 +3378,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_behavior_access_violation: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       log_critical_security_event: {
         Args: {
           details?: Json
