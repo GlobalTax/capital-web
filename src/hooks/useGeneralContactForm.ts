@@ -54,11 +54,22 @@ export const useGeneralContactForm = () => {
         user_agent: navigator.userAgent
       };
 
-      const { data, error } = await supabase
+      console.log('=== GENERAL CONTACT FORM SUBMISSION ===');
+      console.log('Submission data being sent:', submissionData);
+      console.log('Data validation:', {
+        has_full_name: !!submissionData.full_name?.trim(),
+        has_company: !!submissionData.company?.trim(),
+        has_email: !!submissionData.email?.trim(),
+        email_valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submissionData.email || ''),
+        has_country: !!submissionData.country?.trim(),
+        has_annual_revenue: !!submissionData.annual_revenue?.trim(),
+        has_how_did_you_hear: !!submissionData.how_did_you_hear?.trim(),
+        has_message: !!submissionData.message?.trim()
+      });
+      
+      const { error } = await supabase
         .from('general_contact_leads')
-        .insert(submissionData)
-        .select()
-        .single();
+        .insert(submissionData);
 
       if (error) {
         console.error('Error submitting general contact form:', error);
