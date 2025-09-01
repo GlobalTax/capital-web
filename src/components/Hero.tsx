@@ -55,7 +55,7 @@ const Hero = () => {
               {/* Stats Row */}
               <div className="grid grid-cols-2 gap-8 mb-10">
                 <div>
-                  <div className="text-3xl font-bold text-slate-900 mb-2">€1.0B+</div>
+                  <div className="text-3xl font-bold text-slate-900 mb-2">€902M</div>
                   <div className="text-slate-600">Valor Transaccional</div>
                 </div>
                 <div>
@@ -120,7 +120,7 @@ const Hero = () => {
                       <div className="text-xs text-slate-600">Operaciones</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-slate-900">€2.1B</div>
+                      <div className="text-2xl font-bold text-slate-900">€902M</div>
                       <div className="text-xs text-slate-600">Valor Total</div>
                     </div>
                     <div>

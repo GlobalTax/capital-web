@@ -129,7 +129,7 @@ const ValoracionesHero = () => {
                   <div className="text-xs text-gray-500">Valoradas</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-black">€2.8B</div>
+                  <div className="text-lg font-semibold text-black">€902M</div>
                   <div className="text-xs text-gray-500">Valor Total</div>
                 </div>
                 <div className="text-center">

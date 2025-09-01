@@ -283,7 +283,7 @@ const DocumentacionMAContent = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-2">€2.8B+</div>
+            <div className="text-3xl font-bold text-foreground mb-2">€902M</div>
             <p className="text-muted-foreground">Valor en transacciones</p>
           </div>
           <div className="text-center">

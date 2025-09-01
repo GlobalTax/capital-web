@@ -29,7 +29,7 @@ const MarketInsights = () => {
         setInsights([{
           id: '1',
           metric_key: 'volumen_transaccional',
-          metric_value: '€300M',
+          metric_value: '€902M',
           metric_label: 'Volumen Transaccional Q4',
           display_order: 1,
           is_active: true
@@ -57,7 +57,7 @@ const MarketInsights = () => {
       setInsights([{
         id: '1',
         metric_key: 'volumen_transaccional',
-        metric_value: '€300M',
+        metric_value: '€902M',
         metric_label: 'Volumen Transaccional Q4',
         display_order: 1,
         is_active: true

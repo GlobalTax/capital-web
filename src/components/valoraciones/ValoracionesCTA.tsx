@@ -79,7 +79,7 @@ const ValoracionesCTA = () => {
                 <div className="text-gray-400 text-sm">Empresas valoradas</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">€2.8B+</div>
+                <div className="text-2xl font-bold text-white">€902M</div>
                 <div className="text-gray-400 text-sm">Valor analizado</div>
               </div>
               <div className="text-center">

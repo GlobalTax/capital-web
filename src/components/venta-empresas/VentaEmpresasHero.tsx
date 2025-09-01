@@ -77,7 +77,7 @@ const VentaEmpresasHero = () => {
                     <div className="text-xs text-black">Operaciones</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-black">€2.1B</div>
+                    <div className="text-2xl font-bold text-black">€902M</div>
                     <div className="text-xs text-black">Valor Total</div>
                   </div>
                   <div>

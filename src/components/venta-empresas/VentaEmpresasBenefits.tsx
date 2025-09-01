@@ -103,7 +103,7 @@ const VentaEmpresasBenefits = () => {
               <div className="text-sm text-black">Empresas Vendidas</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-black mb-2">€2.1B</div>
+              <div className="text-3xl font-bold text-black mb-2">€902M</div>
               <div className="text-sm text-black">Valor Total</div>
             </div>
             <div>

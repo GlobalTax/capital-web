@@ -194,7 +194,7 @@ const ValoracionesMethodology = () => {
                 <div className="text-slate-600">Empresas valoradas</div>
               </div>
               <div>
-                <div className="text-2xl font-semibold text-slate-900">€2.8B+</div>
+                <div className="text-2xl font-semibold text-slate-900">€902M</div>
                 <div className="text-slate-600">Valor total analizado</div>
               </div>
               <div>

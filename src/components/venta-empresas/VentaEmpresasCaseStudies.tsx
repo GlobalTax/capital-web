@@ -143,7 +143,7 @@ const VentaEmpresasCaseStudies = () => {
             <div className="text-muted-foreground">Empresas Vendidas</div>
           </div>
           <div className="text-center bg-card border border-border rounded-lg p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="text-4xl font-bold text-foreground mb-2">€2.1B</div>
+            <div className="text-4xl font-bold text-foreground mb-2">€902M</div>
             <div className="text-muted-foreground">Valor Total</div>
           </div>
           <div className="text-center bg-card border border-border rounded-lg p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">

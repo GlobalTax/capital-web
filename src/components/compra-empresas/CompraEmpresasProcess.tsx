@@ -67,7 +67,7 @@ const CompraEmpresasProcess = () => {
               <div className="text-sm text-slate-600">ROI promedio conseguido</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-900">€2.8B</div>
+              <div className="text-2xl font-bold text-slate-900">€902M</div>
               <div className="text-sm text-slate-600">Valor total gestionado</div>
             </div>
           </div>
