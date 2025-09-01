@@ -12,7 +12,7 @@ const VentaEmpresasFAQ = () => {
     },
     {
       question: '¿Cuáles son vuestros honorarios?',
-      answer: 'Trabajamos con una estructura de éxito, cobrando un porcentaje del precio final de venta que varía entre el 3% y el 8% dependiendo del tamaño y complejidad de la operación. No cobramos ningún retainer inicial, solo cobramos si la operación se cierra exitosamente.'
+      answer: 'Trabajamos con una estructura basada en resultados, cobrando un porcentaje del precio final de venta que varía entre el 3% y el 8% dependiendo del tamaño y complejidad de la operación.'
     },
     {
       question: '¿Cómo se mantiene la confidencialidad?',
@@ -74,14 +74,6 @@ const VentaEmpresasFAQ = () => {
           ))}
         </div>
 
-        <div className="text-center">
-          <p className="text-black mb-6">
-            ¿No encuentras la respuesta que buscas?
-          </p>
-          <Button className="bg-card text-foreground border border-border rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-            Contacta con Nuestros Expertos
-          </Button>
-        </div>
       </div>
     </section>
   );
