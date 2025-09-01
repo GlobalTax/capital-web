@@ -93,7 +93,7 @@ const VentaEmpresasProcess = () => {
               <div className="text-sm text-black">Tasa de éxito</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black mb-2">4.2x</div>
+              <div className="text-2xl font-bold text-black mb-2">5.5x</div>
               <div className="text-sm text-black">Múltiplo promedio</div>
             </div>
             <div>

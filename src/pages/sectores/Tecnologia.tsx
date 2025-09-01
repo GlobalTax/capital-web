@@ -8,7 +8,7 @@ import { Computer, TrendingUp, Users, Award } from 'lucide-react';
 const Tecnologia = () => {
   const stats = [
     { number: "85%", label: "Crecimiento anual promedio" },
-    { number: "12x", label: "Múltiplo EBITDA promedio" },
+    { number: "5.5x", label: "Múltiplo EBITDA promedio" },
     { number: "150+", label: "Transacciones completadas" },
     { number: "98,7%", label: "Tasa de éxito en deals" }
   ];

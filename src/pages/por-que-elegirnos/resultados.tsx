@@ -35,7 +35,7 @@ const Resultados = () => {
   const metrics = [
     {
       icon: TrendingUp,
-      value: "4.2x",
+      value: "5.5x",
       label: "Múltiplo promedio",
       description: "Superior a la media del mercado"
     },

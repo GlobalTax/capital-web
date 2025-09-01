@@ -147,7 +147,7 @@ const VentaEmpresasCaseStudies = () => {
             <div className="text-muted-foreground">Valor Total</div>
           </div>
           <div className="text-center bg-card border border-border rounded-lg p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="text-4xl font-bold text-foreground mb-2">5.2x</div>
+            <div className="text-4xl font-bold text-foreground mb-2">5.5x</div>
             <div className="text-muted-foreground">Múltiplo Promedio</div>
           </div>
         </div>

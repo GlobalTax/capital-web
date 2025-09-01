@@ -6,7 +6,7 @@ import { useCountAnimation } from '@/hooks/useCountAnimation';
 const PorQueElegirnosResults = () => {
   const valueCount = useCountAnimation(5.2, 2000, 'B');
   const companiesCount = useCountAnimation(500, 2500, '+');
-  const multipleCount = useCountAnimation(4.2, 2000, 'x');
+  const multipleCount = useCountAnimation(5.5, 2000, 'x');
   const successCount = useCountAnimation(95, 1800, '%');
 
   const stats = [

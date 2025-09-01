@@ -121,7 +121,7 @@ const VentaEmpresasHeroService = () => {
                     <div className="text-sm text-black">Tasa de éxito</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-black">7.5x</div>
+                    <div className="text-2xl font-bold text-black">5.5x</div>
                     <div className="text-sm text-black">Múltiplo promedio</div>
                   </div>
                 </div>
