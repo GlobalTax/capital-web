@@ -11,7 +11,7 @@ const VentaEmpresasHeroLanding = () => {
   };
 
   const callExpert = () => {
-    window.open('tel:+34912345678', '_self');
+    window.open('tel:+34695717490', '_self');
   };
 
   const benefits = [

@@ -54,7 +54,7 @@ const VentaEmpresasHero = () => {
                 text="Contactar Ahora" 
                 variant="secondary" 
                 size="lg"
-                onClick={() => window.open('tel:+34912345678', '_self')}
+                onClick={() => window.open('tel:+34695717490', '_self')}
               />
             </div>
           </div>
