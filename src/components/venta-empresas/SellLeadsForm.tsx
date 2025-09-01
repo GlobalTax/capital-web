@@ -40,27 +40,38 @@ const SellLeadsForm = () => {
         company: formData.company,
         email: formData.email,
         phone: formData.phone,
-        revenue_range: null,
-        sector: null,
         message: formData.message,
-        page_origin: 'venta-empresas',
         utm_source: urlParams.get('utm_source'),
         utm_medium: urlParams.get('utm_medium'),
         utm_campaign: urlParams.get('utm_campaign'),
         utm_term: urlParams.get('utm_term'),
         utm_content: urlParams.get('utm_content'),
         referrer: document.referrer,
-        ip_address: null,
         user_agent: navigator.userAgent
-      }).select().single();
+      }).select().maybeSingle();
 
       if (error) {
         console.error('Error submitting sell leads form:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         
         if (error.message?.includes('rate limit') || error.message?.includes('check_rate_limit_enhanced')) {
           toast({
             title: "Límite de envíos alcanzado",
             description: "Has alcanzado el máximo de envíos permitidos. Por favor, espera antes de intentar de nuevo.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (error.code === '42P10' || error.message?.includes('ON CONFLICT')) {
+          toast({
+            title: "Error de base de datos",
+            description: "Ha ocurrido un error técnico. Por favor, contacta directamente con nosotros.",
             variant: "destructive",
           });
           return;
@@ -139,9 +150,9 @@ const SellLeadsForm = () => {
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="font-semibold text-foreground mb-4">¿Prefieres hablar directamente?</h3>
               <div className="space-y-3">
-                <a href="tel:+34912345678" className="flex items-center text-primary hover:text-primary/80 transition-colors">
+                <a href="tel:+34695717490" className="flex items-center text-primary hover:text-primary/80 transition-colors">
                   <span className="mr-2">📞</span>
-                  +34 912 345 678
+                  +34 695 717 490
                 </a>
                 <a href="mailto:info@capittal.es" className="flex items-center text-primary hover:text-primary/80 transition-colors">
                   <span className="mr-2">✉️</span>
