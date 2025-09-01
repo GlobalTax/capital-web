@@ -115,7 +115,7 @@ const CompraEmpresasBenefits = () => {
               <div className="text-sm text-gray-300">Valor total gestionado</div>
             </div>
             <div>
-              <div className="text-3xl font-bold mb-2">95%</div>
+              <div className="text-3xl font-bold mb-2">98,7%</div>
               <div className="text-sm text-gray-300">Tasa de éxito en cierres</div>
             </div>
             <div>

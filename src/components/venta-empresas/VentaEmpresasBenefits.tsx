@@ -107,7 +107,7 @@ const VentaEmpresasBenefits = () => {
               <div className="text-sm text-black">Valor Total</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-black mb-2">95%</div>
+              <div className="text-3xl font-bold text-black mb-2">98,7%</div>
               <div className="text-sm text-black">Tasa de Éxito</div>
             </div>
             <div>

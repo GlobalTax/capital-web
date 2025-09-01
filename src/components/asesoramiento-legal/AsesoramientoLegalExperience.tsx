@@ -12,7 +12,7 @@ const AsesoramientoLegalExperience = () => {
     },
     {
       icon: TrendingUp,
-      value: "95%",
+      value: "98,7%",
       label: "Contratos Sin Reclamaciones",
       description: "Tasa de éxito en documentación"
     },

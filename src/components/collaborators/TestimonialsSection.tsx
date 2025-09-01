@@ -117,7 +117,7 @@ export const TestimonialsSection = () => {
             <div className="text-gray-600 font-medium text-base">Colaboradores Activos</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-black mb-2">95%</div>
+            <div className="text-3xl font-bold text-black mb-2">98,7%</div>
             <div className="text-gray-600 font-medium text-base">Satisfacción</div>
           </div>
           <div className="text-center">

@@ -45,8 +45,8 @@ const VentaEmpresasFAQLanding = () => {
     },
     {
       question: "¿Qué garantías me dais de que vais a vender mi empresa?",
-      answer: "Tenemos un 95% de tasa de éxito en nuestras operaciones. Si aceptamos tu empresa es porque estamos seguros de poder venderla al mejor precio. Además, si no conseguimos mejorar el valor esperado, ¡no cobramos!",
-      highlight: "95% éxito"
+      answer: "Tenemos un 98,7% de tasa de éxito en nuestras operaciones. Si aceptamos tu empresa es porque estamos seguros de poder venderla al mejor precio. Además, si no conseguimos mejorar el valor esperado, ¡no cobramos!",
+      highlight: "98,7% éxito"
     },
     {
       question: "¿Puedo seguir dirigiendo mi empresa durante el proceso?",
@@ -69,7 +69,7 @@ const VentaEmpresasFAQLanding = () => {
             Preguntas <span className="text-blue-600">Frecuentes</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            <strong>¡Estas son las preguntas que nos hacen el 95% de nuestros clientes!</strong> 
+            <strong>¡Estas son las preguntas que nos hacen el 98,7% de nuestros clientes!</strong> 
             Si tienes alguna duda más, llámanos y te la resolvemos en 2 minutos.
           </p>
         </div>

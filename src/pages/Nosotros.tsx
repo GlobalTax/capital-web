@@ -48,7 +48,7 @@ const Nosotros = () => {
                 </div>
                 
                 <div className="text-center">
-                  <div className="text-4xl font-light text-black mb-2">95%</div>
+                  <div className="text-4xl font-light text-black mb-2">98,7%</div>
                   <div className="text-sm text-gray-600 uppercase tracking-wide">Tasa Éxito</div>
                 </div>
               </div>

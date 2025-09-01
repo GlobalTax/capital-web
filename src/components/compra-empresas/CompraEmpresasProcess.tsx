@@ -59,7 +59,7 @@ const CompraEmpresasProcess = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
             <div>
-              <div className="text-2xl font-bold text-slate-900">95%</div>
+              <div className="text-2xl font-bold text-slate-900">98,7%</div>
               <div className="text-sm text-slate-600">Tasa de éxito en cierres</div>
             </div>
             <div>

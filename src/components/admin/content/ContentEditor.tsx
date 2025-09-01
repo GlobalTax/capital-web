@@ -74,7 +74,7 @@ const DEMO_CONTENT: PageContent = {
         stats: [
           { label: 'Colaboradores Activos', value: '50+' },
           { label: 'Valor Gestionado', value: '€1.2B' },
-          { label: 'Satisfacción', value: '95%' }
+          { label: 'Satisfacción', value: '98,7%' }
         ]
       },
       order: 2

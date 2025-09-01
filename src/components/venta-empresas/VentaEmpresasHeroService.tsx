@@ -117,7 +117,7 @@ const VentaEmpresasHeroService = () => {
                     <div className="text-sm text-black">Volumen gestionado</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-black">95%</div>
+                    <div className="text-2xl font-bold text-black">98,7%</div>
                     <div className="text-sm text-black">Tasa de éxito</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">

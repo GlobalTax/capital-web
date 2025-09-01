@@ -41,7 +41,7 @@ const Resultados = () => {
     },
     {
       icon: Award,
-      value: "95%",
+      value: "98,7%",
       label: "Tasa de éxito",
       description: "Operaciones completadas exitosamente"
     },

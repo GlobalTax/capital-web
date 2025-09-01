@@ -35,7 +35,7 @@ const ResultadosContent = () => {
           Resultados
         </h1>
         <p className="text-xl text-black leading-relaxed mb-8 max-w-3xl font-light">
-          Nuestros <strong>resultados hablan por sí solos</strong>: más de <strong>€2.5B</strong> en transacciones completadas y una <strong>tasa de éxito del 95%</strong> en operaciones iniciadas.
+          Nuestros <strong>resultados hablan por sí solos</strong>: más de <strong>€2.5B</strong> en transacciones completadas y una <strong>tasa de éxito del 98,7%</strong> en operaciones iniciadas.
         </p>
         <div className="flex items-center gap-4 text-sm text-black">
           <span>Last updated</span>
@@ -58,7 +58,7 @@ const ResultadosContent = () => {
             <div className="text-black">Volumen de transacciones</div>
           </div>
           <div className="text-center bg-gray-50/30 p-8 rounded-lg">
-            <div className="text-4xl font-bold text-black mb-2">95%</div>
+            <div className="text-4xl font-bold text-black mb-2">98,7%</div>
             <div className="text-black">Tasa de éxito</div>
           </div>
           <div className="text-center bg-gray-50/30 p-8 rounded-lg">

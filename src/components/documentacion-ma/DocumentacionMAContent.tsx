@@ -198,7 +198,7 @@ const maContentData = [
       ],
       examples: [
         'Integración de sistemas ERP completada en 90 días con 0% pérdida de datos',
-        'Retención del 95% del management clave mediante plan de incentivos'
+        'Retención del 98,7% del management clave mediante plan de incentivos'
       ]
     }
   },

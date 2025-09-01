@@ -46,7 +46,7 @@ export const EnhancedHeroSection = () => {
                   <div className="text-sm text-black">Valor Gestionado</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-black">95%</div>
+                  <div className="text-3xl font-bold text-black">98,7%</div>
                   <div className="text-sm text-black">Satisfacción</div>
                 </div>
               </div>
@@ -110,7 +110,7 @@ export const EnhancedHeroSection = () => {
                 
                 {/* Footer Stats */}
                 <div className="mt-6 pt-4 border-t flex justify-between text-sm">
-                  <span className="text-black">95% Satisfacción</span>
+                  <span className="text-black">98,7% Satisfacción</span>
                   <span className="text-black">23 activos</span>
                 </div>
               </div>

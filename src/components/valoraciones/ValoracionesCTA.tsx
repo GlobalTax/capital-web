@@ -83,7 +83,7 @@ const ValoracionesCTA = () => {
                 <div className="text-gray-400 text-sm">Valor analizado</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">95%</div>
+                <div className="text-2xl font-bold text-white">98,7%</div>
                 <div className="text-gray-400 text-sm">Precisión</div>
               </div>
               <div className="text-center">

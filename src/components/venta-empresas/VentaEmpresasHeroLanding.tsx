@@ -86,7 +86,7 @@ const VentaEmpresasHeroLanding = () => {
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="h-4 w-4 text-success" />
-                  <span>95% tasa de éxito</span>
+                  <span>98,7% tasa de éxito</span>
                 </div>
               </div>
             </div>

@@ -87,7 +87,7 @@ const CaseStudies = () => {
           </div>
           
           <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <div className="text-3xl font-bold text-black mb-2">95%</div>
+            <div className="text-3xl font-bold text-black mb-2">98,7%</div>
             <div className="text-sm text-gray-600 font-medium">Tasa Éxito</div>
           </div>
         </div>

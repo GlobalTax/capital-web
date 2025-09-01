@@ -12,7 +12,7 @@ const ValoracionesFAQ = () => {
     },
     {
       pregunta: '¿Qué tan precisa es la valoración?',
-      respuesta: 'Nuestra herramienta tiene una precisión promedio del 95% comparada con valoraciones profesionales. Utilizamos las mismas metodologías que empleamos en nuestras valoraciones de pago, con una base de datos de más de 50,000 transacciones.'
+      respuesta: 'Nuestra herramienta tiene una precisión promedio del 98,7% comparada con valoraciones profesionales. Utilizamos las mismas metodologías que empleamos en nuestras valoraciones de pago, con una base de datos de más de 50,000 transacciones.'
     },
     {
       pregunta: '¿Qué datos necesito para la valoración?',

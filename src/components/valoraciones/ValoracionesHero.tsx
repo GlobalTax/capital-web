@@ -133,7 +133,7 @@ const ValoracionesHero = () => {
                   <div className="text-xs text-gray-500">Valor Total</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-black">95%</div>
+                  <div className="text-lg font-semibold text-black">98,7%</div>
                   <div className="text-xs text-gray-500">Precisión</div>
                 </div>
               </div>

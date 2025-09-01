@@ -198,7 +198,7 @@ const ValoracionesMethodology = () => {
                 <div className="text-slate-600">Valor total analizado</div>
               </div>
               <div>
-                <div className="text-2xl font-semibold text-slate-900">95%</div>
+                <div className="text-2xl font-semibold text-slate-900">98,7%</div>
                 <div className="text-slate-600">Precisión promedio</div>
               </div>
             </div>

@@ -74,7 +74,7 @@ const DueDiligenceHero = () => {
                       <Search className="text-blue-600" size={20} />
                       <span className="font-medium">Análisis Financiero</span>
                     </div>
-                    <div className="bg-green-500 text-white px-2 py-1 rounded text-xs">95%</div>
+                    <div className="bg-green-500 text-white px-2 py-1 rounded text-xs">98,7%</div>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

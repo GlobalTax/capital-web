@@ -24,8 +24,8 @@ const VentaEmpresasBenefitsLanding = () => {
     {
       icon: <Target className="h-8 w-8" />,
       title: "Resultados Comprobados",
-      description: "Más del 95% de nuestras operaciones se completan exitosamente.",
-      highlight: "95% tasa de éxito"
+      description: "Más del 98,7% de nuestras operaciones se completan exitosamente.",
+      highlight: "98,7% tasa de éxito"
     },
     {
       icon: <Users className="h-8 w-8" />,
@@ -92,7 +92,7 @@ const VentaEmpresasBenefitsLanding = () => {
               <div className="text-sm text-muted-foreground">Satisfacción clientes</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">95%</div>
+              <div className="text-3xl font-bold text-primary">98,7%</div>
               <div className="text-lg font-semibold text-foreground">Éxito</div>
               <div className="text-sm text-muted-foreground">Operaciones completadas</div>
             </div>

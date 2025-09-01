@@ -10,7 +10,7 @@ const Tecnologia = () => {
     { number: "85%", label: "Crecimiento anual promedio" },
     { number: "12x", label: "Múltiplo EBITDA promedio" },
     { number: "150+", label: "Transacciones completadas" },
-    { number: "95%", label: "Tasa de éxito en deals" }
+    { number: "98,7%", label: "Tasa de éxito en deals" }
   ];
 
   const expertise = [

@@ -120,7 +120,7 @@ const VentaEmpresasProcessLanding = () => {
               <div className="text-sm text-muted-foreground">Proceso promedio</div>
             </div>
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-primary">95%</div>
+              <div className="text-2xl font-bold text-primary">98,7%</div>
               <div className="text-lg font-semibold text-foreground">Éxito</div>
               <div className="text-sm text-muted-foreground">Operaciones completadas</div>
             </div>

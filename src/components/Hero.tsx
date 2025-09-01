@@ -59,7 +59,7 @@ const Hero = () => {
                   <div className="text-slate-600">Valor Transaccional</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-slate-900 mb-2">95%</div>
+                  <div className="text-3xl font-bold text-slate-900 mb-2">98,7%</div>
                   <div className="text-slate-600">Tasa de Éxito</div>
                 </div>
               </div>

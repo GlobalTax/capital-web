@@ -81,7 +81,7 @@ const VentaEmpresasHero = () => {
                     <div className="text-xs text-black">Valor Total</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-black">95%</div>
+                    <div className="text-2xl font-bold text-black">98,7%</div>
                     <div className="text-xs text-black">Éxito</div>
                   </div>
                 </div>

@@ -37,7 +37,7 @@ const SuccessStories = () => {
       results: [
         { label: "Nuevos mercados", value: "5 países" },
         { label: "Crecimiento facturación", value: "+65%" },
-        { label: "Retención talento", value: "95%" }
+        { label: "Retención talento", value: "98,7%" }
       ],
       highlight: "Expansión a 5 mercados",
       color: "bg-purple-500"
