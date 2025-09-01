@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
+import { TrackingInitializer } from '@/components/TrackingInitializer';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
@@ -405,6 +406,7 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <Router>
+              <TrackingInitializer />
               <LeadTrackingProvider enabled={true}>
                 <AppContent />
               </LeadTrackingProvider>
