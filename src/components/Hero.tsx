@@ -11,7 +11,7 @@ const Hero = () => {
     { text: "Máximo precio de venta garantizado" },
     { text: "Proceso 100% confidencial" },
     { text: "Experiencia en +200 operaciones" },
-    { text: "Equipo multidisciplinario de 60+ profesionales" }
+    { text: "Equipo multidisciplinar de 60+ profesionales" }
   ];
 
   return (
@@ -38,7 +38,7 @@ const Hero = () => {
               </h1>
               
               <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-                Maximizamos el valor de tu empresa con un equipo multidisciplinario 
+                Maximizamos el valor de tu empresa con un equipo multidisciplinar 
                 de más de 60 profesionales y resultados garantizados.
               </p>
 

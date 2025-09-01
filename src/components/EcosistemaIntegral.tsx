@@ -101,7 +101,7 @@ const EcosistemaIntegral = () => {
           </h2>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Contamos con un equipo multidisciplinario de más de <strong className="text-black">60 profesionales especializados</strong>: 
+            Contamos con un equipo multidisciplinar de más de <strong className="text-black">60 profesionales especializados</strong>: 
             analistas financieros, abogados, economistas y fiscalistas que trabajan de forma integrada 
             para ofrecer soluciones completas en todas tus necesidades empresariales de M&A.
           </p>
@@ -154,7 +154,7 @@ const EcosistemaIntegral = () => {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
-              Equipo Multidisciplinario
+              Equipo Multidisciplinar
             </h3>
             <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Nuestro equipo de más de 60 profesionales combina diferentes especialidades 
@@ -193,7 +193,7 @@ const EcosistemaIntegral = () => {
             Nuestro Compromiso
           </h3>
           <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Creamos valor a través de un <strong className="text-black">enfoque integral y multidisciplinario</strong>, 
+            Creamos valor a través de un <strong className="text-black">enfoque integral y multidisciplinar</strong>, 
             donde nuestro equipo de analistas financieros, abogados, economistas y fiscalistas trabajan 
             de forma coordinada para garantizar el éxito de cada operación y maximizar el valor para nuestros clientes.
           </p>
