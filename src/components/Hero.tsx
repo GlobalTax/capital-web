@@ -8,7 +8,7 @@ const Hero = () => {
   const { isOnline } = useNetworkStatus();
 
   const benefits = [
-    { text: "Máximo precio de venta garantizado" },
+    { text: "Máximo precio de venta" },
     { text: "Proceso 100% confidencial" },
     { text: "Experiencia en +200 operaciones" },
     { text: "Equipo multidisciplinar de 60+ profesionales" }
@@ -39,7 +39,7 @@ const Hero = () => {
               
               <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto lg:mx-0">
                 Maximizamos el valor de tu empresa con un equipo multidisciplinar 
-                de más de 60 profesionales y resultados garantizados.
+                de más de 60 profesionales y enfoque orientado a resultados.
               </p>
 
               {/* Benefits */}
@@ -99,7 +99,7 @@ const Hero = () => {
               <div className="absolute -bottom-3 -right-3 z-10">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium shadow-lg">
                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
-                  ✅ Resultados Garantizados
+                  ✅ Enfoque Profesional
                 </div>
               </div>
 

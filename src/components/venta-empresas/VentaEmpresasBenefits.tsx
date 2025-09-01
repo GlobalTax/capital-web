@@ -35,10 +35,10 @@ const VentaEmpresasBenefits = () => {
       stats: "Soporte 360°"
     },
     {
-      title: "Resultados Garantizados",
-      description: "Solo cobramos si vendemos tu empresa. Nuestros intereses están alineados.",
+      title: "Alineación de Intereses",
+      description: "Estructuramos nuestros honorarios para alinear intereses y maximizar el éxito.",
       icon: Target,
-      stats: "Solo éxito, sin retainer"
+      stats: "Honorarios variables"
     }
   ];
 
