@@ -93,11 +93,11 @@ export const useContactForm = () => {
             email: sanitizedData.email,
             country: sanitizedData.country,
             company_size: sanitizedData.companySize,
-            referral: sanitizedData.referral,
+            
             utm_source,
             utm_medium,
             utm_campaign,
-            referrer,
+            referral: referrer,
             status: 'new'
           }])
           .select()
