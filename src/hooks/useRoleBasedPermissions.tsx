@@ -379,7 +379,7 @@ export const useRoleBasedPermissions = () => {
       contentPerformance: userRole !== 'none',
       contentStudio: userRole !== 'none' && userRole !== 'viewer',
       trackingDashboard: userRole !== 'none',
-      trackingConfig: isAdminLevel,
+      trackingConfig: userRole !== 'none',
       
       // Configuration - Para super admins y admins
       adminUsers: userRole === 'super_admin' || userRole === 'admin',
