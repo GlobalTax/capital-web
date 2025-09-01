@@ -197,7 +197,7 @@ const handler = async (req: Request): Promise<Response> => {
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
     // Emails por defecto para pruebas + posible extra desde el frontend
-    const baseRecipients = ["samuel@capittal.es", "lluis@capittal.es", "marc@capittal.es", "pau@capittal.es"];
+    const baseRecipients = ["info@capittal.es"];
     const extraRecipient = recipientEmail?.trim();
     const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
 
@@ -349,7 +349,7 @@ if (pdfToAttach) {
         `Gracias por completar el formulario de valoración de ${companyData.companyName || ''}.\n` +
         (pdfUrlFinal ? `Descargar PDF: ${pdfUrlFinal}\n` : '') +
         (agendaUrl ? `Reserve una llamada: ${agendaUrl}\n` : '') +
-        `Para cualquier duda, responda a este correo o escriba a samuel@capittal.es\n` +
+        `Para cualquier duda, responda a este correo o escriba a info@capittal.es\n` +
         `\nUn saludo,\n${nombre} · ${cargo}\n${firma}`;
 
       const userHtml = `

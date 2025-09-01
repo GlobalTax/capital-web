@@ -75,7 +75,7 @@ const LandingCalculatorInner = () => {
             contactName: 'Prueba',
             companyName: 'Empresa Demo S.L.',
             cif: 'B12345678',
-            email: 'samuel@capittal.es',
+            email: 'info@capittal.es',
             phone: '600 000 000',
             industry: 'Tecnología',
             yearsOfOperation: 5,
@@ -109,7 +109,7 @@ const LandingCalculatorInner = () => {
 
           const { data, error } = await supabase.functions.invoke('send-valuation-email', {
             body: {
-              recipientEmail: 'samuel@capittal.es',
+              recipientEmail: 'info@capittal.es',
               companyData,
               result,
               pdfBase64,

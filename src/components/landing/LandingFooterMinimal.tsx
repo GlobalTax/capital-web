@@ -9,7 +9,7 @@ const LandingFooterMinimal: React.FC = () => {
           <p className="text-gray-700">© 2025 Capittal. Todos los derechos reservados.</p>
           <p className="text-gray-600">Sede Central: Carrer Ausias March número 36, 08010. Barcelona.</p>
           <p className="text-gray-600">Otras oficinas: Madrid - Girona - Lleida - Tarragona - Palma de Mallorca - Zaragoza - Valencia</p>
-          <p className="text-gray-600">Tel: <a href="tel:+34620273552" className="underline" aria-label="Llamar al +34 620 27 35 52">+34 620 27 35 52</a> -  <a href="tel:+34658799614" className="underline" aria-label="Llamar al +34 658 799 614">+34 658 799 614</a></p>
+          <p className="text-gray-600">Tel: <a href="tel:+34695717490" className="underline" aria-label="Llamar al +34 695 717 490">+34 695 717 490</a></p>
         </div>
       </div>
     </footer>

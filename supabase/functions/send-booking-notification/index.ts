@@ -59,10 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Recipients for internal notification
     const recipients = [
-      "samuel@capittal.es",
-      "lluis@capittal.es", 
-      "marc@capittal.es",
-      "pau@capittal.es"
+      "info@capittal.es"
     ];
 
     // Email content for internal team
