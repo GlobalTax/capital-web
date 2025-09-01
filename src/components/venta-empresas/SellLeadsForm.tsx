@@ -9,6 +9,7 @@ interface FormData {
   company: string;
   email: string;
   phone: string;
+  revenue_range: string;
   message: string;
 }
 
@@ -20,6 +21,7 @@ const SellLeadsForm = () => {
     company: '',
     email: '',
     phone: '',
+    revenue_range: '',
     message: ''
   });
 
@@ -40,6 +42,7 @@ const SellLeadsForm = () => {
         company: formData.company,
         email: formData.email,
         phone: formData.phone,
+        revenue_range: formData.revenue_range,
         message: formData.message,
         utm_source: urlParams.get('utm_source'),
         utm_medium: urlParams.get('utm_medium'),
@@ -90,6 +93,7 @@ const SellLeadsForm = () => {
         company: '',
         email: '',
         phone: '',
+        revenue_range: '',
         message: ''
       });
 
@@ -231,6 +235,25 @@ const SellLeadsForm = () => {
                       placeholder="+34 600 000 000"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Facturación Anual *
+                  </label>
+                  <select
+                    name="revenue_range"
+                    value={formData.revenue_range}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                  >
+                    <option value="">Selecciona el rango de facturación</option>
+                    <option value="<1M">Menos de 1M€</option>
+                    <option value="1-5M">Entre 1M€ y 5M€</option>
+                    <option value="5-10M">Entre 5M€ y 10M€</option>
+                    <option value=">10M">Más de 10M€</option>
+                  </select>
                 </div>
 
                 <div>
