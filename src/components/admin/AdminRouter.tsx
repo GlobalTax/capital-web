@@ -15,7 +15,7 @@ import TestimonialsManager from './TestimonialsManager';
 import CarouselTestimonialsManager from './CarouselTestimonialsManager';
 import CarouselLogosManager from './CarouselLogosManager';
 import TeamMembersManager from './TeamMembersManager';
-import OperationsManager from './OperationsManager';
+
 import MultiplesManager from './MultiplesManager';
 import StatisticsManager from './StatisticsManager';
 import SectorReportsGenerator from './SectorReportsGenerator';
@@ -89,7 +89,6 @@ const AdminRouter = () => {
       <Route path="/landing-pages" element={<LandingPagesPage />} />
       
       {/* Company Data */}
-      <Route path="/operations" element={<OperationsManager />} />
       <Route path="/multiples" element={<MultiplesManager />} />
       <Route path="/statistics" element={<StatisticsManager />} />
       

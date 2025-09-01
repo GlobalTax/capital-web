@@ -111,17 +111,6 @@ const SITE_PAGES: PageInfo[] = [
     conversionRate: 0,
     hasErrors: false,
     description: 'Redirige a /venta-empresas - Página temporal'
-  },
-  {
-    id: 'oportunidades',
-    name: 'Oportunidades',
-    route: '/oportunidades',
-    status: 'active',
-    lastModified: '2024-01-11',
-    visits: 1890,
-    conversionRate: 2.1,
-    hasErrors: false,
-    description: 'Listado de empresas en venta'
   }
 ];
 
