@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -11,13 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatSpanishPhone } from '@/utils/validationUtils';
-import { useContactForm } from '@/hooks/useContactForm';
-import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
+import { useGeneralContactForm } from '@/hooks/useGeneralContactForm';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { LoadingButton } from '@/components/LoadingButton';
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import { logger } from '@/utils/logger';
-import RateLimitFeedback from '@/components/ui/RateLimitFeedback';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -26,46 +22,19 @@ const Contact = () => {
     phone: '',
     email: '',
     country: '',
-    companySize: '',
-    referral: '',
+    annualRevenue: '',
+    howDidYouHear: '',
+    message: ''
   });
 
-  const [rateLimitState, setRateLimitState] = useState({
-    isRateLimited: false,
-    remainingRequests: 5
-  });
-
-  const { submitContactForm, isSubmitting, getRemainingRequests, isRateLimited, clearRateLimit } = useContactForm();
-  const { isOnline } = useNetworkStatus();
-  
-  const { trackFormSubmission, trackFormInteraction } = useSimpleFormTracking();
+  const { submitGeneralContactForm, isSubmitting } = useGeneralContactForm();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      logger.info('Contact form submission started', { formData: { ...formData, email: '[REDACTED]' } }, { context: 'form', component: 'Contact' });
-      
-      const result = await submitContactForm(formData);
-      
-      // Actualizar estado de rate limiting
-      setRateLimitState({
-        isRateLimited: result.isRateLimited || false,
-        remainingRequests: result.remainingRequests || getRemainingRequests()
-      });
-
-      if (result.isRateLimited) {
-        logger.warn('Contact form submission blocked by rate limit', undefined, { context: 'security', component: 'Contact' });
-        return;
-      }
-
-      if (result.error) {
-        logger.error('Contact form submission failed', result.error, { context: 'form', component: 'Contact' });
-        return;
-      }
-      
-      trackFormSubmission('contact', formData);
-      
+    const result = await submitGeneralContactForm(formData, 'contacto');
+    
+    if (result.success) {
       // Limpiar formulario después del envío exitoso
       setFormData({
         fullName: '',
@@ -73,26 +42,15 @@ const Contact = () => {
         phone: '',
         email: '',
         country: '',
-        companySize: '',
-        referral: '',
+        annualRevenue: '',
+        howDidYouHear: '',
+        message: ''
       });
-      
-      // Actualizar remaining requests después de envío exitoso
-      setRateLimitState(prev => ({
-        ...prev,
-        remainingRequests: getRemainingRequests()
-      }));
-      
-      logger.info('Contact form submitted successfully', undefined, { context: 'form', component: 'Contact' });
-    } catch (error) {
-      logger.error('Error in contact form submission', error as Error, { context: 'form', component: 'Contact' });
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    trackFormInteraction('contact', name);
     
     if (name === 'phone') {
       setFormData({
@@ -108,31 +66,9 @@ const Contact = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    trackFormInteraction('contact', name);
-    
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
-
-  const handleFieldBlur = (fieldName: string) => {
-    logger.debug('Field blur event', { fieldName }, { context: 'form', component: 'Contact' });
-  };
-
-  const handleRetry = () => {
-    // Actualizar estado para mostrar remaining requests actuales
-    setRateLimitState({
-      isRateLimited: isRateLimited(),
-      remainingRequests: getRemainingRequests()
-    });
-  };
-
-  const handleClearRateLimit = () => {
-    clearRateLimit();
-    setRateLimitState({
-      isRateLimited: false,
-      remainingRequests: 5
     });
   };
 
@@ -204,17 +140,6 @@ const Contact = () => {
             <form onSubmit={handleSubmit} className="z-10 space-y-6 w-full">
               <div className="w-full space-y-6 rounded-xl border border-gray-300 bg-white px-6 py-10 shadow-sm">
                 
-                {/* Rate Limit Feedback */}
-                <RateLimitFeedback
-                  isRateLimited={rateLimitState.isRateLimited}
-                  remainingRequests={rateLimitState.remainingRequests}
-                  maxRequests={5}
-                  onRetry={handleRetry}
-                  onClearLimit={handleClearRateLimit}
-                  title="Límite de envíos alcanzado"
-                  message="Has alcanzado el máximo de envíos permitidos para prevenir spam."
-                />
-
                 <div>
                   <div className="mb-2.5 text-sm font-medium text-black">
                     <label htmlFor="fullName">Nombre completo *</label>
@@ -224,7 +149,6 @@ const Contact = () => {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    onBlur={() => handleFieldBlur('fullName')}
                     placeholder="Tu nombre completo"
                     required
                     className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
@@ -240,7 +164,6 @@ const Contact = () => {
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    onBlur={() => handleFieldBlur('company')}
                     placeholder="Nombre de tu empresa"
                     required
                     className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
@@ -256,7 +179,6 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    onBlur={() => handleFieldBlur('phone')}
                     placeholder="600 000 000"
                     className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
                   />
@@ -272,7 +194,6 @@ const Contact = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    onBlur={() => handleFieldBlur('email')}
                     placeholder="tu@empresa.com"
                     required
                     className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
@@ -304,12 +225,12 @@ const Contact = () => {
                 
                 <div>
                   <div className="mb-2.5 text-sm font-medium text-black">
-                    <label htmlFor="companySize">Facturación anual</label>
+                    <label htmlFor="annualRevenue">Facturación anual</label>
                   </div>
-                  <Select onValueChange={(value) => handleSelectChange('companySize', value)}>
+                  <Select onValueChange={(value) => handleSelectChange('annualRevenue', value)}>
                     <SelectTrigger 
-                      id="companySize" 
-                      name="companySize"
+                      id="annualRevenue" 
+                      name="annualRevenue"
                       className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
                     >
                       <SelectValue placeholder="Selecciona rango" />
@@ -326,15 +247,15 @@ const Contact = () => {
                 
                 <div>
                   <div className="mb-2.5 text-sm font-medium text-black">
-                    <label htmlFor="referral">
+                    <label htmlFor="howDidYouHear">
                       ¿Cómo nos conociste?{" "}
                       <span className="text-gray-500">(Opcional)</span>
                     </label>
                   </div>
-                  <Select onValueChange={(value) => handleSelectChange('referral', value)}>
+                  <Select onValueChange={(value) => handleSelectChange('howDidYouHear', value)}>
                     <SelectTrigger 
-                      id="referral" 
-                      name="referral"
+                      id="howDidYouHear" 
+                      name="howDidYouHear"
                       className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
                     >
                       <SelectValue placeholder="Selecciona" />
@@ -348,12 +269,28 @@ const Contact = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <div className="mb-2.5 text-sm font-medium text-black">
+                    <label htmlFor="message">Mensaje *</label>
+                  </div>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder="Cuéntanos sobre tu proyecto o consulta..."
+                    required
+                    rows={4}
+                    className="bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/20"
+                  />
+                </div>
                 
                 <div className="flex w-full flex-col justify-end space-y-3 pt-2">
                   <LoadingButton
                     loading={isSubmitting}
                     loadingText="Enviando..."
-                    disabled={isSubmitting || !isOnline || rateLimitState.isRateLimited}
+                    disabled={isSubmitting}
                     type="submit"
                     className="w-full bg-black text-white hover:bg-gray-800 py-3"
                   >

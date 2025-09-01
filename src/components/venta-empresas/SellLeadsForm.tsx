@@ -33,7 +33,9 @@ const SellLeadsForm = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from('sell_leads').insert({
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      const { data, error } = await supabase.from('sell_leads').insert({
         full_name: formData.full_name,
         company: formData.company,
         email: formData.email,
@@ -41,21 +43,35 @@ const SellLeadsForm = () => {
         revenue_range: null,
         sector: null,
         message: formData.message,
-        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
-        utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
-        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
-        utm_term: new URLSearchParams(window.location.search).get('utm_term'),
-        utm_content: new URLSearchParams(window.location.search).get('utm_content'),
+        page_origin: 'venta-empresas',
+        utm_source: urlParams.get('utm_source'),
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign'),
+        utm_term: urlParams.get('utm_term'),
+        utm_content: urlParams.get('utm_content'),
         referrer: document.referrer,
         ip_address: null,
         user_agent: navigator.userAgent
-      });
+      }).select().single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error submitting sell leads form:', error);
+        
+        if (error.message?.includes('rate limit') || error.message?.includes('check_rate_limit_enhanced')) {
+          toast({
+            title: "Límite de envíos alcanzado",
+            description: "Has alcanzado el máximo de envíos permitidos. Por favor, espera antes de intentar de nuevo.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        throw error;
+      }
 
       toast({
         title: "¡Mensaje enviado con éxito!",
-        description: "Nos pondremos en contacto contigo en las próximas 24 horas.",
+        description: "Hemos recibido tu consulta sobre venta de empresa. Nos pondremos en contacto contigo en las próximas 24 horas.",
       });
 
       setFormData({

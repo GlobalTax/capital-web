@@ -1639,6 +1639,99 @@ export type Database = {
           },
         ]
       }
+      general_contact_leads: {
+        Row: {
+          annual_revenue: string | null
+          company: string
+          country: string | null
+          created_at: string
+          email: string
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          how_did_you_hear: string | null
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          ip_address: unknown | null
+          message: string
+          page_origin: string
+          phone: string | null
+          referrer: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          annual_revenue?: string | null
+          company: string
+          country?: string | null
+          created_at?: string
+          email: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          how_did_you_hear?: string | null
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message: string
+          page_origin: string
+          phone?: string | null
+          referrer?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          annual_revenue?: string | null
+          company?: string
+          country?: string | null
+          created_at?: string
+          email?: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          how_did_you_hear?: string | null
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string
+          page_origin?: string
+          phone?: string | null
+          referrer?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       hero_slides: {
         Row: {
           autoplay_duration: number | null
@@ -2686,9 +2779,10 @@ export type Database = {
           id: string
           ip_address: unknown | null
           message: string | null
+          page_origin: string | null
           phone: string | null
           referrer: string | null
-          revenue_range: string
+          revenue_range: string | null
           sector: string | null
           status: string
           updated_at: string
@@ -2711,9 +2805,10 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           message?: string | null
+          page_origin?: string | null
           phone?: string | null
           referrer?: string | null
-          revenue_range: string
+          revenue_range?: string | null
           sector?: string | null
           status?: string
           updated_at?: string
@@ -2736,9 +2831,10 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           message?: string | null
+          page_origin?: string | null
           phone?: string | null
           referrer?: string | null
-          revenue_range?: string
+          revenue_range?: string | null
           sector?: string | null
           status?: string
           updated_at?: string

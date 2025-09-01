@@ -15,7 +15,7 @@ const corsHeaders = {
 
 interface FormNotificationRequest {
   submissionId: string;
-  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar';
+  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead';
   email: string;
   fullName: string;
   formData: any;
@@ -57,6 +57,57 @@ const getEmailTemplate = (formType: string, data: any) => {
           </div>
           <div class="footer">
             <p>Capittal - Sistema de Gestión de Leads</p>
+          </div>
+        `
+      };
+
+    case 'general_contact':
+      return {
+        subject: `💼 Nuevo Lead de Contacto General - ${data.fullName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>💼 Nuevo Lead de Contacto General</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Nombre:</span> ${data.fullName}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Empresa:</span> ${data.company}</p>
+              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
+              <p><span class="label">País:</span> ${data.country || 'No especificado'}</p>
+              <p><span class="label">Facturación anual:</span> ${data.annual_revenue || 'No especificada'}</p>
+              <p><span class="label">¿Cómo nos conociste?:</span> ${data.how_did_you_hear || 'No especificado'}</p>
+              <p><span class="label">Página de origen:</span> ${data.page_origin || 'No especificada'}</p>
+              <p><span class="label">Mensaje:</span> ${data.message}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Sistema de Contacto</p>
+          </div>
+        `
+      };
+
+    case 'sell_lead':
+      return {
+        subject: `🏢 Nuevo Lead de Venta de Empresa - ${data.fullName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>🏢 Nueva Consulta de Venta de Empresa</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Nombre:</span> ${data.fullName}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Empresa:</span> ${data.company}</p>
+              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
+              <p><span class="label">Página de origen:</span> ${data.page_origin || 'venta-empresas'}</p>
+              <p><span class="label">Mensaje:</span> ${data.message || 'Sin mensaje específico'}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Venta de Empresas</p>
           </div>
         `
       };
@@ -157,7 +208,6 @@ const getEmailTemplate = (formType: string, data: any) => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -167,14 +217,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing form notification: ${formType} - ${email}`);
 
-    // Get email template
     const template = getEmailTemplate(formType, { 
       email, 
       fullName, 
       ...formData 
     });
 
-    // Send notification emails to admins
     const emailPromises = ADMIN_EMAILS.map(async (adminEmail) => {
       return resend.emails.send({
         from: "Capittal Forms <noreply@capittal.es>",
@@ -186,12 +234,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResults = await Promise.allSettled(emailPromises);
     
-    // Check if all emails were sent successfully
     const allSuccessful = emailResults.every(result => result.status === 'fulfilled');
     const firstSuccess = emailResults.find(result => result.status === 'fulfilled');
 
     if (allSuccessful) {
-      // Update the form_submissions record with email sent status
       await supabase
         .from('form_submissions')
         .update({
@@ -212,7 +258,7 @@ const handler = async (req: Request): Promise<Response> => {
         results: emailResults.map(r => r.status === 'fulfilled' ? r.value : r.reason)
       }), 
       {
-        status: allSuccessful ? 200 : 207, // 207 = Multi-Status for partial success
+        status: allSuccessful ? 200 : 207,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
