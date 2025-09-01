@@ -115,7 +115,7 @@ const SellLeadsForm = () => {
         has_message: !!payload.message.trim()
       });
       
-      const { data, error } = await supabase.from('sell_leads').insert(payload).select().maybeSingle();
+      const { data, error } = await supabase.from('sell_leads').insert(payload);
 
       if (error) {
         console.error('Error submitting sell leads form:', error);
