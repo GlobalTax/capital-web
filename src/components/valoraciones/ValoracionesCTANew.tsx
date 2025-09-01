@@ -83,7 +83,7 @@ const ValoracionesCTANew = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold">Consulta Inicial Gratuita</h4>
-                  <p className="text-gray-600 text-sm">Evaluación preliminar sin compromiso</p>
+                  <p className="text-gray-600 text-sm">Valoración preliminar sin compromiso</p>
                 </div>
               </div>
               

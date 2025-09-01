@@ -18,7 +18,7 @@ const Healthcare = () => {
           content: 'Experiencia en normativas sanitarias, regulación farmacéutica y compliance en el sector salud.'
         },
         {
-          title: 'Evaluación Clínica',
+          title: 'Valoración Clínica',
           content: 'Análisis de capacidades médicas, tecnología sanitaria y protocolos de calidad asistencial.'
         }
       ]
@@ -33,7 +33,7 @@ const Healthcare = () => {
         },
         {
           title: 'Farmacéutica y Biotecnología',
-          content: 'Análisis de pipelines de desarrollo, valoración de patentes y evaluación de riesgos regulatorios.'
+          content: 'Análisis de pipelines de desarrollo, valoración de patentes y valoración de riesgos regulatorios.'
         }
       ]
     }
@@ -44,25 +44,25 @@ const Healthcare = () => {
       icon: Hospital,
       title: 'Centros Sanitarios',
       description: 'Experiencia en valoración de hospitales, clínicas y centros médicos especializados.',
-      features: ['Análisis de licencias sanitarias', 'Evaluación de equipamiento médico', 'Valoración de carteras de pacientes']
+      features: ['Análisis de licencias sanitarias', 'Valoración de equipamiento médico', 'Valoración de carteras de pacientes']
     },
     {
       icon: Heart,
       title: 'Servicios Especializados',
       description: 'Conocimiento en centros de especialidades médicas y servicios de alta complejidad.',
-      features: ['Análisis de especialidades médicas', 'Evaluación de tecnología avanzada', 'Estudio de mercados específicos']
+      features: ['Análisis de especialidades médicas', 'Valoración de tecnología avanzada', 'Estudio de mercados específicos']
     },
     {
       icon: Pill,
       title: 'Farmacéutica',
       description: 'Especialización en empresas farmacéuticas, desde distribución hasta desarrollo de medicamentos.',
-      features: ['Valoración de pipelines', 'Análisis de patentes', 'Evaluación regulatoria']
+      features: ['Valoración de pipelines', 'Análisis de patentes', 'Valoración regulatoria']
     },
     {
       icon: Stethoscope,
       title: 'Tecnología Sanitaria',
       description: 'Experiencia en empresas de tecnología médica y dispositivos sanitarios.',
-      features: ['Análisis de innovación médica', 'Evaluación de certificaciones', 'Estudio de mercados regulados']
+      features: ['Análisis de innovación médica', 'Valoración de certificaciones', 'Estudio de mercados regulados']
     }
   ];
 

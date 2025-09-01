@@ -106,7 +106,7 @@ const SellLeadsForm = () => {
                 <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                 <div>
                   <h3 className="font-semibold text-foreground">Análisis Personalizado</h3>
-                  <p className="text-muted-foreground text-sm">Evaluación detallada basada en tu sector y situación específica</p>
+                  <p className="text-muted-foreground text-sm">Valoración detallada basada en tu sector y situación específica</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">

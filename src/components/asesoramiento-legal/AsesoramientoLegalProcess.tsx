@@ -7,7 +7,7 @@ const AsesoramientoLegalProcess = () => {
   const processSteps = [
     {
       icon: FileText,
-      title: "Evaluación Inicial y Análisis de Riesgos",
+      title: "Valoración Inicial y Análisis de Riesgos",
       description: "Revisión completa de la estructura legal, contratos principales y identificación de contingencias potenciales.",
       duration: "1-2 semanas"
     },

@@ -15,7 +15,7 @@ const Inmobiliario = () => {
     {
       type: 'dashboard' as const,
       title: 'Análisis de Mercado',
-      content: 'Valoración avanzada de portfolios inmobiliarios, análisis de ubicaciones y evaluación de ciclos de mercado.',
+      content: 'Valoración avanzada de portfolios inmobiliarios, análisis de ubicaciones y valoración de ciclos de mercado.',
     },
     {
       type: 'testimonial' as const,

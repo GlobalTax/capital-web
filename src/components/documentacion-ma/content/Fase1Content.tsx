@@ -61,7 +61,7 @@ const Fase1Content = () => {
 
         <ul className="list-disc list-inside mb-8 space-y-2 text-black ml-4">
           <li><strong>Análisis de P&L</strong>: Evolución de ingresos, márgenes y estructura de costos</li>
-          <li><strong>Balance y Cash Flow</strong>: Evaluación de la solidez financiera y generación de caja</li>
+          <li><strong>Balance y Cash Flow</strong>: Valoración de la solidez financiera y generación de caja</li>
           <li><strong>Ratios clave</strong>: Análisis de métricas de rentabilidad, eficiencia y solvencia</li>
           <li><strong>Proyecciones</strong>: Desarrollo de modelos financieros prospectivos</li>
         </ul>
@@ -89,7 +89,7 @@ const Fase1Content = () => {
             </div>
             <div>
               <h6 className="font-medium text-black mb-2">Barreras de Entrada</h6>
-              <p className="text-black text-sm">Evaluación de la defendibilidad de la posición competitiva.</p>
+              <p className="text-black text-sm">Valoración de la defendibilidad de la posición competitiva.</p>
             </div>
           </div>
         </div>

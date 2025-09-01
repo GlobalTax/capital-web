@@ -77,7 +77,7 @@ const EcosistemaIntegral = () => {
     },
     {
       title: "Economistas",
-      description: "Expertos en análisis sectorial y evaluación macroeconómica",
+      description: "Expertos en análisis sectorial y valoración macroeconómica",
       icon: TrendingUp
     },
     {

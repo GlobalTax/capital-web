@@ -22,7 +22,7 @@ const timelineSteps = [
   },
   {
     id: 3,
-    title: "Evaluación Técnica",
+    title: "Valoración Técnica",
     description: "Caso práctico de valoración o análisis financiero para evaluar tus competencias técnicas en M&A y finanzas corporativas.",
     duration: "2-3 horas",
     icon: TrendingUp,

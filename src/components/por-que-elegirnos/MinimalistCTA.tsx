@@ -21,7 +21,7 @@ const MinimalistCTA = () => {
           </h2>
           
           <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
-            Solicita una evaluación gratuita y descubre el verdadero potencial de tu negocio.
+            Solicita una valoración gratuita y descubre el verdadero potencial de tu negocio.
           </p>
 
           <div className="flex justify-center">

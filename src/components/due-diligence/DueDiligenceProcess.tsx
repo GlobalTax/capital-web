@@ -20,7 +20,7 @@ const DueDiligenceProcess = () => {
     {
       icon: <BarChart3 size={32} />,
       title: "Análisis e Interpretación",
-      description: "Evaluación de hallazgos, identificación de riesgos y oportunidades, y análisis de impacto en la valoración.",
+      description: "Valoración de hallazgos, identificación de riesgos y oportunidades, y análisis de impacto en la valoración.",
       duration: "1-2 semanas"
     },
     {

@@ -14,7 +14,7 @@ const Industrial = () => {
     {
       type: 'dashboard' as const,
       title: 'Análisis Técnico',
-      content: 'Evaluación detallada de eficiencia operativa, cadenas de suministro y análisis de activos industriales.',
+      content: 'Valoración detallada de eficiencia operativa, cadenas de suministro y análisis de activos industriales.',
     },
     {
       type: 'testimonial' as const,

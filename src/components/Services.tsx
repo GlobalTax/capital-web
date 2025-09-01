@@ -30,7 +30,7 @@ const Services = () => {
     },
     {
       title: 'Valoraciones',
-      description: 'Evaluaciones precisas con metodologías probadas y análisis exhaustivo.',
+      description: 'Valoraciones precisas con metodologías probadas y análisis exhaustivo.',
       features: ['Múltiples metodologías', 'Análisis comparables', 'Informe detallado']
     },
   ];

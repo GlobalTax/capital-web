@@ -5,7 +5,7 @@ const VentaEmpresasValuationFactors = () => {
   const factors = [
     {
       title: 'Análisis Financiero',
-      description: 'Evaluación profunda de rentabilidad, flujo de caja y proyecciones de crecimiento',
+      description: 'Valoración profunda de rentabilidad, flujo de caja y proyecciones de crecimiento',
       percentage: '35%',
       items: ['EBITDA y márgenes', 'Crecimiento histórico', 'Predictibilidad ingresos', 'Estructura de costes']
     },
@@ -17,7 +17,7 @@ const VentaEmpresasValuationFactors = () => {
     },
     {
       title: 'Gestión y Equipos',
-      description: 'Evaluación del equipo directivo y la estructura organizacional',
+      description: 'Valoración del equipo directivo y la estructura organizacional',
       percentage: '20%',
       items: ['Calidad management', 'Dependencia fundador', 'Talento clave', 'Cultura empresarial']
     },

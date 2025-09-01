@@ -9,8 +9,8 @@ const Metodologia = () => {
     {
       icon: Search,
       title: "Análisis Estratégico",
-      description: "Evaluación completa del negocio y posicionamiento en el mercado",
-      details: ["Análisis financiero detallado", "Evaluación de la competencia", "Identificación de ventajas competitivas"]
+      description: "Valoración completa del negocio y posicionamiento en el mercado",
+      details: ["Análisis financiero detallado", "Valoración de la competencia", "Identificación de ventajas competitivas"]
     },
     {
       icon: FileText,

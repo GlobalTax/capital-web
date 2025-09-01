@@ -81,7 +81,7 @@ const AcquisitionCTA = () => {
                 <ul className="space-y-2 text-xs text-slate-600">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-3 h-3 text-green-600" />
-                    Evaluación de oportunidades estratégicas
+                    Valoración de oportunidades estratégicas
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-3 h-3 text-green-600" />

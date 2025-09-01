@@ -29,11 +29,11 @@ const FinancialServices = () => {
       subsections: [
         {
           title: 'Banca Comercial',
-          content: 'Valoración basada en múltiplos P/B, análisis de ROE y evaluación de carteras crediticias.'
+          content: 'Valoración basada en múltiplos P/B, análisis de ROE y valoración de carteras crediticias.'
         },
         {
           title: 'Seguros y Reaseguros',
-          content: 'Análisis actuarial, evaluación de reservas técnicas y valoración embedded value.'
+          content: 'Análisis actuarial, valoración de reservas técnicas y valoración embedded value.'
         },
         {
           title: 'Fintech y Servicios Digitales',
@@ -54,13 +54,13 @@ const FinancialServices = () => {
       icon: TrendingUp,
       title: 'Asset Management',
       description: 'Especialización en gestoras de fondos, incluyendo valoración de AUM y análisis de fee structures.',
-      features: ['Valoración de AUM', 'Análisis de performance fees', 'Evaluación de capacidades de distribución']
+      features: ['Valoración de AUM', 'Análisis de performance fees', 'Valoración de capacidades de distribución']
     },
     {
       icon: Shield,
       title: 'Seguros',
       description: 'Conocimiento especializado en compañías de seguros de vida, no vida y reaseguros.',
-      features: ['Análisis actuarial', 'Evaluación de reservas', 'Valoración embedded value']
+      features: ['Análisis actuarial', 'Valoración de reservas', 'Valoración embedded value']
     },
     {
       icon: Users,

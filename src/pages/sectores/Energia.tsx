@@ -17,7 +17,7 @@ const Energia = () => {
     {
       type: 'dashboard' as const,
       title: 'Análisis Energético',
-      content: 'Evaluación técnica de proyectos renovables, análisis de contratos PPA y valoración de tecnologías emergentes.',
+      content: 'Valoración técnica de proyectos renovables, análisis de contratos PPA y valoración de tecnologías emergentes.',
     },
     {
       type: 'testimonial' as const,

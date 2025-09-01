@@ -96,7 +96,7 @@ const DueDiligenceHero = () => {
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Shield className="text-red-600" size={20} />
-                      <span className="font-medium">Evaluación de Riesgos</span>
+                      <span className="font-medium">Valoración de Riesgos</span>
                     </div>
                     <div className="bg-gray-400 text-white px-2 py-1 rounded text-xs">45%</div>
                   </div>

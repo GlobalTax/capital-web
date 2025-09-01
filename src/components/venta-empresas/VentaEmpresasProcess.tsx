@@ -5,7 +5,7 @@ const VentaEmpresasProcess = () => {
   const steps = [
     {
       title: 'Análisis Inicial',
-      description: 'Evaluación completa de tu empresa, incluyendo situación financiera, posición en el mercado y potencial de crecimiento.',
+      description: 'Valoración completa de tu empresa, incluyendo situación financiera, posición en el mercado y potencial de crecimiento.',
       duration: '2 semanas'
     },
     {

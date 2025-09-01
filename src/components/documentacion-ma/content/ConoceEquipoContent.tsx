@@ -158,7 +158,7 @@ const ConoceEquipoContent = () => {
             <p className="text-slate-600 text-sm mb-4">25+ operaciones en manufacturing, logística y supply chain</p>
             <div className="space-y-2 text-sm text-slate-600">
               <div>• Análisis de procesos productivos</div>
-              <div>• Evaluación de activos industriales</div>
+              <div>• Valoración de activos industriales</div>
               <div>• Optimización de cadenas de suministro</div>
             </div>
           </div>

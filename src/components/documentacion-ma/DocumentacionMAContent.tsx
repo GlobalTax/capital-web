@@ -18,7 +18,7 @@ const maContentData = [
     content: {
       overview: 'La fase de preparación es crucial para determinar si una adquisición es la estrategia correcta para alcanzar los objetivos empresariales. Incluye el análisis de alternativas, la definición de criterios y la preparación del equipo.',
       keyPoints: [
-        'Evaluación de crecimiento orgánico vs inorgánico según objetivos estratégicos',
+        'Valoración de crecimiento orgánico vs inorgánico según objetivos estratégicos',
         'Identificación del perfil de comprador: estratégico, financiero o industrial',
         'Definición de criterios de inversión: sector, tamaño, geografía, rentabilidad',
         'Preparación del equipo interno y selección de asesores externos',
@@ -130,7 +130,7 @@ const maContentData = [
         'Due diligence financiera: calidad de earnings, working capital, deuda',
         'Análisis comercial: mercado, competencia, posicionamiento, clientes',
         'Revisión legal: contratos, litigios, compliance, propiedad intelectual',
-        'Evaluación operacional: procesos, sistemas, capacidades, sinergias',
+        'Valoración operacional: procesos, sistemas, capacidades, sinergias',
         'Due diligence fiscal: exposiciones, optimizaciones, estructuras',
         'Análisis de RRHH: organización, talento clave, cultura, retención'
       ],

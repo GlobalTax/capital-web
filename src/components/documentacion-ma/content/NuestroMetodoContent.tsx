@@ -98,7 +98,7 @@ const NuestroMetodoContent = () => {
               <div className="w-2 h-2 bg-slate-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
               <div>
                 <strong className="text-slate-900">Análisis de Mercado</strong>
-                <p className="text-slate-600 text-sm">Evaluación del posicionamiento competitivo y tendencias sectoriales</p>
+                <p className="text-slate-600 text-sm">Valoración del posicionamiento competitivo y tendencias sectoriales</p>
               </div>
             </div>
             <div className="flex items-start">
