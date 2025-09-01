@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const VentaEmpresasHero = () => {
+  const navigate = useNavigate();
   const benefits = [
     { text: "Máximo precio de venta" },
     { text: "Proceso 100% confidencial" },
@@ -46,12 +48,7 @@ const VentaEmpresasHero = () => {
                 text="Valorar Empresa" 
                 variant="primary" 
                 size="lg"
-                onClick={() => {
-                  const ctaElement = document.getElementById('contacto');
-                  if (ctaElement) {
-                    ctaElement.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
+                onClick={() => navigate('/lp/calculadora')}
               />
               <InteractiveHoverButton 
                 text="Contactar Ahora" 
