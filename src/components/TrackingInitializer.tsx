@@ -14,10 +14,11 @@ export const TrackingInitializer = () => {
         const config = await TrackingConfigService.loadConfiguration();
         
         // Only initialize if we have at least one tracking service configured
-        if (config.googleAnalyticsId || config.facebookPixelId || config.linkedInInsightTag || config.hotjarId) {
+        if (config.googleAnalyticsId || config.googleTagManagerId || config.facebookPixelId || config.linkedInInsightTag || config.hotjarId) {
           
           console.log('Initializing tracking services', {
             hasGA: !!config.googleAnalyticsId,
+            hasGTM: !!config.googleTagManagerId,
             hasFacebookPixel: !!config.facebookPixelId,
             hasLinkedIn: !!config.linkedInInsightTag,
             hasHotjar: !!config.hotjarId,
@@ -35,6 +36,11 @@ export const TrackingInitializer = () => {
             enableAlerting: true,
             enableAttribution: true,
           });
+
+          // Initialize Google Tag Manager if configured
+          if (config.googleTagManagerId) {
+            initGoogleTagManager(config.googleTagManagerId);
+          }
 
           // Initialize Hotjar if configured
           if (config.hotjarId && config.enableHeatmaps) {
@@ -94,6 +100,41 @@ const initHotjar = (siteId: string) => {
     console.log('Hotjar initialized', { siteId });
   } catch (error) {
     console.error('Error initializing Hotjar:', error);
+  }
+};
+
+/**
+ * Initialize Google Tag Manager
+ */
+const initGoogleTagManager = (gtmId: string) => {
+  try {
+    // Avoid duplicate initialization
+    if ((window as any).dataLayer) {
+      console.log('Google Tag Manager already initialized');
+      return;
+    }
+
+    // Initialize dataLayer
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    
+    // GTM script for head
+    const gtmScript = document.createElement('script');
+    gtmScript.innerHTML = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','${gtmId}');`;
+    document.head.appendChild(gtmScript);
+
+    // GTM noscript for body
+    const gtmNoscript = document.createElement('noscript');
+    gtmNoscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
+    document.body.insertBefore(gtmNoscript, document.body.firstChild);
+
+    console.log('Google Tag Manager initialized', { gtmId });
+  } catch (error) {
+    console.error('Error initializing Google Tag Manager:', error);
   }
 };
 

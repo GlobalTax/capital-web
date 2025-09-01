@@ -59,6 +59,19 @@ const TrackingConfig = () => {
               Formato: G-XXXXXXXXXX (encontrarlo en Analytics → Admin → Flujos de datos)
             </p>
           </div>
+
+          <div>
+            <Label htmlFor="gtm-id">ID de Google Tag Manager</Label>
+            <Input
+              id="gtm-id"
+              placeholder="GTM-XXXXXXXX"
+              value={config.googleTagManagerId || ''}
+              onChange={(e) => handleConfigChange('googleTagManagerId', e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground mt-1">
+              Formato: GTM-XXXXXXXX (encontrarlo en Tag Manager → Workspace → Container ID)
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -211,10 +224,11 @@ const TrackingConfig = () => {
               <h4 className="font-medium">Servicios Activos:</h4>
               <ul className="text-sm space-y-1">
                 {config.googleAnalyticsId && <li>✅ Google Analytics</li>}
+                {config.googleTagManagerId && <li>✅ Google Tag Manager</li>}
                 {config.facebookPixelId && <li>✅ Facebook Pixel</li>}
                 {config.linkedInInsightTag && <li>✅ LinkedIn Insight Tag</li>}
                 {config.hotjarId && <li>✅ Hotjar</li>}
-                {!config.googleAnalyticsId && !config.facebookPixelId && !config.linkedInInsightTag && !config.hotjarId && (
+                {!config.googleAnalyticsId && !config.googleTagManagerId && !config.facebookPixelId && !config.linkedInInsightTag && !config.hotjarId && (
                   <li className="text-muted-foreground">No hay servicios configurados</li>
                 )}
               </ul>

@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface TrackingConfiguration {
   googleAnalyticsId?: string;
+  googleTagManagerId?: string;
   facebookPixelId?: string;
   linkedInInsightTag?: string;
   hotjarId?: string;
@@ -61,6 +62,11 @@ export class TrackingConfigService {
     // Validate Google Analytics ID format
     if (config.googleAnalyticsId && !/^G-[A-Z0-9]{10}$/.test(config.googleAnalyticsId)) {
       errors.push('Google Analytics ID debe tener el formato G-XXXXXXXXXX');
+    }
+
+    // Validate Google Tag Manager ID format
+    if (config.googleTagManagerId && !/^GTM-[A-Z0-9]+$/.test(config.googleTagManagerId)) {
+      errors.push('Google Tag Manager ID debe tener el formato GTM-XXXXXXXX');
     }
     
     // Validate Facebook Pixel ID format
