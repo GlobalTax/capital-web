@@ -39,11 +39,12 @@ export class TrackingConfigService {
         return JSON.parse(stored);
       }
       
-      // Return default configuration
+      // Return default configuration with Meta Pixel ID
       return {
         enableHeatmaps: true,
         enableSessionRecording: false,
         enableLeadTracking: true,
+        facebookPixelId: '1474959750187377',
       };
     } catch (error) {
       console.error('Error loading tracking configuration:', error);
@@ -51,6 +52,7 @@ export class TrackingConfigService {
         enableHeatmaps: true,
         enableSessionRecording: false,
         enableLeadTracking: true,
+        facebookPixelId: '1474959750187377',
       };
     }
   }
