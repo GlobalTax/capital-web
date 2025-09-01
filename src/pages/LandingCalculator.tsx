@@ -64,6 +64,30 @@ const LandingCalculatorInner = () => {
       document.head.appendChild(hreflangLink);
     });
 
+    // Meta Pixel Code - Solo si no existe ya
+    if (!(window as any).fbq) {
+      // Crear el script del pixel
+      const pixelScript = document.createElement('script');
+      pixelScript.innerHTML = `
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1416041772946643');
+        fbq('track', 'PageView');
+      `;
+      document.head.appendChild(pixelScript);
+
+      // Crear el noscript del pixel
+      const noscriptElement = document.createElement('noscript');
+      noscriptElement.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1416041772946643&ev=PageView&noscript=1" />';
+      document.head.appendChild(noscriptElement);
+    }
+
   }, [t]);
 
   // Disparador temporal de prueba por query param ?sendTest=1
