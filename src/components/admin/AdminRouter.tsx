@@ -39,6 +39,7 @@ import TrackingDashboardPage from '@/pages/admin/TrackingDashboardPage';
 import TrackingConfigPage from '@/pages/admin/TrackingConfigPage';
 import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
+import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -72,6 +73,7 @@ const AdminRouter = () => {
       <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsPage />} />
+      <Route path="/contact-leads" element={<ContactLeadsAdminPage />} />
       <Route path="/form-submissions" element={<FormSubmissionsManager />} />
       
       {/* Content Management */}
