@@ -23,28 +23,28 @@ const VentaEmpresasProcessLanding = () => {
       icon: <FileText className="h-8 w-8" />,
       title: "Preparación y Optimización",
       description: "Preparamos tu empresa para maximizar su atractivo y valor ante potenciales compradores.",
-      duration: "2-4 semanas"
+      duration: "3-4 semanas"
     },
     {
       number: "3",
       icon: <Users className="h-8 w-8" />,
       title: "Identificación de Compradores",
       description: "Búsqueda y calificación de compradores estratégicos que valoren al máximo tu empresa.",
-      duration: "4-8 semanas"
+      duration: "6-10 semanas"
     },
     {
       number: "4",
       icon: <Handshake className="h-8 w-8" />,
       title: "Negociación y Estructuración",
       description: "Gestión profesional de ofertas y negociación de términos óptimos para la transacción.",
-      duration: "2-4 semanas"
+      duration: "4-8 semanas"
     },
     {
       number: "5",
       icon: <CheckCircle className="h-8 w-8" />,
       title: "Cierre de Operación",
       description: "Finalización de due diligence y firma de acuerdos definitivos para el cierre exitoso.",
-      duration: "2-3 semanas"
+      duration: "6-12 semanas"
     }
   ];
 
@@ -115,7 +115,7 @@ const VentaEmpresasProcessLanding = () => {
           
           <div className="grid md:grid-cols-4 gap-6 mb-8">
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-primary">6-9</div>
+              <div className="text-2xl font-bold text-primary">6-12</div>
               <div className="text-lg font-semibold text-foreground">Meses</div>
               <div className="text-sm text-muted-foreground">Proceso promedio</div>
             </div>

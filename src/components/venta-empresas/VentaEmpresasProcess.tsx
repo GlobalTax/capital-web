@@ -6,32 +6,32 @@ const VentaEmpresasProcess = () => {
     {
       title: 'Análisis Inicial',
       description: 'Valoración completa de tu empresa, incluyendo situación financiera, posición en el mercado y potencial de crecimiento.',
-      duration: '2 semanas'
+      duration: '2-3 semanas'
     },
     {
       title: 'Preparación de Documentación',
       description: 'Creación del memorando de venta, análisis financiero detallado y documentación legal necesaria.',
-      duration: '2-3 semanas'
+      duration: '3-4 semanas'
     },
     {
       title: 'Identificación de Compradores',
       description: 'Búsqueda activa de compradores estratégicos e inversores financieros que encajen con tu empresa.',
-      duration: '3-4 semanas'
+      duration: '6-8 semanas'
     },
     {
       title: 'Marketing y Presentación',
       description: 'Presentación profesional a compradores cualificados manteniendo la confidencialidad del proceso.',
-      duration: '4-6 semanas'
+      duration: '8-12 semanas'
     },
     {
       title: 'Negociación',
       description: 'Gestión de ofertas, negociación de términos y condiciones para maximizar el valor de la transacción.',
-      duration: '2-4 semanas'
+      duration: '4-6 semanas'
     },
     {
       title: 'Cierre',
       description: 'Acompañamiento en el proceso de due diligence y cierre final de la operación.',
-      duration: '4-8 semanas'
+      duration: '6-12 semanas'
     }
   ];
 
@@ -97,7 +97,7 @@ const VentaEmpresasProcess = () => {
               <div className="text-sm text-black">Múltiplo promedio</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black mb-2">300</div>
+              <div className="text-2xl font-bold text-black mb-2">270</div>
               <div className="text-sm text-black">Días promedio</div>
             </div>
           </div>

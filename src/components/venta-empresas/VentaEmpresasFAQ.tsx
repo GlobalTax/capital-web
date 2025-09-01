@@ -8,7 +8,7 @@ const VentaEmpresasFAQ = () => {
   const faqs = [
     {
       question: '¿Cuánto tiempo tarda el proceso de venta?',
-      answer: 'El proceso completo suele durar entre 4 y 6 meses, dependiendo de la complejidad de la empresa, las condiciones del mercado y la disponibilidad de compradores cualificados. Empresas más pequeñas pueden venderse en 3-4 meses, mientras que operaciones más complejas pueden requerir 6-8 meses.'
+      answer: 'El proceso completo suele durar entre 6 y 12 meses, dependiendo de la complejidad de la empresa, las condiciones del mercado y la disponibilidad de compradores cualificados. Empresas más pequeñas pueden venderse en 6-8 meses, mientras que operaciones más complejas pueden requerir 10-12 meses.'
     },
     {
       question: '¿Cuáles son vuestros honorarios?',

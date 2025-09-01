@@ -25,8 +25,8 @@ const VentaEmpresasFAQLanding = () => {
     },
     {
       question: "¿Cuánto tiempo tarda todo el proceso de venta?",
-      answer: "El proceso completo dura entre 6 y 9 meses. La valoración la tienes en 48h, y desde ahí trabajamos sin descanso para conseguir el mejor comprador al mejor precio en el menor tiempo posible.",
-      highlight: "6-9 meses"
+      answer: "El proceso completo dura entre 6 y 12 meses. La valoración la tienes en 48h, y desde ahí trabajamos sin descanso para conseguir el mejor comprador al mejor precio en el menor tiempo posible.",
+      highlight: "6-12 meses"
     },
     {
       question: "¿Mi información será completamente confidencial?",
