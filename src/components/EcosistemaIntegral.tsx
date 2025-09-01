@@ -6,7 +6,7 @@ const EcosistemaIntegral = () => {
   const { count: professionalsCount, ref: professionalsRef } = useCountAnimation(60, 2000, '+');
   const { count: operationsCount, ref: operationsRef } = useCountAnimation(200, 2000, '+');
   const { count: yearsCount, ref: yearsRef } = useCountAnimation(15, 2000, '+');
-  const { count: successCount, ref: successRef } = useCountAnimation(95, 2000, '%');
+  const { count: successCount, ref: successRef } = useCountAnimation(98.7, 2000, '%');
 
   const statistics = [
     {
