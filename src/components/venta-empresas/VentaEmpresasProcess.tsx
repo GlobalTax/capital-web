@@ -89,7 +89,7 @@ const VentaEmpresasProcess = () => {
           </p>
           <div className="grid grid-cols-3 gap-8">
             <div>
-              <div className="text-2xl font-bold text-black mb-2">85%</div>
+              <div className="text-2xl font-bold text-black mb-2">98,7%</div>
               <div className="text-sm text-black">Tasa de éxito</div>
             </div>
             <div>
