@@ -30,20 +30,70 @@ const SellLeadsForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Enhanced client-side validation
+  const validateForm = (): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    // Check required fields and lengths according to RLS policies
+    if (!formData.full_name?.trim()) {
+      errors.push('El nombre completo es obligatorio');
+    } else if (formData.full_name.trim().length < 2 || formData.full_name.trim().length > 100) {
+      errors.push('El nombre debe tener entre 2 y 100 caracteres');
+    }
+    
+    if (!formData.company?.trim()) {
+      errors.push('El nombre de la empresa es obligatorio');
+    } else if (formData.company.trim().length < 2 || formData.company.trim().length > 100) {
+      errors.push('El nombre de la empresa debe tener entre 2 y 100 caracteres');
+    }
+    
+    if (!formData.email?.trim()) {
+      errors.push('El email es obligatorio');
+    } else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(formData.email)) {
+      errors.push('El email no tiene un formato válido');
+    } else if (formData.email.length > 254) {
+      errors.push('El email es demasiado largo (máximo 254 caracteres)');
+    }
+    
+    if (!formData.revenue_range) {
+      errors.push('La facturación anual es obligatoria');
+    } else if (!['<1M', '1-5M', '5-10M', '>10M'].includes(formData.revenue_range)) {
+      errors.push('La facturación anual debe ser una de las opciones disponibles');
+    }
+    
+    if (!formData.message?.trim()) {
+      errors.push('El mensaje es obligatorio');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Enhanced client-side validation
+      const validation = validateForm();
+      if (!validation.isValid) {
+        toast({
+          title: "Error en el formulario",
+          description: validation.errors.join(', '),
+          variant: "destructive",
+        });
+        return;
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       
-      const { data, error } = await supabase.from('sell_leads').insert({
-        full_name: formData.full_name,
-        company: formData.company,
-        email: formData.email,
-        phone: formData.phone,
+      // Prepare payload for logging and submission
+      const payload = {
+        full_name: formData.full_name.trim(),
+        company: formData.company.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone?.trim() || null,
         revenue_range: formData.revenue_range,
-        message: formData.message,
+        message: formData.message.trim(),
         utm_source: urlParams.get('utm_source'),
         utm_medium: urlParams.get('utm_medium'),
         utm_campaign: urlParams.get('utm_campaign'),
@@ -51,7 +101,21 @@ const SellLeadsForm = () => {
         utm_content: urlParams.get('utm_content'),
         referrer: document.referrer,
         user_agent: navigator.userAgent
-      }).select().maybeSingle();
+      };
+
+      // Detailed logging for debugging (temporary)
+      console.log('=== SELL LEADS FORM SUBMISSION ===');
+      console.log('Payload being sent:', payload);
+      console.log('Payload validation:', {
+        full_name_length: payload.full_name.length,
+        company_length: payload.company.length,
+        email_length: payload.email.length,
+        email_format: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(payload.email),
+        revenue_range_valid: ['<1M', '1-5M', '5-10M', '>10M'].includes(payload.revenue_range),
+        has_message: !!payload.message.trim()
+      });
+      
+      const { data, error } = await supabase.from('sell_leads').insert(payload).select().maybeSingle();
 
       if (error) {
         console.error('Error submitting sell leads form:', error);
@@ -62,10 +126,26 @@ const SellLeadsForm = () => {
           hint: error.hint
         });
         
-        if (error.message?.includes('rate limit') || error.message?.includes('check_rate_limit_enhanced')) {
+        // Enhanced rate limiting detection
+        if (error.message?.includes('rate limit') || 
+            error.message?.includes('check_rate_limit_enhanced') ||
+            error.code === 'PGRST301' || 
+            error.message?.includes('Too Many Requests')) {
           toast({
             title: "Límite de envíos alcanzado",
-            description: "Has alcanzado el máximo de envíos permitidos. Por favor, espera antes de intentar de nuevo.",
+            description: "Solo se permiten 2 envíos por IP cada 24 horas. Si necesitas contactar urgentemente, llama al +34 695 717 490 o escribe a info@capittal.es",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Enhanced RLS policy violation detection
+        if (error.message?.includes('row-level security') || 
+            error.message?.includes('policy') ||
+            error.code === '42501') {
+          toast({
+            title: "Error de validación",
+            description: "Los datos del formulario no cumplen con los requisitos de seguridad. Revisa que todos los campos obligatorios estén completos.",
             variant: "destructive",
           });
           return;
@@ -74,7 +154,7 @@ const SellLeadsForm = () => {
         if (error.code === '42P10' || error.message?.includes('ON CONFLICT')) {
           toast({
             title: "Error de base de datos",
-            description: "Ha ocurrido un error técnico. Por favor, contacta directamente con nosotros.",
+            description: "Ha ocurrido un error técnico. Por favor, contacta directamente con nosotros al +34 695 717 490",
             variant: "destructive",
           });
           return;
@@ -83,6 +163,8 @@ const SellLeadsForm = () => {
         throw error;
       }
 
+      console.log('Form submitted successfully:', data);
+      
       toast({
         title: "¡Mensaje enviado con éxito!",
         description: "Hemos recibido tu consulta sobre venta de empresa. Nos pondremos en contacto contigo en las próximas 24 horas.",
@@ -101,7 +183,7 @@ const SellLeadsForm = () => {
       console.error('Error submitting form:', error);
       toast({
         title: "Error al enviar",
-        description: "Ha ocurrido un error. Por favor, inténtalo de nuevo o contacta directamente con nosotros.",
+        description: "Ha ocurrido un error inesperado. Por favor, contacta directamente con nosotros al +34 695 717 490 o info@capittal.es",
         variant: "destructive",
       });
     } finally {
