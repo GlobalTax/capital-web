@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { RoleIndicator } from './RoleIndicator';
 import UserDropdown from './header/UserDropdown';
-import NotificationCenter from './header/NotificationCenter';
+import AdminNotificationCenter from './header/AdminNotificationCenter';
 import { clearAllCaches } from '@/utils/resetWebSocketState';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,7 +75,7 @@ const AdminHeader = ({ onLogout }: AdminHeaderProps) => {
         <RoleIndicator size="sm" />
         
         <div className="flex items-center gap-1">
-          <NotificationCenter />
+          <AdminNotificationCenter />
           
           <Button 
             variant="ghost" 

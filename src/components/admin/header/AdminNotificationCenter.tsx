@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Bell, CheckCircle, AlertCircle } from 'lucide-react';
 
-const NotificationCenter = () => {
+const AdminNotificationCenter = () => {
   const notifications = [
     {
       id: '1',
@@ -78,4 +77,4 @@ const NotificationCenter = () => {
   );
 };
 
-export default NotificationCenter;
+export default AdminNotificationCenter;

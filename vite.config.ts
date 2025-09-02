@@ -32,11 +32,9 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks: {
-          // Solo vendor chunks grandes para evitar conflictos
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
-          routing: ['react-router-dom'],
-          query: ['@tanstack/react-query']
+          // Simplificado para evitar fragmentación excesiva
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast', '@tanstack/react-query']
         }
       }
     },
