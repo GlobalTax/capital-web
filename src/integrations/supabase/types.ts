@@ -2441,6 +2441,60 @@ export type Database = {
         }
         Relationships: []
       }
+      operation_inquiries: {
+        Row: {
+          company_name: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          ip_address: unknown | null
+          message: string
+          operation_id: string
+          phone: string | null
+          referrer: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          ip_address?: unknown | null
+          message: string
+          operation_id: string
+          phone?: string | null
+          referrer?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          ip_address?: unknown | null
+          message?: string
+          operation_id?: string
+          phone?: string | null
+          referrer?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       pdf_download_logs: {
         Row: {
           created_at: string | null
