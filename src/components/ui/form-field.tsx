@@ -27,7 +27,7 @@ interface FormFieldProps {
   selectClassName?: string;
 }
 
-const FormField = memo<FormFieldProps>(({
+const CustomFormField = memo<FormFieldProps>(({
   id,
   label,
   type = 'text',
@@ -160,6 +160,6 @@ const FormField = memo<FormFieldProps>(({
   );
 });
 
-FormField.displayName = 'FormField';
+CustomFormField.displayName = 'CustomFormField';
 
-export default FormField;
+export default CustomFormField;
