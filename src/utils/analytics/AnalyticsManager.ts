@@ -139,45 +139,64 @@ export class AnalyticsManager {
   // Facebook Pixel Integration
   private initFacebookPixel(pixelId: string) {
     try {
-      // Check if pixel is already initialized to prevent duplicates
+      // Check if pixel is already initialized from HTML
+      if ((window as any).fbPixelStatus?.loadedFromHTML) {
+        console.log('🔄 Facebook Pixel already loaded from HTML, verifying configuration');
+        
+        // Verify the pixel ID matches
+        if ((window as any).fbPixelStatus.pixelId === pixelId) {
+          console.log('✅ Facebook Pixel HTML configuration matches, no additional setup needed');
+          return;
+        } else {
+          console.warn('⚠️ Pixel ID mismatch - HTML:', (window as any).fbPixelStatus.pixelId, 'Config:', pixelId);
+        }
+      }
+
+      // Check if fbq exists but wasn't loaded from HTML
       if ((window as any).fbq && (window as any).fbq.loaded) {
         console.log('🔄 Facebook Pixel already initialized, skipping duplicate initialization');
         return;
       }
 
-      // Initialize Facebook Pixel
-      (window as any).fbq = (window as any).fbq || function() {
-        ((window as any).fbq.q = (window as any).fbq.q || []).push(arguments);
-      };
-      (window as any)._fbq = (window as any).fbq;
-      (window as any).fbq.version = '2.0';
-      (window as any).fbq.queue = [];
+      // Initialize Facebook Pixel if not already loaded
+      if (!(window as any).fbq) {
+        (window as any).fbq = function() {
+          ((window as any).fbq.q = (window as any).fbq.q || []).push(arguments);
+        };
+        (window as any)._fbq = (window as any).fbq;
+        (window as any).fbq.version = '2.0';
+        (window as any).fbq.queue = [];
 
-      // Enhanced script loading with error handling
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      script.onerror = () => {
-        console.error('❌ Failed to load Facebook Pixel script');
-        (window as any).fbq.loadError = true;
-      };
-      script.onload = () => {
-        console.log('✅ Facebook Pixel script loaded successfully');
-        (window as any).fbq.loaded = true;
-      };
-      document.head.appendChild(script);
+        // Enhanced script loading with error handling
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+        script.onerror = () => {
+          console.error('❌ Failed to load Facebook Pixel script');
+          (window as any).fbq.loadError = true;
+        };
+        script.onload = () => {
+          console.log('✅ Facebook Pixel script loaded successfully');
+          (window as any).fbq.loaded = true;
+        };
+        document.head.appendChild(script);
+      }
 
-      // Initialize pixel with ID and error handling
+      // Initialize pixel with ID
       (window as any).fbq('init', pixelId);
       
-      // Track PageView by default
-      (window as any).fbq('track', 'PageView');
+      // Track PageView if not already tracked from HTML
+      if (!(window as any).fbPixelStatus?.loadedFromHTML) {
+        (window as any).fbq('track', 'PageView');
+      }
 
-      // Add global pixel status check
+      // Update global pixel status
       (window as any).fbPixelStatus = {
+        ...(window as any).fbPixelStatus,
         initialized: true,
         pixelId: pixelId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        loadedFromAnalytics: true
       };
 
       console.log('✅ Facebook Pixel initialized successfully with ID:', pixelId);
@@ -194,6 +213,7 @@ export class AnalyticsManager {
     } catch (error) {
       console.error('❌ Error initializing Facebook Pixel:', error);
       (window as any).fbPixelStatus = {
+        ...(window as any).fbPixelStatus,
         initialized: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()

@@ -27,18 +27,32 @@ export const FacebookPixelStatus: React.FC<FacebookPixelStatusProps> = ({ pixelI
     const fbq = (window as any).fbq;
     const fbPixelStatus = (window as any).fbPixelStatus;
     
-    // Check if pixel is blocked by ad blockers
-    const isBlocked = !fbq && !document.querySelector('script[src*="connect.facebook.net"]');
+    // Enhanced ad blocker and script detection
+    const fbScript = document.querySelector('script[src*="fbevents.js"]') ||
+                    document.querySelector('script[src*="connect.facebook.net"]');
+    const scriptLoaded = !!fbScript;
     
-    // Check if script loaded successfully
-    const scriptLoaded = document.querySelector('script[src*="connect.facebook.net"]') !== null;
+    // Check for ad blocker interference
+    let isBlocked = false;
+    let blockingReason = '';
+    
+    if (!fbq && !scriptLoaded) {
+      isBlocked = true;
+      blockingReason = 'Script bloqueado por ad blocker';
+    } else if (fbq && fbq.loadError) {
+      isBlocked = true;
+      blockingReason = 'Error de carga del script';
+    } else if (fbq && !fbq.loaded && scriptLoaded) {
+      isBlocked = true;
+      blockingReason = 'Script cargado pero no inicializado';
+    }
     
     if (fbPixelStatus) {
       setStatus({
         initialized: fbPixelStatus.initialized,
         pixelId: fbPixelStatus.pixelId,
         timestamp: fbPixelStatus.timestamp,
-        error: fbPixelStatus.error,
+        error: fbPixelStatus.error || (isBlocked ? blockingReason : undefined),
         lastEventTime: fbPixelStatus.lastEventTime,
         totalEvents: fbPixelStatus.totalEvents || 0,
         blocked: isBlocked,
@@ -50,13 +64,14 @@ export const FacebookPixelStatus: React.FC<FacebookPixelStatusProps> = ({ pixelI
         pixelId: pixelId || 'unknown',
         timestamp: new Date().toISOString(),
         totalEvents: 0,
-        blocked: false,
+        blocked: isBlocked,
         scriptLoaded: scriptLoaded,
+        error: isBlocked ? blockingReason : undefined,
       });
     } else {
       setStatus({
         initialized: false,
-        error: isBlocked ? 'Bloqueado por ad blocker' : 'Facebook Pixel no encontrado',
+        error: isBlocked ? blockingReason : 'Facebook Pixel no encontrado',
         totalEvents: 0,
         blocked: isBlocked,
         scriptLoaded: scriptLoaded,
@@ -220,12 +235,31 @@ export const FacebookPixelStatus: React.FC<FacebookPixelStatusProps> = ({ pixelI
         </div>
 
         <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded-md">
-          <strong>Herramientas de verificación:</strong>
-          <br />• Instala Facebook Pixel Helper para ver eventos en tiempo real
-          <br />• Usa Events Manager para monitorear eventos en Facebook
-          <br />• Verifica en la consola del navegador para logs detallados
-          <br />• Si Meta Pixel Helper no detecta el pixel, desactiva temporalmente tu ad blocker
-          <br />• El pixel con ID <code>{pixelId || status?.pixelId || '1474959750187377'}</code> debe aparecer como "Active"
+          <strong>🔍 Guía completa de verificación:</strong>
+          <div className="mt-2 space-y-1">
+            <div><strong>1. Meta Pixel Helper:</strong> Instala la extensión desde Chrome Web Store</div>
+            <div><strong>2. Desactivar bloqueadores:</strong> Pausa AdBlock, uBlock Origin o similar</div>
+            <div><strong>3. Recargar página:</strong> Pulsa F5 para recargar completamente</div>
+            <div><strong>4. Verificar icono:</strong> El icono &lt;/&gt; debe volverse azul con "1"</div>
+            <div><strong>5. Pixel ID esperado:</strong> <code>{pixelId || status?.pixelId || '1474959750187377'}</code></div>
+            <div><strong>6. Estado esperado:</strong> "Active" en Meta Pixel Helper</div>
+          </div>
+          
+          {status?.blocked && (
+            <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+              <div className="text-yellow-800 text-xs">
+                <strong>⚠️ Bloqueador detectado:</strong> Meta Pixel Helper no funcionará hasta que desactives temporalmente tu bloqueador de anuncios.
+              </div>
+            </div>
+          )}
+          
+          {status?.initialized && status?.scriptLoaded && !status?.blocked && (
+            <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
+              <div className="text-green-800 text-xs">
+                <strong>✅ Todo configurado:</strong> Meta Pixel Helper debería mostrar el pixel como activo ahora.
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
