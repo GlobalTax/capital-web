@@ -132,6 +132,34 @@ export const useContactForm = () => {
           // No lanzar error aquí ya que el lead principal se guardó correctamente
         }
 
+        // Enviar notificación por email (no bloquear si falla)
+        if (submissionData?.id) {
+          try {
+            logger.info('📧 [ContactForm] Enviando notificación por email', { submissionId: submissionData.id }, { context: 'form', component: 'useContactForm' });
+            
+            await supabase.functions.invoke('send-form-notifications', {
+              body: {
+                submissionId: submissionData.id,
+                formType: 'contact',
+                email: sanitizedData.email,
+                fullName: sanitizedData.fullName,
+                formData: sanitizedData
+              }
+            });
+            
+            logger.info('✅ [ContactForm] Notificación enviada correctamente', { submissionId: submissionData.id }, { context: 'form', component: 'useContactForm' });
+          } catch (notificationError) {
+            logger.warn('⚠️ [ContactForm] Error enviando notificación (no bloquea el formulario)', notificationError as Error, { context: 'form', component: 'useContactForm' });
+            
+            // Toast informativo pero no destructivo
+            toast({
+              title: "Formulario enviado",
+              description: "Tu solicitud fue registrada correctamente. La notificación por email puede tardar unos minutos.",
+              variant: "default", // No destructive
+            });
+          }
+        }
+
         logger.info('✅ [ContactForm] Formulario enviado correctamente', { 
           leadId: leadData.id,
           submissionId: submissionData?.id
