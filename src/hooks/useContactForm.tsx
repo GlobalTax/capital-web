@@ -27,11 +27,11 @@ export const useContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
-  // Rate limiting: 5 intentos por 10 minutos para formulario de contacto
+  // Rate limiting: 10 intentos por 5 minutos para formulario de contacto (configuración de pruebas)
   const rateLimit = useRateLimit({
-    maxRequests: 5,
-    windowMs: 10 * 60 * 1000, // 10 minutos
-    blockDurationMs: 10 * 60 * 1000 // bloquear por 10 minutos
+    maxRequests: 10,
+    windowMs: 5 * 60 * 1000, // 5 minutos
+    blockDurationMs: 5 * 60 * 1000 // bloquear por 5 minutos
   });
 
   const submitContactForm = async (formData: ContactFormData) => {
