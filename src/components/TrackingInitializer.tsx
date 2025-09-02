@@ -11,6 +11,17 @@ export const TrackingInitializer = () => {
   useEffect(() => {
     const initializeTracking = async () => {
       try {
+        // Only initialize on production domain capittal.es
+        const currentDomain = window.location.hostname;
+        const isProductionDomain = currentDomain === 'capittal.es' || currentDomain.includes('capittal.es');
+        
+        if (!isProductionDomain) {
+          console.log('Tracking disabled on development/preview domains:', currentDomain);
+          return;
+        }
+        
+        console.log('Initializing tracking for production domain:', currentDomain);
+        
         // Load saved tracking configuration
         const config = await TrackingConfigService.loadConfiguration();
         

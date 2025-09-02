@@ -64,8 +64,17 @@ export class AttributionEngine {
   ];
 
   addTouchPoint(touchPoint: TouchPoint): void {
+    // Only track touchpoints from capittal.es domain
+    const currentDomain = window.location.hostname;
+    const isProductionDomain = currentDomain === 'capittal.es' || currentDomain.includes('capittal.es');
+    
+    if (!isProductionDomain) {
+      console.log('Attribution: Ignoring touchpoint from dev/preview domain:', currentDomain);
+      return;
+    }
+    
     this.touchPoints.push(touchPoint);
-    console.log('Attribution: New touchpoint added', touchPoint);
+    console.log('Attribution: New touchpoint added for capittal.es', touchPoint);
     
     // Check if this is a conversion event
     if (this.isConversionEvent(touchPoint)) {
