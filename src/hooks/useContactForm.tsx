@@ -54,27 +54,29 @@ export const useContactForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Usar executeWithRateLimit para envolver la operación completa
-      const result = await rateLimit.executeWithRateLimit(async () => {
-        // Sanitizar todos los campos antes de validar
-        const sanitizedData = sanitizeObject(formData, {
-          fullName: 'STRICT',
-          company: 'STRICT',
-          phone: 'STRICT',
-          email: 'STRICT',
-          country: 'STRICT',
-          companySize: 'STRICT',
-          referral: 'STRICT'
-        });
+      // PASO 1: Sanitizar todos los campos antes de cualquier operación
+      const sanitizedData = sanitizeObject(formData, {
+        fullName: 'STRICT',
+        company: 'STRICT',
+        phone: 'STRICT',
+        email: 'STRICT',
+        country: 'STRICT',
+        companySize: 'STRICT',
+        referral: 'STRICT'
+      });
 
-        // Validaciones individuales
-        validateContactName(sanitizedData.fullName);
-        validateCompanyName(sanitizedData.company);
-        validateEmail(sanitizedData.email);
-        
-        if (sanitizedData.phone) {
-          validateSpanishPhone(sanitizedData.phone);
-        }
+      // PASO 2: Validaciones individuales ANTES de rate limit y operaciones de red
+      validateContactName(sanitizedData.fullName);
+      validateCompanyName(sanitizedData.company);
+      validateEmail(sanitizedData.email);
+      
+      if (sanitizedData.phone) {
+        validateSpanishPhone(sanitizedData.phone);
+      }
+
+      // PASO 3: Si las validaciones pasan, verificar rate limit
+      // Usar executeWithRateLimit para envolver solo las operaciones de red
+      const result = await rateLimit.executeWithRateLimit(async () => {
 
         // Get UTM and referrer data
         const urlParams = new URLSearchParams(window.location.search);
