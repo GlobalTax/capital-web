@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { BlogPost } from '@/types/blog';
 
 interface BlogFilters {
@@ -18,31 +18,50 @@ export const useBlogFilters = (posts: BlogPost[]) => {
     sortOrder: 'desc'
   });
 
-  // Obtener todas las categorías únicas
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(posts.map(post => post.category))];
-    return uniqueCategories.filter(Boolean).sort();
+  // Categorías disponibles
+  const categories: string[] = useMemo(() => {
+    if (!posts) return [];
+    const uniqueCategories = Array.from(new Set(posts.map(post => post.category)));
+    return uniqueCategories.sort();
   }, [posts]);
 
-  // Obtener todos los tags únicos
-  const tags = useMemo(() => {
+  // Tags disponibles
+  const tags: string[] = useMemo(() => {
+    if (!posts) return [];
     const allTags = posts.flatMap(post => post.tags || []);
-    const uniqueTags = [...new Set(allTags)];
-    return uniqueTags.filter(Boolean).sort();
+    const uniqueTags = Array.from(new Set(allTags));
+    return uniqueTags.sort();
   }, [posts]);
 
-  // Filtrar y ordenar posts
-  const filteredPosts = useMemo(() => {
-    let filtered = posts.filter(post => {
-      // Solo posts publicados
-      if (!post.is_published) return false;
+  // Filtrado y ordenado de posts
+  const filteredPosts: BlogPost[] = useMemo(() => {
+    console.log('🔍 DEBUG useBlogFilters - Input:', { 
+      postsCount: posts?.length || 0, 
+      filters,
+      samplePost: posts?.[0] ? {
+        title: posts[0].title,
+        category: posts[0].category,
+        is_published: posts[0].is_published,
+        is_featured: posts[0].is_featured
+      } : null
+    });
 
+    if (!posts || posts.length === 0) {
+      console.log('❌ No posts provided to filter');
+      return [];
+    }
+
+    // Verificar que todos los posts estén publicados
+    const publishedPosts = posts.filter(post => post.is_published);
+    console.log('📊 Published posts:', publishedPosts.length, 'of', posts.length);
+
+    let filtered = publishedPosts.filter(post => {
       // Filtro de búsqueda
       if (filters.search && filters.search.trim()) {
-        const searchTerm = filters.search.toLowerCase();
+        const searchTerm = filters.search.toLowerCase().trim();
         const searchFields = [
           post.title,
-          post.excerpt,
+          post.excerpt || '',
           post.content,
           post.author_name,
           ...(post.tags || [])
@@ -64,6 +83,8 @@ export const useBlogFilters = (posts: BlogPost[]) => {
       return true;
     });
 
+    console.log('✅ After filtering:', filtered.length, 'posts');
+
     // Ordenar posts
     filtered.sort((a, b) => {
       let aValue: any;
@@ -83,7 +104,8 @@ export const useBlogFilters = (posts: BlogPost[]) => {
           bValue = b.reading_time;
           break;
         default:
-          return 0;
+          aValue = new Date(a.published_at || a.created_at);
+          bValue = new Date(b.published_at || b.created_at);
       }
 
       if (filters.sortOrder === 'asc') {
@@ -96,9 +118,19 @@ export const useBlogFilters = (posts: BlogPost[]) => {
     return filtered;
   }, [posts, filters]);
 
-  // Separar posts destacados
+  // Separar posts destacados y regulares
   const featuredPosts = filteredPosts.filter(post => post.is_featured);
   const regularPosts = filteredPosts.filter(post => !post.is_featured);
+  
+  // Para la grid, mostrar todos excepto el primer destacado (que va arriba)
+  const gridPosts = filteredPosts.slice(1); // Todos menos el primero
+
+  console.log('🎯 Final separation:', {
+    total: filteredPosts.length,
+    featured: featuredPosts.length,
+    regular: regularPosts.length,
+    gridPosts: gridPosts.length
+  });
 
   // Funciones para actualizar filtros
   const updateFilter = (key: keyof BlogFilters, value: string) => {
@@ -134,6 +166,7 @@ export const useBlogFilters = (posts: BlogPost[]) => {
     filteredPosts,
     featuredPosts,
     regularPosts,
+    gridPosts, // Nuevo: todos los posts menos el primero para la grid
     categories,
     tags,
     updateFilter,

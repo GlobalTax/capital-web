@@ -11,11 +11,14 @@ import '@/utils/blogEmergencyFix';
 import { Link } from 'react-router-dom';
 
 const Blog = () => {
-  const { posts, isLoading } = useBlogPosts();
+  const { posts, isLoading } = useBlogPosts(true); // Solo posts publicados
+  console.log('🏠 Blog component - Posts received:', posts?.length || 0, posts?.map(p => ({ title: p.title, is_published: p.is_published, is_featured: p.is_featured })));
+  
   const {
     filters,
     featuredPosts,
     regularPosts,
+    gridPosts, // Nuevo: para mostrar todos los posts menos el primero
     categories,
     tags,
     updateFilter,
@@ -25,7 +28,8 @@ const Blog = () => {
     totalResults
   } = useBlogFilters(posts || []);
   
-  const featuredArticle = featuredPosts[0] || null;
+  // El artículo principal será el primero de todos los posts (destacado o no)
+  const featuredArticle = (posts && posts.length > 0) ? posts[0] : null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -138,9 +142,9 @@ const Blog = () => {
                 )}
 
                 {/* Grid de Artículos */}
-                {regularPosts.length > 0 && (
+                {gridPosts && gridPosts.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {regularPosts.map((article) => (
+                    {gridPosts.map((article) => (
                       <Link key={article.id} to={`/blog/${article.slug}`}>
                         <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer">
                           <div className="flex flex-col h-full">
