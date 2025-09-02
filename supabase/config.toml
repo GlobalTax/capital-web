@@ -44,3 +44,12 @@ verify_jwt = false
 
 [functions.update-valuation]
 verify_jwt = false
+
+[functions.send-form-notifications]
+verify_jwt = false
+
+[functions.send-booking-notification]
+verify_jwt = false
+
+[functions.list-operations]
+verify_jwt = false

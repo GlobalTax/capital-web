@@ -3510,6 +3510,26 @@ export type Database = {
           role: Database["public"]["Enums"]["admin_role"]
         }[]
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_user_admin: {
         Args: { check_user_id: string }
         Returns: boolean
@@ -3575,6 +3595,18 @@ export type Database = {
       reject_user_registration: {
         Args: { reason?: string; request_id: string }
         Returns: boolean
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
       validate_data_access_security: {
         Args: Record<PropertyKey, never>

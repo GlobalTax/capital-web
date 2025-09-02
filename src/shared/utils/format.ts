@@ -48,3 +48,20 @@ export const formatDateTime = (date: string | Date): string => {
     minute: '2-digit'
   }).format(new Date(date));
 };
+
+// Normalize valuation amounts (fix million interpretation)
+export const normalizeValuationAmount = (raw: number): number => {
+  if (!raw || raw <= 0) return 0;
+  
+  // If already >= 1,000,000 or >= 10,000, use as-is
+  if (raw >= 1000000 || raw >= 10000) {
+    return raw;
+  }
+  
+  // If 0 < raw < 10,000, interpret as millions
+  if (raw > 0 && raw < 10000) {
+    return raw * 1000000;
+  }
+  
+  return raw;
+};
