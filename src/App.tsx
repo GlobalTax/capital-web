@@ -344,24 +344,52 @@ function App() {
           monitorResourceLoading();
         }
 
-        // Service Worker TEMPORARILY DISABLED to fix 404 errors
+        // Service Worker Kill-Switch: Dynamic control via environment variables
         setTimeout(async () => {
           try {
             if ('serviceWorker' in navigator) {
-              console.log('🔧 Service Worker TEMPORARILY DISABLED - Clearing all caches');
+              // Check environment variables for kill-switch
+              const shouldDisableSW = import.meta.env.VITE_DISABLE_SW === '1' || 
+                                    import.meta.env.VITE_ENABLE_SW === '0';
               
-              // Unregister todos los service workers existentes
-              const registrations = await navigator.serviceWorker.getRegistrations();
-              for (const registration of registrations) {
-                await registration.unregister();
-                console.log('✅ Service worker unregistered:', registration.scope);
-              }
-              
-              // Clear todos los caches
-              if ('caches' in window) {
-                const cacheNames = await caches.keys();
-                await Promise.all(cacheNames.map(name => caches.delete(name)));
-                console.log('✅ All caches cleared');
+              if (shouldDisableSW) {
+                console.log('🔧 Service Worker DISABLED via environment variables - Clearing all caches');
+                
+                // Unregister todos los service workers existentes
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                  await registration.unregister();
+                  console.log('✅ Service worker unregistered:', registration.scope);
+                }
+                
+                // Clear todos los caches
+                if ('caches' in window) {
+                  const cacheNames = await caches.keys();
+                  await Promise.all(cacheNames.map(name => caches.delete(name)));
+                  console.log('✅ All caches cleared');
+                }
+              } else {
+                console.log('🔧 Service Worker ENABLED - Registering /sw.js');
+                
+                // Register service worker
+                const registration = await navigator.serviceWorker.register('/sw.js', {
+                  scope: '/',
+                  updateViaCache: 'imports'
+                });
+                
+                console.log('✅ Service worker registered:', registration.scope);
+                
+                // Handle updates
+                registration.addEventListener('updatefound', () => {
+                  const newWorker = registration.installing;
+                  if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('🔄 New service worker available, reload to update');
+                      }
+                    });
+                  }
+                });
               }
             }
           } catch (error) {
