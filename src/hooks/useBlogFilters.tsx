@@ -38,7 +38,7 @@ export const useBlogFilters = (posts: BlogPost[]) => {
       if (!post.is_published) return false;
 
       // Filtro de búsqueda
-      if (filters.search) {
+      if (filters.search && filters.search.trim()) {
         const searchTerm = filters.search.toLowerCase();
         const searchFields = [
           post.title,
@@ -51,13 +51,13 @@ export const useBlogFilters = (posts: BlogPost[]) => {
         if (!searchFields.includes(searchTerm)) return false;
       }
 
-      // Filtro de categoría
-      if (filters.category && post.category !== filters.category) {
+      // Filtro de categoría (solo filtrar si hay una categoría específica seleccionada)
+      if (filters.category && filters.category.trim() && post.category !== filters.category) {
         return false;
       }
 
-      // Filtro de tag
-      if (filters.tag && (!post.tags || !post.tags.includes(filters.tag))) {
+      // Filtro de tag (solo filtrar si hay un tag específico seleccionado)
+      if (filters.tag && filters.tag.trim() && (!post.tags || !post.tags.includes(filters.tag))) {
         return false;
       }
 
@@ -120,8 +120,13 @@ export const useBlogFilters = (posts: BlogPost[]) => {
   };
 
   const hasActiveFilters: boolean = useMemo(() => {
-    return Boolean(filters.search || filters.category || filters.tag || 
-           filters.sortBy !== 'date' || filters.sortOrder !== 'desc');
+    return Boolean(
+      (filters.search && filters.search.trim()) || 
+      (filters.category && filters.category.trim()) || 
+      (filters.tag && filters.tag.trim()) || 
+      filters.sortBy !== 'date' || 
+      filters.sortOrder !== 'desc'
+    );
   }, [filters]);
 
   return {

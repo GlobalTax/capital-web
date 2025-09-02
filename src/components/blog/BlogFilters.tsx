@@ -72,7 +72,7 @@ const BlogFilters = ({
                   <SelectValue placeholder="Todas las categorías" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas las categorías</SelectItem>
+                  <SelectItem value="">Todas las categorías</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
@@ -89,7 +89,7 @@ const BlogFilters = ({
                   <SelectValue placeholder="Todos los tags" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los tags</SelectItem>
+                  <SelectItem value="">Todos los tags</SelectItem>
                   {tags.map((t) => (
                     <SelectItem key={t} value={t}>
                       {t}
@@ -151,21 +151,21 @@ const BlogFilters = ({
                   />
                 </Badge>
               )}
-              {category && category !== 'all' && (
+              {category && category.trim() && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Categoría: {category}
                   <X 
                     className="h-3 w-3 cursor-pointer" 
-                    onClick={() => onCategoryChange('all')}
+                    onClick={() => onCategoryChange('')}
                   />
                 </Badge>
               )}
-              {tag && tag !== 'all' && (
+              {tag && tag.trim() && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Tag: {tag}
                   <X 
                     className="h-3 w-3 cursor-pointer" 
-                    onClick={() => onTagChange('all')}
+                    onClick={() => onTagChange('')}
                   />
                 </Badge>
               )}
