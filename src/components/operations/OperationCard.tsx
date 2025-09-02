@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
 
 interface Operation {
   id: string;

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
-import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
 
 interface Operation {
   id: string;
@@ -58,7 +58,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
       if (error) {
         console.error('Error fetching operations:', error);
-        throw error;
+        setOperations([]);
+        setTotalCount(0);
+        setSectors([]);
+        return;
       }
 
       setOperations(data.data || []);
@@ -66,30 +69,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
       setSectors(data.sectors || []);
 
     } catch (error) {
-      console.error('Error:', error);
-      // Fallback to direct query if Edge Function fails
-      const fallbackQuery = supabase
-        .from('company_operations')
-        .select('*', { count: 'exact' })
-        .eq('is_active', true)
-        .or(`display_locations.cs.{${displayLocation}}`);
-
-      if (searchTerm) {
-        fallbackQuery.or(`company_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
-      }
-      if (selectedSector) {
-        fallbackQuery.eq('sector', selectedSector);
-      }
-
-      fallbackQuery.order(sortBy, { ascending: sortBy === 'company_name' })
-        .range(offset, offset + limit - 1);
-
-      const { data: fallbackData, error: fallbackError, count } = await fallbackQuery;
-      
-      if (!fallbackError) {
-        setOperations(fallbackData || []);
-        setTotalCount(count || 0);
-      }
+      console.error('Error calling list-operations Edge Function:', error);
+      setOperations([]);
+      setTotalCount(0);
+      setSectors([]);
     } finally {
       setIsLoading(false);
     }

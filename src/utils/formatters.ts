@@ -85,3 +85,48 @@ export const formatPercentage = (value: number): string => {
     maximumFractionDigits: 0,
   }).format(value / 100);
 };
+
+// Normalize valuation amounts (fix million interpretation)
+export const normalizeValuationAmount = (raw: number): number => {
+  if (!raw || raw <= 0) return 0;
+  
+  // If already >= 1,000,000 or >= 10,000, use as-is
+  if (raw >= 1000000 || raw >= 10000) {
+    return raw;
+  }
+  
+  // If 0 < raw < 10,000, interpret as millions
+  if (raw > 0 && raw < 10000) {
+    return raw * 1000000;
+  }
+  
+  return raw;
+};
+
+export const formatCompactNumber = (value: number): string => {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}K`;
+  }
+  return value.toString();
+};
+
+export const formatDate = (date: string | Date): string => {
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(new Date(date));
+};
+
+export const formatDateTime = (date: string | Date): string => {
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(date));
+};

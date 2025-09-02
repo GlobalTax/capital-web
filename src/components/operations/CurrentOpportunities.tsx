@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ArrowRight } from 'lucide-react';
-import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
 import OperationCard from './OperationCard';
 
 interface Operation {
@@ -58,37 +58,18 @@ const CurrentOpportunities: React.FC<CurrentOpportunitiesProps> = ({
 
       if (error) {
         console.error('Error fetching operations via Edge Function:', error);
-        throw error;
+        setOperations([]);
+        setTotalCount(0);
+        return;
       }
 
       setOperations(data.data || []);
       setTotalCount(data.count || 0);
 
     } catch (error) {
-      console.error('Error:', error);
-      
-      // Fallback to direct query if Edge Function fails
-      try {
-        const fallbackQuery = supabase
-          .from('company_operations')
-          .select('*', { count: 'exact' })
-          .eq('is_active', true)
-          .or(`display_locations.cs.{${displayLocation}}`)
-          .order('is_featured', { ascending: false })
-          .order('year', { ascending: false })
-          .limit(limit);
-
-        const { data: fallbackData, error: fallbackError, count } = await fallbackQuery;
-        
-        if (fallbackError) {
-          console.error('Fallback query error:', fallbackError);
-        } else {
-          setOperations(fallbackData || []);
-          setTotalCount(count || 0);
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback error:', fallbackErr);
-      }
+      console.error('Error calling list-operations Edge Function:', error);
+      setOperations([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
