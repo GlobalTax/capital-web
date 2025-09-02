@@ -116,94 +116,154 @@ export class AnalyticsManager {
 
   // Facebook Pixel Integration
   private initFacebookPixel(pixelId: string) {
-    // Initialize Facebook Pixel
-    (window as any).fbq = (window as any).fbq || function() {
-      ((window as any).fbq.q = (window as any).fbq.q || []).push(arguments);
-    };
-    (window as any)._fbq = (window as any).fbq;
-    (window as any).fbq.version = '2.0';
-    (window as any).fbq.queue = [];
+    try {
+      // Check if pixel is already initialized to prevent duplicates
+      if ((window as any).fbq && (window as any).fbq.loaded) {
+        console.log('🔄 Facebook Pixel already initialized, skipping duplicate initialization');
+        return;
+      }
 
-    // Load Facebook Pixel script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-    document.head.appendChild(script);
+      // Initialize Facebook Pixel
+      (window as any).fbq = (window as any).fbq || function() {
+        ((window as any).fbq.q = (window as any).fbq.q || []).push(arguments);
+      };
+      (window as any)._fbq = (window as any).fbq;
+      (window as any).fbq.version = '2.0';
+      (window as any).fbq.queue = [];
 
-    // Initialize pixel with ID
-    (window as any).fbq('init', pixelId);
-    
-    // Track PageView by default
-    (window as any).fbq('track', 'PageView');
+      // Enhanced script loading with error handling
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+      script.onerror = () => {
+        console.error('❌ Failed to load Facebook Pixel script');
+        (window as any).fbq.loadError = true;
+      };
+      script.onload = () => {
+        console.log('✅ Facebook Pixel script loaded successfully');
+        (window as any).fbq.loaded = true;
+      };
+      document.head.appendChild(script);
 
-    console.log('Facebook Pixel initialized with ID:', pixelId);
+      // Initialize pixel with ID and error handling
+      (window as any).fbq('init', pixelId);
+      
+      // Track PageView by default
+      (window as any).fbq('track', 'PageView');
+
+      // Add global pixel status check
+      (window as any).fbPixelStatus = {
+        initialized: true,
+        pixelId: pixelId,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('✅ Facebook Pixel initialized successfully with ID:', pixelId);
+      
+      // Verify pixel is working after a short delay
+      setTimeout(() => {
+        if ((window as any).fbq && !(window as any).fbq.loadError) {
+          console.log('🔍 Facebook Pixel verification: WORKING');
+        } else {
+          console.warn('⚠️ Facebook Pixel verification: ISSUES DETECTED');
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error('❌ Error initializing Facebook Pixel:', error);
+      (window as any).fbPixelStatus = {
+        initialized: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      };
+    }
   }
 
   // Facebook Pixel Event Tracking
   private trackFacebookEvent(eventName: string, properties: Record<string, any>) {
-    if (!(window as any).fbq) return;
+    try {
+      // Enhanced validation
+      if (!(window as any).fbq) {
+        console.warn('⚠️ Facebook Pixel not initialized, event skipped:', eventName);
+        return;
+      }
 
-    // Map generic events to Facebook Pixel standard events
-    let facebookEventName = eventName;
-    let eventData = { ...properties };
+      if ((window as any).fbq.loadError) {
+        console.warn('⚠️ Facebook Pixel script failed to load, event skipped:', eventName);
+        return;
+      }
 
-    switch (eventName) {
-      case 'calculator_used':
-      case 'valuation_calculated':
-        facebookEventName = 'InitiateCheckout';
-        eventData = {
-          content_name: 'Calculadora de Valoración',
-          content_category: 'Herramientas',
-          value: properties.eventValue || 1500,
-          currency: 'EUR'
-        };
-        break;
+      // Map generic events to Facebook Pixel standard events
+      let facebookEventName = eventName;
+      let eventData = { ...properties };
+
+      switch (eventName) {
+        case 'calculator_used':
+        case 'valuation_calculated':
+          facebookEventName = 'InitiateCheckout';
+          eventData = {
+            content_name: 'Calculadora de Valoración',
+            content_category: 'Herramientas',
+            value: properties.eventValue || 1500,
+            currency: 'EUR'
+          };
+          break;
+        
+        case 'form_submit':
+        case 'contact_form_submit':
+          facebookEventName = 'Lead';
+          eventData = {
+            content_name: 'Formulario de Contacto',
+            content_category: 'Leads',
+            value: properties.eventValue || 2000,
+            currency: 'EUR'
+          };
+          break;
+        
+        case 'pdf_download':
+        case 'resource_download':
+          facebookEventName = 'ViewContent';
+          eventData = {
+            content_name: properties.resourceName || 'Recurso descargado',
+            content_category: 'Recursos',
+            content_type: 'pdf'
+          };
+          break;
+        
+        case 'page_view':
+          facebookEventName = 'PageView';
+          eventData = {};
+          break;
+        
+        case 'contact_clicked':
+        case 'phone_clicked':
+          facebookEventName = 'Contact';
+          eventData = {
+            content_name: 'Contacto directo',
+            content_category: 'Contacto'
+          };
+          break;
+        
+        default:
+          // Use custom event for unmatched events
+          facebookEventName = eventName;
+          break;
+      }
+
+      // Track the event with Facebook Pixel with error handling
+      (window as any).fbq('track', facebookEventName, eventData);
       
-      case 'form_submit':
-      case 'contact_form_submit':
-        facebookEventName = 'Lead';
-        eventData = {
-          content_name: 'Formulario de Contacto',
-          content_category: 'Leads',
-          value: properties.eventValue || 2000,
-          currency: 'EUR'
-        };
-        break;
+      console.log('📊 Facebook Pixel event tracked successfully:', facebookEventName, eventData);
       
-      case 'pdf_download':
-      case 'resource_download':
-        facebookEventName = 'ViewContent';
-        eventData = {
-          content_name: properties.resourceName || 'Recurso descargado',
-          content_category: 'Recursos',
-          content_type: 'pdf'
-        };
-        break;
-      
-      case 'page_view':
-        facebookEventName = 'PageView';
-        eventData = {};
-        break;
-      
-      case 'contact_clicked':
-      case 'phone_clicked':
-        facebookEventName = 'Contact';
-        eventData = {
-          content_name: 'Contacto directo',
-          content_category: 'Contacto'
-        };
-        break;
-      
-      default:
-        // Use custom event for unmatched events
-        facebookEventName = eventName;
-        break;
+      // Update last event timestamp for monitoring
+      if ((window as any).fbPixelStatus) {
+        (window as any).fbPixelStatus.lastEventTime = new Date().toISOString();
+        (window as any).fbPixelStatus.totalEvents = ((window as any).fbPixelStatus.totalEvents || 0) + 1;
+      }
+
+    } catch (error) {
+      console.error('❌ Error tracking Facebook Pixel event:', error, { eventName, properties });
     }
-
-    // Track the event with Facebook Pixel
-    (window as any).fbq('track', facebookEventName, eventData);
-    
-    console.log('Facebook Pixel event tracked:', facebookEventName, eventData);
   }
 
   // Company Intelligence Tracking

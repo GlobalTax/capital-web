@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTrackingConfig } from '@/hooks/useTrackingConfig';
+import { FacebookPixelStatus } from './FacebookPixelStatus';
 
 const TrackingConfig = () => {
   const { config, isLoading, isSaving, updateConfig, saveConfiguration } = useTrackingConfig();
@@ -106,6 +107,10 @@ const TrackingConfig = () => {
               <strong>Cómo obtenerlo:</strong> Facebook Business → Administrador de eventos → Tu píxel → Configuración → ID del píxel
             </p>
           </div>
+          
+          {config.facebookPixelId && (
+            <FacebookPixelStatus pixelId={config.facebookPixelId} />
+          )}
           
           <div>
             <Label htmlFor="linkedin-tag">LinkedIn Insight Tag</Label>

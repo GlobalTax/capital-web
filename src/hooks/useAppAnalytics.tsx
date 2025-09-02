@@ -7,22 +7,10 @@ export const useAppAnalytics = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Inicializar Marketing Intelligence Platform con todas las funcionalidades
-    const analytics = initAnalytics({
-      ga4MeasurementId: 'G-XXXXXXXXXX', // Configurar con el ID real
-      clarityProjectId: 'XXXXXXXXXX', // Configurar con el ID real
-      leadfeederTrackingId: 'XXXXXXXXXX', // Configurar con el ID real
-      enableCompanyTracking: true,
-      enableEnrichment: true, // Phase 2: Company Intelligence
-      enableAlerting: true, // Phase 2: Automated Alerts
-      enableAttribution: true // Phase 3: Advanced Attribution
-    });
-
-    console.log('Marketing Intelligence Platform completamente inicializado con:');
-    console.log('✅ Phase 1: Core Analytics & Company Tracking');
-    console.log('✅ Phase 2: Company Intelligence & Lead Scoring');
-    console.log('✅ Phase 3: Advanced Attribution & Funnel Analysis');
-    console.log('✅ Phase 4: Predictive Analytics & AI Insights');
+    // DEPRECATED: Analytics initialization is now handled by TrackingInitializer
+    // This hook is kept for compatibility but should not initialize duplicate tracking
+    console.log('⚠️ useAppAnalytics is deprecated. Use TrackingInitializer instead.');
+    console.log('📊 Analytics initialization is handled by the global TrackingInitializer component');
   }, []);
 
   useEffect(() => {
