@@ -85,73 +85,219 @@ export const useContactForm = () => {
         const utm_campaign = urlParams.get('utm_campaign') || undefined;
         const referrer = document.referrer || undefined;
         
+        const timestamp = new Date().toISOString();
+        
+        // PASO 4A: Log antes del insert en contact_leads
+        const leadInsertData = {
+          full_name: sanitizedData.fullName,
+          company: sanitizedData.company,
+          phone: sanitizedData.phone,
+          email: sanitizedData.email,
+          country: sanitizedData.country,
+          company_size: sanitizedData.companySize,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          referral: referrer,
+          status: 'new'
+        };
+        
+        logger.info('📝 [ContactForm] Insertando en contact_leads', { 
+          timestamp,
+          insertData: { ...leadInsertData, email: '[REDACTED]' } 
+        }, { context: 'database', component: 'useContactForm' });
+        console.log('🔄 ContactForm: Iniciando insert en contact_leads', { timestamp });
+        
         // Insert into contact_leads table
         const { data: leadData, error: leadError } = await supabase
           .from('contact_leads')
-          .insert([{
-            full_name: sanitizedData.fullName,
-            company: sanitizedData.company,
-            phone: sanitizedData.phone,
-            email: sanitizedData.email,
-            country: sanitizedData.country,
-            company_size: sanitizedData.companySize,
-            
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            referral: referrer,
-            status: 'new'
-          }])
+          .insert([leadInsertData])
           .select()
           .single();
 
         if (leadError) {
-          logger.error('❌ [ContactForm] Error insertando en contact_leads', leadError, { context: 'database', component: 'useContactForm' });
+          // Log detallado del error de Supabase
+          const errorDetails = {
+            code: leadError.code,
+            message: leadError.message,
+            details: leadError.details,
+            hint: leadError.hint,
+            timestamp
+          };
+          
+          logger.error('❌ [ContactForm] Error insertando en contact_leads', leadError, { 
+            context: 'database', 
+            component: 'useContactForm' 
+          });
+          
+          // Browser debugging para errores específicos
+          if (leadError.code === 'PGRST301' || leadError.message?.includes('RLS')) {
+            console.error('🚫 RLS Policy Error (401/403) en contact_leads:', errorDetails);
+            console.error('⚠️ Verifica las políticas RLS en contact_leads table');
+          } else if (leadError.code === '429' || leadError.message?.includes('rate limit')) {
+            console.error('⏱️ Rate Limit Error (429) en contact_leads:', errorDetails);
+            console.error('⚠️ Demasiadas requests a la base de datos');
+          } else {
+            console.error('💥 Database Error en contact_leads:', errorDetails);
+          }
+          
           throw leadError;
         }
+        
+        // PASO 4B: Log después del insert exitoso en contact_leads
+        logger.info('✅ [ContactForm] Insert exitoso en contact_leads', { 
+          timestamp,
+          leadId: leadData.id,
+          generatedId: leadData.id
+        }, { context: 'database', component: 'useContactForm' });
+        console.log('✅ ContactForm: Insert exitoso en contact_leads', { leadId: leadData.id, timestamp });
+
+        // PASO 5A: Log antes del insert en form_submissions
+        const submissionInsertData = {
+          form_type: 'contact_form',
+          email: sanitizedData.email,
+          full_name: sanitizedData.fullName,
+          phone: sanitizedData.phone,
+          company: sanitizedData.company,
+          form_data: sanitizedData as any,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          referrer,
+          status: 'new'
+        };
+        
+        logger.info('📝 [ContactForm] Insertando en form_submissions', { 
+          timestamp,
+          insertData: { ...submissionInsertData, email: '[REDACTED]', form_data: '[REDACTED]' } 
+        }, { context: 'database', component: 'useContactForm' });
+        console.log('🔄 ContactForm: Iniciando insert en form_submissions', { timestamp });
 
         // Insert into unified form_submissions table with proper structure
         const { data: submissionData, error: submissionError } = await supabase
           .from('form_submissions')
-          .insert([{
-            form_type: 'contact_form',
-            email: sanitizedData.email,
-            full_name: sanitizedData.fullName,
-            phone: sanitizedData.phone,
-            company: sanitizedData.company,
-            form_data: sanitizedData as any, // Cast to any to match Json type
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            referrer,
-            status: 'new'
-          }])
+          .insert([submissionInsertData])
           .select()
           .single();
 
         if (submissionError) {
-          logger.error('❌ [ContactForm] Error insertando en form_submissions', submissionError, { context: 'database', component: 'useContactForm' });
+          // Log detallado del error de Supabase para form_submissions
+          const errorDetails = {
+            code: submissionError.code,
+            message: submissionError.message,
+            details: submissionError.details,
+            hint: submissionError.hint,
+            timestamp
+          };
+          
+          logger.error('❌ [ContactForm] Error insertando en form_submissions', submissionError, { 
+            context: 'database', 
+            component: 'useContactForm' 
+          });
+          
+          // Browser debugging para errores específicos
+          if (submissionError.code === 'PGRST301' || submissionError.message?.includes('RLS')) {
+            console.error('🚫 RLS Policy Error (401/403) en form_submissions:', errorDetails);
+            console.error('⚠️ Verifica las políticas RLS en form_submissions table');
+          } else if (submissionError.code === '429' || submissionError.message?.includes('rate limit')) {
+            console.error('⏱️ Rate Limit Error (429) en form_submissions:', errorDetails);
+            console.error('⚠️ Demasiadas requests a la base de datos');
+          } else {
+            console.error('💥 Database Error en form_submissions:', errorDetails);
+          }
+          
           // No lanzar error aquí ya que el lead principal se guardó correctamente
+        } else {
+          // PASO 5B: Log después del insert exitoso en form_submissions
+          logger.info('✅ [ContactForm] Insert exitoso en form_submissions', { 
+            timestamp,
+            submissionId: submissionData.id,
+            generatedId: submissionData.id
+          }, { context: 'database', component: 'useContactForm' });
+          console.log('✅ ContactForm: Insert exitoso en form_submissions', { submissionId: submissionData.id, timestamp });
         }
 
-        // Enviar notificación por email (no bloquear si falla)
+        // PASO 6: Enviar notificación por email (no bloquear si falla)
         if (submissionData?.id) {
           try {
-            logger.info('📧 [ContactForm] Enviando notificación por email', { submissionId: submissionData.id }, { context: 'form', component: 'useContactForm' });
+            const functionParams = {
+              submissionId: submissionData.id,
+              formType: 'contact',
+              email: sanitizedData.email,
+              fullName: sanitizedData.fullName,
+              formData: sanitizedData
+            };
             
-            await supabase.functions.invoke('send-form-notifications', {
-              body: {
-                submissionId: submissionData.id,
-                formType: 'contact',
-                email: sanitizedData.email,
-                fullName: sanitizedData.fullName,
-                formData: sanitizedData
-              }
+            logger.info('📧 [ContactForm] Invocando función send-form-notifications', { 
+              timestamp,
+              submissionId: submissionData.id,
+              parameters: { ...functionParams, email: '[REDACTED]', formData: '[REDACTED]' }
+            }, { context: 'form', component: 'useContactForm' });
+            console.log('🔄 ContactForm: Invocando Edge Function send-form-notifications', { submissionId: submissionData.id, timestamp });
+            
+            const { data: functionData, error: functionError } = await supabase.functions.invoke('send-form-notifications', {
+              body: functionParams
             });
             
-            logger.info('✅ [ContactForm] Notificación enviada correctamente', { submissionId: submissionData.id }, { context: 'form', component: 'useContactForm' });
-          } catch (notificationError) {
-            logger.warn('⚠️ [ContactForm] Error enviando notificación (no bloquea el formulario)', notificationError as Error, { context: 'form', component: 'useContactForm' });
+            if (functionError) {
+              // Log detallado del error de la función
+              const errorDetails = {
+                code: functionError.code,
+                message: functionError.message,
+                details: functionError.details,
+                context: functionError.context,
+                timestamp
+              };
+              
+              logger.error('❌ [ContactForm] Error en función send-form-notifications', functionError, { 
+                context: 'form', 
+                component: 'useContactForm' 
+              });
+              
+              // Browser debugging para errores HTTP de función
+              if (functionError.message?.includes('401') || functionError.message?.includes('403')) {
+                console.error('🚫 Auth Error (401/403) en Edge Function:', errorDetails);
+                console.error('⚠️ Verifica permisos de la función send-form-notifications');
+              } else if (functionError.message?.includes('429')) {
+                console.error('⏱️ Rate Limit Error (429) en Edge Function:', errorDetails);
+                console.error('⚠️ Edge Function rate limited');
+              } else {
+                console.error('💥 Function Error en send-form-notifications:', errorDetails);
+              }
+              
+              throw functionError;
+            }
+            
+            logger.info('✅ [ContactForm] Función send-form-notifications ejecutada correctamente', { 
+              timestamp,
+              submissionId: submissionData.id,
+              functionResponse: functionData
+            }, { context: 'form', component: 'useContactForm' });
+            console.log('✅ ContactForm: Edge Function ejecutada correctamente', { submissionId: submissionData.id, response: functionData, timestamp });
+            
+          } catch (notificationError: any) {
+            // Log detallado del error de notificación
+            const errorDetails = {
+              name: notificationError.name,
+              message: notificationError.message,
+              code: notificationError.code,
+              details: notificationError.details,
+              stack: notificationError.stack,
+              timestamp
+            };
+            
+            logger.warn('⚠️ [ContactForm] Error enviando notificación (no bloquea el formulario)', notificationError, { 
+              context: 'form', 
+              component: 'useContactForm' 
+            });
+            
+            // Browser debugging específico para errores de notificación
+            console.warn('⚠️ ContactForm: Error en notificación (no crítico)', errorDetails);
+            if (notificationError.message?.includes('401') || notificationError.message?.includes('403')) {
+              console.warn('🚫 Auth issue en notificación - formulario se guardó correctamente');
+            } else if (notificationError.message?.includes('429')) {
+              console.warn('⏱️ Rate limit en notificación - formulario se guardó correctamente');
+            }
             
             // Toast informativo pero no destructivo
             toast({
