@@ -56,7 +56,7 @@ serve(async (req) => {
     }
 
     if (displayLocation) {
-      query = query.or(`display_locations.cs.{${displayLocation}}`);
+      query = query.or('display_locations.cs.{compra-empresas},display_locations.cs.{operaciones}');
     }
 
     // Apply sorting

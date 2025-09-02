@@ -88,17 +88,12 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   )}
                 </>
               ) : (
-                <>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Valoración:</span>
-                    <span className="font-bold text-green-600">
-                      {formatCurrency(normalizeValuationAmount(operation.valuation_amount), operation.valuation_currency || 'EUR')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Valoración de la operación
-                  </p>
-                </>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Valoración:</span>
+                  <span className="font-bold text-green-600">
+                    {formatCurrency(normalizeValuationAmount(operation.valuation_amount), operation.valuation_currency || 'EUR')}
+                  </span>
+                </div>
               )}
             </div>
             
