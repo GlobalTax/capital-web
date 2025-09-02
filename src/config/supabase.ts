@@ -35,9 +35,9 @@ export const validateSupabaseConfig = () => {
   return true;
 };
 
-// Información del proyecto
+// Información del proyecto usando variable de entorno  
 export const PROJECT_INFO = {
-  projectId: "fwhqtzkkvnjkazhaficj",
+  projectId: import.meta.env.VITE_SUPABASE_PROJECT_ID || "fwhqtzkkvnjkazhaficj",
   region: "eu-west-1",
   environment: "production"
 } as const;

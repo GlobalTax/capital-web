@@ -86,15 +86,26 @@ export const useGeneralContactForm = () => {
         submissionData.page_origin = 'contacto'; // Ensure page_origin is always set
       }
       
-      const { error } = await supabase
-        .from('general_contact_leads')
-        .insert(submissionData);
+      // PROMPT 5: Use JS client directly instead of REST fetch
+      const { data: contactData, error: contactError } = await supabase
+        .from('contact_leads')
+        .insert([{
+          full_name: formData.fullName,
+          company: formData.company,
+          phone: formData.phone,
+          email: formData.email,
+          country: formData.country,
+          company_size: formData.annualRevenue,
+          referral: formData.howDidYouHear
+        }])
+        .select()
+        .single();
 
-      if (error) {
-        console.error('Error submitting general contact form:', error);
+      if (contactError) {
+        console.error('Error inserting contact lead:', contactError);
         
         // Check for rate limiting
-        if (error.message?.includes('rate limit') || error.message?.includes('check_rate_limit_enhanced')) {
+        if (contactError.message?.includes('rate limit') || contactError.message?.includes('check_rate_limit_enhanced')) {
           toast({
             title: "Límite de envíos alcanzado",
             description: "Has alcanzado el máximo de envíos permitidos. Por favor, espera antes de intentar de nuevo.",
@@ -108,7 +119,38 @@ export const useGeneralContactForm = () => {
           description: "Ha ocurrido un error al enviar tu mensaje. Por favor, inténtalo de nuevo.",
           variant: "destructive",
         });
-        return { success: false, error: error.message };
+        return { success: false, error: contactError.message };
+      }
+
+      // Insert into form_submissions table
+      const { error: formError } = await supabase
+        .from('form_submissions')
+        .insert([{
+          form_type: 'contact',
+          full_name: formData.fullName,
+          email: formData.email,
+          form_data: submissionData,
+          status: 'new'
+        }]);
+
+      // Don't block UX if form_submissions fails, just log it
+      if (formError) {
+        console.warn('Error inserting form submission (non-blocking):', formError);
+      }
+
+      // Send notifications via Edge Function (non-blocking)
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: contactData?.id,
+            formType: 'contact',
+            email: formData.email,
+            fullName: formData.fullName,
+            formData: submissionData
+          }
+        });
+      } catch (notificationError) {
+        console.warn('Error sending notifications (non-blocking):', notificationError);
       }
 
       toast({
