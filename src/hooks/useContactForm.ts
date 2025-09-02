@@ -16,81 +16,68 @@ interface ContactFormResult {
   error?: string;
 }
 
-// Enhanced rate limiting with localStorage persistence
-const RATE_LIMIT_KEY = 'contact_form_rate_limit';
-const RATE_LIMIT_REQUESTS = 5;
-const RATE_LIMIT_WINDOW_MINUTES = 10;
+// Rate limiting configuration - 5 submissions per 10 minutes
+const RATE_LIMIT_KEY = 'contact_form_submissions';
+const MAX_SUBMISSIONS = 5;
+const WINDOW_MINUTES = 10;
 
 interface RateLimitData {
-  count: number;
-  resetTime: number;
-  attempts: Array<{ timestamp: number; ip?: string }>;
+  submissions: number[];
+  lastReset: number;
 }
 
+// Rate limiting utilities
 const getRateLimitData = (): RateLimitData => {
   try {
     const stored = localStorage.getItem(RATE_LIMIT_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.warn('📊 Rate limit: Error reading stored data:', error);
+    return stored ? JSON.parse(stored) : { submissions: [], lastReset: Date.now() };
+  } catch {
+    return { submissions: [], lastReset: Date.now() };
   }
-  
-  return {
-    count: 0,
-    resetTime: Date.now() + (RATE_LIMIT_WINDOW_MINUTES * 60 * 1000),
-    attempts: []
-  };
 };
 
 const setRateLimitData = (data: RateLimitData): void => {
   try {
     localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
   } catch (error) {
-    console.warn('📊 Rate limit: Error storing data:', error);
+    console.warn('⚠️ Could not store rate limit data:', error);
   }
 };
 
-const checkRateLimit = (): { allowed: boolean; remaining: number; resetIn: number } => {
+const checkRateLimit = (): { allowed: boolean; remaining: number; resetMinutes: number } => {
   const now = Date.now();
+  const windowMs = WINDOW_MINUTES * 60 * 1000;
   const data = getRateLimitData();
   
-  // Reset window if expired
-  if (now > data.resetTime) {
-    const newData: RateLimitData = {
-      count: 0,
-      resetTime: now + (RATE_LIMIT_WINDOW_MINUTES * 60 * 1000),
-      attempts: []
-    };
+  // Reset if window expired
+  if (now - data.lastReset > windowMs) {
+    const newData = { submissions: [], lastReset: now };
     setRateLimitData(newData);
-    console.log('📊 Rate limit: Window reset');
-    return { allowed: true, remaining: RATE_LIMIT_REQUESTS - 1, resetIn: RATE_LIMIT_WINDOW_MINUTES * 60 };
+    console.log('🔄 Rate limit window reset');
+    return { allowed: true, remaining: MAX_SUBMISSIONS - 1, resetMinutes: WINDOW_MINUTES };
   }
   
-  // Clean old attempts (older than window)
-  const windowStart = data.resetTime - (RATE_LIMIT_WINDOW_MINUTES * 60 * 1000);
-  data.attempts = data.attempts.filter(attempt => attempt.timestamp > windowStart);
-  data.count = data.attempts.length;
+  // Remove old submissions outside window
+  const validSubmissions = data.submissions.filter(time => now - time < windowMs);
+  data.submissions = validSubmissions;
   
-  const allowed = data.count < RATE_LIMIT_REQUESTS;
-  const remaining = Math.max(0, RATE_LIMIT_REQUESTS - data.count);
-  const resetIn = Math.ceil((data.resetTime - now) / 1000);
+  const allowed = validSubmissions.length < MAX_SUBMISSIONS;
+  const remaining = Math.max(0, MAX_SUBMISSIONS - validSubmissions.length);
+  const resetMinutes = Math.ceil((windowMs - (now - data.lastReset)) / (60 * 1000));
   
-  console.log(`📊 Rate limit check: ${data.count}/${RATE_LIMIT_REQUESTS}, remaining: ${remaining}, resetIn: ${resetIn}s`);
+  console.log(`📊 Rate limit: ${validSubmissions.length}/${MAX_SUBMISSIONS}, remaining: ${remaining}`);
   
-  return { allowed, remaining, resetIn };
+  return { allowed, remaining, resetMinutes };
 };
 
-const incrementRateLimit = (): void => {
+const recordSubmission = (): void => {
   const data = getRateLimitData();
-  data.attempts.push({ timestamp: Date.now() });
-  data.count = data.attempts.length;
+  data.submissions.push(Date.now());
   setRateLimitData(data);
-  console.log(`📊 Rate limit: Incremented to ${data.count}/${RATE_LIMIT_REQUESTS}`);
+  console.log(`📈 Rate limit: Recorded submission (${data.submissions.length}/${MAX_SUBMISSIONS})`);
 };
 
-// Utility to extract UTM parameters and referrer
+// Tracking data utilities
 const getTrackingData = (pageOrigin?: string) => {
   const urlParams = new URLSearchParams(window.location.search);
   
@@ -102,6 +89,7 @@ const getTrackingData = (pageOrigin?: string) => {
     utm_content: urlParams.get('utm_content') || null,
     referrer: document.referrer || null,
     page_origin: pageOrigin || 'unknown',
+    user_agent: navigator.userAgent,
   };
 };
 
@@ -111,59 +99,57 @@ export const useContactForm = () => {
 
   const submitContactForm = async (formData: ContactFormData, pageOrigin?: string): Promise<ContactFormResult> => {
     if (isSubmitting) {
-      console.warn('📝 ContactForm: Submission already in progress');
-      return { success: false, error: 'Envío en progreso' };
+      console.warn('⚠️ ContactForm: Already submitting');
+      return { success: false, error: 'Submission in progress' };
     }
     
     setIsSubmitting(true);
     const startTime = Date.now();
     
-    console.log('📝 ContactForm: Starting submission', { 
-      email: formData.email, 
+    console.log('🚀 ContactForm: Starting submission', { 
+      email: formData.email?.substring(0, 10) + '...', 
       pageOrigin,
-      hasRequiredFields: validateRequiredFields(formData),
-      timestamp: new Date().toISOString() 
+      requiredComplete: validateRequiredFields(formData)
     });
 
     try {
-      // 1. Client-side validation with Zod
-      console.log('📝 ContactForm: Validating data...');
+      // 1. Validate form data
+      console.log('🔍 Validating form data...');
       const validatedData = contactFormSchema.parse(formData);
-      console.log('✅ ContactForm: Data validation successful');
+      console.log('✅ Form validation passed');
 
-      // 2. Anti-spam honeypot check
+      // 2. Honeypot check
       if (validatedData.website) {
-        console.warn('🚫 ContactForm: Honeypot triggered:', validatedData.website);
+        console.warn('🍯 Honeypot triggered - possible bot submission');
         toast({
           title: "Error de seguridad",
-          description: "Formulario inválido detectado. Si eres humano, recarga la página.",
+          description: "Intento de spam detectado. Recarga la página si eres humano.",
           variant: "destructive",
         });
         return { success: false, error: 'Honeypot triggered' };
       }
 
-      // 3. Rate limiting check
+      // 3. Rate limit check
       const rateLimitCheck = checkRateLimit();
       if (!rateLimitCheck.allowed) {
-        console.warn('🚫 ContactForm: Rate limit exceeded');
-        const resetMinutes = Math.ceil(rateLimitCheck.resetIn / 60);
+        console.warn('🚫 Rate limit exceeded');
         toast({
-          title: "Límite de envíos alcanzado",
-          description: `Has alcanzado el máximo de envíos permitidos (${RATE_LIMIT_REQUESTS} cada ${RATE_LIMIT_WINDOW_MINUTES} minutos). Podrás enviar otra consulta en ${resetMinutes} minutos.`,
+          title: "Límite alcanzado",
+          description: `Máximo ${MAX_SUBMISSIONS} consultas cada ${WINDOW_MINUTES} minutos. Inténtalo en ${rateLimitCheck.resetMinutes} minutos.`,
           variant: "destructive",
         });
         return { success: false, error: 'Rate limit exceeded' };
       }
 
-      // 4. Increment rate limit counter
-      incrementRateLimit();
+      // 4. Record submission for rate limiting
+      recordSubmission();
 
       // 5. Get tracking data
       const trackingData = getTrackingData(pageOrigin);
-      console.log('📊 ContactForm: Tracking data collected', trackingData);
+      console.log('📊 Tracking data collected');
 
-      // 6. Insert into contact_leads table
-      console.log('💾 ContactForm: Inserting into contact_leads...');
+      // 6. Insert into contact_leads
+      console.log('💾 Inserting contact lead...');
       const contactLeadData = {
         full_name: validatedData.fullName,
         company: validatedData.company,
@@ -172,14 +158,8 @@ export const useContactForm = () => {
         country: validatedData.country || null,
         company_size: validatedData.companySize || null,
         referral: validatedData.referral || null,
-        message: validatedData.message || null,
         status: 'new' as const,
-        ip_address: null, // Will be set by RLS if available
         user_agent: navigator.userAgent.slice(0, 255),
-        utm_source: trackingData.utm_source,
-        utm_medium: trackingData.utm_medium,
-        utm_campaign: trackingData.utm_campaign,
-        referrer: trackingData.referrer,
       };
 
       const { data: contactData, error: contactError } = await supabase
@@ -189,28 +169,28 @@ export const useContactForm = () => {
         .single();
 
       if (contactError) {
-        console.error('❌ ContactForm: Error inserting contact lead:', contactError);
+        console.error('❌ Contact lead insert failed:', contactError.message);
         
-        // Handle specific rate limit errors from database
-        if (contactError.message?.includes('rate limit') || contactError.message?.includes('check_rate_limit_enhanced')) {
+        if (contactError.message?.includes('rate limit')) {
           toast({
-            title: "Límite de envíos alcanzado",
-            description: "Has alcanzado el máximo de envíos permitidos desde tu conexión. Por favor, espera antes de intentar de nuevo.",
+            title: "Límite de seguridad",
+            description: "Has alcanzado el límite de envíos. Espera antes de intentar de nuevo.",
             variant: "destructive",
           });
         } else {
           toast({
             title: "Error al enviar",
-            description: "Ha ocurrido un error al procesar tu solicitud. Por favor, verifica tus datos e inténtalo de nuevo.",
+            description: "No se pudo procesar tu consulta. Verifica los datos e inténtalo de nuevo.",
             variant: "destructive",
           });
         }
         return { success: false, error: contactError.message };
       }
 
-      console.log('✅ ContactForm: Contact lead inserted successfully', { id: contactData.id });
+      console.log('✅ Contact lead inserted:', contactData.id);
 
-      // 7. Insert into form_submissions table (non-blocking)
+      // 7. Insert into form_submissions (non-blocking)
+      console.log('💾 Recording form submission...');
       const formSubmissionData = {
         form_type: 'contact_form' as const,
         full_name: validatedData.fullName,
@@ -220,34 +200,25 @@ export const useContactForm = () => {
         form_data: {
           ...validatedData,
           ...trackingData,
-          submission_time: new Date().toISOString(),
-          user_agent: navigator.userAgent,
-          screen_resolution: `${screen.width}x${screen.height}`,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          submission_timestamp: new Date().toISOString(),
         },
         status: 'new' as const,
-        ip_address: null,
         user_agent: navigator.userAgent.slice(0, 255),
-        utm_source: trackingData.utm_source,
-        utm_medium: trackingData.utm_medium,
-        utm_campaign: trackingData.utm_campaign,
-        referrer: trackingData.referrer,
       };
 
-      console.log('💾 ContactForm: Inserting into form_submissions...');
       const { error: formError } = await supabase
         .from('form_submissions')
         .insert([formSubmissionData]);
 
       if (formError) {
-        console.warn('⚠️ ContactForm: Error inserting form submission (non-blocking):', formError);
+        console.warn('⚠️ Form submission insert failed (non-blocking):', formError.message);
       } else {
-        console.log('✅ ContactForm: Form submission recorded');
+        console.log('✅ Form submission recorded');
       }
 
-      // 8. Send notifications via Edge Function (non-blocking)
+      // 8. Send notifications (non-blocking)
       try {
-        console.log('📧 ContactForm: Sending notifications...');
+        console.log('📧 Sending notifications...');
         const { error: functionError } = await supabase.functions.invoke('send-form-notifications', {
           body: {
             submissionId: contactData.id,
@@ -259,21 +230,21 @@ export const useContactForm = () => {
         });
 
         if (functionError) {
-          console.warn('⚠️ ContactForm: Error sending notifications (non-blocking):', functionError);
+          console.warn('⚠️ Notification send failed (non-blocking):', functionError.message);
         } else {
-          console.log('✅ ContactForm: Notifications sent successfully');
+          console.log('✅ Notifications sent successfully');
         }
       } catch (notificationError) {
-        console.warn('⚠️ ContactForm: Exception sending notifications (non-blocking):', notificationError);
+        console.warn('⚠️ Notification error (non-blocking):', notificationError);
       }
 
-      // 9. Success feedback
+      // 9. Success
       const duration = Date.now() - startTime;
-      console.log(`🎉 ContactForm: Submission completed successfully in ${duration}ms`);
+      console.log(`🎉 ContactForm: Success in ${duration}ms`);
       
       toast({
         title: "¡Consulta enviada!",
-        description: "Hemos recibido tu solicitud. Te contactaremos pronto para ayudarte con la valoración de tu empresa.",
+        description: "Hemos recibido tu solicitud. Te contactaremos pronto para la valoración gratuita.",
         variant: "default",
       });
 
@@ -281,25 +252,25 @@ export const useContactForm = () => {
 
     } catch (error) {
       const duration = Date.now() - startTime;
-      console.error(`❌ ContactForm: Submission failed after ${duration}ms:`, error);
+      console.error(`💥 ContactForm: Failed after ${duration}ms:`, error);
       
       if (error instanceof z.ZodError) {
-        console.error('📝 ContactForm: Validation errors:', getFieldErrors(error));
+        console.error('📋 Validation errors:', getFieldErrors(error));
         toast({
           title: "Datos inválidos",
-          description: "Por favor, revisa los campos marcados e inténtalo de nuevo.",
+          description: "Revisa los campos marcados e inténtalo de nuevo.",
           variant: "destructive",
         });
       } else if (error instanceof Error && error.message.includes('network')) {
         toast({
           title: "Error de conexión",
-          description: "Problema de conexión. Verifica tu internet e inténtalo de nuevo.",
+          description: "Verifica tu conexión a internet e inténtalo de nuevo.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Error inesperado",
-          description: "Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde.",
+          description: "Ha ocurrido un error. Por favor, inténtalo más tarde.",
           variant: "destructive",
         });
       }
@@ -312,58 +283,54 @@ export const useContactForm = () => {
 
   const submitOperationContactForm = async (formData: OperationContactFormData): Promise<ContactFormResult> => {
     if (isSubmitting) {
-      console.warn('📝 OperationContactForm: Submission already in progress');
-      return { success: false, error: 'Envío en progreso' };
+      console.warn('⚠️ OperationContactForm: Already submitting');
+      return { success: false, error: 'Submission in progress' };
     }
     
     setIsSubmitting(true);
     const startTime = Date.now();
     
-    console.log('📝 OperationContactForm: Starting submission', { 
-      email: formData.email, 
-      operationId: formData.operationId,
-      companyName: formData.companyName,
-      timestamp: new Date().toISOString() 
+    console.log('🚀 OperationContactForm: Starting submission', { 
+      email: formData.email?.substring(0, 10) + '...',
+      operationId: formData.operationId
     });
 
     try {
-      // 1. Validate with Zod schema
+      // 1. Validate data
       const validatedData = operationContactFormSchema.parse(formData);
-      console.log('✅ OperationContactForm: Data validation successful');
+      console.log('✅ Operation form validation passed');
 
-      // 2. Anti-spam honeypot check
+      // 2. Honeypot check
       if (validatedData.website) {
-        console.warn('🚫 OperationContactForm: Honeypot triggered:', validatedData.website);
+        console.warn('🍯 Operation form: Honeypot triggered');
         toast({
           title: "Error de seguridad",
-          description: "Formulario inválido detectado. Si eres humano, recarga la página.",
+          description: "Intento de spam detectado. Recarga la página.",
           variant: "destructive",
         });
         return { success: false, error: 'Honeypot triggered' };
       }
 
-      // 3. Rate limiting check (stricter for operations)
+      // 3. Rate limit check
       const rateLimitCheck = checkRateLimit();
       if (!rateLimitCheck.allowed) {
-        console.warn('🚫 OperationContactForm: Rate limit exceeded');
-        const resetMinutes = Math.ceil(rateLimitCheck.resetIn / 60);
+        console.warn('🚫 Operation form: Rate limit exceeded');
         toast({
-          title: "Límite de consultas alcanzado",
-          description: `Has alcanzado el máximo de consultas de operaciones permitidas. Podrás enviar otra consulta en ${resetMinutes} minutos.`,
+          title: "Límite alcanzado",
+          description: `Máximo ${MAX_SUBMISSIONS} consultas cada ${WINDOW_MINUTES} minutos.`,
           variant: "destructive",
         });
         return { success: false, error: 'Rate limit exceeded' };
       }
 
-      // 4. Increment rate limit counter
-      incrementRateLimit();
+      recordSubmission();
 
-      // 5. Get tracking data
+      // 4. Get tracking data
       const trackingData = getTrackingData('operation_inquiry');
 
-      // 6. Insert into contact_leads table
-      console.log('💾 OperationContactForm: Inserting into contact_leads...');
-      const contactData = await supabase
+      // 5. Insert contact lead
+      console.log('💾 Inserting operation contact lead...');
+      const { data: contactData, error: contactError } = await supabase
         .from('contact_leads')
         .insert([{
           full_name: validatedData.fullName,
@@ -372,32 +339,26 @@ export const useContactForm = () => {
           email: validatedData.email,
           country: validatedData.country || null,
           company_size: validatedData.companySize || null,
-          referral: `operacion_${validatedData.operationId}`,
-          message: validatedData.message || null,
+          referral: `operation_${validatedData.operationId}`,
           status: 'new',
-          ip_address: null,
           user_agent: navigator.userAgent.slice(0, 255),
-          utm_source: trackingData.utm_source,
-          utm_medium: trackingData.utm_medium,
-          utm_campaign: trackingData.utm_campaign,
-          referrer: trackingData.referrer,
         }])
         .select()
         .single();
 
-      if (contactData.error) {
-        console.error('❌ OperationContactForm: Error inserting contact lead:', contactData.error);
+      if (contactError) {
+        console.error('❌ Operation contact lead failed:', contactError.message);
         toast({
           title: "Error al enviar",
-          description: "Ha ocurrido un error al procesar tu consulta. Por favor, inténtalo de nuevo.",
+          description: "No se pudo procesar tu consulta de operación.",
           variant: "destructive",
         });
-        return { success: false, error: contactData.error.message };
+        return { success: false, error: contactError.message };
       }
 
-      console.log('✅ OperationContactForm: Contact lead inserted', { id: contactData.data.id });
+      console.log('✅ Operation contact lead inserted:', contactData.id);
 
-      // 7. Insert into form_submissions table (non-blocking)
+      // 6. Insert form submission (non-blocking)
       const formSubmissionData = {
         form_type: 'operation_inquiry' as const,
         full_name: validatedData.fullName,
@@ -407,51 +368,37 @@ export const useContactForm = () => {
         form_data: {
           ...validatedData,
           ...trackingData,
-          submission_time: new Date().toISOString(),
+          submission_timestamp: new Date().toISOString(),
         },
         status: 'new' as const,
-        ip_address: null,
         user_agent: navigator.userAgent.slice(0, 255),
-        utm_source: trackingData.utm_source,
-        utm_medium: trackingData.utm_medium,
-        utm_campaign: trackingData.utm_campaign,
-        referrer: trackingData.referrer,
       };
 
-      const { error: formError } = await supabase
-        .from('form_submissions')
-        .insert([formSubmissionData]);
+      await supabase.from('form_submissions').insert([formSubmissionData]);
 
-      if (formError) {
-        console.warn('⚠️ OperationContactForm: Error inserting form submission (non-blocking):', formError);
-      } else {
-        console.log('✅ OperationContactForm: Form submission recorded');
-      }
-
-      // 8. Send notifications via Edge Function (non-blocking)
+      // 7. Send notifications (non-blocking)
       try {
-        console.log('📧 OperationContactForm: Sending notifications...');
         await supabase.functions.invoke('send-form-notifications', {
           body: {
-            submissionId: contactData.data.id,
+            submissionId: contactData.id,
             formType: 'operation_inquiry',
             email: validatedData.email,
             fullName: validatedData.fullName,
             formData: formSubmissionData.form_data,
           }
         });
-        console.log('✅ OperationContactForm: Notifications sent successfully');
-      } catch (notificationError) {
-        console.warn('⚠️ OperationContactForm: Error sending notifications (non-blocking):', notificationError);
+        console.log('✅ Operation notifications sent');
+      } catch (error) {
+        console.warn('⚠️ Operation notification error (non-blocking):', error);
       }
 
-      // 9. Success feedback
+      // 8. Success
       const duration = Date.now() - startTime;
-      console.log(`🎉 OperationContactForm: Submission completed successfully in ${duration}ms`);
+      console.log(`🎉 OperationContactForm: Success in ${duration}ms`);
       
       toast({
         title: "¡Consulta enviada!",
-        description: `Hemos recibido tu interés en ${validatedData.companyName}. Te contactaremos pronto con más información.`,
+        description: `Hemos recibido tu interés en ${validatedData.companyName}. Te contactaremos pronto.`,
         variant: "default",
       });
 
@@ -459,19 +406,19 @@ export const useContactForm = () => {
 
     } catch (error) {
       const duration = Date.now() - startTime;
-      console.error(`❌ OperationContactForm: Submission failed after ${duration}ms:`, error);
+      console.error(`💥 OperationContactForm: Failed after ${duration}ms:`, error);
       
       if (error instanceof z.ZodError) {
-        console.error('📝 OperationContactForm: Validation errors:', getFieldErrors(error));
+        console.error('📋 Operation validation errors:', getFieldErrors(error));
         toast({
           title: "Datos inválidos",
-          description: "Por favor, revisa los campos marcados e inténtalo de nuevo.",
+          description: "Revisa los campos e inténtalo de nuevo.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Error inesperado",
-          description: "Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.",
+          description: "No se pudo procesar la consulta de operación.",
           variant: "destructive",
         });
       }

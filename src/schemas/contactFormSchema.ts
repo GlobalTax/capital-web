@@ -1,45 +1,45 @@
 import { z } from 'zod';
 import { sanitizeInput } from '@/hooks/validation/sanitizers';
 
-// Spanish phone validation - accepts formats like +34, 6XX, 7XX, 8XX, 9XX
+// Spanish phone validation regex
 const phoneRegex = /^(\+34|0034|34)?[6-9]\d{8}$/;
 
-// International email validation with more strict rules
+// Strict email validation
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export const contactFormSchema = z.object({
-  // Required fields - strict validation
+  // Required fields
   fullName: z.string()
-    .min(2, 'El nombre debe tener al menos 2 caracteres')
-    .max(100, 'El nombre no puede exceder 100 caracteres')
-    .regex(/^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s'-]+$/, 'El nombre solo puede contener letras, espacios, guiones y apostrofes')
+    .min(2, 'Nombre debe tener al menos 2 caracteres')
+    .max(100, 'Nombre muy largo')
+    .regex(/^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s'-]+$/, 'Solo letras, espacios y guiones')
     .transform(val => sanitizeInput(val.trim(), { maxLength: 100 })),
   
   company: z.string()
-    .min(2, 'La empresa debe tener al menos 2 caracteres')
-    .max(100, 'La empresa no puede exceder 100 caracteres')
+    .min(2, 'Empresa debe tener al menos 2 caracteres')
+    .max(100, 'Nombre de empresa muy largo')
     .transform(val => sanitizeInput(val.trim(), { maxLength: 100 })),
   
   email: z.string()
     .email('Formato de email inválido')
-    .min(5, 'El email debe tener al menos 5 caracteres')
-    .max(254, 'El email no puede exceder 254 caracteres')
-    .regex(emailRegex, 'Email inválido - verifique el formato')
+    .min(5, 'Email muy corto')
+    .max(254, 'Email muy largo')
+    .regex(emailRegex, 'Email inválido')
     .transform(val => sanitizeInput(val.toLowerCase().trim(), { maxLength: 254 })),
   
-  // Optional fields - with proper validation when present
+  // Optional fields
   phone: z.string()
     .optional()
     .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 20 }) : undefined)
     .refine(val => !val || phoneRegex.test(val.replace(/[\s-]/g, '')), {
-      message: 'Formato de teléfono inválido (debe ser español: +34 6XX XXX XXX)'
+      message: 'Formato de teléfono español inválido'
     }),
   
   country: z.string()
     .optional()
     .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 50 }) : undefined)
     .refine(val => !val || val.length >= 2, {
-      message: 'El país debe tener al menos 2 caracteres'
+      message: 'País debe tener al menos 2 caracteres'
     }),
   
   companySize: z.string()
@@ -54,10 +54,10 @@ export const contactFormSchema = z.object({
     .optional()
     .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 1000 }) : undefined)
     .refine(val => !val || val.length <= 1000, {
-      message: 'El mensaje no puede exceder 1000 caracteres'
+      message: 'Mensaje muy largo (máximo 1000 caracteres)'
     }),
   
-  // Anti-spam honeypot field (MUST remain empty)
+  // Honeypot field - must be empty
   website: z.string()
     .max(0, 'Campo de seguridad inválido')
     .optional()
@@ -66,26 +66,25 @@ export const contactFormSchema = z.object({
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 
-// Operation-specific schema (extends base with operation details)
+// Operation-specific schema
 export const operationContactFormSchema = contactFormSchema.extend({
   operationId: z.string()
     .uuid('ID de operación inválido')
     .transform(val => sanitizeInput(val, { maxLength: 36 })),
     
   companyName: z.string()
-    .min(2, 'El nombre de la empresa debe tener al menos 2 caracteres')
-    .max(100, 'El nombre de la empresa no puede exceder 100 caracteres')
+    .min(2, 'Nombre de empresa debe tener al menos 2 caracteres')
+    .max(100, 'Nombre de empresa muy largo')
     .transform(val => sanitizeInput(val.trim(), { maxLength: 100 })),
 });
 
 export type OperationContactFormData = z.infer<typeof operationContactFormSchema>;
 
-// Utility function to validate required fields are present
+// Validation utilities
 export const validateRequiredFields = (data: Partial<ContactFormData>): boolean => {
   return !!(data.fullName && data.company && data.email);
 };
 
-// Utility function to get field validation errors
 export const getFieldErrors = (error: z.ZodError): Record<string, string> => {
   const fieldErrors: Record<string, string> = {};
   
