@@ -1,5 +1,8 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+import { useEmergencyOverride } from './useEmergencyOverride';
+import { useStorageFallback } from './useStorageFallback';
 
 interface TrackingOptions {
   enablePageTracking?: boolean;
@@ -24,60 +27,123 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableContactTracking = true
   } = options;
 
-  // Circuit breaker state - more aggressive for admin stability
+  // Enhanced circuit breaker state with degraded mode and exponential backoff
   const [circuitState, setCircuitState] = useState<{
     isOpen: boolean;
     failureCount: number;
     lastFailureTime: number;
     isDisabled: boolean;
+    isDegraded: boolean; // New: allows reduced frequency instead of full block
+    backoffLevel: number; // For exponential backoff
   }>({
     isOpen: false,
     failureCount: 0,
     lastFailureTime: 0,
-    isDisabled: false
+    isDisabled: false,
+    isDegraded: false,
+    backoffLevel: 0
   });
 
-  // Aggressive circuit breaker to reduce Edge Function consumption
-  const MAX_FAILURES = 2; // Reduced for faster circuit opening
-  const CIRCUIT_RESET_TIME = 600000; // 10 minutes
-  const shouldAllowRequest = useCallback(() => {
-    if (circuitState.isDisabled) {
-      return false; // Tracking completely disabled
-    }
-    
-    if (!circuitState.isOpen) {
-      return true; // Circuit closed, allow requests
-    }
-    
-    // Circuit is open, check if enough time has passed to try again
-    const now = Date.now();
-    const timeSinceLastFailure = now - circuitState.lastFailureTime;
-    const backoffTime = 10 * 60 * 1000; // 10 minutes
-    
-    return timeSinceLastFailure > backoffTime;
-  }, [circuitState]);
-
-  const recordSuccess = useCallback(() => {
-    setCircuitState(prev => ({
-      ...prev,
-      isOpen: false,
-      failureCount: 0
-    }));
+  // Improved circuit breaker configuration
+  const MAX_FAILURES = 5; // Increased threshold for better resilience
+  const DEGRADED_FAILURES = 3; // Start degraded mode earlier
+  const MAX_BACKOFF_LEVEL = 4; // Maximum backoff level
+  
+  // Dynamic backoff times (exponential: 1min, 2min, 5min, 10min, 20min)
+  const getBackoffTime = useCallback((level: number) => {
+    const backoffTimes = [60000, 120000, 300000, 600000, 1200000]; // 1m, 2m, 5m, 10m, 20m
+    return backoffTimes[Math.min(level, backoffTimes.length - 1)];
   }, []);
 
-  const recordFailure = useCallback(() => {
+  const shouldAllowRequest = useCallback((urgency: 'low' | 'medium' | 'high' = 'medium') => {
+    const { overrideState } = useEmergencyOverride();
+    
+    // Emergency override check
+    if (overrideState.circuitBreakerDisabled && 
+        overrideState.expiresAt && 
+        Date.now() < overrideState.expiresAt) {
+      logger.info('Circuit breaker bypassed via emergency override', {
+        reason: overrideState.reason,
+        activatedBy: overrideState.activatedBy
+      }, { context: 'system', component: 'useLeadTracking' });
+      return true;
+    }
+    
+    if (circuitState.isDisabled) {
+      return false; // Completely disabled
+    }
+    
+    if (!circuitState.isOpen && !circuitState.isDegraded) {
+      return true; // Circuit healthy
+    }
+    
+    const now = Date.now();
+    const timeSinceLastFailure = now - circuitState.lastFailureTime;
+    const backoffTime = getBackoffTime(circuitState.backoffLevel);
+    
+    // Check if circuit should transition back to closed
+    if (timeSinceLastFailure > backoffTime) {
+      return true; // Allow request to test circuit
+    }
+    
+    // Degraded mode: allow reduced requests based on urgency
+    if (circuitState.isDegraded && !circuitState.isOpen) {
+      const degradedInterval = Math.floor(backoffTime / (urgency === 'high' ? 2 : urgency === 'medium' ? 4 : 8));
+      return timeSinceLastFailure > degradedInterval;
+    }
+    
+    return false;
+  }, [circuitState, getBackoffTime]);
+
+  const recordSuccess = useCallback(() => {
     setCircuitState(prev => {
-      const newFailureCount = prev.failureCount + 1;
-      const shouldDisable = newFailureCount >= 10; // Disable after 10 failures
+      // Gradual recovery: reduce backoff level on success
+      const newBackoffLevel = Math.max(0, prev.backoffLevel - 1);
+      
+      logger.info('Circuit breaker success recorded', {
+        previousFailureCount: prev.failureCount,
+        previousBackoffLevel: prev.backoffLevel,
+        newBackoffLevel
+      }, { context: 'system', component: 'useLeadTracking' });
       
       return {
-        isOpen: newFailureCount >= 2, // Open circuit after 2 failures
-        failureCount: newFailureCount,
-        lastFailureTime: Date.now(),
-        isDisabled: shouldDisable
+        ...prev,
+        isOpen: false,
+        isDegraded: newBackoffLevel > 0, // Stay degraded if backoff level > 0
+        failureCount: Math.max(0, prev.failureCount - 1), // Gradually reduce failure count
+        backoffLevel: newBackoffLevel
       };
     });
   }, []);
+
+  const recordFailure = useCallback((error?: Error) => {
+    setCircuitState(prev => {
+      const newFailureCount = prev.failureCount + 1;
+      const newBackoffLevel = Math.min(MAX_BACKOFF_LEVEL, prev.backoffLevel + 1);
+      const shouldDegrade = newFailureCount >= DEGRADED_FAILURES;
+      const shouldOpen = newFailureCount >= MAX_FAILURES;
+      const shouldDisable = newFailureCount >= MAX_FAILURES * 2; // Complete disable after many failures
+      
+      logger.warn('Circuit breaker failure recorded', {
+        newFailureCount,
+        newBackoffLevel,
+        shouldDegrade,
+        shouldOpen,
+        shouldDisable,
+        error: error?.message,
+        backoffTime: getBackoffTime(newBackoffLevel)
+      }, { context: 'system', component: 'useLeadTracking' });
+      
+      return {
+        isOpen: shouldOpen,
+        isDegraded: shouldDegrade,
+        failureCount: newFailureCount,
+        lastFailureTime: Date.now(),
+        isDisabled: shouldDisable,
+        backoffLevel: newBackoffLevel
+      };
+    });
+  }, [getBackoffTime]);
 
   // Generar IDs únicos para sesión y visitante
   const getOrCreateVisitorId = useCallback(() => {
