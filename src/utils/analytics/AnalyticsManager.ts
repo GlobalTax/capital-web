@@ -77,27 +77,49 @@ export class AnalyticsManager {
 
   // Google Analytics 4 Integration
   private initGA4(measurementId: string) {
-    // Load GA4 script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-    document.head.appendChild(script);
+    try {
+      console.log('🟡 Initializing Google Analytics 4 with ID:', measurementId);
+      
+      // Initialize dataLayer first
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      const gtag = (...args: any[]) => {
+        (window as any).dataLayer.push(args);
+      };
+      (window as any).gtag = gtag;
 
-    // Initialize gtag
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    const gtag = (...args: any[]) => {
-      (window as any).dataLayer.push(args);
-    };
-    (window as any).gtag = gtag;
+      // Load GA4 script with proper error handling
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+      script.onerror = () => {
+        console.error('❌ Failed to load Google Analytics script');
+      };
+      script.onload = () => {
+        console.log('✅ Google Analytics script loaded successfully');
+        
+        // Configure GA4 after script loads
+        gtag('js', new Date());
+        gtag('config', measurementId, {
+          page_title: document.title,
+          page_location: window.location.href,
+          send_page_view: true // Enable automatic page view
+        });
+        
+        console.log('✅ Google Analytics 4 configured successfully');
+      };
+      
+      document.head.appendChild(script);
 
-    gtag('js', new Date());
-    gtag('config', measurementId, {
-      page_title: document.title,
-      page_location: window.location.href,
-      send_page_view: false // We'll control this manually
-    });
+      // Add global GA status for monitoring
+      (window as any).gaStatus = {
+        initialized: true,
+        measurementId: measurementId,
+        timestamp: new Date().toISOString()
+      };
 
-    console.log('GA4 initialized with ID:', measurementId);
+    } catch (error) {
+      console.error('❌ Error initializing Google Analytics:', error);
+    }
   }
 
   // Microsoft Clarity Integration
@@ -392,6 +414,16 @@ export class AnalyticsManager {
   // Page View Tracking
   trackPageView(path?: string) {
     const currentPath = path || window.location.pathname;
+    
+    // Enhanced page view tracking
+    if (this.config.ga4MeasurementId && (window as any).gtag) {
+      (window as any).gtag('event', 'page_view', {
+        page_title: document.title,
+        page_location: window.location.href,
+        page_path: currentPath
+      });
+      console.log('📊 GA4 page view tracked:', currentPath);
+    }
     
     this.trackEvent('page_view', {
       page_path: currentPath,
