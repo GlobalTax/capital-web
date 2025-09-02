@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useOperationContactForm } from '@/hooks/useOperationContactForm';
 import { Loader2 } from 'lucide-react';
 
 interface ContactFormOperationProps {
@@ -16,29 +17,27 @@ const ContactFormOperation: React.FC<ContactFormOperationProps> = ({
   operationId, 
   companyName 
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { submitOperationContactForm, isSubmitting } = useOperationContactForm();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     message: `Estoy interesado en obtener más información sobre la oportunidad de ${companyName}.`
   });
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    try {
-      // Simulamos el envío del formulario
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Consulta enviada",
-        description: "Nos pondremos en contacto contigo pronto.",
-        variant: "default",
-      });
+    const result = await submitOperationContactForm({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      message: formData.message,
+      operationId,
+      companyName
+    });
 
+    if (result.success) {
       // Reset form
       setFormData({
         name: '',
@@ -46,14 +45,6 @@ const ContactFormOperation: React.FC<ContactFormOperationProps> = ({
         phone: '',
         message: `Estoy interesado en obtener más información sobre la oportunidad de ${companyName}.`
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo enviar la consulta. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

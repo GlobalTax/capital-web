@@ -15,7 +15,7 @@ const corsHeaders = {
 
 interface FormNotificationRequest {
   submissionId: string;
-  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead';
+  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead' | 'operation_contact' | 'lead_magnet_download';
   email: string;
   fullName: string;
   formData: any;
@@ -102,12 +102,60 @@ const getEmailTemplate = (formType: string, data: any) => {
               <p><span class="label">Email:</span> ${data.email}</p>
               <p><span class="label">Empresa:</span> ${data.company}</p>
               <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">Página de origen:</span> ${data.page_origin || 'venta-empresas'}</p>
+              <p><span class="label">Rango de facturación:</span> ${data.revenue_range || 'No especificado'}</p>
               <p><span class="label">Mensaje:</span> ${data.message || 'Sin mensaje específico'}</p>
             </div>
           </div>
           <div class="footer">
             <p>Capittal - Venta de Empresas</p>
+          </div>
+        `
+      };
+
+    case 'operation_contact':
+      return {
+        subject: `🎯 Nueva Consulta de Operación - ${data.fullName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>🎯 Nueva Consulta de Operación</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Nombre:</span> ${data.fullName}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
+              <p><span class="label">Operación de interés:</span> ${data.company_name}</p>
+              <p><span class="label">ID de operación:</span> ${data.operation_id}</p>
+              <p><span class="label">Mensaje:</span> ${data.message}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Consulta de Operación</p>
+          </div>
+        `
+      };
+
+    case 'lead_magnet_download':
+      return {
+        subject: `📥 Nueva Descarga de Lead Magnet - ${data.fullName}`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>📥 Nueva Descarga de Lead Magnet</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p><span class="label">Nombre:</span> ${data.fullName}</p>
+              <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Empresa:</span> ${data.user_company || 'No especificada'}</p>
+              <p><span class="label">Teléfono:</span> ${data.user_phone || 'No especificado'}</p>
+              <p><span class="label">Lead Magnet ID:</span> ${data.lead_magnet_id}</p>
+              <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES')}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Capittal - Lead Magnet</p>
           </div>
         `
       };

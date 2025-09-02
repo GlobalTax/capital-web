@@ -45,8 +45,9 @@ const Newsletter = () => {
 
       if (error) throw error;
 
-      // Also insert into unified form_submissions table
-      await supabase
+      // Step 2: Insert into form_submissions table
+      console.log('=== STEP 2: INSERTING INTO form_submissions ===');
+      const { data: submissionData, error: submissionError } = await supabase
         .from('form_submissions')
         .insert({
           form_type: 'newsletter',
@@ -58,7 +59,45 @@ const Newsletter = () => {
           utm_source,
           utm_medium,
           utm_campaign
-        });
+        })
+        .select()
+        .single();
+
+      if (submissionError) {
+        console.error('Error inserting into form_submissions:', submissionError);
+        // Don't block if this fails - the main subscription succeeded
+      } else {
+        console.log('Successfully inserted into form_submissions:', submissionData);
+
+        // Step 3: Invoke send-form-notifications function
+        console.log('=== STEP 3: INVOKING send-form-notifications FUNCTION ===');
+        try {
+          const functionPayload = {
+            submissionId: submissionData.id,
+            formType: 'newsletter',
+            email: email.trim(),
+            fullName: email.trim(), // For newsletter, email is the identifier
+            formData: {}
+          };
+
+          console.log('Function payload:', functionPayload);
+
+          const { data: functionData, error: functionError } = await supabase.functions.invoke(
+            'send-form-notifications',
+            { body: functionPayload }
+          );
+
+          if (functionError) {
+            console.error('Error invoking send-form-notifications function:', functionError);
+            // Non-blocking error - notification failed but subscription succeeded
+          } else {
+            console.log('Successfully invoked send-form-notifications function:', functionData);
+          }
+        } catch (functionErr) {
+          console.error('Exception invoking send-form-notifications function:', functionErr);
+          // Non-blocking error
+        }
+      }
 
       setIsSubscribed(true);
       setEmail('');

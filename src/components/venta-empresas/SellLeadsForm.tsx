@@ -129,7 +129,9 @@ const SellLeadsForm = () => {
         return;
       }
       
-      const { data, error } = await supabase.from('sell_leads').insert(payload);
+      // Step 1: Insert into sell_leads
+      console.log('=== STEP 1: INSERTING INTO sell_leads ===');
+      const { data: sellLeadData, error } = await supabase.from('sell_leads').insert(payload).select().single();
 
       if (error) {
         console.error('Error submitting sell leads form:', error);
@@ -177,7 +179,85 @@ const SellLeadsForm = () => {
         throw error;
       }
 
-      console.log('Form submitted successfully:', data);
+      console.log('Successfully inserted into sell_leads:', sellLeadData);
+
+      // Step 2: Insert into form_submissions
+      console.log('=== STEP 2: INSERTING INTO form_submissions ===');
+      const formSubmissionPayload = {
+        form_type: 'sell_lead',
+        email: formData.email.trim(),
+        full_name: formData.full_name.trim(),
+        form_data: {
+          company: formData.company.trim(),
+          phone: formData.phone?.trim() || null,
+          revenue_range: formData.revenue_range,
+          message: formData.message.trim(),
+        },
+        ip_address: null, // Will be set by server
+        user_agent: navigator.userAgent,
+        referrer: document.referrer || null,
+        utm_source: urlParams.get('utm_source'),
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign'),
+      };
+
+      console.log('Payload for form_submissions insert:', formSubmissionPayload);
+
+      const { data: submissionData, error: submissionError } = await supabase
+        .from('form_submissions')
+        .insert(formSubmissionPayload)
+        .select()
+        .single();
+
+      if (submissionError) {
+        console.error('Error inserting into form_submissions:', {
+          code: submissionError.code,
+          message: submissionError.message,
+          details: submissionError.details,
+          hint: submissionError.hint
+        });
+        // Don't block if this fails - the main submission succeeded
+      } else {
+        console.log('Successfully inserted into form_submissions:', submissionData);
+
+        // Step 3: Invoke send-form-notifications function
+        console.log('=== STEP 3: INVOKING send-form-notifications FUNCTION ===');
+        try {
+          const functionPayload = {
+            submissionId: submissionData.id,
+            formType: 'sell_lead',
+            email: formData.email.trim(),
+            fullName: formData.full_name.trim(),
+            formData: {
+              company: formData.company.trim(),
+              phone: formData.phone?.trim() || null,
+              revenue_range: formData.revenue_range,
+              message: formData.message.trim(),
+            }
+          };
+
+          console.log('Function payload:', functionPayload);
+
+          const { data: functionData, error: functionError } = await supabase.functions.invoke(
+            'send-form-notifications',
+            { body: functionPayload }
+          );
+
+          if (functionError) {
+            console.error('Error invoking send-form-notifications function:', {
+              code: functionError.code,
+              message: functionError.message,
+              details: functionError.details
+            });
+            // Non-blocking error - notification failed but form submitted
+          } else {
+            console.log('Successfully invoked send-form-notifications function:', functionData);
+          }
+        } catch (functionErr) {
+          console.error('Exception invoking send-form-notifications function:', functionErr);
+          // Non-blocking error
+        }
+      }
       
       toast({
         title: "¡Mensaje enviado con éxito!",
