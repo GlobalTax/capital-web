@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Hook para prefetching inteligente de datos relacionados
 export const usePrefetch = () => {
   const queryClient = useQueryClient();
+  const { isAdmin } = useAuth();
 
   const prefetchMarketingData = async () => {
     // Prefetch datos relacionados con marketing
@@ -29,23 +31,31 @@ export const usePrefetch = () => {
 
   const prefetchContentData = async () => {
     // Prefetch datos de contenido
-    await Promise.all([
+    const promises = [
       queryClient.prefetchQuery({
         queryKey: ['blog_posts'],
         queryFn: () => supabase.from('blog_posts').select('*').order('created_at', { ascending: false }).limit(50),
         staleTime: 15 * 60 * 1000, // 15 minutos
       }),
       queryClient.prefetchQuery({
-        queryKey: ['blog_analytics'],
-        queryFn: () => supabase.from('blog_analytics').select('*').order('viewed_at', { ascending: false }).limit(200),
-        staleTime: 5 * 60 * 1000,
-      }),
-      queryClient.prefetchQuery({
         queryKey: ['case_studies'],
         queryFn: () => supabase.from('case_studies').select('*').order('created_at', { ascending: false }),
         staleTime: 30 * 60 * 1000, // 30 minutos
       })
-    ]);
+    ];
+
+    // Only prefetch blog_analytics if user is admin
+    if (isAdmin) {
+      promises.push(
+        queryClient.prefetchQuery({
+          queryKey: ['blog_analytics'],
+          queryFn: () => supabase.from('blog_analytics').select('*').order('viewed_at', { ascending: false }).limit(200),
+          staleTime: 5 * 60 * 1000,
+        })
+      );
+    }
+
+    await Promise.all(promises);
   };
 
   const prefetchSystemData = async () => {
@@ -88,6 +98,7 @@ export const usePrefetch = () => {
 // Hook para caché predictivo basado en patrones
 export const usePredictiveCache = () => {
   const queryClient = useQueryClient();
+  const { isAdmin } = useAuth();
 
   const invalidateRelatedQueries = (entityType: string) => {
     switch (entityType) {
@@ -127,17 +138,19 @@ export const usePredictiveCache = () => {
         });
         break;
       case '/admin/content-performance':
-        await queryClient.prefetchQuery({
-          queryKey: ['content_analytics'],
-          queryFn: async () => {
-            const [postsRes, analyticsRes] = await Promise.all([
-              supabase.from('blog_posts').select('*'),
-              supabase.from('blog_analytics').select('*')
-            ]);
-            return { postsRes, analyticsRes };
-          },
-          staleTime: 5 * 60 * 1000
-        });
+        if (isAdmin) {
+          await queryClient.prefetchQuery({
+            queryKey: ['content_analytics'],
+            queryFn: async () => {
+              const [postsRes, analyticsRes] = await Promise.all([
+                supabase.from('blog_posts').select('*'),
+                supabase.from('blog_analytics').select('*')
+              ]);
+              return { postsRes, analyticsRes };
+            },
+            staleTime: 5 * 60 * 1000
+          });
+        }
         break;
     }
   };

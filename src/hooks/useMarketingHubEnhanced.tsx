@@ -2,10 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MarketingMetrics } from '@/types/marketingHub';
 import { usePrefetch } from './usePrefetch';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Hook mejorado para el Marketing Hub con caching inteligente y prefetching
 export const useMarketingHubEnhanced = () => {
   const { prefetchMarketingData } = usePrefetch();
+  const { isAdmin } = useAuth();
 
   // Query unificada optimizada - elimina N+1 queries
   const {
@@ -28,20 +30,24 @@ export const useMarketingHubEnhanced = () => {
           contactLeadsRes,
           leadScoresRes,
           companyValuationsRes,
-          blogAnalyticsRes,
           blogPostMetricsRes
         ] = await Promise.all([
           supabase.from('contact_leads').select('id, created_at, full_name, company').order('created_at', { ascending: false }),
           supabase.from('lead_scores').select('id, total_score, company_domain').order('total_score', { ascending: false }),
           supabase.from('company_valuations').select('id, final_valuation, company_name, created_at').order('created_at', { ascending: false }),
-          supabase.from('blog_analytics').select('id, post_id, viewed_at').order('viewed_at', { ascending: false }),
           supabase.from('blog_post_metrics').select('id, post_id, total_views, unique_views, avg_reading_time, post_slug, avg_scroll_percentage').order('total_views', { ascending: false })
         ]);
+
+        // Only query blog_analytics if user is admin
+        let blogAnalyticsRes = null;
+        if (isAdmin) {
+          blogAnalyticsRes = await supabase.from('blog_analytics').select('id, post_id, viewed_at').order('viewed_at', { ascending: false });
+        }
 
       const contactLeads = contactLeadsRes.data || [];
       const leadScores = leadScoresRes.data || [];
       const companyValuations = companyValuationsRes.data || [];
-      const blogAnalytics = blogAnalyticsRes.data || [];
+      const blogAnalytics = blogAnalyticsRes?.data || [];
       const blogPostMetrics = blogPostMetricsRes.data || [];
 
       // Calcular métricas avanzadas
@@ -114,9 +120,10 @@ export const useMarketingHubEnhanced = () => {
         };
       }
     },
+    enabled: isAdmin, // Only run if user is admin
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos en cache
-    refetchInterval: 5 * 60 * 1000 // Refetch cada 5 minutos
+    refetchInterval: isAdmin ? 5 * 60 * 1000 : false // Only refetch if admin
   });
 
   // Content Performance con agregaciones optimizadas
@@ -128,19 +135,24 @@ export const useMarketingHubEnhanced = () => {
     queryKey: ['content_performance_enhanced'],
     queryFn: async () => {
       try {
-        const [postsRes, metricsRes, analyticsRes] = await Promise.all([
+        const [postsRes, metricsRes] = await Promise.all([
           supabase.from('blog_posts').select('*'),
-          supabase.from('blog_post_metrics').select('*'),
-          supabase.from('blog_analytics').select('*')
+          supabase.from('blog_post_metrics').select('*')
         ]);
+
+        // Only query blog_analytics if user is admin
+        let analyticsRes = null;
+        if (isAdmin) {
+          analyticsRes = await supabase.from('blog_analytics').select('*');
+        }
 
         if (postsRes.error) throw postsRes.error;
         if (metricsRes.error) throw metricsRes.error;
-        if (analyticsRes.error) throw analyticsRes.error;
+        if (analyticsRes?.error) throw analyticsRes.error;
 
         const posts = postsRes.data || [];
         const metrics = metricsRes.data || [];
-        const analytics = analyticsRes.data || [];
+        const analytics = analyticsRes?.data || [];
 
         return posts.map(post => {
           const postMetrics = metrics.find(m => m.post_id === post.id);
@@ -165,6 +177,7 @@ export const useMarketingHubEnhanced = () => {
         throw error;
       }
     },
+    enabled: isAdmin, // Only run if user is admin
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
