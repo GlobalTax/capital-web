@@ -108,12 +108,26 @@ const SellLeadsForm = () => {
       console.log('Payload being sent:', payload);
       console.log('Payload validation:', {
         full_name_length: payload.full_name.length,
+        full_name_valid: payload.full_name.length >= 2 && payload.full_name.length <= 100,
         company_length: payload.company.length,
+        company_valid: payload.company.length >= 2 && payload.company.length <= 100,
         email_length: payload.email.length,
         email_format: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(payload.email),
+        email_length_valid: payload.email.length <= 254,
+        revenue_range: payload.revenue_range,
         revenue_range_valid: ['<1M', '1-5M', '5-10M', '>10M'].includes(payload.revenue_range),
         has_message: !!payload.message.trim()
       });
+
+      // Validate required fields according to RLS policy
+      if (!['<1M', '1-5M', '5-10M', '>10M'].includes(payload.revenue_range)) {
+        toast({
+          title: "Error de validación",
+          description: "Por favor, selecciona un rango de facturación válido.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       const { data, error } = await supabase.from('sell_leads').insert(payload);
 

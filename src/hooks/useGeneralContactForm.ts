@@ -58,14 +58,33 @@ export const useGeneralContactForm = () => {
       console.log('Submission data being sent:', submissionData);
       console.log('Data validation:', {
         has_full_name: !!submissionData.full_name?.trim(),
+        full_name_length: submissionData.full_name?.trim().length || 0,
         has_company: !!submissionData.company?.trim(),
+        company_length: submissionData.company?.trim().length || 0,
         has_email: !!submissionData.email?.trim(),
         email_valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submissionData.email || ''),
         has_country: !!submissionData.country?.trim(),
         has_annual_revenue: !!submissionData.annual_revenue?.trim(),
         has_how_did_you_hear: !!submissionData.how_did_you_hear?.trim(),
-        has_message: !!submissionData.message?.trim()
+        has_message: !!submissionData.message?.trim(),
+        message_length: submissionData.message?.trim().length || 0,
+        message_min_length: submissionData.message?.trim().length >= 10,
+        has_page_origin: !!submissionData.page_origin
       });
+
+      // Validate required fields according to RLS policy
+      if (!submissionData.message?.trim() || submissionData.message.trim().length < 10) {
+        toast({
+          title: "Mensaje requerido",
+          description: "El mensaje debe tener al menos 10 caracteres.",
+          variant: "destructive",
+        });
+        return { success: false, error: "Message too short" };
+      }
+
+      if (!submissionData.page_origin) {
+        submissionData.page_origin = 'contacto'; // Ensure page_origin is always set
+      }
       
       const { error } = await supabase
         .from('general_contact_leads')
