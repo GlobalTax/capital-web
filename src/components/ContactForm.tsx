@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Loader2, Send, Shield } from 'lucide-react';
+import { Loader2, Send, Shield } from 'lucide-react';
 import { useContactForm } from '@/hooks/useContactForm';
 import { type ContactFormData } from '@/schemas/contactFormSchema';
 
@@ -22,7 +21,6 @@ const ContactForm: React.FC<ContactFormProps> = ({
   className = '' 
 }) => {
   const { submitContactForm, isSubmitting } = useContactForm();
-  const [isOptionalOpen, setIsOptionalOpen] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>({
     fullName: '',
     company: '',
@@ -37,11 +35,12 @@ const ContactForm: React.FC<ContactFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('📋 Contact form submitted from:', pageOrigin);
+    console.log('📋 ContactForm: Starting submission', { pageOrigin, hasRequiredFields: !!(formData.fullName && formData.company && formData.email) });
     
     const result = await submitContactForm(formData, pageOrigin);
     
     if (result.success) {
+      console.log('📋 ContactForm: Submission successful, resetting form');
       // Reset form on success
       setFormData({
         fullName: '',
@@ -54,7 +53,8 @@ const ContactForm: React.FC<ContactFormProps> = ({
         message: '',
         website: '',
       });
-      setIsOptionalOpen(false);
+    } else {
+      console.error('📋 ContactForm: Submission failed', result.error);
     }
   };
 
@@ -80,16 +80,16 @@ const ContactForm: React.FC<ContactFormProps> = ({
             Consulta Gratuita
           </CardTitle>
           <p className="text-muted-foreground mt-2">
-            Cuéntanos sobre tu empresa y te ayudaremos con una valoración preliminar gratuita
+            Te ayudaremos con una valoración preliminar gratuita de tu empresa
           </p>
         </CardHeader>
       )}
       
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Honeypot field - hidden from users */}
-          <div className="hidden" aria-hidden="true">
-            <label htmlFor="website">Website (do not fill):</label>
+          {/* Honeypot field - completely hidden from users and screen readers */}
+          <div style={{ display: 'none' }} aria-hidden="true">
+            <label htmlFor="website">Website (leave empty):</label>
             <input
               id="website"
               name="website"
@@ -101,8 +101,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
             />
           </div>
 
-          {/* Required Fields */}
+          {/* Required Fields Section */}
           <div className="space-y-4">
+            <h3 className="text-lg font-medium text-foreground mb-4">Información requerida</h3>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="fullName" className="text-sm font-medium">
@@ -118,6 +120,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
                   className="mt-1"
                   disabled={isSubmitting}
                   aria-describedby="fullName-help"
+                  aria-required="true"
                 />
                 <p id="fullName-help" className="text-xs text-muted-foreground mt-1">
                   Mínimo 2 caracteres
@@ -138,6 +141,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
                   className="mt-1"
                   disabled={isSubmitting}
                   aria-describedby="company-help"
+                  aria-required="true"
                 />
                 <p id="company-help" className="text-xs text-muted-foreground mt-1">
                   Empresa o proyecto empresarial
@@ -159,15 +163,128 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 className="mt-1"
                 disabled={isSubmitting}
                 aria-describedby="email-help"
+                aria-required="true"
               />
               <p id="email-help" className="text-xs text-muted-foreground mt-1">
                 Te contactaremos a este email
               </p>
             </div>
+          </div>
+
+          {/* Optional Fields Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-foreground mb-4">Información adicional (opcional)</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  Teléfono
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone || ''}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="+34 600 000 000"
+                  className="mt-1"
+                  disabled={isSubmitting}
+                  aria-describedby="phone-help"
+                />
+                <p id="phone-help" className="text-xs text-muted-foreground mt-1">
+                  Formato español recomendado
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="country" className="text-sm font-medium">
+                  País
+                </Label>
+                <Select 
+                  value={formData.country || ''} 
+                  onValueChange={(value) => handleSelectChange('country', value)}
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger className="mt-1" aria-describedby="country-help">
+                    <SelectValue placeholder="Selecciona tu país" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="españa">España</SelectItem>
+                    <SelectItem value="portugal">Portugal</SelectItem>
+                    <SelectItem value="francia">Francia</SelectItem>
+                    <SelectItem value="italia">Italia</SelectItem>
+                    <SelectItem value="reino_unido">Reino Unido</SelectItem>
+                    <SelectItem value="alemania">Alemania</SelectItem>
+                    <SelectItem value="mexico">México</SelectItem>
+                    <SelectItem value="colombia">Colombia</SelectItem>
+                    <SelectItem value="argentina">Argentina</SelectItem>
+                    <SelectItem value="chile">Chile</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p id="country-help" className="text-xs text-muted-foreground mt-1">
+                  Opcional
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="companySize" className="text-sm font-medium">
+                  Tamaño de empresa
+                </Label>
+                <Select 
+                  value={formData.companySize || ''} 
+                  onValueChange={(value) => handleSelectChange('companySize', value)}
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger className="mt-1" aria-describedby="companySize-help">
+                    <SelectValue placeholder="Ingresos anuales" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="menos_100k">Menos de €100.000</SelectItem>
+                    <SelectItem value="100k_500k">€100.000 - €500.000</SelectItem>
+                    <SelectItem value="500k_1m">€500.000 - €1M</SelectItem>
+                    <SelectItem value="1m_5m">€1M - €5M</SelectItem>
+                    <SelectItem value="5m_20m">€5M - €20M</SelectItem>
+                    <SelectItem value="mas_20m">Más de €20M</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p id="companySize-help" className="text-xs text-muted-foreground mt-1">
+                  Ayuda a personalizar nuestro servicio
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="referral" className="text-sm font-medium">
+                  ¿Cómo nos conociste?
+                </Label>
+                <Select 
+                  value={formData.referral || ''} 
+                  onValueChange={(value) => handleSelectChange('referral', value)}
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger className="mt-1" aria-describedby="referral-help">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="google">Google / Búsqueda</SelectItem>
+                    <SelectItem value="linkedin">LinkedIn</SelectItem>
+                    <SelectItem value="referencia">Referencia / Recomendación</SelectItem>
+                    <SelectItem value="prensa">Prensa / Artículo</SelectItem>
+                    <SelectItem value="evento">Evento</SelectItem>
+                    <SelectItem value="redes_sociales">Redes sociales</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p id="referral-help" className="text-xs text-muted-foreground mt-1">
+                  Nos ayuda a mejorar nuestro servicio
+                </p>
+              </div>
+            </div>
 
             <div>
               <Label htmlFor="message" className="text-sm font-medium">
-                Mensaje (opcional)
+                Mensaje adicional
               </Label>
               <Textarea
                 id="message"
@@ -180,125 +297,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 aria-describedby="message-help"
               />
               <p id="message-help" className="text-xs text-muted-foreground mt-1">
-                Ayúdanos a preparar mejor nuestra consulta
+                Opcional - Ayúdanos a preparar mejor nuestra consulta
               </p>
             </div>
           </div>
-
-          {/* Optional Fields - Collapsible */}
-          <Collapsible open={isOptionalOpen} onOpenChange={setIsOptionalOpen}>
-            <CollapsibleTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-                disabled={isSubmitting}
-              >
-                {isOptionalOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                Información adicional (opcional)
-              </Button>
-            </CollapsibleTrigger>
-            
-            <CollapsibleContent className="space-y-4 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone" className="text-sm font-medium">
-                    Teléfono
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone || ''}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="+34 600 000 000"
-                    className="mt-1"
-                    disabled={isSubmitting}
-                    aria-describedby="phone-help"
-                  />
-                  <p id="phone-help" className="text-xs text-muted-foreground mt-1">
-                    Formato español recomendado
-                  </p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="country" className="text-sm font-medium">
-                    País
-                  </Label>
-                  <Select 
-                    value={formData.country || ''} 
-                    onValueChange={(value) => handleSelectChange('country', value)}
-                    disabled={isSubmitting}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona tu país" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="españa">España</SelectItem>
-                      <SelectItem value="portugal">Portugal</SelectItem>
-                      <SelectItem value="francia">Francia</SelectItem>
-                      <SelectItem value="italia">Italia</SelectItem>
-                      <SelectItem value="reino_unido">Reino Unido</SelectItem>
-                      <SelectItem value="alemania">Alemania</SelectItem>
-                      <SelectItem value="mexico">México</SelectItem>
-                      <SelectItem value="colombia">Colombia</SelectItem>
-                      <SelectItem value="argentina">Argentina</SelectItem>
-                      <SelectItem value="chile">Chile</SelectItem>
-                      <SelectItem value="otro">Otro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="companySize" className="text-sm font-medium">
-                    Tamaño de empresa
-                  </Label>
-                  <Select 
-                    value={formData.companySize || ''} 
-                    onValueChange={(value) => handleSelectChange('companySize', value)}
-                    disabled={isSubmitting}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Ingresos anuales" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="menos_100k">Menos de €100.000</SelectItem>
-                      <SelectItem value="100k_500k">€100.000 - €500.000</SelectItem>
-                      <SelectItem value="500k_1m">€500.000 - €1M</SelectItem>
-                      <SelectItem value="1m_5m">€1M - €5M</SelectItem>
-                      <SelectItem value="5m_20m">€5M - €20M</SelectItem>
-                      <SelectItem value="mas_20m">Más de €20M</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="referral" className="text-sm font-medium">
-                    ¿Cómo nos conociste?
-                  </Label>
-                  <Select 
-                    value={formData.referral || ''} 
-                    onValueChange={(value) => handleSelectChange('referral', value)}
-                    disabled={isSubmitting}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="google">Google / Búsqueda</SelectItem>
-                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                      <SelectItem value="referencia">Referencia / Recomendación</SelectItem>
-                      <SelectItem value="prensa">Prensa / Artículo</SelectItem>
-                      <SelectItem value="evento">Evento</SelectItem>
-                      <SelectItem value="redes_sociales">Redes sociales</SelectItem>
-                      <SelectItem value="otro">Otro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
 
           {/* Submit Button */}
           <div className="pt-4">
@@ -329,9 +331,9 @@ const ContactForm: React.FC<ContactFormProps> = ({
             </div>
           </div>
 
-          {/* Rate limit info */}
-          <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>Límite: 5 consultas cada 10 minutos por dispositivo</p>
+          {/* Footer Info */}
+          <div className="text-xs text-muted-foreground text-center space-y-1 pt-2 border-t border-border">
+            <p>Límite de seguridad: 5 consultas cada 10 minutos por dispositivo</p>
             <p>
               Al enviar esta consulta aceptas que te contactemos para ofrecerte información sobre nuestros servicios.
             </p>
