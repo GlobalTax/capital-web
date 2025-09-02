@@ -7,9 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTrackingConfig } from '@/hooks/useTrackingConfig';
 import { FacebookPixelStatus } from './FacebookPixelStatus';
 import { GoogleAnalyticsStatus } from './GoogleAnalyticsStatus';
+import EventSyncMonitor from './EventSyncMonitor';
 
 const TrackingConfig = () => {
   const { config, isLoading, isSaving, updateConfig, saveConfiguration } = useTrackingConfig();
@@ -24,18 +26,36 @@ const TrackingConfig = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Configuración de Tracking</h1>
+          <h1 className="text-3xl font-bold">Configuración de Tracking Optimizada</h1>
           <p className="text-muted-foreground">
-            Configura las herramientas de seguimiento y análisis
+            Sistema optimizado de sincronización entre Facebook Pixel y Google Analytics 4
           </p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving || isLoading}>
+        <Button 
+          onClick={handleSave} 
+          disabled={isSaving || isLoading}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
           <Save className="h-4 w-4 mr-2" />
-          {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+          {isSaving ? 'Guardando...' : 'Guardar Configuración'}
         </Button>
       </div>
+
+      <Tabs defaultValue="config" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="config">Configuración</TabsTrigger>
+          <TabsTrigger value="monitor">Monitor de Eventos 1:1</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="config" className="space-y-6">
+          <Alert>
+            <Zap className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Sistema Optimizado 1:1:</strong> Cada evento se mapea perfectamente entre Facebook Pixel y GA4 siguiendo las recomendaciones de Meta para maximizar el rendimiento de tus anuncios.
+            </AlertDescription>
+          </Alert>
 
       {/* Analytics Configuration */}
       <Card>
@@ -96,7 +116,7 @@ const TrackingConfig = () => {
           <Alert>
             <Zap className="h-4 w-4" />
             <AlertDescription>
-              <strong>Eventos automáticos para valoraciones:</strong> InitiateCheckout (inicio), Lead (completado), ViewContent (recursos)
+              <strong>Mapeo 1:1 Optimizado:</strong> InitiateCheckout (calculadora) → begin_checkout, Lead (formularios) → generate_lead, ViewContent (recursos) → view_item. Parámetros sincronizados automáticamente.
             </AlertDescription>
           </Alert>
           
@@ -223,9 +243,9 @@ const TrackingConfig = () => {
       {/* Configuration Preview */}
       <Card>
         <CardHeader>
-          <CardTitle>Vista Previa de Configuración</CardTitle>
+          <CardTitle>Vista Previa - Sistema 1:1 Optimizado</CardTitle>
           <CardDescription>
-            Resumen de los servicios de tracking configurados
+            Configuración optimizada según las recomendaciones de Meta
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -233,19 +253,23 @@ const TrackingConfig = () => {
             <div className="space-y-2">
               <h4 className="font-medium">Servicios Activos:</h4>
               <ul className="text-sm space-y-1">
-                {config.googleAnalyticsId && <li>✅ Google Analytics</li>}
+                {config.googleAnalyticsId && <li>✅ Google Analytics 4 (GA4)</li>}
                 {config.googleTagManagerId && <li>✅ Google Tag Manager</li>}
-                {config.facebookPixelId && <li>✅ Facebook Pixel</li>}
+                {config.facebookPixelId && <li>✅ Meta Pixel (Facebook)</li>}
                 {config.linkedInInsightTag && <li>✅ LinkedIn Insight Tag</li>}
                 {config.hotjarId && <li>✅ Hotjar</li>}
+                {config.facebookPixelId && config.googleAnalyticsId && <li>🎯 <strong>Sincronización 1:1 Activa</strong></li>}
                 {!config.googleAnalyticsId && !config.googleTagManagerId && !config.facebookPixelId && !config.linkedInInsightTag && !config.hotjarId && (
                   <li className="text-muted-foreground">No hay servicios configurados</li>
                 )}
               </ul>
             </div>
             <div className="space-y-2">
-              <h4 className="font-medium">Opciones Habilitadas:</h4>
+              <h4 className="font-medium">Optimizaciones Activas:</h4>
               <ul className="text-sm space-y-1">
+                {config.facebookPixelId && config.googleAnalyticsId && <li>✅ Mapeo de eventos 1:1</li>}
+                {config.facebookPixelId && config.googleAnalyticsId && <li>✅ Parámetros sincronizados</li>}
+                {config.facebookPixelId && config.googleAnalyticsId && <li>✅ Valores consistentes (EUR)</li>}
                 {config.enableHeatmaps && <li>✅ Heatmaps</li>}
                 {config.enableSessionRecording && <li>✅ Grabación de Sesiones</li>}
                 {config.enableLeadTracking && <li>✅ Tracking de Leads</li>}
@@ -253,8 +277,23 @@ const TrackingConfig = () => {
               </ul>
             </div>
           </div>
+          
+          {config.facebookPixelId && config.googleAnalyticsId && (
+            <Alert className="mt-4">
+              <Zap className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Sistema 1:1 Configurado:</strong> Tus eventos están optimizados para maximizar el rendimiento de Meta Ads con asignaciones perfectas entre plataformas.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="monitor">
+          <EventSyncMonitor />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

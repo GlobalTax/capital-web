@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { TrackingConfigService } from '@/services/TrackingConfigService';
 import { initAnalytics } from '@/utils/analytics/AnalyticsManager';
+import { initEventSynchronizer } from '@/utils/analytics/EventSynchronizer';
 
 /**
  * Component responsible for initializing tracking services
@@ -36,6 +37,17 @@ export const TrackingInitializer = () => {
             enableAlerting: true,
             enableAttribution: true,
           });
+
+          // Initialize optimized event synchronizer
+          const eventSynchronizer = initEventSynchronizer({
+            enableFacebook: !!config.facebookPixelId,
+            enableGA4: !!config.googleAnalyticsId,
+            enableValidation: true,
+            debugMode: process.env.NODE_ENV === 'development'
+          });
+
+          // Make synchronizer globally available for analytics manager
+          (window as any).eventSynchronizer = eventSynchronizer;
 
           // Initialize Google Tag Manager if configured
           if (config.googleTagManagerId) {

@@ -316,7 +316,7 @@ export class AnalyticsManager {
     console.log('Company tracking initialized with ID:', trackingId);
   }
 
-  // Enhanced Event Tracking with Attribution
+  // Enhanced Event Tracking with Optimized Synchronization
   trackEvent(eventName: string, properties: Record<string, any> = {}) {
     const event: AnalyticsEvent = {
       name: eventName,
@@ -337,6 +337,19 @@ export class AnalyticsManager {
       this.trackAttributionTouchPoint(eventName, properties);
     }
 
+    // Use optimized event synchronization if available
+    if ((window as any).eventSynchronizer) {
+      (window as any).eventSynchronizer.syncEvent(eventName, properties);
+    } else {
+      // Fallback to legacy method
+      this.trackEventLegacy(eventName, properties);
+    }
+
+    console.log('Event tracked:', event);
+  }
+
+  // Legacy event tracking method (for backward compatibility)
+  private trackEventLegacy(eventName: string, properties: Record<string, any>) {
     // Send to GA4
     if (this.config.ga4MeasurementId && (window as any).gtag) {
       (window as any).gtag('event', eventName, properties);
@@ -351,8 +364,6 @@ export class AnalyticsManager {
     if (this.config.facebookPixelId && (window as any).fbq) {
       this.trackFacebookEvent(eventName, properties);
     }
-
-    console.log('Event tracked:', event);
   }
 
   private trackAttributionTouchPoint(eventName: string, properties: Record<string, any>) {
