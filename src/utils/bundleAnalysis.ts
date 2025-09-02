@@ -3,7 +3,7 @@
 
 // Función para analizar el tamaño de bundle en desarrollo
 export const logBundleSize = () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     // Simular análisis de bundle (en producción usarías webpack-bundle-analyzer)
     const estimatedSizes = {
       'vendor.js': '250KB',

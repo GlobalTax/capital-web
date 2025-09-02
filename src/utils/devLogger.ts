@@ -11,7 +11,7 @@ interface DevLogEntry {
 
 class DevLogger {
   private static instance: DevLogger;
-  private enabled = process.env.NODE_ENV === 'development';
+  private enabled = import.meta.env.DEV;
   private entries: DevLogEntry[] = [];
   private maxEntries = 100;
 

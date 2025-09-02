@@ -227,7 +227,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
       console.debug('🔄 Tracking event:', eventType, 'for visitor:', visitorId.substring(0, 8) + '...');
       
       // Skip tracking in development, admin routes, or when circuit is open
-      if (process.env.NODE_ENV !== 'production' || 
+      if (!import.meta.env.PROD ||
           window.location.pathname.startsWith('/admin') ||
           circuitState.isOpen) {
         console.debug('⏭️ Tracking skipped (dev/admin/circuit-open)');

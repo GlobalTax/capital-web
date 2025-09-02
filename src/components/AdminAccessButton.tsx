@@ -8,7 +8,7 @@ import { Shield } from 'lucide-react';
  */
 const AdminAccessButton: React.FC = () => {
   // Solo mostrar en desarrollo o con query param especial
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = import.meta.env.DEV;
   const hasAdminParam = typeof window !== 'undefined' && 
     new URLSearchParams(window.location.search).has('admin');
   

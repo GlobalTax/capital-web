@@ -8,7 +8,7 @@ interface PerformanceMetric {
 
 class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
-  private isEnabled = process.env.NODE_ENV === 'development';
+  private isEnabled = import.meta.env.DEV;
 
   record(name: string, value: number, category: PerformanceMetric['category']) {
     if (!this.isEnabled) return;

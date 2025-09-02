@@ -202,8 +202,9 @@ export const disableServiceWorkers = () =>
   emergencyCleanup.disableServiceWorkers();
 
 // Expose globally in development for debugging
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV && typeof window !== 'undefined') {
   (window as any).emergencyCleanup = emergencyCleanup;
   (window as any).performDeepCleanup = performDeepCleanup;
   (window as any).quickCleanup = quickCleanup;
+  (window as any).disableServiceWorkers = disableServiceWorkers;
 }

@@ -338,7 +338,7 @@ function App() {
     const initializeFeatures = async () => {
       try {
         // Solo en desarrollo: optimizaciones de bundle
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           const { logBundleSize, monitorResourceLoading } = await import('./utils/bundleAnalysis');
           logBundleSize();
           monitorResourceLoading();
@@ -348,7 +348,7 @@ function App() {
         const swCleanupKey = 'capittal-sw-cleanup-done';
         const shouldCleanSW = !sessionStorage.getItem(swCleanupKey);
         
-        if (shouldCleanSW && process.env.VITE_DISABLE_SW === "1") {
+        if (shouldCleanSW && import.meta.env.VITE_DISABLE_SW === "1") {
           console.log('🧹 INITIATING SW STABILIZATION - One-time cleanup');
           sessionStorage.setItem(swCleanupKey, 'true');
           

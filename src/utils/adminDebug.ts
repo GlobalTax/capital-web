@@ -77,6 +77,6 @@ export const adminDebug = {
 };
 
 // Exponer globalmente en desarrollo
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   (window as any).adminDebug = adminDebug;
 }

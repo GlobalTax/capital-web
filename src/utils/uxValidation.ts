@@ -122,6 +122,6 @@ export const uxValidation = {
 };
 
 // Development helper to run tests in console
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV && typeof window !== 'undefined') {
   (window as any).uxValidation = uxValidation;
 }
