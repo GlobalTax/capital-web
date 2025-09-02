@@ -344,45 +344,55 @@ function App() {
           monitorResourceLoading();
         }
 
-        // IMMEDIATE SW STABILIZATION: Clear all caches and force clean reload
-        console.log('🧹 INITIATING SW STABILIZATION - Clearing all caches and forcing reload');
+        // SERVICE WORKER STABILIZATION: Solo una vez por sesión
+        const swCleanupKey = 'capittal-sw-cleanup-done';
+        const shouldCleanSW = !sessionStorage.getItem(swCleanupKey);
         
-        setTimeout(async () => {
-          try {
-            if ('serviceWorker' in navigator) {
-              console.log('🔧 Unregistering all existing service workers...');
-              
-              // Unregister ALL existing service workers
-              const registrations = await navigator.serviceWorker.getRegistrations();
-              for (const registration of registrations) {
-                await registration.unregister();
-                console.log('✅ Service worker unregistered:', registration.scope);
+        if (shouldCleanSW && process.env.VITE_DISABLE_SW === "1") {
+          console.log('🧹 INITIATING SW STABILIZATION - One-time cleanup');
+          sessionStorage.setItem(swCleanupKey, 'true');
+          
+          setTimeout(async () => {
+            try {
+              if ('serviceWorker' in navigator) {
+                console.log('🔧 Unregistering all existing service workers...');
+                
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                  await registration.unregister();
+                  console.log('✅ Service worker unregistered:', registration.scope);
+                }
               }
+              
+              // Clear ALL browser caches
+              if ('caches' in window) {
+                console.log('🗑️ Clearing all browser caches...');
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log('✅ All caches cleared');
+              }
+              
+              // Clear specific problematic keys but preserve session marker
+              console.log('🧹 Clearing problematic localStorage keys...');
+              const keysToRemove = [];
+              for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('supabase') || key.includes('websocket') || key.includes('cache'))) {
+                  keysToRemove.push(key);
+                }
+              }
+              keysToRemove.forEach(key => localStorage.removeItem(key));
+              
+              // Force hard reload only once
+              console.log('🔄 Forcing hard reload for clean state...');
+              window.location.reload();
+              
+            } catch (error) {
+              console.error('❌ SW stabilization error:', error);
+              window.location.reload();
             }
-            
-            // Clear ALL browser caches
-            if ('caches' in window) {
-              console.log('🗑️ Clearing all browser caches...');
-              const cacheNames = await caches.keys();
-              await Promise.all(cacheNames.map(name => caches.delete(name)));
-              console.log('✅ All caches cleared');
-            }
-            
-            // Clear storage
-            console.log('🧹 Clearing localStorage and sessionStorage...');
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            // Force hard reload to apply changes
-            console.log('🔄 Forcing hard reload for clean state...');
-            window.location.reload();
-            
-          } catch (error) {
-            console.error('❌ SW stabilization error:', error);
-            // Force reload anyway
-            window.location.reload();
-          }
-        }, 500);
+          }, 500);
+        }
 
         // Precarga diferida desactivada: evitamos preloads a chunks inexistentes en Vite
         // Eliminado el preloading dinámico para evitar errores de carga de módulos
