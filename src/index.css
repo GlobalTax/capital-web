@@ -103,15 +103,39 @@
 @layer base {
   * {
     @apply border-border;
+    min-width: 0;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    overflow-x: hidden;
   }
 
   html {
     scroll-behavior: smooth;
     @apply bg-background;
+  }
+
+  img, video, svg, canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  iframe {
+    width: 100%;
+  }
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  th, td, pre, code, a {
+    word-break: break-word;
+  }
+
+  pre, code {
+    white-space: pre-wrap;
   }
 }
 
