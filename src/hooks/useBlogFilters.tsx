@@ -12,8 +12,8 @@ interface BlogFilters {
 export const useBlogFilters = (posts: BlogPost[]) => {
   const [filters, setFilters] = useState<BlogFilters>({
     search: '',
-    category: '',
-    tag: '',
+    category: 'all',
+    tag: 'all',
     sortBy: 'date',
     sortOrder: 'desc'
   });
@@ -52,12 +52,12 @@ export const useBlogFilters = (posts: BlogPost[]) => {
       }
 
       // Filtro de categoría (solo filtrar si hay una categoría específica seleccionada)
-      if (filters.category && filters.category.trim() && post.category !== filters.category) {
+      if (filters.category && filters.category !== 'all' && post.category !== filters.category) {
         return false;
       }
 
       // Filtro de tag (solo filtrar si hay un tag específico seleccionado)
-      if (filters.tag && filters.tag.trim() && (!post.tags || !post.tags.includes(filters.tag))) {
+      if (filters.tag && filters.tag !== 'all' && (!post.tags || !post.tags.includes(filters.tag))) {
         return false;
       }
 
@@ -112,8 +112,8 @@ export const useBlogFilters = (posts: BlogPost[]) => {
   const clearFilters = () => {
     setFilters({
       search: '',
-      category: '',
-      tag: '',
+      category: 'all',
+      tag: 'all',
       sortBy: 'date',
       sortOrder: 'desc'
     });
@@ -122,8 +122,8 @@ export const useBlogFilters = (posts: BlogPost[]) => {
   const hasActiveFilters: boolean = useMemo(() => {
     return Boolean(
       (filters.search && filters.search.trim()) || 
-      (filters.category && filters.category.trim()) || 
-      (filters.tag && filters.tag.trim()) || 
+      (filters.category && filters.category !== 'all') || 
+      (filters.tag && filters.tag !== 'all') || 
       filters.sortBy !== 'date' || 
       filters.sortOrder !== 'desc'
     );

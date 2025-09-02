@@ -6,6 +6,7 @@ import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogFilters } from '@/hooks/useBlogFilters';
 import BlogFilters from '@/components/blog/BlogFilters';
+import '../utils/blogEmergencyFix';
 
 import { Link } from 'react-router-dom';
 
