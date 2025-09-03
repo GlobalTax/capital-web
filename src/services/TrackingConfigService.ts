@@ -39,12 +39,13 @@ export class TrackingConfigService {
         return JSON.parse(stored);
       }
       
-      // Return default configuration with Google Analytics and Meta Pixel ID
+      // Return default configuration with all tracking IDs
       return {
         enableHeatmaps: true,
         enableSessionRecording: false,
         enableLeadTracking: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
+        googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
       };
     } catch (error) {
@@ -54,6 +55,7 @@ export class TrackingConfigService {
         enableSessionRecording: false,
         enableLeadTracking: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
+        googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
       };
     }
