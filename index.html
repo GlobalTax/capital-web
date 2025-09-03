@@ -27,6 +27,30 @@
     <meta name="twitter:site" content="@capittal" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
+    <!-- Google Analytics (GA4) Code -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z97ZB4YKPF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Z97ZB4YKPF', {
+        page_title: document.title,
+        page_location: window.location.href,
+        send_page_view: true
+      });
+      
+      // Add global status for monitoring
+      window.gtagStatus = {
+        initialized: true,
+        measurementId: 'G-Z97ZB4YKPF',
+        timestamp: new Date().toISOString(),
+        loadedFromHTML: true,
+        dataLayerLength: window.dataLayer.length
+      };
+      
+      console.log('✅ Google Analytics (GA4) initialized from HTML with ID: G-Z97ZB4YKPF');
+    </script>
+
     <!-- Facebook Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)

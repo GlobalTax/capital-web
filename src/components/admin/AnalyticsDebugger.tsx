@@ -13,57 +13,102 @@ export const AnalyticsDebugger = () => {
   const [debugOutput, setDebugOutput] = useState<string>('');
 
   useEffect(() => {
-    // Capture domain and tracking info
-    const currentDomain = window.location.hostname;
-    const currentUrl = window.location.href;
-    
-    const info = {
-      domain: currentDomain,
-      url: currentUrl,
-      isProductionDomain: currentDomain === 'capittal.es' || currentDomain.includes('capittal.es'),
-      isLovableDomain: currentDomain.includes('lovableproject.com'),
-      isLocalhost: currentDomain === 'localhost' || currentDomain === '127.0.0.1',
+    // Capturar información del dominio y tracking al montar
+    const domainInfo = {
+      domain: window.location.hostname,
+      url: window.location.href,
       userAgent: navigator.userAgent,
-      gaStatus: (window as any).gaStatus,
-      fbPixelStatus: (window as any).fbPixelStatus,
-      hasGtag: !!(window as any).gtag,
-      hasDataLayer: !!(window as any).dataLayer,
-      hasFbq: !!(window as any).fbq,
-      eventSynchronizer: !!(window as any).eventSynchronizer
+      gtagExists: typeof (window as any).gtag !== 'undefined',
+      fbqExists: typeof (window as any).fbq !== 'undefined',
+      dataLayerExists: typeof (window as any).dataLayer !== 'undefined',
+      eventSynchronizerExists: typeof (window as any).eventSynchronizer !== 'undefined',
+      gtagStatus: (window as any).gtagStatus || null,
+      fbPixelStatus: (window as any).fbPixelStatus || null,
+      dataLayerLength: (window as any).dataLayer?.length || 0,
+      isProductionDomain: window.location.hostname === 'capittal.es' || window.location.hostname.includes('capittal.es'),
+      isLovableDomain: window.location.hostname.includes('lovableproject.com'),
+      isLocalhost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     };
 
-    setDomainInfo(info);
-    setDebugOutput(JSON.stringify(info, null, 2));
+    setDomainInfo(domainInfo);
+    setDebugOutput(JSON.stringify(domainInfo, null, 2));
   }, []);
 
   const sendTestEvent = () => {
-    const testEventData = {
-      event_name: 'debug_test_event',
-      timestamp: new Date().toISOString(),
-      test_id: `test_${Date.now()}`,
-      domain: window.location.hostname,
-      page: window.location.pathname
-    };
+    try {
+      let eventsSuccessful = 0;
+      let eventsTotal = 0;
 
-    // Send to GA4
-    if ((window as any).gtag) {
-      (window as any).gtag('event', 'debug_test_event', testEventData);
-      console.log('📊 GA4 Debug test event sent:', testEventData);
+      // Test Google Analytics
+      if (typeof (window as any).gtag !== 'undefined') {
+        eventsTotal++;
+        (window as any).gtag('event', 'test_debug_event', {
+          event_category: 'debugging',
+          event_label: 'manual_test_from_debugger',
+          value: 1,
+          debug_mode: true,
+          custom_parameter_1: 'analytics_debugger',
+          timestamp: new Date().toISOString()
+        });
+        console.log('✅ Test event sent to Google Analytics (GA4)');
+        eventsSuccessful++;
+      } else {
+        console.warn('⚠️ Google Analytics (gtag) not available');
+        eventsTotal++;
+      }
+
+      // Test Facebook Pixel
+      if (typeof (window as any).fbq !== 'undefined') {
+        eventsTotal++;
+        (window as any).fbq('track', 'Lead', {
+          content_name: 'Debug Test Event',
+          content_category: 'debugging',
+          value: 1.00,
+          currency: 'EUR',
+          source: 'analytics_debugger'
+        });
+        console.log('✅ Test event sent to Facebook Pixel');
+        eventsSuccessful++;
+      } else {
+        console.warn('⚠️ Facebook Pixel (fbq) not available');
+        eventsTotal++;
+      }
+
+      // Test Event Synchronizer
+      if (typeof (window as any).eventSynchronizer !== 'undefined') {
+        eventsTotal++;
+        (window as any).eventSynchronizer.track('debug_test_event', {
+          source: 'analytics_debugger',
+          timestamp: new Date().toISOString(),
+          debug: true
+        });
+        console.log('✅ Test event sent to Event Synchronizer');
+        eventsSuccessful++;
+      } else {
+        console.warn('⚠️ Event Synchronizer not available');
+        eventsTotal++;
+      }
+
+      toast.success(`Eventos enviados: ${eventsSuccessful}/${eventsTotal}. Revisa Google Analytics Real-time y la consola.`);
+
+      // Actualizar debug output con los resultados del test
+      const testResults = {
+        timestamp: new Date().toISOString(),
+        eventsSuccessful,
+        eventsTotal,
+        gtag: typeof (window as any).gtag !== 'undefined',
+        fbq: typeof (window as any).fbq !== 'undefined',
+        eventSynchronizer: typeof (window as any).eventSynchronizer !== 'undefined',
+        gtagStatus: (window as any).gtagStatus,
+        fbPixelStatus: (window as any).fbPixelStatus
+      };
+      
+      setDebugOutput(prev => prev + '\n\n--- TEST RESULTS ---\n' + JSON.stringify(testResults, null, 2));
+
+    } catch (error) {
+      console.error('❌ Error sending test events:', error);
+      toast.error('Error enviando eventos de prueba. Revisa la consola.');
     }
-
-    // Send to Facebook Pixel
-    if ((window as any).fbq) {
-      (window as any).fbq('track', 'CustomEvent', testEventData);
-      console.log('📊 Facebook Pixel debug test event sent:', testEventData);
-    }
-
-    // Send via Event Synchronizer if available
-    if ((window as any).eventSynchronizer) {
-      (window as any).eventSynchronizer.syncEvent('debug_test_event', testEventData);
-      console.log('📊 Event Synchronizer debug test sent:', testEventData);
-    }
-
-    toast.success('Eventos de debug enviados - Revisa la consola para detalles');
   };
 
   const copyDebugInfo = () => {
@@ -119,28 +164,45 @@ export const AnalyticsDebugger = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span>Google Analytics</span>
-                <Badge variant={domainInfo?.hasGtag ? 'default' : 'secondary'}>
-                  {domainInfo?.hasGtag ? 'Activo' : 'Inactivo'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={domainInfo?.gtagExists ? 'default' : 'secondary'}>
+                    {domainInfo?.gtagExists ? 'Activo' : 'Inactivo'}
+                  </Badge>
+                  {domainInfo?.gtagStatus?.loadedFromHTML && (
+                    <Badge variant="outline" className="text-xs">HTML</Badge>
+                  )}
+                </div>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span>Facebook Pixel</span>
-                <Badge variant={domainInfo?.hasFbq ? 'default' : 'secondary'}>
-                  {domainInfo?.hasFbq ? 'Activo' : 'Inactivo'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={domainInfo?.fbqExists ? 'default' : 'secondary'}>
+                    {domainInfo?.fbqExists ? 'Activo' : 'Inactivo'}
+                  </Badge>
+                  {domainInfo?.fbPixelStatus?.loadedFromHTML && (
+                    <Badge variant="outline" className="text-xs">HTML</Badge>
+                  )}
+                </div>
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span>DataLayer</span>
-                <Badge variant={domainInfo?.hasDataLayer ? 'default' : 'secondary'}>
-                  {domainInfo?.hasDataLayer ? 'Disponible' : 'No disponible'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={domainInfo?.dataLayerExists ? 'default' : 'secondary'}>
+                    {domainInfo?.dataLayerExists ? 'Disponible' : 'No disponible'}
+                  </Badge>
+                  {domainInfo?.dataLayerLength > 0 && (
+                    <Badge variant="outline" className="text-xs">
+                      {domainInfo.dataLayerLength} events
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span>Event Sync</span>
-                <Badge variant={domainInfo?.eventSynchronizer ? 'default' : 'secondary'}>
-                  {domainInfo?.eventSynchronizer ? 'Activo' : 'Inactivo'}
+                <Badge variant={domainInfo?.eventSynchronizerExists ? 'default' : 'secondary'}>
+                  {domainInfo?.eventSynchronizerExists ? 'Activo' : 'Inactivo'}
                 </Badge>
               </div>
             </div>
