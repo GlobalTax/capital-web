@@ -11,7 +11,7 @@ const VentaEmpresasHeroService = () => {
   };
 
   const callExpert = () => {
-    window.open('tel:+34900123456', '_self');
+    window.open('tel:+34695717490', '_self');
   };
 
   return (

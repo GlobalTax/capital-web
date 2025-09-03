@@ -126,10 +126,10 @@ const VentaEmpresasFAQLanding = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a 
-                href="tel:+34900123456"
+                href="tel:+34695717490"
                 className="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg font-bold hover:bg-gray-100 transition-colors duration-200"
               >
-                📞 Llamar Ahora: 900 123 456
+                📞 Llamar Ahora: 695 717 490
               </a>
               
               <div className="text-yellow-300 text-sm font-medium">

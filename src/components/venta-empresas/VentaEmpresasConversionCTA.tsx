@@ -85,11 +85,11 @@ const VentaEmpresasConversionCTA = () => {
               <h4 className="text-xl font-bold">¿Prefieres llamar directamente?</h4>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a 
-                  href="tel:+34900123456"
+                  href="tel:+34695717490"
                   className="flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold transition-colors duration-200"
                 >
                   <Phone className="mr-2 h-5 w-5" />
-                  📞 900 123 456
+                  📞 695 717 490
                 </a>
                 <div className="text-sm text-blue-200 flex items-center">
                   <Clock className="mr-2 h-4 w-4" />
