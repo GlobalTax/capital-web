@@ -3451,6 +3451,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_rate_limit_enhanced_safe: {
+        Args: {
+          p_category?: string
+          p_identifier: string
+          p_max_requests?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_user_admin_role: {
         Args: { check_user_id: string }
         Returns: string
