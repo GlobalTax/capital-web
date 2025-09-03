@@ -29,11 +29,11 @@ export const Footerdemo = () => {
               </div>
               <div className="flex items-center text-gray-300">
                 <Phone className="h-4 w-4 mr-2" />
-                <span>+34 912 345 678</span>
+                <a href="tel:+34695717490" className="hover:text-white transition-colors" aria-label="Llamar al +34 695 717 490">+34 695 717 490</a>
               </div>
               <div className="flex items-center text-gray-300">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>info@capittal.es</span>
+                <a href="mailto:info@capittal.es" className="hover:text-white transition-colors" aria-label="Enviar email a info@capittal.es">info@capittal.es</a>
               </div>
             </div>
           </div>
