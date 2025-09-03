@@ -11,16 +11,37 @@ export const TrackingInitializer = () => {
   useEffect(() => {
     const initializeTracking = async () => {
       try {
-        // Only initialize on production domain capittal.es
+        // Domain validation with detailed logging
         const currentDomain = window.location.hostname;
+        const currentUrl = window.location.href;
         const isProductionDomain = currentDomain === 'capittal.es' || currentDomain.includes('capittal.es');
+        const isLovableDomain = currentDomain.includes('lovableproject.com');
+        const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
         
-        if (!isProductionDomain) {
-          console.log('Tracking disabled on development/preview domains:', currentDomain);
+        console.log('🔍 Tracking domain analysis:', {
+          currentDomain,
+          currentUrl,
+          isProductionDomain,
+          isLovableDomain,
+          isLocalhost,
+          userAgent: navigator.userAgent.slice(0, 50) + '...'
+        });
+        
+        // Allow tracking on production, lovable preview, and localhost for testing
+        const shouldInitialize = isProductionDomain || isLovableDomain || isLocalhost;
+        
+        if (!shouldInitialize) {
+          console.log('❌ Tracking disabled on unknown domain:', currentDomain);
           return;
         }
         
-        console.log('Initializing tracking for production domain:', currentDomain);
+        if (isProductionDomain) {
+          console.log('✅ Production domain detected - full tracking enabled');
+        } else if (isLovableDomain) {
+          console.log('🧪 Lovable preview domain detected - testing mode enabled');
+        } else if (isLocalhost) {
+          console.log('🏠 Localhost detected - development mode enabled');
+        }
         
         // Load saved tracking configuration
         const config = await TrackingConfigService.loadConfiguration();

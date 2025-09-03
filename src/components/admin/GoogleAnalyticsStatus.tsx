@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, XCircle, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, RefreshCw, ExternalLink, Play, Zap } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface GoogleAnalyticsStatusProps {
   measurementId: string;
@@ -53,31 +54,103 @@ export const GoogleAnalyticsStatus: React.FC<GoogleAnalyticsStatusProps> = ({ me
 
   const testPageView = () => {
     if ((window as any).gtag) {
-      (window as any).gtag('event', 'page_view', {
-        page_title: 'Test Page View - Admin Panel',
+      const testData = {
+        page_title: 'Test Page View - ' + new Date().toISOString(),
         page_location: window.location.href,
-        page_path: window.location.pathname
-      });
+        page_path: window.location.pathname,
+        test_timestamp: Date.now()
+      };
       
-      console.log('🧪 Test page view sent to Google Analytics');
-      alert('Test page view enviado a Google Analytics. Verifica en tiempo real en GA4.');
+      (window as any).gtag('event', 'page_view', testData);
+      console.log('📊 Test page_view event sent:', testData);
+      toast.success('Evento page_view enviado - Revisa la consola para detalles');
     } else {
-      alert('Google Analytics no está inicializado correctamente.');
+      toast.error('Google Analytics no inicializado - gtag no encontrado');
     }
   };
 
   const testCustomEvent = () => {
     if ((window as any).gtag) {
-      (window as any).gtag('event', 'test_event', {
-        event_category: 'Admin Panel',
-        event_label: 'Status Test',
-        value: 1
+      const testData = {
+        event_category: 'testing',
+        event_label: 'manual_test_' + Date.now(),
+        value: 1,
+        test_timestamp: Date.now(),
+        debug_info: 'Manual test from GoogleAnalyticsStatus component'
+      };
+      
+      (window as any).gtag('event', 'test_analytics_connection', testData);
+      console.log('📊 Test custom event sent:', testData);
+      toast.success('Evento personalizado enviado - Revisa la consola para detalles');
+    } else {
+      toast.error('Google Analytics no inicializado - gtag no encontrado');
+    }
+  };
+
+  const forceGA4Initialization = () => {
+    console.log('🔄 Forcing GA4 re-initialization...');
+    
+    // Check current status
+    const hasGtag = !!(window as any).gtag;
+    const hasDataLayer = !!(window as any).dataLayer;
+    const gaStatus = (window as any).gaStatus;
+    
+    console.log('Current GA4 status:', { hasGtag, hasDataLayer, gaStatus });
+    
+    if (!hasGtag || !hasDataLayer) {
+      // Force load GA4 script
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+      script.onload = () => {
+        console.log('✅ GA4 script force-loaded');
+        
+        // Initialize dataLayer and gtag
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        const gtag = (...args: any[]) => {
+          (window as any).dataLayer.push(args);
+        };
+        (window as any).gtag = gtag;
+        
+        // Configure GA4
+        gtag('js', new Date());
+        gtag('config', measurementId, {
+          page_title: document.title,
+          page_location: window.location.href,
+          send_page_view: true,
+          debug_mode: true
+        });
+        
+        console.log('✅ GA4 force-configured with ID:', measurementId);
+        
+        // Update status
+        (window as any).gaStatus = {
+          initialized: true,
+          measurementId: measurementId,
+          timestamp: new Date().toISOString(),
+          forceInitialized: true
+        };
+        
+        checkGAStatus();
+        toast.success('GA4 forzado a reinicializar');
+      };
+      script.onerror = () => {
+        console.error('❌ Failed to force-load GA4 script');
+        toast.error('Error al forzar carga de GA4');
+      };
+      document.head.appendChild(script);
+    } else {
+      // Just reconfigure existing GA4
+      (window as any).gtag('config', measurementId, {
+        page_title: document.title,
+        page_location: window.location.href,
+        send_page_view: true,
+        debug_mode: true
       });
       
-      console.log('🧪 Test custom event sent to Google Analytics');
-      alert('Evento personalizado enviado a Google Analytics. Verifica en tiempo real en Events > Realtime.');
-    } else {
-      alert('Google Analytics no está inicializado correctamente.');
+      console.log('✅ GA4 reconfigured with existing gtag');
+      toast.success('GA4 reconfigurado');
+      checkGAStatus();
     }
   };
 
@@ -198,13 +271,14 @@ export const GoogleAnalyticsStatus: React.FC<GoogleAnalyticsStatusProps> = ({ me
         {/* Testing Section */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Herramientas de Testing</h4>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={testPageView}
               disabled={!status?.scriptLoaded}
             >
+              <Play className="h-4 w-4 mr-1" />
               Test Page View
             </Button>
             <Button
@@ -213,7 +287,16 @@ export const GoogleAnalyticsStatus: React.FC<GoogleAnalyticsStatusProps> = ({ me
               onClick={testCustomEvent}
               disabled={!status?.scriptLoaded}
             >
-              Test Event
+              <Zap className="h-4 w-4 mr-1" />
+              Test Custom Event
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={forceGA4Initialization}
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Force Reinit GA4
             </Button>
           </div>
         </div>
