@@ -302,7 +302,7 @@ export const useSupabaseValuation = () => {
             result: result,
             pdfBase64,
             pdfFilename,
-            agendaUrl: `${window.location.origin}/lp/reservar-cita?contactName=${encodeURIComponent(companyData.contactName)}&contactEmail=${encodeURIComponent(companyData.email)}&contactPhone=${encodeURIComponent(companyData.phone || '')}&companyName=${encodeURIComponent(companyData.companyName)}`,
+            
             enlaces: {
               // pdfUrl: opcional si se sube a un storage público
               escenariosUrl: `${window.location.origin}/lp/calculadora`,

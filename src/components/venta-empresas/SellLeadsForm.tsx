@@ -338,10 +338,6 @@ const SellLeadsForm = () => {
                   <span className="mr-2">✉️</span>
                   info@capittal.es
                 </a>
-                <a href="#" className="flex items-center text-primary hover:text-primary/80 transition-colors">
-                  <span className="mr-2">📅</span>
-                  Agendar Reunión
-                </a>
               </div>
             </div>
           </div>

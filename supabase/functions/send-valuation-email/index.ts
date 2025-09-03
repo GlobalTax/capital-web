@@ -45,7 +45,6 @@ interface SendValuationEmailRequest {
   result: ValuationResultEmail;
   pdfBase64?: string; // PDF generado en frontend (base64 sin prefijo data:)
   pdfFilename?: string; // nombre sugerido para el adjunto
-  agendaUrl?: string;
   enlaces?: {
     pdfUrl?: string;
     escenariosUrl?: string;
@@ -191,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const payload = (await req.json()) as SendValuationEmailRequest;
-    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, agendaUrl, enlaces, sender, subjectOverride, lang } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl' };
+    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, enlaces, sender, subjectOverride, lang } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl' };
 
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
@@ -348,7 +347,6 @@ if (pdfToAttach) {
       const userText = `${saludo}\n` +
         `Gracias por completar el formulario de valoración de ${companyData.companyName || ''}.\n` +
         (pdfUrlFinal ? `Descargar PDF: ${pdfUrlFinal}\n` : '') +
-        (agendaUrl ? `Reserve una llamada: ${agendaUrl}\n` : '') +
         `Para cualquier duda, responda a este correo o escriba a info@capittal.es\n` +
         `\nUn saludo,\n${nombre} · ${cargo}\n${firma}`;
 
@@ -368,7 +366,7 @@ if (pdfToAttach) {
               </ul>
             </div>
 
-            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos). ${agendaUrl ? `Puede <a href="${agendaUrl}" target="_blank" style="color:#ffffff; background:#1f2937; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:600; display:inline-block; margin:8px 0;">📅 Reservar una llamada (20-30 min)</a>.` : ''}</p>
+            <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos).</p>
             <p style="margin:0 0 20px; line-height:1.6;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es <strong>completamente confidencial</strong>.</p>
 
             ${enlacesUtiles ? `<div style="background:#ecfdf5; border:1px solid #d1fae5; border-radius:8px; padding:20px; margin:20px 0;"><p style="margin:0 0 12px; font-weight:600; color:#065f46;">🔗 Enlaces útiles (guarde este correo):</p>${enlacesUtiles}</div>` : ''}
