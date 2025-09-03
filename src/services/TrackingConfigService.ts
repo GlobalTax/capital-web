@@ -45,7 +45,7 @@ export class TrackingConfigService {
         enableSessionRecording: false,
         enableLeadTracking: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
-        facebookPixelId: '1474959750187377',
+        facebookPixelId: '381068095046019',
       };
     } catch (error) {
       console.error('Error loading tracking configuration:', error);
@@ -54,7 +54,7 @@ export class TrackingConfigService {
         enableSessionRecording: false,
         enableLeadTracking: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
-        facebookPixelId: '1474959750187377',
+        facebookPixelId: '381068095046019',
       };
     }
   }
