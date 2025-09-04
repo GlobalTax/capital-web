@@ -2094,6 +2094,47 @@ export type Database = {
           },
         ]
       }
+      lead_enrichment_snapshots: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          enriched_by: string | null
+          enriched_data: Json
+          enrichment_source: string
+          id: string
+          lead_security_id: string
+          notes: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          enriched_by?: string | null
+          enriched_data?: Json
+          enrichment_source: string
+          id?: string
+          lead_security_id: string
+          notes?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          enriched_by?: string | null
+          enriched_data?: Json
+          enrichment_source?: string
+          id?: string
+          lead_security_id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_enrichment_snapshots_lead_security_id_fkey"
+            columns: ["lead_security_id"]
+            isOneToOne: false
+            referencedRelation: "lead_security"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_scores: {
         Row: {
           assigned_to: string | null
@@ -2216,6 +2257,190 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      lead_security: {
+        Row: {
+          cif: string | null
+          company_name: string
+          contact_name: string
+          created_at: string
+          ebitda_band: string | null
+          email: string
+          id: string
+          ip_address: unknown | null
+          phone: string | null
+          referrer: string | null
+          revenue_band: string | null
+          security_subtype: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          website: string | null
+        }
+        Insert: {
+          cif?: string | null
+          company_name: string
+          contact_name: string
+          created_at?: string
+          ebitda_band?: string | null
+          email: string
+          id?: string
+          ip_address?: unknown | null
+          phone?: string | null
+          referrer?: string | null
+          revenue_band?: string | null
+          security_subtype: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          website?: string | null
+        }
+        Update: {
+          cif?: string | null
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          ebitda_band?: string | null
+          email?: string
+          id?: string
+          ip_address?: unknown | null
+          phone?: string | null
+          referrer?: string | null
+          revenue_band?: string | null
+          security_subtype?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      lead_valuation_initial: {
+        Row: {
+          assumptions: Json
+          calculation_method: string
+          created_at: string
+          ebitda_multiple_base: number
+          ebitda_multiple_high: number
+          ebitda_multiple_low: number
+          ev_base: number
+          ev_high: number
+          ev_low: number
+          id: string
+          lead_security_id: string
+          scorecard_data: Json
+        }
+        Insert: {
+          assumptions?: Json
+          calculation_method?: string
+          created_at?: string
+          ebitda_multiple_base: number
+          ebitda_multiple_high: number
+          ebitda_multiple_low: number
+          ev_base: number
+          ev_high: number
+          ev_low: number
+          id?: string
+          lead_security_id: string
+          scorecard_data?: Json
+        }
+        Update: {
+          assumptions?: Json
+          calculation_method?: string
+          created_at?: string
+          ebitda_multiple_base?: number
+          ebitda_multiple_high?: number
+          ebitda_multiple_low?: number
+          ev_base?: number
+          ev_high?: number
+          ev_low?: number
+          id?: string
+          lead_security_id?: string
+          scorecard_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_valuation_initial_lead_security_id_fkey"
+            columns: ["lead_security_id"]
+            isOneToOne: false
+            referencedRelation: "lead_security"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_valuation_refined: {
+        Row: {
+          adjustment_factors: Json
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          ebitda_multiple_adjusted: number
+          ev_final: number
+          ev_range_max: number
+          ev_range_min: number
+          id: string
+          initial_vs_refined_diff: number | null
+          lead_security_id: string
+          pdf_url: string | null
+          presentation_token: string | null
+          refinement_notes: string | null
+          sensitivity_analysis: Json | null
+          updated_at: string
+        }
+        Insert: {
+          adjustment_factors?: Json
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          ebitda_multiple_adjusted: number
+          ev_final: number
+          ev_range_max: number
+          ev_range_min: number
+          id?: string
+          initial_vs_refined_diff?: number | null
+          lead_security_id: string
+          pdf_url?: string | null
+          presentation_token?: string | null
+          refinement_notes?: string | null
+          sensitivity_analysis?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          adjustment_factors?: Json
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          ebitda_multiple_adjusted?: number
+          ev_final?: number
+          ev_range_max?: number
+          ev_range_min?: number
+          id?: string
+          initial_vs_refined_diff?: number | null
+          lead_security_id?: string
+          pdf_url?: string | null
+          presentation_token?: string | null
+          refinement_notes?: string | null
+          sensitivity_analysis?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_valuation_refined_lead_security_id_fkey"
+            columns: ["lead_security_id"]
+            isOneToOne: false
+            referencedRelation: "lead_security"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       legal_leads: {
         Row: {

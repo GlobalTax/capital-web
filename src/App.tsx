@@ -134,6 +134,7 @@ const BlogPost = lazy(() => import('@/pages/blog/BlogPost').catch(() =>
 const LandingCalculator = lazy(() => import('@/pages/LandingCalculator'));
 const LandingCalculadoraFiscal = lazy(() => import('@/pages/LandingCalculadoraFiscal'));
 const LandingVentaEmpresas = lazy(() => import('@/pages/LandingVentaEmpresas'));
+const SecurityCalculator = lazy(() => import('@/pages/SecurityCalculator'));
 
 // Documentacion MA pages - Create placeholder components for missing ones
 const NuestroMetodo = lazy(() => import('@/pages/documentacion-ma/NuestroMetodo').catch(() => 
@@ -296,6 +297,8 @@ function AppContent() {
           <Route path="/lp/calculadora-fiscal" element={<LandingCalculadoraFiscal />} />
           <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
           <Route path="/lp/venta-empresas" element={<LandingVentaEmpresas />} />
+          <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
+          <Route path="/seguridad/calculadora/*" element={<SecurityCalculator />} />
           
           
           {/* Por que elegirnos routes */}

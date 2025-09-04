@@ -22,6 +22,7 @@ const MarketingOverview = React.lazy(() => import('@/features/dashboard/componen
 const PerformanceDashboard = React.lazy(() => import('./dashboard/PerformanceDashboard'));
 const PredictiveAnalytics = React.lazy(() => import('./analytics/PredictiveAnalytics').then(module => ({ default: module.PredictiveAnalytics })));
 const AIInsightsPanel = React.lazy(() => import('./dashboard/AIInsightsPanel').then(module => ({ default: module.AIInsightsPanel })));
+const SecurityLeadsPanel = React.lazy(() => import('./SecurityLeadsPanel'));
 
 // Componente de KPIs memoizado
 const KPICard = memo(({ 
@@ -208,7 +209,7 @@ const UnifiedDashboard = memo(() => {
 
       {/* Tabs principales */}
       <Tabs defaultValue="overview" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Overview
@@ -224,6 +225,10 @@ const UnifiedDashboard = memo(() => {
           <TabsTrigger value="insights" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Insights
+          </TabsTrigger>
+          <TabsTrigger value="security-leads" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Security
           </TabsTrigger>
         </TabsList>
 
@@ -248,6 +253,12 @@ const UnifiedDashboard = memo(() => {
         <TabsContent value="insights" className="space-y-4">
           <Suspense fallback={<LoadingSkeleton />}>
             <AIInsightsPanel />
+          </Suspense>
+        </TabsContent>
+        
+        <TabsContent value="security-leads" className="space-y-4">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <SecurityLeadsPanel />
           </Suspense>
         </TabsContent>
       </Tabs>
