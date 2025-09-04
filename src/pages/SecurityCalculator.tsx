@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Calculator, TrendingUp, Users, Building2, Mail } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -178,108 +174,61 @@ export default function SecurityCalculator() {
     const selectedSubtype = SECURITY_SUBTYPES.find(s => s.value === formData.security_subtype);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
-        <div className="max-w-4xl mx-auto pt-8">
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-3xl mx-auto pt-12">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center items-center gap-2 mb-4">
-              <ShieldCheck className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold">Valoración Sector Seguridad</h1>
-            </div>
-            <p className="text-muted-foreground">
-              Valoración inicial para {formData.company_name}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-light text-foreground mb-3">
+              Valoración Calculada
+            </h1>
+            <p className="text-foreground/70">
+              {formData.company_name}
             </p>
           </div>
 
           {/* Results */}
-          <div className="grid gap-6 mb-8">
-            {/* Main Valuation Card */}
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Rango de Valoración Estimado
-                </CardTitle>
-                <CardDescription>
-                  Basado en múltiplos del sector seguridad - {selectedSubtype?.label}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center p-4 rounded-lg border">
-                    <div className="text-sm text-muted-foreground mb-1">Conservador</div>
-                    <div className="text-xl font-bold">{formatCurrency(result.ev_low)}</div>
-                    <div className="text-xs text-muted-foreground">{result.ebitda_multiple_low}x EBITDA</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg border border-primary bg-primary/5">
-                    <div className="text-sm text-muted-foreground mb-1">Base</div>
-                    <div className="text-2xl font-bold text-primary">{formatCurrency(result.ev_base)}</div>
-                    <div className="text-xs text-muted-foreground">{result.ebitda_multiple_base}x EBITDA</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg border">
-                    <div className="text-sm text-muted-foreground mb-1">Optimista</div>
-                    <div className="text-xl font-bold">{formatCurrency(result.ev_high)}</div>
-                    <div className="text-xs text-muted-foreground">{result.ebitda_multiple_high}x EBITDA</div>
-                  </div>
+          <div className="space-y-8">
+            {/* Main Valuation */}
+            <div className="text-center">
+              <div className="grid grid-cols-3 gap-6 mb-8">
+                <div className="p-6 border border-border rounded-lg">
+                  <div className="text-sm text-foreground/60 mb-2">Conservador</div>
+                  <div className="text-2xl font-light text-foreground">{formatCurrency(result.ev_low)}</div>
+                  <div className="text-xs text-foreground/50 mt-1">{result.ebitda_multiple_low}x EBITDA</div>
                 </div>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="secondary">
-                    {selectedSubtype?.label}
-                  </Badge>
-                  <Badge variant="outline">
-                    Múltiplos: {selectedSubtype?.multiple_range}
-                  </Badge>
-                  <Badge variant="outline">
-                    EBITDA: {EBITDA_BANDS.find(b => b.value === formData.ebitda_band)?.label}
-                  </Badge>
+                <div className="p-6 border-2 border-foreground rounded-lg bg-foreground/5">
+                  <div className="text-sm text-foreground/60 mb-2">Base</div>
+                  <div className="text-3xl font-light text-foreground">{formatCurrency(result.ev_base)}</div>
+                  <div className="text-xs text-foreground/50 mt-1">{result.ebitda_multiple_base}x EBITDA</div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Next Steps Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Próximos Pasos
-                </CardTitle>
-                <CardDescription>
-                  ¿Quieres una valoración más detallada y precisa?
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
-                    <h3 className="font-semibold mb-2">🎯 Análisis Profesional Completo</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Nuestros expertos en el sector seguridad realizarán un análisis detallado de tu empresa, 
-                      incluyendo múltiplos ajustados, benchmarking sectorial y análisis de sensibilidad.
-                    </p>
-                    <Button className="w-full" size="sm">
-                      Solicitar Análisis Completo
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 rounded border">
-                      <Building2 className="h-6 w-6 mx-auto mb-2 text-primary" />
-                      <div className="font-semibold text-sm">Valoración Detallada</div>
-                      <div className="text-xs text-muted-foreground">Con ajustes específicos</div>
-                    </div>
-                    <div className="text-center p-3 rounded border">
-                      <Mail className="h-6 w-6 mx-auto mb-2 text-primary" />
-                      <div className="font-semibold text-sm">Informe PDF</div>
-                      <div className="text-xs text-muted-foreground">Documento profesional</div>
-                    </div>
-                  </div>
+                <div className="p-6 border border-border rounded-lg">
+                  <div className="text-sm text-foreground/60 mb-2">Optimista</div>
+                  <div className="text-2xl font-light text-foreground">{formatCurrency(result.ev_high)}</div>
+                  <div className="text-xs text-foreground/50 mt-1">{result.ebitda_multiple_high}x EBITDA</div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="flex justify-center gap-4 mb-8">
+                <span className="text-sm text-foreground/60">{selectedSubtype?.label}</span>
+                <span className="text-sm text-foreground/40">•</span>
+                <span className="text-sm text-foreground/60">{selectedSubtype?.multiple_range}</span>
+              </div>
+            </div>
+
+            {/* Next Steps */}
+            <div className="text-center p-8 border border-border rounded-lg">
+              <h3 className="text-xl font-light text-foreground mb-4">Análisis Profesional</h3>
+              <p className="text-sm text-foreground/70 mb-6 max-w-md mx-auto">
+                Obtén una valoración detallada con nuestros expertos en el sector seguridad
+              </p>
+              <Button className="px-8" size="lg">
+                Solicitar Análisis Completo
+              </Button>
+            </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center">
+          <div className="text-center mt-12">
             <Button 
               variant="outline" 
               onClick={() => {
@@ -296,170 +245,155 @@ export default function SecurityCalculator() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <div className="max-w-2xl mx-auto pt-8">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-2xl mx-auto pt-12">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center items-center gap-2 mb-4">
-            <ShieldCheck className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Calculadora Sector Seguridad</h1>
-          </div>
-          <p className="text-muted-foreground">
-            Obtén una valoración inicial de tu empresa de seguridad en menos de 3 minutos
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-light text-foreground mb-3">
+            Calculadora de Valoración
+          </h1>
+          <p className="text-foreground/70">
+            Sector Seguridad
           </p>
         </div>
 
         {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="h-5 w-5" />
-              Información de tu Empresa
-            </CardTitle>
-            <CardDescription>
-              Completa los datos básicos para obtener una valoración inicial
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Company Info */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="contact_name">Nombre de Contacto *</Label>
-                  <Input
-                    id="contact_name"
-                    value={formData.contact_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-                    placeholder="Tu nombre"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="tu@empresa.com"
-                  />
-                </div>
-              </div>
-
+        <div className="space-y-8">
+          {/* Basic Info */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="company_name">Nombre de la Empresa *</Label>
+                <Label htmlFor="contact_name" className="text-foreground">Nombre *</Label>
                 <Input
-                  id="company_name"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="Nombre de tu empresa"
+                  id="contact_name"
+                  value={formData.contact_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
+                  placeholder="Tu nombre"
+                  className="border-border focus:border-foreground"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cif">CIF/NIF</Label>
-                  <Input
-                    id="cif"
-                    value={formData.cif}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
-                    placeholder="B12345678"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website">Sitio Web</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    placeholder="www.empresa.com"
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="phone">Teléfono</Label>
+                <Label htmlFor="email" className="text-foreground">Email *</Label>
                 <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="+34 600 000 000"
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="tu@empresa.com"
+                  className="border-border focus:border-foreground"
                 />
               </div>
             </div>
 
-            {/* Business Type */}
             <div className="space-y-2">
-              <Label htmlFor="security_subtype">Tipo de Empresa de Seguridad *</Label>
-              <Select value={formData.security_subtype} onValueChange={(value) => setFormData(prev => ({ ...prev, security_subtype: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona el tipo de empresa" />
+              <Label htmlFor="company_name" className="text-foreground">Empresa *</Label>
+              <Input
+                id="company_name"
+                value={formData.company_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                placeholder="Nombre de tu empresa"
+                className="border-border focus:border-foreground"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="cif" className="text-foreground">CIF/NIF</Label>
+                <Input
+                  id="cif"
+                  value={formData.cif}
+                  onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
+                  placeholder="B12345678"
+                  className="border-border focus:border-foreground"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="website" className="text-foreground">Web</Label>
+                <Input
+                  id="website"
+                  value={formData.website}
+                  onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                  placeholder="www.empresa.com"
+                  className="border-border focus:border-foreground"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Company Type - Visual Cards */}
+          <div className="space-y-4">
+            <Label className="text-foreground text-base">Tipo de Empresa *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {SECURITY_SUBTYPES.map((subtype) => (
+                <div
+                  key={subtype.value}
+                  onClick={() => setFormData(prev => ({ ...prev, security_subtype: subtype.value }))}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    formData.security_subtype === subtype.value
+                      ? 'border-foreground bg-foreground/5'
+                      : 'border-border hover:border-foreground/50'
+                  }`}
+                >
+                  <div className="text-foreground font-medium mb-1">{subtype.label}</div>
+                  <div className="text-sm text-foreground/60">Múltiplos {subtype.multiple_range}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Financial Metrics */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="revenue_band" className="text-foreground">Facturación *</Label>
+              <Select value={formData.revenue_band} onValueChange={(value) => setFormData(prev => ({ ...prev, revenue_band: value }))}>
+                <SelectTrigger className="border-border focus:border-foreground">
+                  <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SECURITY_SUBTYPES.map((subtype) => (
-                    <SelectItem key={subtype.value} value={subtype.value}>
-                      <div className="flex justify-between items-center w-full">
-                        <span>{subtype.label}</span>
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          {subtype.multiple_range}
-                        </Badge>
-                      </div>
+                  {REVENUE_BANDS.map((band) => (
+                    <SelectItem key={band.value} value={band.value}>
+                      {band.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Financial Metrics */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="revenue_band">Facturación Anual *</Label>
-                <Select value={formData.revenue_band} onValueChange={(value) => setFormData(prev => ({ ...prev, revenue_band: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Rango de facturación" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REVENUE_BANDS.map((band) => (
-                      <SelectItem key={band.value} value={band.value}>
-                        {band.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ebitda_band">EBITDA Anual *</Label>
-                <Select value={formData.ebitda_band} onValueChange={(value) => setFormData(prev => ({ ...prev, ebitda_band: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Rango de EBITDA" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EBITDA_BANDS.map((band) => (
-                      <SelectItem key={band.value} value={band.value}>
-                        {band.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="ebitda_band" className="text-foreground">EBITDA *</Label>
+              <Select value={formData.ebitda_band} onValueChange={(value) => setFormData(prev => ({ ...prev, ebitda_band: value }))}>
+                <SelectTrigger className="border-border focus:border-foreground">
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EBITDA_BANDS.map((band) => (
+                    <SelectItem key={band.value} value={band.value}>
+                      {band.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
 
-            {/* Submit Button */}
-            <Button
-              onClick={calculateValuation}
+          {/* Submit Button */}
+          <div className="pt-8">
+            <Button 
+              onClick={calculateValuation} 
               disabled={!isFormValid() || isCalculating}
-              className="w-full"
+              className="w-full bg-foreground text-background hover:bg-foreground/90"
               size="lg"
             >
-              {isCalculating ? "Calculando..." : "Calcular Valoración"}
+              {isCalculating ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                  Calculando...
+                </div>
+              ) : (
+                "Calcular Valoración"
+              )}
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Info Footer */}
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Esta es una valoración inicial basada en múltiplos del sector seguridad.</p>
-          <p>Para obtener una valoración detallada, solicita nuestro análisis profesional completo.</p>
+          </div>
         </div>
       </div>
     </div>
