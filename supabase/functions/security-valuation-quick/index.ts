@@ -34,6 +34,34 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
+// Helper function to parse client IP from headers
+const parseClientIP = (req: Request): string | null => {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const realIP = req.headers.get('x-real-ip');
+  const remoteAddr = req.headers.get('x-remote-addr');
+  
+  // If x-forwarded-for exists, take the first IP (before any comma)
+  if (forwardedFor) {
+    const firstIP = forwardedFor.split(',')[0].trim();
+    // Basic IP validation (IPv4 or IPv6)
+    if (firstIP && (firstIP.match(/^\d+\.\d+\.\d+\.\d+$/) || firstIP.includes(':'))) {
+      return firstIP;
+    }
+  }
+  
+  // Try x-real-ip
+  if (realIP && (realIP.match(/^\d+\.\d+\.\d+\.\d+$/) || realIP.includes(':'))) {
+    return realIP;
+  }
+  
+  // Try x-remote-addr
+  if (remoteAddr && (remoteAddr.match(/^\d+\.\d+\.\d+\.\d+$/) || remoteAddr.includes(':'))) {
+    return remoteAddr;
+  }
+  
+  return null;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -52,8 +80,8 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log('Processing security valuation request for:', requestData.company_name);
 
-    // Get client IP
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    // Get client IP with proper parsing
+    const clientIP = parseClientIP(req);
 
     // 1. Insert lead into lead_security table
     const { data: leadData, error: leadError } = await supabase
@@ -69,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
         revenue_band: requestData.revenue_band,
         ebitda_band: requestData.ebitda_band,
         status: 'new',
-        ip_address: clientIP,
+        ip_address: clientIP, // Can be null if no valid IP found
         user_agent: requestData.user_agent || null,
         referrer: requestData.referrer || null
       })
