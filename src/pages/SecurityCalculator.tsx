@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LandingLayout from '@/components/shared/LandingLayout';
@@ -72,8 +73,47 @@ export default function SecurityCalculator() {
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showForm, setShowForm] = useState(true);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   const { toast } = useToast();
+
+  const handleBlur = (fieldName: string) => {
+    setTouchedFields(prev => new Set(prev).add(fieldName));
+  };
+
+  const getValidationState = (fieldName: string) => {
+    const isTouched = touchedFields.has(fieldName);
+    const hasValue = Boolean(formData[fieldName as keyof SecurityCalculatorForm]);
+    return {
+      isTouched,
+      hasError: false,
+      isValid: hasValue,
+      errorMessage: ''
+    };
+  };
+
+  const getFieldClassName = (fieldName: string, isRequired: boolean = true) => {
+    const state = getValidationState(fieldName);
+    const hasValue = Boolean(formData[fieldName as keyof SecurityCalculatorForm]);
+    
+    if (!state.isTouched) {
+      return "w-full border-0.5 border-black focus:ring-2 focus:ring-black/20 focus:border-black rounded-lg px-4 py-3";
+    }
+    
+    if (state.isValid && hasValue && state.isTouched) {
+      return "w-full border-0.5 border-green-500 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 rounded-lg px-4 py-3 pr-10";
+    } else if (!state.isValid && isRequired && (state.isTouched && !hasValue)) {
+      return "w-full border-0.5 border-red-500 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 rounded-lg px-4 py-3";
+    }
+    
+    return "w-full border-0.5 border-black focus:ring-2 focus:ring-black/20 focus:border-black rounded-lg px-4 py-3";
+  };
+
+  const shouldShowCheckIcon = (fieldName: string) => {
+    const state = getValidationState(fieldName);
+    const hasValue = Boolean(formData[fieldName as keyof SecurityCalculatorForm]);
+    return state.isValid && hasValue && state.isTouched;
+  };
 
   const getMultiplesBySubtype = (subtype: string) => {
     switch (subtype) {
@@ -182,10 +222,10 @@ export default function SecurityCalculator() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Card className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">
                 Valoración de {formData.company_name}
               </h1>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg text-gray-600 mb-8 text-center">
                 Sector Seguridad - {selectedSubtype?.label}
               </p>
 
@@ -209,13 +249,13 @@ export default function SecurityCalculator() {
               </div>
 
               <div className="text-center mb-8">
-                <span className="text-sm text-gray-500">Múltiplos aplicados: {selectedSubtype?.multiple_range}</span>
+                <span className="text-sm text-gray-500 text-center">Múltiplos aplicados: {selectedSubtype?.multiple_range}</span>
               </div>
 
               {/* CTA Section */}
               <div className="admin-card p-8 text-center">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">¿Quieres un análisis más detallado?</h3>
-                <p className="text-gray-600 mb-6 max-w-lg mx-auto">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">¿Quieres un análisis más detallado?</h3>
+                <p className="text-gray-600 mb-6 max-w-lg mx-auto text-center">
                   Obtén una valoración profesional completa de tu empresa con nuestros expertos en el sector seguridad.
                 </p>
                 <Button className="bg-gray-900 text-white hover:bg-gray-800 px-8" size="lg">
@@ -252,10 +292,10 @@ export default function SecurityCalculator() {
         
         <Card className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">
               Calculadora de Valoración
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 text-center">
               Sector Seguridad
             </p>
           </div>
@@ -263,130 +303,240 @@ export default function SecurityCalculator() {
           <div className="space-y-8">
             {/* Basic Info Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2 text-center">
                 Información de Contacto
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="form-field">
-                  <Label htmlFor="contact_name" className="text-gray-900 font-medium">Nombre *</Label>
-                  <Input
-                    id="contact_name"
-                    value={formData.contact_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-                    placeholder="Tu nombre completo"
-                    className="admin-input"
-                  />
+                {/* Nombre */}
+                <div className="h-[100px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="contact_name" className="block text-sm font-medium text-gray-700 mb-2">Nombre *</Label>
+                    <Input
+                      id="contact_name"
+                      value={formData.contact_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
+                      onBlur={() => handleBlur('contact_name')}
+                      placeholder="Tu nombre completo"
+                      className={getFieldClassName('contact_name')}
+                    />
+                    {shouldShowCheckIcon('contact_name') && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    {/* Reserved space for consistency */}
+                  </div>
                 </div>
-                <div className="form-field">
-                  <Label htmlFor="email" className="text-gray-900 font-medium">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="tu@empresa.com"
-                    className="admin-input"
-                  />
+
+                {/* Email */}
+                <div className="h-[100px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      onBlur={() => handleBlur('email')}
+                      placeholder="tu@empresa.com"
+                      className={getFieldClassName('email')}
+                    />
+                    {shouldShowCheckIcon('email') && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    {/* Reserved space for consistency */}
+                  </div>
                 </div>
               </div>
 
-              <div className="form-field">
-                <Label htmlFor="company_name" className="text-gray-900 font-medium">Nombre de la Empresa *</Label>
-                <Input
-                  id="company_name"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="Nombre completo de tu empresa"
-                  className="admin-input"
-                />
+              {/* Nombre de la Empresa */}
+              <div className="h-[100px] flex flex-col">
+                <div className="relative flex-1">
+                  <Label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-2">Nombre de la Empresa *</Label>
+                  <Input
+                    id="company_name"
+                    value={formData.company_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                    onBlur={() => handleBlur('company_name')}
+                    placeholder="Nombre completo de tu empresa"
+                    className={getFieldClassName('company_name')}
+                  />
+                  {shouldShowCheckIcon('company_name') && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                  )}
+                </div>
+                <div className="h-[20px] mt-1">
+                  {/* Reserved space for consistency */}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="form-field">
-                  <Label htmlFor="cif" className="text-gray-900 font-medium">CIF/NIF</Label>
-                  <Input
-                    id="cif"
-                    value={formData.cif}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
-                    placeholder="B12345678"
-                    className="admin-input"
-                  />
+                {/* CIF */}
+                <div className="h-[100px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="cif" className="block text-sm font-medium text-gray-700 mb-2">CIF/NIF</Label>
+                    <Input
+                      id="cif"
+                      value={formData.cif}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
+                      onBlur={() => handleBlur('cif')}
+                      placeholder="B12345678"
+                      className={getFieldClassName('cif', false)}
+                    />
+                    {shouldShowCheckIcon('cif') && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    {/* Reserved space for consistency */}
+                  </div>
                 </div>
-                <div className="form-field">
-                  <Label htmlFor="website" className="text-gray-900 font-medium">Sitio Web</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    placeholder="www.tuempresa.com"
-                    className="admin-input"
-                  />
+
+                {/* Sitio Web */}
+                <div className="h-[100px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">Sitio Web</Label>
+                    <Input
+                      id="website"
+                      value={formData.website}
+                      onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                      onBlur={() => handleBlur('website')}
+                      placeholder="www.tuempresa.com"
+                      className={getFieldClassName('website', false)}
+                    />
+                    {shouldShowCheckIcon('website') && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    {/* Reserved space for consistency */}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Company Type Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                Tipo de Empresa de Seguridad *
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2 text-center">
+                Tipo de Empresa de Seguridad
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {SECURITY_SUBTYPES.map((subtype) => (
-                  <div
-                    key={subtype.value}
-                    onClick={() => setFormData(prev => ({ ...prev, security_subtype: subtype.value }))}
-                    className={`admin-card p-6 cursor-pointer transition-all hover:shadow-md ${
-                      formData.security_subtype === subtype.value
-                        ? 'border-2 border-gray-900 bg-gray-50'
-                        : 'hover:border-gray-400'
-                    }`}
+              <div className="h-[120px] flex flex-col">
+                <div className="relative flex-1">
+                  <Label htmlFor="security_subtype" className="block text-sm font-medium text-gray-700 mb-2">Tipo de Empresa *</Label>
+                  <Select
+                    value={formData.security_subtype}
+                    onValueChange={(value) => {
+                      setFormData(prev => ({ ...prev, security_subtype: value }));
+                      handleBlur('security_subtype');
+                    }}
                   >
-                    <div className="font-semibold text-gray-900 mb-2">{subtype.label}</div>
-                    <div className="text-sm text-gray-600">Múltiplos EBITDA: {subtype.multiple_range}</div>
+                    <SelectTrigger 
+                      id="security_subtype"
+                      className={getFieldClassName('security_subtype')}
+                    >
+                      <SelectValue placeholder="Selecciona el tipo de empresa" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white shadow-lg border border-gray-200 z-[100]">
+                      {SECURITY_SUBTYPES.map((subtype) => (
+                        <SelectItem key={subtype.value} value={subtype.value} className="hover:bg-gray-100">
+                          <div>
+                            <div className="font-medium">{subtype.label}</div>
+                            <div className="text-xs text-gray-500">Múltiplos EBITDA: {subtype.multiple_range}</div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {shouldShowCheckIcon('security_subtype') && (
+                    <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+                  )}
+                </div>
+                <div className="h-[40px] mt-1 space-y-1">
+                  <p className="text-sm text-gray-500">Selecciona la categoría que mejor describe tu empresa de seguridad</p>
+                  <div className="h-[20px]">
+                    {/* Reserved space for consistency */}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
 
             {/* Financial Metrics Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2 text-center">
                 Métricas Financieras
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="form-field">
-                  <Label htmlFor="revenue_band" className="text-gray-900 font-medium">Facturación Anual *</Label>
-                  <Select value={formData.revenue_band} onValueChange={(value) => setFormData(prev => ({ ...prev, revenue_band: value }))}>
-                    <SelectTrigger className="admin-input">
-                      <SelectValue placeholder="Selecciona tu facturación" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {REVENUE_BANDS.map((band) => (
-                        <SelectItem key={band.value} value={band.value}>
-                          {band.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Facturación Anual */}
+                <div className="h-[100px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="revenue_band" className="block text-sm font-medium text-gray-700 mb-2">Facturación Anual *</Label>
+                    <Select 
+                      value={formData.revenue_band} 
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, revenue_band: value }));
+                        handleBlur('revenue_band');
+                      }}
+                    >
+                      <SelectTrigger 
+                        id="revenue_band"
+                        className={getFieldClassName('revenue_band')}
+                      >
+                        <SelectValue placeholder="Selecciona tu facturación" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border border-gray-200 z-[100]">
+                        {REVENUE_BANDS.map((band) => (
+                          <SelectItem key={band.value} value={band.value} className="hover:bg-gray-100">
+                            {band.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {shouldShowCheckIcon('revenue_band') && (
+                      <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    {/* Reserved space for consistency */}
+                  </div>
                 </div>
 
-                <div className="form-field">
-                  <Label htmlFor="ebitda_band" className="text-gray-900 font-medium">EBITDA *</Label>
-                  <Select value={formData.ebitda_band} onValueChange={(value) => setFormData(prev => ({ ...prev, ebitda_band: value }))}>
-                    <SelectTrigger className="admin-input">
-                      <SelectValue placeholder="Selecciona tu EBITDA" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EBITDA_BANDS.map((band) => (
-                        <SelectItem key={band.value} value={band.value}>
-                          {band.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* EBITDA */}
+                <div className="h-[100px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="ebitda_band" className="block text-sm font-medium text-gray-700 mb-2">EBITDA *</Label>
+                    <Select 
+                      value={formData.ebitda_band} 
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, ebitda_band: value }));
+                        handleBlur('ebitda_band');
+                      }}
+                    >
+                      <SelectTrigger 
+                        id="ebitda_band"
+                        className={getFieldClassName('ebitda_band')}
+                      >
+                        <SelectValue placeholder="Selecciona tu EBITDA" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border border-gray-200 z-[100]">
+                        {EBITDA_BANDS.map((band) => (
+                          <SelectItem key={band.value} value={band.value} className="hover:bg-gray-100">
+                            {band.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {shouldShowCheckIcon('ebitda_band') && (
+                      <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    {/* Reserved space for consistency */}
+                  </div>
                 </div>
               </div>
             </div>
