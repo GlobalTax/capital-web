@@ -15,6 +15,13 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
   onPrev,
   onNext
 }) => {
+  console.log('🔘 NavigationButtonsV2 render:', { currentStep, isNextDisabled });
+
+  const handleCalculateClick = () => {
+    console.log('🔘 Calculate button clicked!', { currentStep, isNextDisabled });
+    onNext();
+  };
+
   return (
     <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
       <Button
@@ -38,7 +45,7 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
       )}
       
       <Button
-        onClick={onNext}
+        onClick={handleCalculateClick}
         disabled={isNextDisabled}
         variant="outline"
         className="flex items-center border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"

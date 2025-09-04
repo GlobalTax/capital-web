@@ -68,7 +68,18 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
       currentStep: calculator.currentStep,
       configSteps: config.steps,
       version: config.version,
-      isFormValid: calculator.isFormValid
+      isFormValid: calculator.isFormValid,
+      companyData: {
+        contactName: calculator.companyData.contactName,
+        email: calculator.companyData.email,
+        phone: calculator.companyData.phone,
+        companyName: calculator.companyData.companyName,
+        industry: calculator.companyData.industry,
+        employeeRange: calculator.companyData.employeeRange,
+        revenue: calculator.companyData.revenue,
+        ebitda: calculator.companyData.ebitda
+      },
+      errors: calculator.errors
     });
 
     if (calculator.currentStep === config.steps) {

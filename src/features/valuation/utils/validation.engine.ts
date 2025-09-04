@@ -103,7 +103,7 @@ const getFieldsForStep = (step: number, config: CalculatorConfig): (keyof Extend
     
     case 'v2':
       switch (step) {
-        case 1: return ['contactName', 'companyName', 'email', 'phone', 'industry', 'activityDescription', 'employeeRange', 'revenue', 'ebitda'];
+        case 1: return ['contactName', 'companyName', 'email', 'phone', 'industry', 'employeeRange', 'revenue', 'ebitda'];
         case 2: return ['location', 'ownershipParticipation', 'competitiveAdvantage'];
         default: return [];
       }
