@@ -47,7 +47,7 @@ export const calculateCompanyValuation = async (
     sectorData = {
       sector_name: industryToUse,
       employee_range: employeeRangeToUse,
-      ebitda_multiple: ebitdaToUse >= 1000000 ? 5.5 : 3.5, // Múltiplo por defecto ajustado por tamaño
+      ebitda_multiple: ebitdaToUse >= 1000000 ? 6.0 : 4.5, // Múltiplo por defecto ajustado por tamaño
       revenue_multiple: 1.0,
       description: 'Valores estimados'
     };
