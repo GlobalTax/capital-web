@@ -45,8 +45,8 @@ export const createValidationRules = (): ValidationRules => ({
   }),
   
   activityDescription: (value: string) => ({
-    isValid: Boolean(value),
-    message: value ? undefined : 'La descripción de actividad es obligatoria'
+    isValid: true, // Campo opcional ahora
+    message: undefined
   }),
   
   employeeRange: (value: string) => ({
@@ -105,7 +105,7 @@ export const validateStepFields = (step: number, data: CompanyData, validationRu
 export const getStepFields = (step: number): string[] => {
   switch (step) {
     case 1:
-      return ['contactName', 'companyName', 'email', 'phone', 'phone_e164', 'industry', 'activityDescription', 'employeeRange'];
+      return ['contactName', 'companyName', 'email', 'phone', 'phone_e164', 'industry', 'employeeRange'];
     case 2:
       return ['revenue', 'ebitda'];
     case 3:

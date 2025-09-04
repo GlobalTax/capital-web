@@ -2,8 +2,6 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 // Utility function for number formatting
 const formatNumberWithDots = (value: number | string): string => {
@@ -235,21 +233,6 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
             )}
           </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="activityDescription">Descripción de actividad *</Label>
-            <Textarea
-              id="activityDescription"
-              value={companyData.activityDescription || ''}
-              onChange={(e) => updateField('activityDescription', e.target.value)}
-              onBlur={() => handleFieldBlur?.('activityDescription')}
-              placeholder="Describe brevemente la actividad principal de tu empresa"
-              rows={3}
-              className={getFieldClass('activityDescription')}
-            />
-            {getFieldError('activityDescription') && (
-              <p className="text-sm text-red-600">{getFieldError('activityDescription')}</p>
-            )}
-          </div>
         </div>
       </div>
 
@@ -298,57 +281,6 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           </div>
         </div>
 
-        {/* Pregunta sobre ajustes al EBITDA */}
-        <div className="mt-6 space-y-4">
-          <Label className="text-base font-medium">¿Tienes ajustes al EBITDA?</Label>
-          <RadioGroup
-            value={companyData.hasAdjustments ? 'si' : 'no'}
-            onValueChange={(value) => updateField('hasAdjustments', value === 'si')}
-            className="flex gap-6"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="no" id="no-adjustments" />
-              <Label htmlFor="no-adjustments">No</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="si" id="si-adjustments" />
-              <Label htmlFor="si-adjustments">Sí</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        {/* Campo de ajustes EBITDA cuando se selecciona "Sí" */}
-        {companyData.hasAdjustments && (
-          <div className="mt-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="adjustmentAmount">Ajustes al EBITDA</Label>
-              <Input
-                id="adjustmentAmount"
-                type="text"
-                value={formatNumberWithDots(companyData.adjustmentAmount || 0)}
-                onChange={(e) => {
-                  const numValue = parseFormattedNumber(e.target.value);
-                  updateField('adjustmentAmount', numValue);
-                }}
-                onBlur={() => handleFieldBlur?.('adjustmentAmount')}
-                placeholder="10.000"
-                className={getFieldClass('adjustmentAmount')}
-              />
-              {getFieldError('adjustmentAmount') && (
-                <p className="text-sm text-red-600">{getFieldError('adjustmentAmount')}</p>
-              )}
-            </div>
-            
-            {/* EBITDA Corregido */}
-            {companyData.ebitda && companyData.adjustmentAmount && (
-              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                <p className="text-sm font-medium text-green-900">
-                  EBITDA Corregido: {formatNumberWithDots((companyData.ebitda || 0) + (companyData.adjustmentAmount || 0))} €
-                </p>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Información sobre datos financieros */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -356,7 +288,6 @@ const BasicInfoFinancialFormV2: React.FC<BasicInfoFinancialFormV2Props> = ({
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Los ingresos incluyen todas las ventas y servicios facturados</li>
             <li>• El EBITDA es el beneficio antes de intereses, impuestos, depreciación y amortización</li>
-            <li>• Los ajustes pueden incluir gastos extraordinarios o ingresos no recurrentes</li>
           </ul>
         </div>
       </div>

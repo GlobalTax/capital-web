@@ -16,14 +16,14 @@ const initialCompanyData: CompanyData = {
   phone_e164: '',
   whatsapp_opt_in: true,
   industry: '',
-  activityDescription: '',
+  activityDescription: '', // Se mantiene con valor por defecto
   employeeRange: '',
   
   // Paso 2
   revenue: 0,
   ebitda: 0,
-  hasAdjustments: false,
-  adjustmentAmount: 0,
+  hasAdjustments: false, // Se mantiene con valor por defecto
+  adjustmentAmount: 0, // Se mantiene con valor por defecto
   
   // Paso 3
   location: '',
