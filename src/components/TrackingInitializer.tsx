@@ -15,7 +15,7 @@ export const TrackingInitializer = () => {
         const currentDomain = window.location.hostname;
         const currentUrl = window.location.href;
         const isProductionDomain = currentDomain === 'capittal.es' || currentDomain.includes('capittal.es');
-        const isLovableDomain = currentDomain.includes('lovableproject.com');
+        const isLovableDomain = currentDomain.includes('lovableproject.com') || currentDomain.includes('sandbox.lovable.dev') || currentDomain.includes('lovable.app');
         const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
         
         console.log('🔍 Tracking domain analysis:', {
