@@ -40,7 +40,8 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
       <Button
         onClick={onNext}
         disabled={isNextDisabled}
-        className="flex items-center bg-white text-gray-900 border border-gray-900 hover:shadow-md hover:-translate-y-0.5"
+        variant="outline"
+        className="flex items-center border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"
       >
         <Calculator className="h-4 w-4 mr-2" />
         Calcular

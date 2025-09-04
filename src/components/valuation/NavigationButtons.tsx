@@ -39,7 +39,8 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         onClick={onNext}
         aria-label={currentStep === 1 ? t('aria.calculate') : t('aria.next')}
         disabled={isNextDisabled}
-        className="flex items-center h-11 bg-white text-gray-900 border border-gray-900 hover:shadow-md hover:-translate-y-0.5"
+        variant="outline"
+        className="flex items-center h-11 border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"
       >
         {currentStep === 3 ? (
           <>
