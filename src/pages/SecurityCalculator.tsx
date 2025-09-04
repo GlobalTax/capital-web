@@ -19,6 +19,9 @@ interface SecurityCalculatorForm {
   website: string;
   phone: string;
   security_subtype: string;
+  connections_count: string;
+  revenue_recurrence: string;
+  contract_duration: string;
   revenue_band: string;
   ebitda_band: string;
 }
@@ -37,6 +40,31 @@ const SECURITY_SUBTYPES = [
   { value: 'cra_monitorizacion', label: 'CRA / Monitorización', multiple_range: '6.0x - 8.5x' },
   { value: 'distribucion', label: 'Distribución', multiple_range: '4.0x - 5.5x' },
   { value: 'mixto', label: 'Mixto', multiple_range: '5.5x - 7.5x' }
+];
+
+const CONNECTIONS_RANGES = [
+  { value: '1-50', label: '1 - 50 conexiones' },
+  { value: '51-100', label: '51 - 100 conexiones' },
+  { value: '101-250', label: '101 - 250 conexiones' },
+  { value: '251-500', label: '251 - 500 conexiones' },
+  { value: '501-1000', label: '501 - 1,000 conexiones' },
+  { value: '1000+', label: 'Más de 1,000 conexiones' }
+];
+
+const REVENUE_RECURRENCE = [
+  { value: 'mensual', label: 'Facturación Mensual Recurrente' },
+  { value: 'trimestral', label: 'Facturación Trimestral' },
+  { value: 'anual', label: 'Facturación Anual' },
+  { value: 'mixta', label: 'Mixta (Recurrente + Proyectos)' },
+  { value: 'proyecto', label: 'Solo Proyectos Puntuales' }
+];
+
+const CONTRACT_DURATION = [
+  { value: '1-2-años', label: '1-2 años' },
+  { value: '3-5-años', label: '3-5 años' },
+  { value: '5+-años', label: 'Más de 5 años' },
+  { value: 'indefinido', label: 'Contratos indefinidos' },
+  { value: 'mixto', label: 'Duración mixta' }
 ];
 
 const REVENUE_BANDS = [
@@ -66,6 +94,9 @@ export default function SecurityCalculator() {
     website: '',
     phone: '',
     security_subtype: '',
+    connections_count: '',
+    revenue_recurrence: '',
+    contract_duration: '',
     revenue_band: '',
     ebitda_band: ''
   });
@@ -460,6 +491,108 @@ export default function SecurityCalculator() {
                   <div className="h-[20px]">
                     {/* Reserved space for consistency */}
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Security Details Section */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2 text-center">
+                Detalles Específicos de Seguridad
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Número de Conexiones */}
+                <div className="h-[120px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="connections_count" className="block text-sm font-medium text-gray-700 mb-2">Número de Conexiones</Label>
+                    <Select 
+                      value={formData.connections_count} 
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, connections_count: value }));
+                        setTouchedFields(prev => new Set(prev).add('connections_count'));
+                      }}
+                    >
+                      <SelectTrigger className={getFieldClassName('connections_count', false)}>
+                        <SelectValue placeholder="Selecciona el rango de conexiones" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-lg z-[100]">
+                        {CONNECTIONS_RANGES.map((range) => (
+                          <SelectItem key={range.value} value={range.value} className="hover:bg-gray-50">
+                            {range.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {shouldShowCheckIcon('connections_count') && (
+                      <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    <span className="text-xs text-gray-500">Conexiones monitorizadas o gestionadas</span>
+                  </div>
+                </div>
+
+                {/* Recurrencia de Ingresos */}
+                <div className="h-[120px] flex flex-col">
+                  <div className="relative flex-1">
+                    <Label htmlFor="revenue_recurrence" className="block text-sm font-medium text-gray-700 mb-2">Modelo de Ingresos</Label>
+                    <Select 
+                      value={formData.revenue_recurrence} 
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, revenue_recurrence: value }));
+                        setTouchedFields(prev => new Set(prev).add('revenue_recurrence'));
+                      }}
+                    >
+                      <SelectTrigger className={getFieldClassName('revenue_recurrence', false)}>
+                        <SelectValue placeholder="Selecciona el modelo de ingresos" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-lg z-[100]">
+                        {REVENUE_RECURRENCE.map((model) => (
+                          <SelectItem key={model.value} value={model.value} className="hover:bg-gray-50">
+                            {model.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {shouldShowCheckIcon('revenue_recurrence') && (
+                      <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+                    )}
+                  </div>
+                  <div className="h-[20px] mt-1">
+                    <span className="text-xs text-gray-500">Frecuencia de facturación principal</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Duración de Contratos */}
+              <div className="h-[120px] flex flex-col">
+                <div className="relative flex-1">
+                  <Label htmlFor="contract_duration" className="block text-sm font-medium text-gray-700 mb-2">Duración Promedio de Contratos</Label>
+                  <Select 
+                    value={formData.contract_duration} 
+                    onValueChange={(value) => {
+                      setFormData(prev => ({ ...prev, contract_duration: value }));
+                      setTouchedFields(prev => new Set(prev).add('contract_duration'));
+                    }}
+                  >
+                    <SelectTrigger className={getFieldClassName('contract_duration', false)}>
+                      <SelectValue placeholder="Selecciona la duración típica" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg z-[100]">
+                      {CONTRACT_DURATION.map((duration) => (
+                        <SelectItem key={duration.value} value={duration.value} className="hover:bg-gray-50">
+                          {duration.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {shouldShowCheckIcon('contract_duration') && (
+                    <Check className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 pointer-events-none" />
+                  )}
+                </div>
+                <div className="h-[20px] mt-1">
+                  <span className="text-xs text-gray-500">Duración típica de tus contratos de seguridad</span>
                 </div>
               </div>
             </div>
