@@ -61,9 +61,7 @@ const SellLeadsForm = () => {
       errors.push('La facturación anual debe ser una de las opciones disponibles');
     }
     
-    if (!formData.message?.trim()) {
-      errors.push('El mensaje es obligatorio');
-    }
+    // Message is optional for sell_leads but will be stored in form_submissions
     
     return { isValid: errors.length === 0, errors };
   };
@@ -86,14 +84,13 @@ const SellLeadsForm = () => {
 
       const urlParams = new URLSearchParams(window.location.search);
       
-      // Prepare payload for logging and submission
-      const payload = {
+      // Prepare payload for sell_leads (without message field)
+      const sellLeadsPayload = {
         full_name: formData.full_name.trim(),
         company: formData.company.trim(),
         email: formData.email.trim(),
         phone: formData.phone?.trim() || null,
         revenue_range: formData.revenue_range,
-        message: formData.message.trim(),
         utm_source: urlParams.get('utm_source'),
         utm_medium: urlParams.get('utm_medium'),
         utm_campaign: urlParams.get('utm_campaign'),
@@ -105,22 +102,21 @@ const SellLeadsForm = () => {
 
       // Detailed logging for debugging (temporary)
       console.log('=== SELL LEADS FORM SUBMISSION ===');
-      console.log('Payload being sent:', payload);
+      console.log('Payload being sent to sell_leads:', sellLeadsPayload);
       console.log('Payload validation:', {
-        full_name_length: payload.full_name.length,
-        full_name_valid: payload.full_name.length >= 2 && payload.full_name.length <= 100,
-        company_length: payload.company.length,
-        company_valid: payload.company.length >= 2 && payload.company.length <= 100,
-        email_length: payload.email.length,
-        email_format: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(payload.email),
-        email_length_valid: payload.email.length <= 254,
-        revenue_range: payload.revenue_range,
-        revenue_range_valid: ['<1M', '1-5M', '5-10M', '>10M'].includes(payload.revenue_range),
-        has_message: !!payload.message.trim()
+        full_name_length: sellLeadsPayload.full_name.length,
+        full_name_valid: sellLeadsPayload.full_name.length >= 2 && sellLeadsPayload.full_name.length <= 100,
+        company_length: sellLeadsPayload.company.length,
+        company_valid: sellLeadsPayload.company.length >= 2 && sellLeadsPayload.company.length <= 100,
+        email_length: sellLeadsPayload.email.length,
+        email_format: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(sellLeadsPayload.email),
+        email_length_valid: sellLeadsPayload.email.length <= 254,
+        revenue_range: sellLeadsPayload.revenue_range,
+        revenue_range_valid: ['<1M', '1-5M', '5-10M', '>10M'].includes(sellLeadsPayload.revenue_range)
       });
 
       // Validate required fields according to RLS policy
-      if (!['<1M', '1-5M', '5-10M', '>10M'].includes(payload.revenue_range)) {
+      if (!['<1M', '1-5M', '5-10M', '>10M'].includes(sellLeadsPayload.revenue_range)) {
         toast({
           title: "Error de validación",
           description: "Por favor, selecciona un rango de facturación válido.",
@@ -131,7 +127,7 @@ const SellLeadsForm = () => {
       
       // Step 1: Insert into sell_leads
       console.log('=== STEP 1: INSERTING INTO sell_leads ===');
-      const { data: sellLeadData, error } = await supabase.from('sell_leads').insert(payload).select().single();
+      const { data: sellLeadData, error } = await supabase.from('sell_leads').insert(sellLeadsPayload).select().single();
 
       if (error) {
         console.error('Error submitting sell leads form:', error);
@@ -430,13 +426,12 @@ const SellLeadsForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Mensaje *
+                    Mensaje
                   </label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
-                    required
                     rows={6}
                     className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
                     placeholder="Cuéntanos sobre tu empresa, sector, facturación aproximada y qué te gustaría saber sobre la venta..."
