@@ -196,7 +196,7 @@ const handler = async (req: Request): Promise<Response> => {
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
     // Emails por defecto para pruebas + posible extra desde el frontend
-    const baseRecipients = ["info@capittal.es", "lluis@capittal.es", "samuel@capittal.es"];
+    const baseRecipients = ["info@capittal.es", "lluis@capittal.es", "samuel@capittal.es", "pau@capittal.es"];
     const extraRecipient = recipientEmail?.trim();
     const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
 
