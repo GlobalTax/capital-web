@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import LandingLayout from '@/components/shared/LandingLayout';
+import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
+import CapittalBrief from '@/components/landing/CapittalBrief';
 
 interface SecurityCalculatorForm {
   cif: string;
@@ -174,228 +178,242 @@ export default function SecurityCalculator() {
     const selectedSubtype = SECURITY_SUBTYPES.find(s => s.value === formData.security_subtype);
     
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-3xl mx-auto pt-12">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-light text-foreground mb-3">
-              Valoración Calculada
-            </h1>
-            <p className="text-foreground/70">
-              {formData.company_name}
-            </p>
-          </div>
-
-          {/* Results */}
-          <div className="space-y-8">
-            {/* Main Valuation */}
+      <LandingLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Card className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
             <div className="text-center">
-              <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="p-6 border border-border rounded-lg">
-                  <div className="text-sm text-foreground/60 mb-2">Conservador</div>
-                  <div className="text-2xl font-light text-foreground">{formatCurrency(result.ev_low)}</div>
-                  <div className="text-xs text-foreground/50 mt-1">{result.ebitda_multiple_low}x EBITDA</div>
-                </div>
-                <div className="p-6 border-2 border-foreground rounded-lg bg-foreground/5">
-                  <div className="text-sm text-foreground/60 mb-2">Base</div>
-                  <div className="text-3xl font-light text-foreground">{formatCurrency(result.ev_base)}</div>
-                  <div className="text-xs text-foreground/50 mt-1">{result.ebitda_multiple_base}x EBITDA</div>
-                </div>
-                <div className="p-6 border border-border rounded-lg">
-                  <div className="text-sm text-foreground/60 mb-2">Optimista</div>
-                  <div className="text-2xl font-light text-foreground">{formatCurrency(result.ev_high)}</div>
-                  <div className="text-xs text-foreground/50 mt-1">{result.ebitda_multiple_high}x EBITDA</div>
-                </div>
-              </div>
-
-              <div className="flex justify-center gap-4 mb-8">
-                <span className="text-sm text-foreground/60">{selectedSubtype?.label}</span>
-                <span className="text-sm text-foreground/40">•</span>
-                <span className="text-sm text-foreground/60">{selectedSubtype?.multiple_range}</span>
-              </div>
-            </div>
-
-            {/* Next Steps */}
-            <div className="text-center p-8 border border-border rounded-lg">
-              <h3 className="text-xl font-light text-foreground mb-4">Análisis Profesional</h3>
-              <p className="text-sm text-foreground/70 mb-6 max-w-md mx-auto">
-                Obtén una valoración detallada con nuestros expertos en el sector seguridad
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Valoración de {formData.company_name}
+              </h1>
+              <p className="text-lg text-gray-600 mb-8">
+                Sector Seguridad - {selectedSubtype?.label}
               </p>
-              <Button className="px-8" size="lg">
-                Solicitar Análisis Completo
-              </Button>
-            </div>
-          </div>
 
-          {/* Footer */}
-          <div className="text-center mt-12">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setShowForm(true);
-                setResult(null);
-              }}
-            >
-              Nueva Valoración
-            </Button>
-          </div>
+              {/* Results Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="admin-card text-center p-6">
+                  <div className="text-sm text-gray-500 mb-2 font-medium">Conservador</div>
+                  <div className="text-2xl font-bold text-gray-900">{formatCurrency(result.ev_low)}</div>
+                  <div className="text-xs text-gray-400 mt-1">{result.ebitda_multiple_low}x EBITDA</div>
+                </div>
+                <div className="admin-card text-center p-6 border-2 border-gray-900 bg-gray-50">
+                  <div className="text-sm text-gray-500 mb-2 font-medium">Valoración Base</div>
+                  <div className="text-3xl font-bold text-gray-900">{formatCurrency(result.ev_base)}</div>
+                  <div className="text-xs text-gray-400 mt-1">{result.ebitda_multiple_base}x EBITDA</div>
+                </div>
+                <div className="admin-card text-center p-6">
+                  <div className="text-sm text-gray-500 mb-2 font-medium">Optimista</div>
+                  <div className="text-2xl font-bold text-gray-900">{formatCurrency(result.ev_high)}</div>
+                  <div className="text-xs text-gray-400 mt-1">{result.ebitda_multiple_high}x EBITDA</div>
+                </div>
+              </div>
+
+              <div className="text-center mb-8">
+                <span className="text-sm text-gray-500">Múltiplos aplicados: {selectedSubtype?.multiple_range}</span>
+              </div>
+
+              {/* CTA Section */}
+              <div className="admin-card p-8 text-center">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">¿Quieres un análisis más detallado?</h3>
+                <p className="text-gray-600 mb-6 max-w-lg mx-auto">
+                  Obtén una valoración profesional completa de tu empresa con nuestros expertos en el sector seguridad.
+                </p>
+                <Button className="bg-gray-900 text-white hover:bg-gray-800 px-8" size="lg">
+                  Solicitar Valoración Profesional
+                </Button>
+              </div>
+
+              <div className="text-center mt-8">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowForm(true);
+                    setResult(null);
+                  }}
+                  className="border-gray-900 text-gray-900 hover:bg-gray-50"
+                >
+                  Nueva Valoración
+                </Button>
+              </div>
+            </div>
+          </Card>
+          
+          <ConfidentialityBlock />
+          <CapittalBrief />
         </div>
-      </div>
+      </LandingLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto pt-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-light text-foreground mb-3">
-            Calculadora de Valoración
-          </h1>
-          <p className="text-foreground/70">
-            Sector Seguridad
-          </p>
-        </div>
-
-        {/* Form */}
-        <div className="space-y-8">
-          {/* Basic Info */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="contact_name" className="text-foreground">Nombre *</Label>
-                <Input
-                  id="contact_name"
-                  value={formData.contact_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-                  placeholder="Tu nombre"
-                  className="border-border focus:border-foreground"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="tu@empresa.com"
-                  className="border-border focus:border-foreground"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="company_name" className="text-foreground">Empresa *</Label>
-              <Input
-                id="company_name"
-                value={formData.company_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                placeholder="Nombre de tu empresa"
-                className="border-border focus:border-foreground"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="cif" className="text-foreground">CIF/NIF</Label>
-                <Input
-                  id="cif"
-                  value={formData.cif}
-                  onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
-                  placeholder="B12345678"
-                  className="border-border focus:border-foreground"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="website" className="text-foreground">Web</Label>
-                <Input
-                  id="website"
-                  value={formData.website}
-                  onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                  placeholder="www.empresa.com"
-                  className="border-border focus:border-foreground"
-                />
-              </div>
-            </div>
+    <LandingLayout>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="sr-only">Calculadora de Valoración - Sector Seguridad</h1>
+        
+        <Card className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Calculadora de Valoración
+            </h2>
+            <p className="text-lg text-gray-600">
+              Sector Seguridad
+            </p>
           </div>
 
-          {/* Company Type - Visual Cards */}
-          <div className="space-y-4">
-            <Label className="text-foreground text-base">Tipo de Empresa *</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {SECURITY_SUBTYPES.map((subtype) => (
-                <div
-                  key={subtype.value}
-                  onClick={() => setFormData(prev => ({ ...prev, security_subtype: subtype.value }))}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    formData.security_subtype === subtype.value
-                      ? 'border-foreground bg-foreground/5'
-                      : 'border-border hover:border-foreground/50'
-                  }`}
-                >
-                  <div className="text-foreground font-medium mb-1">{subtype.label}</div>
-                  <div className="text-sm text-foreground/60">Múltiplos {subtype.multiple_range}</div>
+          <div className="space-y-8">
+            {/* Basic Info Section */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                Información de Contacto
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-field">
+                  <Label htmlFor="contact_name" className="text-gray-900 font-medium">Nombre *</Label>
+                  <Input
+                    id="contact_name"
+                    value={formData.contact_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
+                    placeholder="Tu nombre completo"
+                    className="admin-input"
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Financial Metrics */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="revenue_band" className="text-foreground">Facturación *</Label>
-              <Select value={formData.revenue_band} onValueChange={(value) => setFormData(prev => ({ ...prev, revenue_band: value }))}>
-                <SelectTrigger className="border-border focus:border-foreground">
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REVENUE_BANDS.map((band) => (
-                    <SelectItem key={band.value} value={band.value}>
-                      {band.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ebitda_band" className="text-foreground">EBITDA *</Label>
-              <Select value={formData.ebitda_band} onValueChange={(value) => setFormData(prev => ({ ...prev, ebitda_band: value }))}>
-                <SelectTrigger className="border-border focus:border-foreground">
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EBITDA_BANDS.map((band) => (
-                    <SelectItem key={band.value} value={band.value}>
-                      {band.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="pt-8">
-            <Button 
-              onClick={calculateValuation} 
-              disabled={!isFormValid() || isCalculating}
-              className="w-full bg-foreground text-background hover:bg-foreground/90"
-              size="lg"
-            >
-              {isCalculating ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                  Calculando...
+                <div className="form-field">
+                  <Label htmlFor="email" className="text-gray-900 font-medium">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="tu@empresa.com"
+                    className="admin-input"
+                  />
                 </div>
-              ) : (
-                "Calcular Valoración"
-              )}
-            </Button>
+              </div>
+
+              <div className="form-field">
+                <Label htmlFor="company_name" className="text-gray-900 font-medium">Nombre de la Empresa *</Label>
+                <Input
+                  id="company_name"
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  placeholder="Nombre completo de tu empresa"
+                  className="admin-input"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-field">
+                  <Label htmlFor="cif" className="text-gray-900 font-medium">CIF/NIF</Label>
+                  <Input
+                    id="cif"
+                    value={formData.cif}
+                    onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
+                    placeholder="B12345678"
+                    className="admin-input"
+                  />
+                </div>
+                <div className="form-field">
+                  <Label htmlFor="website" className="text-gray-900 font-medium">Sitio Web</Label>
+                  <Input
+                    id="website"
+                    value={formData.website}
+                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                    placeholder="www.tuempresa.com"
+                    className="admin-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Company Type Section */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                Tipo de Empresa de Seguridad *
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {SECURITY_SUBTYPES.map((subtype) => (
+                  <div
+                    key={subtype.value}
+                    onClick={() => setFormData(prev => ({ ...prev, security_subtype: subtype.value }))}
+                    className={`admin-card p-6 cursor-pointer transition-all hover:shadow-md ${
+                      formData.security_subtype === subtype.value
+                        ? 'border-2 border-gray-900 bg-gray-50'
+                        : 'hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-semibold text-gray-900 mb-2">{subtype.label}</div>
+                    <div className="text-sm text-gray-600">Múltiplos EBITDA: {subtype.multiple_range}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Financial Metrics Section */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                Métricas Financieras
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-field">
+                  <Label htmlFor="revenue_band" className="text-gray-900 font-medium">Facturación Anual *</Label>
+                  <Select value={formData.revenue_band} onValueChange={(value) => setFormData(prev => ({ ...prev, revenue_band: value }))}>
+                    <SelectTrigger className="admin-input">
+                      <SelectValue placeholder="Selecciona tu facturación" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REVENUE_BANDS.map((band) => (
+                        <SelectItem key={band.value} value={band.value}>
+                          {band.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="form-field">
+                  <Label htmlFor="ebitda_band" className="text-gray-900 font-medium">EBITDA *</Label>
+                  <Select value={formData.ebitda_band} onValueChange={(value) => setFormData(prev => ({ ...prev, ebitda_band: value }))}>
+                    <SelectTrigger className="admin-input">
+                      <SelectValue placeholder="Selecciona tu EBITDA" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EBITDA_BANDS.map((band) => (
+                        <SelectItem key={band.value} value={band.value}>
+                          {band.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6">
+              <Button 
+                onClick={calculateValuation} 
+                disabled={!isFormValid() || isCalculating}
+                className="w-full bg-gray-900 text-white hover:bg-gray-800 h-12 text-lg font-medium"
+              >
+                {isCalculating ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Calculando Valoración...
+                  </div>
+                ) : (
+                  "Calcular Valoración"
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
+        
+        <ConfidentialityBlock />
+        <CapittalBrief />
       </div>
-    </div>
+    </LandingLayout>
   );
 }
