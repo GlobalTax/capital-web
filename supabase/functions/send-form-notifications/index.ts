@@ -23,18 +23,6 @@ interface FormNotificationRequest {
 
 const ADMIN_EMAILS = ['info@capittal.es', 'lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es'];
 
-const getEmailTemplate = (formType: string, data: any) => {
-  const baseStyle = `
-    <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-      .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
-      .content { padding: 20px; background: #f9f9f9; }
-      .info-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-      .label { font-weight: bold; color: #0f172a; }
-      .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
-    </style>
-  `;
-
 const getUserConfirmationTemplate = (formType: string, data: any) => {
   const baseStyle = `
     <style>
@@ -220,6 +208,18 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
       };
   }
 };
+
+const getEmailTemplate = (formType: string, data: any) => {
+  const baseStyle = `
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
+      .content { padding: 20px; background: #f9f9f9; }
+      .info-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .label { font-weight: bold; color: #0f172a; }
+      .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    </style>
+  `;
 
   switch (formType) {
     case 'contact':
