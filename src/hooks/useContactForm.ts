@@ -156,6 +156,8 @@ export const useContactForm = () => {
         phone: validatedData.phone || null,
         email: validatedData.email,
         service_type: validatedData.serviceType,
+        investment_budget: validatedData.investmentBudget || null,
+        sectors_of_interest: validatedData.sectorsOfInterest || null,
         status: 'new' as const,
         user_agent: navigator.userAgent.slice(0, 255),
       };

@@ -1136,9 +1136,11 @@ export type Database = {
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
           id: string
+          investment_budget: string | null
           ip_address: unknown | null
           phone: string | null
           referral: string | null
+          sectors_of_interest: string | null
           service_type: Database["public"]["Enums"]["service_type_enum"] | null
           status: string
           updated_at: string
@@ -1159,9 +1161,11 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
+          investment_budget?: string | null
           ip_address?: unknown | null
           phone?: string | null
           referral?: string | null
+          sectors_of_interest?: string | null
           service_type?: Database["public"]["Enums"]["service_type_enum"] | null
           status?: string
           updated_at?: string
@@ -1182,9 +1186,11 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
+          investment_budget?: string | null
           ip_address?: unknown | null
           phone?: string | null
           referral?: string | null
+          sectors_of_interest?: string | null
           service_type?: Database["public"]["Enums"]["service_type_enum"] | null
           status?: string
           updated_at?: string
