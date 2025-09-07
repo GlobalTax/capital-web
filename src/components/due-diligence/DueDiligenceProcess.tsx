@@ -7,26 +7,26 @@ const DueDiligenceProcess = () => {
   const processSteps = [
     {
       icon: <Search size={32} />,
-      title: "Análisis Preliminar",
-      description: "Revisión inicial de documentación financiera, legal y comercial para identificar áreas clave de análisis.",
+      title: "**Kick-off y Análisis Preliminar**",
+      description: "**Definimos alcance (Buy-side/Vendor), revisamos documentación inicial y establecemos áreas críticas según el tipo de DD.**",
       duration: "1 semana"
     },
     {
       icon: <FileText size={32} />,
-      title: "Due Diligence Detallado",
-      description: "Investigación exhaustiva de todos los aspectos de la empresa: financieros, legales, operativos y comerciales.",
+      title: "**Due Diligence Detallado**",
+      description: "**Investigación exhaustiva adaptada: Buy-side enfocado en riesgos, Vendor en optimización y preparación para venta.**",
       duration: "3-4 semanas"
     },
     {
       icon: <BarChart3 size={32} />,
-      title: "Análisis e Interpretación",
-      description: "Valoración de hallazgos, identificación de riesgos y oportunidades, y análisis de impacto en la valoración.",
+      title: "**Análisis e Interpretación**",
+      description: "**Valoración específica: impacto en decisión de compra (Buy-side) o plan de mejoras pre-venta (Vendor).**",
       duration: "1-2 semanas"
     },
     {
       icon: <CheckCircle size={32} />,
-      title: "Informe y Recomendaciones",
-      description: "Entrega de informe completo con hallazgos, análisis de riesgos y recomendaciones estratégicas.",
+      title: "**Informe y Plan de Acción**",
+      description: "**Entrega de informe específico con recomendaciones: Go/No-go (Buy-side) o roadmap de mejoras (Vendor).**",
       duration: "1 semana"
     }
   ];
@@ -35,12 +35,12 @@ const DueDiligenceProcess = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Nuestro Proceso de Due Diligence
+          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+            **Metodología Probada en 150+ Transacciones**
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Metodología sistemática que combina experiencia tradicional con tecnología 
-            avanzada para proporcionar análisis completos y precisos.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            **Proceso sistemático que combina experiencia tradicional con tecnología 
+            avanzada para análisis completos y precisos, adaptado a Buy-side o Vendor DD.**
           </p>
         </div>
 

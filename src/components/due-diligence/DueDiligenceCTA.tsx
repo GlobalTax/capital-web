@@ -10,11 +10,11 @@ const DueDiligenceCTA = () => {
         <div className="space-y-8">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              ¿Listo para un Análisis Completo?
+              **¿Listo para Decisiones Basadas en Datos?**
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
-              No tomes decisiones de inversión a ciegas. Nuestro due diligence te proporciona 
-              la información completa que necesitas para invertir con confianza.
+              **No dejes tu inversión al azar. Buy-side o Vendor Due Diligence 
+              con la experiencia de 150+ transacciones y €1.8B analizados.**
             </p>
           </div>
 
@@ -38,17 +38,27 @@ const DueDiligenceCTA = () => {
           </div>
 
           <div className="space-y-6">
-            <Link to="/contacto">
-              <InteractiveHoverButton
-                text="Due Diligence"
-                variant="secondary"
-                size="lg"
-                className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
-              />
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/contacto">
+                <InteractiveHoverButton
+                  text="**Buy-side Due Diligence**"
+                  variant="secondary"
+                  size="lg"
+                  className="bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:shadow-2xl text-lg px-8 py-4"
+                />
+              </Link>
+              <Link to="/contacto">
+                <InteractiveHoverButton
+                  text="**Vendor Due Diligence**"
+                  variant="secondary"
+                  size="lg"
+                  className="bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:shadow-2xl text-lg px-8 py-4"
+                />
+              </Link>
+            </div>
             
             <p className="text-gray-400 text-sm">
-              Análisis inicial gratuito • Informe en 6-8 semanas • 100% confidencial
+              **Consulta inicial gratuita • Informe en 4-8 semanas • 100% confidencial**
             </p>
           </div>
 

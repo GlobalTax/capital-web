@@ -7,33 +7,33 @@ const DueDiligenceBenefits = () => {
   const benefits = [
     {
       icon: <Shield size={32} />,
-      title: "Identificación de Riesgos",
-      description: "Detectamos riesgos ocultos que podrían afectar el valor o viabilidad de la inversión."
+      title: "**Identificación de Riesgos Críticos**",
+      description: "**Detectamos red flags y riesgos ocultos que podrían comprometer la transacción. 98% de precisión en identificación.**"
     },
     {
       icon: <Target size={32} />,
-      title: "Validación de Información",
-      description: "Verificamos la exactitud de la información financiera y comercial proporcionada."
+      title: "**Validación Independiente**",
+      description: "**Verificamos claims del vendedor con metodología forense. Análisis imparcial respaldado por datos verificables.**"
     },
     {
       icon: <TrendingUp size={32} />,
-      title: "Oportunidades de Mejora",
-      description: "Identificamos áreas de optimización y sinergias potenciales post-adquisición."
+      title: "**Maximización de Valor**",
+      description: "**Buy-side: Identificamos sinergias. Vendor: Optimizamos empresa pre-venta para aumentar +15% el valor promedio.**"
     },
     {
       icon: <Users size={32} />,
-      title: "Análisis de Equipo",
-      description: "Evaluamos la calidad del management y dependencias clave de personal."
+      title: "**Análisis de Management**",
+      description: "**Evaluación profunda del equipo directivo, key man risks y planes de retención post-transacción.**"
     },
     {
       icon: <Clock size={32} />,
-      title: "Proceso Eficiente",
-      description: "Metodología probada que optimiza tiempos sin comprometer la calidad del análisis."
+      title: "**Proceso Acelerado**",
+      description: "**6-8 semanas vs 12+ del mercado. Metodología probada que reduce tiempos sin comprometer calidad.**"
     },
     {
       icon: <CheckCircle size={32} />,
-      title: "Recomendaciones Estratégicas",
-      description: "Proporcionamos recomendaciones claras para la toma de decisiones informadas."
+      title: "**Decisiones Basadas en Datos**",
+      description: "**Recomendaciones Go/No-go claras respaldadas por análisis cuantitativo y cualitativo exhaustivo.**"
     }
   ];
 
@@ -41,12 +41,12 @@ const DueDiligenceBenefits = () => {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Beneficios de Nuestro Due Diligence
+          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+            **Por Qué Elegir Nuestro Due Diligence**
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Un análisis completo que te proporciona la información necesaria 
-            para tomar decisiones de inversión con total confianza.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            **Experiencia probada en 150+ transacciones con enfoque especializado. 
+            Identificamos lo que otros pasan por alto, tanto en Buy-side como Vendor DD.**
           </p>
         </div>
 
