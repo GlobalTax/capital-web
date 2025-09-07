@@ -156,7 +156,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               </Label>
               <Select 
                 value={formData.serviceType} 
-                onValueChange={(value: 'vender' | 'comprar') => updateField('serviceType', value)}
+                onValueChange={(value: ContactFormData['serviceType']) => updateField('serviceType', value)}
                 disabled={isSubmitting}
               >
                 <SelectTrigger className="mt-1">
