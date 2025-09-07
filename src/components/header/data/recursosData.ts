@@ -38,13 +38,13 @@ export const recursosData: MenuCategory[] = [
         icon: 'calculator',
         description: "Herramienta gratuita para valorar tu empresa"
       },
-      {
-        id: "documentacion-ma",
-        label: "Documentación M&A",
-        href: "/documentacion-ma",
-        icon: 'file-text',
-        description: "Guías completas sobre M&A"
-      },
+      // {
+      //   id: "documentacion-ma",
+      //   label: "Documentación M&A",
+      //   href: "/documentacion-ma",
+      //   icon: 'file-text',
+      //   description: "Guías completas sobre M&A"
+      // },
       {
         id: "newsletter",
         label: "Newsletter",

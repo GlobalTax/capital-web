@@ -30,7 +30,7 @@ const CasosExito = lazy(() => import('@/pages/CasosExito'));
 const Nosotros = lazy(() => import('@/pages/Nosotros'));
 const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
 const Equipo = lazy(() => import('@/pages/Equipo'));
-const DocumentacionMA = lazy(() => import('@/pages/DocumentacionMA'));
+// const DocumentacionMA = lazy(() => import('@/pages/DocumentacionMA'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Protected route component
@@ -137,36 +137,36 @@ const LandingVentaEmpresas = lazy(() => import('@/pages/LandingVentaEmpresas'));
 import SecurityCalculator from '@/pages/SecurityCalculator';
 
 // Documentacion MA pages - Create placeholder components for missing ones
-const NuestroMetodo = lazy(() => import('@/pages/documentacion-ma/NuestroMetodo').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Fase1 = lazy(() => import('@/pages/documentacion-ma/Fase1').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Fase2Lucha = lazy(() => import('@/pages/documentacion-ma/Fase2Lucha').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Resultados2 = lazy(() => import('@/pages/documentacion-ma/Resultados').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const ConoceEquipo = lazy(() => import('@/pages/documentacion-ma/ConoceEquipo').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Typography = lazy(() => import('@/pages/documentacion-ma/Typography').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Spacing = lazy(() => import('@/pages/documentacion-ma/Spacing').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Variables = lazy(() => import('@/pages/documentacion-ma/Variables').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const Customization = lazy(() => import('@/pages/documentacion-ma/Customization').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
-const DynamicComponents = lazy(() => import('@/pages/documentacion-ma/DynamicComponents').catch(() => 
-  import('@/pages/VentaEmpresas')
-));
+// const NuestroMetodo = lazy(() => import('@/pages/documentacion-ma/NuestroMetodo').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Fase1 = lazy(() => import('@/pages/documentacion-ma/Fase1').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Fase2Lucha = lazy(() => import('@/pages/documentacion-ma/Fase2Lucha').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Resultados2 = lazy(() => import('@/pages/documentacion-ma/Resultados').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const ConoceEquipo = lazy(() => import('@/pages/documentacion-ma/ConoceEquipo').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Typography = lazy(() => import('@/pages/documentacion-ma/Typography').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Spacing = lazy(() => import('@/pages/documentacion-ma/Spacing').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Variables = lazy(() => import('@/pages/documentacion-ma/Variables').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const Customization = lazy(() => import('@/pages/documentacion-ma/Customization').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
+// const DynamicComponents = lazy(() => import('@/pages/documentacion-ma/DynamicComponents').catch(() => 
+//   import('@/pages/VentaEmpresas')
+// ));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -260,7 +260,7 @@ function AppContent() {
           <Route path="/nosotros" element={<Navigate to="/por-que-elegirnos" replace />} />
           <Route path="/de-looper-a-capittal" element={<DeLooperACapittal />} />
           <Route path="/equipo" element={<Equipo />} />
-          <Route path="/documentacion-ma" element={<DocumentacionMA />} />
+          {/* <Route path="/documentacion-ma" element={<DocumentacionMA />} /> */}
           
           {/* Service routes */}
           <Route path="/servicios/valoraciones" element={<Valoraciones />} />
@@ -316,7 +316,7 @@ function AppContent() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           
           {/* Documentacion MA routes */}
-          <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
+          {/* <Route path="/documentacion-ma/nuestro-metodo" element={<NuestroMetodo />} />
           <Route path="/documentacion-ma/fase1" element={<Fase1 />} />
           <Route path="/documentacion-ma/fase2-lucha" element={<Fase2Lucha />} />
           <Route path="/documentacion-ma/resultados" element={<Resultados2 />} />
@@ -325,7 +325,7 @@ function AppContent() {
           <Route path="/documentacion-ma/spacing" element={<Spacing />} />
           <Route path="/documentacion-ma/variables" element={<Variables />} />
           <Route path="/documentacion-ma/customization" element={<Customization />} />
-          <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} />
+          <Route path="/documentacion-ma/dynamic-components" element={<DynamicComponents />} /> */}
           
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />
