@@ -49,12 +49,6 @@ const DueDiligenceHero = () => {
                   className="w-full sm:w-auto"
                 />
               </Link>
-              <InteractiveHoverButton
-                text="Ver Metodología"
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto"
-              />
             </div>
           </div>
 
