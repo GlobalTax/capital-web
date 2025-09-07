@@ -30,10 +30,10 @@ const MinimalistHero = () => {
   }, [statistics]);
 
   // Fixed hooks - always render the same number
-  const stat1 = useCountAnimation(hookParams[0]?.value || 0, hookParams[0]?.duration || 2000, hookParams[0]?.suffix || '');
-  const stat2 = useCountAnimation(hookParams[1]?.value || 0, hookParams[1]?.duration || 2000, hookParams[1]?.suffix || '');
-  const stat3 = useCountAnimation(hookParams[2]?.value || 0, hookParams[2]?.duration || 2000, hookParams[2]?.suffix || '');
-  const stat4 = useCountAnimation(hookParams[3]?.value || 0, hookParams[3]?.duration || 2000, hookParams[3]?.suffix || '');
+  const stat1 = useCountAnimation(hookParams[0]?.value ?? 25, hookParams[0]?.duration ?? 2000, hookParams[0]?.suffix ?? '+');
+  const stat2 = useCountAnimation(hookParams[1]?.value ?? 100, hookParams[1]?.duration ?? 2500, hookParams[1]?.suffix ?? '+');
+  const stat3 = useCountAnimation(hookParams[2]?.value ?? 900, hookParams[2]?.duration ?? 2000, hookParams[2]?.suffix ?? 'M');
+  const stat4 = useCountAnimation(hookParams[3]?.value ?? 98.7, hookParams[3]?.duration ?? 1800, hookParams[3]?.suffix ?? '%');
 
   // Create metrics using fixed hooks
   const createMetrics = () => {
