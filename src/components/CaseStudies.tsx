@@ -1,10 +1,16 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 const CaseStudies = () => {
+  const navigate = useNavigate();
   const { caseStudies, isLoading } = useCaseStudies();
+
+  const handleContactClick = () => {
+    navigate('/contacto');
+  };
 
   // Get featured cases from database, fallback to all cases if no featured ones
   const featuredCases = React.useMemo(() => {
@@ -184,9 +190,10 @@ const CaseStudies = () => {
 
           <div className="flex justify-center">
             <InteractiveHoverButton 
-              text="Evaluar"
+              text="Contacta"
               variant="primary"
               size="lg"
+              onClick={handleContactClick}
             />
           </div>
           
