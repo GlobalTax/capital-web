@@ -73,11 +73,6 @@ const AsesoramientoLegalFAQ = () => {
                       <p className="text-muted-foreground leading-relaxed">
                         {faq.answer}
                       </p>
-                      <div className="mt-4 text-sm text-muted-foreground">
-                        <a href="/conocimiento" className="text-primary hover:underline">
-                          → Más información en nuestra sección de Conocimiento
-                        </a>
-                      </div>
                     </div>
                   </div>
                 )}
