@@ -13,7 +13,7 @@ const AsesoramientoLegalHero = () => {
           <div className="space-y-8">
             <div className="space-y-6">
               <div className="inline-flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
-                En partnership con Navarro Legal
+                En colaboración con el equipo de Navarro Legal
               </div>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight">
@@ -30,7 +30,7 @@ const AsesoramientoLegalHero = () => {
             {/* Key Metrics */}
             <div className="grid grid-cols-2 gap-6">
               <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-black mb-2">200+</div>
+                <div className="text-3xl font-bold text-black mb-2">500+</div>
                 <div className="text-sm text-black">Operaciones Asesoradas</div>
               </div>
               <div className="text-center p-4 bg-card border rounded-lg">
@@ -46,18 +46,9 @@ const AsesoramientoLegalHero = () => {
                 variant="primary"
                 size="lg"
                 className="flex items-center gap-2"
+                onClick={() => window.location.href = '/contacto'}
               >
                 <Phone className="w-5 h-5" />
-              </InteractiveHoverButton>
-              
-              <InteractiveHoverButton
-                text="Documentación"
-                variant="secondary"
-                size="lg"
-                className="flex items-center gap-2"
-                onClick={() => window.location.href = '/servicios/asesoramiento-legal/tecnico'}
-              >
-                <Download className="w-5 h-5" />
               </InteractiveHoverButton>
             </div>
           </div>
@@ -67,7 +58,7 @@ const AsesoramientoLegalHero = () => {
             <Card className="max-w-md mx-auto">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-sm">
-                  <span>Progreso Legal - Operación TECH-2024</span>
+                  <span>Progreso Legal - Operación TECH-2025</span>
                   <span className="text-primary font-mono">85%</span>
                 </CardTitle>
               </CardHeader>

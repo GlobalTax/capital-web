@@ -20,7 +20,7 @@ const AsesoramientoLegalCTA = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">200+</div>
+              <div className="text-3xl font-bold text-white mb-2">500+</div>
               <div className="text-gray-400 text-sm">Operaciones Protegidas</div>
             </div>
             <div className="text-center">
@@ -37,22 +37,13 @@ const AsesoramientoLegalCTA = () => {
             </div>
           </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Link to="/contacto">
                 <InteractiveHoverButton
                   text="Consulta"
                   variant="secondary"
                   size="lg"
                   className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
-                />
-              </Link>
-              
-              <Link to="/servicios/asesoramiento-legal/tecnico">
-                <InteractiveHoverButton
-                  text="Documentos"
-                  variant="outline"
-                  size="lg"
-                  className="border-white text-white hover:bg-white hover:text-black text-lg px-8 py-4"
                 />
               </Link>
             </div>

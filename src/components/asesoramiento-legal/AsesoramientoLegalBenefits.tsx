@@ -119,7 +119,7 @@ const AsesoramientoLegalBenefits = () => {
             </h4>
             <div className="grid grid-cols-2 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-black mb-2">200+</div>
+                <div className="text-3xl font-bold text-black mb-2">500+</div>
                 <div className="text-gray-600 text-sm">Operaciones asesoradas</div>
               </div>
               <div className="text-center">
