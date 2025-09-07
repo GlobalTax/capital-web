@@ -20,11 +20,11 @@ const AsesoramientoLegalCTA = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">500+</div>
+              <div className="text-3xl font-bold text-white mb-2">+100</div>
               <div className="text-gray-400 text-sm">Operaciones Protegidas</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">€2.5B</div>
+              <div className="text-3xl font-bold text-white mb-2">905 millones</div>
               <div className="text-gray-400 text-sm">Valor Asegurado</div>
             </div>
             <div className="text-center">

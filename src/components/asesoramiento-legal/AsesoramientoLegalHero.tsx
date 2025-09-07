@@ -30,11 +30,11 @@ const AsesoramientoLegalHero = () => {
             {/* Key Metrics */}
             <div className="grid grid-cols-2 gap-6">
               <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-black mb-2">500+</div>
+                <div className="text-3xl font-bold text-black mb-2">+100</div>
                 <div className="text-sm text-black">Operaciones Asesoradas</div>
               </div>
               <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-black mb-2">€2.5B</div>
+                <div className="text-3xl font-bold text-black mb-2">905 millones</div>
                 <div className="text-sm text-black">Valor Total Protegido</div>
               </div>
             </div>

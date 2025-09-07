@@ -63,10 +63,10 @@ const AsesoramientoLegalWhyChoose = () => {
         <div className="mt-16 text-center">
           <div className="bg-white border-0.5 border-black rounded-lg p-8 inline-block">
             <p className="text-lg font-semibold text-black mb-2">
-              +500 operaciones asesoradas legalmente sin contingencias mayores
+              +100 operaciones asesoradas legalmente sin contingencias mayores
             </p>
             <p className="text-slate-600">
-              Protegiendo más de €2.5B en valor de transacciones desde 2008
+              Protegiendo más de 905 millones en valor de transacciones desde 2008
             </p>
           </div>
         </div>

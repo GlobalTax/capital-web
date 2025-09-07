@@ -24,7 +24,7 @@ const AsesoramientoLegalExperience = () => {
     },
     {
       icon: Award,
-      value: "€2.5B",
+      value: "905 millones",
       label: "Valor Total Protegido",
       description: "En operaciones asesoradas"
     }
