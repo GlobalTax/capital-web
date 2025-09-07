@@ -100,9 +100,6 @@ const PlanificacionFiscalCTA = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="space-y-8">
           <div className="space-y-6">
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              Optimiza tu Fiscalidad y Maximiza el Valor de tu Operación
-            </h2>
             <p className="text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
               No pagues más impuestos de los necesarios. Nuestras estrategias fiscales 
               pueden ahorrarte cientos de miles de euros en tu próxima operación.
