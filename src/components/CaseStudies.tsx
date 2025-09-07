@@ -89,9 +89,9 @@ const CaseStudies = () => {
                       {case_.sector} • {case_.year}
                     </div>
                     
-                    {/* Logo - larger and better positioned */}
+                    {/* Logo - much larger and more prominent */}
                     {case_.logo_url && (
-                      <div className="w-16 h-16 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                      <div className="w-28 h-28 bg-gray-50 rounded-lg p-3 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200">
                         <img 
                           src={case_.logo_url} 
                           alt={`${case_.title} logo`}
