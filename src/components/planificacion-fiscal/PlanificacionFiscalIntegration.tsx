@@ -39,22 +39,6 @@ const PlanificacionFiscalIntegration = () => {
           </div>
         </div>
 
-        <div className="mt-12 text-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">360°</div>
-              <div className="text-gray-400">Enfoque integral</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">50+</div>
-              <div className="text-gray-400">Asesores colaboradores</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">100%</div>
-              <div className="text-gray-400">Coordinación garantizada</div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
