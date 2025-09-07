@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLeadMagnetDownloads } from '@/hooks/useLeadMagnets';
 import { Download } from 'lucide-react';
 
 const PlanificacionFiscalCTA = () => {
@@ -24,6 +25,16 @@ const PlanificacionFiscalCTA = () => {
     operation_value: '',
     message: ''
   });
+
+  // Estados para el modal de descarga de guía
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [isDownloadSubmitting, setIsDownloadSubmitting] = useState(false);
+  const [downloadFormData, setDownloadFormData] = useState({
+    user_name: '',
+    user_email: ''
+  });
+
+  const { recordDownload } = useLeadMagnetDownloads();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -138,17 +149,90 @@ const PlanificacionFiscalCTA = () => {
   };
 
   const handleDownloadGuide = () => {
-    const link = document.createElement('a');
-    link.href = '/docs/guia-planificacion-fiscal.pdf';
-    link.download = 'Guia-Planificacion-Fiscal-Capittal.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "Descarga iniciada",
-      description: "La guía fiscal se está descargando.",
-    });
+    setIsDownloadModalOpen(true);
+  };
+
+  const handleDownloadInputChange = (field: string, value: string) => {
+    setDownloadFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleDownloadFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDownloadSubmitting(true);
+
+    // Frontend validation
+    const trimmedName = downloadFormData.user_name.trim();
+    const trimmedEmail = downloadFormData.user_email.trim();
+
+    if (trimmedName.length < 2 || trimmedName.length > 100) {
+      toast({
+        title: "Error de validación",
+        description: "El nombre debe tener entre 2 y 100 caracteres.",
+        variant: "destructive",
+      });
+      setIsDownloadSubmitting(false);
+      return;
+    }
+
+    if (trimmedEmail.length > 254 || !trimmedEmail.includes('@')) {
+      toast({
+        title: "Error de validación",
+        description: "Por favor, introduce un email válido.",
+        variant: "destructive",
+      });
+      setIsDownloadSubmitting(false);
+      return;
+    }
+
+    try {
+      // Registrar el lead usando el hook existente
+      await recordDownload('guia-planificacion-fiscal', {
+        user_name: trimmedName,
+        user_email: trimmedEmail
+      });
+
+      // Iniciar descarga del PDF
+      const link = document.createElement('a');
+      link.href = '/docs/guia-planificacion-fiscal.pdf';
+      link.download = 'Guia-Planificacion-Fiscal-Capittal.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "¡Descarga iniciada exitosamente!",
+        description: "La guía fiscal se está descargando. Te contactaremos pronto.",
+      });
+
+      // Reset form and close modal
+      setDownloadFormData({
+        user_name: '',
+        user_email: ''
+      });
+      setIsDownloadModalOpen(false);
+
+    } catch (error: any) {
+      console.error('Error al procesar descarga:', error);
+      
+      let errorMessage = "Error al procesar la descarga. Por favor, inténtalo de nuevo.";
+      
+      if (error?.message?.includes('rate_limit')) {
+        errorMessage = "Has solicitado demasiadas descargas. Espera un momento antes de volver a intentarlo.";
+      } else if (error?.message?.includes('email')) {
+        errorMessage = "Por favor, verifica que el email sea válido.";
+      }
+
+      toast({
+        title: "Error al procesar descarga",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadSubmitting(false);
+    }
   };
 
   return (
@@ -299,15 +383,56 @@ const PlanificacionFiscalCTA = () => {
                 </DialogContent>
               </Dialog>
 
-              <Button
-                onClick={handleDownloadGuide}
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white text-white hover:bg-white hover:text-black text-lg px-12 py-4"
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Descargar Guía Fiscal
-              </Button>
+              <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="bg-transparent border-white text-white hover:bg-white hover:text-black text-lg px-12 py-4"
+                  >
+                    <Download className="w-5 h-5 mr-2" />
+                    Descargar Guía Fiscal
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[400px]">
+                  <DialogHeader>
+                    <DialogTitle>Descargar Guía Fiscal</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleDownloadFormSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="download_name">Nombre completo *</Label>
+                      <Input 
+                        id="download_name"
+                        value={downloadFormData.user_name}
+                        onChange={(e) => handleDownloadInputChange('user_name', e.target.value)}
+                        required 
+                        placeholder="Tu nombre completo"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="download_email">Email *</Label>
+                      <Input 
+                        id="download_email"
+                        type="email"
+                        value={downloadFormData.user_email}
+                        onChange={(e) => handleDownloadInputChange('user_email', e.target.value)}
+                        required 
+                        placeholder="tu@email.com"
+                      />
+                    </div>
+
+                    <div className="flex gap-4">
+                      <Button type="submit" disabled={isDownloadSubmitting} className="flex-1">
+                        {isDownloadSubmitting ? 'Procesando...' : 'Descargar Guía'}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setIsDownloadModalOpen(false)}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
