@@ -3,7 +3,7 @@ import HomeLayout from '@/components/shared/HomeLayout';
 import AsesoramientoLegalHero from '@/components/asesoramiento-legal/AsesoramientoLegalHero';
 import AsesoramientoLegalWhyChoose from '@/components/asesoramiento-legal/AsesoramientoLegalWhyChoose';
 import AsesoramientoLegalServices from '@/components/asesoramiento-legal/AsesoramientoLegalServices';
-import AsesoramientoLegalProcess from '@/components/asesoramiento-legal/AsesoramientoLegalProcess';
+
 import AsesoramientoLegalBenefits from '@/components/asesoramiento-legal/AsesoramientoLegalBenefits';
 import AsesoramientoLegalExperience from '@/components/asesoramiento-legal/AsesoramientoLegalExperience';
 import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/AsesoramientoLegalFAQ';
@@ -36,7 +36,7 @@ const AsesoramientoLegal = () => {
       <AsesoramientoLegalHero />
       <AsesoramientoLegalWhyChoose />
       <AsesoramientoLegalServices />
-      <AsesoramientoLegalProcess />
+      
       <AsesoramientoLegalBenefits />
       <AsesoramientoLegalExperience />
       <AsesoramientoLegalFAQ />
