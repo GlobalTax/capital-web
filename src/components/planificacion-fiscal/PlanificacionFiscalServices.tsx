@@ -18,9 +18,14 @@ const PlanificacionFiscalServices = () => {
       features: ["Análisis de riesgos", "Contingencias fiscales", "Estrategias de mitigación"]
     },
     {
-      title: "Diferidos y Reorganizaciones",
-      description: "Aplicamos regímenes especiales para diferir la tributación en reorganizaciones empresariales y mejorar el flujo de caja.",
-      features: ["Regímenes especiales", "Diferimiento fiscal", "Mejora cash flow"]
+      title: "Reorganizaciones",
+      description: "Aplicamos regímenes especiales en reorganizaciones empresariales para optimizar la estructura societaria y mejorar el flujo de caja.",
+      features: ["Regímenes especiales", "Fusiones y escisiones", "Mejora cash flow"]
+    },
+    {
+      title: "Planificación de la Sucesión",
+      description: "Diseñamos estructuras de transmisión patrimonial optimizadas fiscalmente para garantizar la continuidad empresarial y familiar.",
+      features: ["Transmisiones patrimoniales", "Reducción impuestos sucesiones", "Continuidad empresarial"]
     },
     {
       title: "Planificación Impuesto Sociedades",
