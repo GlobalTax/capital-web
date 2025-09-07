@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, FileText, Users, TrendingUp, Star, Calendar, Calculator, ArrowLeft, ArrowRight } from 'lucide-react';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { Download, FileText, Users, TrendingUp, Star, Calendar, Calculator, ArrowLeft, ArrowRight, BarChart3 } from 'lucide-react';
 
 const MarketReports = () => {
   const [selectedCalculator, setSelectedCalculator] = useState(null);
@@ -64,26 +65,129 @@ const MarketReports = () => {
 
   return (
     <HomeLayout>
-      <div className="pt-16">
+      <div className="min-h-screen bg-white">
         {/* Hero Section */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-                Market Intelligence
-              </h1>
-              <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                Accede a nuestros informes exclusivos del mercado M&A y utiliza nuestras calculadoras 
-                especializadas por sector para obtener insights precisos y datos actualizados.
-              </p>
-            </div>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left Content */}
+              <div className="text-left">
+                <Badge className="mb-6 text-sm font-medium bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Recursos Exclusivos
+                </Badge>
+                
+                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight">
+                  Informes de Mercado
+                  <br />
+                  <span className="text-slate-600">y Calculadoras Sectoriales</span>
+                </h1>
+                
+                <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-xl">
+                  Accede a nuestros análisis exclusivos del mercado M&A, tendencias sectoriales 
+                  y herramientas especializadas de valoración por sector.
+                </p>
 
-            {/* Navigation Tabs */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <InteractiveHoverButton
+                    variant="primary"
+                    text="Explorar Informes"
+                    className="px-8 py-3"
+                    onClick={() => setCurrentView('reports')}
+                  />
+                  <InteractiveHoverButton
+                    variant="outline"
+                    text="Ver Calculadoras"
+                    className="px-8 py-3"
+                    onClick={() => setCurrentView('calculators')}
+                  />
+                </div>
+
+                {/* Key Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  <div>
+                    <div className="text-2xl font-bold text-slate-900 mb-1">{marketReports?.length || 0}</div>
+                    <div className="text-sm text-slate-600">Informes Disponibles</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-slate-900 mb-1">12+</div>
+                    <div className="text-sm text-slate-600">Sectores Cubiertos</div>
+                  </div>
+                  <div className="md:col-span-1 col-span-2">
+                    <div className="text-2xl font-bold text-slate-900 mb-1">24h</div>
+                    <div className="text-sm text-slate-600">Actualización</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Visual */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 border border-slate-200">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Badge className="bg-green-100 text-green-700 border-green-200">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        En Vivo
+                      </Badge>
+                      <div className="text-sm text-slate-600">Última actualización: Hoy</div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+                      <h3 className="font-semibold text-slate-900 mb-3">Sectores Más Activos</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-700">Tecnología</span>
+                          <div className="flex items-center">
+                            <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
+                            <span className="text-sm font-medium text-green-600">+12%</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-700">Salud</span>
+                          <div className="flex items-center">
+                            <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
+                            <span className="text-sm font-medium text-green-600">+8%</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-700">Energía</span>
+                          <div className="flex items-center">
+                            <TrendingUp className="w-3 h-3 text-blue-500 mr-1" />
+                            <span className="text-sm font-medium text-blue-600">+5%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Navigation Tabs */}
+        <section className="py-12 bg-slate-50/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Tabs value={currentView} onValueChange={(value: any) => setCurrentView(value)} className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3">
-                <TabsTrigger value="overview">Vista General</TabsTrigger>
-                <TabsTrigger value="reports">Informes</TabsTrigger>
-                <TabsTrigger value="calculators">Calculadoras</TabsTrigger>
+              <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 h-12 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                <TabsTrigger 
+                  value="overview"
+                  className="text-sm font-medium data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md transition-all"
+                >
+                  Vista General
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="reports"
+                  className="text-sm font-medium data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md transition-all"
+                >
+                  Informes
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="calculators"
+                  className="text-sm font-medium data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md transition-all"
+                >
+                  Calculadoras
+                </TabsTrigger>
               </TabsList>
 
               {/* Overview Content */}
@@ -94,19 +198,20 @@ const MarketReports = () => {
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h2 className="text-3xl font-bold text-slate-900 mb-2">Informes de Mercado</h2>
-                        <p className="text-slate-600">Análisis profundo del mercado M&A por sectores</p>
+                        <p className="text-lg text-slate-600">Análisis profundo del mercado M&A por sectores</p>
                       </div>
-                      <Button onClick={() => setCurrentView('reports')} className="flex items-center space-x-2">
-                        <FileText className="w-4 h-4" />
-                        <span>Ver todos los informes</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
+                      <InteractiveHoverButton
+                        variant="outline"
+                        text="Ver todos los informes"
+                        className="flex items-center space-x-2"
+                        onClick={() => setCurrentView('reports')}
+                      />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {reportsLoading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                          <Card key={i} className="animate-pulse">
+                          <Card key={i} className="animate-pulse border border-slate-200 rounded-lg">
                             <CardHeader>
                               <div className="h-4 bg-slate-200 rounded w-3/4"></div>
                               <div className="h-3 bg-slate-200 rounded w-1/2"></div>
@@ -120,48 +225,54 @@ const MarketReports = () => {
                           </Card>
                         ))
                       ) : marketReports?.length === 0 ? (
-                        <div className="col-span-full text-center py-12">
-                          <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-slate-900 mb-2">No hay informes disponibles</h3>
+                        <div className="col-span-full text-center py-16">
+                          <div className="bg-slate-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <FileText className="w-8 h-8 text-slate-400" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-slate-900 mb-2">No hay informes disponibles</h3>
                           <p className="text-slate-600">Los informes de mercado estarán disponibles próximamente.</p>
                         </div>
                       ) : (
                         marketReports?.slice(0, 3).map((report) => (
-                          <Card key={report.id} className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                              <div className="flex items-start justify-between">
-                                <Badge variant="secondary">{report.category}</Badge>
-                                <div className="flex items-center text-sm text-slate-500">
-                                  <Calendar className="w-4 h-4 mr-1" />
+                          <Card key={report.id} className="bg-white border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer rounded-lg">
+                            <CardHeader className="pb-4">
+                              <div className="flex items-start justify-between mb-3">
+                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200">
+                                  {report.category}
+                                </Badge>
+                                <div className="flex items-center text-xs text-slate-500">
+                                  <Calendar className="w-3 h-3 mr-1" />
                                   {new Date(report.last_updated).toLocaleDateString('es-ES')}
                                 </div>
                               </div>
-                              <CardTitle className="text-lg">{report.title}</CardTitle>
-                              <CardDescription className="text-sm">
+                              <CardTitle className="text-lg font-bold text-slate-900 leading-tight group-hover:text-slate-700 transition-colors">
+                                {report.title}
+                              </CardTitle>
+                              <CardDescription className="text-sm text-slate-600">
                                 {report.description}
                               </CardDescription>
                             </CardHeader>
-                            <CardContent>
-                              <div className="flex items-center justify-between">
+                            <CardContent className="pt-0">
+                              <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center space-x-4 text-sm text-slate-500">
                                   <span className="flex items-center">
-                                    <FileText className="w-4 h-4 mr-1" />
+                                    <FileText className="w-3 h-3 mr-1" />
                                     {report.pages} páginas
                                   </span>
                                   <span className="flex items-center">
-                                    <Download className="w-4 h-4 mr-1" />
+                                    <Download className="w-3 h-3 mr-1" />
                                     {report.download_count || 0}
                                   </span>
                                 </div>
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => handleDownload(report)}
-                                  disabled={!report.file_url}
-                                >
-                                  <Download className="w-4 h-4 mr-1" />
-                                  Descargar
-                                </Button>
                               </div>
+                              <InteractiveHoverButton
+                                variant="primary"
+                                text="Descargar Informe"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => handleDownload(report)}
+                                disabled={!report.file_url}
+                              />
                             </CardContent>
                           </Card>
                         ))
@@ -174,19 +285,20 @@ const MarketReports = () => {
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h2 className="text-3xl font-bold text-slate-900 mb-2">Calculadoras Sectoriales</h2>
-                        <p className="text-slate-600">Herramientas especializadas para valoración por sector</p>
+                        <p className="text-lg text-slate-600">Herramientas especializadas para valoración por sector</p>
                       </div>
-                      <Button onClick={() => setCurrentView('calculators')} variant="outline" className="flex items-center space-x-2">
-                        <Calculator className="w-4 h-4" />
-                        <span>Ver todas las calculadoras</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
+                      <InteractiveHoverButton
+                        variant="outline"
+                        text="Ver todas las calculadoras"
+                        className="flex items-center space-x-2"
+                        onClick={() => setCurrentView('calculators')}
+                      />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {calculatorsLoading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                          <Card key={i} className="animate-pulse">
+                          <Card key={i} className="animate-pulse border border-slate-200 rounded-lg">
                             <CardHeader>
                               <div className="h-4 bg-slate-200 rounded w-3/4"></div>
                               <div className="h-3 bg-slate-200 rounded w-1/2"></div>
@@ -194,29 +306,30 @@ const MarketReports = () => {
                           </Card>
                         ))
                       ) : calculators?.length === 0 ? (
-                        <div className="col-span-full text-center py-12">
-                          <Calculator className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-slate-900 mb-2">No hay calculadoras disponibles</h3>
+                        <div className="col-span-full text-center py-16">
+                          <div className="bg-slate-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <Calculator className="w-8 h-8 text-slate-400" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-slate-900 mb-2">No hay calculadoras disponibles</h3>
                           <p className="text-slate-600">Las calculadoras sectoriales estarán disponibles próximamente.</p>
                         </div>
                       ) : (
                         calculators?.slice(0, 3).map((calculator) => (
-                          <Card key={calculator.id} className="hover:shadow-lg transition-shadow">
+                          <Card key={calculator.id} className="bg-white border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer rounded-lg">
                             <CardHeader>
-                              <div className="flex items-center justify-between">
-                                <Badge variant="outline">{calculator.sector}</Badge>
+                              <div className="flex items-center justify-between mb-3">
+                                <Badge variant="outline" className="border-slate-300 text-slate-700">{calculator.sector}</Badge>
                               </div>
-                              <CardTitle className="text-lg">{calculator.name}</CardTitle>
-                              <CardDescription>{calculator.description}</CardDescription>
+                              <CardTitle className="text-lg font-bold text-slate-900 group-hover:text-slate-700 transition-colors">{calculator.name}</CardTitle>
+                              <CardDescription className="text-sm text-slate-600">{calculator.description}</CardDescription>
                             </CardHeader>
                             <CardContent>
-                              <Button 
-                                onClick={() => handleCalculate(calculator)}
+                              <InteractiveHoverButton
+                                variant="primary"
+                                text="Usar Calculadora"
                                 className="w-full"
-                              >
-                                <Calculator className="w-4 h-4 mr-2" />
-                                Usar Calculadora
-                              </Button>
+                                onClick={() => handleCalculate(calculator)}
+                              />
                             </CardContent>
                           </Card>
                         ))
@@ -231,7 +344,7 @@ const MarketReports = () => {
                 <div className="space-y-8">
                   <div className="text-center">
                     <h2 className="text-3xl font-bold text-slate-900 mb-4">Informes de Mercado</h2>
-                    <p className="text-slate-600 max-w-2xl mx-auto">
+                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                       Descarga nuestros análisis exclusivos del mercado M&A con datos actualizados,
                       tendencias sectoriales e insights para optimizar tus decisiones estratégicas.
                     </p>
@@ -240,7 +353,7 @@ const MarketReports = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {reportsLoading ? (
                       Array.from({ length: 6 }).map((_, i) => (
-                        <Card key={i} className="animate-pulse">
+                        <Card key={i} className="animate-pulse border border-slate-200 rounded-lg">
                           <CardHeader>
                             <div className="h-4 bg-slate-200 rounded w-3/4"></div>
                             <div className="h-3 bg-slate-200 rounded w-1/2"></div>
@@ -254,48 +367,54 @@ const MarketReports = () => {
                         </Card>
                       ))
                     ) : marketReports?.length === 0 ? (
-                      <div className="col-span-full text-center py-12">
-                        <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-slate-900 mb-2">No hay informes disponibles</h3>
+                      <div className="col-span-full text-center py-16">
+                        <div className="bg-slate-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                          <FileText className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">No hay informes disponibles</h3>
                         <p className="text-slate-600">Los informes de mercado estarán disponibles próximamente.</p>
                       </div>
                     ) : (
                       marketReports?.map((report) => (
-                        <Card key={report.id} className="hover:shadow-lg transition-shadow">
-                          <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <Badge variant="secondary">{report.category}</Badge>
-                              <div className="flex items-center text-sm text-slate-500">
-                                <Calendar className="w-4 h-4 mr-1" />
+                        <Card key={report.id} className="bg-white border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer rounded-lg">
+                          <CardHeader className="pb-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <Badge variant="secondary" className="bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200">
+                                {report.category}
+                              </Badge>
+                              <div className="flex items-center text-xs text-slate-500">
+                                <Calendar className="w-3 h-3 mr-1" />
                                 {new Date(report.last_updated).toLocaleDateString('es-ES')}
                               </div>
                             </div>
-                            <CardTitle className="text-lg">{report.title}</CardTitle>
-                            <CardDescription className="text-sm">
+                            <CardTitle className="text-lg font-bold text-slate-900 leading-tight group-hover:text-slate-700 transition-colors">
+                              {report.title}
+                            </CardTitle>
+                            <CardDescription className="text-sm text-slate-600">
                               {report.description}
                             </CardDescription>
                           </CardHeader>
-                          <CardContent>
-                            <div className="flex items-center justify-between">
+                          <CardContent className="pt-0">
+                            <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center space-x-4 text-sm text-slate-500">
                                 <span className="flex items-center">
-                                  <FileText className="w-4 h-4 mr-1" />
+                                  <FileText className="w-3 h-3 mr-1" />
                                   {report.pages} páginas
                                 </span>
                                 <span className="flex items-center">
-                                  <Download className="w-4 h-4 mr-1" />
+                                  <Download className="w-3 h-3 mr-1" />
                                   {report.download_count || 0}
                                 </span>
                               </div>
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleDownload(report)}
-                                disabled={!report.file_url}
-                              >
-                                <Download className="w-4 h-4 mr-1" />
-                                Descargar
-                              </Button>
                             </div>
+                            <InteractiveHoverButton
+                              variant="primary"
+                              text="Descargar Informe"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => handleDownload(report)}
+                              disabled={!report.file_url}
+                            />
                           </CardContent>
                         </Card>
                       ))
