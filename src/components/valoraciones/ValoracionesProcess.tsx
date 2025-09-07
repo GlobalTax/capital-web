@@ -2,48 +2,48 @@ import React from 'react';
 import { MessageSquare, FileSearch, Calculator, Presentation, FileText, CheckCircle } from 'lucide-react';
 
 const ValoracionesProcess = () => {
-  const steps = [
+const steps = [
     {
       icon: MessageSquare,
       titulo: 'Consulta Inicial',
-      descripcion: 'Reunión para entender objetivos y revisar información preliminar',
-      duracion: '1-2 días',
-      entregables: ['Propuesta comercial', 'Plan de trabajo', 'Carta de confidencialidad']
+      descripcion: 'Reunión de diagnóstico para entender objetivos, contexto y definir alcance del proyecto',
+      duracion: '2-3 días',
+      entregables: ['Propuesta comercial detallada', 'Plan de trabajo específico', 'Acuerdo de confidencialidad']
     },
     {
       icon: FileSearch,
       titulo: 'Due Diligence',
-      descripcion: 'Análisis exhaustivo de información financiera, legal y operativa',
+      descripcion: 'Revisión exhaustiva de estados financieros, documentación legal y análisis operativo',
       duracion: '1-2 semanas',
-      entregables: ['Lista de información requerida', 'Análisis preliminary', 'Identificación de riesgos']
+      entregables: ['Checklist de información', 'Análisis preliminar de riesgos', 'Informe de due diligence']
     },
     {
       icon: Calculator,
       titulo: 'Análisis de Valoración',
-      descripcion: 'Aplicación de múltiples metodologías y análisis de sensibilidad',
-      duracion: '1 semana',
-      entregables: ['Modelo financiero', 'Análisis de múltiplos', 'Proyecciones DCF']
+      descripcion: 'Aplicación de metodologías DCF, múltiplos comparables y análisis de sensibilidad',
+      duracion: '1-2 semanas',
+      entregables: ['Modelo financiero completo', 'Análisis de múltiplos sectoriales', 'Proyecciones DCF validadas']
     },
     {
       icon: Presentation,
       titulo: 'Presentación',
-      descripcion: 'Revisión de resultados y ajustes basados en feedback',
-      duracion: '2-3 días',
-      entregables: ['Presentación ejecutiva', 'Sesión de Q&A', 'Recomendaciones']
+      descripcion: 'Presentación de resultados, validación de supuestos y incorporación de feedback',
+      duracion: '3-5 días',
+      entregables: ['Presentación ejecutiva', 'Sesión de validación', 'Ajustes incorporados']
     },
     {
       icon: FileText,
       titulo: 'Informe Final',
-      descripcion: 'Entrega del informe completo de valoración certificado',
-      duracion: '2-3 días',
-      entregables: ['Informe de valoración', 'Anexos técnicos', 'Certificación profesional']
+      descripcion: 'Elaboración del informe certificado con todas las metodologías y conclusiones',
+      duracion: '1 semana',
+      entregables: ['Informe de valoración certificado', 'Anexos técnicos detallados', 'Certificación profesional']
     },
     {
       icon: CheckCircle,
       titulo: 'Seguimiento',
-      descripcion: 'Soporte post-entrega y actualizaciones si es necesario',
-      duracion: '3 meses',
-      entregables: ['Actualizaciones menores', 'Consultas adicionales', 'Soporte operativo']
+      descripcion: 'Soporte técnico, actualizaciones menores y consultas sobre el informe entregado',
+      duracion: '30 días iniciales',
+      entregables: ['Actualizaciones puntuales', 'Resolución de consultas', 'Soporte técnico incluido']
     }
   ];
 
@@ -106,51 +106,6 @@ const ValoracionesProcess = () => {
           })}
         </div>
 
-        {/* Timeline Summary */}
-        <div className="mt-12 bg-slate-50 rounded-lg p-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">
-              Cronograma Típico
-            </h3>
-            <p className="text-slate-600 text-sm">
-              El proceso completo de valoración profesional suele completarse en 4-6 semanas
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center font-medium text-sm mx-auto mb-2">
-                1-2
-              </div>
-              <h4 className="font-medium text-slate-900 mb-1 text-sm">Semanas 1-2</h4>
-              <p className="text-xs text-slate-600">Consulta inicial y due diligence</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center font-medium text-sm mx-auto mb-2">
-                3
-              </div>
-              <h4 className="font-medium text-slate-900 mb-1 text-sm">Semana 3</h4>
-              <p className="text-xs text-slate-600">Análisis y modelización</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center font-medium text-sm mx-auto mb-2">
-                4
-              </div>
-              <h4 className="font-medium text-slate-900 mb-1 text-sm">Semana 4</h4>
-              <p className="text-xs text-slate-600">Presentación y ajustes</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center font-medium text-sm mx-auto mb-2">
-                5-6
-              </div>
-              <h4 className="font-medium text-slate-900 mb-1 text-sm">Semanas 5-6</h4>
-              <p className="text-xs text-slate-600">Informe final y seguimiento</p>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
