@@ -36,7 +36,7 @@ const MinimalistHero = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
-            Líderes en M&A desde 2008
+            Método, Datos y Confianza
           </div>
           
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-6">
@@ -44,8 +44,7 @@ const MinimalistHero = () => {
           </h1>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Especialistas en M&A respaldados por el ecosistema integral del Grupo Navarro. 
-            Más de dos décadas de experiencia garantizando el éxito de cada transacción.
+            Porque vender (o comprar) una empresa exige método, datos y un socio de confianza. Unimos valoración rigurosa, preparación 360º (legal, fiscal y financiera) y acceso a compradores e inversores cualificados en España y la UE, con confidencialidad absoluta y alineación de incentivos. Resultado: operaciones mejor preparadas, negociaciones más sólidas y cierres con menos fricción.
           </p>
         </div>
 
