@@ -32,7 +32,7 @@ const EcosistemaIntegral = () => {
   // Create statistics array using memoization
   const statistics = useMemo(() => {
     if (!dbStatistics || dbStatistics.length === 0) {
-      return [
+    return [
         {
           value: professionalsCount.count,
           label: "Profesionales Especializados",

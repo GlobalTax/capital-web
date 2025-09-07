@@ -24,5 +24,5 @@ export const useCountAnimation = (end: number, duration: number = 2000, suffix: 
     requestAnimationFrame(animate);
   }, [isVisible, end, duration]);
 
-  return { count: count + suffix, ref };
+  return { count: `${count}${suffix}`, ref };
 };
