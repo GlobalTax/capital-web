@@ -12,16 +12,7 @@ import {
 } from '@/utils/validationUtils';
 import { sanitizeObject } from '@/utils/sanitization';
 import { logger } from '@/utils/logger';
-
-interface ContactFormData {
-  fullName: string;
-  company: string;
-  phone?: string;
-  email: string;
-  country?: string;
-  companySize?: string;
-  referral?: string;
-}
+import { ContactFormData } from '@/schemas/contactFormSchema';
 
 export const useContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +25,7 @@ export const useContactForm = () => {
     blockDurationMs: 5 * 60 * 1000 // bloquear por 5 minutos
   });
 
-  const submitContactForm = async (formData: ContactFormData) => {
+  const submitContactForm = async (formData: ContactFormData, pageOrigin?: string) => {
     logger.info('📝 [ContactForm] Iniciando envío de formulario', { formData: { ...formData, email: '[REDACTED]' } }, { context: 'form', component: 'useContactForm' });
     
     // Verificar rate limiting antes de procesar
@@ -60,9 +51,8 @@ export const useContactForm = () => {
         company: 'STRICT',
         phone: 'STRICT',
         email: 'STRICT',
-        country: 'STRICT',
-        companySize: 'STRICT',
-        referral: 'STRICT'
+        serviceType: 'STRICT',
+        message: 'STRICT'
       });
 
       // PASO 2: Validaciones individuales ANTES de rate limit y operaciones de red
@@ -93,8 +83,7 @@ export const useContactForm = () => {
           company: sanitizedData.company,
           phone: sanitizedData.phone,
           email: sanitizedData.email,
-          country: sanitizedData.country,
-          company_size: sanitizedData.companySize,
+          service_type: sanitizedData.serviceType,
           utm_source,
           utm_medium,
           utm_campaign,
@@ -155,6 +144,7 @@ export const useContactForm = () => {
         // PASO 5A: Log antes del insert en form_submissions
         const submissionInsertData = {
           form_type: 'contact_form',
+          page_origin: pageOrigin || 'contact_page',
           email: sanitizedData.email,
           full_name: sanitizedData.fullName,
           phone: sanitizedData.phone,

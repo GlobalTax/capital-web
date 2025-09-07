@@ -26,9 +26,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
     company: '',
     email: '',
     phone: '',
-    country: '',
-    companySize: '',
-    referral: '',
+    serviceType: 'vender' as const,
     message: '',
     website: '', // Honeypot field
   });
@@ -50,9 +48,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
         company: '',
         email: '',
         phone: '',
-        country: '',
-        companySize: '',
-        referral: '',
+        serviceType: 'vender' as const,
         message: '',
         website: '',
       });
@@ -153,102 +149,45 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 Email de contacto
               </p>
             </div>
+
+            <div>
+              <Label htmlFor="serviceType" className="text-sm font-medium text-foreground">
+                Tipo de servicio *
+              </Label>
+              <Select 
+                value={formData.serviceType} 
+                onValueChange={(value: 'vender' | 'comprar') => updateField('serviceType', value)}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Selecciona una opción" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="vender">Vender mi empresa</SelectItem>
+                  <SelectItem value="comprar">Comprar una empresa</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                ¿Qué servicio necesitas?
+              </p>
+            </div>
           </div>
 
           {/* Optional Fields */}
           <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="phone" className="text-sm font-medium text-foreground">
-                  Teléfono
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone || ''}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                  placeholder="+34 600 000 000"
-                  disabled={isSubmitting}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="country" className="text-sm font-medium text-foreground">
-                  País
-                </Label>
-                <Select 
-                  value={formData.country || ''} 
-                  onValueChange={(value) => updateField('country', value)}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="españa">España</SelectItem>
-                    <SelectItem value="portugal">Portugal</SelectItem>
-                    <SelectItem value="francia">Francia</SelectItem>
-                    <SelectItem value="italia">Italia</SelectItem>
-                    <SelectItem value="reino_unido">Reino Unido</SelectItem>
-                    <SelectItem value="alemania">Alemania</SelectItem>
-                    <SelectItem value="mexico">México</SelectItem>
-                    <SelectItem value="colombia">Colombia</SelectItem>
-                    <SelectItem value="argentina">Argentina</SelectItem>
-                    <SelectItem value="chile">Chile</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="companySize" className="text-sm font-medium text-foreground">
-                  Tamaño empresa
-                </Label>
-                <Select 
-                  value={formData.companySize || ''} 
-                  onValueChange={(value) => updateField('companySize', value)}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Ingresos anuales" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="menos_100k">&lt; €100K</SelectItem>
-                    <SelectItem value="100k_500k">€100K - €500K</SelectItem>
-                    <SelectItem value="500k_1m">€500K - €1M</SelectItem>
-                    <SelectItem value="1m_5m">€1M - €5M</SelectItem>
-                    <SelectItem value="5m_20m">€5M - €20M</SelectItem>
-                    <SelectItem value="mas_20m">&gt; €20M</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="referral" className="text-sm font-medium text-foreground">
-                  ¿Cómo nos conociste?
-                </Label>
-                <Select 
-                  value={formData.referral || ''} 
-                  onValueChange={(value) => updateField('referral', value)}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="google">Google</SelectItem>
-                    <SelectItem value="linkedin">LinkedIn</SelectItem>
-                    <SelectItem value="referencia">Referencia</SelectItem>
-                    <SelectItem value="prensa">Prensa</SelectItem>
-                    <SelectItem value="evento">Evento</SelectItem>
-                    <SelectItem value="redes_sociales">Redes sociales</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label htmlFor="phone" className="text-sm font-medium text-foreground">
+                Teléfono
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => updateField('phone', e.target.value)}
+                placeholder="+34 600 000 000"
+                disabled={isSubmitting}
+                className="mt-1"
+              />
             </div>
 
             <div>

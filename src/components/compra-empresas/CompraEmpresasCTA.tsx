@@ -36,9 +36,9 @@ const CompraEmpresasCTA = () => {
         company: formData.company,
         email: formData.email,
         phone: formData.phone,
-        referral: `Compra de Empresas - ${formData.acquisitionType}`,
-        companySize: formData.investmentRange
-      });
+        serviceType: 'comprar',
+        message: `Compra de Empresas - ${formData.acquisitionType} - Rango: ${formData.investmentRange}`
+      }, 'compra-empresas');
 
       setFormData({
         fullName: '',

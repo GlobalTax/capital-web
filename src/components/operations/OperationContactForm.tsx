@@ -27,9 +27,7 @@ const OperationContactForm: React.FC<OperationContactFormProps> = ({
     companyName: companyName,
     email: '',
     phone: '',
-    country: '',
-    companySize: '',
-    referral: '',
+    serviceType: 'vender' as const,
     message: `Estoy interesado en obtener más información sobre la oportunidad de ${companyName}.`,
     operationId: operationId,
     website: '', // Honeypot field
@@ -49,9 +47,7 @@ const OperationContactForm: React.FC<OperationContactFormProps> = ({
         companyName: companyName,
         email: '',
         phone: '',
-        country: '',
-        companySize: '',
-        referral: '',
+        serviceType: 'vender' as const,
         message: `Estoy interesado en obtener más información sobre la oportunidad de ${companyName}.`,
         operationId: operationId,
         website: '',
@@ -169,30 +165,6 @@ const OperationContactForm: React.FC<OperationContactFormProps> = ({
                   className="mt-1"
                   disabled={isSubmitting}
                 />
-              </div>
-              
-              <div>
-                <Label htmlFor="companySize" className="text-sm font-medium">
-                  Tamaño de tu empresa (opcional)
-                </Label>
-                <Select 
-                  value={formData.companySize || ''} 
-                  onValueChange={(value) => handleSelectChange('companySize', value)}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Ingresos anuales" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="menos_100k">Menos de €100.000</SelectItem>
-                    <SelectItem value="100k_500k">€100.000 - €500.000</SelectItem>
-                    <SelectItem value="500k_1m">€500.000 - €1M</SelectItem>
-                    <SelectItem value="1m_5m">€1M - €5M</SelectItem>
-                    <SelectItem value="5m_20m">€5M - €20M</SelectItem>
-                    <SelectItem value="20m_50m">€20M - €50M</SelectItem>
-                    <SelectItem value="mas_50m">Más de €50M</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 

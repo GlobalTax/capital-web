@@ -27,6 +27,11 @@ export const contactFormSchema = z.object({
     .regex(emailRegex, 'Email inválido')
     .transform(val => sanitizeInput(val.toLowerCase().trim(), { maxLength: 254 })),
   
+  serviceType: z.enum(['vender', 'comprar'], {
+    required_error: 'Selecciona una opción',
+    invalid_type_error: 'Opción inválida'
+  }),
+  
   // Optional fields
   phone: z.string()
     .optional()
@@ -34,21 +39,6 @@ export const contactFormSchema = z.object({
     .refine(val => !val || phoneRegex.test(val.replace(/[\s-]/g, '')), {
       message: 'Formato de teléfono español inválido'
     }),
-  
-  country: z.string()
-    .optional()
-    .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 50 }) : undefined)
-    .refine(val => !val || val.length >= 2, {
-      message: 'País debe tener al menos 2 caracteres'
-    }),
-  
-  companySize: z.string()
-    .optional()
-    .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 50 }) : undefined),
-  
-  referral: z.string()
-    .optional()
-    .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 100 }) : undefined),
   
   message: z.string()
     .optional()
@@ -82,7 +72,7 @@ export type OperationContactFormData = z.infer<typeof operationContactFormSchema
 
 // Validation utilities
 export const validateRequiredFields = (data: Partial<ContactFormData>): boolean => {
-  return !!(data.fullName && data.company && data.email);
+  return !!(data.fullName && data.company && data.email && data.serviceType);
 };
 
 export const getFieldErrors = (error: z.ZodError): Record<string, string> => {
