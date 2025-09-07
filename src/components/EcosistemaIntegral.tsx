@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TrendingUp, Calculator, Building2, FileSearch, Scale, Receipt, Users, BarChart3, Briefcase, GraduationCap } from 'lucide-react';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
 import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
@@ -6,14 +6,31 @@ import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useSt
 const EcosistemaIntegral = () => {
   const { data: dbStatistics, isLoading } = useStatistics('home');
 
-  // Fallback animations
+  // Always call hooks at the top level
   const professionalsCount = useCountAnimation(60, 2000, '+');
   const fallbackOperationsCount = useCountAnimation(100, 2000, '+');
   const fallbackYearsCount = useCountAnimation(25, 2000, '+');
   const fallbackSuccessCount = useCountAnimation(98.7, 2000, '%');
 
-  // Create statistics array from database or fallback
-  const createStatistics = () => {
+  // Create individual hooks for database statistics (up to 4 to match fallback count)
+  const dbStat1 = useCountAnimation(
+    dbStatistics?.[0] ? extractNumericValue(dbStatistics[0].metric_value) : 0, 
+    2000, 
+    dbStatistics?.[0] ? extractSuffix(dbStatistics[0].metric_value) : ''
+  );
+  const dbStat2 = useCountAnimation(
+    dbStatistics?.[1] ? extractNumericValue(dbStatistics[1].metric_value) : 0, 
+    2000, 
+    dbStatistics?.[1] ? extractSuffix(dbStatistics[1].metric_value) : ''
+  );
+  const dbStat3 = useCountAnimation(
+    dbStatistics?.[2] ? extractNumericValue(dbStatistics[2].metric_value) : 0, 
+    2000, 
+    dbStatistics?.[2] ? extractSuffix(dbStatistics[2].metric_value) : ''
+  );
+
+  // Create statistics array using memoization
+  const statistics = useMemo(() => {
     if (!dbStatistics || dbStatistics.length === 0) {
       return [
         {
@@ -39,31 +56,39 @@ const EcosistemaIntegral = () => {
       ];
     }
 
-    // Add the professionals count (hardcoded as it's specific to ecosystem)
-    const professionalsStat = {
-      value: professionalsCount.count,
-      label: "Profesionales Especializados",
-      ref: professionalsCount.ref
-    };
+    // Use database statistics with pre-created hooks
+    const dbStats = [];
+    const animatedHooks = [dbStat1, dbStat2, dbStat3];
+    
+    for (let i = 0; i < Math.min(dbStatistics.length, 3); i++) {
+      if (dbStatistics[i]) {
+        dbStats.push({
+          value: animatedHooks[i].count,
+          label: dbStatistics[i].metric_label,
+          ref: animatedHooks[i].ref
+        });
+      }
+    }
 
-    // Map database statistics to animated values
-    const dbStats = dbStatistics.map(stat => {
-      const numValue = extractNumericValue(stat.metric_value);
-      const suffix = extractSuffix(stat.metric_value);
-      const animatedCount = useCountAnimation(numValue, 2000, suffix);
-      
-      return {
-        value: animatedCount.count,
-        label: stat.metric_label,
-        ref: animatedCount.ref
-      };
-    });
-
-    // Combine professional count with DB stats
-    return [professionalsStat, ...dbStats];
-  };
-
-  const statistics = createStatistics();
+    // Add professionals count first, then database stats
+    return [
+      {
+        value: professionalsCount.count,
+        label: "Profesionales Especializados",
+        ref: professionalsCount.ref
+      },
+      ...dbStats
+    ];
+  }, [
+    dbStatistics, 
+    professionalsCount.count, 
+    fallbackOperationsCount.count, 
+    fallbackYearsCount.count, 
+    fallbackSuccessCount.count,
+    dbStat1.count,
+    dbStat2.count,
+    dbStat3.count
+  ]);
 
   const ecosystemServices = [
     {
