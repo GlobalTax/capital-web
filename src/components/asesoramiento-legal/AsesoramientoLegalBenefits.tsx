@@ -37,24 +37,24 @@ const AsesoramientoLegalBenefits = () => {
 
   const casosExito = [
     {
-      tipo: 'Adquisición Tecnológica',
-      problema: 'Patentes y PI complejos',
-      solucion: 'Estructuración IP y garantías específicas',
-      resultado: 'Cierre exitoso sin riesgos',
+      tipo: 'Mitie España adquiere Grupo Visegurity',
+      problema: 'Adquisición internacional con regulaciones de seguridad complejas',
+      solucion: 'Asesoramiento 360º en due diligence regulatorio y estructuración internacional',
+      resultado: 'Cierre exitoso €12M sin incidencias regulatorias',
       highlight: true
     },
     {
-      tipo: 'Venta Industrial',
-      problema: 'Pasivos ambientales',
-      solucion: 'Due diligence ambiental y seguros',
-      resultado: 'Protección total del vendedor',
+      tipo: 'Encarna Group adquiere Setas Vallondo',
+      problema: 'Negociación compleja de contratos en sector alimentario con normativas específicas',
+      solucion: 'Asesoramiento jurídico especializado y negociación estratégica',
+      resultado: 'Protección total del vendedor líder sectorial',
       highlight: false
     },
     {
-      tipo: 'Fusión Internacional',
-      problema: 'Regulaciones múltiples jurisdicciones',
-      solucion: 'Coordinación legal internacional',
-      resultado: 'Aprobaciones regulatorias obtenidas',
+      tipo: 'Grupo Scutum adquiere Grupo SEA',
+      problema: 'Due diligence exhaustivo para proyecto Build-Up multinacional',
+      solucion: 'Coordinación legal para asesoramiento al comprador en operación compleja',
+      resultado: 'Desarrollo exitoso de estrategia Build-Up',
       highlight: false
     }
   ];
