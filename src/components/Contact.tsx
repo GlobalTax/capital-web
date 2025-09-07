@@ -7,17 +7,19 @@ interface ContactProps {
   description?: string;
   pageOrigin?: string;
   className?: string;
+  id?: string;
 }
 
 const Contact: React.FC<ContactProps> = ({ 
   title = "Contacta con Nosotros",
   description = "Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.",
   pageOrigin = "contacto",
-  className = ""
+  className = "",
+  id
 }) => {
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+      <div id={id} className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-8">

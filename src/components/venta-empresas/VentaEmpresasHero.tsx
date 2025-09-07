@@ -54,7 +54,7 @@ const VentaEmpresasHero = () => {
                 text="Contactar Ahora" 
                 variant="secondary" 
                 size="lg"
-                onClick={() => window.open('tel:+34695717490', '_self')}
+                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
               />
             </div>
           </div>
