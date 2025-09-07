@@ -13,15 +13,15 @@ const DueDiligenceHero = () => {
             <div className="space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold text-black leading-tight">
                 Due Diligence
-                <span className="block text-gray-600">Exhaustivo y Preciso</span>
+                <span className="block text-black">Exhaustivo y Preciso</span>
               </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
+              <p className="text-xl text-black leading-relaxed">
                 Análisis completo financiero, legal y comercial que identifica 
                 riesgos ocultos y oportunidades reales en cada inversión.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm text-black">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span>Análisis 360°</span>
