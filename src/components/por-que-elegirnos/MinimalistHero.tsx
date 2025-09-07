@@ -1,48 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
 import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
 
 const MinimalistHero = () => {
   const { data: statistics, isLoading } = useStatistics('por-que-elegirnos');
 
-  // Default animations for fallback
-  const fallbackExperienceCount = useCountAnimation(25, 2000, '+');
-  const fallbackTransactionsCount = useCountAnimation(100, 2500, '+');
-  const fallbackValueCount = useCountAnimation(900, 2000, 'M');
-  const fallbackSuccessCount = useCountAnimation(98.7, 1800, '%');
-
-  // Create dynamic animations based on database statistics
-  const createMetrics = () => {
+  // Process statistics data to determine hook parameters
+  const hookParams = useMemo(() => {
     if (!statistics || statistics.length === 0) {
       return [
-        {
-          count: fallbackExperienceCount.count,
-          label: "años de experiencia",
-          description: "especializados en M&A",
-          ref: fallbackExperienceCount.ref
-        },
-        {
-          count: fallbackTransactionsCount.count,
-          label: "transacciones exitosas", 
-          description: "operaciones completadas",
-          ref: fallbackTransactionsCount.ref
-        },
-        {
-          count: fallbackValueCount.count,
-          label: "en valor gestionado",
-          description: "€900M+ en transacciones",
-          ref: fallbackValueCount.ref
-        },
-        {
-          count: fallbackSuccessCount.count,
-          label: "tasa de éxito",
-          description: "operaciones completadas",
-          ref: fallbackSuccessCount.ref
-        }
+        { value: 25, duration: 2000, suffix: '+' },
+        { value: 100, duration: 2500, suffix: '+' },
+        { value: 900, duration: 2000, suffix: 'M' },
+        { value: 98.7, duration: 1800, suffix: '%' }
       ];
     }
 
-    return statistics.map(stat => {
+    return statistics.slice(0, 4).map(stat => {
       const numValue = extractNumericValue(stat.metric_value);
       const suffix = extractSuffix(stat.metric_value);
       
@@ -51,15 +25,55 @@ const MinimalistHero = () => {
       if (numValue > 500) duration = 2500;
       if (numValue > 50 && numValue < 100) duration = 1800;
 
-      const animatedCount = useCountAnimation(numValue, duration, suffix);
-      
-      return {
-        count: animatedCount.count,
-        label: stat.metric_label.toLowerCase(),
-        description: getDescriptionForMetric(stat.metric_key),
-        ref: animatedCount.ref
-      };
+      return { value: numValue, duration, suffix };
     });
+  }, [statistics]);
+
+  // Fixed hooks - always render the same number
+  const stat1 = useCountAnimation(hookParams[0]?.value || 0, hookParams[0]?.duration || 2000, hookParams[0]?.suffix || '');
+  const stat2 = useCountAnimation(hookParams[1]?.value || 0, hookParams[1]?.duration || 2000, hookParams[1]?.suffix || '');
+  const stat3 = useCountAnimation(hookParams[2]?.value || 0, hookParams[2]?.duration || 2000, hookParams[2]?.suffix || '');
+  const stat4 = useCountAnimation(hookParams[3]?.value || 0, hookParams[3]?.duration || 2000, hookParams[3]?.suffix || '');
+
+  // Create metrics using fixed hooks
+  const createMetrics = () => {
+    const hooks = [stat1, stat2, stat3, stat4];
+    
+    if (!statistics || statistics.length === 0) {
+      return [
+        {
+          count: hooks[0].count,
+          label: "años de experiencia",
+          description: "especializados en M&A",
+          ref: hooks[0].ref
+        },
+        {
+          count: hooks[1].count,
+          label: "transacciones exitosas", 
+          description: "operaciones completadas",
+          ref: hooks[1].ref
+        },
+        {
+          count: hooks[2].count,
+          label: "en valor gestionado",
+          description: "€900M+ en transacciones",
+          ref: hooks[2].ref
+        },
+        {
+          count: hooks[3].count,
+          label: "tasa de éxito",
+          description: "operaciones completadas",
+          ref: hooks[3].ref
+        }
+      ];
+    }
+
+    return statistics.slice(0, 4).map((stat, index) => ({
+      count: hooks[index].count,
+      label: stat.metric_label.toLowerCase(),
+      description: getDescriptionForMetric(stat.metric_key),
+      ref: hooks[index].ref
+    }));
   };
 
   const getDescriptionForMetric = (key: string) => {
