@@ -1,11 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const MinimalistCTA = () => {
+  const navigate = useNavigate();
+  
   const handleContactClick = () => {
-    // Scroll to contact section or navigate to contact page
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // You can also navigate to contact page: navigate('/contacto');
+    navigate('/contacto');
   };
 
   return (
@@ -26,7 +27,7 @@ const MinimalistCTA = () => {
 
           <div className="flex justify-center">
             <InteractiveHoverButton 
-              text="Evaluar"
+              text="Contacta"
               variant="primary"
               size="lg"
               onClick={handleContactClick}
