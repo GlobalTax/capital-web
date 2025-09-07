@@ -71,12 +71,6 @@ const PlanificacionFiscalServices = () => {
                   </li>
                 ))}
               </ul>
-              
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <button className="text-black font-semibold text-sm hover:text-gray-600 transition-colors">
-                  Más información →
-                </button>
-              </div>
             </div>
           ))}
         </div>
