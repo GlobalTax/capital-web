@@ -14,13 +14,13 @@ const Experiencia = () => {
     },
     {
       icon: Users,
-      number: "500+",
+      number: "100+",
       label: "Transacciones completadas",
       description: "Operaciones exitosas en múltiples sectores"
     },
     {
       icon: TrendingUp,
-      number: "€5B+",
+      number: "€900M",
       label: "Valor total gestionado",
       description: "Valor agregado total en nuestras operaciones"
     },

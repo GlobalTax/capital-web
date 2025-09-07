@@ -38,12 +38,12 @@ const Nosotros = () => {
                 </div>
                 
                 <div className="text-center">
-                  <div className="text-4xl font-light text-black mb-2">500+</div>
+                  <div className="text-4xl font-light text-black mb-2">100+</div>
                   <div className="text-sm text-gray-600 uppercase tracking-wide">Transacciones</div>
                 </div>
                 
                 <div className="text-center">
-                  <div className="text-4xl font-light text-black mb-2">€5B+</div>
+                  <div className="text-4xl font-light text-black mb-2">€900M</div>
                   <div className="text-sm text-gray-600 uppercase tracking-wide">Valor Gestionado</div>
                 </div>
                 
