@@ -5,10 +5,10 @@ import ErrorBoundary from './ErrorBoundary';
 const Contact = () => {
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Contacta con Nosotros
             </h1>
@@ -21,7 +21,7 @@ const Contact = () => {
           <ContactForm pageOrigin="contacto" showTitle={false} />
 
           {/* Additional Info */}
-          <div className="mt-12 text-center">
+          <div className="mt-8 text-center">
             <div className="bg-muted/50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 ¿Prefieres contactar directamente?
