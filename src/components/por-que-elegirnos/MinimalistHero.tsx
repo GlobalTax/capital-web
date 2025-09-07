@@ -97,7 +97,7 @@ const MinimalistHero = () => {
             Por Qué Elegir Capittal
           </h1>
           
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-foreground max-w-3xl mx-auto leading-relaxed">
             Especialistas en M&A respaldados por el ecosistema integral del Grupo Navarro. 
             Más de dos décadas de experiencia garantizando el éxito de cada transacción.
           </p>
@@ -119,7 +119,7 @@ const MinimalistHero = () => {
               <div className="text-sm font-bold text-card-foreground uppercase tracking-wide mb-2">
                 {metric.label}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-card-foreground">
                 {metric.description}
               </p>
             </div>
