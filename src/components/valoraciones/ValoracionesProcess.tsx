@@ -13,15 +13,15 @@ const steps = [
     {
       icon: FileSearch,
       titulo: 'Due Diligence',
-      descripcion: 'Revisión exhaustiva de estados financieros, documentación legal y análisis operativo',
-      duracion: '1-2 semanas',
+      descripcion: 'Revisión exhaustiva de documentación financiera, legal, operativa y análisis completo de riesgos',
+      duracion: '2-3 semanas',
       entregables: ['Checklist de información', 'Análisis preliminar de riesgos', 'Informe de due diligence']
     },
     {
       icon: Calculator,
       titulo: 'Análisis de Valoración',
-      descripcion: 'Aplicación de metodologías DCF, múltiplos comparables y análisis de sensibilidad',
-      duracion: '1-2 semanas',
+      descripcion: 'Aplicación de metodologías DCF, múltiplos comparables y análisis de sensibilidad con datos recopilados',
+      duracion: '1 semana',
       entregables: ['Modelo financiero completo', 'Análisis de múltiplos sectoriales', 'Proyecciones DCF validadas']
     },
     {
@@ -34,8 +34,8 @@ const steps = [
     {
       icon: FileText,
       titulo: 'Informe Final',
-      descripcion: 'Elaboración del informe certificado con todas las metodologías y conclusiones',
-      duracion: '1 semana',
+      descripcion: 'Redacción y formateo del informe certificado con todas las metodologías y conclusiones',
+      duracion: '3-5 días',
       entregables: ['Informe de valoración certificado', 'Anexos técnicos detallados', 'Certificación profesional']
     },
     {
