@@ -35,6 +35,192 @@ const getEmailTemplate = (formType: string, data: any) => {
     </style>
   `;
 
+const getUserConfirmationTemplate = (formType: string, data: any) => {
+  const baseStyle = `
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
+      .content { padding: 20px; background: #f9f9f9; }
+      .info-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .label { font-weight: bold; color: #0f172a; }
+      .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+      .cta-button { background: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+    </style>
+  `;
+
+  switch (formType) {
+    case 'contact':
+    case 'general_contact':
+      return {
+        subject: `✅ Hemos recibido tu consulta - Capittal`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>¡Gracias por contactarnos!</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p>Hola <strong>${data.fullName}</strong>,</p>
+              <p>Hemos recibido tu consulta y queremos agradecerte por ponerte en contacto con nosotros.</p>
+              <p>Nuestro equipo revisará tu mensaje y se pondrá en contacto contigo en las próximas 24-48 horas para dar seguimiento a tu consulta.</p>
+              <p>Mientras tanto, te invitamos a:</p>
+              <ul>
+                <li>Explorar nuestros casos de éxito en <a href="https://capittal.es/casos-exito">capittal.es/casos-exito</a></li>
+                <li>Conocer más sobre nuestros servicios en <a href="https://capittal.es/servicios">capittal.es/servicios</a></li>
+                <li>Probar nuestra calculadora de valoración gratuita en <a href="https://capittal.es/lp/calculadora">capittal.es/lp/calculadora</a></li>
+              </ul>
+              <p>Si tienes alguna pregunta urgente, no dudes en llamarnos al <strong>+34 XXX XXX XXX</strong>.</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Saludos cordiales,<br><strong>El equipo de Capittal</strong></p>
+            <p>📧 info@capittal.es | 🌐 capittal.es</p>
+          </div>
+        `
+      };
+
+    case 'sell_lead':
+      return {
+        subject: `✅ Tu consulta de venta ha sido recibida - Capittal`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>¡Gracias por confiar en nosotros!</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p>Hola <strong>${data.fullName}</strong>,</p>
+              <p>Hemos recibido tu consulta sobre la venta de tu empresa <strong>${data.company}</strong>.</p>
+              <p>Entendemos que esta es una decisión importante y queremos asegurarnos de brindarte el mejor asesoramiento posible.</p>
+              <p>Nuestro equipo de expertos en M&A revisará tu caso y se pondrá en contacto contigo en las próximas 24 horas para programar una consulta inicial gratuita.</p>
+              <p>En esta primera reunión podremos:</p>
+              <ul>
+                <li>Evaluar el valor potencial de tu empresa</li>
+                <li>Discutir tus objetivos y expectativas</li>
+                <li>Explicarte nuestro proceso de venta</li>
+                <li>Resolver todas tus dudas</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Saludos cordiales,<br><strong>El equipo de M&A de Capittal</strong></p>
+            <p>📧 info@capittal.es | 🌐 capittal.es</p>
+          </div>
+        `
+      };
+
+    case 'collaborator':
+      return {
+        subject: `✅ Tu solicitud de colaboración ha sido recibida - Capittal`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>¡Bienvenido al programa de colaboradores!</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p>Hola <strong>${data.fullName}</strong>,</p>
+              <p>¡Gracias por tu interés en formar parte de nuestra red de colaboradores profesionales!</p>
+              <p>Hemos recibido tu solicitud y estamos muy emocionados de conocer más sobre tu experiencia en <strong>${data.profession}</strong>.</p>
+              <p>Nuestro equipo revisará tu perfil y se pondrá en contacto contigo en los próximos 3-5 días hábiles para programar una entrevista inicial.</p>
+              <p>Mientras tanto, te recomendamos:</p>
+              <ul>
+                <li>Preparar ejemplos de proyectos anteriores relevantes</li>
+                <li>Revisar nuestros casos de éxito en <a href="https://capittal.es/casos-exito">capittal.es/casos-exito</a></li>
+                <li>Conocer más sobre nuestra metodología de trabajo</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Saludos cordiales,<br><strong>El equipo de RRHH de Capittal</strong></p>
+            <p>📧 info@capittal.es | 🌐 capittal.es</p>
+          </div>
+        `
+      };
+
+    case 'operation_contact':
+      return {
+        subject: `✅ Tu interés en la operación ha sido registrado - Capittal`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>¡Gracias por tu interés!</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p>Hola <strong>${data.fullName}</strong>,</p>
+              <p>Hemos recibido tu consulta sobre la operación <strong>${data.company_name}</strong>.</p>
+              <p>Nuestro equipo revisará tu perfil de inversor y se pondrá en contacto contigo en las próximas 24-48 horas para proporcionarte más información detallada sobre esta oportunidad.</p>
+              <p>Te recordamos que todas nuestras operaciones están sujetas a:</p>
+              <ul>
+                <li>Proceso de due diligence completo</li>
+                <li>Verificación de perfil de inversor</li>
+                <li>Firma de acuerdos de confidencialidad</li>
+                <li>Cumplimiento de requisitos regulatorios</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Saludos cordiales,<br><strong>El equipo de Inversiones de Capittal</strong></p>
+            <p>📧 info@capittal.es | 🌐 capittal.es</p>
+          </div>
+        `
+      };
+
+    case 'newsletter':
+      return {
+        subject: `✅ ¡Bienvenido a nuestro newsletter! - Capittal`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>¡Bienvenido a la comunidad Capittal!</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p>¡Hola!</p>
+              <p>¡Gracias por suscribirte a nuestro newsletter!</p>
+              <p>Ahora recibirás contenido exclusivo sobre:</p>
+              <ul>
+                <li>📈 Tendencias del mercado M&A</li>
+                <li>💡 Consejos para valorar empresas</li>
+                <li>🎯 Estrategias de crecimiento empresarial</li>
+                <li>📊 Análisis de sectores</li>
+                <li>🔥 Oportunidades de inversión</li>
+              </ul>
+              <p>Tu primer newsletter llegará la próxima semana. ¡No te lo pierdas!</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Saludos cordiales,<br><strong>El equipo de Capittal</strong></p>
+            <p>📧 info@capittal.es | 🌐 capittal.es</p>
+          </div>
+        `
+      };
+
+    default:
+      return {
+        subject: `✅ Hemos recibido tu información - Capittal`,
+        html: `
+          ${baseStyle}
+          <div class="header">
+            <h1>¡Gracias por contactarnos!</h1>
+          </div>
+          <div class="content">
+            <div class="info-box">
+              <p>Hola <strong>${data.fullName || 'Usuario'}</strong>,</p>
+              <p>Hemos recibido tu información y nos pondremos en contacto contigo muy pronto.</p>
+              <p>Gracias por tu interés en Capittal.</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Saludos cordiales,<br><strong>El equipo de Capittal</strong></p>
+            <p>📧 info@capittal.es | 🌐 capittal.es</p>
+          </div>
+        `
+      };
+  }
+};
+
   switch (formType) {
     case 'contact':
       return {
@@ -268,48 +454,84 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing form notification: ${formType} - ${email}`);
 
-    const template = getEmailTemplate(formType, { 
+    // Obtener plantillas para administradores y usuario
+    const adminTemplate = getEmailTemplate(formType, { 
       email, 
       fullName, 
       ...formData 
     });
 
-    const emailPromises = ADMIN_EMAILS.map(async (adminEmail) => {
+    const userTemplate = getUserConfirmationTemplate(formType, {
+      email,
+      fullName,
+      ...formData
+    });
+
+    // Enviar emails a administradores
+    const adminEmailPromises = ADMIN_EMAILS.map(async (adminEmail) => {
       return resend.emails.send({
         from: "Capittal Forms <noreply@capittal.es>",
         to: [adminEmail],
-        subject: template.subject,
-        html: template.html,
+        subject: adminTemplate.subject,
+        html: adminTemplate.html,
       });
     });
 
-    const emailResults = await Promise.allSettled(emailPromises);
-    
-    const allSuccessful = emailResults.every(result => result.status === 'fulfilled');
-    const firstSuccess = emailResults.find(result => result.status === 'fulfilled');
+    // Enviar email de confirmación al usuario
+    const userEmailPromise = resend.emails.send({
+      from: "Capittal <info@capittal.es>",
+      to: [email],
+      subject: userTemplate.subject,
+      html: userTemplate.html,
+    });
 
-    if (allSuccessful) {
+    // Ejecutar ambos envíos en paralelo
+    const [adminResults, userResult] = await Promise.allSettled([
+      Promise.allSettled(adminEmailPromises),
+      userEmailPromise
+    ]);
+
+    const adminEmailResults = adminResults.status === 'fulfilled' ? adminResults.value : [];
+    const allAdminSuccessful = adminEmailResults.every(result => result.status === 'fulfilled');
+    const userEmailSuccessful = userResult.status === 'fulfilled';
+    
+    const firstAdminSuccess = adminEmailResults.find(result => result.status === 'fulfilled');
+
+    // Actualizar estado en base de datos
+    if (allAdminSuccessful || userEmailSuccessful) {
       await supabase
         .from('form_submissions')
         .update({
-          email_sent: true,
+          email_sent: allAdminSuccessful,
           email_sent_at: new Date().toISOString(),
-          email_message_id: firstSuccess?.status === 'fulfilled' ? firstSuccess.value.data?.id : null
+          email_message_id: firstAdminSuccess?.status === 'fulfilled' ? firstAdminSuccess.value.data?.id : null
         })
         .eq('id', submissionId);
+    }
 
-      console.log(`Notification emails sent successfully for submission ${submissionId}`);
+    // Logging detallado
+    if (allAdminSuccessful) {
+      console.log(`Admin notification emails sent successfully for submission ${submissionId}`);
     } else {
-      console.error("Some emails failed to send:", emailResults);
+      console.error(`Some admin emails failed for submission ${submissionId}:`, adminEmailResults);
+    }
+
+    if (userEmailSuccessful) {
+      console.log(`User confirmation email sent successfully to ${email} for submission ${submissionId}`);
+    } else {
+      console.error(`User confirmation email failed for ${email}:`, userResult.status === 'rejected' ? userResult.reason : 'Unknown error');
     }
 
     return new Response(
       JSON.stringify({ 
-        success: allSuccessful,
-        results: emailResults.map(r => r.status === 'fulfilled' ? r.value : r.reason)
+        success: allAdminSuccessful && userEmailSuccessful,
+        adminEmailsSuccess: allAdminSuccessful,
+        userEmailSuccess: userEmailSuccessful,
+        adminResults: adminEmailResults.map(r => r.status === 'fulfilled' ? r.value : r.reason),
+        userResult: userResult.status === 'fulfilled' ? userResult.value : userResult.reason
       }), 
       {
-        status: allSuccessful ? 200 : 207,
+        status: (allAdminSuccessful && userEmailSuccessful) ? 200 : 207,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
