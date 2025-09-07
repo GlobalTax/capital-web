@@ -24,8 +24,8 @@ interface Statistic {
 
 const availableLocations = [
   { value: 'home', label: 'Página Principal' },
+  { value: 'por-que-elegirnos', label: 'Por Qué Elegirnos' },
   { value: 'market-insights', label: 'Market Insights' },
-  { value: 'nosotros', label: 'Nosotros' },
   { value: 'servicios', label: 'Servicios' }
 ];
 

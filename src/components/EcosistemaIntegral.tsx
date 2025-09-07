@@ -1,35 +1,69 @@
 import React from 'react';
 import { TrendingUp, Calculator, Building2, FileSearch, Scale, Receipt, Users, BarChart3, Briefcase, GraduationCap } from 'lucide-react';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
+import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
 
 const EcosistemaIntegral = () => {
-  const { count: professionalsCount, ref: professionalsRef } = useCountAnimation(60, 2000, '+');
-  const { count: operationsCount, ref: operationsRef } = useCountAnimation(200, 2000, '+');
-  const { count: yearsCount, ref: yearsRef } = useCountAnimation(15, 2000, '+');
-  const { count: successCount, ref: successRef } = useCountAnimation(98.7, 2000, '%');
+  const { data: dbStatistics, isLoading } = useStatistics('home');
 
-  const statistics = [
-    {
-      value: professionalsCount,
-      label: "Profesionales Especializados",
-      ref: professionalsRef
-    },
-    {
-      value: operationsCount,
-      label: "Operaciones Completadas",
-      ref: operationsRef
-    },
-    {
-      value: yearsCount,
-      label: "Años de Experiencia",
-      ref: yearsRef
-    },
-    {
-      value: successCount,
-      label: "Tasa de Éxito",
-      ref: successRef
+  // Fallback animations
+  const professionalsCount = useCountAnimation(60, 2000, '+');
+  const fallbackOperationsCount = useCountAnimation(100, 2000, '+');
+  const fallbackYearsCount = useCountAnimation(25, 2000, '+');
+  const fallbackSuccessCount = useCountAnimation(98.7, 2000, '%');
+
+  // Create statistics array from database or fallback
+  const createStatistics = () => {
+    if (!dbStatistics || dbStatistics.length === 0) {
+      return [
+        {
+          value: professionalsCount.count,
+          label: "Profesionales Especializados",
+          ref: professionalsCount.ref
+        },
+        {
+          value: fallbackOperationsCount.count,
+          label: "Operaciones Completadas", 
+          ref: fallbackOperationsCount.ref
+        },
+        {
+          value: fallbackYearsCount.count,
+          label: "Años de Experiencia",
+          ref: fallbackYearsCount.ref
+        },
+        {
+          value: fallbackSuccessCount.count,
+          label: "Tasa de Éxito",
+          ref: fallbackSuccessCount.ref
+        }
+      ];
     }
-  ];
+
+    // Add the professionals count (hardcoded as it's specific to ecosystem)
+    const professionalsStat = {
+      value: professionalsCount.count,
+      label: "Profesionales Especializados",
+      ref: professionalsCount.ref
+    };
+
+    // Map database statistics to animated values
+    const dbStats = dbStatistics.map(stat => {
+      const numValue = extractNumericValue(stat.metric_value);
+      const suffix = extractSuffix(stat.metric_value);
+      const animatedCount = useCountAnimation(numValue, 2000, suffix);
+      
+      return {
+        value: animatedCount.count,
+        label: stat.metric_label,
+        ref: animatedCount.ref
+      };
+    });
+
+    // Combine professional count with DB stats
+    return [professionalsStat, ...dbStats];
+  };
+
+  const statistics = createStatistics();
 
   const ecosystemServices = [
     {
@@ -86,6 +120,17 @@ const EcosistemaIntegral = () => {
       icon: Receipt
     }
   ];
+
+  // Add loading state check
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">Cargando métricas...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-gray-50">

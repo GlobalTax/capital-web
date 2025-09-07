@@ -1,34 +1,88 @@
 import React from 'react';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
+import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
 
 const MinimalistHero = () => {
-  const experienceCount = useCountAnimation(25, 2000, '+');
-  const transactionsCount = useCountAnimation(500, 2500, '+');
-  const valueCount = useCountAnimation(5, 2000, 'B+');
-  const successCount = useCountAnimation(95, 1800, '%');
+  const { data: statistics, isLoading } = useStatistics('por-que-elegirnos');
 
-  const metrics = [
-    {
-      count: experienceCount,
-      label: "años de experiencia",
-      description: "especializados en M&A"
-    },
-    {
-      count: transactionsCount,
-      label: "transacciones exitosas",
-      description: "operaciones completadas"
-    },
-    {
-      count: valueCount,
-      label: "en valor gestionado",
-      description: "€5B+ en transacciones"
-    },
-    {
-      count: successCount,
-      label: "tasa de éxito",
-      description: "operaciones completadas"
+  // Default animations for fallback
+  const fallbackExperienceCount = useCountAnimation(25, 2000, '+');
+  const fallbackTransactionsCount = useCountAnimation(100, 2500, '+');
+  const fallbackValueCount = useCountAnimation(900, 2000, 'M');
+  const fallbackSuccessCount = useCountAnimation(98.7, 1800, '%');
+
+  // Create dynamic animations based on database statistics
+  const createMetrics = () => {
+    if (!statistics || statistics.length === 0) {
+      return [
+        {
+          count: fallbackExperienceCount.count,
+          label: "años de experiencia",
+          description: "especializados en M&A",
+          ref: fallbackExperienceCount.ref
+        },
+        {
+          count: fallbackTransactionsCount.count,
+          label: "transacciones exitosas", 
+          description: "operaciones completadas",
+          ref: fallbackTransactionsCount.ref
+        },
+        {
+          count: fallbackValueCount.count,
+          label: "en valor gestionado",
+          description: "€900M+ en transacciones",
+          ref: fallbackValueCount.ref
+        },
+        {
+          count: fallbackSuccessCount.count,
+          label: "tasa de éxito",
+          description: "operaciones completadas",
+          ref: fallbackSuccessCount.ref
+        }
+      ];
     }
-  ];
+
+    return statistics.map(stat => {
+      const numValue = extractNumericValue(stat.metric_value);
+      const suffix = extractSuffix(stat.metric_value);
+      
+      // Adjust animation duration based on value size
+      let duration = 2000;
+      if (numValue > 500) duration = 2500;
+      if (numValue > 50 && numValue < 100) duration = 1800;
+
+      const animatedCount = useCountAnimation(numValue, duration, suffix);
+      
+      return {
+        count: animatedCount.count,
+        label: stat.metric_label.toLowerCase(),
+        description: getDescriptionForMetric(stat.metric_key),
+        ref: animatedCount.ref
+      };
+    });
+  };
+
+  const getDescriptionForMetric = (key: string) => {
+    const descriptions: Record<string, string> = {
+      'years_experience': 'especializados en M&A',
+      'total_operations': 'operaciones completadas',
+      'total_value': '€900M+ en transacciones',
+      'success_rate': 'operaciones completadas'
+    };
+    return descriptions[key] || 'especialistas en M&A';
+  };
+
+  const metrics = createMetrics();
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">Cargando métricas...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-background">
@@ -57,10 +111,10 @@ const MinimalistHero = () => {
               className="bg-card border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center"
             >
               <div 
-                ref={metric.count.ref}
+                ref={metric.ref}
                 className="text-3xl font-bold text-card-foreground mb-3"
               >
-                {metric.count.count}
+                {metric.count}
               </div>
               <div className="text-sm font-bold text-card-foreground uppercase tracking-wide mb-2">
                 {metric.label}
