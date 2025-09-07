@@ -5,7 +5,6 @@ import AsesoramientoLegalWhyChoose from '@/components/asesoramiento-legal/Asesor
 import AsesoramientoLegalServices from '@/components/asesoramiento-legal/AsesoramientoLegalServices';
 
 import AsesoramientoLegalBenefits from '@/components/asesoramiento-legal/AsesoramientoLegalBenefits';
-import AsesoramientoLegalExperience from '@/components/asesoramiento-legal/AsesoramientoLegalExperience';
 import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/AsesoramientoLegalFAQ';
 import AsesoramientoLegalCTA from '@/components/asesoramiento-legal/AsesoramientoLegalCTA';
 
@@ -38,7 +37,6 @@ const AsesoramientoLegal = () => {
       <AsesoramientoLegalServices />
       
       <AsesoramientoLegalBenefits />
-      <AsesoramientoLegalExperience />
       <AsesoramientoLegalFAQ />
       <AsesoramientoLegalCTA />
     </HomeLayout>
