@@ -86,14 +86,6 @@ const AsesoramientoLegalFAQ = () => {
           ))}
         </div>
 
-        <div className="text-center">
-          <p className="text-muted-foreground mb-6">
-            ¿Necesitas asesoramiento legal específico para tu operación?
-          </p>
-          <Button className="hover:shadow-lg transition-shadow duration-300">
-            Consulta Legal Gratuita
-          </Button>
-        </div>
       </div>
     </section>
   );
