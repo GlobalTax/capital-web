@@ -81,10 +81,6 @@ const AsesoramientoLegalProcess = () => {
               <p className="text-muted-foreground mb-4">
                 Duración desde análisis inicial hasta cierre legal
               </p>
-              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                <strong>Coordinación completa:</strong> El proceso legal se ejecuta en paralelo 
-                con la valoración financiera y negociación comercial de Capittal
-              </div>
             </CardContent>
           </Card>
         </div>

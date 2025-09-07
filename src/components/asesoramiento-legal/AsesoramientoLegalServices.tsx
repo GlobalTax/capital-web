@@ -25,9 +25,9 @@ const AsesoramientoLegalServices = () => {
       description: "Cumplimiento de leyes fiscales, laborales, de competencia y normativa sectorial. Minimizamos riesgos regulatorios."
     },
     {
-      icon: Handshake,
-      title: "Negociación Contractual",
-      description: "Diseño de clausulado para maximizar valor: earn-outs, ajustes de precio, no competencia. Protegemos tu inversión."
+      icon: Users,
+      title: "Disputas entre Socios",
+      description: "Resolución de conflictos societarios, mediación en disputas patrimoniales y protección de derechos minoritarios."
     }
   ];
 
@@ -47,9 +47,6 @@ const AsesoramientoLegalServices = () => {
           {services.map((service, index) => (
             <Card key={index} className="h-full hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <service.icon className="w-6 h-6 text-primary" />
-                </div>
                 <h3 className="text-xl font-semibold text-foreground mb-3">{service.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">{service.description}</p>
               </CardContent>
