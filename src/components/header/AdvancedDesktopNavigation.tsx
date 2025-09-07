@@ -11,7 +11,6 @@ import {
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
-import LazyIcon from '@/components/ui/LazyIcon';
 
 const ServiciosMenu = () => (
   <div className="grid gap-8 lg:grid-cols-4">
@@ -48,12 +47,9 @@ const ServiciosMenu = () => (
               <NavigationMenuLink key={item.id} asChild>
                 <Link
                   to={item.href}
-                  className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                  className="group flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <div className="flex-shrink-0">
-                    {item.icon && <LazyIcon name={item.icon} className="size-6 text-gray-600" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900 group-hover:text-black">
                       {item.label}
                     </div>
@@ -82,14 +78,9 @@ const SectoresMenu = () => (
           to={sector.href}
           className="group flex flex-col space-y-4 p-6 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200"
         >
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0 p-2 bg-gray-100 rounded-lg">
-              {sector.icon && <LazyIcon name={sector.icon} className="size-6 text-gray-700" />}
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900 group-hover:text-black">
-                {sector.label}
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium text-gray-900 group-hover:text-black">
+              {sector.label}
             </div>
             <ArrowRight className="size-4 text-gray-400 transition-transform group-hover:translate-x-1" />
           </div>
@@ -141,12 +132,9 @@ const RecursosMenu = () => (
               <NavigationMenuLink key={item.id} asChild>
                 <Link
                   to={item.href}
-                  className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                  className="group flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <div className="flex-shrink-0">
-                    {item.icon && <LazyIcon name={item.icon} className="size-5 text-gray-600" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900 group-hover:text-black">
                       {item.label}
                     </div>
@@ -196,12 +184,9 @@ const NosotrosMenu = () => (
         <NavigationMenuLink key={item.id} asChild>
           <Link
             to={item.href}
-            className="group flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+            className="group flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
           >
-            <div className="flex-shrink-0">
-              {item.icon && <LazyIcon name={item.icon} className="size-5 text-gray-600" />}
-            </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <div className="text-sm font-medium text-gray-900 group-hover:text-black">
                 {item.label}
               </div>
