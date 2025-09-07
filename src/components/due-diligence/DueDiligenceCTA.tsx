@@ -37,37 +37,22 @@ const DueDiligenceCTA = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <Link to="/contacto">
-              <InteractiveHoverButton
-                text="Due Diligence"
-                variant="secondary"
-                size="lg"
-                className="bg-white text-black border-white hover:shadow-2xl text-lg px-12 py-4"
-              />
-            </Link>
-            
-            <p className="text-gray-400 text-sm">
-              Análisis inicial gratuito • Informe en 6-8 semanas • 100% confidencial
-            </p>
-          </div>
-
           <div className="pt-8 border-t border-gray-700">
             <p className="text-gray-400 mb-4">
               ¿Necesitas un análisis urgente? Contacta directamente con nuestro equipo
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <a 
-                href="tel:+34917702717"
+                href="tel:620273552"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>📞 +34 917 702 717</span>
+                <span>📞 620273552</span>
               </a>
               <a 
-                href="mailto:dd@capittal.com"
+                href="mailto:samuel@capittal.es"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>✉️ dd@capittal.com</span>
+                <span>✉️ samuel@capittal.es</span>
               </a>
             </div>
           </div>
