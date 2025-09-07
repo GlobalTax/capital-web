@@ -25,7 +25,7 @@ const Services = () => {
     },
     {
       title: 'Comprar Empresa',
-      description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas que impulsen tu crecimiento.',
+      description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
       features: ['Identificación objetivos', 'Due diligence completo', 'Negociación exitosa']
     },
     {
