@@ -27,7 +27,7 @@ export const contactFormSchema = z.object({
     .regex(emailRegex, 'Email inválido')
     .transform(val => sanitizeInput(val.toLowerCase().trim(), { maxLength: 254 })),
   
-  serviceType: z.enum(['vender', 'comprar'], {
+  serviceType: z.enum(['vender', 'comprar', 'otros'], {
     required_error: 'Selecciona una opción',
     invalid_type_error: 'Opción inválida'
   }),

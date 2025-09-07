@@ -164,8 +164,9 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="vender">Vender mi empresa</SelectItem>
-                  <SelectItem value="comprar">Comprar una empresa</SelectItem>
-                </SelectContent>
+              <SelectItem value="comprar">Comprar una empresa</SelectItem>
+              <SelectItem value="otros">Otros</SelectItem>
+            </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
                 ¿Qué servicio necesitas?
