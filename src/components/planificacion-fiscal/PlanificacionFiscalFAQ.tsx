@@ -12,7 +12,7 @@ const PlanificacionFiscalFAQ = () => {
     },
     {
       question: '¿Es legal la planificación fiscal que realizáis?',
-      answer: 'Absolutamente. Todas nuestras estrategias están basadas en normativa vigente, interpretaciones de la AEAT y jurisprudencia consolidada. Diferenciamos claramente entre planificación fiscal legítima y elusión fiscal. Nuestro equipo incluye ex-inspectores de Hacienda que validan cada estrategia.'
+      answer: 'Absolutamente. Todas nuestras estrategias están basadas en normativa vigente, interpretaciones de la AEAT y jurisprudencia consolidada. Diferenciamos claramente entre planificación fiscal legítima y elusión fiscal. Nuestro equipo de expertos fiscales valida cada estrategia con rigor técnico y experiencia consolidada.'
     },
     {
       question: '¿Cuándo debe iniciarse la planificación fiscal?',
@@ -20,7 +20,7 @@ const PlanificacionFiscalFAQ = () => {
     },
     {
       question: '¿Qué diferencia vuestra planificación de la de otros?',
-      answer: 'Nuestro equipo combina experiencia en M&A con expertise fiscal especializado. Tenemos ex-inspectores de Hacienda, abogados fiscalistas senior y experiencia directa en más de 200 operaciones. Además, mantenemos relaciones con las mejores firmas fiscales internacionales para casos complejos.'
+      answer: 'Nuestro equipo combina experiencia en M&A con expertise fiscal especializado. Contamos con abogados fiscalistas senior, expertos en M&A y experiencia directa en más de 200 operaciones. Además, mantenemos relaciones con las mejores firmas fiscales internacionales para casos complejos.'
     },
     {
       question: '¿Cómo se estructura el coste del servicio?',
