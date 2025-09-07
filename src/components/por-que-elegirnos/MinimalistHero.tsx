@@ -31,19 +31,19 @@ const MinimalistHero = () => {
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium mb-6">
             Líderes en M&A desde 2008
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
             Por Qué Elegir Capittal
           </h1>
           
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Especialistas en M&A respaldados por el ecosistema integral del Grupo Navarro. 
             Más de dos décadas de experiencia garantizando el éxito de cada transacción.
           </p>
@@ -54,18 +54,18 @@ const MinimalistHero = () => {
           {metrics.map((metric, index) => (
             <div 
               key={index} 
-              className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center"
+              className="bg-card border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group text-center"
             >
               <div 
                 ref={metric.count.ref}
-                className="text-3xl font-bold text-black mb-3"
+                className="text-3xl font-bold text-card-foreground mb-3"
               >
                 {metric.count.count}
               </div>
-              <div className="text-sm font-bold text-black uppercase tracking-wide mb-2">
+              <div className="text-sm font-bold text-card-foreground uppercase tracking-wide mb-2">
                 {metric.label}
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {metric.description}
               </p>
             </div>
