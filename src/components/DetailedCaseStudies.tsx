@@ -182,15 +182,6 @@ const DetailedCaseStudies = () => {
       {/* Featured Case Studies */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-black text-center mb-4">
-              Historias de Éxito Destacadas
-            </h2>
-            <p className="text-lg text-gray-600 text-center max-w-3xl mx-auto">
-              Cada operación cuenta una historia única. Estos son algunos de nuestros casos más representativos 
-              que muestran nuestra capacidad para crear valor en diferentes sectores y situaciones.
-            </p>
-          </div>
 
           <div className="space-y-12">
             {featuredCases.map((caseStudy, index) => (
