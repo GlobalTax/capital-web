@@ -194,17 +194,9 @@ const PlanificacionFiscalCTA = () => {
         user_email: trimmedEmail
       });
 
-      // Iniciar descarga del PDF
-      const link = document.createElement('a');
-      link.href = '/docs/guia-planificacion-fiscal.pdf';
-      link.download = 'Guia-Planificacion-Fiscal-Capittal.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
       toast({
-        title: "¡Descarga iniciada exitosamente!",
-        description: "La guía fiscal se está descargando. Te contactaremos pronto.",
+        title: "¡Solicitud enviada exitosamente!",
+        description: "Te enviaremos la guía fiscal por email en las próximas horas.",
       });
 
       // Reset form and close modal
@@ -217,16 +209,16 @@ const PlanificacionFiscalCTA = () => {
     } catch (error: any) {
       console.error('Error al procesar descarga:', error);
       
-      let errorMessage = "Error al procesar la descarga. Por favor, inténtalo de nuevo.";
+      let errorMessage = "Error al procesar la solicitud. Por favor, inténtalo de nuevo.";
       
       if (error?.message?.includes('rate_limit')) {
-        errorMessage = "Has solicitado demasiadas descargas. Espera un momento antes de volver a intentarlo.";
+        errorMessage = "Has enviado demasiadas solicitudes. Espera un momento antes de volver a intentarlo.";
       } else if (error?.message?.includes('email')) {
         errorMessage = "Por favor, verifica que el email sea válido.";
       }
 
       toast({
-        title: "Error al procesar descarga",
+        title: "Error al procesar solicitud",
         description: errorMessage,
         variant: "destructive",
       });
@@ -391,12 +383,12 @@ const PlanificacionFiscalCTA = () => {
                     className="bg-transparent border-white text-white hover:bg-white hover:text-black text-lg px-12 py-4"
                   >
                     <Download className="w-5 h-5 mr-2" />
-                    Descargar Guía Fiscal
+                    Solicitar Guía Fiscal
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[400px]">
                   <DialogHeader>
-                    <DialogTitle>Descargar Guía Fiscal</DialogTitle>
+                    <DialogTitle>Solicitar Guía Fiscal</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleDownloadFormSubmit} className="space-y-4">
                     <div>
@@ -424,7 +416,7 @@ const PlanificacionFiscalCTA = () => {
 
                     <div className="flex gap-4">
                       <Button type="submit" disabled={isDownloadSubmitting} className="flex-1">
-                        {isDownloadSubmitting ? 'Procesando...' : 'Descargar Guía'}
+                        {isDownloadSubmitting ? 'Procesando...' : 'Solicitar Guía'}
                       </Button>
                       <Button type="button" variant="outline" onClick={() => setIsDownloadModalOpen(false)}>
                         Cancelar
