@@ -210,20 +210,13 @@ const ValoracionesCTANew = () => {
         {/* Contact Direct */}
         <div className="mt-8 text-center">
           <h3 className="text-lg font-semibold mb-4">¿Prefieres hablar directamente?</h3>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex justify-center">
             <a 
-              href="tel:+34912345678" 
+              href="tel:+34695717490" 
               className="inline-flex items-center justify-center px-4 py-2 bg-white text-black rounded-lg hover:bg-slate-100 transition-colors text-sm"
             >
               <Phone className="w-4 h-4 mr-2" />
-              +34 91 234 5678
-            </a>
-            <a 
-              href="mailto:valoraciones@capittal.com" 
-              className="inline-flex items-center justify-center px-4 py-2 border border-slate-600 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              valoraciones@capittal.com
+              +34 695 717 490
             </a>
           </div>
         </div>

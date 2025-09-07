@@ -87,32 +87,6 @@ const ValoracionesFAQNew = () => {
           ))}
         </div>
 
-        {/* Contact Section */}
-        <div className="bg-white rounded-lg p-6 border border-slate-200 text-center">
-          <h3 className="text-xl font-semibold text-slate-900 mb-4">
-            ¿No encuentras tu respuesta?
-          </h3>
-          <p className="text-slate-600 mb-6 text-sm">
-            Nuestros expertos en valoración están disponibles para resolver cualquier duda específica sobre tu caso
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a 
-              href="tel:+34912345678" 
-              className="inline-flex items-center justify-center px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm"
-            >
-              <Phone className="w-4 h-4 mr-2" />
-              +34 91 234 5678
-            </a>
-            <a 
-              href="mailto:valoraciones@capittal.com" 
-              className="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              valoraciones@capittal.com
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );
