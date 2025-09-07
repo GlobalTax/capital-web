@@ -17,8 +17,8 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-32 rounded-lg">
+    <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-48 rounded-lg">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
