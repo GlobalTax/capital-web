@@ -15,7 +15,7 @@ const PlanificacionFiscalHero = () => {
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
                 Planificación y{' '}
-                <span className="text-gray-600">Optimización Fiscal en M&A</span>
+                <span className="text-black">Optimización Fiscal en M&A</span>
               </h1>
           <p className="text-lg text-black leading-relaxed">
             Reducimos la carga fiscal en operaciones corporativas diseñando estructuras 
