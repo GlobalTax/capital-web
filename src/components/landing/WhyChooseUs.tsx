@@ -100,7 +100,7 @@ const WhyChooseUs = () => {
               <div className="text-slate-500 text-sm">Deals completados</div>
             </div>
             <div>
-              <div className="text-xl font-semibold text-slate-900 mb-1">92%</div>
+              <div className="text-xl font-semibold text-slate-900 mb-1">98,7%</div>
               <div className="text-slate-500 text-sm">Tasa de éxito</div>
             </div>
             <div>
