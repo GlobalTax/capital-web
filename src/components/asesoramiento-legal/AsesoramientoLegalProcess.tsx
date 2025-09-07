@@ -78,9 +78,6 @@ const AsesoramientoLegalProcess = () => {
                 Timeline Total Integrado
               </h3>
               <div className="text-3xl font-bold text-primary mb-2">7-15 semanas</div>
-              <p className="text-muted-foreground mb-4">
-                Duración desde análisis inicial hasta cierre legal
-              </p>
             </CardContent>
           </Card>
         </div>
