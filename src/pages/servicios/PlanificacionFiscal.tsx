@@ -3,7 +3,6 @@ import HomeLayout from '@/components/shared/HomeLayout';
 import PlanificacionFiscalHero from '@/components/planificacion-fiscal/PlanificacionFiscalHero';
 import PlanificacionFiscalWhyOptimize from '@/components/planificacion-fiscal/PlanificacionFiscalWhyOptimize';
 import PlanificacionFiscalServices from '@/components/planificacion-fiscal/PlanificacionFiscalServices';
-import PlanificacionFiscalBenefits from '@/components/planificacion-fiscal/PlanificacionFiscalBenefits';
 import PlanificacionFiscalTeam from '@/components/planificacion-fiscal/PlanificacionFiscalTeam';
 import PlanificacionFiscalIntegration from '@/components/planificacion-fiscal/PlanificacionFiscalIntegration';
 import PlanificacionFiscalFAQ from '@/components/planificacion-fiscal/PlanificacionFiscalFAQ';
@@ -37,7 +36,6 @@ const PlanificacionFiscal = () => {
       <PlanificacionFiscalHero />
       <PlanificacionFiscalWhyOptimize />
       <PlanificacionFiscalServices />
-      <PlanificacionFiscalBenefits />
       <PlanificacionFiscalIntegration />
       <PlanificacionFiscalTeam />
       <PlanificacionFiscalFAQ />
