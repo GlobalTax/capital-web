@@ -1139,6 +1139,7 @@ export type Database = {
           ip_address: unknown | null
           phone: string | null
           referral: string | null
+          service_type: Database["public"]["Enums"]["service_type_enum"] | null
           status: string
           updated_at: string
           user_agent: string | null
@@ -1161,6 +1162,7 @@ export type Database = {
           ip_address?: unknown | null
           phone?: string | null
           referral?: string | null
+          service_type?: Database["public"]["Enums"]["service_type_enum"] | null
           status?: string
           updated_at?: string
           user_agent?: string | null
@@ -1183,6 +1185,7 @@ export type Database = {
           ip_address?: unknown | null
           phone?: string | null
           referral?: string | null
+          service_type?: Database["public"]["Enums"]["service_type_enum"] | null
           status?: string
           updated_at?: string
           user_agent?: string | null
@@ -3872,6 +3875,7 @@ export type Database = {
         | "asesoramiento_legal"
         | "planificacion_fiscal"
         | "reestructuraciones"
+      service_type_enum: "vender" | "comprar" | "otros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4016,6 +4020,7 @@ export const Constants = {
         "planificacion_fiscal",
         "reestructuraciones",
       ],
+      service_type_enum: ["vender", "comprar", "otros"],
     },
   },
 } as const
