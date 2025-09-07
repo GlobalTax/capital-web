@@ -20,6 +20,7 @@ const CompraEmpresas = () => {
         <WhyChooseUs />
         <SuccessStories />
         <Contact 
+          id="contact"
           pageOrigin="compra-empresas"
           variant="compra"
         />

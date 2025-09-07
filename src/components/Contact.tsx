@@ -24,9 +24,9 @@ const Contact: React.FC<ContactProps> = ({
     switch (variant) {
       case 'compra':
         return {
-          title: title || "Encuentra tu Empresa Ideal",
+          title: title || "Contacta",
           description: description || "Cuéntanos qué tipo de empresa buscas y te ayudaremos a encontrar las mejores oportunidades de inversión en el mercado español.",
-          bgClass: "bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10"
+          bgClass: "bg-background"
         };
       case 'venta':
         return {

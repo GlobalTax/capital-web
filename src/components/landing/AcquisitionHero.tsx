@@ -21,17 +21,11 @@ const AcquisitionHero = () => {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <InteractiveHoverButton
-                text="Ver Oportunidades"
+                text="Solicitar Consulta"
                 variant="primary"
                 size="lg"
                 className="bg-primary text-white hover:bg-primary/90"
-                onClick={() => window.location.href = '/compra-empresas'}
-              />
-              <InteractiveHoverButton
-                text="Solicitar Consulta"
-                variant="outline"
-                size="lg"
-                onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
               />
             </div>
             

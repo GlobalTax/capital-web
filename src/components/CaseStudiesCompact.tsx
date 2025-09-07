@@ -147,13 +147,6 @@ const CaseStudiesCompact = () => {
               ))}
             </div>
 
-            <div className="text-center">
-              <Link to="/casos-exito">
-                <Button variant="outline" size="lg" className="border border-gray-300 text-black hover:bg-gray-50">
-                  Ver Todos los Casos de Éxito
-                </Button>
-              </Link>
-            </div>
           </>
         ) : (
           <div className="text-center py-16">
