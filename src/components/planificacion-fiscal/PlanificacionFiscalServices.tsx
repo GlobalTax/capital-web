@@ -1,34 +1,28 @@
 import React from 'react';
-import { Calculator, TrendingUp, FileSearch, Repeat, Building } from 'lucide-react';
 
 const PlanificacionFiscalServices = () => {
   const services = [
     {
-      icon: Calculator,
       title: "Estructuración Fiscal",
       description: "Diseñamos estructuras fiscalmente eficientes para operaciones de M&A y reorganizaciones empresariales, optimizando la carga tributaria desde la fase de planificación.",
       features: ["Análisis de estructuras", "Optimización tributaria", "Coordinación multidisciplinar"]
     },
     {
-      icon: TrendingUp,
       title: "Optimización Tributaria",
       description: "Identificamos y aplicamos todos los beneficios fiscales, deducciones y créditos disponibles para minimizar el impacto fiscal de tu operación.",
       features: ["Deducciones aplicables", "Beneficios fiscales", "Créditos disponibles"]
     },
     {
-      icon: FileSearch,
       title: "Due Diligence Fiscal",
       description: "Realizamos un análisis exhaustivo de contingencias fiscales y diseñamos estrategias de mitigación para proteger tu inversión.",
       features: ["Análisis de riesgos", "Contingencias fiscales", "Estrategias de mitigación"]
     },
     {
-      icon: Repeat,
       title: "Diferidos y Reorganizaciones",
       description: "Aplicamos regímenes especiales para diferir la tributación en reorganizaciones empresariales y mejorar el flujo de caja.",
       features: ["Regímenes especiales", "Diferimiento fiscal", "Mejora cash flow"]
     },
     {
-      icon: Building,
       title: "Planificación Impuesto Sociedades",
       description: "Optimizamos la base imponible del Impuesto de Sociedades mediante ajustes en amortizaciones, provisiones y otros conceptos deducibles.",
       features: ["Ajustes base imponible", "Amortizaciones", "Provisiones deducibles"]
@@ -51,10 +45,6 @@ const PlanificacionFiscalServices = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <div key={index} className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">
-              <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-gray-100 transition-colors duration-300">
-                <service.icon className="w-6 h-6 text-black" />
-              </div>
-              
               <h3 className="text-xl font-bold text-black mb-4">
                 {service.title}
               </h3>
