@@ -256,10 +256,6 @@ const PlanificacionFiscalCTA = () => {
                 Descargar Guía Fiscal
               </Button>
             </div>
-            
-            <p className="text-gray-400 text-sm">
-              Diagnóstico inicial gratuito • Solo cobramos si ahorramos • 100% legal
-            </p>
           </div>
 
           <div className="pt-8 border-t border-gray-700">
@@ -268,16 +264,16 @@ const PlanificacionFiscalCTA = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <a 
-                href="tel:+34917702717"
+                href="tel:620273552"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>📞 +34 917 702 717</span>
+                <span>📞 620 273 552</span>
               </a>
               <a 
-                href="mailto:fiscal@capittal.com"
+                href="mailto:samuel@capittal.es"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>✉️ fiscal@capittal.com</span>
+                <span>✉️ samuel@capittal.es</span>
               </a>
             </div>
           </div>
