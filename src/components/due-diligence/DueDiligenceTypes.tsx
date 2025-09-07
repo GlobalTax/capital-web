@@ -24,9 +24,8 @@ const DueDiligenceTypes = () => {
         "Reducción de riesgos post-adquisición",
         "Identificación de oportunidades de valor"
       ],
-      ctaText: "Solicitar Buy-Side DD",
-      gradientFrom: "from-blue-500",
-      gradientTo: "to-blue-700"
+      gradientFrom: "from-gray-800",
+      gradientTo: "to-black"
     },
     {
       type: "vendor",
@@ -46,9 +45,8 @@ const DueDiligenceTypes = () => {
         "Valoración optimizada",
         "Reducción de contingencias"
       ],
-      ctaText: "Solicitar Vendor DD",
-      gradientFrom: "from-green-500", 
-      gradientTo: "to-green-700"
+      gradientFrom: "from-gray-800",
+      gradientTo: "to-black"
     }
   ];
 
@@ -116,16 +114,6 @@ const DueDiligenceTypes = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
-                  <Link to="/contacto" className="block">
-                    <InteractiveHoverButton
-                      text={ddType.ctaText}
-                      variant="primary"
-                      size="lg"
-                      className="w-full"
-                    />
-                  </Link>
-                </div>
               </CardContent>
             </Card>
           ))}
