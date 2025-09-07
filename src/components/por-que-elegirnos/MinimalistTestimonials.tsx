@@ -3,19 +3,19 @@ import React from 'react';
 const MinimalistTestimonials = () => {
   const testimonials = [
     {
-      quote: "Su especialización en empresa familiar fue clave. Entendieron nuestras necesidades de continuidad y encontraron el comprador perfecto que respetará nuestro legado.",
-      author: "CEO, Empresa Familiar de Alimentación",
-      transaction: "€24M - Cataluña"
+      quote: "Capittal nos ayudó a conseguir una valoración 45% superior a la oferta inicial. Su conocimiento del mercado fue determinante.",
+      author: "CEO, Empresa Tecnológica",
+      transaction: "€12M - Sector TI"
     },
     {
-      quote: "La preparación documental fue impecable. Pasamos la due diligence sin ajustes y cerramos en los tiempos previstos. Su plataforma de seguimiento nos dio tranquilidad total.",
-      author: "Fundador, Distribuidora Logística",
-      transaction: "€18M - Sector Logístico"
+      quote: "El proceso fue impecable. En 7 meses cerramos la operación con el comprador ideal. Su red de contactos es excepcional.",
+      author: "Fundador, Empresa Industrial",
+      transaction: "€28M - Sector Industrial"
     },
     {
-      quote: "Alineación total de incentivos. Solo cobraron el éxito cuando nosotros ganamos. Su red de inversores cualificados hizo la diferencia en la valoración final.",
-      author: "Accionista Principal, Protección contra Incendios",
-      transaction: "€32M - Sector Especializado"
+      quote: "Profesionalidad absoluta. Nos guiaron en cada paso y el resultado superó nuestras expectativas más optimistas.",
+      author: "Accionista Principal",
+      transaction: "€35M - Sector Servicios"
     }
   ];
 

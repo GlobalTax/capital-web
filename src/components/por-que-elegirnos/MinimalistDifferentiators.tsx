@@ -3,54 +3,29 @@ import React from 'react';
 const MinimalistDifferentiators = () => {
 const differentiators = [
     {
-      title: "Especialistas en pyme y empresa familiar",
-      description: "Entendemos sucesión, protocolo familiar y la importancia de la continuidad del legado.",
-      metric: "Continuidad"
+      title: "Especialización Exclusiva",
+      description: "No somos una consultora generalista. Nos dedicamos exclusivamente a M&A desde hace más de 25 años, lo que nos da una ventaja competitiva única.",
+      metric: "Solo M&A"
     },
     {
-      title: "Ultraespecialización por sector y territorio",
-      description: "Foco en alimentación y distribución, logística/comercial y protección contra incendios, con cobertura de Cataluña y Baleares (M&A de proximidad) y capacidad nacional.",
-      metric: "3 sectores clave"
+      title: "Resultados Medibles",
+      description: "Nuestros clientes obtienen valoraciones superiores a la media del mercado gracias a nuestro proceso optimizado y red de contactos.",
+      metric: "40% más valor"
     },
     {
-      title: "Valoración y preparación que aguantan la due diligence",
-      description: "Documentación financiera, fiscal y legal lista para auditoría, reduciendo sorpresas en el cierre.",
-      metric: "Due diligence ready"
+      title: "Proceso Optimizado",
+      description: "Reducimos los tiempos de cierre sin comprometer la calidad, mientras la mayoría del mercado tarda el doble.",
+      metric: "6-8 meses"
     },
     {
-      title: "Plataforma tecnológica propia",
-      description: "CRM y dataroom seguros, trazabilidad del pipeline y reporting transparente para el mandante.",
-      metric: "Tech propia"
+      title: "Ecosistema Integral",
+      description: "Más de 70 especialistas coordinados: abogados, fiscales, laborales y economistas trabajando para maximizar el valor de tu transacción.",
+      metric: "70+ especialistas"
     },
     {
-      title: "Alineación de incentivos",
-      description: "Honorarios claros y componente de éxito: ganamos cuando tú ganas.",
-      metric: "Éxito compartido"
-    },
-    {
-      title: "Acceso a compradores e inversores",
-      description: "Red activa de estratégicos y financial sponsors, con alcance paneuropeo.",
-      metric: "Red paneuropea"
-    },
-    {
-      title: "Ejecución 360º",
-      description: "Teaser, cuaderno de venta, contacto cualificado, gestión de NDAs, coordinación de ofertas, SPA y cierre.",
-      metric: "Proceso completo"
-    },
-    {
-      title: "Cumplimiento y confidencialidad",
-      description: "Procesos y NDAs estandarizados, cumplimiento RGPD y criterio profesional.",
-      metric: "Máxima seguridad"
-    },
-    {
-      title: "Transparencia y reportes",
-      description: "Indicadores clave, hitos y siguientes pasos, visibles en panel de seguimiento.",
-      metric: "Full visibility"
-    },
-    {
-      title: "Equipo multidisciplinar",
-      description: "Abogados, fiscalistas y analistas financieros trabajando como un solo equipo.",
-      metric: "360º expertise"
+      title: "Grupo Navarro",
+      description: "Capittal + Navarro Legal: servicio 360° desde la valoración hasta el cierre legal, reduciendo riesgos y optimizando resultados.",
+      metric: "Servicio 360°"
     }
   ];
 
@@ -74,7 +49,7 @@ const differentiators = [
         </div>
 
         {/* Differentiators grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {differentiators.map((item, index) => (
             <div 
               key={index} 

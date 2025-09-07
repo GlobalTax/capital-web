@@ -20,27 +20,22 @@ const MinimalistCTA = () => {
             ¿Listo para maximizar el valor de tu empresa?
           </h2>
           
-          <p className="text-lg text-gray-600 mb-6 leading-relaxed max-w-2xl mx-auto">
-            Primero, entendemos tu empresa; después, diseñamos la mejor salida. Sin prisas y con método.
+          <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
+            Solicita una valoración gratuita y descubre el verdadero potencial de tu negocio.
           </p>
 
           <div className="flex justify-center">
             <InteractiveHoverButton 
-              text="Solicita una valoración inicial sin compromiso"
+              text="Evaluar"
               variant="primary"
               size="lg"
               onClick={handleContactClick}
             />
           </div>
           
-          <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-gray-500">
-              Sin compromiso • Confidencial • Resultados en 48h
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Samuel Montaner:</span> 620 273 552 | samuel@capittal.es
-            </p>
-          </div>
+          <p className="text-sm text-gray-500 mt-4">
+            Sin compromiso • Confidencial • Resultados en 48h
+          </p>
         </div>
       </div>
     </section>
