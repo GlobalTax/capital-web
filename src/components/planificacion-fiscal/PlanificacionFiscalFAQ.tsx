@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 const PlanificacionFiscalFAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -74,14 +73,6 @@ const PlanificacionFiscalFAQ = () => {
           ))}
         </div>
 
-        <div className="text-center">
-          <p className="text-gray-600 mb-6">
-            ¿Quieres conocer tu potencial de ahorro fiscal?
-          </p>
-          <Button className="bg-white text-black border border-gray-300 rounded-lg px-6 py-3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-            Análisis de Ahorro Gratuito
-          </Button>
-        </div>
       </div>
     </section>
   );
