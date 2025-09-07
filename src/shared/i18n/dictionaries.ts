@@ -74,6 +74,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'actions.new': 'Nueva Valoración',
     'actions.download': 'Descargar Informe PDF',
     'actions.generating': 'Generando PDF...',
+    'actions.goto_website': 'Ir a la Web Principal',
 
     // Fiscal - Updated with clearer field names
     'fiscal.title': 'Impacto fiscal estimado (España)',
@@ -260,6 +261,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'actions.new': 'Nova Valoració',
     'actions.download': 'Descarregar Informe PDF',
     'actions.generating': 'Generant PDF...',
+    'actions.goto_website': 'Anar al Web Principal',
 
     'fiscal.title': 'Impacte fiscal estimat (Espanya)',
     'fiscal.description': 'Càlcul orientatiu del possible impacte fiscal en una venda de participacions/actius realitzada a Espanya. Consulteu amb el nostre equip fiscal per a un estudi detallat.',
@@ -428,6 +430,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'actions.new': 'Nova Valoració',
     'actions.download': 'Descarregar Informe PDF',
     'actions.generating': 'Generant PDF...',
+    'actions.goto_website': 'Anar ao Web Principal',
 
     'fiscal.title': 'Impacte fiscal estimat (Espanya)',
     'fiscal.description': 'Càlcul orientatiu del possible impacte fiscal en una venda de participacions/actius realitzada a Espanya. Consulteu amb el nostre equip fiscal per a un estudi detallat.',
@@ -596,6 +599,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'actions.new': 'Nova Valoración',
     'actions.download': 'Descargar Informe PDF',
     'actions.generating': 'Xerando PDF...',
+    'actions.goto_website': 'Ir á Web Principal',
 
     'fiscal.title': 'Impacto fiscal estimado (España)',
     'fiscal.description': 'Cálculo orientativo do posible impacto fiscal nunha venda de participacións/activos realizada en España. Consulte co noso equipo fiscal para un estudo detallado.',

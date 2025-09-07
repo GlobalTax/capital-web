@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Download, RefreshCw } from 'lucide-react';
+import { TrendingUp, Download, RefreshCw, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -343,7 +343,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
       </div>
 
       {/* Acciones */}
-      <div className="flex gap-4 justify-center">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button
           onClick={resetCalculator}
           variant="outline"
@@ -359,6 +359,14 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         >
           <Download className="h-4 w-4 mr-2" />
           {isGeneratingPDF ? t('actions.generating') : t('actions.download')}
+        </Button>
+        <Button 
+          onClick={() => window.open('https://capittal.es', '_blank')}
+          variant="secondary"
+          className="flex items-center"
+        >
+          <ExternalLink className="h-4 w-4 mr-2" />
+          {t('actions.goto_website')}
         </Button>
       </div>
 

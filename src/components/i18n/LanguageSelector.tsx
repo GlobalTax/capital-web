@@ -35,7 +35,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ className }) => {
     if (managed) {
       ctxSetLang(value);
       try { setPreferredLang(value); } catch {}
-      // sin recarga: el contexto re-renderiza la UI
+      // Forzar re-render de toda la aplicación
+      setTimeout(() => {
+        // Trigger a small DOM update to ensure all components re-render
+        document.documentElement.lang = value;
+      }, 0);
     } else {
       setLocalLang(value);
       try { setPreferredLang(value); } catch {}
