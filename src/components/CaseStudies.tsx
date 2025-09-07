@@ -64,23 +64,6 @@ const CaseStudies = () => {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
-            Casos de Éxito
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Resultados Excepcionales
-          </h1>
-          
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-16">
-            Más de 500 transacciones exitosas que demuestran nuestra capacidad para maximizar 
-            el valor en cada operación.
-          </p>
-        </div>
-
-
         {/* Cases Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredCases.length > 0 ? (
