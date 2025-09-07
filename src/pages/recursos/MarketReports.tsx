@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Header from '@/components/Header';
+import HomeLayout from '@/components/shared/HomeLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,26 +63,21 @@ const MarketReports = () => {
 
   if (selectedCalculator) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
-        <Header />
-        <div className="pt-16">
-          <section className="py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <SectorCalculatorForm 
-                calculator={selectedCalculator} 
-                onBack={handleBack}
-              />
-            </div>
-          </section>
-        </div>
-      </div>
+      <HomeLayout>
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectorCalculatorForm 
+              calculator={selectedCalculator} 
+              onBack={handleBack}
+            />
+          </div>
+        </section>
+      </HomeLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
-      <Header />
-      <div className="pt-16">
+    <HomeLayout>
         {/* Hero Section */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -171,7 +166,7 @@ const MarketReports = () => {
             </section>
 
             {/* Market Reports Preview */}
-            <section className="py-16 bg-gray-50">
+            <section className="py-16 bg-white">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl font-bold text-black mb-4">
@@ -185,7 +180,7 @@ const MarketReports = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {marketReports.slice(0, 3).map((report) => (
-                    <Card key={report.id} className="h-full hover:shadow-lg transition-all duration-300 border-gray-200 bg-white">
+                    <Card key={report.id} className="h-full hover:shadow-sm transition-all duration-300 border-gray-300 bg-white">
                       <CardHeader className="pb-4">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
@@ -276,7 +271,7 @@ const MarketReports = () => {
 
         {/* Reports Section */}
         {currentView === 'reports' && (
-          <section className="py-16 bg-gray-50">
+          <section className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-black mb-4">
@@ -289,8 +284,8 @@ const MarketReports = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {marketReports.map((report) => (
-                  <Card key={report.id} className="h-full hover:shadow-lg transition-all duration-300 border-gray-200 bg-white">
+                 {marketReports.map((report) => (
+                   <Card key={report.id} className="h-full hover:shadow-sm transition-all duration-300 border-gray-300 bg-white">
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -336,27 +331,28 @@ const MarketReports = () => {
         )}
 
         {/* CTA Section */}
-        <section className="py-20 bg-slate-900">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              ¿Necesitas un análisis personalizado?
-            </h2>
-            <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-              Nuestro equipo puede crear reportes específicos para tu sector o necesidades de análisis. 
-              Obtén insights personalizados con IA para tu estrategia empresarial.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-slate-900 hover:bg-gray-100">
-                Solicitar Análisis Personalizado
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-900">
-                Contactar Equipo de Análisis
-              </Button>
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white border border-gray-300 rounded-lg p-12 shadow-sm text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+                ¿Necesitas un análisis personalizado?
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
+                Nuestro equipo puede crear reportes específicos para tu sector o necesidades de análisis. 
+                Obtén insights personalizados con IA para tu estrategia empresarial.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg">
+                  Solicitar Análisis Personalizado
+                </Button>
+                <Button size="lg" variant="outline">
+                  Contactar Equipo de Análisis
+                </Button>
+              </div>
             </div>
           </div>
         </section>
-      </div>
-    </div>
+    </HomeLayout>
   );
 };
 
