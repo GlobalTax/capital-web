@@ -12,52 +12,33 @@ interface TeamMember {
   display_order: number;
 }
 
-// Generate initials from name
-const getInitials = (name: string): string => {
-  return name
-    .split(' ')
-    .map(word => word.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-};
-
-// Generate gradient based on name for consistency
-const getGradientClass = (name: string): string => {
-  const gradients = [
-    'bg-gradient-to-br from-slate-600 to-slate-800',
-    'bg-gradient-to-br from-gray-600 to-gray-800',
-    'bg-gradient-to-br from-zinc-600 to-zinc-800',
-    'bg-gradient-to-br from-neutral-600 to-neutral-800',
-    'bg-gradient-to-br from-stone-600 to-stone-800'
-  ];
-  
-  const index = name.length % gradients.length;
-  return gradients[index];
-};
-
-// Modern Team Member Card
+// Enhanced Team Member Card
 const TeamMemberCard = ({ member }: { member: TeamMember }) => {
-  const initials = getInitials(member.name);
-  const gradientClass = getGradientClass(member.name);
+  const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 text-center group">
-      {/* Avatar with initials */}
-      <div className={`w-20 h-20 rounded-full ${gradientClass} flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform duration-300`}>
-        <span className="text-white text-xl font-semibold tracking-wide">
-          {initials}
-        </span>
+    <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
+      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-32 rounded-lg">
+        {member.image_url && !imageError ? (
+          <img
+            src={member.image_url}
+            alt={`${member.name} - ${member.position || 'Miembro del equipo'}`}
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg">
+            <Users className="w-12 h-12 text-gray-400" />
+          </div>
+        )}
       </div>
       
-      {/* Name */}
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <h3 className="text-lg font-bold text-black mb-2">
         {member.name}
       </h3>
-      
-      {/* Position */}
       {member.position && (
-        <p className="text-gray-600 text-sm font-medium">
+        <p className="text-gray-600 text-sm">
           {member.position}
         </p>
       )}
