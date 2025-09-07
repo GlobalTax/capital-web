@@ -17,6 +17,8 @@ interface CaseStudy {
   company_size?: string;
   highlights?: string[];
   is_featured: boolean;
+  is_value_confidential?: boolean;
+  logo_url?: string;
 }
 
 const CaseStudiesCompact = () => {
@@ -80,22 +82,40 @@ const CaseStudiesCompact = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               {cases.map((case_) => (
-                <Card key={case_.id} className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-out group">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      {case_.sector && (
-                        <Badge variant="secondary" className="rounded-lg">
-                          {case_.sector}
-                        </Badge>
-                      )}
-                      {case_.is_featured && (
-                        <Award className="w-5 h-5 text-yellow-500" />
-                      )}
+              <Card key={case_.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 ease-out group overflow-hidden">
+                <CardContent className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    {case_.sector && (
+                      <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200">
+                        {case_.sector}
+                      </Badge>
+                    )}
+                    {case_.is_featured && (
+                      <Award className="w-5 h-5 text-yellow-500" />
+                    )}
+                  </div>
+                  
+                  {/* Logo - larger and better positioned */}
+                  {case_.logo_url && (
+                    <div className="w-20 h-20 mb-6 bg-gray-50 rounded-lg p-3 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200 mx-auto">
+                      <img 
+                        src={case_.logo_url} 
+                        alt={`${case_.title} logo`}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = document.createElement('div');
+                          fallback.className = 'w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500 text-xs font-medium';
+                          fallback.textContent = 'Logo';
+                          e.currentTarget.parentElement?.appendChild(fallback);
+                        }}
+                      />
                     </div>
-                    
-                    <h3 className="text-lg font-semibold text-black mb-3 leading-tight">
-                      {case_.title}
-                    </h3>
+                  )}
+                  
+                  <h3 className="text-xl font-semibold text-black mb-4 leading-tight text-center group-hover:text-blue-700 transition-colors duration-200">
+                    {case_.title}
+                  </h3>
                     
                     {case_.description && (
                       <p className="text-gray-600 mb-4 leading-relaxed text-sm">
@@ -104,14 +124,24 @@ const CaseStudiesCompact = () => {
                     )}
 
                     <div className="space-y-3 mb-4">
-                      {case_.value_amount && (
+                      {case_.is_value_confidential ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Valoración:</span>
+                          <div className="inline-flex items-center px-3 py-1 text-sm font-bold text-orange-700 bg-orange-100 border border-orange-200 rounded-lg">
+                            <svg className="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
+                            </svg>
+                            Confidencial
+                          </div>
+                        </div>
+                      ) : case_.value_amount ? (
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">Valoración:</span>
                           <span className="text-xl font-bold text-black">
                             {case_.value_amount}M{case_.value_currency}
                           </span>
                         </div>
-                      )}
+                      ) : null}
                       
                       {case_.year && (
                         <div className="flex items-center justify-between">

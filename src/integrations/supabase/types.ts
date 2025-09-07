@@ -771,6 +771,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_featured: boolean | null
+          is_value_confidential: boolean | null
           logo_url: string | null
           sector: string
           title: string
@@ -789,6 +790,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_value_confidential?: boolean | null
           logo_url?: string | null
           sector: string
           title: string
@@ -807,6 +809,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_value_confidential?: boolean | null
           logo_url?: string | null
           sector?: string
           title?: string

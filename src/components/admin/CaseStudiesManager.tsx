@@ -28,6 +28,7 @@ interface CaseStudy {
   year?: number;
   is_featured: boolean;
   is_active: boolean;
+  is_value_confidential?: boolean;
   logo_url?: string;
   featured_image_url?: string;
   display_locations?: string[];
@@ -73,6 +74,7 @@ const CaseStudiesManager = () => {
     year: new Date().getFullYear(),
     is_featured: false,
     is_active: true,
+    is_value_confidential: false,
     logo_url: undefined,
     featured_image_url: undefined,
     display_locations: ['home', 'casos-exito']
@@ -303,6 +305,7 @@ const CaseStudiesManager = () => {
                   className="border border-gray-300 rounded-lg"
                 />
               </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-black mb-2">Valoración (millones)</label>
                 <Input
@@ -311,6 +314,7 @@ const CaseStudiesManager = () => {
                   value={formData.value_amount || ''}
                   onChange={(e) => setFormData({...formData, value_amount: parseFloat(e.target.value)})}
                   className="border border-gray-300 rounded-lg"
+                  disabled={formData.is_value_confidential}
                 />
               </div>
               <div>
@@ -319,8 +323,32 @@ const CaseStudiesManager = () => {
                   value={formData.value_currency}
                   onChange={(e) => setFormData({...formData, value_currency: e.target.value})}
                   className="border border-gray-300 rounded-lg"
+                  disabled={formData.is_value_confidential}
                 />
               </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.is_value_confidential || false}
+                  onChange={(e) => {
+                    const isConfidential = e.target.checked;
+                    setFormData({
+                      ...formData, 
+                      is_value_confidential: isConfidential,
+                      ...(isConfidential && { value_amount: undefined })
+                    });
+                  }}
+                  className="rounded"
+                />
+                <span className="text-sm font-medium text-black">Valor Transacción Confidencial</span>
+              </label>
+              <p className="text-xs text-gray-500 ml-6 mt-1">
+                Al marcar esta opción, se mostrará "Confidencial" en lugar del valor de la transacción
+              </p>
+            </div>
             </div>
 
             <div>
@@ -508,7 +536,7 @@ const CaseStudiesManager = () => {
                     <img
                       src={caseStudy.logo_url}
                       alt={`Logo ${caseStudy.title}`}
-                      className="w-12 h-12 object-contain rounded"
+                      className="w-20 h-20 object-contain rounded-lg border border-gray-200 p-2 bg-white"
                     />
                   )}
                   <div>
@@ -535,9 +563,11 @@ const CaseStudiesManager = () => {
                 <p className="text-gray-600 mb-2">{caseStudy.description}</p>
                 <div className="text-sm text-gray-500 mb-2">
                   <span className="mr-4">{caseStudy.sector}</span>
-                  {caseStudy.value_amount && (
+                  {caseStudy.is_value_confidential ? (
+                    <span className="mr-4 text-orange-600 font-medium">Confidencial</span>
+                  ) : caseStudy.value_amount ? (
                     <span className="mr-4">{caseStudy.value_amount}M{caseStudy.value_currency}</span>
-                  )}
+                  ) : null}
                   {caseStudy.year && <span>{caseStudy.year}</span>}
                 </div>
                 {caseStudy.highlights && caseStudy.highlights.length > 0 && (

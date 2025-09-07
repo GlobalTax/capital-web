@@ -14,6 +14,7 @@ export interface CaseStudy {
   year?: number;
   is_featured: boolean;
   is_active: boolean;
+  is_value_confidential?: boolean;
   created_at: string;
   updated_at: string;
   featured_image_url?: string;

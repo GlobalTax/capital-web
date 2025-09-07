@@ -26,7 +26,12 @@ const CaseStudies = () => {
         id: case_.id,
         title: case_.title,
         sector: case_.sector,
-        value: case_.value_amount ? Math.round(case_.value_amount / 1000000).toString() : "N/A",
+        value: case_.is_value_confidential 
+          ? "Confidencial"
+          : case_.value_amount 
+            ? `${case_.value_amount}M`
+            : "N/A",
+        isValueConfidential: case_.is_value_confidential || false,
         currency: case_.value_currency || "€",
         year: case_.year?.toString() || "N/A",
         description: case_.description,
@@ -80,14 +85,14 @@ const CaseStudies = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredCases.length > 0 ? (
             featuredCases.map((case_) => (
-              <div key={case_.id} className="bg-white border-0.5 border-border rounded-lg overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <div key={case_.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out group">
                 {/* Featured Image */}
                 {case_.featured_image_url && (
                   <div className="w-full h-48 bg-gray-100 overflow-hidden">
                     <img 
                       src={case_.featured_image_url} 
                       alt={case_.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
@@ -95,31 +100,45 @@ const CaseStudies = () => {
                   </div>
                 )}
                 
-                <div className="p-6">
-                  <div className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium mb-4">
-                    {case_.sector} • {case_.year}
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-200">
+                      {case_.sector} • {case_.year}
+                    </div>
+                    
+                    {/* Logo - larger and better positioned */}
+                    {case_.logo_url && (
+                      <div className="w-16 h-16 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                        <img 
+                          src={case_.logo_url} 
+                          alt={`${case_.title} logo`}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.parentElement.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Logo if available */}
-                  {case_.logo_url && (
-                    <div className="w-12 h-12 mb-4 bg-gray-50 rounded-lg p-2 overflow-hidden">
-                      <img 
-                        src={case_.logo_url} 
-                        alt={`${case_.title} logo`}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          e.currentTarget.parentElement.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  <h3 className="text-xl font-bold text-black mb-4">
+                  <h3 className="text-xl font-bold text-black mb-4 leading-tight group-hover:text-blue-700 transition-colors duration-200">
                     {case_.title}
                   </h3>
                   
-                  <div className="text-2xl font-bold text-black mb-4 bg-black text-white px-4 py-2 rounded-lg inline-block">
-                    {case_.currency}{case_.value}M
+                  {/* Value display with confidential handling */}
+                  <div className="mb-4">
+                    {case_.isValueConfidential ? (
+                      <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-700 rounded-lg border border-orange-200">
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
+                        </svg>
+                        <span className="font-bold">Confidencial</span>
+                      </div>
+                    ) : (
+                      <div className="text-2xl font-bold text-white bg-black px-4 py-2 rounded-lg inline-block">
+                        {case_.currency}{case_.value}
+                      </div>
+                    )}
                   </div>
                   
                   <p className="text-gray-600 leading-relaxed mb-4">
@@ -128,11 +147,12 @@ const CaseStudies = () => {
                   
                   {/* Highlights */}
                   {case_.highlights && case_.highlights.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-2 pt-4 border-t border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-2">Destacados:</h4>
                       {case_.highlights.slice(0, 3).map((highlight, idx) => (
-                        <div key={idx} className="text-sm text-gray-500 flex items-center">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
-                          {highlight}
+                        <div key={idx} className="text-sm text-gray-600 flex items-start">
+                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                          <span className="leading-relaxed">{highlight}</span>
                         </div>
                       ))}
                     </div>
