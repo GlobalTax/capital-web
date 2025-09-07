@@ -20,7 +20,8 @@ import {
   Play,
   ClipboardList,
   Tags,
-  Image
+  Image,
+  Calculator
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -117,6 +118,20 @@ export const sidebarSections: SidebarSection[] = [
         icon: Tags,
         badge: "NEW",
         description: "Gestión de sectores empresariales"
+      },
+      { 
+        title: "Market Reports", 
+        url: "/admin/market-reports", 
+        icon: FileText,
+        badge: "NEW",
+        description: "Gestión de informes de mercado"
+      },
+      { 
+        title: "Calculadoras Sectoriales", 
+        url: "/admin/sector-calculators", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Configuración de calculadoras por sector"
       },
       { 
         title: "Operaciones", 

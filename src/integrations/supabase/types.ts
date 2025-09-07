@@ -2580,6 +2580,54 @@ export type Database = {
         }
         Relationships: []
       }
+      market_reports: {
+        Row: {
+          category: string
+          cover_image_url: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          download_count: number | null
+          file_url: string | null
+          id: string
+          is_active: boolean | null
+          last_updated: string | null
+          pages: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          pages?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          pages?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       message_logs: {
         Row: {
           created_at: string
