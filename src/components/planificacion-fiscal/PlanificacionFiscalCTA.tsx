@@ -36,22 +36,66 @@ const PlanificacionFiscalCTA = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Frontend validation
+    const trimmedName = formData.full_name.trim();
+    const trimmedCompany = formData.company.trim();
+    const trimmedEmail = formData.email.trim();
+
+    if (trimmedName.length < 2 || trimmedName.length > 100) {
+      toast({
+        title: "Error de validación",
+        description: "El nombre debe tener entre 2 y 100 caracteres.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (trimmedCompany.length < 2 || trimmedCompany.length > 100) {
+      toast({
+        title: "Error de validación", 
+        description: "El nombre de la empresa debe tener entre 2 y 100 caracteres.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (trimmedEmail.length > 254) {
+      toast({
+        title: "Error de validación",
+        description: "El email no puede superar los 254 caracteres.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      const insertData = {
+        full_name: trimmedName,
+        company: trimmedCompany,
+        email: trimmedEmail,
+        phone: formData.phone.trim() || null,
+        sector: formData.sector || null,
+        consultation_type: 'planificacion_fiscal',
+        message: `Operación valor: ${formData.operation_value}. ${formData.message}`.trim() || null,
+        ip_address: null, // Will be set by database trigger
+        user_agent: navigator.userAgent,
+        referrer: document.referrer || null,
+        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+        utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
+        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign')
+      };
+
       const { error } = await supabase
         .from('legal_leads')
-        .insert({
-          full_name: formData.full_name,
-          company: formData.company,
-          email: formData.email,
-          phone: formData.phone,
-          sector: formData.sector,
-          consultation_type: 'planificacion_fiscal',
-          message: `Operación valor: ${formData.operation_value}. ${formData.message}`.trim(),
-          lead_source: 'planificacion_fiscal_page',
-          status: 'nuevo'
-        });
+        .insert([insertData]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "¡Solicitud enviada exitosamente!",
@@ -69,11 +113,23 @@ const PlanificacionFiscalCTA = () => {
       });
       setIsFormOpen(false);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al enviar formulario:', error);
+      
+      // More specific error messages
+      let errorMessage = "Por favor, inténtalo de nuevo o contacta directamente.";
+      
+      if (error?.message?.includes('rate_limit')) {
+        errorMessage = "Has enviado demasiadas solicitudes. Espera un momento antes de volver a intentarlo.";
+      } else if (error?.message?.includes('email')) {
+        errorMessage = "Por favor, verifica que el email sea válido.";
+      } else if (error?.message?.includes('full_name') || error?.message?.includes('company')) {
+        errorMessage = "Por favor, verifica que el nombre y empresa tengan entre 2 y 100 caracteres.";
+      }
+
       toast({
         title: "Error al enviar solicitud",
-        description: "Por favor, inténtalo de nuevo o contacta directamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
