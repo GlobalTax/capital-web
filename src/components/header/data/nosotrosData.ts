@@ -32,13 +32,6 @@ export const nosotrosData: MenuCategory[] = [
         href: "/equipo",
         icon: 'users',
         description: "Conoce a nuestro equipo de expertos"
-      },
-      {
-        id: "nosotros",
-        label: "Nosotros",
-        href: "/nosotros",
-        icon: 'building',
-        description: "Historia y valores de Capittal"
       }
     ]
   }
