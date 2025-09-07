@@ -74,11 +74,7 @@ const AsesoramientoLegalBenefits = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {benefits.map((benefit, index) => (
-            <div key={index} className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group">
-              <div className="bg-gray-50 text-gray-300 rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-100 transition-colors duration-300">
-                <span className="text-sm font-medium">{index + 1}</span>
-              </div>
-              
+          <div key={index} className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group">
               <h3 className="text-lg font-bold text-black mb-4">
                 {benefit.title}
               </h3>
