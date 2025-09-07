@@ -58,16 +58,16 @@ const AsesoramientoLegalCTA = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <a 
-                href="tel:+34917702717"
+                href="tel:+34620273552"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>📞 +34 917 702 717</span>
+                <span>📞 +34 620 273 552</span>
               </a>
               <a 
-                href="mailto:legal@capittal.com"
+                href="mailto:samuel@capittal.es"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>✉️ legal@capittal.com</span>
+                <span>✉️ samuel@capittal.es</span>
               </a>
             </div>
           </div>

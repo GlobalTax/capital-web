@@ -271,7 +271,7 @@ const LegalConsultationForm = () => {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Email Especializado</p>
-                  <p className="text-muted-foreground">legal@capittal.es</p>
+                  <p className="text-muted-foreground">samuel@capittal.es</p>
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Horario de Atención</p>

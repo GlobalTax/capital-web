@@ -24,10 +24,6 @@ const AsesoramientoLegalFAQ = () => {
       answer: 'Se activan las garantías contractuales: el vendedor responde según las warranty & indemnity clauses, se ejecutan las escrow accounts si las hay, se inician procedimientos de reclamación detallados en el SPA, y se aplican los caps y baskets acordados. Navarro Legal gestiona todo el proceso de reclamación.'
     },
     {
-      question: '¿Cuál es el coste del asesoramiento legal en M&A?',
-      answer: 'Dependiendo de la complejidad: operaciones simples (€15,000-30,000), operaciones medianas (€30,000-60,000), transacciones complejas (€60,000-120,000). Incluimos fee structures flexibles: tarifa fija, por horas, o mixta con success fee. Siempre proporcionamos presupuesto cerrado inicial.'
-    },
-    {
       question: '¿Cómo se coordina el asesoramiento legal con el proceso de valoración?',
       answer: 'La coordinación es total: Capittal maneja la valoración y negociación comercial mientras Navarro Legal gestiona todos los aspectos legales. Ambos equipos trabajan en paralelo con comunicación constante, timeline integrado y reporting unificado para maximizar eficiencia y minimizar costes.'
     }
