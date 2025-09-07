@@ -2,7 +2,19 @@ import React from 'react';
 import ContactForm from './ContactForm';
 import ErrorBoundary from './ErrorBoundary';
 
-const Contact = () => {
+interface ContactProps {
+  title?: string;
+  description?: string;
+  pageOrigin?: string;
+  className?: string;
+}
+
+const Contact: React.FC<ContactProps> = ({ 
+  title = "Contacta con Nosotros",
+  description = "Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.",
+  pageOrigin = "contacto",
+  className = ""
+}) => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
@@ -10,15 +22,15 @@ const Contact = () => {
           {/* Hero Section */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-4">
-              Contacta con Nosotros
+              {title}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.
+              {description}
             </p>
           </div>
 
           {/* Contact Form */}
-          <ContactForm pageOrigin="contacto" showTitle={false} />
+          <ContactForm pageOrigin={pageOrigin} showTitle={false} />
 
           {/* Additional Info */}
           <div className="mt-8 text-center">
