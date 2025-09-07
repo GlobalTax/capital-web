@@ -13,11 +13,11 @@ const DueDiligenceHero = () => {
             <div className="space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold text-black leading-tight">
                 Due Diligence
-                <span className="block text-black">Exhaustivo y Preciso</span>
+                <span className="block text-black">Profesional y Estratégico</span>
               </h1>
               <p className="text-xl text-black leading-relaxed">
-                Análisis completo financiero, legal y comercial que identifica 
-                riesgos ocultos y oportunidades reales en cada inversión.
+                Análisis completo financiero, legal y comercial tanto para compradores 
+                como vendedores. Identificamos riesgos, oportunidades y maximizamos el valor en cada operación.
               </p>
             </div>
 

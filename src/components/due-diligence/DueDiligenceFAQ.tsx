@@ -10,12 +10,24 @@ import {
 const DueDiligenceFAQ = () => {
   const faqs = [
     {
+      question: "¿Cuál es la diferencia entre Buy-Side y Vendor Due Diligence?",
+      answer: "El Buy-Side Due Diligence lo realiza el comprador para evaluar riesgos antes de la adquisición, mientras que el Vendor Due Diligence lo encarga el vendedor para preparar la venta, identificar problemas previos y maximizar el valor de la transacción."
+    },
+    {
+      question: "¿Cuándo es recomendable realizar un Vendor Due Diligence?",
+      answer: "Es ideal cuando planeas vender tu empresa en 6-12 meses. Permite identificar y resolver problemas con antelación, optimizar la valoración, preparar documentación completa y acelerar el proceso de venta reduciendo contingencias."
+    },
+    {
       question: "¿Qué áreas cubre el proceso de due diligence?",
       answer: "Nuestro due diligence cubre análisis financiero (estados financieros, proyecciones, flujos de caja), legal (contratos, litigios, compliance), comercial (mercado, competencia, clientes), operativo (procesos, sistemas, personal) y estratégico (posicionamiento, sinergias)."
     },
     {
       question: "¿Cuánto tiempo requiere un due diligence completo?",
-      answer: "El proceso típico toma entre 6-8 semanas, dependiendo del tamaño y complejidad de la empresa. Incluye 1 semana de análisis preliminar, 3-4 semanas de investigación detallada, 1-2 semanas de análisis e interpretación, y 1 semana para el informe final."
+      answer: "El proceso típico toma entre 6-8 semanas, dependiendo del tamaño y complejidad de la empresa. El Vendor DD puede ser ligeramente más rápido (4-6 semanas) ya que el vendedor tiene acceso directo a toda la información."
+    },
+    {
+      question: "¿Cómo un Vendor Due Diligence mejora el precio de venta?",
+      answer: "Al identificar y resolver problemas previos, presentar información transparente y completa, y demostrar proactivamente el valor de la empresa, reducimos las contingencias del comprador y creamos confianza que se traduce en mejor valoración."
     },
     {
       question: "¿Qué documentación necesitamos proporcionar?",
@@ -24,10 +36,6 @@ const DueDiligenceFAQ = () => {
     {
       question: "¿Cómo garantizan la confidencialidad del proceso?",
       answer: "Todos nuestros profesionales firman acuerdos de confidencialidad estrictos. Mantenemos protocolos de seguridad de información robustos y limitamos el acceso a la información solo al equipo necesario para el análisis."
-    },
-    {
-      question: "¿Qué incluye el informe final de due diligence?",
-      answer: "El informe incluye resumen ejecutivo, análisis detallado por áreas, identificación de riesgos y oportunidades, impacto en la valoración, recomendaciones estratégicas y anexos con documentación de soporte."
     },
     {
       question: "¿Pueden realizar due diligence en sectores específicos?",
