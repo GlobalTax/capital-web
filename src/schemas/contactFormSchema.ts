@@ -46,6 +46,19 @@ export const contactFormSchema = z.object({
     .refine(val => !val || val.length <= 1000, {
       message: 'Mensaje muy largo (máximo 1000 caracteres)'
     }),
+
+  // Buyer-specific fields
+  investmentBudget: z.enum(['menos-500k', '500k-1m', '1m-5m', '5m-10m', 'mas-10m'], {
+    required_error: 'Selecciona un rango',
+    invalid_type_error: 'Rango inválido'
+  }).optional(),
+
+  sectorsOfInterest: z.string()
+    .optional()
+    .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 500 }) : undefined)
+    .refine(val => !val || val.length <= 500, {
+      message: 'Sectores muy largo (máximo 500 caracteres)'
+    }),
   
   // Honeypot field - must be empty
   website: z.string()

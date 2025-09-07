@@ -13,12 +13,14 @@ interface ContactFormProps {
   pageOrigin?: string;
   showTitle?: boolean;
   className?: string;
+  variant?: 'default' | 'compra' | 'venta';
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({ 
   pageOrigin = 'contact_page', 
   showTitle = true,
-  className = '' 
+  className = '',
+  variant = 'default'
 }) => {
   const { submitContactForm, isSubmitting } = useContactForm();
   const [formData, setFormData] = useState<ContactFormData>({
@@ -26,9 +28,11 @@ const ContactForm: React.FC<ContactFormProps> = ({
     company: '',
     email: '',
     phone: '',
-    serviceType: 'vender' as const,
+    serviceType: variant === 'compra' ? 'comprar' as const : 'vender' as const,
     message: '',
     website: '', // Honeypot field
+    investmentBudget: undefined,
+    sectorsOfInterest: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,9 +52,11 @@ const ContactForm: React.FC<ContactFormProps> = ({
         company: '',
         email: '',
         phone: '',
-        serviceType: 'vender' as const,
+        serviceType: variant === 'compra' ? 'comprar' as const : 'vender' as const,
         message: '',
         website: '',
+        investmentBudget: undefined,
+        sectorsOfInterest: '',
       });
     } else {
       console.error('❌ ContactForm: Submission failed:', result.error);
@@ -191,6 +197,54 @@ const ContactForm: React.FC<ContactFormProps> = ({
               />
             </div>
 
+            {/* Buyer-specific fields */}
+            {variant === 'compra' && (
+              <>
+                <div>
+                  <Label htmlFor="investmentBudget" className="text-sm font-medium text-foreground">
+                    Presupuesto de inversión
+                  </Label>
+                  <Select 
+                    value={formData.investmentBudget || ''} 
+                    onValueChange={(value: NonNullable<ContactFormData['investmentBudget']>) => updateField('investmentBudget', value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Selecciona tu rango de inversión" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="menos-500k">Menos de 500.000€</SelectItem>
+                      <SelectItem value="500k-1m">500.000€ - 1M€</SelectItem>
+                      <SelectItem value="1m-5m">1M€ - 5M€</SelectItem>
+                      <SelectItem value="5m-10m">5M€ - 10M€</SelectItem>
+                      <SelectItem value="mas-10m">Más de 10M€</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Rango aproximado para tu inversión
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="sectorsOfInterest" className="text-sm font-medium text-foreground">
+                    Sectores de interés
+                  </Label>
+                  <Textarea
+                    id="sectorsOfInterest"
+                    value={formData.sectorsOfInterest || ''}
+                    onChange={(e) => updateField('sectorsOfInterest', e.target.value)}
+                    placeholder="Ej: Tecnología, Hostelería, Manufacturero, Servicios..."
+                    rows={2}
+                    disabled={isSubmitting}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sectores o industrias que te interesan
+                  </p>
+                </div>
+              </>
+            )}
+
             <div>
               <Label htmlFor="message" className="text-sm font-medium text-foreground">
                 Mensaje (opcional)
@@ -199,7 +253,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 id="message"
                 value={formData.message || ''}
                 onChange={(e) => updateField('message', e.target.value)}
-                placeholder="Información adicional sobre tu empresa..."
+                placeholder={variant === 'compra' 
+                  ? "Describe el tipo de empresa que buscas, ubicación preferida, características específicas..."
+                  : "Información adicional sobre tu empresa..."
+                }
                 rows={3}
                 disabled={isSubmitting}
                 className="mt-1"

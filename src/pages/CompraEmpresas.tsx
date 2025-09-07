@@ -20,9 +20,8 @@ const CompraEmpresas = () => {
         <WhyChooseUs />
         <SuccessStories />
         <Contact 
-          title="Solicita Información sobre Oportunidades"
-          description="¿Interesado en adquirir una empresa? Cuéntanos qué tipo de oportunidad buscas y te pondremos en contacto con las mejores opciones del mercado."
           pageOrigin="compra-empresas"
+          variant="compra"
         />
       </div>
       <Footer />

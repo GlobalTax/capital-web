@@ -8,31 +8,58 @@ interface ContactProps {
   pageOrigin?: string;
   className?: string;
   id?: string;
+  variant?: 'default' | 'compra' | 'venta';
 }
 
 const Contact: React.FC<ContactProps> = ({ 
-  title = "Contacta con Nosotros",
-  description = "Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.",
+  title,
+  description,
   pageOrigin = "contacto",
   className = "",
-  id
+  id,
+  variant = 'default'
 }) => {
+  // Variant-specific content
+  const getVariantContent = () => {
+    switch (variant) {
+      case 'compra':
+        return {
+          title: title || "Encuentra tu Empresa Ideal",
+          description: description || "Cuéntanos qué tipo de empresa buscas y te ayudaremos a encontrar las mejores oportunidades de inversión en el mercado español.",
+          bgClass: "bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10"
+        };
+      case 'venta':
+        return {
+          title: title || "Vende tu Empresa al Mejor Precio",
+          description: description || "Obtén una valoración profesional y encuentra el comprador perfecto para tu empresa con nuestro proceso especializado.",
+          bgClass: "bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10"
+        };
+      default:
+        return {
+          title: title || "Contacta con Nosotros",
+          description: description || "Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.",
+          bgClass: "bg-background"
+        };
+    }
+  };
+
+  const variantContent = getVariantContent();
   return (
     <ErrorBoundary>
-      <div id={id} className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+      <div id={id} className={`min-h-screen py-8 px-4 sm:px-6 lg:px-8 ${variantContent.bgClass}`}>
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-4">
-              {title}
+              {variantContent.title}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {description}
+              {variantContent.description}
             </p>
           </div>
 
           {/* Contact Form */}
-          <ContactForm pageOrigin={pageOrigin} showTitle={false} />
+          <ContactForm pageOrigin={pageOrigin} showTitle={false} variant={variant} />
 
           {/* Additional Info */}
           <div className="mt-8 text-center">
