@@ -10,32 +10,28 @@ import {
 const DueDiligenceFAQ = () => {
   const faqs = [
     {
-      question: "**¿Cuál es la diferencia entre Buy-side y Vendor Due Diligence?**",
-      answer: "**Buy-side DD es para compradores que evalúan una inversión - enfocado en identificar riesgos y validar información. Vendor DD es para vendedores preparando su empresa para la venta - enfocado en optimizar valor y acelerar el proceso M&A. Ambos usan metodología similar pero con objetivos diferentes.**"
+      question: "¿Qué áreas cubre el proceso de due diligence?",
+      answer: "Nuestro due diligence cubre análisis financiero (estados financieros, proyecciones, flujos de caja), legal (contratos, litigios, compliance), comercial (mercado, competencia, clientes), operativo (procesos, sistemas, personal) y estratégico (posicionamiento, sinergias)."
     },
     {
-      question: "**¿Cuánto tiempo y costo tiene cada tipo de Due Diligence?**", 
-      answer: "**Buy-side DD: 6-8 semanas, desde €15,000 según complejidad. Vendor DD: 4-6 semanas, ROI promedio +15% en valoración. Incluimos consulta inicial gratuita para determinar alcance exacto según tu situación específica.**"
+      question: "¿Cuánto tiempo requiere un due diligence completo?",
+      answer: "El proceso típico toma entre 6-8 semanas, dependiendo del tamaño y complejidad de la empresa. Incluye 1 semana de análisis preliminar, 3-4 semanas de investigación detallada, 1-2 semanas de análisis e interpretación, y 1 semana para el informe final."
     },
     {
-      question: "**¿Qué documentación necesito proporcionar para cada tipo?**",
-      answer: "**Buy-side: Data room del vendedor, contratos clave, EEFF auditados, proyecciones. Vendor: EEFF internos 3-5 años, contratos principales, información legal corporativa, datos comerciales, organigrama. Te proporcionamos checklist detallado según el tipo.**"
+      question: "¿Qué documentación necesitamos proporcionar?",
+      answer: "Requerimos estados financieros de los últimos 3-5 años, contratos principales, información legal corporativa, datos comerciales y de mercado, información sobre personal clave, y cualquier documentación relevante sobre operaciones y estrategia."
     },
     {
-      question: "**¿Cómo garantizan confidencialidad en procesos sensibles?**",
-      answer: "**NDAs estrictos con todo el equipo, protocolos de seguridad nivel bancario, acceso limitado solo a profesionales necesarios, comunicación encriptada. En Vendor DD, podemos trabajar bajo project names para máxima discreción.**"
+      question: "¿Cómo garantizan la confidencialidad del proceso?",
+      answer: "Todos nuestros profesionales firman acuerdos de confidencialidad estrictos. Mantenemos protocolos de seguridad de información robustos y limitamos el acceso a la información solo al equipo necesario para el análisis."
     },
     {
-      question: "**¿Qué incluye cada tipo de informe final?**",
-      answer: "**Buy-side: Recomendación Go/No-go, riesgos críticos, impacto en valoración, plan post-adquisición. Vendor: Value gap analysis, plan de optimización pre-venta, posicionamiento competitivo, estrategia de marketing al comprador.**"
+      question: "¿Qué incluye el informe final de due diligence?",
+      answer: "El informe incluye resumen ejecutivo, análisis detallado por áreas, identificación de riesgos y oportunidades, impacto en la valoración, recomendaciones estratégicas y anexos con documentación de soporte."
     },
     {
-      question: "**¿Tienen experiencia en mi sector específico?**", 
-      answer: "**Experiencia probada en tecnología, healthcare, industrial, retail, servicios financieros, energía y más. 150+ transacciones completadas. Asignamos especialistas sectoriales a cada proyecto para máximo expertise.**"
-    },
-    {
-      question: "**¿Puedo convertir un Vendor DD en Buy-side si recibo ofertas?**",
-      answer: "**Sí, es común. El Vendor DD sirve como base para acelerar el Buy-side DD posterior. Aprovechamos trabajo previo para reducir tiempos y costos en la fase de comprador, manteniendo independencia profesional.**"
+      question: "¿Pueden realizar due diligence en sectores específicos?",
+      answer: "Sí, tenemos experiencia especializada en múltiples sectores incluyendo tecnología, healthcare, industrial, retail, servicios financieros y energía. Adaptamos nuestro enfoque a las particularidades de cada sector."
     }
   ];
 
@@ -43,12 +39,11 @@ const DueDiligenceFAQ = () => {
     <section className="py-20 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-            **Preguntas Frecuentes**
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+            Preguntas Frecuentes sobre Due Diligence
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            **Resolvemos dudas sobre Buy-side y Vendor Due Diligence basadas 
-            en nuestra experiencia en 150+ transacciones**
+          <p className="text-lg text-gray-600">
+            Resolvemos las dudas más comunes sobre nuestro proceso de due diligence
           </p>
         </div>
 
