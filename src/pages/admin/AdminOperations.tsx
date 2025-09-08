@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Download, Building2, TrendingUp, BarChart3, Target } from 'lucide-react';
+import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
+import { formatDate, formatCurrency } from '@/shared/utils/format';
+import { Loader2, Plus, Pencil, Download, Building2, TrendingUp, BarChart3, Target, Search, Filter, Eye, Calendar, Hash } from 'lucide-react';
 
 interface Operation {
   id: string;
@@ -27,6 +30,8 @@ interface Operation {
   short_description?: string;
   deal_type?: string;
   status?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const AdminOperations = () => {
@@ -35,6 +40,10 @@ const AdminOperations = () => {
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dealTypeFilter, setDealTypeFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,6 +70,39 @@ const AdminOperations = () => {
       setIsLoading(false);
     }
   };
+
+  // Generate opportunity number based on creation date
+  const generateOpportunityNumber = (createdAt: string, index: number): string => {
+    const date = new Date(createdAt);
+    const year = date.getFullYear();
+    const paddedIndex = String(index + 1).padStart(3, '0');
+    return `OP-${year}-${paddedIndex}`;
+  };
+
+  // Filter operations based on search and filters
+  const filteredOperations = useMemo(() => {
+    return operations.filter(operation => {
+      const matchesSearch = !searchTerm || 
+        operation.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        operation.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        operation.description.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || operation.status === statusFilter;
+      const matchesDealType = dealTypeFilter === 'all' || operation.deal_type === dealTypeFilter;
+      
+      return matchesSearch && matchesStatus && matchesDealType;
+    });
+  }, [operations, searchTerm, statusFilter, dealTypeFilter]);
+
+  // Statistics calculations
+  const stats = useMemo(() => {
+    const active = operations.filter(op => op.is_active).length;
+    const thisYear = operations.filter(op => op.year === new Date().getFullYear()).length;
+    const withRevenue = operations.filter(op => op.revenue_amount && op.revenue_amount > 0).length;
+    const withEbitda = operations.filter(op => op.ebitda_amount && op.ebitda_amount > 0).length;
+    
+    return { active, thisYear, withRevenue, withEbitda };
+  }, [operations]);
 
   const extractFinancialData = async () => {
     setIsExtracting(true);
@@ -184,15 +226,153 @@ const AdminOperations = () => {
     }
   };
 
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return 'No definido';
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  // Get status badge variant
+  const getStatusBadgeVariant = (status?: string) => {
+    switch (status) {
+      case 'available': return 'default';
+      case 'under_negotiation': return 'secondary';
+      case 'sold': return 'success';
+      case 'withdrawn': return 'destructive';
+      default: return 'outline';
+    }
   };
+
+  // Get status display text
+  const getStatusText = (status?: string) => {
+    switch (status) {
+      case 'available': return 'Disponible';
+      case 'under_negotiation': return 'En Negociación';
+      case 'sold': return 'Vendida';
+      case 'withdrawn': return 'Retirada';
+      default: return 'Sin Estado';
+    }
+  };
+
+  // Get deal type display text
+  const getDealTypeText = (dealType?: string) => {
+    switch (dealType) {
+      case 'sale': return 'Venta';
+      case 'acquisition': return 'Adquisición';
+      case 'merger': return 'Fusión';
+      case 'restructuring': return 'Reestructuración';
+      default: return 'No Definido';
+    }
+  };
+
+  // Table columns configuration
+  const tableColumns = [
+    {
+      key: 'opportunity_number',
+      title: 'Nº Oportunidad',
+      width: 120,
+      render: (operation: Operation, index: number) => (
+        <div className="flex items-center gap-2">
+          <Hash className="h-3 w-3 text-muted-foreground" />
+          <span className="font-mono text-sm font-medium">
+            {generateOpportunityNumber(operation.created_at || '', index)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'company_info',
+      title: 'Empresa',
+      width: 250,
+      render: (operation: Operation) => (
+        <div className="space-y-1">
+          <div className="font-semibold text-foreground">{operation.company_name}</div>
+          <div className="text-sm text-muted-foreground">{operation.sector}</div>
+          {operation.company_size_employees && (
+            <Badge variant="outline" className="text-xs">
+              {operation.company_size_employees}
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'financial_info',
+      title: 'Información Financiera',
+      width: 200,
+      render: (operation: Operation) => (
+        <div className="space-y-1">
+          <div className="text-sm">
+            <span className="text-muted-foreground">Facturación:</span>{' '}
+            <span className="font-medium text-green-600 dark:text-green-400">
+              {operation.revenue_amount ? formatCurrency(operation.revenue_amount) : 'N/D'}
+            </span>
+          </div>
+          <div className="text-sm">
+            <span className="text-muted-foreground">EBITDA:</span>{' '}
+            <span className="font-medium text-blue-600 dark:text-blue-400">
+              {operation.ebitda_amount ? formatCurrency(operation.ebitda_amount) : 'N/D'}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status_info',
+      title: 'Estado y Tipo',
+      width: 150,
+      render: (operation: Operation) => (
+        <div className="space-y-2">
+          <Badge variant={getStatusBadgeVariant(operation.status)}>
+            {getStatusText(operation.status)}
+          </Badge>
+          <div className="text-xs text-muted-foreground">
+            {getDealTypeText(operation.deal_type)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'date_info',
+      title: 'Fechas',
+      width: 120,
+      render: (operation: Operation) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-1 text-sm">
+            <Calendar className="h-3 w-3 text-muted-foreground" />
+            <span className="text-muted-foreground">Alta:</span>
+          </div>
+          <div className="text-sm font-medium">
+            {operation.created_at ? formatDate(operation.created_at) : 'N/D'}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Año: {operation.year}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      title: 'Acciones',
+      width: 100,  
+      render: (operation: Operation) => (
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setEditingOperation(operation)}
+            className="h-8 w-8 p-0"
+            title="Editar"
+          >
+            <Pencil className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {/* TODO: Add preview functionality */}}
+            className="h-8 w-8 p-0"
+            title="Vista previa"
+          >
+            <Eye className="h-3 w-3" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -269,7 +449,7 @@ const AdminOperations = () => {
               <div>
                 <p className="text-sm font-medium text-green-600 dark:text-green-400">Activas</p>
                 <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                  {operations.filter(op => op.is_active).length}
+                  {stats.active}
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
@@ -283,13 +463,13 @@ const AdminOperations = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Con Facturación</p>
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Este Año</p>
                 <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">
-                  {operations.filter(op => op.revenue_amount).length}
+                  {stats.thisYear}
                 </p>
               </div>
               <div className="h-12 w-12 bg-amber-500 rounded-full flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-white" />
+                <Calendar className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
@@ -299,20 +479,85 @@ const AdminOperations = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Con EBITDA</p>
+                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Con Datos Financieros</p>
                 <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                  {operations.filter(op => op.ebitda_amount).length}
+                  {stats.withRevenue}
                 </p>
               </div>
               <div className="h-12 w-12 bg-purple-500 rounded-full flex items-center justify-center">
-                <Target className="h-6 w-6 text-white" />
+                <BarChart3 className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Enhanced Operations List */}
+      {/* Filters and Search */}
+      <Card className="border-0 shadow-md">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por empresa, sector o descripción..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filtros
+              {(statusFilter !== 'all' || dealTypeFilter !== 'all') && (
+                <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                  {(statusFilter !== 'all' ? 1 : 0) + (dealTypeFilter !== 'all' ? 1 : 0)}
+                </Badge>
+              )}
+            </Button>
+          </div>
+          
+          {showFilters && (
+            <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t">
+              <div className="flex-1">
+                <Label htmlFor="status-filter" className="text-sm font-medium">Estado</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="status-filter">
+                    <SelectValue placeholder="Todos los estados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="available">Disponible</SelectItem>
+                    <SelectItem value="under_negotiation">En Negociación</SelectItem>
+                    <SelectItem value="sold">Vendida</SelectItem>
+                    <SelectItem value="withdrawn">Retirada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="deal-type-filter" className="text-sm font-medium">Tipo de Operación</Label>
+                <Select value={dealTypeFilter} onValueChange={setDealTypeFilter}>
+                  <SelectTrigger id="deal-type-filter">
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="sale">Venta</SelectItem>
+                    <SelectItem value="acquisition">Adquisición</SelectItem>
+                    <SelectItem value="merger">Fusión</SelectItem>
+                    <SelectItem value="restructuring">Reestructuración</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Enhanced Operations Table */}
       <Card className="border-0 shadow-lg">
         <CardHeader className="border-b bg-card/50">
           <div className="flex items-center justify-between">
@@ -323,7 +568,7 @@ const AdminOperations = () => {
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
-              {operations.length} operaciones totales
+              Mostrando {filteredOperations.length} de {operations.length} operaciones
             </div>
           </div>
         </CardHeader>
@@ -336,70 +581,22 @@ const AdminOperations = () => {
                 Comienza añadiendo tu primera operación para construir el portafolio de transacciones.
               </p>
             </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {operations.map((operation, index) => (
-                <div
-                  key={operation.id}
-                  className="p-6 hover:bg-muted/30 transition-colors group"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {operation.company_name}
-                        </h3>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                          {operation.sector}
-                        </span>
-                        {operation.is_featured && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                            ⭐ Destacada
-                          </span>
-                        )}
-                        {!operation.is_active && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                            Inactiva
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-4">
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Facturación</p>
-                          <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-                            {formatCurrency(operation.revenue_amount)}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">EBITDA</p>
-                          <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                            {formatCurrency(operation.ebitda_amount)}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Año</p>
-                          <p className="text-lg font-semibold text-muted-foreground">
-                            {operation.year}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingOperation(operation)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          ) : filteredOperations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Search className="h-16 w-16 text-muted-foreground/30 mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">No se encontraron operaciones</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Intenta ajustar los filtros de búsqueda para encontrar las operaciones que necesitas.
+              </p>
             </div>
+          ) : (
+            <VirtualizedTable
+              data={filteredOperations}
+              columns={tableColumns}
+              itemHeight={80}
+              height={Math.min(600, filteredOperations.length * 80 + 50)}
+              className="border-none"
+            />
           )}
         </CardContent>
       </Card>
@@ -414,6 +611,36 @@ const AdminOperations = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Operation Info - Show for existing operations */}
+              {editingOperation.id && (
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                  <h3 className="text-lg font-semibold">Información de la Oportunidad</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Número de Oportunidad</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Hash className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-mono text-sm font-medium">
+                          {generateOpportunityNumber(
+                            editingOperation.created_at || new Date().toISOString(), 
+                            operations.findIndex(op => op.id === editingOperation.id)
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Fecha de Alta</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">
+                          {editingOperation.created_at ? formatDate(editingOperation.created_at) : 'N/D'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Basic Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Información Básica</h3>
