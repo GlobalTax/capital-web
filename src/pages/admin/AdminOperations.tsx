@@ -23,6 +23,10 @@ interface Operation {
   is_active: boolean;
   is_featured: boolean;
   display_locations: string[];
+  company_size_employees?: string;
+  short_description?: string;
+  deal_type?: string;
+  status?: string;
 }
 
 const AdminOperations = () => {
@@ -30,6 +34,7 @@ const AdminOperations = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -83,6 +88,110 @@ const AdminOperations = () => {
     }
   };
 
+  const saveOperation = async () => {
+    if (!editingOperation) return;
+
+    // Validation
+    if (!editingOperation.company_name?.trim()) {
+      toast({
+        title: 'Error de validación',
+        description: 'El nombre de la empresa es obligatorio',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!editingOperation.sector?.trim()) {
+      toast({
+        title: 'Error de validación',
+        description: 'El sector es obligatorio',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!editingOperation.description?.trim()) {
+      toast({
+        title: 'Error de validación',
+        description: 'La descripción es obligatoria',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!editingOperation.year || editingOperation.year < 1900 || editingOperation.year > new Date().getFullYear() + 5) {
+      toast({
+        title: 'Error de validación',
+        description: 'El año debe ser válido',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!editingOperation.valuation_amount || editingOperation.valuation_amount <= 0) {
+      toast({
+        title: 'Error de validación',
+        description: 'La valoración debe ser mayor a 0',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const operationData = {
+        company_name: editingOperation.company_name.trim(),
+        sector: editingOperation.sector.trim(),
+        description: editingOperation.description.trim(),
+        revenue_amount: editingOperation.revenue_amount || null,
+        ebitda_amount: editingOperation.ebitda_amount || null,
+        valuation_amount: editingOperation.valuation_amount,
+        valuation_currency: editingOperation.valuation_currency || '€',
+        year: editingOperation.year,
+        is_active: editingOperation.is_active ?? true,
+        is_featured: editingOperation.is_featured ?? false,
+        display_locations: editingOperation.display_locations || ['home', 'operaciones'],
+        company_size_employees: editingOperation.company_size_employees || null,
+        short_description: editingOperation.short_description?.trim() || null,
+        deal_type: editingOperation.deal_type || 'sale',
+        status: editingOperation.status || 'available',
+      };
+
+      let result;
+      if (editingOperation.id) {
+        // Update existing
+        result = await supabase
+          .from('company_operations')
+          .update(operationData)
+          .eq('id', editingOperation.id);
+      } else {
+        // Create new
+        result = await supabase
+          .from('company_operations')
+          .insert(operationData);
+      }
+
+      if (result.error) throw result.error;
+
+      toast({
+        title: 'Éxito',
+        description: editingOperation.id ? 'Operación actualizada correctamente' : 'Operación creada correctamente',
+      });
+
+      setEditingOperation(null);
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error saving operation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo guardar la operación',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const formatCurrency = (amount?: number) => {
     if (!amount) return 'No definido';
     return new Intl.NumberFormat('es-ES', {
@@ -118,7 +227,19 @@ const AdminOperations = () => {
             )}
             Extraer Datos Financieros
           </Button>
-          <Button onClick={() => setEditingOperation({} as Operation)}>
+          <Button onClick={() => setEditingOperation({
+            company_name: '',
+            sector: '',
+            description: '',
+            valuation_amount: 0,
+            valuation_currency: '€',
+            year: new Date().getFullYear(),
+            is_active: true,
+            is_featured: false,
+            display_locations: ['home', 'operaciones'],
+            deal_type: 'sale',
+            status: 'available'
+          } as Operation)}>
             <Plus className="h-4 w-4 mr-2" />
             Nueva Operación
           </Button>
@@ -230,115 +351,253 @@ const AdminOperations = () => {
         </CardContent>
       </Card>
 
-      {/* Edit Modal - would need to implement this with Dialog */}
+      {/* Edit Modal */}
       {editingOperation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <CardTitle>
                 {editingOperation.id ? 'Editar Operación' : 'Nueva Operación'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="company_name">Nombre de la empresa</Label>
-                  <Input
-                    id="company_name"
-                    value={editingOperation.company_name || ''}
-                    onChange={(e) => setEditingOperation({
-                      ...editingOperation,
-                      company_name: e.target.value
-                    })}
-                  />
+            <CardContent className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Información Básica</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="company_name">Nombre de la empresa *</Label>
+                    <Input
+                      id="company_name"
+                      value={editingOperation.company_name || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        company_name: e.target.value
+                      })}
+                      placeholder="Nombre de la empresa"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="sector">Sector *</Label>
+                    <Input
+                      id="sector"
+                      value={editingOperation.sector || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        sector: e.target.value
+                      })}
+                      placeholder="Ej: Tecnología, Retail, etc."
+                    />
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="year">Año *</Label>
+                    <Input
+                      id="year"
+                      type="number"
+                      min="1900"
+                      max={new Date().getFullYear() + 5}
+                      value={editingOperation.year || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        year: parseInt(e.target.value) || new Date().getFullYear()
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="deal_type">Tipo de Operación</Label>
+                    <Select
+                      value={editingOperation.deal_type || 'sale'}
+                      onValueChange={(value) => setEditingOperation({
+                        ...editingOperation,
+                        deal_type: value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sale">Venta</SelectItem>
+                        <SelectItem value="acquisition">Adquisición</SelectItem>
+                        <SelectItem value="merger">Fusión</SelectItem>
+                        <SelectItem value="restructuring">Reestructuración</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Estado</Label>
+                    <Select
+                      value={editingOperation.status || 'available'}
+                      onValueChange={(value) => setEditingOperation({
+                        ...editingOperation,
+                        status: value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">Disponible</SelectItem>
+                        <SelectItem value="under_negotiation">En Negociación</SelectItem>
+                        <SelectItem value="sold">Vendida</SelectItem>
+                        <SelectItem value="withdrawn">Retirada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="sector">Sector</Label>
-                  <Input
-                    id="sector"
-                    value={editingOperation.sector || ''}
-                    onChange={(e) => setEditingOperation({
+                  <Label htmlFor="company_size_employees">Tamaño de la Empresa</Label>
+                  <Select
+                    value={editingOperation.company_size_employees || ''}
+                    onValueChange={(value) => setEditingOperation({
                       ...editingOperation,
-                      sector: e.target.value
+                      company_size_employees: value
                     })}
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar tamaño" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-10">1-10 empleados</SelectItem>
+                      <SelectItem value="11-50">11-50 empleados</SelectItem>
+                      <SelectItem value="51-200">51-200 empleados</SelectItem>
+                      <SelectItem value="201-500">201-500 empleados</SelectItem>
+                      <SelectItem value="500+">500+ empleados</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-3 gap-4">
+
+              {/* Financial Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Información Financiera</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="revenue_amount">Facturación (€)</Label>
+                    <Input
+                      id="revenue_amount"
+                      type="number"
+                      min="0"
+                      value={editingOperation.revenue_amount || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        revenue_amount: parseFloat(e.target.value) || undefined
+                      })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ebitda_amount">EBITDA (€)</Label>
+                    <Input
+                      id="ebitda_amount"
+                      type="number"
+                      value={editingOperation.ebitda_amount || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        ebitda_amount: parseFloat(e.target.value) || undefined
+                      })}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="valuation_amount">Valoración *</Label>
+                    <Input
+                      id="valuation_amount"
+                      type="number"
+                      min="1"
+                      value={editingOperation.valuation_amount || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        valuation_amount: parseFloat(e.target.value) || 0
+                      })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="valuation_currency">Moneda</Label>
+                    <Select
+                      value={editingOperation.valuation_currency || '€'}
+                      onValueChange={(value) => setEditingOperation({
+                        ...editingOperation,
+                        valuation_currency: value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="€">€ (Euro)</SelectItem>
+                        <SelectItem value="$">$ (Dólar)</SelectItem>
+                        <SelectItem value="£">£ (Libra)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Descriptions */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Descripción</h3>
                 <div>
-                  <Label htmlFor="revenue_amount">Facturación (€)</Label>
+                  <Label htmlFor="short_description">Descripción Corta</Label>
                   <Input
-                    id="revenue_amount"
-                    type="number"
-                    value={editingOperation.revenue_amount || ''}
+                    id="short_description"
+                    value={editingOperation.short_description || ''}
                     onChange={(e) => setEditingOperation({
                       ...editingOperation,
-                      revenue_amount: parseFloat(e.target.value) || undefined
+                      short_description: e.target.value
                     })}
+                    placeholder="Breve descripción de la operación"
+                    maxLength={200}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="ebitda_amount">EBITDA (€)</Label>
-                  <Input
-                    id="ebitda_amount"
-                    type="number"
-                    value={editingOperation.ebitda_amount || ''}
+                  <Label htmlFor="description">Descripción Completa *</Label>
+                  <Textarea
+                    id="description"
+                    value={editingOperation.description || ''}
                     onChange={(e) => setEditingOperation({
                       ...editingOperation,
-                      ebitda_amount: parseFloat(e.target.value) || undefined
+                      description: e.target.value
                     })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="valuation_amount">Valoración (€)</Label>
-                  <Input
-                    id="valuation_amount"
-                    type="number"
-                    value={editingOperation.valuation_amount || ''}
-                    onChange={(e) => setEditingOperation({
-                      ...editingOperation,
-                      valuation_amount: parseFloat(e.target.value) || 0
-                    })}
+                    rows={6}
+                    placeholder="Descripción detallada de la operación"
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="description">Descripción</Label>
-                <Textarea
-                  id="description"
-                  value={editingOperation.description || ''}
-                  onChange={(e) => setEditingOperation({
-                    ...editingOperation,
-                    description: e.target.value
-                  })}
-                  rows={4}
-                />
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={editingOperation.is_active || false}
-                    onCheckedChange={(checked) => setEditingOperation({
-                      ...editingOperation,
-                      is_active: checked
-                    })}
-                  />
-                  <Label htmlFor="is_active">Activa</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_featured"
-                    checked={editingOperation.is_featured || false}
-                    onCheckedChange={(checked) => setEditingOperation({
-                      ...editingOperation,
-                      is_featured: checked
-                    })}
-                  />
-                  <Label htmlFor="is_featured">Destacada</Label>
+              {/* Settings */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Configuración</h3>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_active"
+                      checked={editingOperation.is_active ?? true}
+                      onCheckedChange={(checked) => setEditingOperation({
+                        ...editingOperation,
+                        is_active: checked
+                      })}
+                    />
+                    <Label htmlFor="is_active">Operación Activa</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_featured"
+                      checked={editingOperation.is_featured ?? false}
+                      onCheckedChange={(checked) => setEditingOperation({
+                        ...editingOperation,
+                        is_featured: checked
+                      })}
+                    />
+                    <Label htmlFor="is_featured">Operación Destacada</Label>
+                  </div>
                 </div>
               </div>
 
@@ -347,20 +606,23 @@ const AdminOperations = () => {
                   onClick={() => setEditingOperation(null)}
                   variant="outline"
                   className="flex-1"
+                  disabled={isSaving}
                 >
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() => {
-                    // TODO: Implement save functionality
-                    toast({
-                      title: 'Funcionalidad pendiente',
-                      description: 'La funcionalidad de guardado se implementará próximamente',
-                    });
-                  }}
+                  onClick={saveOperation}
                   className="flex-1"
+                  disabled={isSaving}
                 >
-                  Guardar
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
                 </Button>
               </div>
             </CardContent>
