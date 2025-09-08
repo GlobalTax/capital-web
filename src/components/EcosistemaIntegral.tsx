@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { TrendingUp, Calculator, Building2, FileSearch, Scale, Receipt, Users, BarChart3, Briefcase, GraduationCap } from 'lucide-react';
-import { useCountAnimation } from '@/hooks/useCountAnimation';
 import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
+import StatisticCard from './StatisticCard';
 
 const EcosistemaIntegral = () => {
   const { data: dbStatistics, isLoading } = useStatistics('ecosystem');
@@ -122,28 +122,15 @@ const EcosistemaIntegral = () => {
 
         {/* Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          {statistics.map((stat, index) => {
-            const { count, ref } = useCountAnimation(
-              stat.numericValue || 0, 
-              2000 + stat.delay, 
-              stat.suffix || ''
-            );
-            
-            return (
-              <div 
-                key={index} 
-                ref={ref}
-                className="text-center bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-300"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-black mb-2">
-                  {count}
-                </div>
-                <div className="text-sm text-gray-600 font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            );
-          })}
+          {statistics.map((stat, index) => (
+            <StatisticCard
+              key={index}
+              label={stat.label}
+              numericValue={stat.numericValue || 0}
+              suffix={stat.suffix || ''}
+              delay={stat.delay}
+            />
+          ))}
         </div>
 
         {/* Ecosystem Services */}
