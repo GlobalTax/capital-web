@@ -41,11 +41,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     }
     
-    // Prevent concurrent admin checks but don't create deadlock
+    // Simple concurrency prevention without deadlock
     if (isCheckingAdmin) {
-      console.log('⚠️ Admin check already in progress, waiting...');
-      // Wait a bit and return current admin status instead of blocking
-      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log('⚠️ Admin check already in progress, returning current status');
       return isAdmin;
     }
     
@@ -53,27 +51,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('🚀 Starting admin status check for user:', targetUserId);
     
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Admin check timeout')), 5000)
-      );
-      
-      const adminCheckPromise = supabase
+      // Simple direct query without timeout - let Supabase handle it
+      const { data, error } = await supabase
         .from('admin_users')
         .select('is_active, role')
         .eq('user_id', targetUserId)
         .maybeSingle();
-
-      const { data, error } = await Promise.race([adminCheckPromise, timeoutPromise]) as any;
       
       console.log('📊 Admin check result:', { data, error });
 
       if (error) {
         console.log('❌ Admin check error:', error.message);
+        
+        // If it's a network error, try one more time after a short delay
+        if (error.message.includes('fetch') || error.message.includes('network')) {
+          console.log('🔄 Network error detected, retrying in 1 second...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const { data: retryData, error: retryError } = await supabase
+            .from('admin_users')
+            .select('is_active, role')
+            .eq('user_id', targetUserId)
+            .maybeSingle();
+            
+          if (!retryError && retryData) {
+            console.log('🎯 Retry successful:', retryData);
+            const adminStatus = !!(retryData && retryData.is_active === true);
+            setIsAdmin(adminStatus);
+            return adminStatus;
+          }
+        }
+        
         logger.warn('Error checking admin status', { 
           userId: targetUserId, 
           error: error.message 
         }, { context: 'auth', component: 'AuthContext' });
+        
         setIsAdmin(false);
         return false;
       }
