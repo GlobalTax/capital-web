@@ -17,7 +17,7 @@ interface Operation {
   description: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  valuation_amount: number;
+  valuation_amount?: number;
   valuation_currency: string;
   year: number;
   is_active: boolean;
@@ -128,14 +128,6 @@ const AdminOperations = () => {
       return;
     }
 
-    if (!editingOperation.valuation_amount || editingOperation.valuation_amount <= 0) {
-      toast({
-        title: 'Error de validación',
-        description: 'La valoración debe ser mayor a 0',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     setIsSaving(true);
     try {
@@ -144,8 +136,8 @@ const AdminOperations = () => {
         sector: editingOperation.sector.trim(),
         description: editingOperation.description.trim(),
         revenue_amount: editingOperation.revenue_amount || null,
-        ebitda_amount: editingOperation.ebitda_amount || null,
-        valuation_amount: editingOperation.valuation_amount,
+        valuation_amount: editingOperation.valuation_amount || null,
+        
         valuation_currency: editingOperation.valuation_currency || '€',
         year: editingOperation.year,
         is_active: editingOperation.is_active ?? true,
@@ -238,7 +230,7 @@ const AdminOperations = () => {
               company_name: '',
               sector: '',
               description: '',
-              valuation_amount: 0,
+              
               valuation_currency: '€',
               year: new Date().getFullYear(),
               is_active: true,
@@ -372,7 +364,7 @@ const AdminOperations = () => {
                         )}
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-4">
                         <div className="space-y-1">
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Facturación</p>
                           <p className="text-lg font-semibold text-green-600 dark:text-green-400">
@@ -383,12 +375,6 @@ const AdminOperations = () => {
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">EBITDA</p>
                           <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
                             {formatCurrency(operation.ebitda_amount)}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Valoración</p>
-                          <p className="text-lg font-semibold text-foreground">
-                            {formatCurrency(operation.valuation_amount)}
                           </p>
                         </div>
                         <div className="space-y-1">
@@ -571,21 +557,7 @@ const AdminOperations = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="valuation_amount">Valoración *</Label>
-                    <Input
-                      id="valuation_amount"
-                      type="number"
-                      min="1"
-                      value={editingOperation.valuation_amount || ''}
-                      onChange={(e) => setEditingOperation({
-                        ...editingOperation,
-                        valuation_amount: parseFloat(e.target.value) || 0
-                      })}
-                      placeholder="0"
-                    />
-                  </div>
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <Label htmlFor="valuation_currency">Moneda</Label>
                     <Select
