@@ -33,25 +33,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
     const targetUserId = userId || user?.id;
     
+    console.log('🔍 checkAdminStatus called', { targetUserId, isCheckingAdmin });
+    
     if (!targetUserId) {
+      console.log('❌ No target user ID, setting admin to false');
       setIsAdmin(false);
       return false;
     }
     
+    // Prevent concurrent admin checks but don't create deadlock
     if (isCheckingAdmin) {
+      console.log('⚠️ Admin check already in progress, waiting...');
+      // Wait a bit and return current admin status instead of blocking
+      await new Promise(resolve => setTimeout(resolve, 100));
       return isAdmin;
     }
     
     setIsCheckingAdmin(true);
+    console.log('🚀 Starting admin status check for user:', targetUserId);
     
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Admin check timeout')), 5000)
+      );
+      
+      const adminCheckPromise = supabase
         .from('admin_users')
         .select('is_active, role')
         .eq('user_id', targetUserId)
         .maybeSingle();
 
+      const { data, error } = await Promise.race([adminCheckPromise, timeoutPromise]) as any;
+      
+      console.log('📊 Admin check result:', { data, error });
+
       if (error) {
+        console.log('❌ Admin check error:', error.message);
         logger.warn('Error checking admin status', { 
           userId: targetUserId, 
           error: error.message 
@@ -61,9 +79,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       const adminStatus = !!(data && data.is_active === true);
+      console.log('✅ Admin status determined:', adminStatus);
       setIsAdmin(adminStatus);
       
       if (adminStatus) {
+        console.log('🎉 Admin access granted');
         logger.info('Admin access granted', {
           userId: targetUserId,
           role: data?.role
@@ -72,6 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       return adminStatus;
     } catch (error) {
+      console.log('💥 Admin check failed:', error);
       logger.error('Failed to check admin status', error as Error, { 
         context: 'auth', 
         component: 'AuthContext',
@@ -80,6 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(false);
       return false;
     } finally {
+      console.log('🏁 Admin check completed, setting isCheckingAdmin to false');
       setIsCheckingAdmin(false);
     }
   }, [user?.id, isCheckingAdmin, isAdmin]);
@@ -92,6 +114,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!mounted) return;
       
+      console.log('🔄 Auth state changed:', { event, hasUser: !!session?.user, userId: session?.user?.id });
+      
       logger.debug('Auth state changed', { 
         event, 
         hasUser: !!session?.user,
@@ -103,25 +127,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin status immediately without timeout to prevent race conditions
+          console.log('👤 User found, checking admin status...');
+          // Check admin status with circuit breaker logic
           try {
-            await checkAdminStatus(session.user.id);
+            const adminResult = await checkAdminStatus(session.user.id);
+            console.log('🔐 Admin check result:', adminResult);
           } catch (error) {
+            console.log('💥 Admin status check failed:', error);
             logger.warn('Admin status check failed', { 
               error: error.message 
             }, { context: 'auth', component: 'AuthContext' });
             setIsAdmin(false);
           }
         } else {
+          console.log('🚫 No user, setting admin to false');
           setIsAdmin(false);
         }
       } catch (error) {
+        console.log('💥 Error in auth state change handler:', error);
         logger.error('Error in auth state change handler', error as Error, { 
           context: 'auth', 
           component: 'AuthContext' 
         });
       } finally {
         if (mounted) {
+          console.log('✅ Setting isLoading to false');
           setIsLoading(false);
         }
       }
