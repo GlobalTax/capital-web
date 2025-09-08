@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, Download, Upload } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Building2, TrendingUp, BarChart3, Target } from 'lucide-react';
 
 interface Operation {
   id: string;
@@ -211,14 +211,20 @@ const AdminOperations = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Gestión de Operaciones</h1>
-        <div className="flex gap-2">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Gestión de Operaciones</h1>
+          <p className="text-muted-foreground mt-2">
+            Administra y supervisa todas las operaciones de M&A, inversiones y transacciones corporativas
+          </p>
+        </div>
+        <div className="flex gap-3">
           <Button
             onClick={extractFinancialData}
             disabled={isExtracting}
             variant="outline"
+            className="bg-card hover:bg-accent"
           >
             {isExtracting ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -227,127 +233,188 @@ const AdminOperations = () => {
             )}
             Extraer Datos Financieros
           </Button>
-          <Button onClick={() => setEditingOperation({
-            company_name: '',
-            sector: '',
-            description: '',
-            valuation_amount: 0,
-            valuation_currency: '€',
-            year: new Date().getFullYear(),
-            is_active: true,
-            is_featured: false,
-            display_locations: ['home', 'operaciones'],
-            deal_type: 'sale',
-            status: 'available'
-          } as Operation)}>
+          <Button 
+            onClick={() => setEditingOperation({
+              company_name: '',
+              sector: '',
+              description: '',
+              valuation_amount: 0,
+              valuation_currency: '€',
+              year: new Date().getFullYear(),
+              is_active: true,
+              is_featured: false,
+              display_locations: ['home', 'operaciones'],
+              deal_type: 'sale',
+              status: 'available'
+            } as Operation)}
+            className="bg-primary hover:bg-primary/90"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Operación
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{operations.length}</div>
-            <div className="text-sm text-muted-foreground">Total Operaciones</div>
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Operaciones</p>
+                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{operations.length}</p>
+              </div>
+              <div className="h-12 w-12 bg-blue-500 rounded-full flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-white" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {operations.filter(op => op.is_active).length}
+        
+        <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">Activas</p>
+                <p className="text-3xl font-bold text-green-900 dark:text-green-100">
+                  {operations.filter(op => op.is_active).length}
+                </p>
+              </div>
+              <div className="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">Activas</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {operations.filter(op => op.revenue_amount).length}
+        
+        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/50 dark:to-amber-900/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Con Facturación</p>
+                <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">
+                  {operations.filter(op => op.revenue_amount).length}
+                </p>
+              </div>
+              <div className="h-12 w-12 bg-amber-500 rounded-full flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">Con Facturación</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {operations.filter(op => op.ebitda_amount).length}
+        
+        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Con EBITDA</p>
+                <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+                  {operations.filter(op => op.ebitda_amount).length}
+                </p>
+              </div>
+              <div className="h-12 w-12 bg-purple-500 rounded-full flex items-center justify-center">
+                <Target className="h-6 w-6 text-white" />
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">Con EBITDA</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Operations Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Operaciones</CardTitle>
+      {/* Enhanced Operations List */}
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="border-b bg-card/50">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-foreground">Operaciones Registradas</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Gestiona el portafolio completo de transacciones y oportunidades de inversión
+              </p>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {operations.length} operaciones totales
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {operations.map((operation) => (
-              <div
-                key={operation.id}
-                className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4">
-                      <h3 className="font-semibold text-lg">{operation.company_name}</h3>
-                      <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {operation.sector}
-                      </span>
-                      {operation.is_featured && (
-                        <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                          Destacada
+        <CardContent className="p-0">
+          {operations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Building2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">No hay operaciones registradas</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Comienza añadiendo tu primera operación para construir el portafolio de transacciones.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {operations.map((operation, index) => (
+                <div
+                  key={operation.id}
+                  className="p-6 hover:bg-muted/30 transition-colors group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {operation.company_name}
+                        </h3>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                          {operation.sector}
                         </span>
-                      )}
-                      {!operation.is_active && (
-                        <span className="text-sm bg-red-100 text-red-800 px-2 py-1 rounded">
-                          Inactiva
-                        </span>
-                      )}
+                        {operation.is_featured && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                            ⭐ Destacada
+                          </span>
+                        )}
+                        {!operation.is_active && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                            Inactiva
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Facturación</p>
+                          <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                            {formatCurrency(operation.revenue_amount)}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">EBITDA</p>
+                          <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                            {formatCurrency(operation.ebitda_amount)}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Valoración</p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {formatCurrency(operation.valuation_amount)}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Año</p>
+                          <p className="text-lg font-semibold text-muted-foreground">
+                            {operation.year}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-4 mt-2 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Facturación:</span>
-                        <div className="font-medium text-green-600">
-                          {formatCurrency(operation.revenue_amount)}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">EBITDA:</span>
-                        <div className="font-medium text-blue-600">
-                          {formatCurrency(operation.ebitda_amount)}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Valoración:</span>
-                        <div className="font-medium">
-                          {formatCurrency(operation.valuation_amount)}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Año:</span>
-                        <div className="font-medium">{operation.year}</div>
-                      </div>
+                    
+                    <div className="flex gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingOperation(operation)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingOperation(operation)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
