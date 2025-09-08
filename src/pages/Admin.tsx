@@ -1,34 +1,38 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminRouter from '@/components/admin/AdminRouter';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import AdminSetup from '@/components/admin/AdminSetup';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, CheckCircle, AlertCircle, Lock } from 'lucide-react';
-const Admin = () => {
-  return (
-    <AdminWrapper>
-      <AdminContent />
-    </AdminWrapper>
-  );
-};
+import { Shield, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-const AdminContent = () => {
+const Admin = () => {
   const { user, isLoading, signIn, signUp, isAdmin } = useAuth();
-  const [mode, setMode] = useState<'login' | 'register' | 'setup'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Si ya está autenticado y es admin, mostrar el panel
-  if (!isLoading && user && isAdmin) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verificando acceso administrativo...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated and admin - show admin panel
+  if (user && isAdmin) {
     return (
       <AdminLayout onLogout={() => window.location.reload()}>
         <AdminRouter />
@@ -36,10 +40,10 @@ const AdminContent = () => {
     );
   }
 
-  // Si está autenticado pero no es admin, mostrar setup
-  if (!isLoading && user && !isAdmin) {
+  // Authenticated but not admin - show setup
+  if (user && !isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <AdminSetup />
         </div>
@@ -67,28 +71,16 @@ const AdminContent = () => {
     setAuthLoading(false);
   };
 
-  // Pantalla de carga
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando panel de administración...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Pantalla de autenticación
+  // Not authenticated - show login form
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
             <Shield className="h-6 w-6" />
             Admin Panel - Capittal
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {mode === 'login' ? 'Inicia sesión para acceder' : 'Regístrate como administrador'}
           </p>
         </CardHeader>
@@ -132,7 +124,14 @@ const AdminContent = () => {
               className="w-full"
               disabled={authLoading}
             >
-              {authLoading ? "Procesando..." : mode === 'login' ? "Iniciar Sesión" : "Registrarse"}
+              {authLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                mode === 'login' ? "Iniciar Sesión" : "Registrarse"
+              )}
             </Button>
           </form>
 
@@ -148,7 +147,7 @@ const AdminContent = () => {
               <Button
                 variant="link"
                 onClick={() => window.location.href = '/admin/recovery'}
-                className="text-sm text-orange-600"
+                className="text-sm text-destructive"
               >
                 ¿Problemas de acceso? Recuperar cuenta de admin
               </Button>
