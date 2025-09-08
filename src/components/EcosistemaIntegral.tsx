@@ -4,91 +4,34 @@ import { useCountAnimation } from '@/hooks/useCountAnimation';
 import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
 
 const EcosistemaIntegral = () => {
-  const { data: dbStatistics, isLoading } = useStatistics('home');
+  const { data: dbStatistics, isLoading } = useStatistics('ecosystem');
 
-  // Always call hooks at the top level
-  const professionalsCount = useCountAnimation(60, 2000, '+');
-  const fallbackOperationsCount = useCountAnimation(100, 2000, '+');
-  const fallbackYearsCount = useCountAnimation(25, 2000, '+');
-  const fallbackSuccessCount = useCountAnimation(98.7, 2000, '%');
-
-  // Create individual hooks for database statistics (up to 4 to match fallback count)
-  const dbStat1 = useCountAnimation(
-    dbStatistics?.[0] ? extractNumericValue(dbStatistics[0].metric_value) : 0, 
-    2000, 
-    dbStatistics?.[0] ? extractSuffix(dbStatistics[0].metric_value) : ''
-  );
-  const dbStat2 = useCountAnimation(
-    dbStatistics?.[1] ? extractNumericValue(dbStatistics[1].metric_value) : 0, 
-    2000, 
-    dbStatistics?.[1] ? extractSuffix(dbStatistics[1].metric_value) : ''
-  );
-  const dbStat3 = useCountAnimation(
-    dbStatistics?.[2] ? extractNumericValue(dbStatistics[2].metric_value) : 0, 
-    2000, 
-    dbStatistics?.[2] ? extractSuffix(dbStatistics[2].metric_value) : ''
-  );
-
-  // Create statistics array using memoization
+  // Statistics data with animated counters
   const statistics = useMemo(() => {
-    if (!dbStatistics || dbStatistics.length === 0) {
-    return [
-        {
-          value: professionalsCount.count,
-          label: "Profesionales Especializados",
-          ref: professionalsCount.ref
-        },
-        {
-          value: fallbackOperationsCount.count,
-          label: "Operaciones Completadas", 
-          ref: fallbackOperationsCount.ref
-        },
-        {
-          value: fallbackYearsCount.count,
-          label: "Años de Experiencia",
-          ref: fallbackYearsCount.ref
-        },
-        {
-          value: fallbackSuccessCount.count,
-          label: "Tasa de Éxito",
-          ref: fallbackSuccessCount.ref
-        }
-      ];
+    if (dbStatistics && dbStatistics.length > 0) {
+      return dbStatistics.slice(0, 4).map((stat, index) => {
+        const numericValue = extractNumericValue(stat.metric_value);
+        const suffix = extractSuffix(stat.metric_value);
+        
+        return {
+          label: stat.metric_label,
+          value: stat.metric_value,
+          numericValue,
+          suffix,
+          animated: true,
+          delay: index * 200
+        };
+      });
     }
 
-    // Use database statistics with pre-created hooks
-    const dbStats = [];
-    const animatedHooks = [dbStat1, dbStat2, dbStat3];
-    
-    for (let i = 0; i < Math.min(dbStatistics.length, 3); i++) {
-      if (dbStatistics[i]) {
-        dbStats.push({
-          value: animatedHooks[i].count,
-          label: dbStatistics[i].metric_label,
-          ref: animatedHooks[i].ref
-        });
-      }
-    }
-
-    // Add professionals count first, then database stats
+    // Fallback statistics with proper numeric values for animation
     return [
-      {
-        value: professionalsCount.count,
-        label: "Profesionales Especializados",
-        ref: professionalsCount.ref
-      },
-      ...dbStats
+      { label: 'Profesionales Especializados', value: '60+', numericValue: 60, suffix: '+', animated: true, delay: 0 },
+      { label: 'Operaciones Completadas', value: '150+', numericValue: 150, suffix: '+', animated: true, delay: 200 },
+      { label: 'Años de Experiencia', value: '25+', numericValue: 25, suffix: '+', animated: true, delay: 400 },
+      { label: 'Tasa de Éxito', value: '98.7%', numericValue: 98.7, suffix: '%', animated: true, delay: 600 }
     ];
-  }, [
-    dbStatistics, 
-    professionalsCount.count, 
-    fallbackOperationsCount.count, 
-    fallbackYearsCount.count, 
-    fallbackSuccessCount.count,
-    dbStat1.count,
-    dbStat2.count,
-    dbStat3.count
-  ]);
+  }, [dbStatistics]);
 
   const ecosystemServices = [
     {
@@ -179,20 +122,28 @@ const EcosistemaIntegral = () => {
 
         {/* Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          {statistics.map((stat, index) => (
-            <div 
-              key={index} 
-              ref={stat.ref}
-              className="text-center bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-300"
-            >
-              <div className="text-3xl md:text-4xl font-bold text-black mb-2">
-                {stat.value}
+          {statistics.map((stat, index) => {
+            const { count, ref } = useCountAnimation(
+              stat.numericValue || 0, 
+              2000 + stat.delay, 
+              stat.suffix || ''
+            );
+            
+            return (
+              <div 
+                key={index} 
+                ref={ref}
+                className="text-center bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-300"
+              >
+                <div className="text-3xl md:text-4xl font-bold text-black mb-2">
+                  {count}
+                </div>
+                <div className="text-sm text-gray-600 font-medium">
+                  {stat.label}
+                </div>
               </div>
-              <div className="text-sm text-gray-600 font-medium">
-                {stat.label}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Ecosystem Services */}

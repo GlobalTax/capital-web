@@ -7,6 +7,13 @@ interface UseLazyLoadOptions {
   root?: Element | null;
 }
 
+interface UseLazyLoadOptions {
+  threshold?: number;
+  rootMargin?: string;
+  root?: Element | null;
+  triggerOnce?: boolean;
+}
+
 export const useLazyLoad = <T extends HTMLElement>(
   options: UseLazyLoadOptions = {}
 ) => {
@@ -14,15 +21,19 @@ export const useLazyLoad = <T extends HTMLElement>(
   const [hasLoaded, setHasLoaded] = useState(false);
   const elementRef = useRef<T>(null);
 
-  const { threshold = 0.1, rootMargin = '50px', root = null } = options;
+  const { threshold = 0.3, rootMargin = '50px', root = null, triggerOnce = true } = options;
 
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
     const [entry] = entries;
-    if (entry.isIntersecting && !hasLoaded) {
+    if (entry.isIntersecting) {
       setIsVisible(true);
-      setHasLoaded(true);
+      if (triggerOnce && !hasLoaded) {
+        setHasLoaded(true);
+      }
+    } else if (!triggerOnce) {
+      setIsVisible(false);
     }
-  }, [hasLoaded]);
+  }, [hasLoaded, triggerOnce]);
 
   useEffect(() => {
     const element = elementRef.current;
