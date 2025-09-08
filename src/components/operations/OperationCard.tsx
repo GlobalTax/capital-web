@@ -12,10 +12,14 @@ interface Operation {
   revenue_amount?: number;
   year: number;
   description: string;
+  short_description?: string;
   is_featured: boolean;
   is_active: boolean;
   logo_url?: string;
   company_size?: string;
+  company_size_employees?: string;
+  highlights?: string[];
+  deal_type?: string;
 }
 
 interface OperationCardProps {
@@ -63,8 +67,22 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           
           {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-3">
-            {operation.description}
+            {operation.short_description || operation.description}
           </p>
+          
+          {/* Highlights */}
+          {operation.highlights && operation.highlights.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {operation.highlights.slice(0, 2).map((highlight, index) => (
+                <span 
+                  key={index}
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                >
+                  {highlight}
+                </span>
+              ))}
+            </div>
+          )}
           
           {/* Details */}
           <div className="space-y-3 pt-4 border-t">
@@ -99,14 +117,25 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             
             {/* Year and Company Size */}
             <div className="flex items-center justify-between text-sm">
-              <div>
-                <span className="text-muted-foreground">Año: </span>
-                <span className="font-medium">{operation.year}</span>
-              </div>
-              {operation.company_size && (
+              <div className="flex items-center space-x-4">
                 <div>
-                  <span className="text-muted-foreground">Tamaño: </span>
-                  <span className="font-medium">{operation.company_size}</span>
+                  <span className="text-muted-foreground">Año: </span>
+                  <span className="font-medium">{operation.year}</span>
+                </div>
+                {operation.deal_type && (
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    operation.deal_type === 'sale' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-orange-100 text-orange-800'
+                  }`}>
+                    {operation.deal_type === 'sale' ? 'Venta' : 'Adquisición'}
+                  </div>
+                )}
+              </div>
+              {(operation.company_size_employees || operation.company_size) && (
+                <div>
+                  <span className="text-muted-foreground">Empleados: </span>
+                  <span className="font-medium">{operation.company_size_employees || operation.company_size}</span>
                 </div>
               )}
             </div>

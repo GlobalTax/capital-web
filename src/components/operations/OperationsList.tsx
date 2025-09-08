@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
+import OperationCard from './OperationCard';
 
 interface Operation {
   id: string;
@@ -17,8 +18,14 @@ interface Operation {
   revenue_amount?: number;
   year: number;
   description: string;
+  short_description?: string;
   is_featured: boolean;
   is_active: boolean;
+  logo_url?: string;
+  company_size?: string;
+  company_size_employees?: string;
+  highlights?: string[];
+  deal_type?: string;
   display_locations: string[];
 }
 
@@ -175,51 +182,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
       {operations.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {operations.map((operation) => (
-            <Card key={operation.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <h3 className="font-semibold text-lg line-clamp-2">
-                      {operation.company_name}
-                    </h3>
-                    {operation.is_featured && (
-                      <Badge variant="secondary" className="text-xs">
-                        Destacado
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <Badge variant="outline" className="text-xs">
-                    {operation.sector}
-                  </Badge>
-                  
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {operation.description}
-                  </p>
-                  
-                  <div className="space-y-2 pt-4 border-t">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Valoración:</span>
-                      <span className="font-bold text-green-600">
-                        {operation.revenue_amount ? 
-                          formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR') :
-                          formatCurrency(normalizeValuationAmount(operation.valuation_amount), operation.valuation_currency || 'EUR')
-                        }
-                      </span>
-                    </div>
-                    {!operation.revenue_amount && (
-                      <p className="text-xs text-muted-foreground">
-                        Valoración de la operación
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Año:</span>
-                      <span className="font-medium">{operation.year}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <OperationCard 
+              key={operation.id} 
+              operation={operation}
+            />
           ))}
         </div>
       ) : (

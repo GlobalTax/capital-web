@@ -16,10 +16,14 @@ interface Operation {
   revenue_amount?: number;
   year: number;
   description: string;
+  short_description?: string;
   is_featured: boolean;
   is_active: boolean;
   logo_url?: string;
   company_size?: string;
+  company_size_employees?: string;
+  highlights?: string[];
+  deal_type?: string;
   display_locations: string[];
 }
 
@@ -152,9 +156,11 @@ const CurrentOpportunities: React.FC<CurrentOpportunitiesProps> = ({
                         Mostrando {operations.length} de {totalCount} oportunidades totales
                       </p>
                     </div>
-                    <Button>
-                      Ver Todas
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button asChild>
+                      <a href="/oportunidades">
+                        Ver Todas
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </a>
                     </Button>
                   </div>
                 </CardContent>
