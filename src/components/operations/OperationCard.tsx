@@ -10,6 +10,7 @@ interface Operation {
   valuation_amount: number;
   valuation_currency?: string;
   revenue_amount?: number;
+  ebitda_amount?: number;
   year: number;
   description: string;
   short_description?: string;
@@ -88,31 +89,24 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           <div className="space-y-3 pt-4 border-t">
             {/* Financial Information */}
             <div className="space-y-2">
-              {operation.revenue_amount ? (
-                <>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Facturación:</span>
-                    <span className="font-bold text-green-600">
-                      {formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')}
-                    </span>
-                  </div>
-                  {operation.valuation_amount && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Valoración:</span>
-                      <span className="font-medium text-blue-600">
-                        {formatCurrency(normalizeValuationAmount(operation.valuation_amount), operation.valuation_currency || 'EUR')}
-                      </span>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Valoración:</span>
-                  <span className="font-bold text-green-600">
-                    {formatCurrency(normalizeValuationAmount(operation.valuation_amount), operation.valuation_currency || 'EUR')}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Facturación:</span>
+                <span className="font-bold text-green-600">
+                  {operation.revenue_amount 
+                    ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
+                    : 'Consultar'
+                  }
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">EBITDA:</span>
+                <span className="font-medium text-blue-600">
+                  {operation.ebitda_amount 
+                    ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
+                    : 'Consultar'
+                  }
+                </span>
+              </div>
             </div>
             
             {/* Year and Company Size */}

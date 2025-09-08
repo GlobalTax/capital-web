@@ -16,6 +16,7 @@ interface Operation {
   valuation_amount: number;
   valuation_currency: string;
   revenue_amount?: number;
+  ebitda_amount?: number;
   year: number;
   description: string;
   short_description?: string;
