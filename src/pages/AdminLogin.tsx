@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, AlertCircle, RefreshCw, Bug } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
-import IframeSandboxGuard from '@/components/admin/IframeSandboxGuard';
+
 import { AdminDebugPanel } from '@/components/admin/AdminDebugPanel';
 
 const AdminLogin = () => {
@@ -145,147 +145,145 @@ const AdminLogin = () => {
   }
 
   return (
-    <IframeSandboxGuard>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <Shield className="h-6 w-6" />
-              Panel de Administración
-            </CardTitle>
-            <p className="text-gray-600">
-              {mode === 'login' ? 'Inicia sesión para acceder' : 'Panel de Debug'}
-            </p>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+            <Shield className="h-6 w-6" />
+            Panel de Administración
+          </CardTitle>
+          <p className="text-gray-600">
+            {mode === 'login' ? 'Inicia sesión para acceder' : 'Panel de Debug'}
+          </p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-            {/* Debug Mode */}
-            {mode === 'debug' && (
-              <AdminDebugPanel />
-            )}
+          {/* Debug Mode */}
+          {mode === 'debug' && (
+            <AdminDebugPanel />
+          )}
 
-            {/* Opción de recuperación para admins existentes */}
-            {!recoveryAttempted && mode === 'login' && (
-              <Alert>
-                <RefreshCw className="h-4 w-4" />
-                <AlertDescription>
-                  ¿Problemas para acceder después de un reinicio?
-                  <Button 
-                    variant="link" 
-                    onClick={handleSessionRecovery}
-                    disabled={authLoading}
-                    className="p-0 h-auto text-sm underline ml-1"
-                  >
-                    Intentar recuperar acceso
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Force Admin Reload Button */}
-            {mode === 'login' && user && !isAdmin && (
-              <Alert>
-                <Bug className="h-4 w-4" />
-                <AlertDescription>
-                  ¿Usuario autenticado pero sin acceso admin?
-                  <Button 
-                    variant="link" 
-                    onClick={forceAdminReload}
-                    disabled={authLoading}
-                    className="p-0 h-auto text-sm underline ml-1"
-                  >
-                    Forzar recarga admin
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {mode === 'login' && (
-              <form onSubmit={handleAuth} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="admin@capittal.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={authLoading}
-                >
-                  {authLoading ? "Procesando..." : "Iniciar Sesión"}
-                </Button>
-              </form>
-            )}
-
-            <div className="text-center space-y-2">
-              {mode === 'login' && (
-                <Button
-                  variant="link"
-                  onClick={() => setMode('debug')}
-                  className="text-sm text-blue-600"
-                >
-                  Panel de Debug
-                </Button>
-              )}
-              
-              {mode === 'debug' && (
-                <Button
-                  variant="link"
-                  onClick={() => setMode('login')}
-                  className="text-sm"
-                >
-                  Volver al login
-                </Button>
-              )}
-              
-              <div>
-                <Button
-                  variant="link"
-                  onClick={() => navigate('/')}
-                  className="text-sm text-gray-500"
-                >
-                  Volver al inicio
-                </Button>
-              </div>
-            </div>
-
+          {/* Opción de recuperación para admins existentes */}
+          {!recoveryAttempted && mode === 'login' && (
             <Alert>
-              <CheckCircle className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" />
               <AlertDescription>
-                Solo usuarios autorizados con cuentas existentes pueden acceder al panel de administración.
+                ¿Problemas para acceder después de un reinicio?
+                <Button 
+                  variant="link" 
+                  onClick={handleSessionRecovery}
+                  disabled={authLoading}
+                  className="p-0 h-auto text-sm underline ml-1"
+                >
+                  Intentar recuperar acceso
+                </Button>
               </AlertDescription>
             </Alert>
-          </CardContent>
-        </Card>
-      </div>
-    </IframeSandboxGuard>
+          )}
+
+          {/* Force Admin Reload Button */}
+          {mode === 'login' && user && !isAdmin && (
+            <Alert>
+              <Bug className="h-4 w-4" />
+              <AlertDescription>
+                ¿Usuario autenticado pero sin acceso admin?
+                <Button 
+                  variant="link" 
+                  onClick={forceAdminReload}
+                  disabled={authLoading}
+                  className="p-0 h-auto text-sm underline ml-1"
+                >
+                  Forzar recarga admin
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {mode === 'login' && (
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@capittal.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={authLoading}
+              >
+                {authLoading ? "Procesando..." : "Iniciar Sesión"}
+              </Button>
+            </form>
+          )}
+
+          <div className="text-center space-y-2">
+            {mode === 'login' && (
+              <Button
+                variant="link"
+                onClick={() => setMode('debug')}
+                className="text-sm text-blue-600"
+              >
+                Panel de Debug
+              </Button>
+            )}
+            
+            {mode === 'debug' && (
+              <Button
+                variant="link"
+                onClick={() => setMode('login')}
+                className="text-sm"
+              >
+                Volver al login
+              </Button>
+            )}
+            
+            <div>
+              <Button
+                variant="link"
+                onClick={() => navigate('/')}
+                className="text-sm text-gray-500"
+              >
+                Volver al inicio
+              </Button>
+            </div>
+          </div>
+
+          <Alert>
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>
+              Solo usuarios autorizados con cuentas existentes pueden acceder al panel de administración.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
