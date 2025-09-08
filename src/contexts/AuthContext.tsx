@@ -33,83 +33,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
     const targetUserId = userId || user?.id;
     
-    console.log('🔐🔍 ADMIN CHECK START:', {
-      targetUserId,
-      hasUser: !!user,
-      currentIsAdmin: isAdmin,
-      isCheckingAdmin,
-      timestamp: new Date().toISOString()
-    });
-    
     if (!targetUserId) {
-      console.log('🔐❌ Admin check: No user ID provided');
       setIsAdmin(false);
       return false;
     }
     
     if (isCheckingAdmin) {
-      console.log('🔐⏳ Admin check: Already checking, skipping to prevent loops');
       return isAdmin;
     }
     
     setIsCheckingAdmin(true);
     
     try {
-      console.log('🔐📊 Executing admin query for user:', targetUserId);
-      
-      // Enhanced query with debugging
-      const { data, error, status, statusText } = await supabase
+      const { data, error } = await supabase
         .from('admin_users')
-        .select('id, user_id, email, role, is_active, needs_credentials, created_at, updated_at')
+        .select('is_active, role')
         .eq('user_id', targetUserId)
         .maybeSingle();
 
-      console.log('🔐📈 Query response:', {
-        data,
-        error,
-        status,
-        statusText,
-        hasData: !!data,
-        timestamp: new Date().toISOString()
-      });
-
       if (error) {
-        console.error('🔐💥 Admin check error:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
         logger.warn('Error checking admin status', { 
           userId: targetUserId, 
-          error: error.message,
-          errorCode: error.code 
+          error: error.message 
         }, { context: 'auth', component: 'AuthContext' });
         setIsAdmin(false);
         return false;
       }
 
-      // Detailed status determination
       const adminStatus = !!(data && data.is_active === true);
-      
-      console.log('🔐✅ Admin status determination:', {
-        hasRecord: !!data,
-        isActive: data?.is_active,
-        needsCredentials: data?.needs_credentials,
-        role: data?.role,
-        finalStatus: adminStatus,
-        userEmail: data?.email
-      });
-      
       setIsAdmin(adminStatus);
       
-      // Log successful admin verification
       if (adminStatus) {
-        console.log('🔐🎉 ADMIN ACCESS GRANTED:', {
-          userId: targetUserId,
-          email: data?.email,
-          role: data?.role
-        });
         logger.info('Admin access granted', {
           userId: targetUserId,
           role: data?.role
@@ -118,11 +72,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       return adminStatus;
     } catch (error) {
-      console.error('🔐💀 Admin check failed with exception:', {
-        error,
-        message: error?.message,
-        stack: error?.stack
-      });
       logger.error('Failed to check admin status', error as Error, { 
         context: 'auth', 
         component: 'AuthContext',
@@ -132,11 +81,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     } finally {
       setIsCheckingAdmin(false);
-      console.log('🔐🏁 ADMIN CHECK END:', {
-        targetUserId,
-        finalIsAdmin: isAdmin,
-        timestamp: new Date().toISOString()
-      });
     }
   }, [user?.id, isCheckingAdmin, isAdmin]);
 
@@ -148,14 +92,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!mounted) return;
       
-      console.log('🔐 Auth state change:', { event, hasUser: !!session?.user, userId: session?.user?.id });
-      
-      // Enhanced logging for debugging JWT issues
       logger.debug('Auth state changed', { 
         event, 
         hasUser: !!session?.user,
-        userId: session?.user?.id,
-        hasSession: !!session 
+        userId: session?.user?.id
       }, { context: 'auth', component: 'AuthContext' });
       
       try {
@@ -163,24 +103,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('🔐 User authenticated, checking admin status...');
-          // Defer admin check to prevent blocking auth flow
-          setTimeout(async () => {
-            try {
-              await checkAdminStatus(session.user.id);
-            } catch (error) {
-              console.error('🔐 Admin check failed:', error);
-              logger.warn('Admin status check failed', { error: error.message }, { context: 'auth', component: 'AuthContext' });
-              setIsAdmin(false);
-            }
-          }, 100);
+          // Check admin status immediately without timeout to prevent race conditions
+          try {
+            await checkAdminStatus(session.user.id);
+          } catch (error) {
+            logger.warn('Admin status check failed', { 
+              error: error.message 
+            }, { context: 'auth', component: 'AuthContext' });
+            setIsAdmin(false);
+          }
         } else {
-          console.log('🔐 No user, setting admin to false');
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error('🔐 Error in auth handler:', error);
-        logger.error('Error in auth state change handler', error as Error, { context: 'auth', component: 'AuthContext' });
+        logger.error('Error in auth state change handler', error as Error, { 
+          context: 'auth', 
+          component: 'AuthContext' 
+        });
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -301,15 +240,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Force admin reload for debugging
   const forceAdminReload = useCallback(async () => {
-    console.log('🔐🔄 FORCE ADMIN RELOAD INITIATED');
     setIsAdmin(false);
     setIsCheckingAdmin(false);
     
     if (user?.id) {
-      console.log('🔐🔄 Force checking admin status for:', user.id);
       await checkAdminStatus(user.id);
-    } else {
-      console.log('🔐🔄 No user to check admin status for');
     }
   }, [user?.id, checkAdminStatus]);
 

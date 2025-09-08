@@ -50,7 +50,7 @@ export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
 
   const { user, session, isLoading, isAdmin } = authContext;
 
-  // Loading state mejorado
+  // Loading state - verificando autenticación
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -67,24 +67,14 @@ export const AdminWrapper: React.FC<AdminWrapperProps> = ({ children }) => {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Si no es admin, mostrar acceso denegado
-  if (!isAdmin) {
+  // Loading state - verificando permisos de admin
+  if (user && !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Acceso restringido. Solo administradores pueden acceder a esta área.
-            <div className="mt-2">
-              <button 
-                onClick={() => window.location.href = '/'}
-                className="text-xs underline"
-              >
-                Ir al inicio
-              </button>
-            </div>
-          </AlertDescription>
-        </Alert>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verificando permisos de administrador...</p>
+        </div>
       </div>
     );
   }
