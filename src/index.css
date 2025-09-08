@@ -26,14 +26,14 @@
     --legal-accent: 210 15% 35%;
     --legal-accent-foreground: 0 0% 100%;
 
-    /* Legal gray scale - more sophisticated */
-    --secondary: 210 10% 97%;
+    /* Pure white backgrounds */
+    --secondary: 0 0% 100%;
     --secondary-foreground: 210 15% 40%;
 
-    --muted: 210 8% 95%;
+    --muted: 0 0% 100%;
     --muted-foreground: 210 12% 45%;
 
-    --accent: 210 10% 97%;
+    --accent: 0 0% 100%;
     --accent-foreground: 210 20% 25%;
 
     /* Status colors */
@@ -57,10 +57,10 @@
     --radius-lg: 12px;
     --radius-xl: 16px;
 
-    /* Gradients */
+    /* Gradients - Pure white */
     --gradient-primary: linear-gradient(135deg, hsl(215 27% 23%) 0%, hsl(215 27% 18%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(210 16% 98%) 0%, hsl(210 15% 96%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(215 27% 23% / 0.1) 0%, hsl(215 27% 18% / 0.05) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 100%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 100%) 100%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(215 27% 23% / 0.05);
@@ -87,10 +87,10 @@
     --sidebar-border: 214 31% 91%;
     --sidebar-ring: 215 27% 23%;
 
-    /* Custom admin panel colors */
+    /* Custom admin panel colors - Pure white */
     --admin-header-bg: 0 0% 100%;
-    --admin-content-bg: 210 40% 98%;
-    --admin-nav-hover: 210 40% 96%;
+    --admin-content-bg: 0 0% 100%;
+    --admin-nav-hover: 0 0% 100%;
     --admin-border: 214 31% 91%;
     --admin-text-primary: 215 25% 27%;
     --admin-text-secondary: 215 16% 47%;

@@ -17,7 +17,7 @@ const Oportunidades = () => {
     <HomeLayout>
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20">
+        <section className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
@@ -56,7 +56,7 @@ const Oportunidades = () => {
         </section>
 
         {/* Contact Section */}
-        <section className="py-16 bg-muted/30">
+        <section className="py-16 bg-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold text-foreground mb-4">
               ¿No encuentras lo que buscas?
