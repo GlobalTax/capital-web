@@ -19,63 +19,84 @@ const MarketInsights = () => {
   }, []);
   const fetchInsights = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('key_statistics').select('*').eq('is_active', true).order('display_order').limit(3);
+      console.log('📈 Fetching market insights...');
+      
+      const { data, error } = await supabase
+        .from('key_statistics')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order')
+        .limit(3);
+
+      console.log('📊 Market insights result:', { data, error });
+
       if (error) {
-        console.error('Error fetching statistics:', error);
-        // Use fallback data if database fetch fails
-        setInsights([{
-          id: '1',
+        console.error('❌ Error fetching market insights:', error);
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        console.log('✅ Market insights loaded from DB:', data.length);
+        setInsights(data);
+      } else {
+        console.log('⚠️ No market insights in DB, using fallback data');
+        // Fallback data if no database results
+        setInsights([
+          {
+            id: 'fallback-1',
+            metric_key: 'volumen_transaccional',
+            metric_value: '€902M',
+            metric_label: 'Volumen Transaccional Q4',
+            display_order: 1,
+            is_active: true
+          },
+          {
+            id: 'fallback-2',
+            metric_key: 'transacciones_activas',
+            metric_value: '47',
+            metric_label: 'Transacciones Activas',
+            display_order: 2,
+            is_active: true
+          },
+          {
+            id: 'fallback-3',
+            metric_key: 'empresas_valoradas',
+            metric_value: '156',
+            metric_label: 'Empresas Valoradas',
+            display_order: 3,
+            is_active: true
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('💥 Market insights fetch failed, using fallback:', error);
+      // Use fallback data on error
+      setInsights([
+        {
+          id: 'fallback-1',
           metric_key: 'volumen_transaccional',
           metric_value: '€902M',
           metric_label: 'Volumen Transaccional Q4',
           display_order: 1,
           is_active: true
-        }, {
-          id: '2',
+        },
+        {
+          id: 'fallback-2',
           metric_key: 'transacciones_activas',
           metric_value: '47',
           metric_label: 'Transacciones Activas',
           display_order: 2,
           is_active: true
-        }, {
-          id: '3',
+        },
+        {
+          id: 'fallback-3',
           metric_key: 'empresas_valoradas',
           metric_value: '156',
           metric_label: 'Empresas Valoradas',
           display_order: 3,
           is_active: true
-        }]);
-      } else {
-        setInsights(data || []);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      // Use fallback data
-      setInsights([{
-        id: '1',
-        metric_key: 'volumen_transaccional',
-        metric_value: '€902M',
-        metric_label: 'Volumen Transaccional Q4',
-        display_order: 1,
-        is_active: true
-      }, {
-        id: '2',
-        metric_key: 'transacciones_activas',
-        metric_value: '47',
-        metric_label: 'Transacciones Activas',
-        display_order: 2,
-        is_active: true
-      }, {
-        id: '3',
-        metric_key: 'empresas_valoradas',
-        metric_value: '156',
-        metric_label: 'Empresas Valoradas',
-        display_order: 3,
-        is_active: true
-      }]);
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }

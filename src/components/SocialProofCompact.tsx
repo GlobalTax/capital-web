@@ -28,26 +28,47 @@ const SocialProofCompact = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch logos (limit to 6)
-        const { data: logosData } = await supabase
-          .from('carousel_logos')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order', { ascending: true })
-          .limit(6);
+        console.log('🏢 Fetching social proof data (logos and testimonials)...');
+        
+        // Use Promise.allSettled for better error handling
+        const [logosResult, testimonialsResult] = await Promise.allSettled([
+          supabase
+            .from('carousel_logos')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(6),
+          supabase
+            .from('carousel_testimonials')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(1)
+        ]);
 
-        // Fetch featured testimonial (first one)
-        const { data: testimonialsData } = await supabase
-          .from('carousel_testimonials')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order', { ascending: true })
-          .limit(1);
+        console.log('📊 Social proof results:', { logosResult, testimonialsResult });
 
-        setLogos(logosData || []);
-        setTestimonial(testimonialsData?.[0] || null);
+        // Handle logos result
+        if (logosResult.status === 'fulfilled' && !logosResult.value.error) {
+          console.log('✅ Logos loaded:', logosResult.value.data?.length || 0);
+          setLogos(logosResult.value.data || []);
+        } else {
+          console.error('❌ Error fetching logos:', logosResult.status === 'fulfilled' ? logosResult.value.error : logosResult.reason);
+          setLogos([]);
+        }
+
+        // Handle testimonials result  
+        if (testimonialsResult.status === 'fulfilled' && !testimonialsResult.value.error) {
+          console.log('✅ Testimonial loaded:', testimonialsResult.value.data?.[0] ? 'yes' : 'no');
+          setTestimonial(testimonialsResult.value.data?.[0] || null);
+        } else {
+          console.error('❌ Error fetching testimonials:', testimonialsResult.status === 'fulfilled' ? testimonialsResult.value.error : testimonialsResult.reason);
+          setTestimonial(null);
+        }
       } catch (error) {
-        console.error('Error fetching social proof data:', error);
+        console.error('💥 Social proof fetch completely failed:', error);
+        setLogos([]);
+        setTestimonial(null);
       } finally {
         setIsLoading(false);
       }

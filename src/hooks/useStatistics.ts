@@ -15,27 +15,55 @@ export const useStatistics = (location?: string) => {
   return useQuery({
     queryKey: ['statistics', location],
     queryFn: async () => {
-      let query = supabase
-        .from('key_statistics')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
+      console.log('🔍 Fetching statistics for location:', location);
+      
+      try {
+        let query = supabase
+          .from('key_statistics')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
 
-      // Filter by location if provided
-      if (location) {
-        query = query.contains('display_locations', [location]);
+        // Filter by location if provided - simplified approach
+        if (location) {
+          console.log('📍 Filtering by location:', location);
+          // Use a more robust filtering approach
+          query = query.or(`display_locations.cs.{${location}},display_locations.is.null`);
+        }
+
+        const { data, error } = await query;
+        
+        console.log('📊 Statistics query result:', { data, error, location });
+
+        if (error) {
+          console.error('❌ Error fetching statistics:', error);
+          // Don't throw error immediately, try fallback
+          console.log('🔄 Trying fallback query without location filter...');
+          
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('key_statistics')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order');
+            
+          if (fallbackError) {
+            console.error('❌ Fallback query also failed:', fallbackError);
+            throw fallbackError;
+          }
+          
+          console.log('✅ Fallback query successful:', fallbackData);
+          return (fallbackData || []) as Statistic[];
+        }
+
+        return (data || []) as Statistic[];
+      } catch (err) {
+        console.error('💥 Statistics fetch completely failed:', err);
+        throw err;
       }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching statistics:', error);
-        throw error;
-      }
-
-      return data as Statistic[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

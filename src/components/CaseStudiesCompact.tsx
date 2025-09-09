@@ -28,16 +28,43 @@ const CaseStudiesCompact = () => {
   useEffect(() => {
     const fetchCases = async () => {
       try {
-        const { data } = await supabase
+        console.log('🎯 Fetching featured case studies...');
+        
+        const { data, error } = await supabase
           .from('case_studies')
           .select('*')
+          .eq('is_active', true)
           .eq('is_featured', true)
           .order('year', { ascending: false })
           .limit(3);
 
-        setCases(data || []);
+        console.log('📊 Case studies result:', { data, error });
+
+        if (error) {
+          console.error('❌ Error fetching case studies:', error);
+          
+          // Try fallback without featured filter
+          console.log('🔄 Trying fallback query for any active cases...');
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('case_studies')
+            .select('*')
+            .eq('is_active', true)
+            .order('year', { ascending: false })
+            .limit(3);
+            
+          if (fallbackError) {
+            console.error('❌ Fallback query failed:', fallbackError);
+          } else {
+            console.log('✅ Fallback successful:', fallbackData);
+            setCases(fallbackData || []);
+          }
+        } else {
+          console.log('✅ Featured cases loaded:', data?.length || 0);
+          setCases(data || []);
+        }
       } catch (error) {
-        console.error('Error fetching case studies:', error);
+        console.error('💥 Case studies fetch completely failed:', error);
+        setCases([]);
       } finally {
         setIsLoading(false);
       }
