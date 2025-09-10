@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
-import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
+import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
 
 interface ToolRatingProps {
   companyData: any;
@@ -24,7 +24,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
 
   const { toast } = useToast();
   const { createToolRating } = useHubSpotIntegration();
-  const { saveToolRating } = useSupabaseValuation();
+  const { saveToolRating } = useOptimizedSupabaseValuation();
 
   const setRating = (category: keyof typeof ratings, value: number) => {
     setRatings(prev => ({ ...prev, [category]: value }));

@@ -4,12 +4,12 @@ import { Progress } from '@/components/ui/progress';
 import StepContent from './valuation/StepContent';
 import NavigationButtons from './valuation/NavigationButtons';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
-import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
+import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ValuationCalculator: React.FC = () => {
   const { t } = useI18n();
-  const { createInitialValuation, updateValuation } = useSupabaseValuation();
+  const { createInitialValuation, updateValuation } = useOptimizedSupabaseValuation();
   const uniqueTokenRef = useRef<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const {
@@ -137,9 +137,10 @@ const ValuationCalculator: React.FC = () => {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 3) {
-      calculateValuation();
+      console.log('🎯 Starting valuation calculation...');
+      await calculateValuation();
     } else {
       nextStep();
     }

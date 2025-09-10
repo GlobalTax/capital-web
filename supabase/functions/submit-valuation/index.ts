@@ -72,14 +72,34 @@ function getIp(req: Request): string | null {
 }
 
 Deno.serve(async (req) => {
+  // Set timeout for the entire request
+  const timeout = setTimeout(() => {
+    console.error('Submit valuation timeout after 20 seconds');
+  }, 20000);
+
   if (req.method === "OPTIONS") {
+    clearTimeout(timeout);
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('=== SUBMIT VALUATION START ===');
+    console.log('Request method:', req.method);
+    console.log('Timestamp:', new Date().toISOString());
+    
     const supabase = getClient();
 
-    const body = (await req.json()) as InsertData;
+    let body: InsertData;
+    try {
+      body = (await req.json()) as InsertData;
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      clearTimeout(timeout);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON payload" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Basic validation (required minimal fields)
     if (!body || !body.company_name || !body.email || !body.industry) {
@@ -121,14 +141,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log('=== SUBMIT VALUATION SUCCESS ===');
+    clearTimeout(timeout);
     return new Response(
       JSON.stringify({ success: true, insertedId: data?.id, uniqueToken: data?.unique_token }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (err: any) {
-    console.error("submit-valuation fatal error:", err);
+    console.error("=== SUBMIT VALUATION ERROR ===");
+    console.error("Fatal error:", err);
+    console.error("Stack trace:", err?.stack);
+    clearTimeout(timeout);
     return new Response(
-      JSON.stringify({ error: err?.message || "Unexpected error" }),
+      JSON.stringify({ 
+        error: err?.message || "Unexpected error",
+        timestamp: new Date().toISOString()
+      }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

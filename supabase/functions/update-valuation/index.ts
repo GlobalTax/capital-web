@@ -72,13 +72,35 @@ function toSnakeCase(key: string): string {
 }
 
 Deno.serve(async (req) => {
+  // Set timeout for the entire request
+  const timeout = setTimeout(() => {
+    console.error('Request timeout after 25 seconds');
+  }, 25000);
+
   if (req.method === "OPTIONS") {
+    clearTimeout(timeout);
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('=== UPDATE VALUATION START ===');
+    console.log('Request method:', req.method);
+    console.log('Timestamp:', new Date().toISOString());
+    
     const supabase = getClient();
-    const body = (await req.json()) as UpdatePayload;
+    
+    // Parse body with timeout protection
+    let body: UpdatePayload;
+    try {
+      body = (await req.json()) as UpdatePayload;
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      clearTimeout(timeout);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON payload" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     if (!body || !body.uniqueToken || !body.data || typeof body.data !== "object") {
       return new Response(
@@ -162,7 +184,9 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Successfully processed update for token: ${body.uniqueToken}, id: ${data?.id}`);
+    console.log('=== UPDATE VALUATION SUCCESS ===');
 
+    clearTimeout(timeout);
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -174,9 +198,15 @@ Deno.serve(async (req) => {
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (err: any) {
-    console.error("update-valuation fatal error:", err);
+    console.error("=== UPDATE VALUATION ERROR ===");
+    console.error("Fatal error:", err);
+    console.error("Stack trace:", err?.stack);
+    clearTimeout(timeout);
     return new Response(
-      JSON.stringify({ error: err?.message || "Unexpected error" }),
+      JSON.stringify({ 
+        error: err?.message || "Unexpected error",
+        timestamp: new Date().toISOString()
+      }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

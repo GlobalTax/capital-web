@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
-import { useSupabaseValuation } from '@/hooks/useSupabaseValuation';
+import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
 import ReferralPrompt from './ReferralPrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { getPreferredLang } from '@/shared/i18n/locale';
@@ -22,7 +22,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   const [dataSaved, setDataSaved] = useState(false);
   const { toast } = useToast();
   const { createCompanyValuation } = useHubSpotIntegration();
-  const { saveValuation } = useSupabaseValuation();
+  const { saveValuation } = useOptimizedSupabaseValuation();
   const { t } = useI18n();
 
   // Guardar datos cuando se muestran los resultados - FIX: Agregar más dependencias específicas

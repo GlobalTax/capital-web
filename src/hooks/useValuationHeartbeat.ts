@@ -19,7 +19,7 @@ export const useValuationHeartbeat = ({
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityRef = useRef<Date>(new Date());
 
-  // Send heartbeat to server
+  // Send heartbeat to server with timeout protection
   const sendHeartbeat = useCallback(async () => {
     if (!uniqueToken || !isActive) return;
 
@@ -28,7 +28,8 @@ export const useValuationHeartbeat = ({
         ? Math.floor((Date.now() - startTime.getTime()) / 1000)
         : timeSpent;
 
-      await supabase.functions.invoke('update-valuation', {
+      // Add timeout to prevent hanging requests
+      const heartbeatPromise = supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken,
           data: {
@@ -39,10 +40,19 @@ export const useValuationHeartbeat = ({
         }
       });
 
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Heartbeat timeout')), 8000)
+      );
+
+      await Promise.race([heartbeatPromise, timeoutPromise]);
+
       lastActivityRef.current = new Date();
       console.log('Heartbeat sent successfully');
     } catch (error) {
-      console.error('Error sending heartbeat:', error);
+      // Don't spam console with heartbeat errors
+      if (error instanceof Error && !error.message.includes('timeout')) {
+        console.error('Error sending heartbeat:', error.message);
+      }
     }
   }, [uniqueToken, currentStep, timeSpent, startTime, isActive]);
 
@@ -61,14 +71,14 @@ export const useValuationHeartbeat = ({
       return;
     }
 
-    // Optimized heartbeat - reduced frequency to save Edge Function calls
+    // Further optimized heartbeat - reduced frequency and smarter logic
     heartbeatRef.current = setInterval(() => {
       const timeSinceActivity = Date.now() - lastActivityRef.current.getTime();
-      // Only send heartbeat if user was active in the last 3 minutes
-      if (timeSinceActivity < 3 * 60 * 1000) {
+      // Only send heartbeat if user was active in the last 5 minutes and not on final step
+      if (timeSinceActivity < 5 * 60 * 1000 && currentStep < 4) {
         sendHeartbeat();
       }
-    }, 5 * 60 * 1000); // Send every 5 minutes (vs 1 minute)
+    }, 10 * 60 * 1000); // Send every 10 minutes (further reduced)
 
     // Send initial heartbeat
     sendHeartbeat();
