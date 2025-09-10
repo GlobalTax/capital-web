@@ -195,8 +195,8 @@ const handler = async (req: Request): Promise<Response> => {
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
-    // Emails por defecto para pruebas + posible extra desde el frontend
-    const baseRecipients = ["info@capittal.es", "lluis@capittal.es", "samuel@capittal.es", "pau@capittal.es", "marcc@capittal.es"];
+    // Emails actualizados para Exchange/Microsoft 365
+    const baseRecipients = ["info@capittal.es", "samuel@capittal.es"];
     const extraRecipient = recipientEmail?.trim();
     const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
 
