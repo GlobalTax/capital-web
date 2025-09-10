@@ -189,7 +189,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("=== INICIO DEBUG send-valuation-email ===");
+    console.log("Request method:", req.method);
+    console.log("RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
+    
     const payload = (await req.json()) as SendValuationEmailRequest;
+    console.log("Payload received:", JSON.stringify(payload, null, 2));
+    
     const { recipientEmail, companyData, result, pdfBase64, pdfFilename, enlaces, sender, subjectOverride, lang } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl' };
 
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
@@ -299,7 +305,11 @@ if (pdfToAttach) {
       `Calculadora de valoración - Capittal`;
 
     let emailResponse: any;
+    console.log("Attempting to send email to recipients:", recipients);
+    console.log("Subject:", subject);
+    
     try {
+      console.log("Trying primary sender: Capittal <no-reply@capittal.es>");
       emailResponse = await resend.emails.send({
         from: "Capittal <no-reply@capittal.es>",
         to: recipients,
@@ -312,8 +322,11 @@ if (pdfToAttach) {
            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
          },
       });
+      console.log("Primary email sent successfully:", emailResponse);
     } catch (e: any) {
       console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
+      console.error("Error details:", JSON.stringify(e, null, 2));
+      console.log("Trying fallback sender: Capittal (Test) <onboarding@resend.dev>");
       emailResponse = await resend.emails.send({
         from: "Capittal (Test) <onboarding@resend.dev>",
         to: recipients,
