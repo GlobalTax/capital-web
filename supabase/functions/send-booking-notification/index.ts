@@ -65,7 +65,8 @@ const handler = async (req: Request): Promise<Response> => {
       "info@capittal.es",
       "lluis@capittal.es",
       "samuel@capittal.es",
-      "pau@capittal.es"
+      "pau@capittal.es",
+      "marcc@capittal.es"
     ];
 
     // Email content for internal team

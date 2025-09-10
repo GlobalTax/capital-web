@@ -21,7 +21,7 @@ interface FormNotificationRequest {
   formData: any;
 }
 
-const ADMIN_EMAILS = ['info@capittal.es', 'lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es'];
+const ADMIN_EMAILS = ['info@capittal.es', 'lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es', 'marcc@capittal.es'];
 
 const getUserConfirmationTemplate = (formType: string, data: any) => {
   const baseStyle = `
