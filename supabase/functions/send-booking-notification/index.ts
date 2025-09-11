@@ -60,13 +60,14 @@ const handler = async (req: Request): Promise<Response> => {
       minute: '2-digit'
     });
 
-    // Recipients for internal notification
+    // Recipients for internal notification - actualizados post-migración Exchange
     const recipients = [
       "info@capittal.es",
-      "lluis@capittal.es",
       "samuel@capittal.es",
       "pau@capittal.es",
-      "marcc@capittal.es"
+      "marcc@capittal.es",
+      "marc@capittal.es", 
+      "lluis@capittal.es"
     ];
 
     // Email content for internal team
