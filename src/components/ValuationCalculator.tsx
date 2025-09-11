@@ -181,18 +181,19 @@ const ValuationCalculator: React.FC = () => {
           </div>
 
           {/* Step Content */}
-          <StepContent
-            currentStep={currentStep}
-            companyData={companyData}
-            updateField={updateField}
-            result={result}
-            isCalculating={isCalculating}
-            resetCalculator={resetCalculator}
-            showValidation={showValidation}
-            getFieldState={getFieldState}
-            handleFieldBlur={handleFieldBlur}
-            errors={errors}
-          />
+      <StepContent
+        currentStep={currentStep}
+        companyData={companyData}
+        updateField={updateField}
+        result={result}
+        isCalculating={isCalculating}
+        resetCalculator={resetCalculator}
+        showValidation={showValidation}
+        getFieldState={getFieldState}
+        handleFieldBlur={handleFieldBlur}
+        errors={errors}
+        uniqueToken={uniqueTokenRef.current}
+      />
 
           {/* Navigation - Only show for steps 1-3 */}
           {currentStep <= 3 && (

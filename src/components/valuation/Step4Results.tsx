@@ -15,9 +15,10 @@ interface Step4Props {
   companyData: any;
   isCalculating: boolean;
   resetCalculator: () => void;
+  uniqueToken?: string;
 }
 
-const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating, resetCalculator }) => {
+const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating, resetCalculator, uniqueToken }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [dataSaved, setDataSaved] = useState(false);
   const { toast } = useToast();
@@ -39,7 +40,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           // PASO 1: Guardar SIEMPRE en Supabase primero
           try {
             console.log('📊 Guardando en Supabase...');
-            await saveValuation(companyData, result);
+            await saveValuation(companyData, result, uniqueToken);
             console.log('✅ Datos guardados correctamente en Supabase');
             
             toast({

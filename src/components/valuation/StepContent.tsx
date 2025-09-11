@@ -21,6 +21,7 @@ interface StepContentProps {
   };
   handleFieldBlur?: (field: string) => void;
   errors?: Record<string, string>;
+  uniqueToken?: string;
 }
 
 const StepContent: React.FC<StepContentProps> = ({
@@ -33,7 +34,8 @@ const StepContent: React.FC<StepContentProps> = ({
   showValidation = false,
   getFieldState,
   handleFieldBlur,
-  errors
+  errors,
+  uniqueToken
 }) => {
   switch (currentStep) {
     case 1:
@@ -76,6 +78,7 @@ const StepContent: React.FC<StepContentProps> = ({
           companyData={companyData}
           isCalculating={isCalculating}
           resetCalculator={resetCalculator}
+          uniqueToken={uniqueToken}
         />
       );
     default:
