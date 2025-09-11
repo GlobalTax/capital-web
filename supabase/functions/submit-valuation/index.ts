@@ -86,6 +86,9 @@ Deno.serve(async (req) => {
     console.log('=== SUBMIT VALUATION START ===');
     console.log('Request method:', req.method);
     console.log('Timestamp:', new Date().toISOString());
+    console.log('RESEND_API_KEY exists:', !!Deno.env.get("RESEND_API_KEY"));
+    console.log('SUPABASE_URL exists:', !!Deno.env.get("SUPABASE_URL"));
+    console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
     
     const supabase = getClient();
 

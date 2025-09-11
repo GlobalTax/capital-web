@@ -4,7 +4,6 @@ import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { CompanyData, ValuationResult } from '@/types/valuation';
 import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
-import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 
 interface RetryConfig {
   maxRetries: number;
@@ -13,21 +12,34 @@ interface RetryConfig {
 }
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
-  maxRetries: 3,
+  maxRetries: 2,
   initialDelay: 1000,
-  maxDelay: 5000
+  maxDelay: 3000
 };
 
 export const useOptimizedSupabaseValuation = () => {
   const { handleError, handleAsyncError } = useCentralizedErrorHandler();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCreatingInitial, setIsCreatingInitial] = useState(false);
+  const [currentOperation, setCurrentOperation] = useState<string | null>(null);
 
   // Debug logging on initialization
   useEffect(() => {
-    console.log('🔧 useOptimizedSupabaseValuation hook initialized');
+    console.log('🔧 useOptimizedSupabaseValuation hook initialized (simplified post-Exchange)');
   }, []);
 
-  // Optimized retry mechanism
+  // Helper function for IP address
+  const getIPAddress = async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  };
+
+  // Simplified retry mechanism
   const withRetry = async <T,> (
     operation: () => Promise<T>,
     context: string,
@@ -40,12 +52,12 @@ export const useOptimizedSupabaseValuation = () => {
         const result = await Promise.race([
           operation(),
           new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Operation timeout')), 15000)
+            setTimeout(() => reject(new Error('Operation timeout')), 12000)
           )
         ]);
         
         if (attempt > 0) {
-          console.log(`${context} succeeded on attempt ${attempt + 1}`);
+          console.log(`✅ ${context} succeeded on attempt ${attempt + 1}`);
         }
         return result;
       } catch (error) {
@@ -56,187 +68,180 @@ export const useOptimizedSupabaseValuation = () => {
             config.initialDelay * Math.pow(2, attempt),
             config.maxDelay
           );
-          console.log(`${context} failed, retrying in ${delay}ms (attempt ${attempt + 1}/${config.maxRetries + 1})`);
+          console.log(`⏳ ${context} failed, retrying in ${delay}ms (attempt ${attempt + 1}/${config.maxRetries + 1})`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     }
     
-    console.error(`${context} failed after ${config.maxRetries + 1} attempts:`, lastError);
-    handleError(lastError, { 
-      component: 'OptimizedSupabaseValuation', 
-      action: context 
-    });
+    console.error(`❌ ${context} failed after ${config.maxRetries + 1} attempts:`, lastError);
     return null;
   };
 
-  // Helper function for IP address (used in fallback)
-  const getIPAddress = async (): Promise<string> => {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || 'unknown';
-    } catch {
-      return 'unknown';
+  // SIMPLIFIED createInitialValuation without debouncing or useAsyncOperation
+  const createInitialValuation = useCallback(async (stepOneData: Partial<CompanyData>) => {
+    // Protección crítica contra ejecuciones concurrentes
+    if (isCreatingInitial) {
+      console.warn('🚫 BLOCKED: createInitialValuation already in progress');
+      throw new Error('Ya se está creando una valoración. Por favor, espere.');
     }
-  };
 
-  // Optimized create initial valuation with robust fallback
-  const { execute: executeCreateInitialValuation, loading: isCreating } = useAsyncOperation(
-    async (stepOneData: Partial<CompanyData>) => {
-      console.log('=== CREATING OPTIMIZED INITIAL VALUATION ===');
-      console.log('📝 Step one data:', stepOneData);
-      
-      // Validación previa de datos críticos
-      if (!stepOneData.contactName || !stepOneData.email || !stepOneData.companyName) {
-        throw new Error('Missing required fields: contactName, email, or companyName');
-      }
-      
-      if (!stepOneData.email.includes('@')) {
-        throw new Error('Invalid email format');
-      }
-      
-      const insertData = {
-        contact_name: stepOneData.contactName || '',
-        company_name: stepOneData.companyName || '',
-        cif: stepOneData.cif || null,
-        email: stepOneData.email || '',
-        phone: stepOneData.phone || null,
-        phone_e164: stepOneData.phone_e164 || null,
+    console.log('=== CREATING INITIAL VALUATION (SIMPLIFIED POST-EXCHANGE) ===');
+    console.log('📝 Step one data:', stepOneData);
+    console.log('🔒 Setting protection lock...');
+    
+    // Validación previa
+    if (!stepOneData.contactName || !stepOneData.email || !stepOneData.companyName) {
+      throw new Error('Campos obligatorios faltantes: contactName, email o companyName');
+    }
+    
+    if (!stepOneData.email.includes('@') || stepOneData.email.length < 5) {
+      throw new Error('Formato de email inválido');
+    }
+
+    setIsCreatingInitial(true);
+    setCurrentOperation('creating_initial_valuation');
+    
+    try {
+      // MÉTODO PRINCIPAL: Inserción directa (más confiable post-migración Exchange)
+      const fallbackData = {
+        contact_name: stepOneData.contactName,
+        company_name: stepOneData.companyName,
+        email: stepOneData.email,
+        phone: stepOneData.phone || '',
+        phone_e164: stepOneData.phone_e164 || '',
         whatsapp_opt_in: stepOneData.whatsapp_opt_in || false,
+        cif: stepOneData.cif || '',
         industry: stepOneData.industry || '',
-        activity_description: stepOneData.activityDescription || null,
+        activity_description: stepOneData.activityDescription || '',
         employee_range: stepOneData.employeeRange || '',
         valuation_status: 'in_progress',
         completion_percentage: 25,
-        current_step: 1
+        current_step: 1,
+        ip_address: await getIPAddress(),
+        user_agent: navigator.userAgent
       };
-
-      console.log('🚀 Invoking submit-valuation edge function with data:', insertData);
       
-      try {
-        const response = await supabase.functions.invoke('submit-valuation', {
-          body: insertData
-        });
-
-        console.log('📥 Submit valuation response:', { data: response.data, error: response.error });
-
-        if (response.error) {
-          console.warn('⚠️ Edge function failed, attempting direct database insertion...');
-          throw new Error(`Edge function failed: ${response.error.message || JSON.stringify(response.error)}`);
-        }
-
-        if (response.data?.success && response.data?.uniqueToken) {
-          console.log('✅ Initial valuation created via edge function:', response.data.uniqueToken);
-          return response.data;
-        } else {
-          console.warn('⚠️ Edge function succeeded but returned invalid data:', response.data);
-          throw new Error('Edge function returned invalid response');
-        }
-      } catch (edgeFunctionError) {
-        console.warn('🔄 Edge function failed, attempting direct database insertion fallback...');
-        console.error('Edge function error details:', edgeFunctionError);
+      console.log('🎯 TRYING PRIMARY METHOD: Direct database insertion');
+      console.log('📤 Data to insert:', fallbackData);
+      
+      const { data: insertData, error: insertError } = await supabase
+        .from('company_valuations')
+        .insert(fallbackData)
+        .select('unique_token, id')
+        .single();
+      
+      if (insertError) {
+        console.error('❌ Direct insertion failed:', insertError);
+        console.error('❌ Error code:', insertError.code);
+        console.error('❌ Error details:', insertError.details);
+        console.error('❌ Error hint:', insertError.hint);
         
-        // Fallback: inserción directa en la base de datos
-        const fallbackData = {
-          contact_name: stepOneData.contactName,
-          company_name: stepOneData.companyName,
-          email: stepOneData.email,
+        // MÉTODO SECUNDARIO: Edge function como fallback
+        console.log('🔄 TRYING FALLBACK: Edge function submit-valuation');
+        
+        const edgeFunctionData = {
+          contact_name: stepOneData.contactName || '',
+          company_name: stepOneData.companyName || '',
+          cif: stepOneData.cif || '',
+          email: stepOneData.email || '',
           phone: stepOneData.phone || '',
           phone_e164: stepOneData.phone_e164 || '',
           whatsapp_opt_in: stepOneData.whatsapp_opt_in || false,
-          cif: stepOneData.cif || '',
           industry: stepOneData.industry || '',
           activity_description: stepOneData.activityDescription || '',
           employee_range: stepOneData.employeeRange || '',
           valuation_status: 'in_progress',
           completion_percentage: 25,
-          current_step: 1,
-          ip_address: await getIPAddress(),
-          user_agent: navigator.userAgent
+          current_step: 1
         };
-        
-        console.log('📤 Attempting direct database insertion:', fallbackData);
-        
-        const { data: insertData, error: insertError } = await supabase
-          .from('company_valuations')
-          .insert(fallbackData)
-          .select('unique_token')
-          .single();
-        
-        if (insertError) {
-          console.error('❌ Direct insertion failed:', insertError);
-          throw new Error(`Both edge function and direct insertion failed. Edge function: ${edgeFunctionError.message}. Direct insertion: ${insertError.message}`);
+
+        console.log('🚀 Invoking submit-valuation edge function:', edgeFunctionData);
+
+        const response = await supabase.functions.invoke('submit-valuation', {
+          body: edgeFunctionData
+        });
+
+        console.log('📥 Edge function response:', { data: response.data, error: response.error });
+
+        if (response.error || !response.data?.success) {
+          console.error('❌ Edge function also failed:', response.error);
+          throw new Error(
+            `Ambos métodos fallaron.\n` +
+            `Inserción directa: ${insertError.message}\n` +
+            `Edge function: ${response.error?.message || 'respuesta inválida'}\n` +
+            `Esto puede deberse a la configuración post-migración Exchange.`
+          );
         }
-        
-        if (insertData?.unique_token) {
-          console.log('✅ Initial valuation created via direct insertion fallback:', insertData.unique_token);
-          return { success: true, uniqueToken: insertData.unique_token };
-        } else {
-          throw new Error('Direct insertion succeeded but no unique_token returned');
-        }
+
+        console.log('✅ Valoración inicial creada via edge function (fallback):', response.data.uniqueToken);
+        return { success: true, uniqueToken: response.data.uniqueToken };
       }
-    },
-    { 
-      debounceMs: 500,
-      retries: 2,
-      timeout: 15000 
-    }
-  );
-
-  const createInitialValuation = useCallback(async (stepOneData: Partial<CompanyData>) => {
-    const result = await executeCreateInitialValuation(stepOneData);
-    
-    if (result?.success) {
-      console.log('✅ Optimized initial valuation created:', result.uniqueToken);
-      return { success: true, uniqueToken: result.uniqueToken };
-    }
-    
-    return { success: false };
-  }, [executeCreateInitialValuation]);
-
-  // Optimized update valuation (with debouncing)
-  const { execute: executeUpdateValuation, loading: isUpdating } = useAsyncOperation(
-    async ({ uniqueToken, partialData }: { uniqueToken: string; partialData: Partial<CompanyData> }) => {
-      console.log('=== UPDATING OPTIMIZED VALUATION ===');
       
-      // Map data to database format efficiently
-      const updateData: any = {};
-      
-      const fieldMap: { [K in keyof CompanyData]?: string } = {
-        contactName: 'contact_name',
-        companyName: 'company_name',
-        cif: 'cif',
-        email: 'email',
-        phone: 'phone',
-        phone_e164: 'phone_e164',
-        whatsapp_opt_in: 'whatsapp_opt_in',
-        industry: 'industry',
-        activityDescription: 'activity_description',
-        employeeRange: 'employee_range',
-        revenue: 'revenue',
-        ebitda: 'ebitda',
-        hasAdjustments: 'has_adjustments',
-        adjustmentAmount: 'adjustment_amount',
-        location: 'location',
-        ownershipParticipation: 'ownership_participation',
-        competitiveAdvantage: 'competitive_advantage'
-      };
-
-      Object.entries(partialData).forEach(([key, value]) => {
-        const dbField = fieldMap[key as keyof CompanyData];
-        if (dbField && value !== undefined) {
-          updateData[dbField] = value;
-        }
+      if (insertData?.unique_token) {
+        console.log('✅ Valoración inicial creada via inserción directa (método principal):', insertData.unique_token);
+        return { success: true, uniqueToken: insertData.unique_token, insertedId: insertData.id };
+      } else {
+        throw new Error('Inserción directa completada pero no se obtuvo unique_token');
+      }
+    } catch (error) {
+      console.error('💥 createInitialValuation failed completely:', error);
+      handleError(error instanceof Error ? error : new Error('Unknown error'), { 
+        component: 'OptimizedSupabaseValuation', 
+        action: 'createInitialValuation'
       });
+      throw error;
+    } finally {
+      console.log('🔓 Releasing protection lock...');
+      setIsCreatingInitial(false);
+      setCurrentOperation(null);
+    }
+  }, [isCreatingInitial, handleError]);
 
-      // Calculate progress efficiently
-      const completedFields = Object.values(partialData).filter(v => 
-        v !== undefined && v !== null && v !== ''
-      ).length;
-      updateData.completion_percentage = Math.min(Math.max(completedFields * 8, 10), 75);
-      updateData.valuation_status = 'in_progress';
+  // Optimized update valuation
+  const updateValuation = useCallback(async (uniqueToken: string, partialData: Partial<CompanyData>) => {
+    console.log('=== UPDATING VALUATION (POST-EXCHANGE) ===');
+    console.log('📝 Partial data:', partialData);
+    console.log('🎫 Token:', uniqueToken);
+    
+    // Map data to database format efficiently
+    const updateData: any = {};
+    
+    const fieldMap: { [K in keyof CompanyData]?: string } = {
+      contactName: 'contact_name',
+      companyName: 'company_name',
+      cif: 'cif',
+      email: 'email',
+      phone: 'phone',
+      phone_e164: 'phone_e164',
+      whatsapp_opt_in: 'whatsapp_opt_in',
+      industry: 'industry',
+      activityDescription: 'activity_description',
+      employeeRange: 'employee_range',
+      revenue: 'revenue',
+      ebitda: 'ebitda',
+      hasAdjustments: 'has_adjustments',
+      adjustmentAmount: 'adjustment_amount',
+      location: 'location',
+      ownershipParticipation: 'ownership_participation',
+      competitiveAdvantage: 'competitive_advantage'
+    };
 
+    Object.entries(partialData).forEach(([key, value]) => {
+      const dbField = fieldMap[key as keyof CompanyData];
+      if (dbField && value !== undefined) {
+        updateData[dbField] = value;
+      }
+    });
+
+    // Calculate progress efficiently
+    const completedFields = Object.values(partialData).filter(v => 
+      v !== undefined && v !== null && v !== ''
+    ).length;
+    updateData.completion_percentage = Math.min(Math.max(completedFields * 8, 10), 75);
+    updateData.valuation_status = 'in_progress';
+
+    const result = await withRetry(async () => {
       const response = await supabase.functions.invoke('update-valuation', {
         body: {
           uniqueToken,
@@ -249,18 +254,10 @@ export const useOptimizedSupabaseValuation = () => {
       }
 
       return response.data;
-    },
-    {
-      debounceMs: 1000, // Debounce updates to avoid spam
-      retries: 2,
-      timeout: 10000
-    }
-  );
+    }, 'Valuation update');
 
-  const updateValuation = useCallback(async (uniqueToken: string, partialData: Partial<CompanyData>) => {
-    const result = await executeUpdateValuation({ uniqueToken, partialData });
     return result?.success || false;
-  }, [executeUpdateValuation]);
+  }, [withRetry]);
 
   // Optimized save valuation with background processing
   const saveValuation = useCallback(async (companyData: CompanyData, result: ValuationResult, uniqueToken?: string) => {
@@ -277,9 +274,10 @@ export const useOptimizedSupabaseValuation = () => {
     }
 
     setIsProcessing(true);
+    setCurrentOperation('saving_final_valuation');
 
     try {
-      console.log('=== SAVING OPTIMIZED FINAL VALUATION ===');
+      console.log('=== SAVING FINAL VALUATION (POST-EXCHANGE) ===');
       console.log('📊 Company data:', companyData);
       console.log('📈 Result data:', result);
 
@@ -356,7 +354,7 @@ export const useOptimizedSupabaseValuation = () => {
       // These will run asynchronously without blocking the user response
       setTimeout(async () => {
         try {
-          console.log('Starting background operations...');
+          console.log('🔄 Starting background operations (post-Exchange)...');
 
           // Background: Generate and send PDF
           await handleAsyncError(async () => {
@@ -393,7 +391,8 @@ export const useOptimizedSupabaseValuation = () => {
 
             const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
 
-            await supabase.functions.invoke('send-valuation-email', {
+            console.log('📧 Sending valuation email (post-Exchange)...');
+            const emailResponse = await supabase.functions.invoke('send-valuation-email', {
               body: {
                 recipientEmail: companyData.email,
                 companyData: companyData,
@@ -414,7 +413,12 @@ export const useOptimizedSupabaseValuation = () => {
               }
             });
 
-            console.log('Background email sent successfully');
+            console.log('📧 Email response:', emailResponse);
+            if (emailResponse.error) {
+              console.warn('⚠️ Email sending failed (possibly Exchange-related):', emailResponse.error);
+            } else {
+              console.log('✅ Background email sent successfully');
+            }
           }, { component: 'OptimizedSupabaseValuation', action: 'backgroundEmail' });
 
           // Background: Sync with external systems
@@ -433,62 +437,86 @@ export const useOptimizedSupabaseValuation = () => {
               source: 'lp-calculadora'
             };
 
-            await supabase.functions.invoke('sync-leads', {
+            const syncResponse = await supabase.functions.invoke('sync-leads', {
               body: {
                 type: 'company_valuation',
                 data: syncData
               }
             });
 
-            console.log('Background sync completed successfully');
+            console.log('🔄 Sync response:', syncResponse);
+            if (syncResponse.error) {
+              console.warn('⚠️ Sync failed (possibly Exchange-related):', syncResponse.error);
+            } else {
+              console.log('✅ Background sync completed successfully');
+            }
           }, { component: 'OptimizedSupabaseValuation', action: 'backgroundSync' });
 
         } catch (bgError) {
-          console.error('Background operations error:', bgError);
+          console.error('💥 Background operations error (post-Exchange):', bgError);
         }
       }, 100); // Start background operations after 100ms
 
       return { success: true };
       
     } catch (error) {
-      console.error('Save valuation error:', error);
-      handleError(error as Error, { 
+      console.error('💥 saveValuation failed:', error);
+      handleError(error instanceof Error ? error : new Error('Unknown error'), { 
         component: 'OptimizedSupabaseValuation', 
-        action: 'saveValuation' 
+        action: 'saveValuation'
       });
       return { success: false };
     } finally {
       setIsProcessing(false);
+      setCurrentOperation(null);
     }
-  }, [isProcessing, handleError, handleAsyncError, withRetry]);
+  }, [isProcessing, createInitialValuation, withRetry, handleError, handleAsyncError]);
 
-  // Tool rating (unchanged but optimized)
+  // Utility to save a rating
   const saveToolRating = useCallback(async (ratingData: any) => {
-    return await handleAsyncError(async () => {
+    console.log('💯 Saving tool rating:', ratingData);
+    
+    try {
+      const fullRatingData = {
+        ...ratingData,
+        ip_address: await getIPAddress(),
+        user_agent: navigator.userAgent,
+        created_at: new Date().toISOString()
+      };
+
       const { data, error } = await supabase
         .from('tool_ratings')
-        .insert({
-          ease_of_use: ratingData.ease_of_use,
-          result_accuracy: ratingData.result_accuracy,
-          recommendation: ratingData.recommendation,
-          feedback_comment: ratingData.feedback_comment,
-          user_email: ratingData.user_email,
-          company_sector: ratingData.company_sector,
-          company_size: ratingData.company_size
-        });
+        .insert(fullRatingData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Failed to save rating:', error);
+        throw error;
+      }
+
+      console.log('✅ Rating saved successfully:', data);
       return data;
-    }, { component: 'OptimizedSupabaseValuation', action: 'saveToolRating' });
-  }, [handleAsyncError]);
+    } catch (error) {
+      console.error('💥 saveToolRating failed:', error);
+      handleError(error instanceof Error ? error : new Error('Unknown error'), { 
+        component: 'OptimizedSupabaseValuation', 
+        action: 'saveToolRating' 
+      });
+      throw error;
+    }
+  }, [handleError]);
 
   return {
     createInitialValuation,
     updateValuation,
     saveValuation,
     saveToolRating,
-    isCreating,
-    isUpdating,
-    isProcessing
+    isProcessing: isProcessing || isCreatingInitial,
+    currentOperation,
+    // Debug info for troubleshooting
+    debugInfo: {
+      isProcessing,
+      isCreatingInitial,
+      currentOperation
+    }
   };
 };
