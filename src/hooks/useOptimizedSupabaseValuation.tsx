@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { getPreferredLang } from '@/shared/i18n/locale';
@@ -21,6 +21,11 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 export const useOptimizedSupabaseValuation = () => {
   const { handleError, handleAsyncError } = useCentralizedErrorHandler();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Debug logging on initialization
+  useEffect(() => {
+    console.log('🔧 useOptimizedSupabaseValuation hook initialized');
+  }, []);
 
   // Optimized retry mechanism
   const withRetry = async <T,> (
@@ -69,6 +74,7 @@ export const useOptimizedSupabaseValuation = () => {
   const { execute: executeCreateInitialValuation, loading: isCreating } = useAsyncOperation(
     async (stepOneData: Partial<CompanyData>) => {
       console.log('=== CREATING OPTIMIZED INITIAL VALUATION ===');
+      console.log('📝 Step one data:', stepOneData);
       
       const insertData = {
         contact_name: stepOneData.contactName || '',
@@ -86,11 +92,16 @@ export const useOptimizedSupabaseValuation = () => {
         current_step: 1
       };
 
+      console.log('🚀 Invoking submit-valuation with data:', insertData);
+      
       const response = await supabase.functions.invoke('submit-valuation', {
         body: insertData
       });
 
+      console.log('📥 Submit valuation response:', response);
+
       if (response.error) {
+        console.error('❌ Submit valuation error:', response.error);
         throw new Error(`Database error: ${response.error.message}`);
       }
 
@@ -183,8 +194,15 @@ export const useOptimizedSupabaseValuation = () => {
 
   // Optimized save valuation with background processing
   const saveValuation = useCallback(async (companyData: CompanyData, result: ValuationResult, uniqueToken?: string) => {
+    console.log('🎯 saveValuation called with:', { 
+      hasCompanyData: !!companyData, 
+      hasResult: !!result, 
+      uniqueToken,
+      isProcessing 
+    });
+
     if (isProcessing) {
-      console.log('Save already in progress, ignoring duplicate call');
+      console.log('❌ Save already in progress, ignoring duplicate call');
       return { success: false };
     }
 
@@ -192,8 +210,12 @@ export const useOptimizedSupabaseValuation = () => {
 
     try {
       console.log('=== SAVING OPTIMIZED FINAL VALUATION ===');
+      console.log('📊 Company data:', companyData);
+      console.log('📈 Result data:', result);
 
       // Step 1: Save core valuation data (critical path)
+      console.log('🔄 Starting core update with uniqueToken:', uniqueToken);
+      
       const coreUpdateResult = await withRetry(async () => {
         if (uniqueToken) {
           const finalData = {
@@ -214,14 +236,20 @@ export const useOptimizedSupabaseValuation = () => {
             completion_percentage: 100
           };
 
+          console.log('🚀 Invoking update-valuation with:', { uniqueToken, finalData });
+          
           const response = await supabase.functions.invoke('update-valuation', {
             body: { uniqueToken, data: finalData }
           });
 
+          console.log('📥 Update valuation response:', response);
+
           if (response.error) {
+            console.error('❌ Update valuation error:', response.error);
             throw new Error(`Failed to save valuation: ${response.error.message}`);
           }
 
+          console.log('✅ Core valuation saved successfully');
           return response.data;
         } else {
           throw new Error('No unique token provided');
