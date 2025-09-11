@@ -213,11 +213,33 @@ export const useOptimizedSupabaseValuation = () => {
       console.log('📊 Company data:', companyData);
       console.log('📈 Result data:', result);
 
+      // If no uniqueToken provided, create initial valuation first
+      let finalUniqueToken = uniqueToken;
+      if (!finalUniqueToken) {
+        console.log('⚠️ No uniqueToken provided, creating initial valuation...');
+        const initialResult = await createInitialValuation({
+          contactName: companyData.contactName,
+          companyName: companyData.companyName,
+          email: companyData.email,
+          cif: companyData.cif,
+          phone: companyData.phone,
+          industry: companyData.industry,
+          employeeRange: companyData.employeeRange
+        });
+        
+        if (initialResult.success && initialResult.uniqueToken) {
+          finalUniqueToken = initialResult.uniqueToken;
+          console.log('✅ Created initial valuation with token:', finalUniqueToken);
+        } else {
+          throw new Error('Failed to create initial valuation record');
+        }
+      }
+
       // Step 1: Save core valuation data (critical path)
-      console.log('🔄 Starting core update with uniqueToken:', uniqueToken);
+      console.log('🔄 Starting core update with uniqueToken:', finalUniqueToken);
       
       const coreUpdateResult = await withRetry(async () => {
-        if (uniqueToken) {
+        if (finalUniqueToken) {
           const finalData = {
             // Core data
             contact_name: companyData.contactName || '',
@@ -236,10 +258,10 @@ export const useOptimizedSupabaseValuation = () => {
             completion_percentage: 100
           };
 
-          console.log('🚀 Invoking update-valuation with:', { uniqueToken, finalData });
+          console.log('🚀 Invoking update-valuation with:', { uniqueToken: finalUniqueToken, finalData });
           
           const response = await supabase.functions.invoke('update-valuation', {
-            body: { uniqueToken, data: finalData }
+            body: { uniqueToken: finalUniqueToken, data: finalData }
           });
 
           console.log('📥 Update valuation response:', response);
@@ -252,7 +274,7 @@ export const useOptimizedSupabaseValuation = () => {
           console.log('✅ Core valuation saved successfully');
           return response.data;
         } else {
-          throw new Error('No unique token provided');
+          throw new Error('No unique token provided - this should not happen after fallback creation');
         }
       }, 'Core valuation save');
 

@@ -12,6 +12,8 @@ const ValuationCalculator: React.FC = () => {
   const { createInitialValuation, updateValuation } = useOptimizedSupabaseValuation();
   const uniqueTokenRef = useRef<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveExecutedRef = useRef(false);
+  
   const {
     currentStep,
     companyData,
@@ -29,7 +31,12 @@ const ValuationCalculator: React.FC = () => {
     errors
   } = useValuationCalculator();
 
-  const saveExecutedRef = useRef(false);
+  // Solo limpiar el token cuando se resetea explícitamente la calculadora
+  const handleReset = useCallback(() => {
+    console.log('🔄 Resetting calculator and clearing uniqueToken');
+    uniqueTokenRef.current = null;
+    resetCalculator();
+  }, [resetCalculator]);
 
   // Effect para auto-guardado con debounce - SOLO usando campos específicos como dependencias
   useEffect(() => {
@@ -146,13 +153,6 @@ const ValuationCalculator: React.FC = () => {
     }
   };
 
-  // Limpiar token cuando se resetea la calculadora
-  useEffect(() => {
-    if (currentStep === 1 && !companyData.contactName && !companyData.email) {
-      uniqueTokenRef.current = null;
-    }
-  }, [currentStep, companyData.contactName, companyData.email]);
-
   const progressValue = currentStep === 4 ? 100 : ((currentStep - 1) / 3) * 100;
 
   return (
@@ -181,19 +181,19 @@ const ValuationCalculator: React.FC = () => {
           </div>
 
           {/* Step Content */}
-      <StepContent
-        currentStep={currentStep}
-        companyData={companyData}
-        updateField={updateField}
-        result={result}
-        isCalculating={isCalculating}
-        resetCalculator={resetCalculator}
-        showValidation={showValidation}
-        getFieldState={getFieldState}
-        handleFieldBlur={handleFieldBlur}
-        errors={errors}
-        uniqueToken={uniqueTokenRef.current}
-      />
+          <StepContent
+            currentStep={currentStep}
+            companyData={companyData}
+            updateField={updateField}
+            result={result}
+            isCalculating={isCalculating}
+            resetCalculator={handleReset}
+            showValidation={showValidation}
+            getFieldState={getFieldState}
+            handleFieldBlur={handleFieldBlur}
+            errors={errors}
+            uniqueToken={uniqueTokenRef.current}
+          />
 
           {/* Navigation - Only show for steps 1-3 */}
           {currentStep <= 3 && (
