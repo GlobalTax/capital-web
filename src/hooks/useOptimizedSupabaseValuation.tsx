@@ -70,11 +70,31 @@ export const useOptimizedSupabaseValuation = () => {
     return null;
   };
 
-  // Optimized create initial valuation
+  // Helper function for IP address (used in fallback)
+  const getIPAddress = async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  };
+
+  // Optimized create initial valuation with robust fallback
   const { execute: executeCreateInitialValuation, loading: isCreating } = useAsyncOperation(
     async (stepOneData: Partial<CompanyData>) => {
       console.log('=== CREATING OPTIMIZED INITIAL VALUATION ===');
       console.log('📝 Step one data:', stepOneData);
+      
+      // Validación previa de datos críticos
+      if (!stepOneData.contactName || !stepOneData.email || !stepOneData.companyName) {
+        throw new Error('Missing required fields: contactName, email, or companyName');
+      }
+      
+      if (!stepOneData.email.includes('@')) {
+        throw new Error('Invalid email format');
+      }
       
       const insertData = {
         contact_name: stepOneData.contactName || '',
@@ -92,20 +112,70 @@ export const useOptimizedSupabaseValuation = () => {
         current_step: 1
       };
 
-      console.log('🚀 Invoking submit-valuation with data:', insertData);
+      console.log('🚀 Invoking submit-valuation edge function with data:', insertData);
       
-      const response = await supabase.functions.invoke('submit-valuation', {
-        body: insertData
-      });
+      try {
+        const response = await supabase.functions.invoke('submit-valuation', {
+          body: insertData
+        });
 
-      console.log('📥 Submit valuation response:', response);
+        console.log('📥 Submit valuation response:', { data: response.data, error: response.error });
 
-      if (response.error) {
-        console.error('❌ Submit valuation error:', response.error);
-        throw new Error(`Database error: ${response.error.message}`);
+        if (response.error) {
+          console.warn('⚠️ Edge function failed, attempting direct database insertion...');
+          throw new Error(`Edge function failed: ${response.error.message || JSON.stringify(response.error)}`);
+        }
+
+        if (response.data?.success && response.data?.uniqueToken) {
+          console.log('✅ Initial valuation created via edge function:', response.data.uniqueToken);
+          return response.data;
+        } else {
+          console.warn('⚠️ Edge function succeeded but returned invalid data:', response.data);
+          throw new Error('Edge function returned invalid response');
+        }
+      } catch (edgeFunctionError) {
+        console.warn('🔄 Edge function failed, attempting direct database insertion fallback...');
+        console.error('Edge function error details:', edgeFunctionError);
+        
+        // Fallback: inserción directa en la base de datos
+        const fallbackData = {
+          contact_name: stepOneData.contactName,
+          company_name: stepOneData.companyName,
+          email: stepOneData.email,
+          phone: stepOneData.phone || '',
+          phone_e164: stepOneData.phone_e164 || '',
+          whatsapp_opt_in: stepOneData.whatsapp_opt_in || false,
+          cif: stepOneData.cif || '',
+          industry: stepOneData.industry || '',
+          activity_description: stepOneData.activityDescription || '',
+          employee_range: stepOneData.employeeRange || '',
+          valuation_status: 'in_progress',
+          completion_percentage: 25,
+          current_step: 1,
+          ip_address: await getIPAddress(),
+          user_agent: navigator.userAgent
+        };
+        
+        console.log('📤 Attempting direct database insertion:', fallbackData);
+        
+        const { data: insertData, error: insertError } = await supabase
+          .from('company_valuations')
+          .insert(fallbackData)
+          .select('unique_token')
+          .single();
+        
+        if (insertError) {
+          console.error('❌ Direct insertion failed:', insertError);
+          throw new Error(`Both edge function and direct insertion failed. Edge function: ${edgeFunctionError.message}. Direct insertion: ${insertError.message}`);
+        }
+        
+        if (insertData?.unique_token) {
+          console.log('✅ Initial valuation created via direct insertion fallback:', insertData.unique_token);
+          return { success: true, uniqueToken: insertData.unique_token };
+        } else {
+          throw new Error('Direct insertion succeeded but no unique_token returned');
+        }
       }
-
-      return response.data;
     },
     { 
       debounceMs: 500,
