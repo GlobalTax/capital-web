@@ -4,11 +4,13 @@ import Hero from '@/components/suiteloop/Hero';
 import ExecutiveSummary from '@/components/suiteloop/ExecutiveSummary';
 import MarketAnalysis from '@/components/suiteloop/MarketAnalysis';
 import PainPoints from '@/components/suiteloop/PainPoints';
-import CompetitiveMatrix from '@/components/suiteloop/CompetitiveMatrix';
 import ValueProposition from '@/components/suiteloop/ValueProposition';
+import CompetitiveMatrix from '@/components/suiteloop/CompetitiveMatrix';
+import RegulatoryTimeline from '@/components/suiteloop/RegulatoryTimeline';
 import ProductDemo from '@/components/suiteloop/ProductDemo';
 import ROICalculator from '@/components/suiteloop/ROICalculator';
 import FAQ from '@/components/suiteloop/FAQ';
+import TrustSignals from '@/components/suiteloop/TrustSignals';
 import { seoConfig } from '@/data/suiteloop-data';
 
 const LandingSuiteLoop: React.FC = () => {
@@ -117,9 +119,11 @@ const LandingSuiteLoop: React.FC = () => {
       <PainPoints />
       <ValueProposition />
       <CompetitiveMatrix />
+      <RegulatoryTimeline />
       <ProductDemo />
       <ROICalculator />
       <FAQ />
+      <TrustSignals />
     </LandingLayout>
   );
 };
