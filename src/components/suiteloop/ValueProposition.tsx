@@ -23,16 +23,23 @@ const ValueProposition: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {suiteloopData.propuestaValor.map((beneficio, index) => {
-              const IconComponent = iconMap[beneficio.titulo as keyof typeof iconMap];
-              
+            {suiteloopData.propuestaValor.productos.map((producto, index) => {
+              const iconMap = {
+                Network: Zap,
+                Users: Users,
+                ScanLine: CheckCircle,
+                CreditCard: Shield,
+                Calendar: TrendingUp,
+              } as const;
+              const IconComponent = iconMap[producto.icon as keyof typeof iconMap];
               return (
                 <div key={index} className="text-center p-6 bg-background rounded-lg border border-border">
                   <div className="flex justify-center mb-4">
                     {IconComponent && <IconComponent className="h-8 w-8 text-primary" />}
                   </div>
-                  <h3 className="font-semibold text-foreground mb-3">{beneficio.titulo}</h3>
-                  <div className="text-2xl font-bold text-primary">{beneficio.impacto}</div>
+                  <h3 className="font-semibold text-foreground mb-2">{producto.nombre}</h3>
+                  <p className="text-sm text-muted-foreground mb-3">{producto.descripcion}</p>
+                  <div className="text-primary font-semibold">{producto.beneficio}</div>
                 </div>
               );
             })}

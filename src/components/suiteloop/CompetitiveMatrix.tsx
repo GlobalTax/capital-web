@@ -1,8 +1,9 @@
 import React from 'react';
-import { Check, X } from 'lucide-react';
 import { suiteloopData } from '@/data/suiteloop-data';
 
 const CompetitiveMatrix: React.FC = () => {
+  const rows = suiteloopData.mixCompetidores;
+
   return (
     <section className="py-16 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -16,39 +17,21 @@ const CompetitiveMatrix: React.FC = () => {
           <div className="bg-background rounded-lg border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-muted">
+                <thead className="bg-muted/40">
                   <tr>
-                    <th className="text-left p-4 font-semibold">Característica</th>
-                    <th className="text-center p-4 font-semibold text-primary">SuiteLoop</th>
-                    <th className="text-center p-4 font-semibold">Competidor A</th>
-                    <th className="text-center p-4 font-semibold">Competidor B</th>
+                    <th className="text-left p-4 font-semibold">Proveedor</th>
+                    <th className="text-center p-4 font-semibold">Cuota</th>
+                    <th className="text-left p-4 font-semibold">Fortaleza</th>
+                    <th className="text-left p-4 font-semibold">Gap</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {suiteloopData.matrizCompetitiva.map((row, index) => (
-                    <tr key={index} className="border-t border-border">
-                      <td className="p-4 font-medium">{row.caracteristica}</td>
-                      <td className="text-center p-4">
-                        {row.suiteloop ? (
-                          <Check className="h-5 w-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-5 w-5 text-red-500 mx-auto" />
-                        )}
-                      </td>
-                      <td className="text-center p-4">
-                        {row.competidorA ? (
-                          <Check className="h-5 w-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-5 w-5 text-red-500 mx-auto" />
-                        )}
-                      </td>
-                      <td className="text-center p-4">
-                        {row.competidorB ? (
-                          <Check className="h-5 w-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-5 w-5 text-red-500 mx-auto" />
-                        )}
-                      </td>
+                  {rows.map((r, i) => (
+                    <tr key={i} className="border-t border-border">
+                      <td className="p-4 font-medium">{r.proveedor}</td>
+                      <td className="text-center p-4 text-primary font-semibold">{r.marketShare}%</td>
+                      <td className="p-4 text-muted-foreground">{r.fuerza}</td>
+                      <td className="p-4 text-muted-foreground">{r.gap}</td>
                     </tr>
                   ))}
                 </tbody>

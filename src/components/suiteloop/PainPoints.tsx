@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, FileText, AlertTriangle, Users } from 'lucide-react';
+import { Clock, FileText, AlertTriangle, Users, MessageSquareX, TrendingUp } from 'lucide-react';
 import { suiteloopData } from '@/data/suiteloop-data';
 
 const PainPoints: React.FC = () => {
@@ -22,7 +22,8 @@ const PainPoints: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {suiteloopData.dolores.map((dolor, index) => {
-              const IconComponent = iconMap[dolor.titulo as keyof typeof iconMap];
+              const iconMap = { Clock, MessageSquareX, TrendingUp, AlertTriangle, Users } as const;
+              const IconComponent = iconMap[dolor.icon as keyof typeof iconMap] || Clock;
               
               return (
                 <div key={index} className="p-6 border border-border rounded-lg bg-background">
@@ -31,7 +32,7 @@ const PainPoints: React.FC = () => {
                       {IconComponent && <IconComponent className="h-6 w-6 text-primary" />}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground mb-2">{dolor.titulo}</h3>
+                      <h3 className="font-semibold text-foreground mb-2">{dolor.pain}</h3>
                       <p className="text-sm text-muted-foreground">{dolor.descripcion}</p>
                     </div>
                   </div>
