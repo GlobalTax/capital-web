@@ -6,7 +6,6 @@ import MarketAnalysis from '@/components/suiteloop/MarketAnalysis';
 import PainPoints from '@/components/suiteloop/PainPoints';
 import CompetitiveMatrix from '@/components/suiteloop/CompetitiveMatrix';
 import ValueProposition from '@/components/suiteloop/ValueProposition';
-import RegulatoryTimeline from '@/components/suiteloop/RegulatoryTimeline';
 import ProductDemo from '@/components/suiteloop/ProductDemo';
 import ROICalculator from '@/components/suiteloop/ROICalculator';
 import FAQ from '@/components/suiteloop/FAQ';
@@ -116,9 +115,8 @@ const LandingSuiteLoop: React.FC = () => {
       <ExecutiveSummary />
       <MarketAnalysis />
       <PainPoints />
-      <CompetitiveMatrix />
       <ValueProposition />
-      <RegulatoryTimeline />
+      <CompetitiveMatrix />
       <ProductDemo />
       <ROICalculator />
       <FAQ />
