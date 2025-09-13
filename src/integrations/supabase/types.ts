@@ -3830,6 +3830,15 @@ export type Database = {
           security_risk_level: string
         }[]
       }
+      audit_tracking_data_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_count: number
+          access_date: string
+          top_utm_sources: string[]
+          unique_visitors: number
+        }[]
+      }
       bootstrap_first_admin: {
         Args: { user_email: string }
         Returns: boolean
@@ -3995,6 +4004,10 @@ export type Database = {
           user_id?: string
           violation_type: string
         }
+        Returns: undefined
+      }
+      log_tracking_access_violation: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       monitor_security_violations: {
