@@ -183,24 +183,51 @@ export const useContactForm = () => {
             contactData = { id: 'sell_lead_success' };
           }
         } else {
-          const contactLeadData = {
-            full_name: validatedData.fullName,
-            company: validatedData.company,
-            phone: validatedData.phone || null,
-            email: validatedData.email,
-            service_type: validatedData.serviceType,
-            investment_budget: validatedData.investmentBudget || null,
-            sectors_of_interest: validatedData.sectorsOfInterest || null,
-            status: 'new' as const,
-            user_agent: navigator.userAgent.slice(0, 255),
-          };
+          if (validatedData.serviceType === 'comprar') {
+            const acquisitionData = {
+              full_name: validatedData.fullName,
+              company: validatedData.company,
+              email: validatedData.email,
+              phone: validatedData.phone || null,
+              investment_range: validatedData.investmentBudget || null,
+              sectors_of_interest: validatedData.sectorsOfInterest || null,
+              acquisition_type: null,
+              target_timeline: null,
+              additional_details: validatedData.message || null,
+              status: 'new' as const,
+              utm_source: trackingData.utm_source,
+              utm_medium: trackingData.utm_medium,
+              utm_campaign: trackingData.utm_campaign,
+              referrer: trackingData.referrer,
+              user_agent: navigator.userAgent.slice(0, 255),
+            };
 
-          const { error } = await supabase
-            .from('contact_leads')
-            .insert([contactLeadData]);
+            const { error } = await supabase
+              .from('acquisition_leads')
+              .insert([acquisitionData]);
 
-          if (error) throw error;
-          contactData = { id: 'contact_lead_success' };
+            if (error) throw error;
+            contactData = { id: 'acquisition_lead_success' };
+          } else {
+            const contactLeadData = {
+              full_name: validatedData.fullName,
+              company: validatedData.company,
+              phone: validatedData.phone || null,
+              email: validatedData.email,
+              service_type: validatedData.serviceType,
+              investment_budget: validatedData.investmentBudget || null,
+              sectors_of_interest: validatedData.sectorsOfInterest || null,
+              status: 'new' as const,
+              user_agent: navigator.userAgent.slice(0, 255),
+            };
+
+            const { error } = await supabase
+              .from('contact_leads')
+              .insert([contactLeadData]);
+
+            if (error) throw error;
+            contactData = { id: 'contact_lead_success' };
+          }
         }
       } catch (primaryError: any) {
         // Fallback: try contact_leads to avoid losing the lead
@@ -249,7 +276,7 @@ export const useContactForm = () => {
       // 7. Insert into form_submissions (non-blocking)
       console.log('💾 Recording form submission...');
       const formSubmissionData = {
-        form_type: 'contact_form' as const,
+        form_type: 'contact' as const,
         full_name: validatedData.fullName,
         email: validatedData.email,
         phone: validatedData.phone || null,

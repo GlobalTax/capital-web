@@ -36,7 +36,16 @@ export const contactFormSchema = z.object({
   phone: z.string()
     .optional()
     .transform(val => val ? sanitizeInput(val.trim(), { maxLength: 20 }) : undefined)
-    .refine(val => !val || phoneRegex.test(val.replace(/[\s-]/g, '')), {
+    .refine(val => {
+      if (!val) return true;
+      // Allow formats like +34 695 717 490, 0034 695717490, (34) 695-717-490, 695717490
+      const cleaned = val.replace(/[^\d+]/g, '');
+      let digits = cleaned.startsWith('+') ? cleaned.slice(1) : cleaned;
+      if (digits.startsWith('0034')) digits = digits.slice(4);
+      if (digits.startsWith('34')) digits = digits.slice(2);
+      const onlyDigits = digits.replace(/\D/g, '');
+      return /^[6-9]\d{8}$/.test(onlyDigits);
+    }, {
       message: 'Formato de teléfono español inválido'
     }),
   
