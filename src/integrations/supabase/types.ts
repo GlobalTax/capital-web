@@ -889,6 +889,125 @@ export type Database = {
         }
         Relationships: []
       }
+      company_acquisition_inquiries: {
+        Row: {
+          acquisition_type: string | null
+          company: string
+          created_at: string
+          email: string
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          investment_budget: string | null
+          ip_address: unknown | null
+          message: string | null
+          notes: string | null
+          page_origin: string
+          phone: string | null
+          preferred_location: string | null
+          priority: string
+          processed_at: string | null
+          processed_by: string | null
+          referrer: string | null
+          sectors_of_interest: string | null
+          status: string
+          target_timeline: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          acquisition_type?: string | null
+          company: string
+          created_at?: string
+          email: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          investment_budget?: string | null
+          ip_address?: unknown | null
+          message?: string | null
+          notes?: string | null
+          page_origin?: string
+          phone?: string | null
+          preferred_location?: string | null
+          priority?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string
+          target_timeline?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          acquisition_type?: string | null
+          company?: string
+          created_at?: string
+          email?: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          investment_budget?: string | null
+          ip_address?: unknown | null
+          message?: string | null
+          notes?: string | null
+          page_origin?: string
+          phone?: string | null
+          preferred_location?: string | null
+          priority?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string
+          target_timeline?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_acquisition_inquiries_processed_by"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       company_operations: {
         Row: {
           company_name: string

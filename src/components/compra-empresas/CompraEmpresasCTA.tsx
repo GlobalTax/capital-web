@@ -4,60 +4,54 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { useContactForm } from '@/hooks/useContactForm';
-import { useToast } from '@/hooks/use-toast';
+import { useCompraEmpresasForm, type CompraEmpresasFormData } from '@/hooks/useCompraEmpresasForm';
 
 const CompraEmpresasCTA = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CompraEmpresasFormData>({
     fullName: '',
     company: '',
     email: '',
     phone: '',
-    investmentRange: '',
-    preferredSectors: '',
+    investmentBudget: undefined,
+    sectorsOfInterest: '',
     acquisitionType: '',
-    timeline: '',
+    targetTimeline: '',
+    preferredLocation: '',
     message: ''
   });
 
-  const { submitContactForm, isSubmitting } = useContactForm();
-  const { toast } = useToast();
+  const { submitInquiry, isSubmitting } = useCompraEmpresasForm();
 
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = (name: keyof CompraEmpresasFormData, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: keyof CompraEmpresasFormData, value: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: value === '' ? undefined : value 
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      await submitContactForm({
-        fullName: formData.fullName,
-        company: formData.company,
-        email: formData.email,
-        phone: formData.phone,
-        serviceType: 'comprar',
-        message: `Compra de Empresas - ${formData.acquisitionType} - Rango: ${formData.investmentRange}`
-      }, 'compra-empresas');
-
+    const result = await submitInquiry(formData);
+    
+    if (result.success) {
+      // Reset form on success
       setFormData({
         fullName: '',
         company: '',
         email: '',
         phone: '',
-        investmentRange: '',
-        preferredSectors: '',
+        investmentBudget: undefined,
+        sectorsOfInterest: '',
         acquisitionType: '',
-        timeline: '',
+        targetTimeline: '',
+        preferredLocation: '',
         message: ''
       });
-
-      toast({
-        title: "Solicitud enviada",
-        description: "Te contactaremos en 24h para discutir tu estrategia de adquisición.",
-      });
-    } catch (error) {
-      // Error handled by useContactForm
     }
   };
 
@@ -136,15 +130,16 @@ const CompraEmpresasCTA = () => {
                     <label className="block text-sm font-medium text-white mb-2">
                       Rango de Inversión
                     </label>
-                    <Select onValueChange={(value) => handleInputChange('investmentRange', value)}>
+                    <Select onValueChange={(value) => handleSelectChange('investmentBudget', value)}>
                       <SelectTrigger className="bg-white/10 border-white/20 text-white">
                         <SelectValue placeholder="Selecciona rango" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1-5M">1M€ - 5M€</SelectItem>
-                        <SelectItem value="5-15M">5M€ - 15M€</SelectItem>
-                        <SelectItem value="15-50M">15M€ - 50M€</SelectItem>
-                        <SelectItem value="50M+">50M€+</SelectItem>
+                        <SelectItem value="menos-500k">Menos de 500k€</SelectItem>
+                        <SelectItem value="500k-1m">500k€ - 1M€</SelectItem>
+                        <SelectItem value="1m-5m">1M€ - 5M€</SelectItem>
+                        <SelectItem value="5m-10m">5M€ - 10M€</SelectItem>
+                        <SelectItem value="mas-10m">Más de 10M€</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -171,8 +166,8 @@ const CompraEmpresasCTA = () => {
                     Sectores de Interés
                   </label>
                   <Input
-                    value={formData.preferredSectors}
-                    onChange={(e) => handleInputChange('preferredSectors', e.target.value)}
+                    value={formData.sectorsOfInterest}
+                    onChange={(e) => handleInputChange('sectorsOfInterest', e.target.value)}
                     placeholder="Ej: Tecnología, Industrial, Servicios..."
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                   />
@@ -182,7 +177,7 @@ const CompraEmpresasCTA = () => {
                   <label className="block text-sm font-medium text-white mb-2">
                     Timeline Objetivo
                   </label>
-                  <Select onValueChange={(value) => handleInputChange('timeline', value)}>
+                  <Select onValueChange={(value) => handleSelectChange('targetTimeline', value)}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
                       <SelectValue placeholder="¿Cuándo quieres completar la adquisición?" />
                     </SelectTrigger>
