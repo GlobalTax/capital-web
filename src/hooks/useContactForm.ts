@@ -148,26 +148,90 @@ export const useContactForm = () => {
       const trackingData = getTrackingData(pageOrigin);
       console.log('📊 Tracking data collected');
 
-      // 6. Insert into contact_leads
-      console.log('💾 Inserting contact lead...');
-      const contactLeadData = {
-        full_name: validatedData.fullName,
-        company: validatedData.company,
-        phone: validatedData.phone || null,
-        email: validatedData.email,
-        service_type: validatedData.serviceType,
-        investment_budget: validatedData.investmentBudget || null,
-        sectors_of_interest: validatedData.sectorsOfInterest || null,
-        status: 'new' as const,
-        user_agent: navigator.userAgent.slice(0, 255),
-      };
+      // 6. Insert lead (sell_leads for 'vender', fallback to contact_leads)
+      console.log('💾 Inserting lead...');
+      let contactData: any = null;
+      let contactError: any = null;
 
-      const { data: contactData, error: contactError } = await supabase
-        .from('contact_leads')
-        .insert([contactLeadData])
-        .select()
-        .single();
+      try {
+        if (validatedData.serviceType === 'vender') {
+          const sellLeadData = {
+            full_name: validatedData.fullName,
+            company: validatedData.company,
+            email: validatedData.email,
+            phone: validatedData.phone || null,
+            message: validatedData.message || null,
+            status: 'new' as const,
+            page_origin: pageOrigin || 'unknown',
+            user_agent: navigator.userAgent.slice(0, 255),
+            utm_source: trackingData.utm_source,
+            utm_medium: trackingData.utm_medium,
+            utm_campaign: trackingData.utm_campaign,
+            utm_term: trackingData.utm_term,
+            utm_content: trackingData.utm_content,
+            referrer: trackingData.referrer,
+          };
 
+          const { data, error } = await supabase
+            .from('sell_leads')
+            .insert([sellLeadData])
+            .select()
+            .single();
+
+          if (error) {
+            console.warn('⚠️ sell_leads insert failed, falling back to contact_leads:', error.message);
+            throw error;
+          } else {
+            contactData = data;
+          }
+        } else {
+          const contactLeadData = {
+            full_name: validatedData.fullName,
+            company: validatedData.company,
+            phone: validatedData.phone || null,
+            email: validatedData.email,
+            service_type: validatedData.serviceType,
+            investment_budget: validatedData.investmentBudget || null,
+            sectors_of_interest: validatedData.sectorsOfInterest || null,
+            status: 'new' as const,
+            user_agent: navigator.userAgent.slice(0, 255),
+          };
+
+          const { data, error } = await supabase
+            .from('contact_leads')
+            .insert([contactLeadData])
+            .select()
+            .single();
+
+          if (error) throw error;
+          contactData = data;
+        }
+      } catch (primaryError: any) {
+        // Fallback: try contact_leads to avoid losing the lead
+        const contactLeadData = {
+          full_name: validatedData.fullName,
+          company: validatedData.company,
+          phone: validatedData.phone || null,
+          email: validatedData.email,
+          service_type: validatedData.serviceType,
+          investment_budget: validatedData.investmentBudget || null,
+          sectors_of_interest: validatedData.sectorsOfInterest || null,
+          status: 'new' as const,
+          user_agent: navigator.userAgent.slice(0, 255),
+        };
+
+        const { data, error } = await supabase
+          .from('contact_leads')
+          .insert([contactLeadData])
+          .select()
+          .single();
+
+        if (error) {
+          contactError = error;
+        } else {
+          contactData = data;
+        }
+      }
       if (contactError) {
         console.error('❌ Contact lead insert failed:', contactError.message);
         
@@ -186,7 +250,6 @@ export const useContactForm = () => {
         }
         return { success: false, error: contactError.message };
       }
-
       console.log('✅ Contact lead inserted:', contactData.id);
 
       // 7. Insert into form_submissions (non-blocking)
