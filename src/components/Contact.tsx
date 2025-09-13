@@ -32,7 +32,7 @@ const Contact: React.FC<ContactProps> = ({
         return {
           title: title || "Vende tu Empresa al Mejor Precio",
           description: description || "Obtén una valoración profesional y encuentra el comprador perfecto para tu empresa con nuestro proceso especializado.",
-          bgClass: "bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10"
+          bgClass: "bg-background"
         };
       default:
         return {
