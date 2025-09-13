@@ -3839,6 +3839,16 @@ export type Database = {
           unique_visitors: number
         }[]
       }
+      audit_valuation_data_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_count: number
+          access_date: string
+          anonymous_access_count: number
+          high_risk_access_count: number
+          unique_ips: number
+        }[]
+      }
       bootstrap_first_admin: {
         Args: { user_email: string }
         Returns: boolean
@@ -4007,6 +4017,10 @@ export type Database = {
         Returns: undefined
       }
       log_tracking_access_violation: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      log_valuation_access_attempt: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
