@@ -172,17 +172,15 @@ export const useContactForm = () => {
             referrer: trackingData.referrer,
           };
 
-          const { data, error } = await supabase
+          const { error } = await supabase
             .from('sell_leads')
-            .insert([sellLeadData])
-            .select()
-            .single();
+            .insert([sellLeadData]);
 
           if (error) {
             console.warn('⚠️ sell_leads insert failed, falling back to contact_leads:', error.message);
             throw error;
           } else {
-            contactData = data;
+            contactData = { id: 'sell_lead_success' };
           }
         } else {
           const contactLeadData = {
@@ -197,14 +195,12 @@ export const useContactForm = () => {
             user_agent: navigator.userAgent.slice(0, 255),
           };
 
-          const { data, error } = await supabase
+          const { error } = await supabase
             .from('contact_leads')
-            .insert([contactLeadData])
-            .select()
-            .single();
+            .insert([contactLeadData]);
 
           if (error) throw error;
-          contactData = data;
+          contactData = { id: 'contact_lead_success' };
         }
       } catch (primaryError: any) {
         // Fallback: try contact_leads to avoid losing the lead
@@ -220,16 +216,14 @@ export const useContactForm = () => {
           user_agent: navigator.userAgent.slice(0, 255),
         };
 
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('contact_leads')
-          .insert([contactLeadData])
-          .select()
-          .single();
+          .insert([contactLeadData]);
 
         if (error) {
           contactError = error;
         } else {
-          contactData = data;
+          contactData = { id: 'fallback_contact' };
         }
       }
       if (contactError) {
@@ -250,7 +244,7 @@ export const useContactForm = () => {
         }
         return { success: false, error: contactError.message };
       }
-      console.log('✅ Contact lead inserted:', contactData.id);
+      console.log('✅ Contact lead inserted:', contactData?.id || 'success');
 
       // 7. Insert into form_submissions (non-blocking)
       console.log('💾 Recording form submission...');
@@ -284,7 +278,7 @@ export const useContactForm = () => {
         console.log('📧 Sending notifications...');
         const { error: functionError } = await supabase.functions.invoke('send-form-notifications', {
           body: {
-            submissionId: contactData.id,
+            submissionId: contactData?.id || 'unknown',
             formType: 'contact',
             email: validatedData.email,
             fullName: validatedData.fullName,
@@ -393,7 +387,7 @@ export const useContactForm = () => {
 
       // 5. Insert contact lead
       console.log('💾 Inserting operation contact lead...');
-      const { data: contactData, error: contactError } = await supabase
+      const { error: contactError } = await supabase
         .from('contact_leads')
         .insert([{
           full_name: validatedData.fullName,
@@ -404,9 +398,7 @@ export const useContactForm = () => {
           referral: `operation_${validatedData.operationId}`,
           status: 'new',
           user_agent: navigator.userAgent.slice(0, 255),
-        }])
-        .select()
-        .single();
+        }]);
 
       if (contactError) {
         console.error('❌ Operation contact lead failed:', contactError.message);
@@ -418,7 +410,7 @@ export const useContactForm = () => {
         return { success: false, error: contactError.message };
       }
 
-      console.log('✅ Operation contact lead inserted:', contactData.id);
+      console.log('✅ Operation contact lead inserted');
 
       // 6. Insert form submission (non-blocking)
       const formSubmissionData = {
@@ -442,7 +434,7 @@ export const useContactForm = () => {
       try {
         await supabase.functions.invoke('send-form-notifications', {
           body: {
-            submissionId: contactData.id,
+            submissionId: 'operation_contact',
             formType: 'operation_inquiry',
             email: validatedData.email,
             fullName: validatedData.fullName,
