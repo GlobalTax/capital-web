@@ -89,12 +89,45 @@ const EcosistemaIntegral = () => {
     }
   ];
 
-  // Add loading state check
   if (isLoading) {
     return (
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">Cargando métricas...</div>
+          {/* Header Skeleton */}
+          <div className="text-center mb-16">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded-lg w-48 mx-auto mb-6"></div>
+              <div className="h-10 bg-gray-200 rounded w-96 mx-auto mb-6"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+            </div>
+          </div>
+
+          {/* Statistics Skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Services Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="h-5 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );

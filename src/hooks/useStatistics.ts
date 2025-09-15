@@ -24,10 +24,9 @@ export const useStatistics = (location?: string) => {
           .eq('is_active', true)
           .order('display_order');
 
-        // Filter by location if provided - simplified approach
+        // Filter by location if provided
         if (location) {
           console.log('📍 Filtering by location:', location);
-          // Use a more robust filtering approach
           query = query.or(`display_locations.cs.{${location}},display_locations.is.null`);
         }
 
@@ -37,33 +36,22 @@ export const useStatistics = (location?: string) => {
 
         if (error) {
           console.error('❌ Error fetching statistics:', error);
-          // Don't throw error immediately, try fallback
-          console.log('🔄 Trying fallback query without location filter...');
-          
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('key_statistics')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order');
-            
-          if (fallbackError) {
-            console.error('❌ Fallback query also failed:', fallbackError);
-            throw fallbackError;
-          }
-          
-          console.log('✅ Fallback query successful:', fallbackData);
-          return (fallbackData || []) as Statistic[];
+          // Return empty array instead of throwing to prevent blocking UI
+          return [] as Statistic[];
         }
 
+        // Ensure we always return an array
         return (data || []) as Statistic[];
       } catch (err) {
         console.error('💥 Statistics fetch completely failed:', err);
-        throw err;
+        // Return empty array instead of throwing to prevent blocking UI
+        return [] as Statistic[];
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 2,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 1000 * 60 * 10, // 10 minutes for better caching
+    retry: 1, // Reduce retries to prevent delays
+    retryDelay: 1000, // Fixed 1 second delay
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 };
 
