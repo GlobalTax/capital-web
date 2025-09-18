@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, TrendingUp, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { secureLogger } from '@/utils/secureLogger';
 
 interface CaseStudy {
   id: string;
@@ -28,7 +29,7 @@ const CaseStudiesCompact = () => {
   useEffect(() => {
     const fetchCases = async () => {
       try {
-        console.log('🎯 Fetching featured case studies...');
+        secureLogger.debug('Fetching featured case studies', undefined, { component: 'CaseStudiesCompact' });
         
         const { data, error } = await supabase
           .from('case_studies')
@@ -38,13 +39,13 @@ const CaseStudiesCompact = () => {
           .order('year', { ascending: false })
           .limit(3);
 
-        console.log('📊 Case studies result:', { data, error });
+        secureLogger.debug('Case studies result', { data, error }, { component: 'CaseStudiesCompact' });
 
         if (error) {
-          console.error('❌ Error fetching case studies:', error);
+          secureLogger.error('Error fetching case studies', error, { component: 'CaseStudiesCompact' });
           
           // Try fallback without featured filter
-          console.log('🔄 Trying fallback query for any active cases...');
+          secureLogger.debug('Trying fallback query for any active cases', undefined, { component: 'CaseStudiesCompact' });
           const { data: fallbackData, error: fallbackError } = await supabase
             .from('case_studies')
             .select('*')
@@ -53,17 +54,17 @@ const CaseStudiesCompact = () => {
             .limit(3);
             
           if (fallbackError) {
-            console.error('❌ Fallback query failed:', fallbackError);
+            secureLogger.error('Fallback query failed', fallbackError, { component: 'CaseStudiesCompact' });
           } else {
-            console.log('✅ Fallback successful:', fallbackData);
+            secureLogger.debug('Fallback successful', fallbackData, { component: 'CaseStudiesCompact' });
             setCases(fallbackData || []);
           }
         } else {
-          console.log('✅ Featured cases loaded:', data?.length || 0);
+          secureLogger.debug('Featured cases loaded', { count: data?.length || 0 }, { component: 'CaseStudiesCompact' });
           setCases(data || []);
         }
       } catch (error) {
-        console.error('💥 Case studies fetch completely failed:', error);
+        secureLogger.error('Case studies fetch completely failed', error, { component: 'CaseStudiesCompact' });
         setCases([]);
       } finally {
         setIsLoading(false);

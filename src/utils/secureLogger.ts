@@ -256,12 +256,43 @@ class SecureLogger {
 // Instancia singleton
 export const secureLogger = new SecureLogger();
 
+// Función para detectar errores de extensiones de Chrome
+const isChromeExtensionError = (message: string, source?: string): boolean => {
+  const chromeExtensionPatterns = [
+    'chrome-extension',
+    'chrome://extensions',
+    'Extension context invalidated',
+    'message port closed',
+    'message channel closed',
+    'listener indicated an asynchronous response',
+    'Cannot access contents of',
+    'Script error.',
+    'Non-Error promise rejection captured'
+  ];
+  
+  return chromeExtensionPatterns.some(pattern => 
+    message?.toLowerCase().includes(pattern.toLowerCase()) ||
+    source?.toLowerCase().includes(pattern.toLowerCase())
+  );
+};
+
 // Configurar captura automática de errores no manejados
 window.addEventListener('error', (event) => {
+  // Filtrar errores de extensiones de Chrome
+  if (isChromeExtensionError(event.message, event.filename)) {
+    return; // Ignorar silenciosamente
+  }
+  
   secureLogger.captureUnhandledError(event.error, event.filename);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
+  // Filtrar rechazos de promesas relacionados con extensiones
+  const reason = event.reason?.toString() || '';
+  if (isChromeExtensionError(reason)) {
+    return; // Ignorar silenciosamente
+  }
+  
   secureLogger.captureUnhandledRejection(event.reason, event.promise);
 });
 

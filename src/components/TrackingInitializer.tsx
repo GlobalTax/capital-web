@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { TrackingConfigService } from '@/services/TrackingConfigService';
 import { initAnalytics } from '@/utils/analytics/AnalyticsManager';
 import { initEventSynchronizer } from '@/utils/analytics/EventSynchronizer';
+import { secureLogger } from '@/utils/secureLogger';
 
 /**
  * Component responsible for initializing tracking services
@@ -22,29 +23,29 @@ export const TrackingInitializer = () => {
                               currentDomain.endsWith('.lovable.app');
         const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
         
-        console.log('🔍 Tracking domain analysis:', {
+        secureLogger.debug('Tracking domain analysis', {
           currentDomain,
           currentUrl,
           isProductionDomain,
           isLovableDomain,
           isLocalhost,
           userAgent: navigator.userAgent.slice(0, 50) + '...'
-        });
+        }, { component: 'TrackingInitializer' });
         
         // Allow tracking on production, lovable preview, and localhost for testing
         const shouldInitialize = isProductionDomain || isLovableDomain || isLocalhost;
         
         if (!shouldInitialize) {
-          console.log('❌ Tracking disabled on unknown domain:', currentDomain);
+          secureLogger.debug('Tracking disabled on unknown domain', { currentDomain }, { component: 'TrackingInitializer' });
           return;
         }
         
         if (isProductionDomain) {
-          console.log('✅ Production domain detected - full tracking enabled');
+          secureLogger.info('Production domain detected - full tracking enabled', undefined, { component: 'TrackingInitializer' });
         } else if (isLovableDomain) {
-          console.log('🧪 Lovable preview domain detected - testing mode enabled');
+          secureLogger.info('Lovable preview domain detected - testing mode enabled', undefined, { component: 'TrackingInitializer' });
         } else if (isLocalhost) {
-          console.log('🏠 Localhost detected - development mode enabled');
+          secureLogger.info('Localhost detected - development mode enabled', undefined, { component: 'TrackingInitializer' });
         }
         
         // Load saved tracking configuration
@@ -53,7 +54,7 @@ export const TrackingInitializer = () => {
         // Only initialize if we have at least one tracking service configured
         if (config.googleAnalyticsId || config.googleTagManagerId || config.facebookPixelId || config.linkedInInsightTag || config.hotjarId) {
           
-          console.log('Initializing tracking services', {
+          secureLogger.debug('Initializing tracking services', {
             hasGA: !!config.googleAnalyticsId,
             hasGTM: !!config.googleTagManagerId,
             hasFacebookPixel: !!config.facebookPixelId,
@@ -62,7 +63,7 @@ export const TrackingInitializer = () => {
             enableHeatmaps: config.enableHeatmaps,
             enableSessionRecording: config.enableSessionRecording,
             enableLeadTracking: config.enableLeadTracking
-          });
+          }, { component: 'TrackingInitializer' });
 
           // Initialize AnalyticsManager with configuration
           initAnalytics({
@@ -108,18 +109,18 @@ export const TrackingInitializer = () => {
               script.textContent = config.customTrackingCode;
               document.head.appendChild(script);
               
-              console.log('Custom tracking code executed');
+              secureLogger.debug('Custom tracking code executed', undefined, { component: 'TrackingInitializer' });
             } catch (error) {
-              console.error('Error executing custom tracking code:', error);
+              secureLogger.error('Error executing custom tracking code', error, { component: 'TrackingInitializer' });
             }
           }
 
-          console.log('Tracking services initialized successfully');
+          secureLogger.info('Tracking services initialized successfully', undefined, { component: 'TrackingInitializer' });
         } else {
-          console.log('No tracking services configured, skipping initialization');
+          secureLogger.debug('No tracking services configured, skipping initialization', undefined, { component: 'TrackingInitializer' });
         }
       } catch (error) {
-        console.error('Error initializing tracking services:', error);
+        secureLogger.error('Error initializing tracking services', error, { component: 'TrackingInitializer' });
       }
     };
 
@@ -145,9 +146,9 @@ const initHotjar = (siteId: string) => {
     script.src = `https://static.hotjar.com/c/hotjar-${siteId}.js?sv=6`;
     document.head.appendChild(script);
 
-    console.log('Hotjar initialized', { siteId });
+    secureLogger.debug('Hotjar initialized', { siteId }, { component: 'TrackingInitializer' });
   } catch (error) {
-    console.error('Error initializing Hotjar:', error);
+    secureLogger.error('Error initializing Hotjar', error, { component: 'TrackingInitializer' });
   }
 };
 
@@ -158,7 +159,7 @@ const initGoogleTagManager = (gtmId: string) => {
   try {
     // Avoid duplicate initialization
     if ((window as any).dataLayer) {
-      console.log('Google Tag Manager already initialized');
+      secureLogger.info('Google Tag Manager already initialized', undefined, { component: 'TrackingInitializer' });
       return;
     }
 
@@ -180,9 +181,9 @@ const initGoogleTagManager = (gtmId: string) => {
       height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
     document.body.insertBefore(gtmNoscript, document.body.firstChild);
 
-    console.log('Google Tag Manager initialized', { gtmId });
+    secureLogger.debug('Google Tag Manager initialized', { gtmId }, { component: 'TrackingInitializer' });
   } catch (error) {
-    console.error('Error initializing Google Tag Manager:', error);
+    secureLogger.error('Error initializing Google Tag Manager', error, { component: 'TrackingInitializer' });
   }
 };
 
@@ -211,8 +212,8 @@ const initLinkedInInsightTag = (partnerId: string) => {
     noscript.appendChild(img);
     document.head.appendChild(noscript);
 
-    console.log('LinkedIn Insight Tag initialized', { partnerId });
+    secureLogger.debug('LinkedIn Insight Tag initialized', { partnerId }, { component: 'TrackingInitializer' });
   } catch (error) {
-    console.error('Error initializing LinkedIn Insight Tag:', error);
+    secureLogger.error('Error initializing LinkedIn Insight Tag', error, { component: 'TrackingInitializer' });
   }
 };
