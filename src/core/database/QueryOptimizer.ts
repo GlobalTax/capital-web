@@ -291,21 +291,20 @@ class DatabaseQueryOptimizer {
 let queryOptimizerInstance: DatabaseQueryOptimizer | null = null;
 
 export const getQueryOptimizer = (): DatabaseQueryOptimizer => {
-  // TEMPORARILY DISABLED - Using direct supabase client instead
-  console.warn('QueryOptimizer temporarily disabled - using direct supabase client');
-  
   if (!queryOptimizerInstance) {
-    // Create a simple mock instance to avoid breaking existing code
+    // Create a pass-through instance when disabled
     queryOptimizerInstance = {
-      executeOptimizedQuery: async () => { 
-        throw new Error('QueryOptimizer disabled - use direct supabase client'); 
+      executeOptimizedQuery: async <T>(queryBuilder: any): Promise<T> => {
+        // Pass-through: execute query directly
+        const { data, error } = await queryBuilder;
+        if (error) throw error;
+        return data as T;
       },
       generatePerformanceReport: () => ({
-        totalQueries: 0,
-        avgExecutionTime: 0,
         cacheHitRate: 0,
+        averageOptimization: 0,
         slowQueries: [],
-        recommendations: ['Use direct supabase client instead of optimizer']
+        indexSuggestions: []
       }),
       clearCache: () => {},
       getMetrics: () => ({
