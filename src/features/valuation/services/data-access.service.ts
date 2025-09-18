@@ -2,7 +2,7 @@
 // Single point of truth for all database operations
 
 import { supabase } from '@/integrations/supabase/client';
-import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import type { CompanyData } from '@/types/valuation';
 // Remove V4 reference - type union updated
 import type { ExtendedCompanyData } from '@/features/valuation/types/unified.types';
@@ -23,7 +23,7 @@ export const dataAccessService = {
   
   // === SECTOR MULTIPLES ===
   async getSectorMultiples(): Promise<SectorMultiple[]> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const { data, error } = await supabase
@@ -39,7 +39,7 @@ export const dataAccessService = {
 
   // === COMPANY VALUATIONS ===
   async createValuation(valuationData: Partial<AnyCompanyData>, utmData?: any): Promise<string | null> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const token = this.generateToken();
@@ -75,7 +75,7 @@ export const dataAccessService = {
   },
 
   async updateValuation(token: string, updates: Partial<AnyCompanyData>, lastModifiedField?: string): Promise<boolean> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const updateData = {
@@ -109,7 +109,7 @@ export const dataAccessService = {
   },
 
   async finalizeValuation(token: string, result: any): Promise<boolean> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const { error } = await supabase
@@ -131,7 +131,7 @@ export const dataAccessService = {
   },
 
   async getValuationByToken(token: string): Promise<AnyCompanyData | null> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const { data, error } = await supabase
@@ -168,7 +168,7 @@ export const dataAccessService = {
 
   // === TRACKING & ANALYTICS ===
   async trackEvent(eventType: string, eventData: any): Promise<void> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     await handleAsyncError(async () => {
       // Use a simpler approach - just log for now, can be enhanced later
@@ -178,7 +178,7 @@ export const dataAccessService = {
 
   // === CONTACT LEADS ===
   async createContactLead(leadData: any): Promise<boolean> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const { error } = await supabase
@@ -202,7 +202,7 @@ export const dataAccessService = {
 
   // === NEWSLETTER ===
   async subscribeToNewsletter(email: string, utmData?: any): Promise<boolean> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       const { error } = await supabase
@@ -221,7 +221,7 @@ export const dataAccessService = {
 
   // === BLOG ===
   async getBlogPosts(limit?: number): Promise<any[]> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
       let query = supabase
@@ -239,7 +239,7 @@ export const dataAccessService = {
   },
 
   async trackBlogView(postId: string, postSlug: string, viewData: any): Promise<void> {
-    const { handleAsyncError } = useCentralizedErrorHandler();
+    const { handleAsyncError } = useErrorHandler();
     
     await handleAsyncError(async () => {
       const { error } = await supabase

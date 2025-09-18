@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { ErrorState } from '@/components/EmptyStates';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -32,7 +32,7 @@ export const SafeAsyncComponent = ({
     retryCount: 0
   });
   
-  const { handleError } = useCentralizedErrorHandler();
+  const { handleError } = useErrorHandler();
 
   const retry = () => {
     setState(prev => ({

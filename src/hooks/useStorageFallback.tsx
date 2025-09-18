@@ -4,7 +4,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useErrorHandler } from './useErrorHandler';
 
 interface StorageTestResult {
   localStorage: boolean;
@@ -35,7 +35,7 @@ export const useStorageFallback = () => {
     preferEdgeFunction: false
   });
 
-  const { handleError } = useCentralizedErrorHandler();
+  const { handleError } = useErrorHandler();
 
   // Detect storage capabilities and tracking prevention
   const testStorageCapabilities = useCallback(async (): Promise<StorageTestResult> => {

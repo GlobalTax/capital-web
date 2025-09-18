@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { CompanyData, ValuationResult } from '@/types/valuation';
-import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 interface RetryConfig {
   maxRetries: number;
@@ -18,7 +18,7 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 };
 
 export const useOptimizedSupabaseValuation = () => {
-  const { handleError, handleAsyncError } = useCentralizedErrorHandler();
+  const { handleError, handleAsyncError } = useErrorHandler();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCreatingInitial, setIsCreatingInitial] = useState(false);
   const [currentOperation, setCurrentOperation] = useState<string | null>(null);

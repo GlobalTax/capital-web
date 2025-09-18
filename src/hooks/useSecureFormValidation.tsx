@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useErrorHandler } from './useErrorHandler';
 import { 
   ValidationResult, 
   SecurityConfig, 
@@ -22,7 +22,7 @@ export const useSecureFormValidation = <T extends Record<string, any>>(
   const [data, setData] = useState<T>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
   const [touched, setTouched] = useState<Set<keyof T>>(new Set());
-  const { handleError } = useCentralizedErrorHandler();
+  const { handleError } = useErrorHandler();
 
   // Validadores predefinidos
   const validators = useMemo(() => ({

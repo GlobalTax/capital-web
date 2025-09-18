@@ -2,7 +2,7 @@
 // Hook para controles de emergencia de Circuit Breaker y Rate Limits
 
 import { useState, useCallback, useEffect } from 'react';
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useErrorHandler } from './useErrorHandler';
 import { logger } from '@/utils/logger';
 
 interface EmergencyOverrideState {
@@ -17,7 +17,7 @@ const STORAGE_KEY = 'capittal_emergency_override';
 const DEFAULT_DURATION = 30 * 60 * 1000; // 30 minutes default
 
 export const useEmergencyOverride = () => {
-  const { handleError } = useCentralizedErrorHandler();
+  const { handleError } = useErrorHandler();
   
   const [overrideState, setOverrideState] = useState<EmergencyOverrideState>({
     circuitBreakerDisabled: false,

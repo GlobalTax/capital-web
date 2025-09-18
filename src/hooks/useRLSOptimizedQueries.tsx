@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useErrorHandler } from './useErrorHandler';
 import { logger } from '@/utils/logger';
 
 interface CacheEntry<T> {
@@ -19,7 +19,7 @@ interface QueryConfig {
 
 export const useRLSOptimizedQueries = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { handleAsyncError } = useCentralizedErrorHandler();
+  const { handleAsyncError } = useErrorHandler();
   const cacheRef = useRef<Map<string, CacheEntry<any>>>(new Map());
 
   const getFromCache = useCallback(<T,>(key: string): T | null => {

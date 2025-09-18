@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { dataAccessService } from '../services/data-access.service';
 import { 
   ExtendedCompanyData, 
@@ -58,7 +58,7 @@ const createInitialState = (config: CalculatorConfig): CalculatorState => ({
 
 // ============= MAIN HOOK =============
 export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Partial<ExtendedCompanyData>) => {
-  const { handleError, handleAsyncError } = useCentralizedErrorHandler();
+  const { handleError, handleAsyncError } = useErrorHandler();
   const [state, setState] = useState<CalculatorState>(() => {
     const initial = createInitialState(config);
     if (initialData) {

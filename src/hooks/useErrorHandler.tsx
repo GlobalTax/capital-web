@@ -1,28 +1,75 @@
+import { useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+interface ErrorContext {
+  component?: string;
+  action?: string;
+  userId?: string;
+  metadata?: Record<string, any>;
+}
 
-// Mantener compatibilidad con la interfaz anterior
 interface UseErrorHandlerReturn {
-  handleError: (error: Error, context?: string) => void;
-  handleAsyncError: (asyncFn: () => Promise<void>, context?: string) => Promise<void>;
+  handleError: (error: Error, context?: ErrorContext | string) => void;
+  handleAsyncError: <T>(
+    asyncFn: () => Promise<T>, 
+    context?: ErrorContext | string
+  ) => Promise<T | null>;
+  logError: (error: Error, context?: ErrorContext | string) => void;
 }
 
 export const useErrorHandler = (): UseErrorHandlerReturn => {
-  const { handleError: centralizedHandleError, handleAsyncError: centralizedHandleAsyncError } = useCentralizedErrorHandler();
+  const { toast } = useToast();
 
-  const handleError = (error: Error, context?: string) => {
-    centralizedHandleError(error, { component: context });
-  };
+  const logError = useCallback((error: Error, context?: ErrorContext | string) => {
+    const errorContext = typeof context === 'string' ? { component: context } : context;
+    
+    logger.error('Application error', error, {
+      context: 'system',
+      component: errorContext?.component || 'unknown',
+      data: {
+        action: errorContext?.action,
+        userId: errorContext?.userId,
+        metadata: errorContext?.metadata
+      }
+    });
+  }, []);
 
-  const handleAsyncError = async (
-    asyncFn: () => Promise<void>, 
-    context?: string
-  ) => {
-    await centralizedHandleAsyncError(asyncFn, { component: context });
-  };
+  const handleError = useCallback((error: Error, context?: ErrorContext | string) => {
+    logError(error, context);
+    
+    // Solo mostrar toast para errores críticos, no de tracking
+    if (!error.message.toLowerCase().includes('tracking') && 
+        !error.message.toLowerCase().includes('404')) {
+      const errorContext = typeof context === 'string' ? { component: context } : context;
+      const contextMessage = errorContext?.component 
+        ? ` en ${errorContext.component}` 
+        : '';
+      
+      toast({
+        title: "Error",
+        description: `Error${contextMessage}: ${error.message}`,
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  }, [logError, toast]);
+
+  const handleAsyncError = useCallback(async <T,>(
+    asyncFn: () => Promise<T>, 
+    context?: ErrorContext | string
+  ): Promise<T | null> => {
+    try {
+      return await asyncFn();
+    } catch (error) {
+      handleError(error as Error, context);
+      return null;
+    }
+  }, [handleError]);
 
   return {
     handleError,
-    handleAsyncError
+    handleAsyncError,
+    logError
   };
 };

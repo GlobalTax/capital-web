@@ -2,7 +2,7 @@
 // Hook avanzado de rate limiting con umbrales dinámicos y override de emergencia
 
 import { useCallback, useRef } from 'react';
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useErrorHandler } from './useErrorHandler';
 import { useEmergencyOverride } from './useEmergencyOverride';
 import { logger } from '@/utils/logger';
 
@@ -37,7 +37,7 @@ export const useConfigurableRateLimit = (config: RateLimitConfig) => {
     elevatedMultiplier = 3
   } = config;
   
-  const { handleError } = useCentralizedErrorHandler();
+  const { handleError } = useErrorHandler();
   const { overrideState } = useEmergencyOverride();
   
   const requestLogRef = useRef<Map<string, RequestLog>>(new Map());

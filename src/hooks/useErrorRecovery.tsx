@@ -2,7 +2,7 @@
 // Hook especializado para recuperación automática de errores
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useCentralizedErrorHandler } from '@/hooks/useCentralizedErrorHandler';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useToast } from '@/hooks/use-toast';
 
 interface RecoveryOptions {
@@ -34,7 +34,7 @@ export const useErrorRecovery = (options: RecoveryOptions = {}) => {
     recoverySuccess: false
   });
 
-  const { handleError, handleAsyncError } = useCentralizedErrorHandler();
+  const { handleError, handleAsyncError } = useErrorHandler();
   const { toast } = useToast();
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();

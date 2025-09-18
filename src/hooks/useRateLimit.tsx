@@ -1,6 +1,6 @@
 
 import { useCallback, useRef } from 'react';
-import { useCentralizedErrorHandler } from './useCentralizedErrorHandler';
+import { useErrorHandler } from './useErrorHandler';
 
 interface RateLimitConfig {
   maxRequests: number;
@@ -17,7 +17,7 @@ export const useRateLimit = (config: RateLimitConfig) => {
   const { maxRequests, windowMs, blockDurationMs = windowMs } = config;
   const requestLogRef = useRef<Map<string, RequestLog>>(new Map());
   const blockedUntilRef = useRef<Map<string, number>>(new Map());
-  const { handleError } = useCentralizedErrorHandler();
+  const { handleError } = useErrorHandler();
 
   const isRateLimited = useCallback((key: string = 'default'): boolean => {
     const now = Date.now();
