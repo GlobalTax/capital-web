@@ -2,14 +2,11 @@
 // Centralized exports for admin components
 
 // Dashboard components
-export { UnifiedDashboard } from '@/components/admin/UnifiedDashboard';
+export { AdminDashboard } from './AdminDashboard';
 
 // Sidebar components  
 export { AdminSidebar } from '@/components/admin/sidebar/AdminSidebar';
 export { default as RoleBasedSidebar } from '@/components/admin/RoleBasedSidebar';
-
-// Layout components
-export { default as AdminLayout } from '@/components/admin/AdminLayout';
 
 // Form management components
 export { default as FormSubmissionsManager } from '@/components/admin/FormSubmissionsManager';

@@ -101,7 +101,7 @@ const menuSections = [
   }
 ];
 
-export function ModernAppSidebar() {
+export default function ModernAppSidebar() {
   const location = useLocation();
   const { getMenuVisibility, userRole } = useRoleBasedPermissions();
 

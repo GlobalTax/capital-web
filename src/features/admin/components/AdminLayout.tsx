@@ -3,11 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
 import { useAdminDebug } from '@/hooks/useAdminDebug';
-import { AdminSidebar } from './sidebar/AdminSidebar';
-import { EmergencyNavigation } from './EmergencyNavigation';
-import AdminHeader from './AdminHeader';
-import AdminBreadcrumbs from './layout/AdminBreadcrumbs';
-import { ErrorBoundaryProvider } from './ErrorBoundaryProvider';
+import { AdminSidebar } from '@/components/admin/sidebar/AdminSidebar';
+import { EmergencyNavigation } from '@/components/admin/EmergencyNavigation';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminBreadcrumbs from '@/components/admin/layout/AdminBreadcrumbs';
+import { ErrorBoundaryProvider } from '@/components/admin/ErrorBoundaryProvider';
 import { resetWebSocketState } from '@/utils/resetWebSocketState';
 
 interface AdminLayoutProps {

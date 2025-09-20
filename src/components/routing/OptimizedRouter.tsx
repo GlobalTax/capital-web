@@ -4,8 +4,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy loading para todas las rutas
-const AdminDashboard = lazy(() => import('@/components/admin/dashboard/AdminDashboard'));
-const UnifiedDashboard = lazy(() => import('@/components/admin/UnifiedDashboard').then(module => ({ default: module.UnifiedDashboard })));
+const AdminDashboard = lazy(() => import('@/features/admin/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const UnifiedDashboard = lazy(() => import('@/features/admin/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 
 // Componente de loading optimizado
 const PageLoading = () => (

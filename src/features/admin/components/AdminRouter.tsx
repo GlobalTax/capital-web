@@ -2,36 +2,36 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import AdminDashboard from './dashboard/AdminDashboard';
-import LeadScoringManager from './dashboard/LeadScoringManager';
-import LeadScoringRulesManager from './dashboard/LeadScoringRulesManager';
-import AdminSettings from './AdminSettings';
-import AlertsManager from './leads/AlertsManager';
-import ModernBlogManager from './ModernBlogManager';
+import { AdminDashboard } from './AdminDashboard';
+import LeadScoringManager from '@/components/admin/dashboard/LeadScoringManager';
+import LeadScoringRulesManager from '@/components/admin/dashboard/LeadScoringRulesManager';
+import AdminSettings from '@/components/admin/AdminSettings';
+import AlertsManager from '@/components/admin/leads/AlertsManager';
+import ModernBlogManager from '@/components/admin/ModernBlogManager';
 import BlogEditorPage from '@/pages/admin/BlogEditorPage';
-import CaseStudiesManager from './CaseStudiesManager';
-import CollaboratorApplicationsManager from './CollaboratorApplicationsManager';
-import TestimonialsManager from './TestimonialsManager';
-import CarouselTestimonialsManager from './CarouselTestimonialsManager';
-import CarouselLogosManager from './CarouselLogosManager';
-import TeamMembersManager from './TeamMembersManager';
+import CaseStudiesManager from '@/components/admin/CaseStudiesManager';
+import CollaboratorApplicationsManager from '@/components/admin/CollaboratorApplicationsManager';
+import TestimonialsManager from '@/components/admin/TestimonialsManager';
+import CarouselTestimonialsManager from '@/components/admin/CarouselTestimonialsManager';
+import CarouselLogosManager from '@/components/admin/CarouselLogosManager';
+import TeamMembersManager from '@/components/admin/TeamMembersManager';
 import AdminOperations from '@/pages/admin/AdminOperations';
 
-import MultiplesManager from './MultiplesManager';
-import StatisticsManager from './StatisticsManager';
-import SectorReportsGenerator from './SectorReportsGenerator';
-import AdminUsersManager from './AdminUsersManager';
-import ProposalsManager from './ProposalsManager';
-import EnhancedLeadsDashboard from './leads/EnhancedLeadsDashboard';
-import ExternalLeadsDashboard from './leads/ExternalLeadsDashboard';
-import FormSubmissionsManager from './FormSubmissionsManager';
+import MultiplesManager from '@/components/admin/MultiplesManager';
+import StatisticsManager from '@/components/admin/StatisticsManager';
+import SectorReportsGenerator from '@/components/admin/SectorReportsGenerator';
+import AdminUsersManager from '@/components/admin/AdminUsersManager';
+import ProposalsManager from '@/components/admin/ProposalsManager';
+import EnhancedLeadsDashboard from '@/components/admin/leads/EnhancedLeadsDashboard';
+import ExternalLeadsDashboard from '@/components/admin/leads/ExternalLeadsDashboard';
+import FormSubmissionsManager from '@/components/admin/FormSubmissionsManager';
 import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
-import VideoManager from './VideoManager';
+// import VideoManager from './VideoManager';
 import SectorsPage from '@/pages/admin/SectorsPage';
-import { PageManager } from './pages/PageManager';
-import { ContentEditor } from './content/ContentEditor';
+// import PageManager from './pages/PageManager';
+// import ContentEditor from './content/ContentEditor';
 import MarketReports from '@/pages/admin/MarketReports';
 import SectorCalculators from '@/pages/admin/SectorCalculators';
 
@@ -86,7 +86,7 @@ const AdminRouter = () => {
       {/* Content Management */}
       <Route path="/content-performance" element={<ContentPerformancePage />} />
       <Route path="/content-studio" element={<ContentStudioPage />} />
-      <Route path="/video-manager" element={<VideoManager />} />
+      {/* <Route path="/video-manager" element={<VideoManager />} /> */}
       <Route path="/design-resources" element={<DesignResourcesPage />} />
       <Route path="/lead-magnets" element={<LeadMagnetsPage />} />
       <Route path="/blog-v2" element={<ModernBlogManager />} />
@@ -118,9 +118,9 @@ const AdminRouter = () => {
       {/* Valuations */}
       <Route path="/valuations/:id" element={<ValuationDetailPage />} />
       
-      {/* Page Management */}
-      <Route path="/pages" element={<PageManager />} />
-      <Route path="/content-editor" element={<ContentEditor />} />
+      {/* Page Management - Commented out for now */}
+      {/* <Route path="/pages" element={<PageManager />} /> */}
+      {/* <Route path="/content-editor" element={<ContentEditor />} /> */}
       
       {/* Settings */}
       <Route path="/admin-users" element={<AdminUsersManager />} />

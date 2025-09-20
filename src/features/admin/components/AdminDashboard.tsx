@@ -15,14 +15,14 @@ import {
 import { useMarketingMetrics } from '@/features/dashboard/hooks/useMarketingMetrics';
 import { LoadingSkeleton, ErrorFallback } from '@/shared';
 import { devLogger } from '@/utils/devLogger';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '../hooks/useAdminAuth';
 
 // Lazy loading para componentes pesados
 const MarketingOverview = React.lazy(() => import('@/features/dashboard/components/MarketingOverview').then(module => ({ default: module.MarketingOverview })));
-const PerformanceDashboard = React.lazy(() => import('./dashboard/PerformanceDashboard'));
-const PredictiveAnalytics = React.lazy(() => import('./analytics/PredictiveAnalytics').then(module => ({ default: module.PredictiveAnalytics })));
-const AIInsightsPanel = React.lazy(() => import('./dashboard/AIInsightsPanel').then(module => ({ default: module.AIInsightsPanel })));
-const SecurityLeadsPanel = React.lazy(() => import('./SecurityLeadsPanel'));
+const PerformanceDashboard = React.lazy(() => import('@/components/admin/dashboard/PerformanceDashboard'));
+const PredictiveAnalytics = React.lazy(() => import('@/components/admin/analytics/PredictiveAnalytics').then(module => ({ default: module.PredictiveAnalytics })));
+const AIInsightsPanel = React.lazy(() => import('@/components/admin/dashboard/AIInsightsPanel').then(module => ({ default: module.AIInsightsPanel })));
+const SecurityLeadsPanel = React.lazy(() => import('@/components/admin/SecurityLeadsPanel'));
 
 // Componente de KPIs memoizado
 const KPICard = memo(({ 
@@ -59,11 +59,9 @@ const KPICard = memo(({
 
 KPICard.displayName = 'KPICard';
 
-// Usar LoadingSkeleton de shared components
-
-// Componente principal memoizado
-const UnifiedDashboard = memo(() => {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+// Componente principal consolidado - reemplaza AdminDashboard, AdminDashboardHome y UnifiedDashboard
+export const AdminDashboard = memo(() => {
+  const { adminUser, isLoading: authLoading } = useAdminAuth();
   const { metrics, isLoading: metricsLoading, error } = useMarketingMetrics();
   
   // Combined loading state
@@ -110,7 +108,7 @@ const UnifiedDashboard = memo(() => {
 
   // Callback memoizado para el tab change
   const handleTabChange = useCallback((value: string) => {
-    devLogger.info(`Dashboard tab changed to: ${value}`, undefined, 'ui', 'UnifiedDashboard');
+    devLogger.info(`Dashboard tab changed to: ${value}`, undefined, 'ui', 'AdminDashboard');
   }, []);
 
   if (isLoading) {
@@ -118,44 +116,20 @@ const UnifiedDashboard = memo(() => {
   }
 
   // Show authentication status for debugging
-  if (!user) {
+  if (!adminUser) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="p-6 max-w-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              No autenticado
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Debes iniciar sesión para acceder al dashboard de administración.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="p-6 max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              Sin permisos de administrador
+              Acceso denegado
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Necesitas permisos de administrador para acceder a este dashboard.
             </p>
-            <div className="mt-4 text-xs text-muted-foreground">
-              <p>Usuario: {user.email}</p>
-              <p>ID: {user.id}</p>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -176,7 +150,7 @@ const UnifiedDashboard = memo(() => {
           <CardContent className="text-sm">
             <p className="text-red-600 mb-2">Error: {error?.message || 'Error desconocido'}</p>
             <div className="text-xs text-red-500 space-y-1">
-              <p>Usuario: {user.email} (Admin: {isAdmin ? 'Sí' : 'No'})</p>
+              <p>Usuario: {adminUser.email}</p>
               <p>Esto puede indicar un problema con las políticas RLS de la base de datos.</p>
             </div>
           </CardContent>
@@ -266,6 +240,4 @@ const UnifiedDashboard = memo(() => {
   );
 });
 
-UnifiedDashboard.displayName = 'UnifiedDashboard';
-
-export { UnifiedDashboard };
+AdminDashboard.displayName = 'AdminDashboard';

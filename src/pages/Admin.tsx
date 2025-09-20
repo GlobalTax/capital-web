@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import AdminRouter from '@/components/admin/AdminRouter';
-import AdminLayout from '@/components/admin/AdminLayout';
+import AdminRouter from '@/features/admin/components/AdminRouter';
+import AdminLayout from '@/features/admin/components/AdminLayout';
 import AdminSetup from '@/components/admin/AdminSetup';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
