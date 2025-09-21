@@ -1,6 +1,6 @@
 
 import React from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import Hero from '@/components/Hero';
 import SocialProofCompact from '@/components/SocialProofCompact';
 import Services from '@/components/Services';
@@ -12,7 +12,7 @@ import Contact from '@/components/Contact';
 
 const Index = () => {
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <Hero />
       <SocialProofCompact />
       <Services />
@@ -20,7 +20,7 @@ const Index = () => {
       <CaseStudiesCompact />
       <WhyChooseCapittal />
       <Contact />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

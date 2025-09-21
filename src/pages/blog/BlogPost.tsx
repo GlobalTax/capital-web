@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';
@@ -82,7 +82,7 @@ const BlogPost = () => {
 
   if (isLoading) {
     return (
-      <HomeLayout>
+      <UnifiedLayout variant="home">
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -91,7 +91,7 @@ const BlogPost = () => {
             </div>
           </div>
         </section>
-      </HomeLayout>
+      </UnifiedLayout>
     );
   }
 
@@ -100,7 +100,7 @@ const BlogPost = () => {
   }
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         {/* Breadcrumbs */}
         <BlogBreadcrumbs 
@@ -121,7 +121,7 @@ const BlogPost = () => {
         {/* Posts relacionados */}
         <RelatedPosts posts={relatedPosts} />
       </div>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

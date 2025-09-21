@@ -17,7 +17,7 @@ const Nosotros = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <div className="pt-16">
         <section className="py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,7 +58,7 @@ const Nosotros = () => {
         <About />
         <OurGroup />
       </div>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

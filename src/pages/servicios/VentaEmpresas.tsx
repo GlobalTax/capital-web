@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import VentaEmpresasHeroService from '@/components/venta-empresas/VentaEmpresasHeroService';
 import VentaEmpresasProcess from '@/components/venta-empresas/VentaEmpresasProcess';
 import VentaEmpresasBenefits from '@/components/venta-empresas/VentaEmpresasBenefits';
@@ -41,7 +41,7 @@ const VentaEmpresas = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <VentaEmpresasHeroService />
       <VentaEmpresasProcess />
       <VentaEmpresasBenefits />
@@ -50,7 +50,7 @@ const VentaEmpresas = () => {
       <VentaEmpresasValuationFactors />
       <VentaEmpresasFAQ />
       <VentaEmpresasCTA />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

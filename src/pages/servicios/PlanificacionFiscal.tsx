@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import PlanificacionFiscalHero from '@/components/planificacion-fiscal/PlanificacionFiscalHero';
 import PlanificacionFiscalWhyOptimize from '@/components/planificacion-fiscal/PlanificacionFiscalWhyOptimize';
 import PlanificacionFiscalServices from '@/components/planificacion-fiscal/PlanificacionFiscalServices';
@@ -30,13 +30,13 @@ const PlanificacionFiscal = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <PlanificacionFiscalHero />
       <PlanificacionFiscalWhyOptimize />
       <PlanificacionFiscalServices />
       <PlanificacionFiscalFAQ />
       <PlanificacionFiscalCTA />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

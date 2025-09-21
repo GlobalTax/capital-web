@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { useMarketReports } from '@/hooks/useMarketReports';
 import { useSectorCalculators, useSubmitCalculatorResult } from '@/hooks/useSectorCalculators';
 import { SectorCalculatorForm } from '@/components/sector-calculators/SectorCalculatorForm';
@@ -39,7 +39,7 @@ const MarketReports = () => {
 
   if (selectedCalculator) {
     return (
-      <HomeLayout>
+      <UnifiedLayout variant="home">
         <div className="pt-16">
           <section className="py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,12 +59,12 @@ const MarketReports = () => {
             </div>
           </section>
         </div>
-      </HomeLayout>
+      </UnifiedLayout>
     );
   }
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
         <section className="py-20 bg-white">
@@ -496,7 +496,7 @@ const MarketReports = () => {
           </div>
         </section>
       </div>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

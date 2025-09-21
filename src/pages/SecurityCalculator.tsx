@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import LandingLayout from '@/components/shared/LandingLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
 import CapittalBrief from '@/components/landing/CapittalBrief';
 
@@ -249,7 +249,7 @@ export default function SecurityCalculator() {
     const selectedSubtype = SECURITY_SUBTYPES.find(s => s.value === formData.security_subtype);
     
     return (
-      <LandingLayout>
+      <UnifiedLayout variant="landing">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Card className="bg-white rounded-lg p-8 mb-8 border-0.5 border-border shadow-sm">
             <div className="text-center">
@@ -312,12 +312,12 @@ export default function SecurityCalculator() {
           <ConfidentialityBlock />
           <CapittalBrief />
         </div>
-      </LandingLayout>
+      </UnifiedLayout>
     );
   }
 
   return (
-    <LandingLayout>
+    <UnifiedLayout variant="landing">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="sr-only">Calculadora de Valoración - Sector Seguridad</h1>
         
@@ -697,6 +697,6 @@ export default function SecurityCalculator() {
         <ConfidentialityBlock />
         <CapittalBrief />
       </div>
-    </LandingLayout>
+    </UnifiedLayout>
   );
 }

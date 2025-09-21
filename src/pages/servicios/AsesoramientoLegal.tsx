@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import AsesoramientoLegalHero from '@/components/asesoramiento-legal/AsesoramientoLegalHero';
 import AsesoramientoLegalWhyChoose from '@/components/asesoramiento-legal/AsesoramientoLegalWhyChoose';
 import AsesoramientoLegalServices from '@/components/asesoramiento-legal/AsesoramientoLegalServices';
@@ -31,7 +31,7 @@ const AsesoramientoLegal = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <AsesoramientoLegalHero />
       <AsesoramientoLegalWhyChoose />
       <AsesoramientoLegalServices />
@@ -39,7 +39,7 @@ const AsesoramientoLegal = () => {
       <AsesoramientoLegalBenefits />
       <AsesoramientoLegalFAQ />
       <AsesoramientoLegalCTA />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

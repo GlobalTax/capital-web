@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 
 const TerminosUso = () => {
   useEffect(() => {
@@ -29,7 +29,7 @@ const TerminosUso = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8">
@@ -208,7 +208,7 @@ const TerminosUso = () => {
           </div>
         </div>
       </section>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

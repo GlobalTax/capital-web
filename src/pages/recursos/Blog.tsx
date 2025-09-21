@@ -1,6 +1,6 @@
 
 import React from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
@@ -46,7 +46,7 @@ const Blog = () => {
 
   if (isLoading) {
     return (
-      <HomeLayout>
+      <UnifiedLayout variant="home">
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -55,12 +55,12 @@ const Blog = () => {
             </div>
           </div>
         </section>
-      </HomeLayout>
+      </UnifiedLayout>
     );
   }
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <section className="py-20 bg-white">
           <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
@@ -235,7 +235,7 @@ const Blog = () => {
                 </div>
           </div>
         </section>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

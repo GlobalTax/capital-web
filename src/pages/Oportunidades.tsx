@@ -1,5 +1,5 @@
 import React from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { useOperationsStats } from '@/hooks/useOperationsStats';
 import { formatCompactNumber } from '@/shared/utils/format';
@@ -18,7 +18,7 @@ const Oportunidades = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
         <section className="bg-white py-20">
@@ -92,7 +92,7 @@ const Oportunidades = () => {
           </div>
         </section>
       </div>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

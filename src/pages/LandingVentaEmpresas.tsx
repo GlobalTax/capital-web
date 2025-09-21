@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import LandingLayout from '@/components/shared/LandingLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import VentaEmpresasHeroLanding from '@/components/venta-empresas/VentaEmpresasHeroLanding';
 import VentaEmpresasBenefitsLanding from '@/components/venta-empresas/VentaEmpresasBenefitsLanding';
 import VentaEmpresasProcessLanding from '@/components/venta-empresas/VentaEmpresasProcessLanding';
@@ -41,7 +41,7 @@ const LandingVentaEmpresas = () => {
   }, []);
 
   return (
-    <LandingLayout>
+    <UnifiedLayout variant="landing">
       <StickyNavigationLanding />
       <VentaEmpresasHeroLanding />
       <VentaEmpresasBenefitsLanding />
@@ -50,7 +50,7 @@ const LandingVentaEmpresas = () => {
       <VentaEmpresasValuationLanding />
       <VentaEmpresasFAQLanding />
       <VentaEmpresasConversionCTA />
-    </LandingLayout>
+    </UnifiedLayout>
   );
 };
 

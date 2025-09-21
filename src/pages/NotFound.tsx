@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
@@ -14,7 +14,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-bold mb-4">404</h1>
@@ -24,7 +24,7 @@ const NotFound = () => {
           </Button>
         </div>
       </section>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

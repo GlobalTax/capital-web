@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import LegalServiceTechnical from '@/components/asesoramiento-legal/LegalServiceTechnical';
 
 const AsesoramientoLegalTecnico = () => {
@@ -25,9 +25,9 @@ const AsesoramientoLegalTecnico = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout variant="home">
       <LegalServiceTechnical />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

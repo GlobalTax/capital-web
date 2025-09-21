@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import LandingLayout from '@/components/shared/LandingLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import Hero from '@/components/suiteloop/Hero';
 import ExecutiveSummary from '@/components/suiteloop/ExecutiveSummary';
 import MarketAnalysis from '@/components/suiteloop/MarketAnalysis';
@@ -112,7 +112,7 @@ const LandingSuiteLoop: React.FC = () => {
   };
 
   return (
-    <LandingLayout mainClassName="pt-0">
+    <UnifiedLayout variant="landing" mainClassName="pt-0">
       <Hero onDownloadReport={handleDownloadReport} />
       <ExecutiveSummary />
       <MarketAnalysis />
@@ -124,7 +124,7 @@ const LandingSuiteLoop: React.FC = () => {
       <ROICalculator />
       <FAQ />
       <TrustSignals />
-    </LandingLayout>
+    </UnifiedLayout>
   );
 };
 
