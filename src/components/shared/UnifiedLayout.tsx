@@ -1,15 +1,17 @@
 import React, { ReactNode } from 'react';
 import Header from '@/components/Header';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
+import NavarroHeader from '@/components/navarro/NavarroHeader';
 import Footer from '@/components/Footer';
+import NavarroFooter from '@/components/navarro/NavarroFooter';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import AdminAccessButton from '@/components/AdminAccessButton';
 
 interface UnifiedLayoutProps {
   children: ReactNode;
-  /** Layout variant - affects header type */
-  variant?: 'home' | 'landing';
+  /** Layout variant - affects header and footer type */
+  variant?: 'home' | 'landing' | 'navarro';
   /** Custom className for the main element */
   mainClassName?: string;
   /** Whether to show accessibility tools (default: true) */
@@ -29,7 +31,15 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
   showAdminButton,
 }) => {
   const shouldShowAdminButton = showAdminButton ?? variant === 'home';
-  const HeaderComponent = variant === 'landing' ? LandingHeaderMinimal : Header;
+  
+  // Select header and footer based on variant
+  const HeaderComponent = variant === 'landing' 
+    ? LandingHeaderMinimal 
+    : variant === 'navarro' 
+    ? NavarroHeader 
+    : Header;
+    
+  const FooterComponent = variant === 'navarro' ? NavarroFooter : Footer;
 
   return (
     <div className="min-h-screen bg-white">
@@ -37,7 +47,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
       <main role="main" className={`pt-16 ${mainClassName}`}>
         {children}
       </main>
-      <Footer />
+      <FooterComponent />
       {showAccessibilityTools && <AccessibilityTools />}
       {showNotificationCenter && <NotificationCenter className="mr-16" />}
       {shouldShowAdminButton && <AdminAccessButton />}

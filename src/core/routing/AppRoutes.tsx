@@ -53,6 +53,9 @@ const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => 
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
 
+// === NAVARRO PAGES ===
+const NavarroIndex = lazy(() => import('@/pages/navarro/NavarroIndex'));
+
 // === LEGAL PAGES ===
 const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos/index').catch(() => import('@/pages/VentaEmpresas')));
 const Experiencia = lazy(() => import('@/pages/por-que-elegirnos/experiencia').catch(() => import('@/pages/VentaEmpresas')));
@@ -132,6 +135,13 @@ export const AppRoutes = () => {
         
         {/* === LANDING PAGES === */}
         <Route path="/landing/:slug" element={<LandingPageView />} />
+        
+        {/* === NAVARRO ROUTES === */}
+        <Route path="/navarro" element={<NavarroIndex />} />
+        <Route path="/navarro/legal" element={<NavarroIndex />} />
+        <Route path="/navarro/fiscal" element={<NavarroIndex />} />
+        <Route path="/navarro/laboral" element={<NavarroIndex />} />
+        <Route path="/navarro/contacto" element={<NavarroIndex />} />
         
         {/* === LEGAL ROUTES === */}
         <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
