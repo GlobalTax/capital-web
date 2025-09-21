@@ -57,10 +57,7 @@ const Admin = () => {
     setError('');
 
     try {
-      const { error } = mode === 'login' 
-        ? await signIn(email, password)
-        : await signUp(email, password, 'Admin User');
-
+      const { error } = await signIn(email, password);
       if (error) {
         setError(error.message);
       }
@@ -80,9 +77,7 @@ const Admin = () => {
             <Shield className="h-6 w-6" />
             Admin Panel - Capittal
           </CardTitle>
-          <p className="text-muted-foreground">
-            {mode === 'login' ? 'Inicia sesión para acceder' : 'Regístrate como administrador'}
-          </p>
+          <p className="text-muted-foreground">Inicia sesión para acceder</p>
         </CardHeader>
         
         <CardContent className="space-y-4">
@@ -130,36 +125,19 @@ const Admin = () => {
                   Procesando...
                 </>
               ) : (
-                mode === 'login' ? "Iniciar Sesión" : "Registrarse"
+                "Iniciar Sesión"
               )}
             </Button>
           </form>
 
           <div className="text-center space-y-2">
-            <Button
-              variant="link"
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-              className="text-sm"
-            >
-              {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
-            </Button>
-            <div>
-              <Button
-                variant="link"
-                onClick={() => window.location.href = '/admin/recovery'}
-                className="text-sm text-destructive"
-              >
-                ¿Problemas de acceso? Recuperar cuenta de admin
-              </Button>
-            </div>
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                Aplicación interna - Solo usuarios autorizados pueden acceder.
+              </AlertDescription>
+            </Alert>
           </div>
-
-          <Alert>
-            <CheckCircle className="h-4 w-4" />
-            <AlertDescription>
-              Una vez autenticado, podrás configurar permisos de administrador automáticamente.
-            </AlertDescription>
-          </Alert>
         </CardContent>
       </Card>
     </div>

@@ -6,7 +6,6 @@ import { PageLoadingSkeleton } from '@/components/LoadingStates';
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
-const AdminRecovery = lazy(() => import('@/pages/AdminRecovery'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
@@ -72,7 +71,6 @@ export const AppRoutes = () => {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/recovery" element={<AdminRecovery />} />
         <Route path="/admin/*" element={<Admin />} />
         
         {/* === BUSINESS ROUTES === */}

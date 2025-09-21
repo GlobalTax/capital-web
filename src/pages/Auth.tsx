@@ -133,17 +133,10 @@ const Auth = () => {
               <Alert className="mt-4 bg-blue-50 border-blue-200">
                 <AlertCircle className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
-                  <strong>Acceso Restringido:</strong> Solo usuarios autorizados pueden acceder. 
-                  Si necesitas una cuenta, contacta con el administrador.
+                  <strong>Aplicación Interna:</strong> Solo usuarios autorizados con cuentas existentes pueden acceder. 
+                  Contacta con el administrador para obtener acceso.
                 </AlertDescription>
               </Alert>
-
-              <div className="mt-6 text-center text-sm text-muted-foreground">
-                <p>¿Problemas para acceder?</p>
-                <Link to="/contacto" className="text-primary hover:underline">
-                  Contacta con nosotros
-                </Link>
-              </div>
             </div>
           </CardContent>
         </Card>
