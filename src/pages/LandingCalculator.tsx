@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import LandingLayout from '@/components/shared/LandingLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { UnifiedCalculator } from '@/features/valuation/components/UnifiedCalculator';
 import { V2_CONFIG } from '@/features/valuation/configs/calculator.configs';
 import { supabase } from '@/integrations/supabase/client';
@@ -167,7 +167,7 @@ const LandingCalculatorInner = () => {
   }, [location.search]);
 
   return (
-    <LandingLayout>
+    <UnifiedLayout variant="landing">
       {/* Selector de idioma */}
       <div className="max-w-6xl mx-auto px-4 flex justify-end">
         <LanguageSelector />
@@ -179,7 +179,7 @@ const LandingCalculatorInner = () => {
       <ConfidentialityBlock />
       {/* Breve descripción de Capittal */}
       <CapittalBrief />
-    </LandingLayout>
+    </UnifiedLayout>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Team from '@/components/Team';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 
 const Equipo = () => {
   useEffect(() => {
@@ -16,9 +16,9 @@ const Equipo = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout>
       <Team />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

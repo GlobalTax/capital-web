@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import About from '@/components/About';
 import OurGroup from '@/components/OurGroup';
 

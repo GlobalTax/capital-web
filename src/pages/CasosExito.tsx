@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import CaseStudies from '@/components/CaseStudies';
 
 const CasosExito = () => {
@@ -16,7 +16,7 @@ const CasosExito = () => {
   }, []);
 
   return (
-    <HomeLayout>
+    <UnifiedLayout>
       <div className="pt-16">
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,7 +33,7 @@ const CasosExito = () => {
         </section>
         <CaseStudies />
       </div>
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 

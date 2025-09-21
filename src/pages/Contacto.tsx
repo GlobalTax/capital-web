@@ -1,12 +1,12 @@
 import React from 'react';
-import HomeLayout from '@/components/shared/HomeLayout';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import Contact from '@/components/Contact';
 
 const Contacto = () => {
   return (
-    <HomeLayout mainClassName="pt-16">
+    <UnifiedLayout mainClassName="pt-16">
       <Contact />
-    </HomeLayout>
+    </UnifiedLayout>
   );
 };
 
