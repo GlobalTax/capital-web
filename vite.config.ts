@@ -31,24 +31,8 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Simplified chunking strategy to avoid React dependency issues
-          if (id.includes('node_modules')) {
-            // Keep React and UI libraries together to avoid forwardRef issues
-            if (id.includes('react') || id.includes('react-dom') || id.includes('@radix-ui')) {
-              return 'react-ui-vendor';
-            }
-            if (id.includes('@tanstack/react-query')) return 'query-vendor';
-            // Keep PDF libraries separate as they're heavy
-            if (id.includes('@react-pdf') || id.includes('react-pdf')) return 'react-pdf-vendor';
-            if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-libs-vendor';
-            return 'vendor';
-          }
-          
-          // Feature-based chunks only for large features
-          if (id.includes('/admin/')) return 'admin';
-          if (id.includes('/valuation/')) return 'valuation';
-        }
+        // Remove all manual chunking to avoid React initialization issues
+        // Let Vite handle chunking automatically for stability
       }
     },
     target: ['es2020', 'chrome80', 'safari14'],
@@ -61,15 +45,10 @@ export default defineConfig(({ mode }) => {
   optimizeDeps: {
     include: [
       'react', 
-      'react-dom', 
-      '@tanstack/react-query',
-      'react-router-dom',
-      '@supabase/supabase-js',
-      'lucide-react',
-      '@radix-ui/react-toast'
+      'react-dom'
     ],
     exclude: ['@vite/client', '@vite/env'],
-    force: false
+    force: true
   },
   esbuild: {
     drop: mode === 'production' ? ['console', 'debugger'] : [],

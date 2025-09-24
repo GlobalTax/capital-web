@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 
 const MinimalistCTA = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const MinimalistCTA = () => {
           </p>
 
           <div className="flex justify-center">
-            <InteractiveHoverButton 
+            <SimpleButton 
               text="Contacta"
               variant="primary"
               size="lg"
