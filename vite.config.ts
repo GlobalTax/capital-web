@@ -32,27 +32,22 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks optimizados con separación mejorada
+          // Simplified chunking strategy to avoid React dependency issues
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
-            if (id.includes('@radix-ui')) return 'ui-vendor';
+            // Keep React and UI libraries together to avoid forwardRef issues
+            if (id.includes('react') || id.includes('react-dom') || id.includes('@radix-ui')) {
+              return 'react-ui-vendor';
+            }
             if (id.includes('@tanstack/react-query')) return 'query-vendor';
-            // CRÍTICO: Separar react-pdf en chunk independiente (recharts se maneja automáticamente)
+            // Keep PDF libraries separate as they're heavy
             if (id.includes('@react-pdf') || id.includes('react-pdf')) return 'react-pdf-vendor';
             if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-libs-vendor';
-            if (id.includes('lucide-react')) return 'icons-vendor';
             return 'vendor';
           }
           
-          // Separar componentes problemáticos en chunks específicos
-          if (id.includes('interactive-hover-button')) return 'interactive-button';
-          
-          // Feature-based chunks
+          // Feature-based chunks only for large features
           if (id.includes('/admin/')) return 'admin';
-          if (id.includes('/landing/') || id.includes('Landing')) return 'landing';
           if (id.includes('/valuation/')) return 'valuation';
-          if (id.includes('/blog/')) return 'blog';
-          if (id.includes('/navarro/')) return 'navarro';
         }
       }
     },
@@ -70,7 +65,8 @@ export default defineConfig(({ mode }) => {
       '@tanstack/react-query',
       'react-router-dom',
       '@supabase/supabase-js',
-      'lucide-react'
+      'lucide-react',
+      '@radix-ui/react-toast'
     ],
     exclude: ['@vite/client', '@vite/env'],
     force: false
