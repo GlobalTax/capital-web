@@ -1,17 +1,14 @@
+import React, { Suspense, lazy } from "react";
+import { Button } from '@/components/ui/button';
 
-import React from "react";
-import { cn } from "@/lib/utils";
-
-interface InteractiveHoverButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  text?: string;
-  variant?: "primary" | "secondary" | "outline";
-  size?: "sm" | "default" | "lg";
-}
-
-const InteractiveHoverButton = React.forwardRef<
+// Original InteractiveHoverButton component
+const InteractiveHoverButtonOriginal = React.forwardRef<
   HTMLButtonElement,
-  InteractiveHoverButtonProps
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    text?: string;
+    variant?: "primary" | "secondary" | "outline";
+    size?: "sm" | "default" | "lg";
+  }
 >(({ text = "Button", variant = "primary", size = "default", className, ...props }, ref) => {
   const baseClasses = "relative cursor-pointer rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20 flex items-center justify-center text-center";
   
@@ -30,12 +27,7 @@ const InteractiveHoverButton = React.forwardRef<
   return (
     <button
       ref={ref}
-      className={cn(
-        baseClasses,
-        variantClasses[variant],
-        sizeClasses[size],
-        className,
-      )}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className || ''}`}
       {...props}
     >
       {text}
@@ -43,6 +35,64 @@ const InteractiveHoverButton = React.forwardRef<
   );
 });
 
-InteractiveHoverButton.displayName = "InteractiveHoverButton";
+InteractiveHoverButtonOriginal.displayName = "InteractiveHoverButtonOriginal";
 
-export { InteractiveHoverButton };
+// Fallback button component
+const FallbackButton: React.FC<any> = ({ text = "Button", variant = "primary", size = "default", className, ...props }) => {
+  const variantClass = variant === "primary" ? "bg-black text-white hover:bg-gray-800" : 
+                      variant === "secondary" ? "bg-white text-black border border-black hover:bg-gray-50" :
+                      "bg-transparent text-black border border-black hover:bg-gray-50";
+  
+  return (
+    <Button 
+      className={`${variantClass} transition-all duration-300 ${className || ''}`}
+      {...props}
+    >
+      {text}
+    </Button>
+  );
+};
+
+// Loading fallback
+const ButtonLoading = () => (
+  <div className="h-11 w-24 bg-gray-200 animate-pulse rounded-lg" />
+);
+
+// Error boundary for the button
+class ButtonErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ComponentType<any>; fallbackProps: any },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.warn('InteractiveHoverButton failed to load, using fallback:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      const FallbackComponent = this.props.fallback;
+      return <FallbackComponent {...this.props.fallbackProps} />;
+    }
+
+    return this.props.children;
+  }
+}
+
+// Main export - safe lazy-loaded version with error handling
+export const InteractiveHoverButton: React.FC<any> = (props) => {
+  return (
+    <ButtonErrorBoundary fallback={FallbackButton} fallbackProps={props}>
+      <Suspense fallback={<ButtonLoading />}>
+        <InteractiveHoverButtonOriginal {...props} />
+      </Suspense>
+    </ButtonErrorBoundary>
+  );
+};
