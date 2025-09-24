@@ -124,4 +124,16 @@ export const LazyCell = lazy(() =>
   import('recharts').then(module => ({ default: module.Cell }))
 );
 
+export const LazyAreaChart = lazy(() => 
+  import('recharts').then(module => ({ default: module.AreaChart }))
+);
+
+export const LazyArea = lazy(() => 
+  import('recharts').then(module => ({ default: module.Area }))
+);
+
+export const LazyLegend = lazy(() => 
+  import('recharts').then(module => ({ default: module.Legend }))
+);
+
 export { ChartErrorBoundary, ChartLoadingFallback };

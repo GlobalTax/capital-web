@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Settings, Trash2 } from 'lucide-react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { 
+  LazyResponsiveContainer, 
+  LazyLineChart, 
+  LazyLine, 
+  LazyAreaChart, 
+  LazyArea, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyTooltip 
+} from '@/components/shared/LazyChart';
 import { BaseWidget } from './WidgetFactory';
 
 interface ChartWidgetProps {
@@ -72,39 +83,33 @@ export function ChartWidget({ widget, isEditing, onEdit, onDelete, isDragging }:
     switch (widget.config?.chartType) {
       case 'area':
         return (
-          <ResponsiveContainer width="100%" height={height}>
-            <AreaChart data={data}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} />
-              {'organic' in data[0] && <Area type="monotone" dataKey="organic" stroke="hsl(var(--secondary))" fill="hsl(var(--secondary))" fillOpacity={0.2} />}
-            </AreaChart>
-          </ResponsiveContainer>
+          <LazyAreaChart data={data}>
+            <LazyXAxis dataKey="name" />
+            <LazyYAxis />
+            <LazyTooltip />
+            <LazyArea type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} />
+            {'organic' in data[0] && <LazyArea type="monotone" dataKey="organic" stroke="hsl(var(--secondary))" fill="hsl(var(--secondary))" fillOpacity={0.2} />}
+          </LazyAreaChart>
         );
       case 'bar':
         return (
-          <ResponsiveContainer width="100%" height={height}>
-            <BarChart data={data}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="views" fill="hsl(var(--primary))" />
-              {'engagement' in data[0] && <Bar dataKey="engagement" fill="hsl(var(--secondary))" />}
-            </BarChart>
-          </ResponsiveContainer>
+          <LazyBarChart data={data}>
+            <LazyXAxis dataKey="name" />
+            <LazyYAxis />
+            <LazyTooltip />
+            <LazyBar dataKey="views" fill="hsl(var(--primary))" />
+            {'engagement' in data[0] && <LazyBar dataKey="engagement" fill="hsl(var(--secondary))" />}
+          </LazyBarChart>
         );
       default:
         return (
-          <ResponsiveContainer width="100%" height={height}>
-            <LineChart data={data}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
-              {'leads' in data[0] && <Line type="monotone" dataKey="leads" stroke="hsl(var(--secondary))" strokeWidth={2} />}
-            </LineChart>
-          </ResponsiveContainer>
+          <LazyLineChart data={data}>
+            <LazyXAxis dataKey="name" />
+            <LazyYAxis />
+            <LazyTooltip />
+            <LazyLine type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
+            {'leads' in data[0] && <LazyLine type="monotone" dataKey="leads" stroke="hsl(var(--secondary))" strokeWidth={2} />}
+          </LazyLineChart>
         );
     }
   };
@@ -133,7 +138,11 @@ export function ChartWidget({ widget, isEditing, onEdit, onDelete, isDragging }:
         )}
       </CardHeader>
       <CardContent>
-        {renderChart()}
+        <LazyResponsiveContainer height={getChartHeight()}>
+          <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+            {renderChart()}
+          </Suspense>
+        </LazyResponsiveContainer>
       </CardContent>
     </Card>
   );

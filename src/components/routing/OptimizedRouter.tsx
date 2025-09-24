@@ -35,10 +35,10 @@ const OptimizedRouter: React.FC = () => {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         
         {/* Redirect por defecto */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/lp/calculadora" replace />} />
         
         {/* Catch-all para rutas no encontradas */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/lp/calculadora" replace />} />
       </Routes>
     </Suspense>
   );

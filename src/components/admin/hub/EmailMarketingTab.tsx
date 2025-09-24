@@ -3,7 +3,17 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmailMarketingMetrics } from '@/types/marketingHub';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
+import { 
+  LazyResponsiveContainer, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip, 
+  LazyLineChart, 
+  LazyLine 
+} from '@/components/shared/LazyChart';
 import { Mail, MousePointer, Eye, Target, TrendingUp } from 'lucide-react';
 
 interface EmailMarketingTabProps {
@@ -199,17 +209,17 @@ const EmailMarketingTab = ({ emailMetrics }: EmailMarketingTabProps) => {
             <CardTitle>📈 Comparativo de Campañas</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={emailMetrics.campaigns} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="open_rate" fill="#3b82f6" name="Open Rate %" />
-                <Bar dataKey="click_rate" fill="#8b5cf6" name="Click Rate %" />
-                <Bar dataKey="conversion_rate" fill="#f59e0b" name="Conversion Rate %" />
-              </BarChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <LazyBarChart data={emailMetrics.campaigns} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LazyCartesianGrid strokeDasharray="3 3" />
+                <LazyXAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+                <LazyYAxis />
+                <LazyTooltip />
+                <LazyBar dataKey="open_rate" fill="#3b82f6" name="Open Rate %" />
+                <LazyBar dataKey="click_rate" fill="#8b5cf6" name="Click Rate %" />
+                <LazyBar dataKey="conversion_rate" fill="#f59e0b" name="Conversion Rate %" />
+              </LazyBarChart>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
       </div>

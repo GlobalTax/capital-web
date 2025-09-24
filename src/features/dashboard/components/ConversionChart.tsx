@@ -1,8 +1,16 @@
 // ============= CONVERSION CHART COMPONENT =============
 // Componente para gráfico de embudo de conversión
 
-import React, { memo } from 'react';
-import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import React, { memo, Suspense } from 'react';
+import { 
+  LazyResponsiveContainer, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyCartesianGrid, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyTooltip 
+} from '@/components/shared/LazyChart';
 
 interface ConversionChartProps {
   data: Array<{
@@ -22,26 +30,28 @@ const ConversionChart = memo(({ data, height = 300 }: ConversionChartProps) => {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis 
-          dataKey="stage" 
-          tick={{ fontSize: 12 }}
-          interval={0}
-        />
-        <YAxis />
-        <Tooltip 
-          formatter={(value) => [value, 'Cantidad']}
-          labelFormatter={(label) => `Etapa: ${label}`}
-        />
-        <Bar 
-          dataKey="count" 
-          fill="hsl(var(--primary))"
-          radius={[4, 4, 0, 0]}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+    <LazyResponsiveContainer height={height}>
+      <Suspense fallback={<div className="h-64 flex items-center justify-center">Cargando gráfico...</div>}>
+        <LazyBarChart data={data}>
+          <LazyCartesianGrid strokeDasharray="3 3" />
+          <LazyXAxis 
+            dataKey="stage" 
+            tick={{ fontSize: 12 }}
+            interval={0}
+          />
+          <LazyYAxis />
+          <LazyTooltip 
+            formatter={(value) => [value, 'Cantidad']}
+            labelFormatter={(label) => `Etapa: ${label}`}
+          />
+          <LazyBar 
+            dataKey="count" 
+            fill="hsl(var(--primary))"
+            radius={[4, 4, 0, 0]}
+          />
+        </LazyBarChart>
+      </Suspense>
+    </LazyResponsiveContainer>
   );
 });
 

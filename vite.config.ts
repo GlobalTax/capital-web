@@ -37,8 +37,7 @@ export default defineConfig(({ mode }) => {
             if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
             if (id.includes('@radix-ui')) return 'ui-vendor';
             if (id.includes('@tanstack/react-query')) return 'query-vendor';
-            // CRÍTICO: Separar recharts y react-pdf en chunks independientes
-            if (id.includes('recharts')) return 'recharts-vendor';
+            // CRÍTICO: Separar react-pdf en chunk independiente (recharts se maneja automáticamente)
             if (id.includes('@react-pdf') || id.includes('react-pdf')) return 'react-pdf-vendor';
             if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-libs-vendor';
             if (id.includes('lucide-react')) return 'icons-vendor';

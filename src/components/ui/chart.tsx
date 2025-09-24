@@ -1,5 +1,6 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
+import { LazyResponsiveContainer } from "@/components/shared/LazyChart"
 
 import { cn } from "@/lib/utils"
 
@@ -56,9 +57,9 @@ const ChartContainer = React.forwardRef<
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
+        <LazyResponsiveContainer>
           {children}
-        </RechartsPrimitive.ResponsiveContainer>
+        </LazyResponsiveContainer>
       </div>
     </ChartContext.Provider>
   )
@@ -98,7 +99,9 @@ ${colorConfig
   )
 }
 
-const ChartTooltip = RechartsPrimitive.Tooltip
+const ChartTooltip = React.lazy(() => 
+  import('recharts').then(module => ({ default: module.Tooltip }))
+) as React.ComponentType<any>;
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
@@ -254,7 +257,9 @@ const ChartTooltipContent = React.forwardRef<
 )
 ChartTooltipContent.displayName = "ChartTooltip"
 
-const ChartLegend = RechartsPrimitive.Legend
+const ChartLegend = React.lazy(() => 
+  import('recharts').then(module => ({ default: module.Legend }))
+) as React.ComponentType<any>;
 
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,

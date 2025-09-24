@@ -1,7 +1,18 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { 
+  LazyResponsiveContainer, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip, 
+  LazyPieChart, 
+  LazyPie, 
+  LazyCell 
+} from '@/components/shared/LazyChart';
 import { TrendingUp, MapPin, Building, Users } from 'lucide-react';
 import { suiteloopData } from '@/data/suiteloop-data';
 
@@ -50,23 +61,23 @@ const MarketAnalysis: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={segmentacion} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                      <XAxis 
+                  <LazyResponsiveContainer height={320}>
+                    <LazyBarChart data={segmentacion} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                      <LazyCartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                      <LazyXAxis 
                         dataKey="segmento" 
                         stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                       />
-                      <YAxis 
+                      <LazyYAxis 
                         stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => `${value}%`}
                       />
-                      <Tooltip 
+                      <LazyTooltip 
                         contentStyle={{
                           backgroundColor: 'hsl(var(--card))',
                           border: '1px solid hsl(var(--border))',
@@ -78,13 +89,13 @@ const MarketAnalysis: React.FC = () => {
                           'Porcentaje'
                         ]}
                       />
-                      <Bar 
+                      <LazyBar 
                         dataKey="porcentaje" 
                         radius={[4, 4, 0, 0]}
                         fill="hsl(var(--primary))"
                       />
-                    </BarChart>
-                  </ResponsiveContainer>
+                    </LazyBarChart>
+                  </LazyResponsiveContainer>
                 </div>
                 
                 <div className="mt-4 space-y-2">
@@ -113,9 +124,9 @@ const MarketAnalysis: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
+                  <LazyResponsiveContainer height={320}>
+                    <LazyPieChart>
+                      <LazyPie
                         data={geografia}
                         cx="50%"
                         cy="50%"
@@ -126,13 +137,13 @@ const MarketAnalysis: React.FC = () => {
                         strokeWidth={2}
                       >
                         {geografia.map((entry, index) => (
-                          <Cell 
+                          <LazyCell 
                             key={`cell-${index}`} 
                             fill={geografiaColors[entry.densidad as keyof typeof geografiaColors]} 
                           />
                         ))}
-                      </Pie>
-                      <Tooltip 
+                      </LazyPie>
+                      <LazyTooltip 
                         contentStyle={{
                           backgroundColor: 'hsl(var(--card))',
                           border: '1px solid hsl(var(--border))',
@@ -143,8 +154,8 @@ const MarketAnalysis: React.FC = () => {
                           name
                         ]}
                       />
-                    </PieChart>
-                  </ResponsiveContainer>
+                    </LazyPieChart>
+                  </LazyResponsiveContainer>
                 </div>
 
                 <div className="mt-4 space-y-2">

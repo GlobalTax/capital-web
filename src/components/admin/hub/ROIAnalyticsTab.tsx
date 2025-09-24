@@ -3,7 +3,20 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ROIAnalytics } from '@/types/marketingHub';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { 
+  LazyResponsiveContainer, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip, 
+  LazyLineChart, 
+  LazyLine, 
+  LazyPieChart, 
+  LazyPie, 
+  LazyCell 
+} from '@/components/shared/LazyChart';
 import { TrendingUp, DollarSign, Target, Percent } from 'lucide-react';
 
 interface ROIAnalyticsTabProps {
@@ -75,15 +88,15 @@ const ROIAnalyticsTab = ({ roiAnalytics }: ROIAnalyticsTabProps) => {
             <CardTitle>📊 ROI por Canal de Marketing</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={roiAnalytics.channelROI} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="channel" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
-                <YAxis />
-                <Tooltip formatter={(value) => [`${value}%`, 'ROI']} />
-                <Bar dataKey="roi" fill="#10b981" />
-              </BarChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <LazyBarChart data={roiAnalytics.channelROI} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LazyCartesianGrid strokeDasharray="3 3" />
+                <LazyXAxis dataKey="channel" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+                <LazyYAxis />
+                <LazyTooltip formatter={(value) => [`${value}%`, 'ROI']} />
+                <LazyBar dataKey="roi" fill="#10b981" />
+              </LazyBarChart>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
 
@@ -92,9 +105,9 @@ const ROIAnalyticsTab = ({ roiAnalytics }: ROIAnalyticsTabProps) => {
             <CardTitle>💰 Distribución de Inversión</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
+            <LazyResponsiveContainer height={300}>
+              <LazyPieChart>
+                <LazyPie
                   data={roiAnalytics.channelROI}
                   cx="50%"
                   cy="50%"
@@ -106,12 +119,12 @@ const ROIAnalyticsTab = ({ roiAnalytics }: ROIAnalyticsTabProps) => {
                   }
                 >
                   {roiAnalytics.channelROI.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={channelColors[index % channelColors.length]} />
+                    <LazyCell key={`cell-${index}`} fill={channelColors[index % channelColors.length]} />
                   ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`€${value.toLocaleString()}`, 'Inversión']} />
-              </PieChart>
-            </ResponsiveContainer>
+                </LazyPie>
+                <LazyTooltip formatter={(value) => [`€${value.toLocaleString()}`, 'Inversión']} />
+              </LazyPieChart>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -199,16 +212,16 @@ const ROIAnalyticsTab = ({ roiAnalytics }: ROIAnalyticsTabProps) => {
           <CardTitle>📈 Evolución Mensual del ROI</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={roiAnalytics.monthlyROI}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis yAxisId="investment" orientation="left" />
-              <YAxis yAxisId="roi" orientation="right" />
-              <Tooltip />
-              <Bar dataKey="investment" fill="#3b82f6" name="Inversión €" />
-              <Bar dataKey="revenue" fill="#10b981" name="Ingresos €" />
-              <Line 
+          <LazyResponsiveContainer height={400}>
+            <LazyLineChart data={roiAnalytics.monthlyROI}>
+              <LazyCartesianGrid strokeDasharray="3 3" />
+              <LazyXAxis dataKey="month" />
+              <LazyYAxis yAxisId="investment" orientation="left" />
+              <LazyYAxis yAxisId="roi" orientation="right" />
+              <LazyTooltip />
+              <LazyBar dataKey="investment" fill="#3b82f6" name="Inversión €" />
+              <LazyBar dataKey="revenue" fill="#10b981" name="Ingresos €" />
+              <LazyLine 
                 yAxisId="roi"
                 type="monotone" 
                 dataKey="roi" 
@@ -216,8 +229,8 @@ const ROIAnalyticsTab = ({ roiAnalytics }: ROIAnalyticsTabProps) => {
                 strokeWidth={3}
                 name="ROI %"
               />
-            </LineChart>
-          </ResponsiveContainer>
+            </LazyLineChart>
+          </LazyResponsiveContainer>
         </CardContent>
       </Card>
 

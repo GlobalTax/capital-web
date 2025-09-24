@@ -11,7 +11,20 @@ import {
   TrendingUp, TrendingDown, AlertTriangle, Target, 
   Brain, Zap, Eye, BarChart3, Users, Clock 
 } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { 
+  LazyResponsiveContainer, 
+  LazyLineChart, 
+  LazyLine, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip, 
+  LazyPieChart, 
+  LazyPie, 
+  LazyCell, 
+  LazyBarChart, 
+  LazyBar 
+} from '@/components/shared/LazyChart';
 
 const PredictiveDashboard = () => {
   const { 
@@ -383,9 +396,9 @@ const PredictiveDashboard = () => {
                 <CardTitle>Distribución de Oportunidades</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
+                <LazyResponsiveContainer height={300}>
+                  <LazyPieChart>
+                    <LazyPie
                       data={[
                         { name: 'Alto Valor (>80%)', value: analytics.highValueOpportunities, color: '#22c55e' },
                         { name: 'Medio (50-80%)', value: predictiveData.predictions.filter(p => p.conversionProbability >= 50 && p.conversionProbability < 80).length, color: '#f59e0b' },
@@ -399,12 +412,12 @@ const PredictiveDashboard = () => {
                       label={({ name, value }) => `${name}: ${value}`}
                     >
                       {[0, 1, 2].map((index) => (
-                        <Cell key={index} fill={['#22c55e', '#f59e0b', '#ef4444'][index]} />
+                        <LazyCell key={index} fill={['#22c55e', '#f59e0b', '#ef4444'][index]} />
                       ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                    </LazyPie>
+                    <LazyTooltip />
+                  </LazyPieChart>
+                </LazyResponsiveContainer>
               </CardContent>
             </Card>
           </div>

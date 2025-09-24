@@ -3,7 +3,20 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LeadScoringAnalytics, MarketingMetrics } from '@/types/marketingHub';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { 
+  LazyResponsiveContainer, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip, 
+  LazyLineChart, 
+  LazyLine, 
+  LazyPieChart, 
+  LazyPie, 
+  LazyCell 
+} from '@/components/shared/LazyChart';
 import { Target, TrendingUp, Users, Flame } from 'lucide-react';
 
 interface LeadScoringHubTabProps {
@@ -86,9 +99,9 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
             <CardTitle>📊 Distribución de Lead Scores</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
+            <LazyResponsiveContainer height={300}>
+              <LazyPieChart>
+                <LazyPie
                   data={distributionData}
                   cx="50%"
                   cy="50%"
@@ -97,12 +110,12 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
                   label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
                 >
                   {distributionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <LazyCell key={`cell-${index}`} fill={entry.color} />
                   ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+                </LazyPie>
+                <LazyTooltip />
+              </LazyPieChart>
+            </LazyResponsiveContainer>
             
             <div className="mt-4 grid grid-cols-3 gap-4 text-center">
               <div>
@@ -133,21 +146,21 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
             <CardTitle>🏭 Score Promedio por Industria</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={industryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
+            <LazyResponsiveContainer height={300}>
+              <LazyBarChart data={industryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LazyCartesianGrid strokeDasharray="3 3" />
+                <LazyXAxis 
                   dataKey="industry" 
                   tick={{ fontSize: 10 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="score" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
+                <LazyYAxis />
+                <LazyTooltip />
+                <LazyBar dataKey="score" fill="#3b82f6" />
+              </LazyBarChart>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -158,14 +171,14 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
           <CardTitle>📈 Tendencias de Lead Scoring (Últimos 30 días)</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={leadScoringAnalytics.scoringTrends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis yAxisId="score" orientation="left" />
-              <YAxis yAxisId="leads" orientation="right" />
-              <Tooltip />
-              <Line 
+          <LazyResponsiveContainer height={400}>
+            <LazyLineChart data={leadScoringAnalytics.scoringTrends}>
+              <LazyCartesianGrid strokeDasharray="3 3" />
+              <LazyXAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <LazyYAxis yAxisId="score" orientation="left" />
+              <LazyYAxis yAxisId="leads" orientation="right" />
+              <LazyTooltip />
+              <LazyLine 
                 yAxisId="score"
                 type="monotone" 
                 dataKey="average_score" 
@@ -173,7 +186,7 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
                 strokeWidth={2}
                 name="Score Promedio"
               />
-              <Line 
+              <LazyLine 
                 yAxisId="leads"
                 type="monotone" 
                 dataKey="hot_leads" 
@@ -181,8 +194,8 @@ const LeadScoringHubTab = ({ leadScoringAnalytics, marketingMetrics }: LeadScori
                 strokeWidth={2}
                 name="Hot Leads"
               />
-            </LineChart>
-          </ResponsiveContainer>
+            </LazyLineChart>
+          </LazyResponsiveContainer>
         </CardContent>
       </Card>
 
