@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { generateValuationPDFWithReactPDF } from './reactPdfGenerator';
 import { CompanyData, ValuationResult } from '@/types/valuation';
+import { logger } from './conditionalLogger';
 
 interface PDFDownloadOptions {
   valuationId: string;
@@ -118,12 +118,25 @@ export async function downloadValuationPDF(options: PDFDownloadOptions): Promise
     let filename: string;
 
     if (finalPdfType === 'react_pdf' && valuation.final_valuation) {
-      // Usar React-PDF para valoraciones completas
+      // Usar lazy loading para React-PDF para evitar errores de inicialización
+      logger.info('Using lazy React-PDF generation');
       const { companyData, result } = mapValuationToPDFData(valuation);
-      blob = await generateValuationPDFWithReactPDF(companyData, result, language);
-      filename = `valoracion-${valuation.company_name}-${new Date().toISOString().split('T')[0]}.pdf`;
-    } else {
+      
+      try {
+        // Import dinámico para evitar errores de inicialización
+        const { generateValuationPDFWithReactPDF } = await import('./reactPdfGenerator');
+        
+        blob = await generateValuationPDFWithReactPDF(companyData, result, language);
+        filename = `valoracion-${valuation.company_name}-${new Date().toISOString().split('T')[0]}.pdf`;
+      } catch (pdfError) {
+        logger.error('React-PDF generation failed, falling back to edge function:', pdfError);
+        finalPdfType = 'edge_function'; // Fallback
+      }
+    }
+    
+    if (finalPdfType === 'edge_function') {
       // Usar Edge Function para reportes simples
+      logger.info('Using edge function for PDF generation');
       const { data, error: pdfError } = await supabase.functions.invoke('generate-pdf-report', {
         body: {
           valuationId,

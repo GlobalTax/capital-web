@@ -32,12 +32,15 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks optimizados
+          // Vendor chunks optimizados con separación mejorada
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
             if (id.includes('@radix-ui')) return 'ui-vendor';
             if (id.includes('@tanstack/react-query')) return 'query-vendor';
-            if (id.includes('recharts') || id.includes('react-pdf')) return 'charts-pdf';
+            // CRÍTICO: Separar recharts y react-pdf en chunks independientes
+            if (id.includes('recharts')) return 'recharts-vendor';
+            if (id.includes('@react-pdf') || id.includes('react-pdf')) return 'react-pdf-vendor';
+            if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-libs-vendor';
             if (id.includes('lucide-react')) return 'icons-vendor';
             return 'vendor';
           }
