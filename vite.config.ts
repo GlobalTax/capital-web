@@ -44,8 +44,8 @@ export default defineConfig(({ mode }) => {
             return 'vendor';
           }
           
-          // UI Components chunk independiente para evitar conflictos
-          if (id.includes('interactive-hover-button') || id.includes('/ui/')) return 'ui-components';
+          // Separar componentes problemáticos en chunks específicos
+          if (id.includes('interactive-hover-button')) return 'interactive-button';
           
           // Feature-based chunks
           if (id.includes('/admin/')) return 'admin';
