@@ -1,20 +1,20 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useProposals } from '@/hooks/useProposals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer,
-  LineChart,
-  Line
-} from 'recharts';
+  LazyResponsiveContainer,
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip, 
+  LazyPieChart, 
+  LazyPie, 
+  LazyCell, 
+  LazyLineChart,
+  LazyLine
+} from '@/components/shared/LazyChart';
 import { SERVICE_TYPE_LABELS, PROPOSAL_STATUS_LABELS } from '@/types/proposals';
 
 export const ProposalStats = () => {
@@ -120,25 +120,27 @@ export const ProposalStats = () => {
             <CardTitle>Distribución por Estado</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+                <LazyPieChart>
+                  <LazyPie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {statusData.map((entry, index) => (
+                      <LazyCell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </LazyPie>
+                  <LazyTooltip />
+                </LazyPieChart>
+              </Suspense>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
 
@@ -148,26 +150,28 @@ export const ProposalStats = () => {
             <CardTitle>Propuestas por Servicio</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={serviceTypeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  fontSize={12}
-                />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    name === 'proposals' ? value : `€${Number(value).toLocaleString()}`,
-                    name === 'proposals' ? 'Propuestas' : 'Valor Total'
-                  ]}
-                />
-                <Bar dataKey="proposals" fill="#3b82f6" name="proposals" />
-              </BarChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+                <LazyBarChart data={serviceTypeData}>
+                  <LazyCartesianGrid strokeDasharray="3 3" />
+                  <LazyXAxis 
+                    dataKey="name" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={12}
+                  />
+                  <LazyYAxis />
+                  <LazyTooltip 
+                    formatter={(value, name) => [
+                      name === 'proposals' ? value : `€${Number(value).toLocaleString()}`,
+                      name === 'proposals' ? 'Propuestas' : 'Valor Total'
+                    ]}
+                  />
+                  <LazyBar dataKey="proposals" fill="#3b82f6" name="proposals" />
+                </LazyBarChart>
+              </Suspense>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -178,34 +182,36 @@ export const ProposalStats = () => {
           <CardTitle>Tendencia Mensual</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value, name) => [
-                  name === 'value' ? `€${Number(value).toLocaleString()}` : value,
-                  name === 'created' ? 'Creadas' : 
-                  name === 'approved' ? 'Aprobadas' : 'Valor'
-                ]}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="created" 
-                stroke="#3b82f6" 
-                strokeWidth={2}
-                name="created"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="approved" 
-                stroke="#10b981" 
-                strokeWidth={2}
-                name="approved"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <LazyResponsiveContainer height={300}>
+            <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+              <LazyLineChart data={monthlyData}>
+                <LazyCartesianGrid strokeDasharray="3 3" />
+                <LazyXAxis dataKey="month" />
+                <LazyYAxis />
+                <LazyTooltip 
+                  formatter={(value, name) => [
+                    name === 'value' ? `€${Number(value).toLocaleString()}` : value,
+                    name === 'created' ? 'Creadas' : 
+                    name === 'approved' ? 'Aprobadas' : 'Valor'
+                  ]}
+                />
+                <LazyLine 
+                  type="monotone" 
+                  dataKey="created" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  name="created"
+                />
+                <LazyLine 
+                  type="monotone" 
+                  dataKey="approved" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  name="approved"
+                />
+              </LazyLineChart>
+            </Suspense>
+          </LazyResponsiveContainer>
         </CardContent>
       </Card>
 

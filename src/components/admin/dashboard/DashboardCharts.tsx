@@ -1,22 +1,22 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell
-} from 'recharts';
+  LazyResponsiveContainer,
+  LazyLineChart,
+  LazyLine,
+  LazyAreaChart,
+  LazyArea,
+  LazyPieChart,
+  LazyPie,
+  LazyBarChart,
+  LazyBar,
+  LazyXAxis,
+  LazyYAxis,
+  LazyCartesianGrid,
+  LazyTooltip,
+  LazyLegend,
+  LazyCell
+} from '@/components/shared/LazyChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Users, Eye, BarChart3 } from 'lucide-react';
 import type { AdvancedDashboardStats } from '@/types/dashboard';
@@ -65,49 +65,51 @@ const DashboardCharts = ({ stats, revenueData = [], contentData = [] }: Dashboar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="month" 
-                  fontSize={12}
-                  tick={{ fill: '#64748b' }}
-                />
-                <YAxis 
-                  fontSize={12}
-                  tick={{ fill: '#64748b' }}
-                  tickFormatter={(value) => `${value / 1000}k€`}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value: number, name: string) => [
-                    name === 'revenue' ? formatCurrency(value) : formatNumber(value),
-                    name === 'revenue' ? 'Ingresos' : 'Operaciones'
-                  ]}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="deals" 
-                  stroke="#10b981" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#10b981', strokeWidth: 2, r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+                <LazyLineChart data={chartData}>
+                  <LazyCartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <LazyXAxis 
+                    dataKey="month" 
+                    fontSize={12}
+                    tick={{ fill: '#64748b' }}
+                  />
+                  <LazyYAxis 
+                    fontSize={12}
+                    tick={{ fill: '#64748b' }}
+                    tickFormatter={(value) => `${value / 1000}k€`}
+                  />
+                  <LazyTooltip 
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value: number, name: string) => [
+                      name === 'revenue' ? formatCurrency(value) : formatNumber(value),
+                      name === 'revenue' ? 'Ingresos' : 'Operaciones'
+                    ]}
+                  />
+                  <LazyLine 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                  />
+                  <LazyLine 
+                    type="monotone" 
+                    dataKey="deals" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={{ fill: '#10b981', strokeWidth: 2, r: 3 }}
+                  />
+                </LazyLineChart>
+              </Suspense>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
 
@@ -120,37 +122,39 @@ const DashboardCharts = ({ stats, revenueData = [], contentData = [] }: Dashboar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={leadsData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {leadsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value: number) => [formatPercentage(value), 'Porcentaje']}
-                />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  fontSize={12}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+                <LazyPieChart>
+                  <LazyPie
+                    data={leadsData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {leadsData.map((entry, index) => (
+                      <LazyCell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </LazyPie>
+                  <LazyTooltip 
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value: number) => [formatPercentage(value), 'Porcentaje']}
+                  />
+                  <LazyLegend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    fontSize={12}
+                  />
+                </LazyPieChart>
+              </Suspense>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -166,48 +170,50 @@ const DashboardCharts = ({ stats, revenueData = [], contentData = [] }: Dashboar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="month" 
-                  fontSize={12}
-                  tick={{ fill: '#64748b' }}
-                />
-                <YAxis 
-                  fontSize={12}
-                  tick={{ fill: '#64748b' }}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value: number, name: string) => [
-                    formatNumber(value),
-                    name === 'views' ? 'Vistas' : 'Engagement'
-                  ]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="views"
-                  stackId="1"
-                  stroke="#8b5cf6"
-                  fill="#8b5cf6"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="engagement"
-                  stackId="2"
-                  stroke="#f59e0b"
-                  fill="#f59e0b"
-                  fillOpacity={0.6}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+                <LazyAreaChart data={chartData}>
+                  <LazyCartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <LazyXAxis 
+                    dataKey="month" 
+                    fontSize={12}
+                    tick={{ fill: '#64748b' }}
+                  />
+                  <LazyYAxis 
+                    fontSize={12}
+                    tick={{ fill: '#64748b' }}
+                  />
+                  <LazyTooltip 
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value: number, name: string) => [
+                      formatNumber(value),
+                      name === 'views' ? 'Vistas' : 'Engagement'
+                    ]}
+                  />
+                  <LazyArea
+                    type="monotone"
+                    dataKey="views"
+                    stackId="1"
+                    stroke="#8b5cf6"
+                    fill="#8b5cf6"
+                    fillOpacity={0.6}
+                  />
+                  <LazyArea
+                    type="monotone"
+                    dataKey="engagement"
+                    stackId="2"
+                    stroke="#f59e0b"
+                    fill="#f59e0b"
+                    fillOpacity={0.6}
+                  />
+                </LazyAreaChart>
+              </Suspense>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
 
@@ -220,41 +226,43 @@ const DashboardCharts = ({ stats, revenueData = [], contentData = [] }: Dashboar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sectorData} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis 
-                  type="number" 
-                  fontSize={12}
-                  tick={{ fill: '#64748b' }}
-                  tickFormatter={(value) => `${value / 1000}k€`}
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="sector" 
-                  fontSize={12}
-                  tick={{ fill: '#64748b' }}
-                  width={80}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value: number, name: string) => [
-                    name === 'revenue' ? formatCurrency(value) : `${value} deals`,
-                    name === 'revenue' ? 'Ingresos' : 'Operaciones'
-                  ]}
-                />
-                <Bar 
-                  dataKey="revenue" 
-                  fill="#f59e0b" 
-                  radius={[0, 4, 4, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer height={300}>
+              <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando gráfico...</div>}>
+                <LazyBarChart data={sectorData} layout="horizontal">
+                  <LazyCartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <LazyXAxis 
+                    type="number" 
+                    fontSize={12}
+                    tick={{ fill: '#64748b' }}
+                    tickFormatter={(value) => `${value / 1000}k€`}
+                  />
+                  <LazyYAxis 
+                    type="category" 
+                    dataKey="sector" 
+                    fontSize={12}
+                    tick={{ fill: '#64748b' }}
+                    width={80}
+                  />
+                  <LazyTooltip 
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value: number, name: string) => [
+                      name === 'revenue' ? formatCurrency(value) : `${value} deals`,
+                      name === 'revenue' ? 'Ingresos' : 'Operaciones'
+                    ]}
+                  />
+                  <LazyBar 
+                    dataKey="revenue" 
+                    fill="#f59e0b" 
+                    radius={[0, 4, 4, 0]}
+                  />
+                </LazyBarChart>
+              </Suspense>
+            </LazyResponsiveContainer>
           </CardContent>
         </Card>
       </div>
