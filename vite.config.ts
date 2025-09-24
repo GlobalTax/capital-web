@@ -31,21 +31,48 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Simplificado para evitar fragmentación excesiva
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast', '@tanstack/react-query']
+        manualChunks: (id) => {
+          // Vendor chunks optimizados
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
+            if (id.includes('@radix-ui')) return 'ui-vendor';
+            if (id.includes('@tanstack/react-query')) return 'query-vendor';
+            if (id.includes('recharts') || id.includes('react-pdf')) return 'charts-pdf';
+            if (id.includes('lucide-react')) return 'icons-vendor';
+            return 'vendor';
+          }
+          
+          // Feature-based chunks
+          if (id.includes('/admin/')) return 'admin';
+          if (id.includes('/landing/') || id.includes('Landing')) return 'landing';
+          if (id.includes('/valuation/')) return 'valuation';
+          if (id.includes('/blog/')) return 'blog';
+          if (id.includes('/navarro/')) return 'navarro';
         }
       }
     },
-    target: ['es2019', 'safari13'],
+    target: ['es2020', 'chrome80', 'safari14'],
     minify: 'esbuild',
     sourcemap: mode === 'development',
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 500,
+    assetsInlineLimit: 4096,
+    reportCompressedSize: false
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@tanstack/react-query'],
-    exclude: ['@vite/client', '@vite/env']
+    include: [
+      'react', 
+      'react-dom', 
+      '@tanstack/react-query',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      'lucide-react'
+    ],
+    exclude: ['@vite/client', '@vite/env'],
+    force: false
+  },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    legalComments: 'none'
   }
 };
 });

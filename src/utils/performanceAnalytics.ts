@@ -292,8 +292,8 @@ class PerformanceAnalytics {
   private flush(): void {
     if (this.batchBuffer.length === 0) return;
 
-    // Reducir spam de logs - solo cada 5 flushes
-    if (this.batchBuffer.length % 5 === 0) {
+    // Solo log en desarrollo y cada 10 flushes
+    if (import.meta.env.DEV && this.batchBuffer.length % 10 === 0) {
       console.log('📊 Performance Analytics Batch:', {
         batches: this.batchBuffer.length,
         session: this.session.id,
