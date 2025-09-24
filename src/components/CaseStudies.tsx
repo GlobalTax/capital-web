@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 const CaseStudies = () => {
@@ -170,7 +170,7 @@ const CaseStudies = () => {
           </p>
 
           <div className="flex justify-center">
-            <InteractiveHoverButton 
+            <SimpleButton 
               text="Contacta"
               variant="primary"
               size="lg"

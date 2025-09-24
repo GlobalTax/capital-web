@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChevronRight, TrendingUp, Users, Award, ArrowRight, CheckCircle, Database, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SmartVideoPlayer from '@/components/video/SmartVideoPlayer';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 
 const DeLooperACapittalContent = () => {
   const navigate = useNavigate();
@@ -42,12 +42,12 @@ const DeLooperACapittalContent = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <InteractiveHoverButton
+                <SimpleButton
                   text="Solicitar Valoración"
                   onClick={() => navigate('/calculadora')}
                   variant="primary"
                 />
-                <InteractiveHoverButton
+                <SimpleButton
                   text="Hablar con Experto"
                   onClick={() => navigate('/contacto')}
                   variant="secondary"
@@ -171,7 +171,7 @@ const DeLooperACapittalContent = () => {
             Descubre cómo podemos ayudarte hoy.
           </p>
           <div className="inline-block">
-            <InteractiveHoverButton
+            <SimpleButton
               text="Comenzar Valoración Gratuita"
               onClick={() => navigate('/calculadora')}
               variant="primary"

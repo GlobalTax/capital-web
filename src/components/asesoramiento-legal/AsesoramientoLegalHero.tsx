@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 import { Phone, Download } from 'lucide-react';
 
 const AsesoramientoLegalHero = () => {
@@ -41,15 +41,13 @@ const AsesoramientoLegalHero = () => {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <InteractiveHoverButton
+              <SimpleButton
                 text="Consulta"
                 variant="primary"
                 size="lg"
                 className="flex items-center gap-2"
                 onClick={() => window.location.href = '/contacto'}
-              >
-                <Phone className="w-5 h-5" />
-              </InteractiveHoverButton>
+              />
             </div>
           </div>
 

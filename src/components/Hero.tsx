@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
@@ -67,7 +67,7 @@ const Hero = () => {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/lp/calculadora">
-                  <InteractiveHoverButton 
+                  <SimpleButton 
                     text="Valorar Empresa" 
                     variant="primary" 
                     size="lg" 
@@ -75,7 +75,7 @@ const Hero = () => {
                   />
                 </Link>
                 <Link to="/casos-exito">
-                  <InteractiveHoverButton 
+                  <SimpleButton 
                     text="Ver Casos" 
                     variant="secondary" 
                     size="lg" 

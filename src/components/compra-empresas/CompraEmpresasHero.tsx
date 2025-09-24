@@ -1,5 +1,5 @@
 import React from 'react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 
 const CompraEmpresasHero = () => {
   const benefits = [
@@ -43,12 +43,12 @@ const CompraEmpresasHero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <InteractiveHoverButton 
+              <SimpleButton 
                 text="Ver Oportunidades Actuales" 
                 variant="primary"
                 size="lg"
               />
-              <InteractiveHoverButton 
+              <SimpleButton 
                 text="Solicitar Consulta" 
                 variant="outline"
                 size="lg"

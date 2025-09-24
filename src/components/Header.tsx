@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 import { Menu, X, Phone, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,7 +28,7 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
             <Link to="/contacto">
-              <InteractiveHoverButton 
+              <SimpleButton 
                 text="Contacto"
                 variant="secondary"
                 size="sm"

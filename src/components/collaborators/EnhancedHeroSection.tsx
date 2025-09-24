@@ -1,5 +1,5 @@
 import React from 'react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 import { Badge } from '@/components/ui/badge';
 
 // Fixed: Removed undefined variable reference that was causing crashes
@@ -53,12 +53,12 @@ export const EnhancedHeroSection = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <InteractiveHoverButton 
+                <SimpleButton 
                   text="Aplicar Ahora"
                   variant="primary"
                   size="lg"
                 />
-                <InteractiveHoverButton 
+                <SimpleButton 
                   text="Requisitos"
                   variant="outline"
                   size="lg"

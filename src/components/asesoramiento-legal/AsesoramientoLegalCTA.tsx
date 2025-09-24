@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SimpleButton } from '@/components/ui/simple-button';
 import { Link } from 'react-router-dom';
 
 const AsesoramientoLegalCTA = () => {
@@ -39,7 +39,7 @@ const AsesoramientoLegalCTA = () => {
 
             <div className="flex justify-center">
               <Link to="/contacto">
-                <InteractiveHoverButton
+                <SimpleButton
                   text="Consulta"
                   variant="secondary"
                   size="lg"
