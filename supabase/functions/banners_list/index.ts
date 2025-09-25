@@ -394,6 +394,71 @@ Deno.serve(async (req) => {
       );
     }
 
+    // POST /banners/:id/track - Track banner events (impression/click)
+    const trackMatch = path.match(/^\/banners\/([^\/]+)\/track$/);
+    if (req.method === 'POST' && trackMatch) {
+      const bannerId = trackMatch[1];
+      const { event } = await req.json();
+      
+      // Validate event type
+      if (!event || !['impression', 'click'].includes(event)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid event type. Must be "impression" or "click"' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Get request metadata
+      const url = new URL(req.url);
+      const currentPath = url.searchParams.get('path') || '/';
+      const userAgent = req.headers.get('user-agent') || null;
+      const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                        req.headers.get('x-real-ip') || null;
+
+      // Get user ID if authenticated (but don't require authentication)
+      let userId = null;
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.replace('Bearer ', '');
+          const { data: { user } } = await supabaseClient.auth.getUser(token);
+          if (user) {
+            userId = user.id;
+          }
+        } catch (error) {
+          // Ignore auth errors for tracking - we allow anonymous tracking
+          console.log('Auth error in tracking (ignored):', error);
+        }
+      }
+
+      // Insert banner event
+      const { error: insertError } = await supabaseClient
+        .from('banner_events')
+        .insert({
+          banner_id: bannerId,
+          event: event,
+          path: currentPath,
+          user_id: userId,
+          ip_address: ipAddress,
+          user_agent: userAgent
+        });
+
+      if (insertError) {
+        console.error('Error inserting banner event:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to track banner event' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Tracked ${event} event for banner ${bannerId} on path ${currentPath}`);
+      
+      return new Response(
+        JSON.stringify({ success: true, event, banner_id: bannerId }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Route not found
     return new Response(
       JSON.stringify({ error: 'Route not found' }),

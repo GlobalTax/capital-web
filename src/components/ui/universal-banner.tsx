@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LazyIcon from '@/components/ui/LazyIcon';
 import { useBannerDismiss } from '@/hooks/useBannerDismiss';
+import { useBannerTracking } from '@/hooks/useBannerTracking';
 import type { IconName } from './icon-registry';
 
 interface ColorScheme {
@@ -140,6 +141,7 @@ export const UniversalBanner: React.FC<UniversalBannerProps> = ({
   version = "1.0",
 }) => {
   const { isDismissed, dismissBanner } = useBannerDismiss(id, version);
+  const { trackClick } = useBannerTracking({ bannerId: id, enabled: show });
 
   // Don't render if not showing or dismissed
   if (!show || isDismissed) {
@@ -149,6 +151,10 @@ export const UniversalBanner: React.FC<UniversalBannerProps> = ({
   const handleDismiss = () => {
     dismissBanner();
     onDismiss?.(id);
+  };
+
+  const handleCtaClick = () => {
+    trackClick();
   };
 
   const { container, background, text } = getBannerClasses(variant, colorScheme);
@@ -251,6 +257,7 @@ export const UniversalBanner: React.FC<UniversalBannerProps> = ({
                     variant="secondary"
                     size="sm"
                     className="bg-white/20 hover:bg-white/30 text-current border-white/30"
+                    onClick={handleCtaClick}
                   >
                     <a href={ctaHref}>{ctaText}</a>
                   </Button>
@@ -259,6 +266,7 @@ export const UniversalBanner: React.FC<UniversalBannerProps> = ({
                     variant="secondary"
                     size="sm"
                     className="bg-white/20 hover:bg-white/30 text-current border-white/30"
+                    onClick={handleCtaClick}
                   >
                     {ctaText}
                   </Button>

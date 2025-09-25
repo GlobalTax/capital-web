@@ -358,6 +358,47 @@ export type Database = {
         }
         Relationships: []
       }
+      banner_events: {
+        Row: {
+          banner_id: string
+          created_at: string
+          event: string
+          id: string
+          ip_address: unknown | null
+          path: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          banner_id: string
+          created_at?: string
+          event: string
+          id?: string
+          ip_address?: unknown | null
+          path: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          banner_id?: string
+          created_at?: string
+          event?: string
+          id?: string
+          ip_address?: unknown | null
+          path?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banner_events_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "banners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banners: {
         Row: {
           align: string
@@ -3903,7 +3944,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      banner_daily_analytics: {
+        Row: {
+          banner_id: string | null
+          banner_name: string | null
+          banner_slug: string | null
+          clicks: number | null
+          ctr_percentage: number | null
+          event_date: string | null
+          impressions: number | null
+          unique_pages: number | null
+          unique_users: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banner_events_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "banners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approve_user_registration: {
@@ -4121,6 +4183,10 @@ export type Database = {
       process_automation_workflows: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      refresh_banner_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       reject_user_registration: {
         Args: { reason?: string; request_id: string }
