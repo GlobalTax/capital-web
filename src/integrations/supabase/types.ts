@@ -369,6 +369,7 @@ export type Database = {
           cta_text: string | null
           dismissible: boolean
           end_at: string | null
+          exclusive: boolean | null
           id: string
           max_width: string
           name: string
@@ -397,6 +398,7 @@ export type Database = {
           cta_text?: string | null
           dismissible?: boolean
           end_at?: string | null
+          exclusive?: boolean | null
           id?: string
           max_width?: string
           name: string
@@ -425,6 +427,7 @@ export type Database = {
           cta_text?: string | null
           dismissible?: boolean
           end_at?: string | null
+          exclusive?: boolean | null
           id?: string
           max_width?: string
           name?: string

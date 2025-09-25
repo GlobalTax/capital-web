@@ -191,6 +191,7 @@ export const BannersDataTable: React.FC<BannersDataTableProps> = ({
               <TableHead>Audience</TableHead>
               <TableHead>Variant</TableHead>
               <TableHead className="w-20">Priority</TableHead>
+              <TableHead className="w-24">Exclusive</TableHead>
               <TableHead>Time Window</TableHead>
               <TableHead>Updated</TableHead>
               <TableHead className="w-32">Actions</TableHead>
@@ -199,7 +200,7 @@ export const BannersDataTable: React.FC<BannersDataTableProps> = ({
           <TableBody>
             {filteredBanners.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                   {banners.length === 0 ? 'No banners found' : 'No banners match the current filters'}
                 </TableCell>
               </TableRow>
@@ -258,6 +259,18 @@ export const BannersDataTable: React.FC<BannersDataTableProps> = ({
                   
                   <TableCell>
                     <Badge variant="outline">{banner.priority}</Badge>
+                  </TableCell>
+                  
+                  <TableCell>
+                    {banner.exclusive ? (
+                      <Badge variant="destructive" className="text-xs">
+                        Exclusivo
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        Normal
+                      </Badge>
+                    )}
                   </TableCell>
                   
                   <TableCell>

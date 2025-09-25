@@ -22,6 +22,7 @@ export interface BannerData {
   show: boolean;
   version: string;
   priority: number;
+  exclusive?: boolean;
 }
 
 export interface BannerContainerProps {

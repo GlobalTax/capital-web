@@ -34,6 +34,7 @@ interface Database {
           end_at: string | null;
           priority: number;
           version: number;
+          exclusive: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -84,6 +85,8 @@ function transformBannerForUI(banner: Database['public']['Tables']['banners']['R
     maxWidth: banner.max_width,
     show: banner.visible,
     version: banner.version.toString(),
+    priority: banner.priority,
+    exclusive: banner.exclusive,
   };
 }
 
@@ -125,12 +128,11 @@ Deno.serve(async (req) => {
       
       console.log(`Fetching active banners for path: ${requestedPath}, audience: ${audience}`);
 
+      // Fetch visible banners with basic filters only
       const { data: banners, error } = await supabaseClient
         .from('banners')
         .select('*')
-        .eq('visible', true)
-        .order('priority', { ascending: false })
-        .order('start_at', { ascending: false });
+        .eq('visible', true);
 
       if (error) {
         console.error('Database error:', error);
@@ -140,22 +142,93 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Filter banners based on time window, audience, and pages
+      // Apply time window and audience filtering
       const now = new Date();
-      const activeBanners = banners.filter(banner => {
+      const candidateBanners = banners.filter(banner => {
         // Check time window
         const startOk = !banner.start_at || new Date(banner.start_at) <= now;
         const endOk = !banner.end_at || new Date(banner.end_at) >= now;
         
-        // Check audience and pages
+        // Check audience
         const audienceMatch = matchesAudience(banner.audience, audience);
-        const pageMatch = matchesPage(banner.pages, requestedPath);
         
-        return startOk && endOk && audienceMatch && pageMatch;
+        return startOk && endOk && audienceMatch;
       });
 
-      const transformedBanners = activeBanners.map(transformBannerForUI);
+      // Group banners by specific pages they match
+      const pageGroups = new Map<string, typeof candidateBanners>();
       
+      candidateBanners.forEach(banner => {
+        // Determine which specific pages this banner matches
+        const matchingPages: string[] = [];
+        
+        if (banner.pages.includes('all')) {
+          matchingPages.push('all');
+        } else {
+          banner.pages.forEach((page: string) => {
+            if (matchesPage([page], requestedPath)) {
+              matchingPages.push(page);
+            }
+          });
+        }
+        
+        // Add banner to each matching page group
+        matchingPages.forEach(page => {
+          if (!pageGroups.has(page)) {
+            pageGroups.set(page, []);
+          }
+          pageGroups.get(page)!.push(banner);
+        });
+      });
+
+      // Process each page group and apply ordering + exclusive logic
+      const finalBanners = new Map<string, any>(); // Use banner ID as key to avoid duplicates
+      
+      for (const [page, pageBanners] of pageGroups.entries()) {
+        // Sort by priority DESC, then start_at DESC (null start_at treated as oldest)
+        pageBanners.sort((a, b) => {
+          // First sort by priority
+          if (a.priority !== b.priority) {
+            return b.priority - a.priority; // DESC
+          }
+          
+          // Then by start_at (more recent first, null last)
+          const aDate = a.start_at ? new Date(a.start_at).getTime() : 0;
+          const bDate = b.start_at ? new Date(b.start_at).getTime() : 0;
+          return bDate - aDate; // DESC
+        });
+        
+        // Get the top banner(s) for this page
+        if (pageBanners.length > 0) {
+          const topBanner = pageBanners[0];
+          
+          if (topBanner.exclusive) {
+            // If top banner is exclusive, only return that one for this page
+            finalBanners.set(topBanner.id, topBanner);
+            
+            // If exclusive banner affects 'all' pages, clear everything else
+            if (page === 'all') {
+              finalBanners.clear();
+              finalBanners.set(topBanner.id, topBanner);
+              break; // Exit loop, this banner overrides everything
+            }
+          } else {
+            // Not exclusive: return all banners with the same highest priority
+            const highestPriority = topBanner.priority;
+            const samePriorityBanners = pageBanners.filter(b => b.priority === highestPriority);
+            
+            samePriorityBanners.forEach(banner => {
+              finalBanners.set(banner.id, banner);
+            });
+          }
+        }
+      }
+
+      // Transform final banners for UI
+      const transformedBanners = Array.from(finalBanners.values())
+        .map(transformBannerForUI)
+        .sort((a, b) => b.priority - a.priority); // Final sort by priority for consistent ordering
+
       console.log(`Returning ${transformedBanners.length} active banners`);
       
       return new Response(

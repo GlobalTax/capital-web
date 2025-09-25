@@ -96,6 +96,8 @@ export const BannerFormSchema = z.object({
     .min(0, 'Priority must be 0 or greater')
     .max(100, 'Priority must be 100 or less')
     .default(0),
+  
+  exclusive: z.boolean().default(false),
 }).refine(
   (data) => {
     // If both start_at and end_at are provided, start_at should be before end_at
@@ -160,6 +162,7 @@ export const defaultBannerValues: BannerFormData = {
   start_at: '',
   end_at: '',
   priority: 0,
+  exclusive: false,
 };
 
 // Audience options for form

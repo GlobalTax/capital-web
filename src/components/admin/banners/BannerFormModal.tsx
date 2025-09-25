@@ -455,6 +455,20 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
 
                   <div className="flex items-center space-x-2">
                     <Switch
+                      id="exclusive"
+                      checked={watchedValues.exclusive}
+                      onCheckedChange={(checked) => setValue('exclusive', checked)}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="exclusive">Exclusive Banner</Label>
+                      <p className="text-sm text-muted-foreground">
+                        When enabled, this banner hides all other banners on the selected pages
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
                       id="visible"
                       checked={watchedValues.visible}
                       onCheckedChange={(checked) => setValue('visible', checked)}

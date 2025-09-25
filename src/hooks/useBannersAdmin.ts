@@ -25,6 +25,7 @@ export interface Banner {
   start_at: string | null;
   end_at: string | null;
   priority: number;
+  exclusive: boolean;
   version: number;
   created_at: string;
   updated_at: string;
@@ -53,6 +54,7 @@ export interface BannerFormData {
   start_at?: string;
   end_at?: string;
   priority: number;
+  exclusive?: boolean;
 }
 
 interface BannersResponse {
