@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import AdminAccessButton from '@/components/AdminAccessButton';
+import BannerContainer from '@/components/banners/BannerContainer';
 
 interface UnifiedLayoutProps {
   children: ReactNode;
@@ -33,10 +34,12 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-white">
+      <BannerContainer position="top" />
       <HeaderComponent />
       <main role="main" className={`pt-16 ${mainClassName}`}>
         {children}
       </main>
+      <BannerContainer position="bottom" />
       <Footer />
       {showAccessibilityTools && <AccessibilityTools />}
       {showNotificationCenter && <NotificationCenter className="mr-16" />}
