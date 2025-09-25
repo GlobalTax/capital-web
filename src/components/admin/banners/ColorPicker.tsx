@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Palette } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Palette, Check, AlertTriangle } from 'lucide-react';
+import { COLOR_THEMES, getContrastInfo, isValidHex } from '@/utils/colorUtils';
+import type { ColorTheme } from '@/utils/colorUtils';
 
 interface ColorPickerProps {
   value: string;
   onChange: (color: string) => void;
+  showPresets?: boolean;
+  showContrastChecker?: boolean;
+  contrastAgainst?: string;
+  onThemeSelect?: (theme: ColorTheme) => void;
 }
 
 const PRESET_COLORS = [
@@ -24,15 +32,22 @@ const PRESET_COLORS = [
   '#6b7280', // gray-500
 ];
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
+export const ColorPicker: React.FC<ColorPickerProps> = ({ 
+  value, 
+  onChange, 
+  showPresets = true,
+  showContrastChecker = false,
+  contrastAgainst = '#ffffff',
+  onThemeSelect
+}) => {
   const [inputValue, setInputValue] = useState(value);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
     
-    // Validate hex color
-    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newValue)) {
+    // Validate hex color using enhanced validation
+    if (isValidHex(newValue)) {
       onChange(newValue);
     }
   };
@@ -41,6 +56,15 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
     setInputValue(color);
     onChange(color);
   };
+
+  const handleThemeClick = (theme: ColorTheme) => {
+    setInputValue(theme.primary);
+    onChange(theme.primary);
+    onThemeSelect?.(theme);
+  };
+
+  // Calculate contrast ratio if enabled
+  const contrastInfo = showContrastChecker ? getContrastInfo(value, contrastAgainst) : null;
 
   return (
     <div className="flex items-center gap-2">
@@ -78,8 +102,47 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
             <Palette className="w-4 h-4" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-3">
-          <div className="space-y-3">
+        <PopoverContent className="w-80 p-4">
+          <div className="space-y-4">
+            {/* Theme Presets */}
+            {showPresets && (
+              <>
+                <div>
+                  <p className="text-sm font-medium mb-3">Color Themes</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {COLOR_THEMES.map((theme) => (
+                      <button
+                        key={theme.name}
+                        className="flex items-center justify-between p-2 rounded-md border hover:bg-muted transition-colors"
+                        onClick={() => handleThemeClick(theme)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <div
+                              className="w-4 h-4 rounded-full border border-border"
+                              style={{ backgroundColor: theme.primary }}
+                            />
+                            {theme.secondary && (
+                              <div
+                                className="w-4 h-4 rounded-full border border-border"
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                            )}
+                          </div>
+                          <span className="text-sm font-medium">{theme.name}</span>
+                        </div>
+                        {onThemeSelect && (
+                          <Check className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Individual Preset Colors */}
             <div>
               <p className="text-sm font-medium mb-2">Preset Colors</p>
               <div className="grid grid-cols-6 gap-2">
@@ -95,6 +158,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
               </div>
             </div>
             
+            {/* Custom Color Picker */}
             <div>
               <p className="text-sm font-medium mb-2">Custom Color</p>
               <Input
@@ -107,6 +171,37 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
                 className="w-full h-10"
               />
             </div>
+
+            {/* Contrast Checker */}
+            {showContrastChecker && contrastInfo && (
+              <>
+                <Separator />
+                <div>
+                  <p className="text-sm font-medium mb-2">Accessibility Check</p>
+                  <div className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                    <div className="flex items-center gap-2">
+                      {contrastInfo.accessible ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                      )}
+                      <span className="text-sm">Contrast Ratio: {contrastInfo.ratio.toFixed(2)}</span>
+                    </div>
+                    <Badge 
+                      variant={contrastInfo.accessible ? 'success' : 'warning'}
+                      className="text-xs"
+                    >
+                      {contrastInfo.level}
+                    </Badge>
+                  </div>
+                  {!contrastInfo.accessible && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Consider using a different color for better readability
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </PopoverContent>
       </Popover>

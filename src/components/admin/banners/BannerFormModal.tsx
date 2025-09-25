@@ -22,6 +22,8 @@ import type { BannerFormData } from '@/schemas/bannerSchema';
 import { Banner } from '@/hooks/useBannersAdmin';
 import { UniversalBanner } from '@/components/ui/universal-banner';
 import { ColorPicker } from '@/components/admin/banners/ColorPicker';
+import { COLOR_THEMES } from '@/utils/colorUtils';
+import type { ColorTheme } from '@/utils/colorUtils';
 import { MultiSelect } from '@/components/admin/banners/MultiSelect';
 
 interface BannerFormModalProps {
@@ -108,6 +110,16 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .trim();
+  };
+
+  const handleThemeSelect = (theme: ColorTheme) => {
+    setValue('color_primary', theme.primary);
+    if (theme.secondary) {
+      setValue('color_secondary', theme.secondary);
+    }
+    if (theme.textOnPrimary) {
+      setValue('text_on_primary', theme.textOnPrimary);
+    }
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,6 +276,37 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 </TabsContent>
 
                 <TabsContent value="design" className="space-y-4">
+                  {/* Theme Selector */}
+                  <div>
+                    <Label>Quick Themes</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
+                      {COLOR_THEMES.map((theme) => (
+                        <Button
+                          key={theme.name}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="flex flex-col items-center gap-1 h-auto py-2"
+                          onClick={() => handleThemeSelect(theme)}
+                        >
+                          <div className="flex gap-1">
+                            <div
+                              className="w-3 h-3 rounded-full border"
+                              style={{ backgroundColor: theme.primary }}
+                            />
+                            {theme.secondary && (
+                              <div
+                                className="w-3 h-3 rounded-full border"
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                            )}
+                          </div>
+                          <span className="text-xs">{theme.name}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div>
                     <Label htmlFor="variant">Variant</Label>
                     <Select
@@ -288,6 +331,10 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                       <ColorPicker
                         value={watchedValues.color_primary}
                         onChange={(color) => setValue('color_primary', color)}
+                        showPresets={true}
+                        showContrastChecker={true}
+                        contrastAgainst={watchedValues.text_on_primary}
+                        onThemeSelect={handleThemeSelect}
                       />
                       {errors.color_primary && (
                         <p className="text-sm text-destructive mt-1">{errors.color_primary.message}</p>
@@ -300,6 +347,8 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                         <ColorPicker
                           value={watchedValues.color_secondary || '#6366f1'}
                           onChange={(color) => setValue('color_secondary', color)}
+                          showPresets={true}
+                          showContrastChecker={false}
                         />
                         {errors.color_secondary && (
                           <p className="text-sm text-destructive mt-1">{errors.color_secondary.message}</p>
@@ -312,6 +361,9 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                       <ColorPicker
                         value={watchedValues.text_on_primary}
                         onChange={(color) => setValue('text_on_primary', color)}
+                        showPresets={true}
+                        showContrastChecker={true}
+                        contrastAgainst={watchedValues.color_primary}
                       />
                       {errors.text_on_primary && (
                         <p className="text-sm text-destructive mt-1">{errors.text_on_primary.message}</p>
