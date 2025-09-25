@@ -358,6 +358,93 @@ export type Database = {
         }
         Relationships: []
       }
+      banners: {
+        Row: {
+          align: string
+          audience: string[]
+          color_primary: string
+          color_secondary: string | null
+          created_at: string | null
+          cta_href: string | null
+          cta_text: string | null
+          dismissible: boolean
+          end_at: string | null
+          id: string
+          max_width: string
+          name: string
+          pages: string[]
+          position: string
+          priority: number
+          rounded: string
+          shadow: boolean
+          slug: string
+          start_at: string | null
+          subtitle: string | null
+          text_on_primary: string | null
+          title: string
+          updated_at: string | null
+          variant: string
+          version: number
+          visible: boolean
+        }
+        Insert: {
+          align?: string
+          audience?: string[]
+          color_primary?: string
+          color_secondary?: string | null
+          created_at?: string | null
+          cta_href?: string | null
+          cta_text?: string | null
+          dismissible?: boolean
+          end_at?: string | null
+          id?: string
+          max_width?: string
+          name: string
+          pages?: string[]
+          position?: string
+          priority?: number
+          rounded?: string
+          shadow?: boolean
+          slug: string
+          start_at?: string | null
+          subtitle?: string | null
+          text_on_primary?: string | null
+          title: string
+          updated_at?: string | null
+          variant?: string
+          version?: number
+          visible?: boolean
+        }
+        Update: {
+          align?: string
+          audience?: string[]
+          color_primary?: string
+          color_secondary?: string | null
+          created_at?: string | null
+          cta_href?: string | null
+          cta_text?: string | null
+          dismissible?: boolean
+          end_at?: string | null
+          id?: string
+          max_width?: string
+          name?: string
+          pages?: string[]
+          position?: string
+          priority?: number
+          rounded?: string
+          shadow?: boolean
+          slug?: string
+          start_at?: string | null
+          subtitle?: string | null
+          text_on_primary?: string | null
+          title?: string
+          updated_at?: string | null
+          variant?: string
+          version?: number
+          visible?: boolean
+        }
+        Relationships: []
+      }
       blog_analytics: {
         Row: {
           id: string
