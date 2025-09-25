@@ -37,7 +37,8 @@ import {
   MessageSquare,
   TestTube,
   Image,
-  AlertCircle
+  AlertCircle,
+  Flag
 } from 'lucide-react';
 
 const menuSections = [
@@ -65,6 +66,7 @@ const menuSections = [
       { title: "Reports Sectoriales IA", url: "/admin/sector-reports", icon: Database, badge: "AI" },
       { title: "Casos de Éxito", url: "/admin/case-studies", icon: Award },
       { title: "Lead Magnets", url: "/admin/lead-magnets", icon: Zap },
+      { title: "Banners", url: "/admin/banners", icon: Flag },
     ]
   },
   {

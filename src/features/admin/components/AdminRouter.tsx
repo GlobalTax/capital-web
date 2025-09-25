@@ -36,6 +36,7 @@ import MarketReports from '@/pages/admin/MarketReports';
 import SectorCalculators from '@/pages/admin/SectorCalculators';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
+import AdminBanners from '@/pages/AdminBanners';
 import ContactsPage from '@/pages/admin/ContactsPage';
 import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
 import TrackingDashboardPage from '@/pages/admin/TrackingDashboardPage';
@@ -96,6 +97,7 @@ const AdminRouter = () => {
       <Route path="/sectors" element={<SectorsPage />} />
       <Route path="/case-studies" element={<CaseStudiesManager />} />
       <Route path="/landing-pages" element={<LandingPagesPage />} />
+      <Route path="/banners" element={<AdminBanners />} />
       
       {/* Company Data */}
       <Route path="/operations" element={<AdminOperations />} />
