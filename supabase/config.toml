@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.list-operations]
 verify_jwt = false
+
+[functions.banners_list]
+verify_jwt = false
