@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+import { SimpleButton } from "./simple-button";
 
 interface InteractiveHoverButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,33 +12,15 @@ const InteractiveHoverButton = React.forwardRef<
   HTMLButtonElement,
   InteractiveHoverButtonProps
 >(({ text = "Button", variant = "primary", size = "default", className, ...props }, ref) => {
-  const baseClasses = "relative cursor-pointer rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20 flex items-center justify-center text-center";
-  
-  const variantClasses = {
-    primary: "bg-black text-white border-0.5 border-black hover:shadow-lg hover:-translate-y-1",
-    secondary: "bg-white text-black border-0.5 border-black hover:shadow-lg hover:-translate-y-1",
-    outline: "bg-transparent text-black border-0.5 border-black hover:shadow-md hover:-translate-y-0.5"
-  };
-
-  const sizeClasses = {
-    sm: "px-4 py-2 text-sm h-9",
-    default: "px-6 py-3 text-base h-11",
-    lg: "px-8 py-4 text-lg h-12"
-  };
-
   return (
-    <button
+    <SimpleButton
       ref={ref}
-      className={cn(
-        baseClasses,
-        variantClasses[variant],
-        sizeClasses[size],
-        className,
-      )}
+      text={text}
+      variant={variant}
+      size={size}
+      className={className}
       {...props}
-    >
-      {text}
-    </button>
+    />
   );
 });
 

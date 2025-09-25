@@ -6,13 +6,13 @@ interface SimpleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   size?: "sm" | "default" | "lg";
 }
 
-const SimpleButton: React.FC<SimpleButtonProps> = ({ 
+const SimpleButton = React.forwardRef<HTMLButtonElement, SimpleButtonProps>(({ 
   text = "Button", 
   variant = "primary", 
   size = "default", 
   className = "",
   ...props 
-}) => {
+}, ref) => {
   const baseClasses = "relative cursor-pointer rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20 flex items-center justify-center text-center";
   
   const variantClasses = {
@@ -36,12 +36,15 @@ const SimpleButton: React.FC<SimpleButtonProps> = ({
 
   return (
     <button
+      ref={ref}
       className={classes}
       {...props}
     >
       {text}
     </button>
   );
-};
+});
+
+SimpleButton.displayName = "SimpleButton";
 
 export { SimpleButton };
