@@ -208,7 +208,8 @@ const handler = async (req: Request): Promise<Response> => {
       "pau@capittal.es",
       "marcc@capittal.es", 
       "marc@capittal.es",
-      "lluis@capittal.es"
+      "lluis@capittal.es",
+      "l.linares@nrro.es"
     ];
     const extraRecipient = recipientEmail?.trim();
     const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
