@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, CheckCircle, AlertCircle, RefreshCw, Bug } from 'lucide-react';
+import { Shield, CheckCircle, AlertCircle, RefreshCw, Bug, AlertTriangle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 
 import { AdminDebugPanel } from '@/components/admin/AdminDebugPanel';
 
 const AdminLogin = () => {
-  const { user, isLoading, signIn, signUp, isAdmin, checkAdminStatus, forceAdminReload } = useAuth();
+  const { user, isLoading, signIn, signUp, isAdmin, checkAdminStatus, forceAdminReload, getDebugInfo, clearAuthSession } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'debug'>('login');
   const [email, setEmail] = useState('s.navarro@obn.es'); // Pre-fill for debugging
@@ -21,12 +21,23 @@ const AdminLogin = () => {
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
   const [recoveryAttempted, setRecoveryAttempted] = useState(false);
+  const [showStuckHelp, setShowStuckHelp] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Si ya está autenticado y es admin, redirigir al panel
   useEffect(() => {
     if (!isLoading && user && isAdmin) {
       navigate('/admin/dashboard', { replace: true });
     }
+
+    // Show stuck help if loading takes too long
+    const stuckTimer = setTimeout(() => {
+      if (isLoading) {
+        setShowStuckHelp(true);
+      }
+    }, 8000);
+
+    return () => clearTimeout(stuckTimer);
   }, [user, isAdmin, isLoading, navigate]);
 
   // Función de recuperación de sesión para admins existentes
@@ -69,6 +80,26 @@ const AdminLogin = () => {
     }
   };
 
+  const handleClearSession = async () => {
+    try {
+      setError('');
+      setAuthLoading(true);
+      console.log('🧹 Clearing auth session from AdminLogin...');
+      await clearAuthSession();
+      setShowStuckHelp(false);
+      
+      // Reload page after clearing to start fresh
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err: any) {
+      console.error('💥 Clear session failed:', err);
+      setError('Error al limpiar sesión: ' + err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
@@ -103,9 +134,24 @@ const AdminLogin = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Verificando acceso de administrador...</p>
+          
+          {showStuckHelp && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-yellow-800 text-sm mb-3">
+                ¿La verificación está tardando mucho?
+              </p>
+              <button
+                onClick={handleClearSession}
+                disabled={authLoading}
+                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50 text-sm"
+              >
+                {authLoading ? 'Limpiando...' : 'Limpiar Sesión y Reiniciar'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -167,7 +213,31 @@ const AdminLogin = () => {
 
           {/* Debug Mode */}
           {mode === 'debug' && (
-            <AdminDebugPanel />
+            <div className="space-y-4">
+              <AdminDebugPanel />
+              
+              <div className="bg-gray-50 p-4 rounded-lg text-sm">
+                <h4 className="font-semibold mb-2">Debug Info:</h4>
+                <pre className="whitespace-pre-wrap text-xs overflow-auto max-h-40">
+                  {JSON.stringify(getDebugInfo(), null, 2)}
+                </pre>
+              </div>
+              
+              <button
+                onClick={() => setDebugInfo(getDebugInfo())}
+                className="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200"
+              >
+                Actualizar Debug Info
+              </button>
+              
+              <button
+                onClick={handleClearSession}
+                disabled={authLoading}
+                className="w-full px-3 py-2 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200 disabled:opacity-50"
+              >
+                {authLoading ? 'Limpiando...' : 'Limpiar Sesión Completa'}
+              </button>
+            </div>
           )}
 
           {/* Opción de recuperación para admins existentes */}

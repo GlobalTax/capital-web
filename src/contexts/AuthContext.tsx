@@ -17,6 +17,7 @@ interface AuthContextType {
   checkAdminStatus: (userId?: string) => Promise<boolean>;
   forceAdminReload: () => Promise<void>;
   getDebugInfo: () => any;
+  clearAuthSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authTimeout, setAuthTimeout] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
@@ -41,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     }
     
-    // Simple concurrency prevention without deadlock
+    // Prevent concurrent admin checks
     if (isCheckingAdmin) {
       console.log('⚠️ Admin check already in progress, returning current status');
       return isAdmin;
@@ -51,12 +53,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('🚀 Starting admin status check for user:', targetUserId);
     
     try {
-      // Simple direct query without timeout - let Supabase handle it
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Admin check timeout')), 5000);
+      });
+
+      const checkPromise = supabase
         .from('admin_users')
         .select('is_active, role')
         .eq('user_id', targetUserId)
         .maybeSingle();
+      
+      const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
       
       console.log('📊 Admin check result:', { data, error });
 
@@ -64,15 +72,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('❌ Admin check error:', error.message);
         
         // If it's a network error, try one more time after a short delay
-        if (error.message.includes('fetch') || error.message.includes('network')) {
+        if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('timeout')) {
           console.log('🔄 Network error detected, retrying in 1 second...');
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          const { data: retryData, error: retryError } = await supabase
+          const retryPromise = supabase
             .from('admin_users')
             .select('is_active, role')
             .eq('user_id', targetUserId)
             .maybeSingle();
+            
+          const { data: retryData, error: retryError } = await Promise.race([
+            retryPromise, 
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Retry timeout')), 3000))
+          ]);
             
           if (!retryError && retryData) {
             console.log('🎯 Retry successful:', retryData);
@@ -123,11 +136,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
     
+    // Security timeout - force loading to false after 10 seconds
+    const globalTimeout = setTimeout(() => {
+      if (mounted && isLoading) {
+        console.log('⚠️ Auth initialization timeout, forcing completion');
+        logger.warn('Auth initialization timeout exceeded', undefined, { 
+          context: 'auth', 
+          component: 'AuthContext' 
+        });
+        setIsLoading(false);
+      }
+    }, 10000);
+    
+    setAuthTimeout(globalTimeout);
+    
     // Function to handle auth state changes
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!mounted) return;
       
       console.log('🔄 Auth state changed:', { event, hasUser: !!session?.user, userId: session?.user?.id });
+      
+      // Clear timeout on any auth state change
+      if (authTimeout) {
+        clearTimeout(authTimeout);
+        setAuthTimeout(null);
+      }
       
       logger.debug('Auth state changed', { 
         event, 
@@ -139,7 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
+        if (session?.user && !isCheckingAdmin) {
           console.log('👤 User found, checking admin status...');
           // Check admin status with circuit breaker logic
           try {
@@ -163,7 +196,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           component: 'AuthContext' 
         });
       } finally {
-        if (mounted) {
+        if (mounted && event !== 'INITIAL_SESSION') {
           console.log('✅ Setting isLoading to false');
           setIsLoading(false);
         }
@@ -173,15 +206,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
 
-    // Initial session check with retry mechanism
+    // Initial session check with retry mechanism and timeout
     const initializeSession = async () => {
+      if (!mounted) return;
+      
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Session initialization timeout')), 8000);
+        });
+
+        const sessionPromise = supabase.auth.getSession();
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
         
         if (error) {
           logger.error('Error getting initial session', error, { context: 'auth', component: 'AuthContext' });
           // Try to refresh session on error
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          const refreshPromise = supabase.auth.refreshSession();
+          const { data: refreshData, error: refreshError } = await Promise.race([
+            refreshPromise,
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Refresh timeout')), 5000))
+          ]);
+          
           if (!refreshError && refreshData.session) {
             await handleAuthStateChange('INITIAL_SESSION_REFRESH', refreshData.session);
             return;
@@ -190,6 +235,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         await handleAuthStateChange('INITIAL_SESSION', session);
       } catch (error) {
+        console.log('💥 Session initialization failed:', error);
         logger.error('Failed to initialize session', error as Error, { context: 'auth', component: 'AuthContext' });
         if (mounted) {
           setIsLoading(false);
@@ -202,8 +248,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      if (authTimeout) {
+        clearTimeout(authTimeout);
+      }
     };
-  }, []); // Remove checkAdminStatus dependency to prevent infinite re-renders
+  }, []); // Remove dependencies to prevent infinite re-renders
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
@@ -291,6 +340,70 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user?.id, checkAdminStatus]);
 
+  // Clear auth session and local storage
+  const clearAuthSession = async (): Promise<void> => {
+    try {
+      console.log('🧹 Clearing auth session and local storage...');
+      logger.info('Clearing auth session', undefined, { context: 'auth', component: 'AuthContext' });
+      
+      // Clear timeout if exists
+      if (authTimeout) {
+        clearTimeout(authTimeout);
+        setAuthTimeout(null);
+      }
+      
+      // Clear auth-related localStorage
+      const authKeys = Object.keys(localStorage).filter(key => 
+        key.includes('auth') || 
+        key.includes('supabase') || 
+        key.includes('session') ||
+        key.includes('admin')
+      );
+      
+      authKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('🗑️ Removed localStorage key:', key);
+      });
+      
+      // Clear auth-related cookies
+      document.cookie.split(";").forEach(cookie => {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name.includes('auth') || name.includes('supabase') || name.includes('session')) {
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        }
+      });
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Reset all state
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      setIsLoading(false);
+      setIsCheckingAdmin(false);
+      
+      console.log('✅ Auth session cleared successfully');
+      
+      toast({
+        title: "Sesión limpiada",
+        description: "Se ha limpiado toda la información de autenticación.",
+      });
+      
+    } catch (error: any) {
+      console.log('💥 Error clearing auth session:', error);
+      logger.error('Error clearing auth session', error, { context: 'auth', component: 'AuthContext' });
+      
+      toast({
+        title: "Error al limpiar",
+        description: "Hubo un problema al limpiar la sesión. Intenta recargar la página.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Get debug information
   const getDebugInfo = useCallback(() => {
     return {
@@ -308,11 +421,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       auth: {
         isLoading,
         isAdmin,
-        isCheckingAdmin
+        isCheckingAdmin,
+        hasTimeout: !!authTimeout
       },
-      timestamp: new Date().toISOString()
+      localStorage: Object.keys(localStorage).filter(key => 
+        key.includes('auth') || key.includes('supabase')
+      ),
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href
     };
-  }, [user, session, isLoading, isAdmin, isCheckingAdmin]);
+  }, [user, session, isLoading, isAdmin, isCheckingAdmin, authTimeout]);
 
   const value = {
     user,
@@ -325,6 +444,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAdminStatus,
     forceAdminReload,
     getDebugInfo,
+    clearAuthSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
