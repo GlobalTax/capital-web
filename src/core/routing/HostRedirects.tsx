@@ -6,12 +6,22 @@ export const useHostRedirects = () => {
   const rawHost = window.location.hostname;
   const host = rawHost.replace(/^www\./, '');
   const path = window.location.pathname;
+  const currentUrl = window.location.href;
+
+  // Redirección www.capittal.es -> capittal.es (sin bucle)
+  if (rawHost === 'www.capittal.es' && host === 'capittal.es') {
+    const targetUrl = currentUrl.replace('www.capittal.es', 'capittal.es');
+    if (currentUrl !== targetUrl) {
+      window.location.replace(targetUrl);
+      return null;
+    }
+  }
 
   // Si entran por calculadoras.capittal.es, forzamos dominio canónico capittal.es/lp/calculadora
   if (host === 'calculadoras.capittal.es' || host === 'calculadora.capittal.es') {
     const canonical = 'https://capittal.es/lp/calculadora';
-    if (window.location.href !== canonical) {
-      window.location.replace(canonical); // 302 en cliente (efecto similar a 301 para UX)
+    if (currentUrl !== canonical) {
+      window.location.replace(canonical);
       return null;
     }
   }

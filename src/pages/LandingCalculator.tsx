@@ -15,24 +15,52 @@ const LandingCalculatorInner = () => {
   const location = useLocation();
   const { t } = useI18n();
 
-  // SEO dinámico según idioma con canonical fijo y hreflang
+  // SEO dinámico según idioma con canonical fijo, hreflang y metadatos sociales
   useEffect(() => {
     const title = t('landing.title');
     const description = t('landing.description');
+    const canonicalUrl = 'https://capittal.es/lp/calculadora';
+    const imageUrl = 'https://capittal.es/src/assets/calculadora-social-preview.jpg';
 
     document.title = title;
 
-    // Meta description
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'description');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', description);
+    // Función helper para crear o actualizar meta tags
+    const setMetaTag = (selector: string, content: string, attr: string = 'content') => {
+      let meta = document.querySelector(selector);
+      if (!meta) {
+        meta = document.createElement('meta');
+        const [key, value] = selector.match(/\[([^=]+)="([^"]+)"\]/)?.slice(1) || [];
+        if (key && value) meta.setAttribute(key, value);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute(attr, content);
+    };
+
+    // Meta description básica
+    setMetaTag('meta[name="description"]', description);
+
+    // Open Graph tags
+    setMetaTag('meta[property="og:title"]', title);
+    setMetaTag('meta[property="og:description"]', description);
+    setMetaTag('meta[property="og:type"]', 'website');
+    setMetaTag('meta[property="og:url"]', canonicalUrl);
+    setMetaTag('meta[property="og:image"]', imageUrl);
+    setMetaTag('meta[property="og:image:width"]', '1200');
+    setMetaTag('meta[property="og:image:height"]', '630');
+    setMetaTag('meta[property="og:site_name"]', 'Capittal');
+    setMetaTag('meta[property="og:locale"]', 'es_ES');
+
+    // Twitter Card tags
+    setMetaTag('meta[name="twitter:card"]', 'summary_large_image');
+    setMetaTag('meta[name="twitter:title"]', title);
+    setMetaTag('meta[name="twitter:description"]', description);
+    setMetaTag('meta[name="twitter:image"]', imageUrl);
+    setMetaTag('meta[name="twitter:site"]', '@capittal');
+
+    // Cache control para redes sociales
+    setMetaTag('meta[http-equiv="Cache-Control"]', 'public, max-age=3600');
 
     // Canonical link fijo
-    const canonicalUrl = 'https://capittal.es/lp/calculadora';
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');

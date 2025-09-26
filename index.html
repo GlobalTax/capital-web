@@ -62,23 +62,6 @@
       console.log('✅ Facebook Pixel initialized from HTML with ID: 381068095046019');
     </script>
     
-    <!-- Redirección temprana por host para subdominio calculadoras.capittal.es -->
-    <script>
-      (function () {
-        try {
-          var host = location.hostname.replace(/^www\./, '');
-          if (host === 'calculadoras.capittal.es' || host === 'calculadora.capittal.es') {
-            var target = 'https://capittal.es/lp/calculadora';
-            if (location.href !== target) {
-              location.replace(target);
-            }
-          }
-        } catch (e) { /* noop */ }
-      })();
-    </script>
-    <noscript>
-      <meta http-equiv="refresh" content="0;url=https://capittal.es/lp/calculadora">
-    </noscript>
   </head>
 
   <body>
