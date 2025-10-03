@@ -62,6 +62,15 @@ export class TrackingConfigService {
   }
   
   // Validate configuration
+  // Helper method to check if tracking should be enabled based on domain
+  static shouldEnableTracking(): boolean {
+    const domain = window.location.hostname;
+    return domain === 'capittal.es' || 
+           domain.endsWith('.capittal.es') || 
+           domain === 'localhost' || 
+           domain === '127.0.0.1';
+  }
+
   static validateConfiguration(config: TrackingConfiguration): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
     

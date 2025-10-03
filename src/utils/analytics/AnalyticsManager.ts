@@ -136,27 +136,33 @@ export class AnalyticsManager {
     console.log('Microsoft Clarity initialized with ID:', projectId);
   }
 
-  // Facebook Pixel Integration
+  // Facebook Pixel Integration with Enhanced Anti-Duplication
   private initFacebookPixel(pixelId: string) {
     try {
-      // Check if pixel is already initialized from HTML
-      if ((window as any).fbPixelStatus?.loadedFromHTML) {
-        console.log('🔄 Facebook Pixel already loaded from HTML, verifying configuration');
-        
-        // Verify the pixel ID matches
-        if ((window as any).fbPixelStatus.pixelId === pixelId) {
-          console.log('✅ Facebook Pixel HTML configuration matches, no additional setup needed');
-          return;
-        } else {
-          console.warn('⚠️ Pixel ID mismatch - HTML:', (window as any).fbPixelStatus.pixelId, 'Config:', pixelId);
-        }
+      // 🔍 PASO 1: Verificar si ya está cargado desde HTML (legacy)
+      if ((window as any).fbPixelStatus?.loadedFromHTML && (window as any).fbPixelStatus?.pixelId === pixelId) {
+        console.log('✅ Facebook Pixel ya cargado desde HTML, ID coincide - ABORTANDO inicialización', {
+          pixelId,
+          totalEvents: (window as any).fbPixelStatus.totalEvents
+        });
+        return; // ⛔ SALIR - no hacer nada más
       }
 
-      // Check if fbq exists but wasn't loaded from HTML
+      // 🔍 PASO 2: Verificar si fbq existe y está inicializado
       if ((window as any).fbq && (window as any).fbq.loaded) {
-        console.log('🔄 Facebook Pixel already initialized, skipping duplicate initialization');
+        console.log('✅ fbq ya inicializado, omitiendo duplicación');
         return;
       }
+
+      // 🔍 PASO 3: Verificar si el script ya está en el DOM
+      const existingScript = document.querySelector('script[src*="fbevents.js"]');
+      if (existingScript) {
+        console.log('✅ Script Facebook Pixel ya presente en DOM');
+        return;
+      }
+
+      // 🚀 PASO 4: Solo si no existe, inicializar
+      console.log('🔄 Inicializando Facebook Pixel desde AnalyticsManager', { pixelId });
 
       // Initialize Facebook Pixel if not already loaded
       if (!(window as any).fbq) {

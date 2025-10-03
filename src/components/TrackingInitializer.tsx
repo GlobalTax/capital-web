@@ -12,41 +12,23 @@ export const TrackingInitializer = () => {
   useEffect(() => {
     const initializeTracking = async () => {
       try {
-        // Domain validation with detailed logging
+        // 🔍 PASO 1: Validación de dominio estricta
         const currentDomain = window.location.hostname;
-        const currentUrl = window.location.href;
-        const isProductionDomain = currentDomain === 'capittal.es' || currentDomain.includes('capittal.es');
-        const isLovableDomain = currentDomain.includes('lovableproject.com') || 
-                              currentDomain.includes('sandbox.lovable.dev') || 
-                              currentDomain.includes('lovable.app') ||
-                              currentDomain.endsWith('.lovable.dev') ||
-                              currentDomain.endsWith('.lovable.app');
+        const isProduction = currentDomain === 'capittal.es' || currentDomain.endsWith('.capittal.es');
         const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
         
-        secureLogger.debug('Tracking domain analysis', {
-          currentDomain,
-          currentUrl,
-          isProductionDomain,
-          isLovableDomain,
-          isLocalhost,
-          userAgent: navigator.userAgent.slice(0, 50) + '...'
-        }, { component: 'TrackingInitializer' });
-        
-        // Allow tracking on production, lovable preview, and localhost for testing
-        const shouldInitialize = isProductionDomain || isLovableDomain || isLocalhost;
+        // ⚠️ SOLO inicializar en producción y localhost
+        const shouldInitialize = isProduction || isLocalhost;
         
         if (!shouldInitialize) {
-          secureLogger.debug('Tracking disabled on unknown domain', { currentDomain }, { component: 'TrackingInitializer' });
+          secureLogger.info('🚫 Tracking desactivado en este entorno', { currentDomain }, { component: 'TrackingInitializer' });
           return;
         }
         
-        if (isProductionDomain) {
-          secureLogger.info('Production domain detected - full tracking enabled', undefined, { component: 'TrackingInitializer' });
-        } else if (isLovableDomain) {
-          secureLogger.info('Lovable preview domain detected - testing mode enabled', undefined, { component: 'TrackingInitializer' });
-        } else if (isLocalhost) {
-          secureLogger.info('Localhost detected - development mode enabled', undefined, { component: 'TrackingInitializer' });
-        }
+        secureLogger.info('✅ Dominio válido detectado, inicializando tracking', { 
+          currentDomain, 
+          environment: isProduction ? 'production' : 'localhost' 
+        }, { component: 'TrackingInitializer' });
         
         // Load saved tracking configuration
         const config = await TrackingConfigService.loadConfiguration();
@@ -86,10 +68,24 @@ export const TrackingInitializer = () => {
           // Make synchronizer globally available for analytics manager
           (window as any).eventSynchronizer = eventSynchronizer;
 
-          // Initialize Google Tag Manager if configured
-          if (config.googleTagManagerId) {
-            initGoogleTagManager(config.googleTagManagerId);
+        // 🔍 PASO 2: Inicializar Google Tag Manager con anti-duplicación
+        if (config.googleTagManagerId) {
+          initGoogleTagManager(config.googleTagManagerId);
+        }
+
+        // 🔍 PASO 3: Verificar Facebook Pixel con anti-duplicación
+        if (config.facebookPixelId) {
+          const fbPixelStatus = (window as any).fbPixelStatus;
+          
+          if (fbPixelStatus?.loadedFromHTML && fbPixelStatus?.pixelId === config.facebookPixelId) {
+            secureLogger.info('✅ Facebook Pixel ya cargado desde HTML, omitiendo re-inicialización', {
+              pixelId: config.facebookPixelId,
+              totalEvents: fbPixelStatus.totalEvents
+            }, { component: 'TrackingInitializer' });
+          } else {
+            secureLogger.debug('🔄 Facebook Pixel será inicializado por AnalyticsManager', undefined, { component: 'TrackingInitializer' });
           }
+        }
 
           // Initialize Hotjar if configured
           if (config.hotjarId && config.enableHeatmaps) {
@@ -157,33 +153,50 @@ const initHotjar = (siteId: string) => {
  */
 const initGoogleTagManager = (gtmId: string) => {
   try {
-    // Avoid duplicate initialization
-    if ((window as any).dataLayer) {
-      secureLogger.info('Google Tag Manager already initialized', undefined, { component: 'TrackingInitializer' });
+    // 🔍 PASO 1: Detectar si GTM ya está cargado
+    if ((window as any).dataLayer && Array.isArray((window as any).dataLayer) && (window as any).dataLayer.length > 0) {
+      secureLogger.info('✅ GTM ya inicializado, omitiendo re-carga', { 
+        existingEvents: (window as any).dataLayer.length 
+      }, { component: 'TrackingInitializer' });
       return;
     }
 
+    // 🔍 PASO 2: Detectar si el script GTM ya existe en el DOM
+    const existingGTMScript = document.querySelector(`script[src*="googletagmanager.com/gtm.js?id=${gtmId}"]`);
+    if (existingGTMScript) {
+      secureLogger.info('✅ Script GTM ya presente en DOM, omitiendo inserción', undefined, { component: 'TrackingInitializer' });
+      return;
+    }
+
+    // 🚀 PASO 3: Inicializar GTM solo si no existe
+    secureLogger.info('🔄 Inicializando GTM desde TrackingInitializer', { gtmId }, { component: 'TrackingInitializer' });
+    
     // Initialize dataLayer
     (window as any).dataLayer = (window as any).dataLayer || [];
-    
-    // GTM script for head
-    const gtmScript = document.createElement('script');
-    gtmScript.innerHTML = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','${gtmId}');`;
-    document.head.appendChild(gtmScript);
+    (window as any).dataLayer.push({
+      'gtm.start': new Date().getTime(),
+      event: 'gtm.js'
+    });
 
-    // GTM noscript for body
-    const gtmNoscript = document.createElement('noscript');
-    gtmNoscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
-    document.body.insertBefore(gtmNoscript, document.body.firstChild);
+    // Load GTM script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
+    document.head.appendChild(script);
 
-    secureLogger.debug('Google Tag Manager initialized', { gtmId }, { component: 'TrackingInitializer' });
+    // Add noscript iframe to body
+    const noscript = document.createElement('noscript');
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.googletagmanager.com/ns.html?id=${gtmId}`;
+    iframe.height = '0';
+    iframe.width = '0';
+    iframe.style.cssText = 'display:none;visibility:hidden';
+    noscript.appendChild(iframe);
+    document.body.insertBefore(noscript, document.body.firstChild);
+
+    secureLogger.info('✅ GTM inicializado correctamente desde TrackingInitializer', { gtmId }, { component: 'TrackingInitializer' });
   } catch (error) {
-    secureLogger.error('Error initializing Google Tag Manager', error, { component: 'TrackingInitializer' });
+    secureLogger.error('❌ Error inicializando GTM', error, { component: 'TrackingInitializer' });
   }
 };
 
