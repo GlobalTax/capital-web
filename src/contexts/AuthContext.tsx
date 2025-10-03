@@ -6,6 +6,40 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
 
+// ============= ADMIN CACHE =============
+// Caché optimista de estado admin con TTL 10 min
+const ADMIN_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
+const ADMIN_CACHE_KEY_PREFIX = 'admin_status:';
+
+const getCachedAdminStatus = (userId: string): boolean | null => {
+  try {
+    const cacheKey = `${ADMIN_CACHE_KEY_PREFIX}${userId}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (!cached) return null;
+    
+    const { status, timestamp } = JSON.parse(cached);
+    if (Date.now() - timestamp > ADMIN_CACHE_TTL) {
+      sessionStorage.removeItem(cacheKey);
+      return null;
+    }
+    return status;
+  } catch {
+    return null;
+  }
+};
+
+const setCachedAdminStatus = (userId: string, status: boolean): void => {
+  try {
+    const cacheKey = `${ADMIN_CACHE_KEY_PREFIX}${userId}`;
+    sessionStorage.setItem(cacheKey, JSON.stringify({
+      status,
+      timestamp: Date.now()
+    }));
+  } catch {
+    // Silently fail if sessionStorage is unavailable
+  }
+};
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -35,22 +69,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
     const targetUserId = userId || user?.id;
     
-    console.log('🔍 checkAdminStatus called', { targetUserId, isCheckingAdmin });
-    
     if (!targetUserId) {
-      console.log('❌ No target user ID, setting admin to false');
       setIsAdmin(false);
       return false;
+    }
+
+    // 🚀 OPTIMIZACIÓN: Verificar caché primero (resolución optimista)
+    const cachedStatus = getCachedAdminStatus(targetUserId);
+    if (cachedStatus !== null) {
+      setIsAdmin(cachedStatus);
+      // Actualizar en background para mantener caché fresca
+      setTimeout(() => {
+        checkAdminStatusFromDB(targetUserId);
+      }, 100);
+      return cachedStatus;
     }
     
     // Prevent concurrent admin checks
     if (isCheckingAdmin) {
-      console.log('⚠️ Admin check already in progress, returning current status');
       return isAdmin;
     }
     
+    return checkAdminStatusFromDB(targetUserId);
+  }, [user?.id, isCheckingAdmin, isAdmin]);
+
+  // Función interna para consultar DB (reutilizable)
+  const checkAdminStatusFromDB = async (userId: string): Promise<boolean> => {
     setIsCheckingAdmin(true);
-    console.log('🚀 Starting admin status check for user:', targetUserId);
     
     try {
       // Add timeout to prevent hanging
@@ -61,25 +106,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const checkPromise = supabase
         .from('admin_users')
         .select('is_active, role')
-        .eq('user_id', targetUserId)
+        .eq('user_id', userId)
         .maybeSingle();
       
       const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
-      
-      console.log('📊 Admin check result:', { data, error });
 
       if (error) {
-        console.log('❌ Admin check error:', error.message);
-        
         // If it's a network error, try one more time after a short delay
         if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('timeout')) {
-          console.log('🔄 Network error detected, retrying in 1 second...');
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           const retryPromise = supabase
             .from('admin_users')
             .select('is_active, role')
-            .eq('user_id', targetUserId)
+            .eq('user_id', userId)
             .maybeSingle();
             
           const { data: retryData, error: retryError } = await Promise.race([
@@ -88,65 +128,52 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           ]);
             
           if (!retryError && retryData) {
-            console.log('🎯 Retry successful:', retryData);
             const adminStatus = !!(retryData && retryData.is_active === true);
             setIsAdmin(adminStatus);
+            setCachedAdminStatus(userId, adminStatus); // ✅ Guardar en caché
             return adminStatus;
           }
         }
-        
-        logger.warn('Error checking admin status', { 
-          userId: targetUserId, 
-          error: error.message 
-        }, { context: 'auth', component: 'AuthContext' });
         
         setIsAdmin(false);
         return false;
       }
 
       const adminStatus = !!(data && data.is_active === true);
-      console.log('✅ Admin status determined:', adminStatus);
       setIsAdmin(adminStatus);
+      setCachedAdminStatus(userId, adminStatus); // ✅ Guardar en caché
       
       if (adminStatus) {
-        console.log('🎉 Admin access granted');
         logger.info('Admin access granted', {
-          userId: targetUserId,
+          userId,
           role: data?.role
         }, { context: 'auth', component: 'AuthContext' });
       }
       
       return adminStatus;
     } catch (error) {
-      console.log('💥 Admin check failed:', error);
       logger.error('Failed to check admin status', error as Error, { 
         context: 'auth', 
         component: 'AuthContext',
-        userId: targetUserId 
+        userId 
       });
       setIsAdmin(false);
       return false;
     } finally {
-      console.log('🏁 Admin check completed, setting isCheckingAdmin to false');
       setIsCheckingAdmin(false);
     }
-  }, [user?.id, isCheckingAdmin, isAdmin]);
+  };
 
 
   useEffect(() => {
     let mounted = true;
     
-    // Security timeout - force loading to false after 10 seconds
+    // ⚡ OPTIMIZACIÓN: Timeout reducido a 6s
     const globalTimeout = setTimeout(() => {
       if (mounted && isLoading) {
-        console.log('⚠️ Auth initialization timeout, forcing completion');
-        logger.warn('Auth initialization timeout exceeded', undefined, { 
-          context: 'auth', 
-          component: 'AuthContext' 
-        });
         setIsLoading(false);
       }
-    }, 10000);
+    }, 6000);
     
     setAuthTimeout(globalTimeout);
     
@@ -154,50 +181,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!mounted) return;
       
-      console.log('🔄 Auth state changed:', { event, hasUser: !!session?.user, userId: session?.user?.id });
-      
       // Clear timeout on any auth state change
       if (authTimeout) {
         clearTimeout(authTimeout);
         setAuthTimeout(null);
       }
       
-      logger.debug('Auth state changed', { 
-        event, 
-        hasUser: !!session?.user,
-        userId: session?.user?.id
-      }, { context: 'auth', component: 'AuthContext' });
-      
       try {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user && !isCheckingAdmin) {
-          console.log('👤 User found, checking admin status...');
-          // Check admin status with circuit breaker logic
+          // Check admin status (con caché optimista)
           try {
-            const adminResult = await checkAdminStatus(session.user.id);
-            console.log('🔐 Admin check result:', adminResult);
+            await checkAdminStatus(session.user.id);
           } catch (error) {
-            console.log('💥 Admin status check failed:', error);
-            logger.warn('Admin status check failed', { 
-              error: error.message 
-            }, { context: 'auth', component: 'AuthContext' });
             setIsAdmin(false);
           }
         } else {
-          console.log('🚫 No user, setting admin to false');
           setIsAdmin(false);
         }
       } catch (error) {
-        console.log('💥 Error in auth state change handler:', error);
         logger.error('Error in auth state change handler', error as Error, { 
           context: 'auth', 
           component: 'AuthContext' 
         });
       } finally {
         if (mounted && event !== 'INITIAL_SESSION') {
-          console.log('✅ Setting isLoading to false');
           setIsLoading(false);
         }
       }
@@ -235,7 +245,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         await handleAuthStateChange('INITIAL_SESSION', session);
       } catch (error) {
-        console.log('💥 Session initialization failed:', error);
         logger.error('Failed to initialize session', error as Error, { context: 'auth', component: 'AuthContext' });
         if (mounted) {
           setIsLoading(false);
@@ -343,7 +352,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Clear auth session and local storage
   const clearAuthSession = async (): Promise<void> => {
     try {
-      console.log('🧹 Clearing auth session and local storage...');
       logger.info('Clearing auth session', undefined, { context: 'auth', component: 'AuthContext' });
       
       // Clear timeout if exists
@@ -352,7 +360,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setAuthTimeout(null);
       }
       
-      // Clear auth-related localStorage
+      // Clear auth-related localStorage and sessionStorage (incluye caché admin)
       const authKeys = Object.keys(localStorage).filter(key => 
         key.includes('auth') || 
         key.includes('supabase') || 
@@ -362,7 +370,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       authKeys.forEach(key => {
         localStorage.removeItem(key);
-        console.log('🗑️ Removed localStorage key:', key);
+      });
+
+      // Limpiar caché de admin en sessionStorage
+      Object.keys(sessionStorage).filter(key => key.startsWith(ADMIN_CACHE_KEY_PREFIX)).forEach(key => {
+        sessionStorage.removeItem(key);
       });
       
       // Clear auth-related cookies
@@ -385,15 +397,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false);
       setIsCheckingAdmin(false);
       
-      console.log('✅ Auth session cleared successfully');
-      
       toast({
         title: "Sesión limpiada",
         description: "Se ha limpiado toda la información de autenticación.",
       });
       
     } catch (error: any) {
-      console.log('💥 Error clearing auth session:', error);
       logger.error('Error clearing auth session', error, { context: 'auth', component: 'AuthContext' });
       
       toast({

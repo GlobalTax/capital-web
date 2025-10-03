@@ -22,6 +22,16 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
 
   // Detect WebSocket issues and offer emergency navigation
   useEffect(() => {
+    // ⚡ OPTIMIZACIÓN: Desregistrar Service Worker si está deshabilitado
+    const shouldDisableSW = import.meta.env.VITE_DISABLE_SW === '1';
+    if (shouldDisableSW && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        if (registrations.length > 0) {
+          Promise.all(registrations.map(r => r.unregister())).catch(() => {});
+        }
+      }).catch(() => {});
+    }
+
     // Clear any existing WebSocket state immediately
     try {
       const keys = Object.keys(localStorage);
@@ -32,7 +42,6 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
       );
       
       if (hasRealtimeKeys) {
-        console.log('🧹 Clearing problematic WebSocket state...');
         keys.forEach(key => {
           if (key.includes('realtime') || key.includes('websocket') || key.includes('push-state')) {
             localStorage.removeItem(key);

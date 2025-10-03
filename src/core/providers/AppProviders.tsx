@@ -1,11 +1,29 @@
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
 import { TrackingInitializer } from '@/components/TrackingInitializer';
+
+// ============= CONDITIONAL TRACKING =============
+// Solo cargar tracking fuera de rutas /admin/*
+const ConditionalTracking: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
+
+  return (
+    <LeadTrackingProvider>
+      <TrackingInitializer />
+      {children}
+    </LeadTrackingProvider>
+  );
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,10 +53,9 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
         <TooltipProvider>
           <Router>
             <AuthProvider>
-              <LeadTrackingProvider>
-                <TrackingInitializer />
+              <ConditionalTracking>
                 {children}
-              </LeadTrackingProvider>
+              </ConditionalTracking>
             </AuthProvider>
           </Router>
         </TooltipProvider>

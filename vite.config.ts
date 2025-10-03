@@ -31,13 +31,33 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        // Remove all manual chunking to avoid React initialization issues
-        // Let Vite handle chunking automatically for stability
+        // ⚡ OPTIMIZACIÓN: Manual chunks para librerías pesadas solo en admin
+        manualChunks: (id) => {
+          // Separar react-quill (usado solo en admin blog)
+          if (id.includes('react-quill') || id.includes('quill')) {
+            return 'quill-editor';
+          }
+          
+          // Separar recharts (usado solo en dashboards)
+          if (id.includes('recharts')) {
+            return 'charts';
+          }
+          
+          // Separar @react-pdf (usado solo en exports)
+          if (id.includes('@react-pdf') || id.includes('react-pdf')) {
+            return 'pdf-renderer';
+          }
+          
+          // Vendor principal (React, etc.)
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
       }
     },
     target: ['es2020', 'chrome80', 'safari14'],
     minify: 'esbuild',
-    sourcemap: mode === 'development',
+    sourcemap: false, // ⚡ Sin sourcemaps en producción
     chunkSizeWarningLimit: 500,
     assetsInlineLimit: 4096,
     reportCompressedSize: false
