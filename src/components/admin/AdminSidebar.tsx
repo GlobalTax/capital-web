@@ -32,11 +32,6 @@ const adminNavItems = [
     href: '/admin/valuations'
   },
   {
-    title: 'Calculadoras Sectoriales',
-    icon: <Target className="h-5 w-5" />,
-    href: '/admin/sector-calculators'
-  },
-  {
     title: 'Gestión de Páginas',
     icon: <BookOpen className="h-5 w-5" />,
     href: '/admin/pages'

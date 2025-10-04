@@ -635,80 +635,6 @@ export type Database = {
         }
         Relationships: []
       }
-      calculator_results: {
-        Row: {
-          calculation_results: Json
-          calculator_id: string | null
-          company_name: string | null
-          contact_email: string | null
-          created_at: string | null
-          id: string
-          input_data: Json
-          ip_address: unknown | null
-          lead_captured: boolean | null
-          referrer: string | null
-          report_generated: boolean | null
-          sector: string
-          session_id: string | null
-          user_agent: string | null
-          utm_campaign: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          valuation_amount: number | null
-          visitor_id: string | null
-        }
-        Insert: {
-          calculation_results?: Json
-          calculator_id?: string | null
-          company_name?: string | null
-          contact_email?: string | null
-          created_at?: string | null
-          id?: string
-          input_data?: Json
-          ip_address?: unknown | null
-          lead_captured?: boolean | null
-          referrer?: string | null
-          report_generated?: boolean | null
-          sector: string
-          session_id?: string | null
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          valuation_amount?: number | null
-          visitor_id?: string | null
-        }
-        Update: {
-          calculation_results?: Json
-          calculator_id?: string | null
-          company_name?: string | null
-          contact_email?: string | null
-          created_at?: string | null
-          id?: string
-          input_data?: Json
-          ip_address?: unknown | null
-          lead_captured?: boolean | null
-          referrer?: string | null
-          report_generated?: boolean | null
-          sector?: string
-          session_id?: string | null
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          valuation_amount?: number | null
-          visitor_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "calculator_results_calculator_id_fkey"
-            columns: ["calculator_id"]
-            isOneToOne: false
-            referencedRelation: "sector_calculators"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       calendar_bookings: {
         Row: {
           booking_date: string
@@ -2708,54 +2634,6 @@ export type Database = {
           request_count?: number
           updated_at?: string
           window_start?: string
-        }
-        Relationships: []
-      }
-      sector_calculators: {
-        Row: {
-          configuration: Json | null
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          display_order: number | null
-          fields_config: Json | null
-          id: string
-          is_active: boolean | null
-          name: string
-          results_config: Json | null
-          sector: string
-          slug: string
-          updated_at: string | null
-        }
-        Insert: {
-          configuration?: Json | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          display_order?: number | null
-          fields_config?: Json | null
-          id?: string
-          is_active?: boolean | null
-          name: string
-          results_config?: Json | null
-          sector: string
-          slug: string
-          updated_at?: string | null
-        }
-        Update: {
-          configuration?: Json | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          display_order?: number | null
-          fields_config?: Json | null
-          id?: string
-          is_active?: boolean | null
-          name?: string
-          results_config?: Json | null
-          sector?: string
-          slug?: string
-          updated_at?: string | null
         }
         Relationships: []
       }

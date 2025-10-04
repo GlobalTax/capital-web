@@ -113,13 +113,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de informes de mercado"
       },
       { 
-        title: "Calculadoras Sectoriales", 
-        url: "/admin/sector-calculators", 
-        icon: Calculator,
-        badge: "NEW",
-        description: "Configuración de calculadoras por sector"
-      },
-      { 
         title: "Operaciones", 
         url: "/admin/operations", 
         icon: Building2,
@@ -173,12 +166,6 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/admin-users", 
         icon: Users,
         description: "Gestión de administradores"
-      },
-      { 
-        title: "Recursos de Diseño", 
-        url: "/admin/design-resources", 
-        icon: Palette,
-        description: "Materiales y assets web"
       },
       { 
         title: "Ajustes", 

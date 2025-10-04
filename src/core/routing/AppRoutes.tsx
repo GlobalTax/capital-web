@@ -48,7 +48,7 @@ const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(()
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => import('@/pages/VentaEmpresas')));
-const MarketReports = lazy(() => import('@/pages/recursos/MarketReports').catch(() => import('@/pages/VentaEmpresas')));
+
 const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => import('@/pages/VentaEmpresas')));
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
@@ -126,7 +126,7 @@ export const AppRoutes = () => {
         <Route path="/blog" element={<Navigate to="/recursos/blog" replace />} />
         <Route path="/recursos/blog" element={<Blog />} />
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
-        <Route path="/recursos/market-reports" element={<MarketReports />} />
+        
         <Route path="/recursos/newsletter" element={<Newsletter />} />
         <Route path="/recursos/webinars" element={<Webinars />} />
         

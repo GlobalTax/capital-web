@@ -25,8 +25,6 @@ import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import SectorsPage from '@/pages/admin/SectorsPage';
 // import PageManager from './pages/PageManager';
 // import ContentEditor from './content/ContentEditor';
-import MarketReports from '@/pages/admin/MarketReports';
-import SectorCalculators from '@/pages/admin/SectorCalculators';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import AdminBanners from '@/pages/AdminBanners';
@@ -64,9 +62,6 @@ const AdminRouter = () => {
       <Route path="/contacts" element={<ContactsPage />} />
       <Route path="/contact-leads" element={<ContactLeadsAdminPage />} />
       
-      {/* Calculators & Reports - NEW ROUTES */}
-      <Route path="/market-reports" element={<MarketReports />} />
-      <Route path="/sector-calculators" element={<SectorCalculators />} />
       
       {/* Content Management */}
       <Route path="/content-performance" element={<ContentPerformancePage />} />
