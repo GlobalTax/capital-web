@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 // Version stamp to force cache invalidation
-const VERSION = '2025-01-04T16:30:00Z';
+const VERSION = '2025-01-04T17:00:00Z';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,20 +48,22 @@ interface Database {
   };
 }
 
-// Helper function to check if user is admin
+// Helper function to check if user is admin using RPC
 async function isUserAdmin(supabase: any, userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('admin_users')
-      .select('role, is_active')
-      .eq('user_id', userId)
-      .eq('is_active', true)
-      .single();
+    const { data: role, error } = await supabase
+      .rpc('check_user_admin_role', { check_user_id: userId });
     
-    if (error || !data) return false;
-    return ['admin', 'super_admin'].includes(data.role);
+    if (error) {
+      console.error(`[isUserAdmin] RPC error for user ${userId}:`, error);
+      return false;
+    }
+    
+    const isAdmin = role === 'admin' || role === 'super_admin';
+    console.log(`[isUserAdmin] User ${userId} role: ${role}, isAdmin: ${isAdmin}`);
+    return isAdmin;
   } catch (error) {
-    console.error('Error checking admin status:', error);
+    console.error('[isUserAdmin] Exception checking admin status:', error);
     return false;
   }
 }
@@ -324,8 +326,8 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // CRITICAL: Set session FIRST before any admin checks
-    await supabaseClient.auth.setSession({ access_token: token, refresh_token: '' });
+    // CRITICAL: Set auth token for RLS context
+    supabaseClient.auth.setAuth(token);
     
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
