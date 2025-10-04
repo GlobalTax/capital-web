@@ -4,11 +4,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Phone, Mail, Eye, ChevronDown, ChevronRight, Flame, CheckCircle2, Clock } from 'lucide-react';
+import { Phone, Mail, Eye, Flame, CheckCircle2, Clock } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface ContactsTableProps {
   contacts: UnifiedContact[];
@@ -27,15 +26,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   onUpdateStatus,
   onViewDetails,
 }) => {
-  const [expandedRows, setExpandedRows] = useState<string[]>([]);
-
-  const toggleRowExpansion = (contactId: string) => {
-    setExpandedRows(prev =>
-      prev.includes(contactId)
-        ? prev.filter(id => id !== contactId)
-        : [...prev, contactId]
-    );
-  };
 
   const getOriginBadge = (origin: ContactOrigin) => {
     const badges = {
@@ -145,7 +135,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 onCheckedChange={onSelectAll}
               />
             </TableHead>
-            <TableHead className="w-12"></TableHead>
             <TableHead>Origen</TableHead>
             <TableHead>Contacto</TableHead>
             <TableHead>Email</TableHead>
@@ -158,148 +147,90 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <Collapsible
-              key={contact.id}
-              open={expandedRows.includes(contact.id)}
-              onOpenChange={() => toggleRowExpansion(contact.id)}
-            >
-              <TableRow className={getRowClassName(contact.priority)}>
-                <TableCell>
-                  <Checkbox
-                    checked={selectedContacts.includes(contact.id)}
-                    onCheckedChange={() => onSelectContact(contact.id)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      {expandedRows.includes(contact.id) ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                </TableCell>
-                <TableCell>{getOriginBadge(contact.origin)}</TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-medium">{contact.name}</div>
-                    <div className="flex gap-1">
-                      {getPriorityBadge(contact.priority)}
-                      {contact.is_hot_lead && (
-                        <Badge className="bg-red-500 hover:bg-red-600">
-                          <Flame className="h-3 w-3 mr-1" />
-                          Hot
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="text-sm">{contact.email}</div>
-                    {getEmailStatusBadge(contact)}
-                  </div>
-                </TableCell>
-                <TableCell>{contact.company || '-'}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {getContactDetails(contact)}
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={contact.status}
-                    onValueChange={(value) => onUpdateStatus(contact.id, contact.origin, value)}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">Nuevo</SelectItem>
-                      <SelectItem value="contacted">Contactado</SelectItem>
-                      <SelectItem value="qualified">Cualificado</SelectItem>
-                      <SelectItem value="opportunity">Oportunidad</SelectItem>
-                      <SelectItem value="customer">Cliente</SelectItem>
-                      <SelectItem value="lost">Perdido</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(contact.created_at), {
-                    addSuffix: true,
-                    locale: es,
-                  })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex gap-2 justify-end">
-                    {contact.phone && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(`tel:${contact.phone}`)}
-                      >
-                        <Phone className="h-4 w-4" />
-                      </Button>
+            <TableRow key={contact.id} className={getRowClassName(contact.priority)}>
+              <TableCell>
+                <Checkbox
+                  checked={selectedContacts.includes(contact.id)}
+                  onCheckedChange={() => onSelectContact(contact.id)}
+                />
+              </TableCell>
+              <TableCell>{getOriginBadge(contact.origin)}</TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <div className="font-medium">{contact.name}</div>
+                  <div className="flex gap-1">
+                    {getPriorityBadge(contact.priority)}
+                    {contact.is_hot_lead && (
+                      <Badge className="bg-red-500 hover:bg-red-600">
+                        <Flame className="h-3 w-3 mr-1" />
+                        Hot
+                      </Badge>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(`mailto:${contact.email}`)}
-                    >
-                      <Mail className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewDetails(contact.id)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
                   </div>
-                </TableCell>
-              </TableRow>
-              
-              <CollapsibleContent asChild>
-                <TableRow>
-                  <TableCell colSpan={10} className="bg-muted/50">
-                    <div className="p-4 space-y-2">
-                      <h4 className="font-semibold">Información Detallada</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        {contact.phone && (
-                          <div>
-                            <span className="text-muted-foreground">Teléfono:</span>
-                            <div className="font-medium">{contact.phone}</div>
-                          </div>
-                        )}
-                        {contact.utm_source && (
-                          <div>
-                            <span className="text-muted-foreground">UTM Source:</span>
-                            <div className="font-medium">{contact.utm_source}</div>
-                          </div>
-                        )}
-                        {contact.hubspot_sent && (
-                          <div>
-                            <span className="text-muted-foreground">HubSpot:</span>
-                            <Badge variant="secondary">Sincronizado</Badge>
-                          </div>
-                        )}
-                        {contact.email_opened_at && (
-                          <div>
-                            <span className="text-muted-foreground">Email abierto:</span>
-                            <div className="font-medium">
-                              {formatDistanceToNow(new Date(contact.email_opened_at), {
-                                addSuffix: true,
-                                locale: es,
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </CollapsibleContent>
-            </Collapsible>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <div className="text-sm">{contact.email}</div>
+                  {getEmailStatusBadge(contact)}
+                </div>
+              </TableCell>
+              <TableCell>{contact.company || '-'}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {getContactDetails(contact)}
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={contact.status}
+                  onValueChange={(value) => onUpdateStatus(contact.id, contact.origin, value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">Nuevo</SelectItem>
+                    <SelectItem value="contacted">Contactado</SelectItem>
+                    <SelectItem value="qualified">Cualificado</SelectItem>
+                    <SelectItem value="opportunity">Oportunidad</SelectItem>
+                    <SelectItem value="customer">Cliente</SelectItem>
+                    <SelectItem value="lost">Perdido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {formatDistanceToNow(new Date(contact.created_at), {
+                  addSuffix: true,
+                  locale: es,
+                })}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex gap-2 justify-end">
+                  {contact.phone && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.open(`tel:${contact.phone}`)}
+                    >
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.open(`mailto:${contact.email}`)}
+                  >
+                    <Mail className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onViewDetails(contact.id)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
           ))}
         </TableBody>
       </Table>
