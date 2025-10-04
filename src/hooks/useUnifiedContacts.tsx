@@ -17,6 +17,7 @@ export interface UnifiedContact {
   // Campos específicos por origen
   valuation_amount?: number;
   final_valuation?: number;
+  ebitda?: number;
   industry?: string;
   profession?: string;
   motivation?: string;
@@ -206,6 +207,7 @@ export const useUnifiedContacts = () => {
           industry: lead.industry,
           employee_range: lead.employee_range,
           final_valuation: lead.final_valuation,
+          ebitda: lead.ebitda,
           valuation_amount: lead.final_valuation,
           location: lead.location,
           email_sent: lead.email_sent,

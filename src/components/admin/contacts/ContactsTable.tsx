@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Eye, Flame, CheckCircle2, Clock } from 'lucide-react';
+import { Trash2, Flame, CheckCircle2, Clock, Mail } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -14,6 +14,7 @@ interface ContactsTableProps {
   onSelectContact: (contactId: string) => void;
   onSelectAll: () => void;
   onViewDetails: (contactId: string) => void;
+  onDeleteContact: (contactId: string) => void;
 }
 
 const ContactsTable: React.FC<ContactsTableProps> = ({
@@ -22,6 +23,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   onSelectContact,
   onSelectAll,
   onViewDetails,
+  onDeleteContact,
 }) => {
 
   const getOriginBadge = (origin: ContactOrigin) => {
@@ -111,6 +113,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             <TableHead>Contacto</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Empresa</TableHead>
+            <TableHead className="text-right">Valoración</TableHead>
+            <TableHead className="text-right">EBITDA</TableHead>
             <TableHead>Detalles</TableHead>
             <TableHead>Fecha</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
@@ -144,6 +148,12 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 </div>
               </TableCell>
               <TableCell>{contact.company || '-'}</TableCell>
+              <TableCell className="text-right text-sm">
+                {contact.final_valuation ? formatCurrency(contact.final_valuation) : '-'}
+              </TableCell>
+              <TableCell className="text-right text-sm">
+                {contact.ebitda ? formatCurrency(contact.ebitda) : '-'}
+              </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {getContactDetails(contact)}
               </TableCell>
@@ -154,34 +164,14 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 })}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex gap-1 justify-end">
-                  {contact.phone && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(`tel:${contact.phone}`)}
-                      title="Llamar"
-                    >
-                      <Phone className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`mailto:${contact.email}`)}
-                    title="Enviar email"
-                  >
-                    <Mail className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onViewDetails(contact.id)}
-                    title="Ver detalles"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDeleteContact(contact.id)}
+                  title="Eliminar contacto"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Users, Flame, CheckCircle, TrendingUp, DollarSign } from 'lucide-react';
 import { useUnifiedContacts, ContactOrigin } from '@/hooks/useUnifiedContacts';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import ContactFilters from './ContactFilters';
 import ContactsTable from './ContactsTable';
 import BulkActionsToolbar from './BulkActionsToolbar';
@@ -11,6 +13,7 @@ import ContactDetailsModal from './ContactDetailsModal';
 
 const ContactsManager = () => {
   const { contacts, stats, isLoading, filters, applyFilters, updateContactStatus, bulkUpdateStatus, exportContacts, refetch } = useUnifiedContacts();
+  const { toast } = useToast();
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ContactOrigin | 'all'>('all');
@@ -41,6 +44,73 @@ const ContactsManager = () => {
 
   const handleViewDetails = (contactId: string) => {
     setSelectedContact(contactId);
+  };
+
+  const handleDeleteContact = async (contactId: string) => {
+    const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este contacto?');
+    if (!confirmed) return;
+
+    try {
+      const contact = contacts.find(c => c.id === contactId);
+      if (!contact) return;
+
+      let error = null;
+      
+      // Delete based on origin
+      if (contact.origin === 'contact') {
+        const result = await supabase
+          .from('contact_leads')
+          .delete()
+          .eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'valuation') {
+        const result = await supabase
+          .from('company_valuations')
+          .delete()
+          .eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'collaborator') {
+        const result = await supabase
+          .from('collaborator_applications')
+          .delete()
+          .eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'acquisition') {
+        const result = await supabase
+          .from('acquisition_leads')
+          .delete()
+          .eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'company_acquisition') {
+        const result = await supabase
+          .from('company_acquisition_inquiries')
+          .delete()
+          .eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'general') {
+        const result = await supabase
+          .from('general_contact_leads')
+          .delete()
+          .eq('id', contactId);
+        error = result.error;
+      }
+
+      if (error) throw error;
+
+      toast({
+        title: "Contacto eliminado",
+        description: "El contacto ha sido eliminado correctamente",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el contacto",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -213,6 +283,7 @@ const ContactsManager = () => {
             onSelectContact={handleSelectContact}
             onSelectAll={handleSelectAll}
             onViewDetails={handleViewDetails}
+            onDeleteContact={handleDeleteContact}
           />
         </TabsContent>
       </Tabs>
