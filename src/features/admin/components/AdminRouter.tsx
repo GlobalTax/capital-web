@@ -25,6 +25,7 @@ import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import SectorsPage from '@/pages/admin/SectorsPage';
 // import PageManager from './pages/PageManager';
 // import ContentEditor from './content/ContentEditor';
+import { AdminDashboard } from './AdminDashboard';
 
 import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import AdminBanners from '@/pages/AdminBanners';
@@ -54,8 +55,8 @@ const AdminRouter = () => {
   return (
     <Routes>
       {/* Dashboard */}
-      <Route index element={<Navigate to="/admin/blog-v2" replace />} />
-      <Route path="/dashboard" element={<Navigate to="/admin/blog-v2" replace />} />
+      <Route index element={<AdminDashboard />} />
+      <Route path="/dashboard" element={<AdminDashboard />} />
       
       {/* Lead Management */}
       <Route path="/proposals" element={<ProposalsManager />} />
