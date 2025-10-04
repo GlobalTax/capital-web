@@ -158,7 +158,11 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <React.Fragment key={contact.id}>
+            <Collapsible
+              key={contact.id}
+              open={expandedRows.includes(contact.id)}
+              onOpenChange={() => toggleRowExpansion(contact.id)}
+            >
               <TableRow className={getRowClassName(contact.priority)}>
                 <TableCell>
                   <Checkbox
@@ -168,11 +172,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleRowExpansion(contact.id)}
-                    >
+                    <Button variant="ghost" size="sm">
                       {expandedRows.includes(contact.id) ? (
                         <ChevronDown className="h-4 w-4" />
                       ) : (
@@ -258,7 +258,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                   </div>
                 </TableCell>
               </TableRow>
-              {expandedRows.includes(contact.id) && (
+              
+              <CollapsibleContent asChild>
                 <TableRow>
                   <TableCell colSpan={10} className="bg-muted/50">
                     <div className="p-4 space-y-2">
@@ -297,8 +298,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                     </div>
                   </TableCell>
                 </TableRow>
-              )}
-            </React.Fragment>
+              </CollapsibleContent>
+            </Collapsible>
           ))}
         </TableBody>
       </Table>
