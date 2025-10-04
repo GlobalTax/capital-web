@@ -56,10 +56,6 @@ export const useMarketingHub = () => {
         .from('company_valuations')
         .select('*');
 
-      const { data: leadScores, error: scoresError } = await supabase
-        .from('lead_scores')
-        .select('*');
-
       const { data: blogPosts, error: postsError } = await supabase
         .from('blog_posts')
         .select('*')
@@ -69,9 +65,9 @@ export const useMarketingHub = () => {
         .from('blog_analytics')
         .select('*');
 
-      if (leadsError || valuationsError || scoresError || postsError || analyticsError) {
+      if (leadsError || valuationsError || postsError || analyticsError) {
         console.error('Error fetching marketing data:', { 
-          leadsError, valuationsError, scoresError, postsError, analyticsError 
+          leadsError, valuationsError, postsError, analyticsError 
         });
         return;
       }
@@ -79,10 +75,7 @@ export const useMarketingHub = () => {
       const totalLeads = (contactLeads?.length || 0) + (companyValuations?.length || 0);
       const qualifiedLeads = contactLeads?.filter(lead => lead.status !== 'new').length || 0;
       const totalVisitors = blogAnalytics?.length || 0;
-      const averageScore = leadScores?.length > 0 
-        ? Math.round(leadScores.reduce((sum, score) => sum + (score.total_score || 0), 0) / leadScores.length)
-        : 0;
-      const hotProspects = leadScores?.filter(score => (score.total_score || 0) > 80).length || 0;
+      const hotProspects = qualifiedLeads; // Usar leads calificados como proxy
 
       // Top performing content basado en blog posts más populares
       const topContent = blogPosts?.slice(0, 3).map(post => post.title) || [];
@@ -90,14 +83,14 @@ export const useMarketingHub = () => {
       setMarketingMetrics({
         totalVisitors,
         companyVisitors: Math.round(totalVisitors * 0.25), // Estimación: 25% de visitantes son empresas
-        identifiedCompanies: leadScores?.filter(score => score.company_domain).length || 0,
+        identifiedCompanies: companyValuations?.length || 0,
         totalLeads,
         qualifiedLeads,
         leadConversionRate: totalVisitors > 0 ? Math.round((totalLeads / totalVisitors) * 100 * 10) / 10 : 0,
         downloadCount: Math.round(totalLeads * 0.3), // Estimación: 30% de leads son por descarga
         topPerformingContent: topContent,
         contentToLeadRate: blogPosts?.length > 0 ? Math.round((totalLeads / blogPosts.length) * 10) / 10 : 0,
-        averageLeadScore: averageScore,
+        averageLeadScore: 0, // Ya no disponible sin lead scoring
         hotProspects,
         emailOpenRate: 78.5, // Datos que mantendremos simulados por ahora
         emailClickRate: 12.3,
@@ -164,45 +157,21 @@ export const useMarketingHub = () => {
   };
 
   const fetchLeadScoringAnalytics = async () => {
+    // Lead Scoring ya no está disponible
+    // Usamos datos simplificados basados en contact leads
     try {
-      const { data: leadScores, error } = await supabase
-        .from('lead_scores')
+      const { data: contactLeads, error } = await supabase
+        .from('contact_leads')
         .select('*');
 
       if (error) {
-        console.error('Error fetching lead scoring analytics:', error);
+        console.error('Error fetching contact leads:', error);
         return;
       }
 
-      const coldLeads = leadScores?.filter(score => (score.total_score || 0) <= 40).length || 0;
-      const warmLeads = leadScores?.filter(score => (score.total_score || 0) > 40 && (score.total_score || 0) <= 70).length || 0;
-      const hotLeads = leadScores?.filter(score => (score.total_score || 0) > 70).length || 0;
-
-      // Agrupar por industria
-      const industryScores: Record<string, number[]> = {};
-      leadScores?.forEach(score => {
-        if (score.industry && score.total_score) {
-          if (!industryScores[score.industry]) {
-            industryScores[score.industry] = [];
-          }
-          industryScores[score.industry].push(score.total_score);
-        }
-      });
-
-      const averageScoreByIndustry: Record<string, number> = {};
-      Object.keys(industryScores).forEach(industry => {
-        const scores = industryScores[industry];
-        averageScoreByIndustry[industry] = Math.round(
-          scores.reduce((sum, score) => sum + score, 0) / scores.length
-        );
-      });
-
-      // Tendencias de los últimos 30 días (simulado por ahora)
-      const scoringTrends = Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        average_score: Math.floor(Math.random() * 20) + 60,
-        hot_leads: Math.floor(Math.random() * 10) + 5
-      }));
+      const coldLeads = contactLeads?.filter(lead => lead.status === 'new').length || 0;
+      const warmLeads = contactLeads?.filter(lead => lead.status === 'contacted').length || 0;
+      const hotLeads = contactLeads?.filter(lead => lead.status === 'qualified').length || 0;
 
       setLeadScoringAnalytics({
         scoreDistribution: {
@@ -210,8 +179,8 @@ export const useMarketingHub = () => {
           warm: warmLeads,
           hot: hotLeads
         },
-        averageScoreByIndustry,
-        scoringTrends
+        averageScoreByIndustry: {},
+        scoringTrends: []
       });
     } catch (error) {
       console.error('Error en fetchLeadScoringAnalytics:', error);

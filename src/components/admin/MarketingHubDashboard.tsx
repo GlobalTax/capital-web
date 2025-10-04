@@ -9,7 +9,6 @@ import MarketingHubOverviewTab from './hub/MarketingHubOverviewTab';
 import MarketingHubTrafficTab from './hub/MarketingHubTrafficTab';
 import MarketingHubLoadingState from './hub/MarketingHubLoadingState';
 import ContentPerformanceTab from './hub/ContentPerformanceTab';
-import LeadScoringHubTab from './hub/LeadScoringHubTab';
 import EmailMarketingTab from './hub/EmailMarketingTab';
 import ROIAnalyticsTab from './hub/ROIAnalyticsTab';
 
@@ -17,7 +16,6 @@ const MarketingHubDashboard = () => {
   const {
     marketingMetrics,
     contentPerformance,
-    leadScoringAnalytics,
     emailMetrics,
     roiAnalytics,
     isLoadingMetrics
@@ -47,13 +45,6 @@ const MarketingHubDashboard = () => {
 
         <TabsContent value="content">
           <ContentPerformanceTab contentPerformance={contentPerformance} />
-        </TabsContent>
-
-        <TabsContent value="leads">
-          <LeadScoringHubTab 
-            leadScoringAnalytics={leadScoringAnalytics} 
-            marketingMetrics={marketingMetrics}
-          />
         </TabsContent>
 
         <TabsContent value="email">

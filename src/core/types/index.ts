@@ -44,20 +44,6 @@ export interface ContactLead extends BaseEntity {
   country?: string;
 }
 
-export interface LeadScore extends BaseEntity {
-  visitor_id: string;
-  company_domain?: string;
-  company_name?: string;
-  contact_name?: string;
-  email?: string;
-  phone?: string;
-  total_score: number;
-  visit_count: number;
-  last_activity: string;
-  is_hot_lead: boolean;
-  lead_status: 'active' | 'inactive' | 'converted';
-}
-
 export interface CompanyValuation extends BaseEntity {
   user_id?: string | null;
   contact_name: string;
@@ -122,14 +108,4 @@ export interface BlogAnalytics extends BaseEntity {
   viewed_at: string;
   reading_time?: number;
   scroll_percentage?: number;
-}
-
-export interface LeadBehaviorEvent extends BaseEntity {
-  visitor_id?: string;
-  session_id: string;
-  event_type: string;
-  page_path?: string;
-  company_domain?: string;
-  points_awarded: number;
-  event_data?: Record<string, any>;
 }

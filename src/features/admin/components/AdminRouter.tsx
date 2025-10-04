@@ -3,10 +3,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { AdminDashboard } from './AdminDashboard';
-import LeadScoringManager from '@/components/admin/dashboard/LeadScoringManager';
-import LeadScoringRulesManager from '@/components/admin/dashboard/LeadScoringRulesManager';
 import AdminSettings from '@/components/admin/AdminSettings';
-import AlertsManager from '@/components/admin/leads/AlertsManager';
 import ModernBlogManager from '@/components/admin/ModernBlogManager';
 import BlogEditorPage from '@/pages/admin/BlogEditorPage';
 import CaseStudiesManager from '@/components/admin/CaseStudiesManager';
@@ -23,7 +20,6 @@ import StatisticsManager from '@/components/admin/StatisticsManager';
 import SectorReportsGenerator from '@/components/admin/SectorReportsGenerator';
 import AdminUsersManager from '@/components/admin/AdminUsersManager';
 import ProposalsManager from '@/components/admin/ProposalsManager';
-import EnhancedLeadsDashboard from '@/components/admin/leads/EnhancedLeadsDashboard';
 import ExternalLeadsDashboard from '@/components/admin/leads/ExternalLeadsDashboard';
 import FormSubmissionsManager from '@/components/admin/FormSubmissionsManager';
 import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
@@ -67,15 +63,11 @@ const AdminRouter = () => {
   return (
     <Routes>
       {/* Dashboard */}
-      <Route index element={<AdminDashboard />} />
-      <Route path="/dashboard" element={<AdminDashboard />} />
+      <Route index element={<Navigate to="/admin/blog-v2" replace />} />
+      <Route path="/dashboard" element={<Navigate to="/admin/blog-v2" replace />} />
       
       {/* Lead Management */}
-      <Route path="/leads-dashboard" element={<EnhancedLeadsDashboard />} />
       <Route path="/external-leads" element={<ExternalLeadsDashboard />} />
-      <Route path="/lead-scoring" element={<LeadScoringManager />} />
-      <Route path="/lead-scoring-rules" element={<LeadScoringRulesManager />} />
-      <Route path="/alerts" element={<AlertsManager />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsPage />} />
       <Route path="/contact-leads" element={<ContactLeadsAdminPage />} />
@@ -113,7 +105,6 @@ const AdminRouter = () => {
       <Route path="/carousel-logos" element={<CarouselLogosManager />} />
       
       {/* Tracking & Analytics */}
-      <Route path="/tracking-dashboard" element={<TrackingDashboardPage />} />
       <Route path="/tracking-config" element={<TrackingConfigPage />} />
       
       {/* Integrations */}

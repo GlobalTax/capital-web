@@ -8,7 +8,6 @@ export type * from './basicCompany';
 // Feature-specific types
 export type * from './blog';
 export type * from './aiContent';
-export type * from './leadScoring';
 export type * from './valuation';
 
 // Utility types for better development experience

@@ -316,48 +316,6 @@ export type Database = {
           },
         ]
       }
-      automation_workflows: {
-        Row: {
-          actions: Json
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          execution_count: number | null
-          id: string
-          is_active: boolean | null
-          last_executed: string | null
-          name: string
-          trigger_conditions: Json
-          updated_at: string | null
-        }
-        Insert: {
-          actions: Json
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          execution_count?: number | null
-          id?: string
-          is_active?: boolean | null
-          last_executed?: string | null
-          name: string
-          trigger_conditions: Json
-          updated_at?: string | null
-        }
-        Update: {
-          actions?: Json
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          execution_count?: number | null
-          id?: string
-          is_active?: boolean | null
-          last_executed?: string | null
-          name?: string
-          trigger_conditions?: Json
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       banner_events: {
         Row: {
           banner_id: string
@@ -2256,112 +2214,6 @@ export type Database = {
           },
         ]
       }
-      lead_alerts: {
-        Row: {
-          alert_type: string
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          lead_score_id: string | null
-          message: string
-          priority: string | null
-          threshold_reached: number | null
-        }
-        Insert: {
-          alert_type: string
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          lead_score_id?: string | null
-          message: string
-          priority?: string | null
-          threshold_reached?: number | null
-        }
-        Update: {
-          alert_type?: string
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          lead_score_id?: string | null
-          message?: string
-          priority?: string | null
-          threshold_reached?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lead_alerts_lead_score_id_fkey"
-            columns: ["lead_score_id"]
-            isOneToOne: false
-            referencedRelation: "lead_scores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lead_behavior_events: {
-        Row: {
-          company_domain: string | null
-          created_at: string | null
-          event_data: Json | null
-          event_type: string
-          id: string
-          ip_address: unknown | null
-          page_path: string | null
-          points_awarded: number | null
-          referrer: string | null
-          rule_id: string | null
-          session_id: string
-          user_agent: string | null
-          utm_campaign: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          visitor_id: string | null
-        }
-        Insert: {
-          company_domain?: string | null
-          created_at?: string | null
-          event_data?: Json | null
-          event_type: string
-          id?: string
-          ip_address?: unknown | null
-          page_path?: string | null
-          points_awarded?: number | null
-          referrer?: string | null
-          rule_id?: string | null
-          session_id: string
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          visitor_id?: string | null
-        }
-        Update: {
-          company_domain?: string | null
-          created_at?: string | null
-          event_data?: Json | null
-          event_type?: string
-          id?: string
-          ip_address?: unknown | null
-          page_path?: string | null
-          points_awarded?: number | null
-          referrer?: string | null
-          rule_id?: string | null
-          session_id?: string
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          visitor_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lead_behavior_events_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "lead_scoring_rules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lead_enrichment_snapshots: {
         Row: {
           confidence_score: number | null
@@ -2402,129 +2254,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      lead_scores: {
-        Row: {
-          assigned_to: string | null
-          company_domain: string | null
-          company_name: string | null
-          company_size: string | null
-          contact_name: string | null
-          created_at: string | null
-          crm_id: string | null
-          crm_synced: boolean | null
-          email: string | null
-          first_visit: string | null
-          hot_lead_threshold: number | null
-          id: string
-          industry: string | null
-          is_hot_lead: boolean | null
-          last_activity: string | null
-          lead_status: string | null
-          location: string | null
-          notes: string | null
-          phone: string | null
-          total_score: number | null
-          updated_at: string | null
-          visit_count: number | null
-          visitor_id: string
-        }
-        Insert: {
-          assigned_to?: string | null
-          company_domain?: string | null
-          company_name?: string | null
-          company_size?: string | null
-          contact_name?: string | null
-          created_at?: string | null
-          crm_id?: string | null
-          crm_synced?: boolean | null
-          email?: string | null
-          first_visit?: string | null
-          hot_lead_threshold?: number | null
-          id?: string
-          industry?: string | null
-          is_hot_lead?: boolean | null
-          last_activity?: string | null
-          lead_status?: string | null
-          location?: string | null
-          notes?: string | null
-          phone?: string | null
-          total_score?: number | null
-          updated_at?: string | null
-          visit_count?: number | null
-          visitor_id: string
-        }
-        Update: {
-          assigned_to?: string | null
-          company_domain?: string | null
-          company_name?: string | null
-          company_size?: string | null
-          contact_name?: string | null
-          created_at?: string | null
-          crm_id?: string | null
-          crm_synced?: boolean | null
-          email?: string | null
-          first_visit?: string | null
-          hot_lead_threshold?: number | null
-          id?: string
-          industry?: string | null
-          is_hot_lead?: boolean | null
-          last_activity?: string | null
-          lead_status?: string | null
-          location?: string | null
-          notes?: string | null
-          phone?: string | null
-          total_score?: number | null
-          updated_at?: string | null
-          visit_count?: number | null
-          visitor_id?: string
-        }
-        Relationships: []
-      }
-      lead_scoring_rules: {
-        Row: {
-          company_size_filter: string[] | null
-          created_at: string | null
-          decay_days: number | null
-          description: string | null
-          id: string
-          industry_specific: string[] | null
-          is_active: boolean | null
-          name: string
-          page_pattern: string | null
-          points: number
-          trigger_type: string
-          updated_at: string | null
-        }
-        Insert: {
-          company_size_filter?: string[] | null
-          created_at?: string | null
-          decay_days?: number | null
-          description?: string | null
-          id?: string
-          industry_specific?: string[] | null
-          is_active?: boolean | null
-          name: string
-          page_pattern?: string | null
-          points?: number
-          trigger_type: string
-          updated_at?: string | null
-        }
-        Update: {
-          company_size_filter?: string[] | null
-          created_at?: string | null
-          decay_days?: number | null
-          description?: string | null
-          id?: string
-          industry_specific?: string[] | null
-          is_active?: boolean | null
-          name?: string
-          page_pattern?: string | null
-          points?: number
-          trigger_type?: string
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       lead_security: {
         Row: {
@@ -3918,69 +3647,6 @@ export type Database = {
         }
         Relationships: []
       }
-      workflow_executions: {
-        Row: {
-          completed_actions: number | null
-          completed_at: string | null
-          created_at: string
-          error_message: string | null
-          execution_result: Json | null
-          execution_status: string
-          id: string
-          lead_score_id: string | null
-          started_at: string
-          total_actions: number | null
-          trigger_data: Json | null
-          updated_at: string
-          workflow_id: string
-        }
-        Insert: {
-          completed_actions?: number | null
-          completed_at?: string | null
-          created_at?: string
-          error_message?: string | null
-          execution_result?: Json | null
-          execution_status?: string
-          id?: string
-          lead_score_id?: string | null
-          started_at?: string
-          total_actions?: number | null
-          trigger_data?: Json | null
-          updated_at?: string
-          workflow_id: string
-        }
-        Update: {
-          completed_actions?: number | null
-          completed_at?: string | null
-          created_at?: string
-          error_message?: string | null
-          execution_result?: Json | null
-          execution_status?: string
-          id?: string
-          lead_score_id?: string | null
-          started_at?: string
-          total_actions?: number | null
-          trigger_data?: Json | null
-          updated_at?: string
-          workflow_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_workflow_executions_lead_score_id"
-            columns: ["lead_score_id"]
-            isOneToOne: false
-            referencedRelation: "lead_scores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_workflow_executions_workflow_id"
-            columns: ["workflow_id"]
-            isOneToOne: false
-            referencedRelation: "automation_workflows"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       banner_daily_analytics: {
@@ -4044,10 +3710,6 @@ export type Database = {
         Args: { user_email: string }
         Returns: boolean
       }
-      calculate_lead_score: {
-        Args: { p_visitor_id: string }
-        Returns: number
-      }
       check_rate_limit: {
         Args: {
           identifier: string
@@ -4077,10 +3739,6 @@ export type Database = {
       check_user_admin_role: {
         Args: { check_user_id: string }
         Returns: string
-      }
-      cleanup_old_lead_data: {
-        Args: Record<PropertyKey, never>
-        Returns: number
       }
       cleanup_old_tracking_events: {
         Args: Record<PropertyKey, never>
@@ -4218,10 +3876,6 @@ export type Database = {
       monitor_security_violations: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      process_automation_workflows: {
-        Args: Record<PropertyKey, never>
-        Returns: number
       }
       refresh_banner_analytics: {
         Args: Record<PropertyKey, never>
