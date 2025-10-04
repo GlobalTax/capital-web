@@ -11,7 +11,8 @@ import {
   MessageSquare,
   Settings,
   Target,
-  Eye
+  Eye,
+  Megaphone
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -112,6 +113,13 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         url: "/admin/testimonials", 
         icon: MessageSquare,
         description: "Reseñas de clientes"
+      },
+      { 
+        title: "Banners", 
+        url: "/admin/banners", 
+        icon: Megaphone,
+        badge: "NEW",
+        description: "Gestión de banners"
       },
     ]
   },

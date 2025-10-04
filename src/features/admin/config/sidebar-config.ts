@@ -21,7 +21,8 @@ import {
   ClipboardList,
   Tags,
   Image,
-  Calculator
+  Calculator,
+  Megaphone
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -143,6 +144,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Image,
         badge: "NEW",
         description: "Gestión de logos del carrusel"
+      },
+      { 
+        title: "Banners", 
+        url: "/admin/banners", 
+        icon: Megaphone,
+        badge: "NEW",
+        description: "Gestión de banners del sitio"
       },
     ]
   },
