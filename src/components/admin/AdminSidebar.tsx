@@ -82,11 +82,6 @@ const adminNavItems = [
     href: '/admin/fee-proposals'
   },
   {
-    title: 'Recursos de Diseño',
-    icon: <BookOpen className="h-5 w-5" />,
-    href: '/admin/design-resources'
-  },
-  {
     title: 'Analytics',
     icon: <BarChart3 className="h-5 w-5" />,
     href: '/admin/analytics'
