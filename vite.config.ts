@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
     },
     target: ['es2020', 'chrome80', 'safari14'],
     minify: 'esbuild',
-    sourcemap: false, // ⚡ Sin sourcemaps en producción
+    sourcemap: mode === 'development', // ⚡ Sourcemaps solo en desarrollo
     chunkSizeWarningLimit: 500,
     assetsInlineLimit: 4096,
     reportCompressedSize: false
@@ -52,8 +52,7 @@ export default defineConfig(({ mode }) => {
       'react', 
       'react-dom'
     ],
-    exclude: ['@vite/client', '@vite/env'],
-    force: true
+    exclude: ['@vite/client', '@vite/env']
   },
   esbuild: {
     drop: mode === 'production' ? ['console', 'debugger'] : [],
