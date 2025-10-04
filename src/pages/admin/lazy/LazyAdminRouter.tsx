@@ -5,7 +5,6 @@ import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import {
-  LazyUnifiedDashboard,
   LazyBlogDashboard,
   LazyModernBlogManager,
   LazyBlogPostsManager,
@@ -26,7 +25,6 @@ export const LazyAdminRouter = () => {
   return (
     <Suspense fallback={<AdminLoadingFallback />}>
       <Routes>
-        <Route path="/" element={<LazyUnifiedDashboard />} />
         <Route path="/blog-dashboard" element={<LazyBlogDashboard />} />
         <Route path="/blog-manager" element={<LazyModernBlogManager />} />
         <Route path="/blog-posts" element={<LazyBlogPostsManager />} />

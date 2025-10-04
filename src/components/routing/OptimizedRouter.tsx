@@ -1,11 +1,7 @@
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// Lazy loading para todas las rutas
-const AdminDashboard = lazy(() => import('@/features/admin/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
-const UnifiedDashboard = lazy(() => import('@/features/admin/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 
 // Componente de loading optimizado
 const PageLoading = () => (
@@ -28,12 +24,6 @@ const OptimizedRouter: React.FC = () => {
   return (
     <Suspense fallback={<PageLoading />}>
       <Routes>
-        {/* Ruta principal del dashboard */}
-        <Route path="/dashboard" element={<UnifiedDashboard />} />
-        
-        {/* Rutas de admin */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        
         {/* Redirect por defecto */}
         <Route path="/" element={<Navigate to="/lp/calculadora" replace />} />
         

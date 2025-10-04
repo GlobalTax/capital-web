@@ -3,8 +3,7 @@
 
 import { lazy } from 'react';
 
-// Dashboard components - carga crítica prioritaria
-export const LazyUnifiedDashboard = lazy(() => import('@/features/admin/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+// Blog management - carga agrupada
 export const LazyBlogDashboard = lazy(() => import('../BlogDashboard'));
 
 // Blog management - carga agrupada

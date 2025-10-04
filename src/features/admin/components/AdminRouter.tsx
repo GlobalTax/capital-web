@@ -2,7 +2,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { AdminDashboard } from './AdminDashboard';
 import AdminSettings from '@/components/admin/AdminSettings';
 import ModernBlogManager from '@/components/admin/ModernBlogManager';
 import BlogEditorPage from '@/pages/admin/BlogEditorPage';
@@ -36,8 +35,6 @@ import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import AdminBanners from '@/pages/AdminBanners';
 import ContactsPage from '@/pages/admin/ContactsPage';
 import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
-import TrackingDashboardPage from '@/pages/admin/TrackingDashboardPage';
-import TrackingConfigPage from '@/pages/admin/TrackingConfigPage';
 import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
@@ -103,9 +100,6 @@ const AdminRouter = () => {
       <Route path="/testimonials" element={<TestimonialsManager />} />
       <Route path="/carousel-testimonials" element={<CarouselTestimonialsManager />} />
       <Route path="/carousel-logos" element={<CarouselLogosManager />} />
-      
-      {/* Tracking & Analytics */}
-      <Route path="/tracking-config" element={<TrackingConfigPage />} />
       
       {/* Integrations */}
       <Route path="/integrations" element={<IntegrationsPage />} />
