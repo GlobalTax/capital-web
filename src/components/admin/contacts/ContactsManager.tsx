@@ -212,7 +212,6 @@ const ContactsManager = () => {
             selectedContacts={selectedContacts}
             onSelectContact={handleSelectContact}
             onSelectAll={handleSelectAll}
-            onUpdateStatus={updateContactStatus}
             onViewDetails={handleViewDetails}
           />
         </TabsContent>

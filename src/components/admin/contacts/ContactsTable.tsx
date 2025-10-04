@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Phone, Mail, Eye, Flame, CheckCircle2, Clock } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,7 +13,6 @@ interface ContactsTableProps {
   selectedContacts: string[];
   onSelectContact: (contactId: string) => void;
   onSelectAll: () => void;
-  onUpdateStatus: (contactId: string, origin: ContactOrigin, newStatus: string) => void;
   onViewDetails: (contactId: string) => void;
 }
 
@@ -23,7 +21,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   selectedContacts,
   onSelectContact,
   onSelectAll,
-  onUpdateStatus,
   onViewDetails,
 }) => {
 
@@ -65,31 +62,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
     );
   };
 
-  const getPriorityBadge = (priority?: 'hot' | 'warm' | 'cold') => {
-    if (!priority) return null;
-    
-    const badges = {
-      hot: { label: 'Hot', className: 'bg-red-500 hover:bg-red-600', icon: Flame },
-      warm: { label: 'Warm', className: 'bg-orange-500 hover:bg-orange-600', icon: Flame },
-      cold: { label: 'Cold', className: 'bg-blue-500 hover:bg-blue-600', icon: Clock },
-    };
-    
-    const badge = badges[priority];
-    const Icon = badge.icon;
-    
-    return (
-      <Badge className={badge.className}>
-        <Icon className="h-3 w-3 mr-1" />
-        {badge.label}
-      </Badge>
-    );
-  };
-
-  const getRowClassName = (priority?: 'hot' | 'warm' | 'cold') => {
-    if (priority === 'hot') return 'border-l-4 border-l-red-500';
-    if (priority === 'warm') return 'border-l-4 border-l-orange-500';
-    return '';
-  };
 
   const formatCurrency = (value?: number) => {
     if (!value) return '-';
@@ -140,14 +112,13 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             <TableHead>Email</TableHead>
             <TableHead>Empresa</TableHead>
             <TableHead>Detalles</TableHead>
-            <TableHead>Estado</TableHead>
             <TableHead>Fecha</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <TableRow key={contact.id} className={getRowClassName(contact.priority)}>
+            <TableRow key={contact.id}>
               <TableCell>
                 <Checkbox
                   checked={selectedContacts.includes(contact.id)}
@@ -158,15 +129,12 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               <TableCell>
                 <div className="space-y-1">
                   <div className="font-medium">{contact.name}</div>
-                  <div className="flex gap-1">
-                    {getPriorityBadge(contact.priority)}
-                    {contact.is_hot_lead && (
-                      <Badge className="bg-red-500 hover:bg-red-600">
-                        <Flame className="h-3 w-3 mr-1" />
-                        Hot
-                      </Badge>
-                    )}
-                  </div>
+                  {contact.is_hot_lead && (
+                    <Badge className="bg-red-500 hover:bg-red-600">
+                      <Flame className="h-3 w-3 mr-1" />
+                      Hot
+                    </Badge>
+                  )}
                 </div>
               </TableCell>
               <TableCell>
@@ -179,24 +147,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               <TableCell className="text-sm text-muted-foreground">
                 {getContactDetails(contact)}
               </TableCell>
-              <TableCell>
-                <Select
-                  value={contact.status}
-                  onValueChange={(value) => onUpdateStatus(contact.id, contact.origin, value)}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">Nuevo</SelectItem>
-                    <SelectItem value="contacted">Contactado</SelectItem>
-                    <SelectItem value="qualified">Cualificado</SelectItem>
-                    <SelectItem value="opportunity">Oportunidad</SelectItem>
-                    <SelectItem value="customer">Cliente</SelectItem>
-                    <SelectItem value="lost">Perdido</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(contact.created_at), {
                   addSuffix: true,
@@ -204,27 +154,30 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 })}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-1 justify-end">
                   {contact.phone && (
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => window.open(`tel:${contact.phone}`)}
+                      title="Llamar"
                     >
                       <Phone className="h-4 w-4" />
                     </Button>
                   )}
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => window.open(`mailto:${contact.email}`)}
+                    title="Enviar email"
                   >
                     <Mail className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => onViewDetails(contact.id)}
+                    title="Ver detalles"
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
