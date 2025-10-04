@@ -1,4 +1,4 @@
-import { Building2, TrendingUp, Calendar, BarChart3 } from 'lucide-react';
+import { Building2, TrendingUp, Calendar, BarChart3, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface OperationsStatsCardsProps {
@@ -6,13 +6,17 @@ interface OperationsStatsCardsProps {
   activeOperations: number;
   thisYearOperations: number;
   withFinancialData: number;
+  featuredOperations: number;
+  totalValuation: string;
 }
 
 export const OperationsStatsCards = ({ 
   totalOperations, 
   activeOperations, 
   thisYearOperations, 
-  withFinancialData 
+  withFinancialData,
+  featuredOperations,
+  totalValuation
 }: OperationsStatsCardsProps) => {
   const stats = [
     {
@@ -46,11 +50,27 @@ export const OperationsStatsCards = ({
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600',
       textColor: 'text-gray-700'
+    },
+    {
+      label: 'Destacadas',
+      value: featuredOperations,
+      icon: Star,
+      iconBg: 'bg-yellow-100',
+      iconColor: 'text-yellow-600',
+      textColor: 'text-gray-700'
+    },
+    {
+      label: 'Valor Total',
+      value: totalValuation,
+      icon: TrendingUp,
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      textColor: 'text-gray-700'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {stats.map((stat, index) => (
         <Card key={index} className="bg-white border border-gray-100 hover:shadow-md transition-shadow">
           <CardContent className="p-6">

@@ -14,6 +14,8 @@ import { formatDate, formatCurrency } from '@/shared/utils/format';
 import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText } from 'lucide-react';
 import { OperationsBreadcrumbs } from '@/components/operations/OperationsBreadcrumbs';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,10 +55,12 @@ const AdminOperations = () => {
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dealTypeFilter, setDealTypeFilter] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const [filters, setFilters] = useState<OperationFiltersType>({
+    search: '',
+    status: 'all',
+    dealType: 'all',
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -92,20 +96,75 @@ const AdminOperations = () => {
     return `OP-${year}-${paddedIndex}`;
   };
 
+  // Available sectors for filter dropdown
+  const availableSectors = useMemo(() => {
+    return Array.from(new Set(operations.map(op => op.sector))).sort();
+  }, [operations]);
+
   // Filter operations based on search and filters
   const filteredOperations = useMemo(() => {
     return operations.filter(operation => {
-      const matchesSearch = !searchTerm || 
-        operation.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        operation.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        operation.description.toLowerCase().includes(searchTerm.toLowerCase());
+      // Search filter
+      const matchesSearch = !filters.search || 
+        operation.company_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        operation.sector.toLowerCase().includes(filters.search.toLowerCase()) ||
+        operation.description.toLowerCase().includes(filters.search.toLowerCase());
       
-      const matchesStatus = statusFilter === 'all' || operation.status === statusFilter;
-      const matchesDealType = dealTypeFilter === 'all' || operation.deal_type === dealTypeFilter;
+      // Status filter
+      const matchesStatus = filters.status === 'all' || operation.status === filters.status;
       
-      return matchesSearch && matchesStatus && matchesDealType;
+      // Deal type filter
+      const matchesDealType = filters.dealType === 'all' || operation.deal_type === filters.dealType;
+      
+      // Year range filter
+      const matchesYearFrom = !filters.yearFrom || operation.year >= filters.yearFrom;
+      const matchesYearTo = !filters.yearTo || operation.year <= filters.yearTo;
+      
+      // Sector filter
+      const matchesSector = !filters.sector || operation.sector === filters.sector;
+      
+      // Valuation range filter (convert k to actual amount)
+      const matchesValuationMin = !filters.valuationMin || (operation.valuation_amount && operation.valuation_amount >= filters.valuationMin * 1000);
+      const matchesValuationMax = !filters.valuationMax || (operation.valuation_amount && operation.valuation_amount <= filters.valuationMax * 1000);
+      
+      // Display location filter
+      const matchesLocation = !filters.displayLocation || operation.display_locations?.includes(filters.displayLocation);
+      
+      return matchesSearch && matchesStatus && matchesDealType && matchesYearFrom && 
+             matchesYearTo && matchesSector && matchesValuationMin && matchesValuationMax && matchesLocation;
     });
-  }, [operations, searchTerm, statusFilter, dealTypeFilter]);
+  }, [operations, filters]);
+
+  // Tab counts
+  const tabCounts = useMemo(() => ({
+    all: filteredOperations.length,
+    active: filteredOperations.filter(op => op.is_active).length,
+    featured: filteredOperations.filter(op => op.is_featured).length,
+    sales: filteredOperations.filter(op => op.deal_type === 'sale').length,
+    acquisitions: filteredOperations.filter(op => op.deal_type === 'acquisition').length,
+    thisYear: filteredOperations.filter(op => op.year === new Date().getFullYear()).length,
+    inactive: filteredOperations.filter(op => !op.is_active).length,
+  }), [filteredOperations]);
+
+  // Tab filtered operations
+  const tabFilteredOperations = useMemo(() => {
+    switch (activeTab) {
+      case 'active':
+        return filteredOperations.filter(op => op.is_active);
+      case 'featured':
+        return filteredOperations.filter(op => op.is_featured);
+      case 'sales':
+        return filteredOperations.filter(op => op.deal_type === 'sale');
+      case 'acquisitions':
+        return filteredOperations.filter(op => op.deal_type === 'acquisition');
+      case 'thisYear':
+        return filteredOperations.filter(op => op.year === new Date().getFullYear());
+      case 'inactive':
+        return filteredOperations.filter(op => !op.is_active);
+      default:
+        return filteredOperations;
+    }
+  }, [filteredOperations, activeTab]);
 
   // Statistics calculations
   const stats = useMemo(() => {
@@ -113,8 +172,12 @@ const AdminOperations = () => {
     const thisYear = operations.filter(op => op.year === new Date().getFullYear()).length;
     const withRevenue = operations.filter(op => op.revenue_amount && op.revenue_amount > 0).length;
     const withEbitda = operations.filter(op => op.ebitda_amount && op.ebitda_amount > 0).length;
+    const featured = operations.filter(op => op.is_featured).length;
+    const totalValuation = operations
+      .filter(op => op.is_active && op.valuation_amount)
+      .reduce((sum, op) => sum + (op.valuation_amount || 0), 0);
     
-    return { active, thisYear, withRevenue, withEbitda };
+    return { active, thisYear, withRevenue, withEbitda, featured, totalValuation };
   }, [operations]);
 
   const extractFinancialData = async () => {
@@ -565,89 +628,45 @@ const AdminOperations = () => {
         totalOperations={operations.length}
         activeOperations={stats.active}
         thisYearOperations={stats.thisYear}
-        withFinancialData={stats.withRevenue}
+        withFinancialData={Math.max(stats.withRevenue, stats.withEbitda)}
+        featuredOperations={stats.featured}
+        totalValuation={formatCurrency(stats.totalValuation)}
       />
 
-      {/* Filters and Search */}
-      <Card className="bg-white border border-gray-100">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar por empresa, sector o descripción..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 border-gray-200 hover:bg-gray-50"
-            >
-              <Filter className="h-4 w-4" />
-              Filtros
-              <ChevronDown className={`h-3 w-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-              {(statusFilter !== 'all' || dealTypeFilter !== 'all') && (
-                <Badge className="ml-1 h-5 w-5 rounded-full p-0 text-xs bg-blue-100 text-blue-700 hover:bg-blue-100">
-                  {(statusFilter !== 'all' ? 1 : 0) + (dealTypeFilter !== 'all' ? 1 : 0)}
-                </Badge>
-              )}
-            </Button>
-          </div>
-          
-          {showFilters && (
-            <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t border-gray-100 animate-fade-in">
-              <div className="flex-1">
-                <Label htmlFor="status-filter" className="text-xs text-gray-600">Estado</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger id="status-filter" className="mt-1 border-gray-200">
-                    <SelectValue placeholder="Todos los estados" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="available">Disponible</SelectItem>
-                    <SelectItem value="under_negotiation">En Negociación</SelectItem>
-                    <SelectItem value="sold">Vendida</SelectItem>
-                    <SelectItem value="withdrawn">Retirada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Label htmlFor="deal-type-filter" className="text-xs text-gray-600">Tipo de Operación</Label>
-                <Select value={dealTypeFilter} onValueChange={setDealTypeFilter}>
-                  <SelectTrigger id="deal-type-filter" className="mt-1 border-gray-200">
-                    <SelectValue placeholder="Todos los tipos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los tipos</SelectItem>
-                    <SelectItem value="sale">Venta</SelectItem>
-                    <SelectItem value="acquisition">Adquisición</SelectItem>
-                    <SelectItem value="merger">Fusión</SelectItem>
-                    <SelectItem value="restructuring">Reestructuración</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {(statusFilter !== 'all' || dealTypeFilter !== 'all') && (
-                <div className="flex items-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setStatusFilter('all');
-                      setDealTypeFilter('all');
-                    }}
-                    className="text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                  >
-                    Limpiar filtros
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-7 w-full">
+          <TabsTrigger value="all">
+            Todas ({tabCounts.all})
+          </TabsTrigger>
+          <TabsTrigger value="active">
+            Activas ({tabCounts.active})
+          </TabsTrigger>
+          <TabsTrigger value="featured">
+            Destacadas ({tabCounts.featured})
+          </TabsTrigger>
+          <TabsTrigger value="sales">
+            Ventas ({tabCounts.sales})
+          </TabsTrigger>
+          <TabsTrigger value="acquisitions">
+            Adquisiciones ({tabCounts.acquisitions})
+          </TabsTrigger>
+          <TabsTrigger value="thisYear">
+            Este Año ({tabCounts.thisYear})
+          </TabsTrigger>
+          <TabsTrigger value="inactive">
+            Inactivas ({tabCounts.inactive})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Advanced Filters */}
+      <OperationFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        totalOperations={tabFilteredOperations.length}
+        availableSectors={availableSectors}
+      />
 
       {/* Operations Table */}
       <Card className="bg-white border border-gray-100">
@@ -657,7 +676,7 @@ const AdminOperations = () => {
               <CardTitle className="text-lg font-semibold text-gray-900">Operaciones Registradas</CardTitle>
             </div>
             <div className="text-xs text-gray-500">
-              Mostrando {filteredOperations.length} de {operations.length} operaciones
+              Mostrando {tabFilteredOperations.length} de {operations.length} operaciones
             </div>
           </div>
         </CardHeader>
@@ -670,7 +689,7 @@ const AdminOperations = () => {
                 Comienza añadiendo tu primera operación para construir el portafolio de transacciones.
               </p>
             </div>
-          ) : filteredOperations.length === 0 ? (
+          ) : tabFilteredOperations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Search className="h-16 w-16 text-gray-300 mb-4" />
               <h3 className="text-lg font-semibold text-gray-700 mb-2">No se encontraron operaciones</h3>
@@ -680,10 +699,10 @@ const AdminOperations = () => {
             </div>
           ) : (
             <VirtualizedTable
-              data={filteredOperations}
+              data={tabFilteredOperations}
               columns={tableColumns}
               itemHeight={80}
-              height={Math.min(600, filteredOperations.length * 80 + 50)}
+              height={Math.min(600, tabFilteredOperations.length * 80 + 50)}
               className="border-none [&_thead]:bg-gray-50 [&_thead_th]:text-[10px] [&_thead_th]:font-semibold [&_thead_th]:text-gray-600 [&_thead_th]:uppercase [&_thead_th]:tracking-wider [&_tbody_tr]:hover:bg-gray-50 [&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100"
             />
           )}
