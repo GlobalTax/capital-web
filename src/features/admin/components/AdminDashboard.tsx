@@ -8,7 +8,6 @@ import { RecentBlogPosts } from './dashboard/RecentBlogPosts';
 import { RecentAcquisitions } from './dashboard/RecentAcquisitions';
 import { RecentCollaborations } from './dashboard/RecentCollaborations';
 import { ActivityTimeline } from './dashboard/ActivityTimeline';
-import { QuickActions } from './dashboard/QuickActions';
 
 export const AdminDashboard = () => {
   // Queries simples para métricas básicas
@@ -134,9 +133,6 @@ export const AdminDashboard = () => {
 
       {/* Timeline de actividad - ancho completo */}
       <ActivityTimeline />
-
-      {/* Acciones rápidas */}
-      <QuickActions />
     </div>
   );
 };
