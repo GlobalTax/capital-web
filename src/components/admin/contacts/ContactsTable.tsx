@@ -56,12 +56,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         </Badge>
       );
     }
-    return (
-      <Badge variant="outline">
-        <Clock className="h-3 w-3 mr-1" />
-        Sin contactar
-      </Badge>
-    );
+    return null;
   };
 
 

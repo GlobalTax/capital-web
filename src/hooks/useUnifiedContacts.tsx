@@ -86,6 +86,7 @@ export interface ContactStats {
   byOrigin: Record<ContactOrigin, number>;
   growth: number;
   potentialValue: number;
+  totalValuation: number;
 }
 
 export const useUnifiedContacts = () => {
@@ -106,6 +107,7 @@ export const useUnifiedContacts = () => {
     },
     growth: 0,
     potentialValue: 0,
+    totalValuation: 0,
   });
   const [filters, setFilters] = useState<ContactFilters>({
     origin: 'all',
@@ -386,6 +388,11 @@ export const useUnifiedContacts = () => {
       .filter(c => c.final_valuation)
       .reduce((sum, c) => sum + (c.final_valuation || 0), 0);
 
+    // Calculate total valuation summing ALL valuations
+    const totalValuation = contactsList
+      .filter(c => c.final_valuation && c.final_valuation > 0)
+      .reduce((sum, c) => sum + (c.final_valuation || 0), 0);
+
     setStats({
       total: contactsList.length,
       hot: hotLeads,
@@ -393,6 +400,7 @@ export const useUnifiedContacts = () => {
       byOrigin,
       growth: 0, // TODO: Calculate based on previous period
       potentialValue,
+      totalValuation,
     });
   };
 
