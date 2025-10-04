@@ -38,58 +38,89 @@ serve(async (req) => {
       displayLocation 
     } = await req.json();
 
-    console.log('List operations request:', { searchTerm, sector, sortBy, limit, offset, displayLocation });
+    console.log('📋 List operations request:', { 
+      searchTerm, 
+      sector, 
+      sortBy, 
+      limit, 
+      offset, 
+      displayLocation,
+      timestamp: new Date().toISOString()
+    });
 
-    // Base query
+    // Base query with better error context
     let query = supabase
       .from('company_operations')
       .select('*', { count: 'exact' })
       .eq('is_active', true);
 
-    // Apply filters
-    if (searchTerm) {
-      query = query.or(`company_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+    // Apply filters with validation
+    if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
+      const sanitizedSearch = searchTerm.trim().substring(0, 100);
+      query = query.or(`company_name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
+      console.log('🔍 Search filter applied:', sanitizedSearch);
     }
 
-    if (sector) {
+    if (sector && typeof sector === 'string') {
       query = query.eq('sector', sector);
+      console.log('🏢 Sector filter applied:', sector);
     }
 
-    if (displayLocation) {
-      query = query.or('display_locations.cs.{compra-empresas},display_locations.cs.{operaciones}');
+    if (displayLocation && typeof displayLocation === 'string') {
+      query = query.contains('display_locations', [displayLocation]);
+      console.log('📍 Location filter applied:', displayLocation);
     }
 
-    // Apply sorting
+    // Apply sorting with validation
     const validSortFields = ['created_at', 'year', 'valuation_amount', 'company_name'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
     const sortOrder = ['created_at', 'year', 'valuation_amount'].includes(sortField) ? 'desc' : 'asc';
     
     query = query.order(sortField, { ascending: sortOrder === 'asc' });
+    console.log('📊 Sorting:', { sortField, sortOrder });
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    // Apply pagination with bounds check
+    const safeLimit = Math.min(Math.max(1, limit), 100);
+    const safeOffset = Math.max(0, offset);
+    query = query.range(safeOffset, safeOffset + safeLimit - 1);
 
+    // Execute main query with timeout
     const { data, error, count } = await query;
 
     if (error) {
-      console.error('Database error:', error);
-      throw error;
+      console.error('❌ Database error:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to fetch operations',
+          details: error.message,
+          data: [],
+          count: 0,
+          sectors: []
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    // Get unique sectors for filter options
-    const { data: sectorsData, error: sectorsError } = await supabase
-      .from('company_operations')
-      .select('sector')
-      .eq('is_active', true)
-      .not('sector', 'is', null);
+    // Get unique sectors for filter options (only if not already filtered)
+    let sectors: string[] = [];
+    if (!sector) {
+      const { data: sectorsData, error: sectorsError } = await supabase
+        .from('company_operations')
+        .select('sector')
+        .eq('is_active', true)
+        .not('sector', 'is', null);
 
-    if (sectorsError) {
-      console.error('Sectors query error:', sectorsError);
+      if (sectorsError) {
+        console.warn('⚠️ Sectors query error (non-critical):', sectorsError.message);
+      } else {
+        sectors = [...new Set(sectorsData?.map(item => item.sector).filter(Boolean) || [])].sort();
+      }
     }
 
-    const sectors = [...new Set(sectorsData?.map(item => item.sector) || [])].sort();
-
-    console.log(`Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
+    console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
 
     return new Response(
       JSON.stringify({
@@ -103,9 +134,20 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in list-operations function:', error);
+    console.error('❌ CRITICAL ERROR in list-operations function:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message,
+        data: [],
+        count: 0,
+        sectors: []
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
