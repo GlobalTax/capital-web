@@ -1,5 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
+// Version stamp to force cache invalidation
+const VERSION = '2025-01-04T16:30:00Z';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -105,12 +108,16 @@ function matchesPage(bannerPages: string[], requestedPath: string): boolean {
 }
 
 Deno.serve(async (req) => {
+  const requestId = crypto.randomUUID().slice(0, 8);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log(`[${requestId}] 🚀 banners_list v${VERSION} - Starting request`);
+    
     const supabaseClient = createClient<Database>(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
@@ -122,14 +129,14 @@ Deno.serve(async (req) => {
     // Normalize path by removing function prefix
     const path = fullPath.replace(/^.*\/banners_list/, '');
     
-    console.log(`Processing ${req.method} ${fullPath} -> normalized to ${path}`);
+    console.log(`[${requestId}] 🔍 Processing ${req.method} ${fullPath} -> normalized: "${path}"`);
 
     // GET /banners/active - Public endpoint for active banners (NO AUTH REQUIRED)
     if (req.method === 'GET' && path === '/banners/active') {
       const requestedPath = url.searchParams.get('path') || '/';
       const audience = url.searchParams.get('audience') || 'anon';
       
-      console.log(`Fetching active banners for path: ${requestedPath}, audience: ${audience}`);
+      console.log(`[${requestId}] 📢 PUBLIC ENDPOINT - Fetching active banners for path: ${requestedPath}, audience: ${audience}`);
 
       // Fetch visible banners with basic filters only
       const { data: banners, error } = await supabaseClient
@@ -138,7 +145,7 @@ Deno.serve(async (req) => {
         .eq('visible', true);
 
       if (error) {
-        console.error('Database error:', error);
+        console.error(`[${requestId}] ❌ Database error:`, error);
         return new Response(
           JSON.stringify({ error: 'Failed to fetch banners' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -232,11 +239,11 @@ Deno.serve(async (req) => {
         .map(transformBannerForUI)
         .sort((a, b) => b.priority - a.priority); // Final sort by priority for consistent ordering
 
-      console.log(`Returning ${transformedBanners.length} active banners`);
+      console.log(`[${requestId}] ✅ PUBLIC RESPONSE - Returning ${transformedBanners.length} active banners`);
       
       return new Response(
         JSON.stringify(transformedBanners),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -244,6 +251,7 @@ Deno.serve(async (req) => {
     const trackMatch = path.match(/^\/banners\/([^\/]+)\/track$/);
     if (req.method === 'POST' && trackMatch) {
       const bannerId = trackMatch[1];
+      console.log(`[${requestId}] 📊 PUBLIC ENDPOINT - Tracking banner event for: ${bannerId}`);
       const { event } = await req.json();
       
       // Validate event type
@@ -288,25 +296,26 @@ Deno.serve(async (req) => {
         });
 
       if (insertError) {
-        console.error('Error inserting banner event:', insertError);
+        console.error(`[${requestId}] ❌ Error inserting banner event:`, insertError);
         return new Response(
           JSON.stringify({ error: 'Failed to track banner event' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.log(`Tracked ${event} event for banner ${bannerId} on path ${currentPath}`);
+      console.log(`[${requestId}] ✅ PUBLIC RESPONSE - Tracked ${event} event for banner ${bannerId} on path ${currentPath}`);
       
       return new Response(
         JSON.stringify({ success: true, event, banner_id: bannerId }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // All other endpoints require authentication
+    console.log(`[${requestId}] 🔒 Checking authentication for protected endpoint: ${path}`);
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log(`Auth required for ${path} - no auth header provided`);
+      console.log(`[${requestId}] ⛔ Auth required for ${path} - no auth header provided`);
       return new Response(
         JSON.stringify({ error: 'Missing or invalid authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -321,26 +330,28 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
-      console.error('Auth error:', authError);
+      console.error(`[${requestId}] ❌ Auth error:`, authError);
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`User authenticated: ${user.id}, checking admin status...`);
+    console.log(`[${requestId}] ✅ User authenticated: ${user.id}, checking admin status...`);
 
     // Check if user is admin
     const isAdmin = await isUserAdmin(supabaseClient, user.id);
-    console.log(`User ${user.id} admin status: ${isAdmin}`);
+    console.log(`[${requestId}] 🔐 User ${user.id} admin status: ${isAdmin}`);
     
     if (!isAdmin) {
-      console.log(`Access denied for user ${user.id} - not an admin`);
+      console.log(`[${requestId}] ⛔ Access denied for user ${user.id} - not an admin`);
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    console.log(`[${requestId}] ✅ Admin access granted for user ${user.id}`);
 
     // GET /banners - Admin endpoint for all banners with pagination
     if (req.method === 'GET' && path === '/banners') {
