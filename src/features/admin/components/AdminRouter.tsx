@@ -16,6 +16,7 @@ import CarouselTestimonialsManager from '@/components/admin/CarouselTestimonials
 import CarouselLogosManager from '@/components/admin/CarouselLogosManager';
 import TeamMembersManager from '@/components/admin/TeamMembersManager';
 import AdminOperations from '@/pages/admin/AdminOperations';
+import OperationDetails from '@/pages/admin/OperationDetails';
 
 import MultiplesManager from '@/components/admin/MultiplesManager';
 import StatisticsManager from '@/components/admin/StatisticsManager';
@@ -101,6 +102,7 @@ const AdminRouter = () => {
       
       {/* Company Data */}
       <Route path="/operations" element={<AdminOperations />} />
+      <Route path="/operations/:id" element={<OperationDetails />} />
       <Route path="/multiples" element={<MultiplesManager />} />
       <Route path="/statistics" element={<StatisticsManager />} />
       

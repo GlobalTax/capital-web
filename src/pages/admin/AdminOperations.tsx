@@ -11,9 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import { formatDate, formatCurrency } from '@/shared/utils/format';
-import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText } from 'lucide-react';
 import { OperationsBreadcrumbs } from '@/components/operations/OperationsBreadcrumbs';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
 
 interface Operation {
   id: string;
@@ -37,6 +45,7 @@ interface Operation {
 }
 
 const AdminOperations = () => {
+  const navigate = useNavigate();
   const [operations, setOperations] = useState<Operation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
@@ -228,6 +237,93 @@ const AdminOperations = () => {
     }
   };
 
+  // Quick update for inline editing
+  const handleQuickUpdate = async (id: string, field: string, value: any) => {
+    try {
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ [field]: value })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Actualizado',
+        description: 'Cambio guardado correctamente',
+      });
+      
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error updating operation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Duplicate operation
+  const handleDuplicate = async (operation: Operation) => {
+    try {
+      const { id, created_at, updated_at, ...restData } = operation;
+      
+      const newOperation = {
+        ...restData,
+        company_name: `${operation.company_name} (Copia)`,
+        valuation_amount: operation.valuation_amount || 0,
+        is_active: false,
+        is_featured: false,
+      };
+
+      const { error } = await supabase
+        .from('company_operations')
+        .insert([newOperation]);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operación duplicada',
+        description: 'La operación se ha duplicado correctamente',
+      });
+      
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error duplicating operation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo duplicar la operación',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Toggle active status
+  const handleToggleActive = async (operation: Operation) => {
+    try {
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_active: !operation.is_active })
+        .eq('id', operation.id);
+
+      if (error) throw error;
+
+      toast({
+        title: operation.is_active ? 'Operación desactivada' : 'Operación activada',
+        description: `La operación se ha ${operation.is_active ? 'desactivado' : 'activado'} correctamente`,
+      });
+      
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error toggling operation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cambiar el estado',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Get status badge classes
   const getStatusBadgeClass = (status?: string) => {
     switch (status) {
@@ -350,27 +446,51 @@ const AdminOperations = () => {
     {
       key: 'actions',
       title: 'ACCIONES',
-      width: 100,  
+      width: 120,  
       render: (operation: Operation) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setEditingOperation(operation)}
-            className="h-8 w-8 p-0 hover:bg-gray-50"
-            title="Editar"
+            onClick={() => navigate(`/admin/operations/${operation.id}`)}
+            className="h-8 w-8 p-0 hover:bg-blue-50"
+            title="Ver ficha completa"
           >
-            <Pencil className="h-3 w-3 text-gray-600" />
+            <FileText className="h-3 w-3 text-blue-600" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {/* TODO: Add preview functionality */}}
-            className="h-8 w-8 p-0 hover:bg-gray-50"
-            title="Vista previa"
-          >
-            <Eye className="h-3 w-3 text-gray-600" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-gray-100"
+              >
+                <MoreVertical className="h-4 w-4 text-gray-600" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => navigate(`/admin/operations/${operation.id}`)}>
+                <FileText className="mr-2 h-4 w-4" />
+                Ver ficha completa
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setEditingOperation(operation)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDuplicate(operation)}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => handleToggleActive(operation)}
+                className="text-amber-600"
+              >
+                <Archive className="mr-2 h-4 w-4" />
+                {operation.is_active ? 'Desactivar' : 'Activar'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
