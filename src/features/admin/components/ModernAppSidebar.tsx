@@ -51,8 +51,6 @@ const menuSections = [
   {
     title: "🎯 Leads & Workflows",
     items: [
-      { title: "Lead Scoring", url: "/admin/lead-scoring", icon: Target, badge: "URGENTE" },
-      { title: "Reglas de Scoring", url: "/admin/lead-scoring-rules", icon: BarChart3 },
       { title: "Leads de Contacto", url: "/admin/contact-leads", icon: Mail },
       { title: "Solicitudes Colaboradores", url: "/admin/collaborator-applications", icon: UserPlus },
       { title: "Marketing Automation", url: "/admin/marketing-automation", icon: Workflow },

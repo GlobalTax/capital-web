@@ -121,14 +121,7 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
     workflow: 'analyze',
     items: [
       { 
-        title: "Lead Scoring", 
-        url: "/admin/lead-scoring", 
-        icon: Target,
-        badge: "HOT",
-        description: "Calificación de leads"
-      },
-      { 
-        title: "Contactos", 
+        title: "Contactos",
         url: "/admin/contacts", 
         icon: Users,
         description: "Base de contactos"

@@ -20,10 +20,6 @@ export interface MarketingMetrics {
   totalViews: number;
   totalRevenue: number;
   
-  // Lead Scoring
-  averageLeadScore: number;
-  hotProspects: number; // score > 80
-  
   // Email Marketing
   emailOpenRate: number;
   emailClickRate: number;

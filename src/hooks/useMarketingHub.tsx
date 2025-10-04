@@ -14,8 +14,6 @@ export const useMarketingHub = () => {
     downloadCount: 0,
     topPerformingContent: [],
     contentToLeadRate: 0,
-    averageLeadScore: 0,
-    hotProspects: 0,
     emailOpenRate: 0,
     emailClickRate: 0,
     sequenceCompletionRate: 0,
@@ -90,8 +88,6 @@ export const useMarketingHub = () => {
         downloadCount: Math.round(totalLeads * 0.3), // Estimación: 30% de leads son por descarga
         topPerformingContent: topContent,
         contentToLeadRate: blogPosts?.length > 0 ? Math.round((totalLeads / blogPosts.length) * 10) / 10 : 0,
-        averageLeadScore: 0, // Ya no disponible sin lead scoring
-        hotProspects,
         emailOpenRate: 78.5, // Datos que mantendremos simulados por ahora
         emailClickRate: 12.3,
         sequenceCompletionRate: 65.4,

@@ -23,7 +23,6 @@ export const useAdminLayout = () => {
       const section = segments[1];
       const sectionTitles: Record<string, string> = {
         // LEADS & WORKFLOWS
-        'lead-scoring': 'Lead Scoring',
         'crm': 'CRM',
         'marketing-automation': 'Marketing Automation',
         'alerts': 'Alertas',

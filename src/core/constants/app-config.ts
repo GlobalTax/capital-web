@@ -20,13 +20,6 @@ export const APP_CONFIG = {
     LEAD_BEHAVIOR_EVENTS: 1000,
   },
 
-  // Lead scoring thresholds
-  LEAD_SCORING: {
-    HOT_LEAD_THRESHOLD: 80,
-    MEDIUM_LEAD_THRESHOLD: 50,
-    QUALIFIED_LEAD_THRESHOLD: 70,
-  },
-
   // Dashboard refresh intervals
   REFRESH_INTERVALS: {
     DASHBOARD_AUTO_REFRESH: 5 * 60 * 1000, // 5 minutos

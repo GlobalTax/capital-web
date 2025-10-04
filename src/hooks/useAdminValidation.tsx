@@ -32,8 +32,6 @@ export const useAdminValidation = () => {
     { name: 'Marketing Hub', path: '/admin/marketing-hub' },
     { name: 'Integrations Manager', path: '/admin/integrations' },
     { name: 'Sector Reports', path: '/admin/sector-reports' },
-    { name: 'Lead Scoring', path: '/admin/lead-scoring' },
-    { name: 'Lead Scoring Rules', path: '/admin/lead-scoring-rules' },
   ];
 
   const validateComponents = async () => {

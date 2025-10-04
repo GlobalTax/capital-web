@@ -37,14 +37,6 @@ const QuickInsights = ({ marketingMetrics, contentStats, businessStats, dateRang
       progress: marketingMetrics ? marketingMetrics.leadConversionRate : 0
     },
     {
-      title: 'Calidad de Leads',
-      type: 'warning',
-      icon: Target,
-      description: 'Score promedio por debajo del objetivo',
-      metric: marketingMetrics ? marketingMetrics.averageLeadScore.toString() : 'N/A',
-      progress: marketingMetrics ? (marketingMetrics.averageLeadScore / 100) * 100 : 0
-    },
-    {
       title: 'Rendimiento de Contenido',
       type: 'positive',
       icon: Zap,

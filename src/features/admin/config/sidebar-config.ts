@@ -157,14 +157,7 @@ export const sidebarSections: SidebarSection[] = [
     description: "Gestión de prospectos",
     items: [
       { 
-        title: "Lead Scoring", 
-        url: "/admin/lead-scoring", 
-        icon: Target,
-        badge: "URGENTE",
-        description: "Calificación de leads"
-      },
-      { 
-        title: "Contactos", 
+        title: "Contactos",
         url: "/admin/contacts", 
         icon: Users,
         description: "Base de contactos"

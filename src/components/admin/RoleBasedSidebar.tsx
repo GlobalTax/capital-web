@@ -63,20 +63,7 @@ export function RoleBasedSidebar() {
       title: "🎯 Leads & Workflows",
       items: [
         { 
-          title: "Lead Scoring", 
-          url: "/admin/lead-scoring", 
-          icon: Target, 
-          badge: "URGENTE",
-          visible: menuVisibility.leadScoring
-        },
-        { 
-          title: "Reglas de Scoring", 
-          url: "/admin/lead-scoring-rules", 
-          icon: BarChart3,
-          visible: menuVisibility.leadScoringRules
-        },
-        { 
-          title: "Leads de Contacto", 
+          title: "Leads de Contacto",
           url: "/admin/contact-leads", 
           icon: Mail,
           visible: menuVisibility.contactLeads

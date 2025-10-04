@@ -43,14 +43,6 @@ export const navigationGroups: NavigationGroup[] = [
     priority: "high",
     items: [
       {
-        title: "Lead Scoring",
-        icon: Target,
-        id: "lead-scoring",
-        description: "Priorización de leads y alertas urgentes",
-        badge: "URGENTE" as const,
-        keywords: ["leads", "scoring", "puntuación", "alertas", "urgente"]
-      },
-      {
         title: "Marketing Automation",
         icon: Workflow,
         id: "marketing-automation",

@@ -83,14 +83,6 @@ const MarketingHubKPIs = ({ metrics }: MarketingHubKPIsProps) => {
       change: '+18.7%'
     },
     {
-      title: 'Score Promedio',
-      value: metrics.averageLeadScore.toString(),
-      icon: BarChart3,
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-50',
-      change: '+5.9%'
-    },
-    {
       title: 'Email Open Rate',
       value: `${metrics.emailOpenRate}%`,
       icon: Mail,

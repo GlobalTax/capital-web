@@ -66,22 +66,7 @@ const MarketingHubOverviewTab = ({ marketingMetrics, roiAnalytics }: MarketingHu
       </div>
 
       {/* Métricas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>🔥 Leads Calientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-600 mb-2">
-              {marketingMetrics?.hotProspects}
-            </div>
-            <p className="text-gray-600">Score {'>'}80 puntos</p>
-            <div className="mt-2 text-sm text-green-600">
-              +{Math.floor(Math.random() * 10 + 5)} esta semana
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>📧 Email Performance</CardTitle>
