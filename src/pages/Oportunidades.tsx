@@ -59,7 +59,7 @@ const Oportunidades = () => {
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <OperationsList 
-              displayLocation="oportunidades"
+              displayLocation="operaciones"
               limit={12}
             />
           </div>

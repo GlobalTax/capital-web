@@ -76,6 +76,29 @@ const OperationsList: React.FC<OperationsListProps> = ({
         return;
       }
 
+      // Fallback: if no results with custom location, try 'operaciones'
+      if (data && (data.count || 0) === 0 && displayLocation && displayLocation !== 'operaciones') {
+        console.info(`ℹ️ No results with location '${displayLocation}', falling back to 'operaciones'`);
+        
+        const fallbackResponse = await supabase.functions.invoke('list-operations', {
+          body: {
+            searchTerm: debouncedSearchTerm || undefined,
+            sector: selectedSector || undefined,
+            sortBy,
+            limit,
+            offset,
+            displayLocation: 'operaciones'
+          }
+        });
+        
+        if (fallbackResponse.data) {
+          setOperations(fallbackResponse.data.data || []);
+          setTotalCount(fallbackResponse.data.count || 0);
+          setSectors(fallbackResponse.data.sectors || []);
+          return;
+        }
+      }
+
       setOperations(data.data || []);
       setTotalCount(data.count || 0);
       setSectors(data.sectors || []);
