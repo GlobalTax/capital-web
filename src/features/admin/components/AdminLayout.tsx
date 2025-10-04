@@ -98,8 +98,8 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             </header>
 
             {/* Contenido principal */}
-            <main className="flex-1 p-6 overflow-auto bg-background">
-              <div className="max-w-7xl mx-auto">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto bg-background">
+              <div className="max-w-[1200px] mx-auto">
                 {children}
               </div>
             </main>

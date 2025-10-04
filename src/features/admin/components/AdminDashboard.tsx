@@ -87,19 +87,19 @@ export const AdminDashboard = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
           Visión general de la plataforma
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title}>
+            <Card key={stat.title} className="w-full shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
@@ -120,19 +120,21 @@ export const AdminDashboard = () => {
       </div>
 
       {/* Sección superior - 2 columnas */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentContacts />
         <RecentBlogPosts />
       </div>
 
       {/* Sección media - 2 columnas */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentAcquisitions />
         <RecentCollaborations />
       </div>
 
       {/* Timeline de actividad - ancho completo */}
-      <ActivityTimeline />
+      <div className="mt-6">
+        <ActivityTimeline />
+      </div>
     </div>
   );
 };
