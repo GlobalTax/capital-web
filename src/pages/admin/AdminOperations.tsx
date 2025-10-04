@@ -10,12 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
+import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatDate, formatCurrency } from '@/shared/utils/format';
 import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText } from 'lucide-react';
 import { OperationsBreadcrumbs } from '@/components/operations/OperationsBreadcrumbs';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
+import { BulkActionsToolbar } from '@/components/operations/BulkActionsToolbar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { OperationsTableMobile } from '@/components/operations/OperationsTableMobile';
+import OperationDetailsModalEnhanced from '@/components/operations/OperationDetailsModalEnhanced';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +39,7 @@ interface Operation {
   description: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  valuation_amount?: number;
+  valuation_amount: number;
   valuation_currency: string;
   year: number;
   is_active: boolean;
@@ -44,6 +49,8 @@ interface Operation {
   short_description?: string;
   deal_type?: string;
   status?: string;
+  logo_url?: string;
+  highlights?: string[];
   created_at?: string;
   updated_at?: string;
 }
@@ -61,6 +68,8 @@ const AdminOperations = () => {
     status: 'all',
     dealType: 'all',
   });
+  const [selectedOperations, setSelectedOperations] = useState<Set<string>>(new Set());
+  const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -423,8 +432,196 @@ const AdminOperations = () => {
     }
   };
 
+  // Multi-select handlers
+  const handleSelectAll = () => {
+    if (selectedOperations.size === tabFilteredOperations.length) {
+      setSelectedOperations(new Set());
+    } else {
+      setSelectedOperations(new Set(tabFilteredOperations.map(op => op.id)));
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    const newSet = new Set(selectedOperations);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedOperations(newSet);
+  };
+
+  // Bulk actions
+  const handleBulkActivate = async () => {
+    try {
+      const ids = Array.from(selectedOperations);
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_active: true })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operaciones activadas',
+        description: `Se activaron ${ids.length} operaciones correctamente`,
+      });
+
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error activating operations:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron activar las operaciones',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkDeactivate = async () => {
+    try {
+      const ids = Array.from(selectedOperations);
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_active: false })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operaciones desactivadas',
+        description: `Se desactivaron ${ids.length} operaciones correctamente`,
+      });
+
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error deactivating operations:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron desactivar las operaciones',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkFeature = async () => {
+    try {
+      const ids = Array.from(selectedOperations);
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_featured: true })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operaciones destacadas',
+        description: `Se marcaron ${ids.length} operaciones como destacadas`,
+      });
+
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error featuring operations:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron destacar las operaciones',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkUnfeature = async () => {
+    try {
+      const ids = Array.from(selectedOperations);
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_featured: false })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operaciones desmarcadas',
+        description: `Se quitó el destacado de ${ids.length} operaciones`,
+      });
+
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error unfeaturing operations:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron desmarcar las operaciones',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkExport = () => {
+    const ids = Array.from(selectedOperations);
+    const selected = operations.filter(op => ids.includes(op.id));
+    
+    // Create CSV content
+    const headers = ['Empresa', 'Sector', 'Año', 'Valoración', 'Facturación', 'EBITDA', 'Estado', 'Tipo'];
+    const rows = selected.map(op => [
+      op.company_name,
+      op.sector,
+      op.year,
+      op.valuation_amount || '',
+      op.revenue_amount || '',
+      op.ebitda_amount || '',
+      getStatusText(op.status),
+      getDealTypeText(op.deal_type)
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `operaciones_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+
+    toast({
+      title: 'Exportación completada',
+      description: `Se exportaron ${ids.length} operaciones`,
+    });
+  };
+
+  const handleBulkChangeDisplayLocations = () => {
+    toast({
+      title: 'En desarrollo',
+      description: 'Esta funcionalidad estará disponible próximamente',
+    });
+  };
+
   // Table columns configuration
   const tableColumns = [
+    {
+      key: 'select',
+      title: (
+        <Checkbox
+          checked={selectedOperations.size === tabFilteredOperations.length && tabFilteredOperations.length > 0}
+          onCheckedChange={handleSelectAll}
+          aria-label="Seleccionar todas"
+        />
+      ),
+      width: 40,
+      render: (operation: Operation) => (
+        <Checkbox
+          checked={selectedOperations.has(operation.id)}
+          onCheckedChange={() => handleSelectOne(operation.id)}
+          aria-label={`Seleccionar ${operation.company_name}`}
+        />
+      ),
+    },
     {
       key: 'opportunity_number',
       title: '# OPORTUNIDAD',
@@ -523,7 +720,7 @@ const AdminOperations = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/admin/operations/${operation.id}`)}
+            onClick={() => setViewingOperation(operation)}
             className="h-8 w-8 p-0 hover:bg-blue-50"
             title="Ver ficha completa"
           >
@@ -540,7 +737,7 @@ const AdminOperations = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => navigate(`/admin/operations/${operation.id}`)}>
+              <DropdownMenuItem onClick={() => setViewingOperation(operation)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Ver ficha completa
               </DropdownMenuItem>
@@ -606,8 +803,9 @@ const AdminOperations = () => {
             onClick={() => setEditingOperation({
               company_name: '',
               sector: '',
-              description: '',
-              valuation_currency: '€',
+            description: '',
+            valuation_amount: 0,
+            valuation_currency: '€',
               year: new Date().getFullYear(),
               is_active: true,
               is_featured: false,
@@ -668,46 +866,147 @@ const AdminOperations = () => {
         availableSectors={availableSectors}
       />
 
-      {/* Operations Table */}
-      <Card className="bg-white border border-gray-100">
-        <CardHeader className="border-b border-gray-100 bg-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold text-gray-900">Operaciones Registradas</CardTitle>
+      {/* Bulk Actions Toolbar */}
+      {selectedOperations.size > 0 && (
+        <BulkActionsToolbar
+          selectedCount={selectedOperations.size}
+          onClearSelection={() => setSelectedOperations(new Set())}
+          onActivate={handleBulkActivate}
+          onDeactivate={handleBulkDeactivate}
+          onFeature={handleBulkFeature}
+          onUnfeature={handleBulkUnfeature}
+          onExport={handleBulkExport}
+          onChangeDisplayLocations={handleBulkChangeDisplayLocations}
+        />
+      )}
+
+      {/* Operations Table - Desktop */}
+      <div className="hidden md:block">
+        <Card className="bg-white border border-gray-100">
+          <CardHeader className="border-b border-gray-100 bg-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-gray-900">Operaciones Registradas</CardTitle>
+              </div>
+              <div className="text-xs text-gray-500">
+                Mostrando {tabFilteredOperations.length} de {operations.length} operaciones
+              </div>
             </div>
-            <div className="text-xs text-gray-500">
-              Mostrando {tabFilteredOperations.length} de {operations.length} operaciones
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {operations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Building2 className="h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay operaciones registradas</h3>
-              <p className="text-sm text-gray-500 max-w-md">
-                Comienza añadiendo tu primera operación para construir el portafolio de transacciones.
+          </CardHeader>
+          <CardContent className="p-0">
+            {operations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Building2 className="h-16 w-16 text-gray-300 mb-4 animate-pulse" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay operaciones registradas</h3>
+                <p className="text-sm text-gray-500 max-w-md">
+                  Comienza añadiendo tu primera operación para construir el portafolio de transacciones.
+                </p>
+                <Button
+                  className="mt-4"
+                  onClick={() => setEditingOperation({
+                  company_name: '',
+                  sector: '',
+                  description: '',
+                  valuation_amount: 0,
+                  valuation_currency: '€',
+                    year: new Date().getFullYear(),
+                    is_active: true,
+                    is_featured: false,
+                    display_locations: ['home', 'operaciones'],
+                    deal_type: 'sale',
+                    status: 'available'
+                  } as Operation)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear Primera Operación
+                </Button>
+              </div>
+            ) : tabFilteredOperations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Search className="h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No se encontraron operaciones</h3>
+                <p className="text-sm text-gray-500 max-w-md">
+                  Intenta ajustar los filtros de búsqueda para encontrar las operaciones que necesitas.
+                </p>
+              </div>
+            ) : (
+              <VirtualizedTable
+                data={tabFilteredOperations}
+                columns={tableColumns}
+                itemHeight={80}
+                height={Math.min(600, tabFilteredOperations.length * 80 + 50)}
+                className="border-none [&_thead]:bg-gray-50 [&_thead_th]:text-[10px] [&_thead_th]:font-semibold [&_thead_th]:text-gray-600 [&_thead_th]:uppercase [&_thead_th]:tracking-wider [&_tbody_tr]:hover:bg-gray-50 [&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100"
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Operations Table - Mobile */}
+      <div className="md:hidden">
+        {operations.length === 0 ? (
+          <Card className="p-8">
+            <div className="flex flex-col items-center text-center">
+              <Building2 className="h-16 w-16 text-gray-300 mb-4 animate-pulse" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay operaciones</h3>
+              <p className="text-sm text-gray-500 max-w-md mb-4">
+                Comienza añadiendo tu primera operación.
               </p>
+              <Button
+                onClick={() => setEditingOperation({
+                company_name: '',
+                sector: '',
+                description: '',
+                valuation_amount: 0,
+                valuation_currency: '€',
+                  year: new Date().getFullYear(),
+                  is_active: true,
+                  is_featured: false,
+                  display_locations: ['home', 'operaciones'],
+                  deal_type: 'sale',
+                  status: 'available'
+                } as Operation)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Operación
+              </Button>
             </div>
-          ) : tabFilteredOperations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
+          </Card>
+        ) : tabFilteredOperations.length === 0 ? (
+          <Card className="p-8">
+            <div className="flex flex-col items-center text-center">
               <Search className="h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">No se encontraron operaciones</h3>
-              <p className="text-sm text-gray-500 max-w-md">
-                Intenta ajustar los filtros de búsqueda para encontrar las operaciones que necesitas.
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Sin resultados</h3>
+              <p className="text-sm text-gray-500">
+                Ajusta los filtros para ver operaciones.
               </p>
             </div>
-          ) : (
-            <VirtualizedTable
-              data={tabFilteredOperations}
-              columns={tableColumns}
-              itemHeight={80}
-              height={Math.min(600, tabFilteredOperations.length * 80 + 50)}
-              className="border-none [&_thead]:bg-gray-50 [&_thead_th]:text-[10px] [&_thead_th]:font-semibold [&_thead_th]:text-gray-600 [&_thead_th]:uppercase [&_thead_th]:tracking-wider [&_tbody_tr]:hover:bg-gray-50 [&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100"
-            />
-          )}
-        </CardContent>
-      </Card>
+          </Card>
+        ) : (
+          <OperationsTableMobile
+            operations={tabFilteredOperations}
+            selectedOperations={selectedOperations}
+            onSelectOne={handleSelectOne}
+            onViewDetails={setViewingOperation}
+            onEdit={setEditingOperation}
+            onDuplicate={handleDuplicate}
+            onToggleActive={handleToggleActive}
+          />
+        )}
+      </div>
+
+      {/* View Details Modal */}
+      {viewingOperation && (
+        <OperationDetailsModalEnhanced
+          operation={viewingOperation}
+          isOpen={!!viewingOperation}
+          onClose={() => setViewingOperation(null)}
+          onEdit={() => {
+            setEditingOperation(viewingOperation);
+            setViewingOperation(null);
+          }}
+        />
+      )}
 
       {/* Edit Modal */}
       {editingOperation && (

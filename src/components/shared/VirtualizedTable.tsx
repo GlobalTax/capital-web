@@ -5,9 +5,9 @@ import { memo, useMemo } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { cn } from '@/lib/utils';
 
-interface Column<T> {
+export interface Column<T> {
   key: string;
-  title: string;
+  title: string | React.ReactNode;
   render: (item: T, index: number) => React.ReactNode;
   width?: number;
 }
