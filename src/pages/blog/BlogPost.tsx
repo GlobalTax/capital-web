@@ -5,7 +5,6 @@ import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';
-import BlogBreadcrumbs from '@/components/blog/BlogBreadcrumbs';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogNavigation } from '@/hooks/useBlogNavigation';
 import { useSimpleBlogAnalytics } from '@/hooks/useSimpleBlogAnalytics';
@@ -102,14 +101,6 @@ const BlogPost = () => {
   return (
     <UnifiedLayout variant="home">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-        {/* Breadcrumbs */}
-        <BlogBreadcrumbs 
-          currentPage={{
-            title: post.title,
-            category: post.category
-          }} 
-        />
-        
         <BlogPostContent post={post} />
         
         {/* Navegación entre posts */}

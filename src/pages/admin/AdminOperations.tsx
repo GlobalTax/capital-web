@@ -13,7 +13,6 @@ import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatDate, formatCurrency } from '@/shared/utils/format';
 import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText } from 'lucide-react';
-import { OperationsBreadcrumbs } from '@/components/operations/OperationsBreadcrumbs';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
@@ -774,9 +773,6 @@ const AdminOperations = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumbs */}
-      <OperationsBreadcrumbs />
-
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

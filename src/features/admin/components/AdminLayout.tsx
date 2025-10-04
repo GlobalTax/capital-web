@@ -6,7 +6,6 @@ import { useAdminDebug } from '@/hooks/useAdminDebug';
 import { AdminSidebar } from '@/components/admin/sidebar/AdminSidebar';
 import { EmergencyNavigation } from '@/components/admin/EmergencyNavigation';
 import AdminHeader from '@/components/admin/AdminHeader';
-import AdminBreadcrumbs from '@/components/admin/layout/AdminBreadcrumbs';
 import { ErrorBoundaryProvider } from '@/components/admin/ErrorBoundaryProvider';
 import { resetWebSocketState } from '@/utils/resetWebSocketState';
 
@@ -16,7 +15,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
-  const { breadcrumbs } = useAdminLayout();
+  useAdminLayout();
   const { debugInfo } = useAdminDebug();
   const [showEmergencyNav, setShowEmergencyNav] = useState(false);
 
@@ -97,11 +96,6 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
                 <AdminHeader onLogout={onLogout} />
               </div>
             </header>
-
-            {/* Breadcrumbs */}
-            <div className="px-6 py-3 bg-card border-b border-border/50">
-              <AdminBreadcrumbs items={breadcrumbs} />
-            </div>
 
             {/* Contenido principal */}
             <main className="flex-1 p-6 overflow-auto bg-background">
