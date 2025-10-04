@@ -72,15 +72,6 @@ export const clearAllCaches = async () => {
       console.log('✅ React Query cache cleared');
     }
     
-    // 6. Unregister service worker to force fresh registration
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        await registration.unregister();
-        console.log('✅ Service worker unregistered');
-      }
-    }
-    
     console.log('✅ All caches cleared successfully');
     
     // Force complete page reload

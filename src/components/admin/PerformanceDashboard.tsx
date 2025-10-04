@@ -9,7 +9,6 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 import { performanceOptimizer } from '@/utils/performanceOptimizer';
-import { serviceWorkerManager } from '@/utils/serviceWorker';
 import { backgroundSync } from '@/utils/backgroundSync';
 import { 
   Activity, 
@@ -63,9 +62,6 @@ export const PerformanceDashboard = () => {
       // Generar reporte de optimización
       const optimizationReport = performanceOptimizer.generateReport();
       
-      // Obtener tamaño de cache
-      const cacheData = await serviceWorkerManager.getCacheSize();
-      
       // Obtener tareas pendientes
       const pendingTasksCount = await backgroundSync.getTaskCount();
       
@@ -80,7 +76,7 @@ export const PerformanceDashboard = () => {
         pendingTasks: pendingTasksCount
       });
       
-      setCacheSize(cacheData);
+      setCacheSize({ total: 0, breakdown: {} });
       setReport(optimizationReport);
       
     } catch (error) {
@@ -91,7 +87,11 @@ export const PerformanceDashboard = () => {
   };
 
   const clearCache = async () => {
-    await serviceWorkerManager.clearCache();
+    // Cache management handled by browser
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
     await loadPerformanceData();
   };
 

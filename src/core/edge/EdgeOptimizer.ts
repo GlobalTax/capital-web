@@ -193,42 +193,6 @@ export class EdgeOptimizer {
     return optimizedURL;
   }
 
-  // ============= SERVICE WORKER MANAGEMENT =============
-  async registerServiceWorker(swPath: string = '/sw.js'): Promise<ServiceWorkerRegistration | null> {
-    if (!('serviceWorker' in navigator)) {
-      logger.warn('Service Worker not supported', undefined, { 
-        context: 'performance', 
-        component: 'EdgeOptimizer' 
-      });
-      return null;
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.register(swPath);
-      
-      logger.info('Service Worker registered', { scope: registration.scope }, { 
-        context: 'performance', 
-        component: 'EdgeOptimizer' 
-      });
-
-      // Escuchar actualizaciones
-      registration.addEventListener('updatefound', () => {
-        logger.info('Service Worker update found', undefined, { 
-          context: 'performance', 
-          component: 'EdgeOptimizer' 
-        });
-      });
-
-      return registration;
-    } catch (error) {
-      logger.error('Service Worker registration failed', error as Error, { 
-        context: 'performance', 
-        component: 'EdgeOptimizer' 
-      });
-      return null;
-    }
-  }
-
   // ============= NETWORK OPTIMIZATION =============
   async optimizeRequest(url: string, options: RequestInit = {}): Promise<Response> {
     // Verificar cache primero

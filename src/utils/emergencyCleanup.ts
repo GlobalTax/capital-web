@@ -3,7 +3,6 @@
 
 interface CleanupOptions {
   preserveAuth?: boolean;
-  clearServiceWorker?: boolean;
   clearAllCaches?: boolean;
   forceReload?: boolean;
 }
@@ -34,12 +33,7 @@ class EmergencyCleanup {
     try {
       console.log(`🧹 Starting deep cleanup (${cleanupId})...`);
 
-      // 1. Service Worker cleanup
-      if (options.clearServiceWorker !== false) {
-        await this.cleanupServiceWorkers();
-      }
-
-      // 2. Cache cleanup
+      // 1. Cache cleanup
       if (options.clearAllCaches !== false) {
         await this.cleanupBrowserCaches();
       }
@@ -108,43 +102,6 @@ class EmergencyCleanup {
     console.log(`🗑️ Cleared ${problematicKeys.length} problematic localStorage keys`);
   }
 
-  /**
-   * Desactivar temporalmente service workers
-   */
-  async disableServiceWorkers(): Promise<void> {
-    if (!('serviceWorker' in navigator)) return;
-
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      console.log(`🔧 Found ${registrations.length} service workers to unregister`);
-
-      for (const registration of registrations) {
-        await registration.unregister();
-        console.log(`✅ Unregistered SW: ${registration.scope}`);
-      }
-
-      // Marcar como desactivados
-      sessionStorage.setItem('service-workers-disabled', 'true');
-      
-    } catch (error) {
-      console.error('❌ Failed to disable service workers:', error);
-    }
-  }
-
-  private async cleanupServiceWorkers(): Promise<void> {
-    if (!('serviceWorker' in navigator)) return;
-
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        await registration.unregister();
-      }
-      console.log(`🔧 Unregistered ${registrations.length} service workers`);
-    } catch (error) {
-      console.error('Failed to cleanup service workers:', error);
-    }
-  }
-
   private async cleanupBrowserCaches(): Promise<void> {
     if (!('caches' in window)) return;
 
@@ -198,13 +155,9 @@ export const performDeepCleanup = (options?: CleanupOptions) =>
 export const quickCleanup = () => 
   emergencyCleanup.quickCleanup();
 
-export const disableServiceWorkers = () => 
-  emergencyCleanup.disableServiceWorkers();
-
 // Expose globally in development for debugging
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   (window as any).emergencyCleanup = emergencyCleanup;
   (window as any).performDeepCleanup = performDeepCleanup;
   (window as any).quickCleanup = quickCleanup;
-  (window as any).disableServiceWorkers = disableServiceWorkers;
 }
