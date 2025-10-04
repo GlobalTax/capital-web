@@ -7,6 +7,79 @@ import { useUserBehaviorTracking } from './useUserBehaviorTracking';
 import { useRoutePreloader } from './useRoutePreloader';
 import { resourceHints } from '@/utils/resourceHints';
 
+// Whitelist de rutas válidas extraída de AppRoutes.tsx
+const VALID_ROUTES = [
+  // Core routes
+  '/',
+  '/auth',
+  '/admin/login',
+  '/admin',
+  
+  // Business routes
+  '/venta-empresas',
+  '/compra-empresas',
+  '/oportunidades',
+  '/contacto',
+  '/programa-colaboradores',
+  '/casos-exito',
+  '/de-looper-a-capittal',
+  '/equipo',
+  
+  // Calculator routes (landing pages)
+  '/lp/calculadora',
+  '/lp/calculadora-fiscal',
+  '/lp/venta-empresas',
+  '/lp/suiteloop',
+  '/calculadora-standalone',
+  '/seguridad/calculadora',
+  
+  // Service routes
+  '/servicios/valoraciones',
+  '/servicios/venta-empresas',
+  '/servicios/due-diligence',
+  '/servicios/asesoramiento-legal',
+  '/servicios/asesoramiento-legal/tecnico',
+  '/servicios/reestructuraciones',
+  '/servicios/planificacion-fiscal',
+  
+  // Sector routes
+  '/sectores/tecnologia',
+  '/sectores/healthcare',
+  '/sectores/financial-services',
+  '/sectores/industrial',
+  '/sectores/retail-consumer',
+  '/sectores/energia',
+  '/sectores/inmobiliario',
+  
+  // Resource routes
+  '/recursos/blog',
+  '/recursos/case-studies',
+  '/recursos/newsletter',
+  '/recursos/webinars',
+  
+  // Legal routes
+  '/por-que-elegirnos',
+  '/por-que-elegirnos/experiencia',
+  '/por-que-elegirnos/metodologia',
+  '/por-que-elegirnos/resultados',
+  '/politica-privacidad',
+  '/terminos-uso',
+  '/cookies'
+] as const;
+
+// Helper para validar si una ruta es válida
+const isValidRoute = (route: string): boolean => {
+  // Validar rutas exactas
+  if (VALID_ROUTES.includes(route as any)) return true;
+  
+  // Validar rutas dinámicas
+  if (route.startsWith('/admin/')) return true;
+  if (route.startsWith('/landing/')) return true;
+  if (route.startsWith('/blog/')) return true;
+  
+  return false;
+};
+
 interface NavigationPrediction {
   route: string;
   confidence: number;
@@ -66,6 +139,7 @@ export const usePredictiveNavigation = (config: PredictiveConfig = {}) => {
     
     return consolidated
       .filter(p => p.confidence >= confidenceThreshold)
+      .filter(p => isValidRoute(p.route))
       .slice(0, maxPredictions);
   }, [enabled, confidenceThreshold, maxPredictions, location.pathname, getBehavior, getMetrics]);
 
@@ -172,19 +246,41 @@ function predictByFrequency(behavior: any, currentRoute: string): NavigationPred
 
 // Predicción basada en tiempo promedio en página
 function predictByTime(behavior: any, currentRoute: string, metrics: any): NavigationPrediction[] {
-  const timeSpent = behavior.timeSpentOnRoute;
   const avgTime = metrics.averageTimeOnPage;
-  
-  // Si el usuario ha pasado más tiempo del promedio, es probable que navegue
   const currentTime = Date.now() - (behavior.routeStartTime || Date.now());
   
-  if (currentTime > avgTime * 1.2) {
-    // Buscar rutas frecuentes después de tiempo prolongado
-    return [{
-      route: '/dashboard',
-      confidence: 0.7,
-      reason: 'time-based' as const
-    }];
+  // Si el usuario ha pasado más tiempo del promedio, predecir rutas relevantes
+  if (currentTime > avgTime * 1.5) {
+    const predictions: NavigationPrediction[] = [];
+    
+    // Desde landing pages → servicios
+    if (currentRoute.startsWith('/lp/')) {
+      predictions.push({
+        route: '/servicios/valoraciones',
+        confidence: 0.7,
+        reason: 'time-based' as const
+      });
+    }
+    
+    // Desde servicios → contacto
+    if (currentRoute.startsWith('/servicios/')) {
+      predictions.push({
+        route: '/contacto',
+        confidence: 0.65,
+        reason: 'time-based' as const
+      });
+    }
+    
+    // Desde páginas informativas → calculadora
+    if (currentRoute === '/venta-empresas' || currentRoute === '/compra-empresas') {
+      predictions.push({
+        route: '/lp/calculadora',
+        confidence: 0.7,
+        reason: 'time-based' as const
+      });
+    }
+    
+    return predictions;
   }
 
   return [];
@@ -194,13 +290,38 @@ function predictByTime(behavior: any, currentRoute: string, metrics: any): Navig
 function predictByScrollDepth(behavior: any, currentRoute: string): NavigationPrediction[] {
   const scrollDepth = behavior.scrollDepth[currentRoute] || 0;
   
-  // Si el usuario ha scrolleado mucho, puede estar buscando más información
+  // Si el usuario ha scrolleado mucho, puede querer más información
   if (scrollDepth > 80) {
-    return [{
-      route: '/search',
-      confidence: 0.6,
-      reason: 'scroll-depth' as const
-    }];
+    const predictions: NavigationPrediction[] = [];
+    
+    // Desde landing pages → más info
+    if (currentRoute.startsWith('/lp/')) {
+      predictions.push({
+        route: '/venta-empresas',
+        confidence: 0.6,
+        reason: 'scroll-depth' as const
+      });
+    }
+    
+    // Desde páginas de sector → servicios relacionados
+    if (currentRoute.startsWith('/sectores/')) {
+      predictions.push({
+        route: '/servicios/valoraciones',
+        confidence: 0.65,
+        reason: 'scroll-depth' as const
+      });
+    }
+    
+    // Desde blog → más recursos
+    if (currentRoute.startsWith('/recursos/blog') || currentRoute.startsWith('/blog/')) {
+      predictions.push({
+        route: '/recursos/case-studies',
+        confidence: 0.6,
+        reason: 'scroll-depth' as const
+      });
+    }
+    
+    return predictions;
   }
 
   return [];
