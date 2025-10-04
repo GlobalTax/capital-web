@@ -160,8 +160,8 @@ export const ContactsHealthDashboard = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-20 h-2 bg-gray-200 rounded-full">
                     <div 
-                      className="h-2 bg-blue-500 rounded-full" 
-                      style={{ width: `${stats.total > 0 ? (stats.new / stats.total) * 100 : 0}%` }}
+                      className="progress-bar-fill bg-blue-500" 
+                      style={{ '--progress': `${stats.total > 0 ? (stats.new / stats.total) * 100 : 0}%` } as React.CSSProperties}
                     ></div>
                   </div>
                   <span className="text-sm font-medium text-admin-text-primary w-8">
@@ -175,8 +175,8 @@ export const ContactsHealthDashboard = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-20 h-2 bg-gray-200 rounded-full">
                     <div 
-                      className="h-2 bg-yellow-500 rounded-full" 
-                      style={{ width: `${stats.total > 0 ? (stats.contacted / stats.total) * 100 : 0}%` }}
+                      className="progress-bar-fill bg-yellow-500" 
+                      style={{ '--progress': `${stats.total > 0 ? (stats.contacted / stats.total) * 100 : 0}%` } as React.CSSProperties}
                     ></div>
                   </div>
                   <span className="text-sm font-medium text-admin-text-primary w-8">
@@ -190,8 +190,8 @@ export const ContactsHealthDashboard = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-20 h-2 bg-gray-200 rounded-full">
                     <div 
-                      className="h-2 bg-green-500 rounded-full" 
-                      style={{ width: `${stats.total > 0 ? (stats.qualified / stats.total) * 100 : 0}%` }}
+                      className="progress-bar-fill bg-green-500" 
+                      style={{ '--progress': `${stats.total > 0 ? (stats.qualified / stats.total) * 100 : 0}%` } as React.CSSProperties}
                     ></div>
                   </div>
                   <span className="text-sm font-medium text-admin-text-primary w-8">
@@ -232,8 +232,8 @@ export const ContactsHealthDashboard = () => {
                     <div className="flex items-center gap-2">
                       <div className="w-20 h-2 bg-gray-200 rounded-full">
                         <div 
-                          className="h-2 bg-indigo-500 rounded-full" 
-                          style={{ width: `${percentage}%` }}
+                          className="progress-bar-fill bg-indigo-500" 
+                          style={{ '--progress': `${percentage}%` } as React.CSSProperties}
                         ></div>
                       </div>
                       <span className="text-sm font-medium text-admin-text-primary w-8">

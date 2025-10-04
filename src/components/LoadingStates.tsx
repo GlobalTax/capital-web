@@ -135,7 +135,7 @@ export const PageLoadingSkeleton = () => (
       <Skeleton className="h-12 w-3/4 mx-auto" />
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="admin-card animate-scale-in" style={{ animationDelay: `${i * 100}ms` }}>
+          <div key={i} className="admin-card animate-scale-in" style={{ '--animation-delay': `${i * 100}ms` } as React.CSSProperties}>
             <div className="p-6">
               <Skeleton className="h-6 w-3/4 mb-4" />
               <div className="space-y-3">

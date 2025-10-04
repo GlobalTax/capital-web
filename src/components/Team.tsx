@@ -2,6 +2,7 @@
 import React, { useCallback, useState } from 'react';
 import { Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 interface TeamMember {
   id: string;
@@ -34,11 +35,11 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
         )}
       </div>
       
-      <h3 className="text-lg font-bold text-black mb-2">
+      <h3 className="text-lg font-bold text-foreground mb-2">
         {member.name}
       </h3>
       {member.position && (
-        <p className="text-gray-600 text-sm">
+        <p className="text-muted-foreground text-sm">
           {member.position}
         </p>
       )}
@@ -81,34 +82,34 @@ const Team = () => {
       {/* Header */}
       <section className="mb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium mb-6">
             Nuestro Equipo
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
             Expertos en M&A
           </h1>
           
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-16">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-16">
             Profesionales con trayectorias internacionales y resultados probados en las mejores firmas del mundo.
           </p>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-black mb-2">25+</div>
-              <div className="text-sm text-gray-600 font-medium">Años Experiencia</div>
+              <div className="text-3xl font-bold text-foreground mb-2">25+</div>
+              <div className="text-sm text-muted-foreground font-medium">Años Experiencia</div>
             </div>
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-black mb-2">100+</div>
-              <div className="text-sm text-gray-600 font-medium">Transacciones</div>
+              <div className="text-3xl font-bold text-foreground mb-2">100+</div>
+              <div className="text-sm text-muted-foreground font-medium">Transacciones</div>
             </div>
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-black mb-2">€900M</div>
-              <div className="text-sm text-gray-600 font-medium">Valor Gestionado</div>
+              <div className="text-3xl font-bold text-foreground mb-2">€900M</div>
+              <div className="text-sm text-muted-foreground font-medium">Valor Gestionado</div>
             </div>
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-black mb-2">98,7%</div>
-              <div className="text-sm text-gray-600 font-medium">Tasa Éxito</div>
+              <div className="text-3xl font-bold text-foreground mb-2">98,7%</div>
+              <div className="text-sm text-muted-foreground font-medium">Tasa Éxito</div>
             </div>
           </div>
         </div>
@@ -129,13 +130,10 @@ const Team = () => {
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-black mb-4">Error al cargar el equipo</p>
-              <button 
-                onClick={fetchTeamMembers}
-                className="bg-black text-white px-6 py-2 hover:bg-gray-800"
-              >
+              <p className="text-foreground mb-4">Error al cargar el equipo</p>
+              <Button onClick={fetchTeamMembers}>
                 Reintentar
-              </button>
+              </Button>
             </div>
           ) : teamMembers && teamMembers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -145,7 +143,7 @@ const Team = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-black">No hay miembros del equipo disponibles.</p>
+              <p className="text-foreground">No hay miembros del equipo disponibles.</p>
             </div>
           )}
         </div>
