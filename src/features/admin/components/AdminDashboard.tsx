@@ -19,7 +19,6 @@ import { useAdminAuth } from '../hooks/useAdminAuth';
 
 // Lazy loading para componentes pesados
 const MarketingOverview = React.lazy(() => import('@/features/dashboard/components/MarketingOverview').then(module => ({ default: module.MarketingOverview })));
-const PerformanceDashboard = React.lazy(() => import('@/components/admin/dashboard/PerformanceDashboard'));
 const PredictiveAnalytics = React.lazy(() => import('@/components/admin/analytics/PredictiveAnalytics').then(module => ({ default: module.PredictiveAnalytics })));
 const AIInsightsPanel = React.lazy(() => import('@/components/admin/dashboard/AIInsightsPanel').then(module => ({ default: module.AIInsightsPanel })));
 const SecurityLeadsPanel = React.lazy(() => import('@/components/admin/SecurityLeadsPanel'));
@@ -183,14 +182,10 @@ export const AdminDashboard = memo(() => {
 
       {/* Tabs principales */}
       <Tabs defaultValue="overview" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Overview
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Performance
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
@@ -209,12 +204,6 @@ export const AdminDashboard = memo(() => {
         <TabsContent value="overview" className="space-y-4">
           <Suspense fallback={<LoadingSkeleton />}>
             {metrics && <MarketingOverview metrics={metrics} />}
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-4">
-          <Suspense fallback={<LoadingSkeleton />}>
-            <PerformanceDashboard />
           </Suspense>
         </TabsContent>
 

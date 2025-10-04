@@ -51,13 +51,6 @@ export const sidebarSections: SidebarSection[] = [
         icon: LayoutDashboard,
         description: "Dashboard principal"
       },
-      { 
-        title: "Performance", 
-        url: "/admin/content-performance", 
-        icon: BarChart3,
-        badge: "NEW",
-        description: "Métricas de contenido"
-      },
     ]
   },
   {
@@ -73,14 +66,7 @@ export const sidebarSections: SidebarSection[] = [
         visible: false
       },
       { 
-        title: "Videos", 
-        url: "/admin/video-manager", 
-        icon: Play,
-        badge: "NEW",
-        description: "Gestión de videos"
-      },
-      { 
-        title: "Lead Magnets", 
+        title: "Lead Magnets",
         url: "/admin/lead-magnets", 
         icon: Zap,
         description: "Recursos descargables",

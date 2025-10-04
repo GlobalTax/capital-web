@@ -12,13 +12,6 @@ import {
   LazyBlogPostsManagerV2
 } from '@/components/admin/lazy';
 
-// Lazy load del Performance Dashboard
-const LazyPerformanceDashboard = React.lazy(() => 
-  import('@/components/admin/PerformanceDashboard').then(module => ({
-    default: module.PerformanceDashboard
-  }))
-);
-
 // Loading fallback component
 const AdminLoadingFallback = () => (
   <div className="flex items-center justify-center min-h-96">
@@ -38,7 +31,6 @@ export const LazyAdminRouter = () => {
         <Route path="/blog-manager" element={<LazyModernBlogManager />} />
         <Route path="/blog-posts" element={<LazyBlogPostsManager />} />
         <Route path="/blog-posts-v2" element={<LazyBlogPostsManagerV2 />} />
-        <Route path="/performance" element={<LazyPerformanceDashboard />} />
       </Routes>
     </Suspense>
   );

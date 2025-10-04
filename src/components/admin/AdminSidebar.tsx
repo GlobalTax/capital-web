@@ -77,11 +77,6 @@ const adminNavItems = [
     href: '/admin/carousel-logos'
   },
   {
-    title: 'Videos',
-    icon: <Video className="h-5 w-5" />,
-    href: '/admin/videos'
-  },
-  {
     title: 'Propuestas de Honorarios',
     icon: <Briefcase className="h-5 w-5" />,
     href: '/admin/fee-proposals'
