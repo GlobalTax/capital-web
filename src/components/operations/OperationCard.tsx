@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
+import { highlightSearchTerm } from '@/utils/highlightText';
+import { isRecentOperation } from '@/utils/dateHelpers';
+import { Eye } from 'lucide-react';
+import OperationDetailsModal from './OperationDetailsModal';
 
 interface Operation {
   id: string;
@@ -21,15 +26,20 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
+  created_at?: string;
 }
 
 interface OperationCardProps {
   operation: Operation;
   className?: string;
+  searchTerm?: string;
 }
 
-const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '' }) => {
+const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '', searchTerm }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
+    <>
     <Card className={`hover:shadow-lg transition-shadow ${className} ${operation.is_featured ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-6">
         <div className="space-y-4">
@@ -40,6 +50,10 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 src={operation.logo_url} 
                 alt={`${operation.company_name} logo`}
                 className="w-12 h-12 rounded-lg object-contain bg-gray-50 p-2"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             ) : (
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -51,13 +65,20 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             
             <div className="flex-1">
               <h3 className="font-semibold text-lg line-clamp-1">
-                {operation.company_name}
+                {searchTerm ? highlightSearchTerm(operation.company_name, searchTerm) : operation.company_name}
               </h3>
-              {operation.is_featured && (
-                <Badge variant="secondary" className="text-xs mt-1">
-                  Destacado
-                </Badge>
-              )}
+              <div className="flex items-center gap-1 mt-1">
+                {operation.is_featured && (
+                  <Badge variant="secondary" className="text-xs">
+                    Destacado
+                  </Badge>
+                )}
+                {isRecentOperation(operation.created_at) && (
+                  <Badge className="text-xs bg-green-500 hover:bg-green-600">
+                    Nuevo
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
           
@@ -68,7 +89,10 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           
           {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-3">
-            {operation.short_description || operation.description}
+            {searchTerm 
+              ? highlightSearchTerm(operation.short_description || operation.description, searchTerm)
+              : (operation.short_description || operation.description)
+            }
           </p>
           
           {/* Highlights */}
@@ -134,9 +158,26 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
               )}
             </div>
           </div>
+          
+          {/* Ver Detalles Button */}
+          <Button 
+            variant="outline" 
+            className="w-full mt-4"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Ver Detalles
+          </Button>
         </div>
       </CardContent>
     </Card>
+    
+    <OperationDetailsModal 
+      operation={operation}
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+    />
+    </>
   );
 };
 

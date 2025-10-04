@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, X, Sparkles } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
+import { useDebounce } from '@/hooks/useDebounce';
 import OperationCard from './OperationCard';
 
 interface Operation {
@@ -28,6 +29,7 @@ interface Operation {
   highlights?: string[];
   deal_type?: string;
   display_locations: string[];
+  created_at?: string;
 }
 
 interface OperationsListProps {
@@ -47,6 +49,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [sortBy, setSortBy] = useState('created_at');
   const [offset, setOffset] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchOperations = async () => {
     try {
@@ -55,7 +59,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
       // Use the new list-operations Edge Function
       const { data, error } = await supabase.functions.invoke('list-operations', {
         body: {
-          searchTerm: searchTerm || undefined,
+          searchTerm: debouncedSearchTerm || undefined,
           sector: selectedSector || undefined,
           sortBy,
           limit,
@@ -88,7 +92,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
   useEffect(() => {
     fetchOperations();
-  }, [searchTerm, selectedSector, sortBy, offset, displayLocation]);
+  }, [debouncedSearchTerm, selectedSector, sortBy, offset, displayLocation]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -135,8 +139,46 @@ const OperationsList: React.FC<OperationsListProps> = ({
             placeholder="Buscar operaciones..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-20"
+            maxLength={100}
           />
+          {searchTerm && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+              <span className="text-xs text-muted-foreground">{searchTerm.length}/100</span>
+              <button 
+                onClick={() => handleSearch('')}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          
+          {/* Sector Suggestions */}
+          {searchTerm.length >= 2 && sectors.filter(s => 
+            s.toLowerCase().includes(searchTerm.toLowerCase())
+          ).length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+              {sectors
+                .filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+                .slice(0, 5)
+                .map((sector) => (
+                  <button
+                    key={sector}
+                    onClick={() => {
+                      setSelectedSector(sector);
+                      setSearchTerm('');
+                      setOffset(0);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
+                  >
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <span className="text-sm">{sector}</span>
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
         
         <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
@@ -186,6 +228,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
             <OperationCard 
               key={operation.id} 
               operation={operation}
+              searchTerm={debouncedSearchTerm}
             />
           ))}
         </div>
