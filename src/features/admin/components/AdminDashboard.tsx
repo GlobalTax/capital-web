@@ -88,14 +88,14 @@ export const AdminDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div className="text-center mb-8">
+      <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
           Visión general de la plataforma
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-start">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
