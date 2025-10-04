@@ -110,7 +110,8 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/market-reports", 
         icon: FileText,
         badge: "NEW",
-        description: "Gestión de informes de mercado"
+        description: "Gestión de informes de mercado",
+        visible: false
       },
       { 
         title: "Operaciones", 
