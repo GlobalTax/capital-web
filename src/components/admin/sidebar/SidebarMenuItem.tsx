@@ -26,15 +26,15 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ item }) => {
   const content = (
     <Link 
       to={item.url} 
-      className="flex items-center justify-between w-full px-3 py-2.5 group-hover:scale-[1.02] transition-all duration-200"
+      className="flex items-center justify-between w-full px-3 py-3 transition-colors duration-150"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <item.icon className={`h-4 w-4 shrink-0 transition-colors ${
-          isActive ? 'text-primary' : 'text-sidebar-foreground/60'
+        <item.icon className={`h-4 w-4 shrink-0 ${
+          isActive ? 'text-blue-600' : 'text-gray-600'
         }`} />
         {!isCollapsed && (
-          <span className={`text-sm truncate transition-colors ${
-            isActive ? 'font-semibold text-sidebar-foreground' : 'font-medium text-sidebar-foreground/80'
+          <span className={`text-sm truncate ${
+            isActive ? 'font-semibold text-blue-600' : 'font-normal text-gray-700'
           }`}>
             {item.title}
           </span>
@@ -51,10 +51,10 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ item }) => {
         isActive={isActive}
         tooltip={isCollapsed ? item.title : undefined}
         className={`
-          group relative rounded-lg transition-all duration-200
+          group relative rounded-md transition-colors duration-150
           ${isActive 
-            ? 'bg-sidebar-accent/80 border-l-4 border-primary shadow-sm' 
-            : 'hover:bg-sidebar-accent/50 border-l-4 border-transparent'
+            ? 'bg-blue-50' 
+            : 'hover:bg-gray-50'
           }
         `}
       >
@@ -63,7 +63,7 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ item }) => {
             <TooltipTrigger asChild>
               {content}
             </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium">
+            <TooltipContent side="right" className="font-normal bg-white border-gray-200">
               {item.title}
               {item.badge && (
                 <span className="ml-2">

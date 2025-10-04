@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { sidebarSections } from '@/features/admin/config/sidebar-config';
@@ -8,10 +7,8 @@ import { SidebarFooter } from './SidebarFooter';
 import { SidebarSection } from './SidebarSection';
 
 export const AdminSidebar: React.FC = () => {
-  const location = useLocation();
   const { getMenuVisibility, userRole, isLoading, error } = useRoleBasedPermissions();
   const mountedRef = useRef(true);
-  const [searchQuery, setSearchQuery] = useState('');
   
   // Cleanup on unmount
   useEffect(() => {
@@ -64,26 +61,14 @@ export const AdminSidebar: React.FC = () => {
     }
   }, [getMenuVisibility]);
 
-  // Filtrar items por búsqueda
-  const filterItemsBySearch = useCallback((items: typeof sidebarSections[0]['items']) => {
-    if (!searchQuery.trim()) return items;
-    
-    const query = searchQuery.toLowerCase();
-    return items.filter(item => 
-      item.title.toLowerCase().includes(query) ||
-      item.description?.toLowerCase().includes(query)
-    );
-  }, [searchQuery]);
-
-
   if (error) {
     return (
-      <Sidebar className="border-r border-sidebar-border" collapsible="icon">
-        <SidebarHeader userRole="Error" onSearch={setSearchQuery} />
+      <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
+        <SidebarHeader userRole="Error" />
         <SidebarContent>
           <div className="p-4 text-center">
             <p className="text-sm text-red-500 mb-2">Error de permisos</p>
-            <p className="text-xs text-sidebar-foreground/60">Modo básico activo</p>
+            <p className="text-xs text-gray-500">Modo básico activo</p>
           </div>
         </SidebarContent>
       </Sidebar>
@@ -92,12 +77,12 @@ export const AdminSidebar: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Sidebar className="border-r border-sidebar-border" collapsible="icon">
-        <SidebarHeader userRole="Cargando..." onSearch={setSearchQuery} />
+      <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
+        <SidebarHeader userRole="Cargando..." />
         <SidebarContent>
           <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-            <p className="text-sm text-sidebar-foreground/60">Cargando permisos...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-500">Cargando permisos...</p>
           </div>
         </SidebarContent>
       </Sidebar>
@@ -158,8 +143,8 @@ export const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <Sidebar className="border-r border-sidebar-border" collapsible="icon">
-      <SidebarHeader userRole={userRole} onSearch={setSearchQuery} />
+    <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
+      <SidebarHeader userRole={userRole} />
       
       <SidebarContent className="py-2">
         {sidebarSections.map((section) => {
@@ -167,15 +152,13 @@ export const AdminSidebar: React.FC = () => {
             getItemVisibility(item.url) && (item.visible !== false)
           );
           
-          const filteredItems = filterItemsBySearch(visibleItems);
-          
-          if (filteredItems.length === 0) return null;
+          if (visibleItems.length === 0) return null;
           
           return (
             <SidebarSection 
               key={section.title} 
               section={section} 
-              visibleItems={filteredItems}
+              visibleItems={visibleItems}
             />
           );
         })}
