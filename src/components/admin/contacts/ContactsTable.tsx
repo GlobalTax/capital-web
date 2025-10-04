@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, Flame, CheckCircle2, Clock, Mail } from 'lucide-react';
+import { Trash2, CheckCircle2, Mail } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -126,15 +126,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               </TableCell>
               <TableCell>{getOriginBadge(contact.origin)}</TableCell>
               <TableCell>
-                <div className="space-y-1">
-                  <div className="font-medium">{contact.name}</div>
-                  {contact.is_hot_lead && (
-                    <Badge className="bg-red-500 hover:bg-red-600">
-                      <Flame className="h-3 w-3 mr-1" />
-                      Hot
-                    </Badge>
-                  )}
-                </div>
+                <div className="font-medium">{contact.name}</div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
