@@ -31,19 +31,14 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        // ⚡ OPTIMIZACIÓN: Manual chunks solo para librerías que no tienen dependencias circulares
+        // ⚡ OPTIMIZACIÓN: Manual chunks solo para librerías sin dependencias circulares
         manualChunks: (id) => {
           // Separar react-quill (usado solo en admin blog)
           if (id.includes('react-quill') || id.includes('quill')) {
             return 'quill-editor';
           }
           
-          // Separar @react-pdf (usado solo en exports)
-          if (id.includes('@react-pdf') || id.includes('react-pdf')) {
-            return 'pdf-renderer';
-          }
-          
-          // Recharts se deja en vendor automático para evitar dependencias circulares
+          // @react-pdf y recharts van a vendor para evitar circular dependencies
           // Vendor principal (React, etc.)
           if (id.includes('node_modules')) {
             return 'vendor';
