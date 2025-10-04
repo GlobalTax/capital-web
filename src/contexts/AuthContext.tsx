@@ -7,7 +7,21 @@ import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
 
 // ============= ADMIN CACHE =============
-// Caché optimista de estado admin con TTL 10 min
+/**
+ * Admin Status Cache Configuration
+ * 
+ * TTL: 10 minutos (600,000ms) - Balance entre UX y seguridad
+ * Storage: sessionStorage (se limpia al cerrar pestaña)
+ * Key Format: "admin_status:{userId}"
+ * Invalidación: 
+ *   - Automática: Al superar TTL
+ *   - Manual: clearAuthSession() limpia toda la caché
+ * 
+ * Flujo optimista:
+ * 1. checkAdminStatus() consulta caché primero
+ * 2. Cache hit → retorno inmediato + actualización background
+ * 3. Cache miss → consulta DB + guardar resultado
+ */
 const ADMIN_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
 const ADMIN_CACHE_KEY_PREFIX = 'admin_status:';
 
@@ -157,6 +171,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         component: 'AuthContext',
         userId 
       });
+      
+      // Toast genérico para timeouts (no alarmante)
+      if (error instanceof Error && error.message.includes('timeout')) {
+        toast({
+          title: "Verificación lenta",
+          description: "La verificación de permisos está tardando. Intenta recargar si el problema persiste.",
+          variant: "default",
+        });
+      }
+      
       setIsAdmin(false);
       return false;
     } finally {
@@ -246,6 +270,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await handleAuthStateChange('INITIAL_SESSION', session);
       } catch (error) {
         logger.error('Failed to initialize session', error as Error, { context: 'auth', component: 'AuthContext' });
+        
+        // Toast solo si es timeout crítico (>8s)
+        if (error instanceof Error && error.message.includes('timeout')) {
+          toast({
+            title: "Carga lenta",
+            description: "La carga está tardando más de lo normal. Intenta recargar la página.",
+            variant: "default",
+          });
+        }
+        
         if (mounted) {
           setIsLoading(false);
         }
