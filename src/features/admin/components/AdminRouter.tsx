@@ -33,7 +33,6 @@ import LandingPagesPage from '@/pages/admin/LandingPagesPage';
 import AdminBanners from '@/pages/AdminBanners';
 import ContactsPage from '@/pages/admin/ContactsPage';
 import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
-import IntegrationsPage from '@/pages/admin/IntegrationsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
 
@@ -96,9 +95,6 @@ const AdminRouter = () => {
       <Route path="/testimonials" element={<TestimonialsManager />} />
       <Route path="/carousel-testimonials" element={<CarouselTestimonialsManager />} />
       <Route path="/carousel-logos" element={<CarouselLogosManager />} />
-      
-      {/* Integrations */}
-      <Route path="/integrations" element={<IntegrationsPage />} />
       
       {/* Valuations */}
       <Route path="/valuations/:id" element={<ValuationDetailPage />} />

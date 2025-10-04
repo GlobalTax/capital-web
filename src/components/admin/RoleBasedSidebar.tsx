@@ -195,13 +195,6 @@ export function RoleBasedSidebar() {
           icon: PieChart,
           visible: menuVisibility.marketingHub
         },
-        { 
-          title: "Integraciones", 
-          url: "/admin/integrations", 
-          icon: Globe, 
-          badge: "NEW",
-          visible: menuVisibility.integrations
-        },
       ]
     },
     {

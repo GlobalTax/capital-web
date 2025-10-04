@@ -30,7 +30,6 @@ export const useAdminValidation = () => {
     { name: 'Marketing Automation', path: '/admin/marketing-automation' },
     { name: 'Marketing Intelligence', path: '/admin/marketing-intelligence' },
     { name: 'Marketing Hub', path: '/admin/marketing-hub' },
-    { name: 'Integrations Manager', path: '/admin/integrations' },
     { name: 'Sector Reports', path: '/admin/sector-reports' },
   ];
 

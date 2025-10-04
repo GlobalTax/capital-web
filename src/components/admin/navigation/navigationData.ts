@@ -155,14 +155,6 @@ export const navigationGroups: NavigationGroup[] = [
         id: "marketing-hub",
         description: "Dashboard completo de métricas",
         keywords: ["hub", "dashboard", "métricas", "marketing"]
-      },
-      {
-        title: "Integraciones",
-        icon: Globe,
-        id: "integrations",
-        description: "Apollo, Google Ads, LinkedIn y más",
-        badge: "NEW" as const,
-        keywords: ["integraciones", "apollo", "google", "ads", "linkedin"]
       }
     ]
   }

@@ -89,7 +89,6 @@ const menuSections = [
     items: [
       { title: "Marketing Intelligence", url: "/admin/marketing-intelligence", icon: Brain, badge: "AI" },
       { title: "Marketing Hub", url: "/admin/marketing-hub", icon: PieChart },
-      { title: "Integraciones", url: "/admin/integrations", icon: Globe, badge: "NEW" },
     ]
   },
   {
