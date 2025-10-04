@@ -19,8 +19,6 @@ import StatisticsManager from '@/components/admin/StatisticsManager';
 import SectorReportsGenerator from '@/components/admin/SectorReportsGenerator';
 import AdminUsersManager from '@/components/admin/AdminUsersManager';
 import ProposalsManager from '@/components/admin/ProposalsManager';
-import ExternalLeadsDashboard from '@/components/admin/leads/ExternalLeadsDashboard';
-import FormSubmissionsManager from '@/components/admin/FormSubmissionsManager';
 import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
 import ContentStudioPage from '@/pages/admin/ContentStudioPage';
 import DesignResourcesPage from '@/pages/admin/DesignResourcesPage';
@@ -64,11 +62,9 @@ const AdminRouter = () => {
       <Route path="/dashboard" element={<Navigate to="/admin/blog-v2" replace />} />
       
       {/* Lead Management */}
-      <Route path="/external-leads" element={<ExternalLeadsDashboard />} />
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsPage />} />
       <Route path="/contact-leads" element={<ContactLeadsAdminPage />} />
-      <Route path="/form-submissions" element={<FormSubmissionsManager />} />
       
       {/* Calculators & Reports - NEW ROUTES */}
       <Route path="/market-reports" element={<MarketReports />} />

@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
 import { Phone, Download } from 'lucide-react';
 
 const LegalConsultationForm = () => {
@@ -24,7 +23,6 @@ const LegalConsultationForm = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { trackFormSubmission } = useSimpleFormTracking();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -51,8 +49,6 @@ const LegalConsultationForm = () => {
         }]);
 
       if (error) throw error;
-
-      trackFormSubmission('legal_consultation', formData);
       
       toast({
         title: "Consulta Legal Enviada",

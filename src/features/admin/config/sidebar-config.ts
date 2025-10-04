@@ -169,20 +169,6 @@ export const sidebarSections: SidebarSection[] = [
         icon: Users,
         description: "Base de contactos"
       },
-      { 
-        title: "Form Submissions", 
-        url: "/admin/form-submissions", 
-        icon: ClipboardList,
-        badge: "NEW",
-        description: "Gestión de formularios"
-      },
-      { 
-        title: "Leads Externos", 
-        url: "/admin/external-leads", 
-        icon: Activity,
-        badge: "NEW",
-        description: "Leads del CRM secundario"
-      },
     ]
   },
   {

@@ -30,7 +30,7 @@ export const AdminDashboard = () => {
     queryKey: ['admin-contacts-count'],
     queryFn: async () => {
       const { count } = await supabase
-        .from('form_submissions')
+        .from('contact_leads')
         .select('*', { count: 'exact', head: true });
       return count || 0;
     }
@@ -64,10 +64,10 @@ export const AdminDashboard = () => {
       bgColor: 'bg-green-50'
     },
     {
-      title: 'Formularios',
+      title: 'Contact Leads',
       value: contactsCount || 0,
       icon: Mail,
-      description: 'Contactos recibidos',
+      description: 'Leads de contacto',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50'
     },
@@ -133,21 +133,21 @@ export const AdminDashboard = () => {
               </div>
             </a>
             <a 
-              href="/admin/external-leads" 
-              className="block p-3 rounded-lg hover:bg-muted transition-colors"
-            >
-              <div className="font-medium">Leads Externos</div>
-              <div className="text-sm text-muted-foreground">
-                Ver y gestionar leads
-              </div>
-            </a>
-            <a 
               href="/admin/contacts" 
               className="block p-3 rounded-lg hover:bg-muted transition-colors"
             >
               <div className="font-medium">Contactos</div>
               <div className="text-sm text-muted-foreground">
                 Gestión de contactos
+              </div>
+            </a>
+            <a 
+              href="/admin/contact-leads" 
+              className="block p-3 rounded-lg hover:bg-muted transition-colors"
+            >
+              <div className="font-medium">Contact Leads</div>
+              <div className="text-sm text-muted-foreground">
+                Leads de contacto
               </div>
             </a>
           </CardContent>

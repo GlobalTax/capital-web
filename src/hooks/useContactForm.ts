@@ -273,34 +273,7 @@ export const useContactForm = () => {
       }
       console.log('✅ Contact lead inserted:', contactData?.id || 'success');
 
-      // 7. Insert into form_submissions (non-blocking)
-      console.log('💾 Recording form submission...');
-      const formSubmissionData = {
-        form_type: 'contact' as const,
-        full_name: validatedData.fullName,
-        email: validatedData.email,
-        phone: validatedData.phone || null,
-        company: validatedData.company,
-        form_data: {
-          ...validatedData,
-          ...trackingData,
-          submission_timestamp: new Date().toISOString(),
-        },
-        status: 'new' as const,
-        user_agent: navigator.userAgent.slice(0, 255),
-      };
-
-      const { error: formError } = await supabase
-        .from('form_submissions')
-        .insert([formSubmissionData]);
-
-      if (formError) {
-        console.warn('⚠️ Form submission insert failed (non-blocking):', formError.message);
-      } else {
-        console.log('✅ Form submission recorded');
-      }
-
-      // 8. Send notifications (non-blocking)
+      // 7. Send notifications (non-blocking)
       try {
         console.log('📧 Sending notifications...');
         const { error: functionError } = await supabase.functions.invoke('send-form-notifications', {
@@ -309,7 +282,11 @@ export const useContactForm = () => {
             formType: 'contact',
             email: validatedData.email,
             fullName: validatedData.fullName,
-            formData: formSubmissionData.form_data,
+            formData: {
+              ...validatedData,
+              ...trackingData,
+              submission_timestamp: new Date().toISOString(),
+            },
           }
         });
 
@@ -439,25 +416,7 @@ export const useContactForm = () => {
 
       console.log('✅ Operation contact lead inserted');
 
-      // 6. Insert form submission (non-blocking)
-      const formSubmissionData = {
-        form_type: 'operation_inquiry' as const,
-        full_name: validatedData.fullName,
-        email: validatedData.email,
-        phone: validatedData.phone || null,
-        company: validatedData.companyName,
-        form_data: {
-          ...validatedData,
-          ...trackingData,
-          submission_timestamp: new Date().toISOString(),
-        },
-        status: 'new' as const,
-        user_agent: navigator.userAgent.slice(0, 255),
-      };
-
-      await supabase.from('form_submissions').insert([formSubmissionData]);
-
-      // 7. Send notifications (non-blocking)
+      // 6. Send notifications (non-blocking)
       try {
         await supabase.functions.invoke('send-form-notifications', {
           body: {
@@ -465,7 +424,11 @@ export const useContactForm = () => {
             formType: 'operation_inquiry',
             email: validatedData.email,
             fullName: validatedData.fullName,
-            formData: formSubmissionData.form_data,
+            formData: {
+              ...validatedData,
+              ...trackingData,
+              submission_timestamp: new Date().toISOString(),
+            },
           }
         });
         console.log('✅ Operation notifications sent');

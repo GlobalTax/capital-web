@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useCollaboratorApplications } from '@/hooks/useCollaboratorApplications';
-import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,8 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const CollaboratorApplicationForm = () => {
   const { submitApplication, isSubmitting } = useCollaboratorApplications();
-  
-  const { trackFormSubmission } = useSimpleFormTracking();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -37,7 +34,6 @@ const CollaboratorApplicationForm = () => {
     
     try {
       await submitApplication(formData);
-      trackFormSubmission('collaborator_application', formData);
       
       // Resetear formulario
       setFormData({

@@ -32,7 +32,6 @@ import { CalendarDays, Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Webinar, useWebinarRegistration } from '@/hooks/useWebinars';
-import { useSimpleFormTracking } from '@/hooks/useSimpleFormTracking';
 
 const formSchema = z.object({
   full_name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -81,7 +80,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
   onClose
 }) => {
   const { registerForWebinar, isPending } = useWebinarRegistration();
-  const { trackFormSubmission, trackFormInteraction } = useSimpleFormTracking();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -125,24 +123,11 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
         user_agent: navigator.userAgent,
       });
 
-      // Track form submission
-      trackFormSubmission('webinar_registration', {
-        webinar_id: webinar.id,
-        webinar_title: webinar.title,
-        category: webinar.category,
-        sector: data.sector,
-        company: data.company
-      });
-
       form.reset();
       onClose();
     } catch (error) {
       console.error('Error registering for webinar:', error);
     }
-  };
-
-  const handleFieldFocus = (fieldName: string) => {
-    trackFormInteraction('webinar_registration', fieldName);
   };
 
   if (!webinar) return null;
@@ -196,7 +181,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                       <Input 
                         placeholder="Tu nombre completo" 
                         {...field} 
-                        onFocus={() => handleFieldFocus('full_name')}
                       />
                     </FormControl>
                     <FormMessage />
@@ -215,7 +199,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                         type="email" 
                         placeholder="tu@email.com" 
                         {...field} 
-                        onFocus={() => handleFieldFocus('email')}
                       />
                     </FormControl>
                     <FormMessage />
@@ -235,7 +218,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                       <Input 
                         placeholder="Nombre de tu empresa" 
                         {...field} 
-                        onFocus={() => handleFieldFocus('company')}
                       />
                     </FormControl>
                     <FormMessage />
@@ -253,7 +235,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                       <Input 
                         placeholder="Tu cargo en la empresa" 
                         {...field} 
-                        onFocus={() => handleFieldFocus('job_title')}
                       />
                     </FormControl>
                     <FormMessage />
@@ -273,7 +254,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                       <Input 
                         placeholder="+34 600 000 000" 
                         {...field} 
-                        onFocus={() => handleFieldFocus('phone')}
                       />
                     </FormControl>
                     <FormMessage />
@@ -289,7 +269,7 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                     <FormLabel>Sector</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger onFocus={() => handleFieldFocus('sector')}>
+                        <SelectTrigger>
                           <SelectValue placeholder="Selecciona tu sector" />
                         </SelectTrigger>
                       </FormControl>
@@ -315,7 +295,7 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                   <FormLabel>Años de experiencia en M&A</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger onFocus={() => handleFieldFocus('years_experience')}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Selecciona tu experiencia" />
                       </SelectTrigger>
                     </FormControl>
@@ -342,7 +322,6 @@ export const WebinarRegistrationForm: React.FC<WebinarRegistrationFormProps> = (
                     <Textarea 
                       placeholder="¿Hay algún tema específico del webinar que te interese más?"
                       {...field} 
-                      onFocus={() => handleFieldFocus('specific_interests')}
                     />
                   </FormControl>
                   <FormMessage />

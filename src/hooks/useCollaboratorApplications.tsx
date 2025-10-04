@@ -53,28 +53,6 @@ export const useCollaboratorApplications = () => {
         throw error;
       }
 
-      // Also insert into unified form_submissions table
-      await supabase
-        .from('form_submissions')
-        .insert({
-          form_type: 'collaborator',
-          full_name: applicationData.fullName,
-          email: applicationData.email,
-          phone: applicationData.phone,
-          company: applicationData.company,
-          form_data: {
-            profession: applicationData.profession,
-            experience: applicationData.experience,
-            motivation: applicationData.motivation
-          },
-          ip_address: ipData?.ip,
-          user_agent: navigator.userAgent,
-          referrer,
-          utm_source,
-          utm_medium,
-          utm_campaign
-        });
-
       // Enviar a segunda base de datos
       try {
         // Enriquecer con UTM y referrer
