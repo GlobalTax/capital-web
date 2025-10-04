@@ -14,11 +14,13 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Building2, DollarSign, FileText, Calendar, MapPin, Settings, Loader2, Plus, Trash2 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { useToast } from '@/hooks/use-toast';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 interface Operation {
   id: string;
   company_name: string;
   sector: string;
+  subsector?: string;
   description: string;
   short_description: string | null;
   valuation_amount: number;
@@ -267,13 +269,32 @@ const OperationDetails = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Sector</Label>
-                  <Input
-                    value={operation.sector}
-                    onChange={(e) => setOperation({ ...operation, sector: e.target.value })}
-                    onBlur={() => handleFieldUpdate('sector', operation.sector)}
-                    className="font-medium"
-                  />
+                  <Label className="text-xs text-muted-foreground">Sector *</Label>
+                  <div className="relative">
+                    <SectorSelect
+                      value={operation.sector}
+                      onChange={(value) => handleFieldUpdate('sector', value)}
+                      placeholder="Selecciona un sector"
+                      className="font-medium"
+                    />
+                    {savingFields.has('sector') && (
+                      <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Subsector / Especialización</Label>
+                  <div className="relative">
+                    <Input
+                      value={operation.subsector || ''}
+                      onChange={(e) => setOperation({ ...operation, subsector: e.target.value })}
+                      onBlur={() => handleFieldUpdate('subsector', operation.subsector)}
+                      placeholder="Ej: SaaS B2B, Retail de moda, etc."
+                    />
+                    {savingFields.has('subsector') && (
+                      <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Tamaño (empleados)</Label>

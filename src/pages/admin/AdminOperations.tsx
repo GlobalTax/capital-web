@@ -22,11 +22,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 interface Operation {
   id: string;
   company_name: string;
   sector: string;
+  subsector?: string;
   description: string;
   revenue_amount?: number;
   ebitda_amount?: number;
@@ -187,6 +189,7 @@ const AdminOperations = () => {
       const operationData = {
         company_name: editingOperation.company_name.trim(),
         sector: editingOperation.sector.trim(),
+        subsector: editingOperation.subsector?.trim() || null,
         description: editingOperation.description.trim(),
         revenue_amount: editingOperation.revenue_amount || null,
         valuation_amount: editingOperation.valuation_amount || null,
@@ -379,7 +382,12 @@ const AdminOperations = () => {
       render: (operation: Operation) => (
         <div className="space-y-1">
           <div className="font-semibold text-sm text-gray-900">{operation.company_name}</div>
-          <div className="text-xs text-gray-500">{operation.sector}</div>
+          <div className="text-xs text-gray-500">
+            {operation.sector}
+            {operation.subsector && (
+              <span className="text-gray-400"> › {operation.subsector}</span>
+            )}
+          </div>
           {operation.company_size_employees && (
             <Badge variant="outline" className="text-xs border-gray-200 text-gray-600">
               {operation.company_size_employees}
@@ -740,16 +748,28 @@ const AdminOperations = () => {
                   </div>
                   <div>
                     <Label htmlFor="sector" className="text-xs text-gray-600">Sector *</Label>
-                    <Input
-                      id="sector"
+                    <SectorSelect
                       value={editingOperation.sector || ''}
-                      onChange={(e) => setEditingOperation({
+                      onChange={(value) => setEditingOperation({
                         ...editingOperation,
-                        sector: e.target.value
+                        sector: value
                       })}
-                      placeholder="Ej: Tecnología, Retail, etc."
+                      placeholder="Selecciona un sector"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="subsector" className="text-xs text-gray-600">Subsector / Especialización</Label>
+                  <Input
+                    id="subsector"
+                    value={editingOperation.subsector || ''}
+                    onChange={(e) => setEditingOperation({
+                      ...editingOperation,
+                      subsector: e.target.value
+                    })}
+                    placeholder="Ej: SaaS B2B, Retail de moda, etc."
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">

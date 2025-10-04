@@ -1160,6 +1160,7 @@ export type Database = {
           sector: string
           short_description: string | null
           status: string | null
+          subsector: string | null
           updated_at: string
           valuation_amount: number
           valuation_currency: string | null
@@ -1185,6 +1186,7 @@ export type Database = {
           sector: string
           short_description?: string | null
           status?: string | null
+          subsector?: string | null
           updated_at?: string
           valuation_amount: number
           valuation_currency?: string | null
@@ -1210,6 +1212,7 @@ export type Database = {
           sector?: string
           short_description?: string | null
           status?: string | null
+          subsector?: string | null
           updated_at?: string
           valuation_amount?: number
           valuation_currency?: string | null
