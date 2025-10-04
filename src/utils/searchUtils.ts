@@ -1,9 +1,10 @@
 import Fuse, { FuseResult, IFuseOptions } from 'fuse.js';
-import { UnifiedContact } from '@/hooks/useUnifiedContacts';
+import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 
 export interface SearchResult extends UnifiedContact {
   matches?: any[];
   score?: number;
+  source?: string;
 }
 
 export interface SearchOptions {

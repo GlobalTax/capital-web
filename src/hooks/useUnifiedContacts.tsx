@@ -31,6 +31,7 @@ export interface UnifiedContact {
   acquisition_type?: string;
   target_timeline?: string;
   preferred_location?: string;
+  location?: string;
   
   // Email tracking
   email_sent?: boolean;
@@ -58,6 +59,10 @@ export interface UnifiedContact {
   // Lead scoring
   is_hot_lead?: boolean;
   priority?: 'hot' | 'warm' | 'cold';
+  score?: number;
+  
+  // Legacy compatibility
+  source?: string;
 }
 
 export interface ContactFilters {
@@ -247,7 +252,7 @@ export const useUnifiedContacts = () => {
         ...(generalLeads || []).map(lead => ({
           id: lead.id,
           origin: 'general' as const,
-          name: lead.full_name || lead.name,
+          name: lead.full_name || '',
           email: lead.email,
           phone: lead.phone,
           company: lead.company,
@@ -267,6 +272,7 @@ export const useUnifiedContacts = () => {
           referrer: lead.referrer,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+          source: 'general',
         })),
         
         // Acquisition leads
@@ -468,22 +474,41 @@ export const useUnifiedContacts = () => {
 
   const updateContactStatus = async (contactId: string, origin: ContactOrigin, newStatus: string) => {
     try {
-      const tableMap: Record<ContactOrigin, string> = {
-        contact: 'contact_leads',
-        valuation: 'company_valuations',
-        collaborator: 'collaborator_applications',
-        general: 'general_contact_leads',
-        acquisition: 'acquisition_leads',
-        company_acquisition: 'company_acquisition_inquiries',
-      };
-
-      const table = tableMap[origin];
       const statusField = origin === 'valuation' ? 'valuation_status' : 'status';
 
-      const { error } = await supabase
-        .from(table)
-        .update({ [statusField]: newStatus })
-        .eq('id', contactId);
+      let error = null;
+      
+      if (origin === 'contact') {
+        const result = await supabase
+          .from('contact_leads')
+          .update({ status: newStatus })
+          .eq('id', contactId);
+        error = result.error;
+      } else if (origin === 'valuation') {
+        const result = await supabase
+          .from('company_valuations')
+          .update({ valuation_status: newStatus })
+          .eq('id', contactId);
+        error = result.error;
+      } else if (origin === 'collaborator') {
+        const result = await supabase
+          .from('collaborator_applications')
+          .update({ status: newStatus })
+          .eq('id', contactId);
+        error = result.error;
+      } else if (origin === 'acquisition') {
+        const result = await supabase
+          .from('acquisition_leads')
+          .update({ status: newStatus })
+          .eq('id', contactId);
+        error = result.error;
+      } else if (origin === 'company_acquisition') {
+        const result = await supabase
+          .from('company_acquisition_inquiries')
+          .update({ status: newStatus })
+          .eq('id', contactId);
+        error = result.error;
+      }
 
       if (error) throw error;
 
@@ -517,22 +542,39 @@ export const useUnifiedContacts = () => {
 
       // Update each origin group
       for (const [origin, ids] of Object.entries(byOrigin)) {
-        const tableMap: Record<ContactOrigin, string> = {
-          contact: 'contact_leads',
-          valuation: 'company_valuations',
-          collaborator: 'collaborator_applications',
-          general: 'general_contact_leads',
-          acquisition: 'acquisition_leads',
-          company_acquisition: 'company_acquisition_inquiries',
-        };
-
-        const table = tableMap[origin as ContactOrigin];
-        const statusField = origin === 'valuation' ? 'valuation_status' : 'status';
-
-        const { error } = await supabase
-          .from(table)
-          .update({ [statusField]: newStatus })
-          .in('id', ids);
+        let error = null;
+        
+        if (origin === 'contact') {
+          const result = await supabase
+            .from('contact_leads')
+            .update({ status: newStatus })
+            .in('id', ids);
+          error = result.error;
+        } else if (origin === 'valuation') {
+          const result = await supabase
+            .from('company_valuations')
+            .update({ valuation_status: newStatus })
+            .in('id', ids);
+          error = result.error;
+        } else if (origin === 'collaborator') {
+          const result = await supabase
+            .from('collaborator_applications')
+            .update({ status: newStatus })
+            .in('id', ids);
+          error = result.error;
+        } else if (origin === 'acquisition') {
+          const result = await supabase
+            .from('acquisition_leads')
+            .update({ status: newStatus })
+            .in('id', ids);
+          error = result.error;
+        } else if (origin === 'company_acquisition') {
+          const result = await supabase
+            .from('company_acquisition_inquiries')
+            .update({ status: newStatus })
+            .in('id', ids);
+          error = result.error;
+        }
 
         if (error) throw error;
       }

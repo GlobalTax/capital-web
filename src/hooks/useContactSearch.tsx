@@ -147,7 +147,8 @@ export const useContactSearch = ({
       : 0;
     
     const sourceBreakdown = searchResults.reduce((acc, result) => {
-      acc[result.source] = (acc[result.source] || 0) + 1;
+      const source = result.source || result.origin || 'unknown';
+      acc[source] = (acc[source] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 

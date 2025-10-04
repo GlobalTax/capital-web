@@ -29,7 +29,7 @@ export const ContactsHealthDashboard = () => {
     new: allContacts.filter(c => c.status === 'new').length,
     qualified: allContacts.filter(c => c.status === 'qualified').length,
     contacted: allContacts.filter(c => c.status === 'contacted').length,
-    hotLeads: allContacts.filter(c => c.is_hot_lead || (c.score || 0) >= 80).length,
+    hotLeads: allContacts.filter(c => c.is_hot_lead || c.priority === 'hot' || (c.score || 0) >= 80).length,
     recentContacts: allContacts.filter(c => 
       new Date(c.created_at) >= new Date(Date.now() - 24 * 60 * 60 * 1000)
     ).length
@@ -212,14 +212,22 @@ export const ContactsHealthDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {['contact_lead', 'apollo', 'lead_score'].map(source => {
-                const count = allContacts.filter(c => c.source === source).length;
+              {['contact', 'valuation', 'collaborator', 'acquisition', 'general'].map(originType => {
+                const count = allContacts.filter(c => c.origin === originType).length;
                 const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
                 
+                const originLabels: Record<string, string> = {
+                  contact: 'Comerciales',
+                  valuation: 'Valoraciones',
+                  collaborator: 'Colaboradores',
+                  acquisition: 'Adquisiciones',
+                  general: 'Generales'
+                };
+                
                 return (
-                  <div key={source} className="flex items-center justify-between">
+                  <div key={originType} className="flex items-center justify-between">
                     <span className="text-sm text-admin-text-secondary capitalize">
-                      {source.replace('_', ' ')}
+                      {originLabels[originType]}
                     </span>
                     <div className="flex items-center gap-2">
                       <div className="w-20 h-2 bg-gray-200 rounded-full">
