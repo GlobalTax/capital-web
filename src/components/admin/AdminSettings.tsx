@@ -13,11 +13,11 @@ const AdminSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-        <p className="text-gray-600 mt-2">
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">Configuración</h1>
+        <p className="text-muted-foreground mt-2">
           Gestiona tu cuenta y configuraciones del sistema
         </p>
       </div>

@@ -772,12 +772,12 @@ const AdminOperations = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">Gestión de Operaciones</h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <h1 className="text-2xl md:text-3xl font-bold">Gestión de Operaciones</h1>
+          <p className="text-muted-foreground mt-2">
             Administra y supervisa todas las operaciones de M&A, inversiones y transacciones corporativas
           </p>
         </div>

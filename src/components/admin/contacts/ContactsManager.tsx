@@ -134,12 +134,12 @@ const ContactsManager = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Gestión de Contactos</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold">Gestión de Contactos</h1>
+          <p className="text-muted-foreground mt-2">
             Sistema unificado de gestión de leads y contactos
           </p>
         </div>
