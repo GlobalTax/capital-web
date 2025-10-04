@@ -11,7 +11,7 @@ import { BlogPost, BlogPostFormData } from '@/types/blog';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useToast } from '@/hooks/use-toast';
 import { useBlogValidation } from '@/hooks/useBlogValidation';
-import RichTextEditor from './RichTextEditor';
+const RichTextEditor = React.lazy(() => import('./RichTextEditor'));
 import AuthorSelector from './AuthorSelector';
 import AIAssistantModal from './AIAssistantModal';
 import BlogEditorSidebar from './BlogEditorSidebar';
@@ -420,11 +420,13 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
             <div>
               <Label className="text-sm font-medium text-muted-foreground">Contenido</Label>
               <div className="mt-2 border rounded-lg">
-                <RichTextEditor
-                  value={formData.content}
-                  onChange={(content) => setFormData(prev => ({ ...prev, content }))}
-                  placeholder="Escribe tu contenido aquí..."
-                />
+                <React.Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Cargando editor...</div>}>
+                  <RichTextEditor
+                    value={formData.content}
+                    onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                    placeholder="Escribe tu contenido aquí..."
+                  />
+                </React.Suspense>
               </div>
             </div>
           </TabsContent>

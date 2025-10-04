@@ -52,28 +52,36 @@ function App() {
         const swCleanupKey = 'capittal-sw-cleanup-done';
         const shouldCleanSW = !sessionStorage.getItem(swCleanupKey);
         
-        if (shouldCleanSW && import.meta.env.VITE_DISABLE_SW === "1") {
+        if (shouldCleanSW) {
           console.log('🧹 INITIATING SW STABILIZATION - One-time cleanup');
           sessionStorage.setItem(swCleanupKey, 'true');
           
           setTimeout(async () => {
             try {
               if ('serviceWorker' in navigator) {
-                console.log('🔧 Unregistering all existing service workers...');
-                
+                console.log('🔧 Stabilizing Service Worker (skipWaiting + update)');
                 const registrations = await navigator.serviceWorker.getRegistrations();
                 for (const registration of registrations) {
-                  await registration.unregister();
-                  console.log('✅ Service worker unregistered:', registration.scope);
+                  try {
+                    registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+                    await registration.update();
+                    console.log('✅ SW stabilized:', registration.scope);
+                  } catch (e) {
+                    console.warn('⚠️ SW stabilization failed for', registration.scope, e);
+                  }
                 }
               }
               
-              // Clear ALL browser caches
+              // Clear Capittal SW caches (avoid nuking unrelated caches)
               if ('caches' in window) {
-                console.log('🗑️ Clearing all browser caches...');
+                console.log('🗑️ Clearing Capittal caches...');
                 const cacheNames = await caches.keys();
-                await Promise.all(cacheNames.map(name => caches.delete(name)));
-                console.log('✅ All caches cleared');
+                await Promise.all(
+                  cacheNames
+                    .filter(name => name.startsWith('capittal-') || /quill/i.test(name))
+                    .map(name => caches.delete(name))
+                );
+                console.log('✅ Capittal caches cleared');
               }
 
               console.log('✅ SW stabilization complete');

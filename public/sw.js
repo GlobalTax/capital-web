@@ -1,8 +1,8 @@
 // Service Worker optimizado para Capittal
 // Versión simplificada para evitar problemas de inicialización
 
-const CACHE_NAME = 'capittal-v4';
-const STATIC_CACHE = 'capittal-static-v4';
+const CACHE_NAME = 'capittal-v5';
+const STATIC_CACHE = 'capittal-static-v5';
 
 // Recursos críticos para cachear (eliminado '/' del precache)
 const CRITICAL_RESOURCES = [
@@ -231,7 +231,7 @@ function isStaticResource(url) {
     }
     
     // Verificar extensiones estáticas
-    const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff', '.woff2'];
+    const staticExtensions = ['.css', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff', '.woff2'];
     return staticExtensions.some(ext => url.includes(ext));
   } catch (error) {
     console.warn('[SW] Invalid URL for static resource check:', url);
