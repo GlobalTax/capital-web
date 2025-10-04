@@ -3,6 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, FileText, Mail, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { RecentContacts } from './dashboard/RecentContacts';
+import { RecentBlogPosts } from './dashboard/RecentBlogPosts';
+import { RecentAcquisitions } from './dashboard/RecentAcquisitions';
+import { RecentCollaborations } from './dashboard/RecentCollaborations';
+import { ActivityTimeline } from './dashboard/ActivityTimeline';
+import { QuickActions } from './dashboard/QuickActions';
 
 export const AdminDashboard = () => {
   // Queries simples para métricas básicas
@@ -114,59 +120,23 @@ export const AdminDashboard = () => {
         })}
       </div>
 
+      {/* Sección superior - 2 columnas */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Accesos Rápidos</CardTitle>
-            <CardDescription>
-              Secciones más utilizadas
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <a 
-              href="/admin/blog-v2" 
-              className="block p-3 rounded-lg hover:bg-muted transition-colors"
-            >
-              <div className="font-medium">Gestión de Blog</div>
-              <div className="text-sm text-muted-foreground">
-                Crear y editar artículos
-              </div>
-            </a>
-            <a 
-              href="/admin/contacts" 
-              className="block p-3 rounded-lg hover:bg-muted transition-colors"
-            >
-              <div className="font-medium">Contactos</div>
-              <div className="text-sm text-muted-foreground">
-                Gestión de contactos
-              </div>
-            </a>
-            <a 
-              href="/admin/contact-leads" 
-              className="block p-3 rounded-lg hover:bg-muted transition-colors"
-            >
-              <div className="font-medium">Contact Leads</div>
-              <div className="text-sm text-muted-foreground">
-                Leads de contacto
-              </div>
-            </a>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Actividad Reciente</CardTitle>
-            <CardDescription>
-              Últimos eventos en la plataforma
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-muted-foreground">
-              Los eventos de actividad se mostrarán aquí
-            </div>
-          </CardContent>
-        </Card>
+        <RecentContacts />
+        <RecentBlogPosts />
       </div>
+
+      {/* Sección media - 2 columnas */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RecentAcquisitions />
+        <RecentCollaborations />
+      </div>
+
+      {/* Timeline de actividad - ancho completo */}
+      <ActivityTimeline />
+
+      {/* Acciones rápidas */}
+      <QuickActions />
     </div>
   );
 };
