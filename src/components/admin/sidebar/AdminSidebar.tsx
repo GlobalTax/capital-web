@@ -61,6 +61,9 @@ export const AdminSidebar: React.FC = () => {
     }
   }, [getMenuVisibility]);
 
+  // Debug visibility
+  console.debug('[AdminSidebar] role:', userRole, 'banners visible:', (menuVisibility as any)?.banners);
+
   if (error) {
     return (
       <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
@@ -91,14 +94,15 @@ export const AdminSidebar: React.FC = () => {
 
   // Mapear visibilidad de permisos a los items del sidebar
   const getItemVisibility = (url: string): boolean => {
-    const route = url.split('/').pop() || '';
-    
-    // Dashboard siempre visible
-    if (url === '/admin') return true;
-    
+    // Normalizar ruta: quitar trailing slash y obtener el primer segmento tras /admin
+    const clean = url.replace(/\/+$/, '');
+    if (clean === '/admin') return true; // Dashboard siempre visible
+
     // Super admin siempre tiene acceso a todo
     if (userRole === 'super_admin') return true;
-    
+
+    const route = clean.replace(/^\/admin\/?/, '').split('/')[0] || '';
+
     // Mapear rutas a permisos - SINCRONIZADO con AdminRouter y useRoleBasedPermissions
     const routePermissionMap: Record<string, keyof typeof menuVisibility> = {
       'lead-scoring': 'leadScoring',
@@ -139,7 +143,13 @@ export const AdminSidebar: React.FC = () => {
     };
 
     const permissionKey = routePermissionMap[route];
-    return permissionKey ? menuVisibility[permissionKey] : false;
+    const result = permissionKey ? (menuVisibility as any)[permissionKey] : false;
+
+    if (route === 'banners') {
+      console.debug('[AdminSidebar] item=banners -> permissionKey:', permissionKey, 'value:', result);
+    }
+
+    return result;
   };
 
   return (
