@@ -31,16 +31,11 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        // ⚡ OPTIMIZACIÓN: Manual chunks para librerías pesadas solo en admin
+        // ⚡ OPTIMIZACIÓN: Manual chunks solo para librerías que no tienen dependencias circulares
         manualChunks: (id) => {
           // Separar react-quill (usado solo en admin blog)
           if (id.includes('react-quill') || id.includes('quill')) {
             return 'quill-editor';
-          }
-          
-          // Separar recharts (usado solo en dashboards)
-          if (id.includes('recharts')) {
-            return 'charts';
           }
           
           // Separar @react-pdf (usado solo en exports)
@@ -48,6 +43,7 @@ export default defineConfig(({ mode }) => {
             return 'pdf-renderer';
           }
           
+          // Recharts se deja en vendor automático para evitar dependencias circulares
           // Vendor principal (React, etc.)
           if (id.includes('node_modules')) {
             return 'vendor';
