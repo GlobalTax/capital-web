@@ -11,7 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import { formatDate, formatCurrency } from '@/shared/utils/format';
-import { Loader2, Plus, Pencil, Download, Building2, TrendingUp, BarChart3, Target, Search, Filter, Eye, Calendar, Hash } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2 } from 'lucide-react';
+import { OperationsBreadcrumbs } from '@/components/operations/OperationsBreadcrumbs';
+import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 
 interface Operation {
   id: string;
@@ -226,14 +228,14 @@ const AdminOperations = () => {
     }
   };
 
-  // Get status badge variant
-  const getStatusBadgeVariant = (status?: string) => {
+  // Get status badge classes
+  const getStatusBadgeClass = (status?: string) => {
     switch (status) {
-      case 'available': return 'default';
-      case 'under_negotiation': return 'secondary';
-      case 'sold': return 'success';
-      case 'withdrawn': return 'destructive';
-      default: return 'outline';
+      case 'available': return 'bg-green-100 text-green-700 hover:bg-green-100';
+      case 'under_negotiation': return 'bg-amber-100 text-amber-700 hover:bg-amber-100';
+      case 'sold': return 'bg-blue-100 text-blue-700 hover:bg-blue-100';
+      case 'withdrawn': return 'bg-gray-100 text-gray-700 hover:bg-gray-100';
+      default: return 'bg-gray-100 text-gray-600 hover:bg-gray-100';
     }
   };
 
@@ -263,12 +265,12 @@ const AdminOperations = () => {
   const tableColumns = [
     {
       key: 'opportunity_number',
-      title: 'Nº Oportunidad',
+      title: '# OPORTUNIDAD',
       width: 120,
       render: (operation: Operation, index: number) => (
         <div className="flex items-center gap-2">
-          <Hash className="h-3 w-3 text-muted-foreground" />
-          <span className="font-mono text-sm font-medium">
+          <Hash className="h-3 w-3 text-gray-400" />
+          <span className="font-mono text-xs font-medium text-gray-900">
             {generateOpportunityNumber(operation.created_at || '', index)}
           </span>
         </div>
@@ -276,14 +278,14 @@ const AdminOperations = () => {
     },
     {
       key: 'company_info',
-      title: 'Empresa',
+      title: 'EMPRESA',
       width: 250,
       render: (operation: Operation) => (
         <div className="space-y-1">
-          <div className="font-semibold text-foreground">{operation.company_name}</div>
-          <div className="text-sm text-muted-foreground">{operation.sector}</div>
+          <div className="font-semibold text-sm text-gray-900">{operation.company_name}</div>
+          <div className="text-xs text-gray-500">{operation.sector}</div>
           {operation.company_size_employees && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs border-gray-200 text-gray-600">
               {operation.company_size_employees}
             </Badge>
           )}
@@ -292,19 +294,19 @@ const AdminOperations = () => {
     },
     {
       key: 'financial_info',
-      title: 'Información Financiera',
+      title: 'INFORMACIÓN FINANCIERA',
       width: 200,
       render: (operation: Operation) => (
         <div className="space-y-1">
-          <div className="text-sm">
-            <span className="text-muted-foreground">Facturación:</span>{' '}
-            <span className="font-medium text-green-600 dark:text-green-400">
+          <div className="text-xs">
+            <span className="text-gray-500">Facturación:</span>{' '}
+            <span className="font-semibold text-green-600">
               {operation.revenue_amount ? formatCurrency(operation.revenue_amount) : 'N/D'}
             </span>
           </div>
-          <div className="text-sm">
-            <span className="text-muted-foreground">EBITDA:</span>{' '}
-            <span className="font-medium text-blue-600 dark:text-blue-400">
+          <div className="text-xs">
+            <span className="text-gray-500">EBITDA:</span>{' '}
+            <span className="font-semibold text-blue-600">
               {operation.ebitda_amount ? formatCurrency(operation.ebitda_amount) : 'N/D'}
             </span>
           </div>
@@ -313,14 +315,14 @@ const AdminOperations = () => {
     },
     {
       key: 'status_info',
-      title: 'Estado y Tipo',
+      title: 'ESTADO Y TIPO',
       width: 150,
       render: (operation: Operation) => (
         <div className="space-y-2">
-          <Badge variant={getStatusBadgeVariant(operation.status)}>
+          <Badge className={getStatusBadgeClass(operation.status)}>
             {getStatusText(operation.status)}
           </Badge>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-gray-500">
             {getDealTypeText(operation.deal_type)}
           </div>
         </div>
@@ -328,18 +330,18 @@ const AdminOperations = () => {
     },
     {
       key: 'date_info',
-      title: 'Fechas',
+      title: 'FECHAS',
       width: 120,
       render: (operation: Operation) => (
         <div className="space-y-1">
-          <div className="flex items-center gap-1 text-sm">
-            <Calendar className="h-3 w-3 text-muted-foreground" />
-            <span className="text-muted-foreground">Alta:</span>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Calendar className="h-3 w-3" />
+            <span>Alta:</span>
           </div>
-          <div className="text-sm font-medium">
+          <div className="text-xs font-medium text-gray-900">
             {operation.created_at ? formatDate(operation.created_at) : 'N/D'}
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-gray-500">
             Año: {operation.year}
           </div>
         </div>
@@ -347,7 +349,7 @@ const AdminOperations = () => {
     },
     {
       key: 'actions',
-      title: 'Acciones',
+      title: 'ACCIONES',
       width: 100,  
       render: (operation: Operation) => (
         <div className="flex gap-1">
@@ -355,19 +357,19 @@ const AdminOperations = () => {
             variant="ghost"
             size="sm"
             onClick={() => setEditingOperation(operation)}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-gray-50"
             title="Editar"
           >
-            <Pencil className="h-3 w-3" />
+            <Pencil className="h-3 w-3 text-gray-600" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {/* TODO: Add preview functionality */}}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-gray-50"
             title="Vista previa"
           >
-            <Eye className="h-3 w-3" />
+            <Eye className="h-3 w-3 text-gray-600" />
           </Button>
         </div>
       ),
@@ -383,11 +385,15 @@ const AdminOperations = () => {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <OperationsBreadcrumbs />
+
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">Gestión de Operaciones</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-4xl font-bold text-gray-900">Gestión de Operaciones</h1>
+          <p className="text-gray-500 mt-1 text-sm">
             Administra y supervisa todas las operaciones de M&A, inversiones y transacciones corporativas
           </p>
         </div>
@@ -396,21 +402,20 @@ const AdminOperations = () => {
             onClick={extractFinancialData}
             disabled={isExtracting}
             variant="outline"
-            className="bg-card hover:bg-accent"
+            className="border-gray-200 hover:bg-gray-50"
           >
             {isExtracting ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Download className="h-4 w-4 mr-2" />
             )}
-            Extraer Datos Financieros
+            Extraer
           </Button>
           <Button 
             onClick={() => setEditingOperation({
               company_name: '',
               sector: '',
               description: '',
-              
               valuation_currency: '€',
               year: new Date().getFullYear(),
               is_active: true,
@@ -419,7 +424,7 @@ const AdminOperations = () => {
               deal_type: 'sale',
               status: 'available'
             } as Operation)}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Operación
@@ -427,93 +432,37 @@ const AdminOperations = () => {
         </div>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Operaciones</p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{operations.length}</p>
-              </div>
-              <div className="h-12 w-12 bg-blue-500 rounded-full flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">Activas</p>
-                <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                  {stats.active}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/50 dark:to-amber-900/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Este Año</p>
-                <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">
-                  {stats.thisYear}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-amber-500 rounded-full flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Con Datos Financieros</p>
-                <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                  {stats.withRevenue}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-purple-500 rounded-full flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Cards */}
+      <OperationsStatsCards 
+        totalOperations={operations.length}
+        activeOperations={stats.active}
+        thisYearOperations={stats.thisYear}
+        withFinancialData={stats.withRevenue}
+      />
 
       {/* Filters and Search */}
-      <Card className="border-0 shadow-md">
+      <Card className="bg-white border border-gray-100">
         <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Buscar por empresa, sector o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 border-gray-200 hover:bg-gray-50"
             >
               <Filter className="h-4 w-4" />
               Filtros
+              <ChevronDown className={`h-3 w-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
               {(statusFilter !== 'all' || dealTypeFilter !== 'all') && (
-                <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                <Badge className="ml-1 h-5 w-5 rounded-full p-0 text-xs bg-blue-100 text-blue-700 hover:bg-blue-100">
                   {(statusFilter !== 'all' ? 1 : 0) + (dealTypeFilter !== 'all' ? 1 : 0)}
                 </Badge>
               )}
@@ -521,11 +470,11 @@ const AdminOperations = () => {
           </div>
           
           {showFilters && (
-            <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t border-gray-100 animate-fade-in">
               <div className="flex-1">
-                <Label htmlFor="status-filter" className="text-sm font-medium">Estado</Label>
+                <Label htmlFor="status-filter" className="text-xs text-gray-600">Estado</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger id="status-filter">
+                  <SelectTrigger id="status-filter" className="mt-1 border-gray-200">
                     <SelectValue placeholder="Todos los estados" />
                   </SelectTrigger>
                   <SelectContent>
@@ -538,9 +487,9 @@ const AdminOperations = () => {
                 </Select>
               </div>
               <div className="flex-1">
-                <Label htmlFor="deal-type-filter" className="text-sm font-medium">Tipo de Operación</Label>
+                <Label htmlFor="deal-type-filter" className="text-xs text-gray-600">Tipo de Operación</Label>
                 <Select value={dealTypeFilter} onValueChange={setDealTypeFilter}>
-                  <SelectTrigger id="deal-type-filter">
+                  <SelectTrigger id="deal-type-filter" className="mt-1 border-gray-200">
                     <SelectValue placeholder="Todos los tipos" />
                   </SelectTrigger>
                   <SelectContent>
@@ -552,22 +501,34 @@ const AdminOperations = () => {
                   </SelectContent>
                 </Select>
               </div>
+              {(statusFilter !== 'all' || dealTypeFilter !== 'all') && (
+                <div className="flex items-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setStatusFilter('all');
+                      setDealTypeFilter('all');
+                    }}
+                    className="text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                  >
+                    Limpiar filtros
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Enhanced Operations Table */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="border-b bg-card/50">
+      {/* Operations Table */}
+      <Card className="bg-white border border-gray-100">
+        <CardHeader className="border-b border-gray-100 bg-white">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl text-foreground">Operaciones Registradas</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Gestiona el portafolio completo de transacciones y oportunidades de inversión
-              </p>
+              <CardTitle className="text-lg font-semibold text-gray-900">Operaciones Registradas</CardTitle>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs text-gray-500">
               Mostrando {filteredOperations.length} de {operations.length} operaciones
             </div>
           </div>
@@ -575,17 +536,17 @@ const AdminOperations = () => {
         <CardContent className="p-0">
           {operations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Building2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold text-muted-foreground mb-2">No hay operaciones registradas</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
+              <Building2 className="h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay operaciones registradas</h3>
+              <p className="text-sm text-gray-500 max-w-md">
                 Comienza añadiendo tu primera operación para construir el portafolio de transacciones.
               </p>
             </div>
           ) : filteredOperations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Search className="h-16 w-16 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold text-muted-foreground mb-2">No se encontraron operaciones</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
+              <Search className="h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No se encontraron operaciones</h3>
+              <p className="text-sm text-gray-500 max-w-md">
                 Intenta ajustar los filtros de búsqueda para encontrar las operaciones que necesitas.
               </p>
             </div>
@@ -595,7 +556,7 @@ const AdminOperations = () => {
               columns={tableColumns}
               itemHeight={80}
               height={Math.min(600, filteredOperations.length * 80 + 50)}
-              className="border-none"
+              className="border-none [&_thead]:bg-gray-50 [&_thead_th]:text-[10px] [&_thead_th]:font-semibold [&_thead_th]:text-gray-600 [&_thead_th]:uppercase [&_thead_th]:tracking-wider [&_tbody_tr]:hover:bg-gray-50 [&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100"
             />
           )}
         </CardContent>
@@ -604,23 +565,23 @@ const AdminOperations = () => {
       {/* Edit Modal */}
       {editingOperation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-200">
+            <CardHeader className="border-b border-gray-100">
+              <CardTitle className="text-xl font-semibold text-gray-900">
                 {editingOperation.id ? 'Editar Operación' : 'Nueva Operación'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               {/* Operation Info - Show for existing operations */}
               {editingOperation.id && (
-                <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-                  <h3 className="text-lg font-semibold">Información de la Oportunidad</h3>
+                <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900">Información de la Oportunidad</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Número de Oportunidad</Label>
+                      <Label className="text-xs text-gray-600">Número de Oportunidad</Label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Hash className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-mono text-sm font-medium">
+                        <Hash className="h-3 w-3 text-gray-400" />
+                        <span className="font-mono text-xs font-medium text-gray-900">
                           {generateOpportunityNumber(
                             editingOperation.created_at || new Date().toISOString(), 
                             operations.findIndex(op => op.id === editingOperation.id)
@@ -629,10 +590,10 @@ const AdminOperations = () => {
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Fecha de Alta</Label>
+                      <Label className="text-xs text-gray-600">Fecha de Alta</Label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
+                        <Calendar className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-900">
                           {editingOperation.created_at ? formatDate(editingOperation.created_at) : 'N/D'}
                         </span>
                       </div>
@@ -643,10 +604,10 @@ const AdminOperations = () => {
 
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Información Básica</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Información Básica</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="company_name">Nombre de la empresa *</Label>
+                    <Label htmlFor="company_name" className="text-xs text-gray-600">Nombre de la empresa *</Label>
                     <Input
                       id="company_name"
                       value={editingOperation.company_name || ''}
@@ -658,7 +619,7 @@ const AdminOperations = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="sector">Sector *</Label>
+                    <Label htmlFor="sector" className="text-xs text-gray-600">Sector *</Label>
                     <Input
                       id="sector"
                       value={editingOperation.sector || ''}
@@ -673,7 +634,7 @@ const AdminOperations = () => {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="year">Año *</Label>
+                    <Label htmlFor="year" className="text-xs text-gray-600">Año *</Label>
                     <Input
                       id="year"
                       type="number"
@@ -687,7 +648,7 @@ const AdminOperations = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="deal_type">Tipo de Operación</Label>
+                    <Label htmlFor="deal_type" className="text-xs text-gray-600">Tipo de Operación</Label>
                     <Select
                       value={editingOperation.deal_type || 'sale'}
                       onValueChange={(value) => setEditingOperation({
@@ -707,7 +668,7 @@ const AdminOperations = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="status">Estado</Label>
+                    <Label htmlFor="status" className="text-xs text-gray-600">Estado</Label>
                     <Select
                       value={editingOperation.status || 'available'}
                       onValueChange={(value) => setEditingOperation({
@@ -729,7 +690,7 @@ const AdminOperations = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="company_size_employees">Tamaño de la Empresa</Label>
+                  <Label htmlFor="company_size_employees" className="text-xs text-gray-600">Tamaño de la Empresa</Label>
                   <Select
                     value={editingOperation.company_size_employees || ''}
                     onValueChange={(value) => setEditingOperation({
@@ -753,10 +714,10 @@ const AdminOperations = () => {
 
               {/* Financial Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Información Financiera</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Información Financiera</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="revenue_amount">Facturación (€)</Label>
+                    <Label htmlFor="revenue_amount" className="text-xs text-gray-600">Facturación (€)</Label>
                     <Input
                       id="revenue_amount"
                       type="number"
@@ -770,7 +731,7 @@ const AdminOperations = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ebitda_amount">EBITDA (€)</Label>
+                    <Label htmlFor="ebitda_amount" className="text-xs text-gray-600">EBITDA (€)</Label>
                     <Input
                       id="ebitda_amount"
                       type="number"
@@ -786,7 +747,7 @@ const AdminOperations = () => {
 
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <Label htmlFor="valuation_currency">Moneda</Label>
+                    <Label htmlFor="valuation_currency" className="text-xs text-gray-600">Moneda</Label>
                     <Select
                       value={editingOperation.valuation_currency || '€'}
                       onValueChange={(value) => setEditingOperation({
@@ -809,9 +770,9 @@ const AdminOperations = () => {
 
               {/* Descriptions */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Descripción</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Descripción</h3>
                 <div>
-                  <Label htmlFor="short_description">Descripción Corta</Label>
+                  <Label htmlFor="short_description" className="text-xs text-gray-600">Descripción Corta</Label>
                   <Input
                     id="short_description"
                     value={editingOperation.short_description || ''}
@@ -824,7 +785,7 @@ const AdminOperations = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">Descripción Completa *</Label>
+                  <Label htmlFor="description" className="text-xs text-gray-600">Descripción Completa *</Label>
                   <Textarea
                     id="description"
                     value={editingOperation.description || ''}
@@ -840,7 +801,7 @@ const AdminOperations = () => {
 
               {/* Settings */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Configuración</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Configuración</h3>
                 <div className="flex items-center gap-6">
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -851,7 +812,7 @@ const AdminOperations = () => {
                         is_active: checked
                       })}
                     />
-                    <Label htmlFor="is_active">Operación Activa</Label>
+                    <Label htmlFor="is_active" className="text-xs text-gray-700 font-medium">Operación Activa</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -862,23 +823,23 @@ const AdminOperations = () => {
                         is_featured: checked
                       })}
                     />
-                    <Label htmlFor="is_featured">Operación Destacada</Label>
+                    <Label htmlFor="is_featured" className="text-xs text-gray-700 font-medium">Operación Destacada</Label>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
+              <div className="flex gap-3 pt-4">
                 <Button
                   onClick={() => setEditingOperation(null)}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 border-gray-200 hover:bg-gray-50"
                   disabled={isSaving}
                 >
                   Cancelar
                 </Button>
                 <Button
                   onClick={saveOperation}
-                  className="flex-1"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={isSaving}
                 >
                   {isSaving ? (
