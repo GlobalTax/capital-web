@@ -81,69 +81,132 @@ const getAuthHeaders = async () => {
 };
 
 const fetchBanners = async (page: number = 1, limit: number = 20): Promise<BannersResponse> => {
-  const headers = await getAuthHeaders();
-  const url = new URL(`${BANNERS_API_BASE}/banners`);
-  
-  url.searchParams.set('page', page.toString());
-  url.searchParams.set('limit', limit.toString());
+  try {
+    const headers = await getAuthHeaders();
+    const url = new URL(`${BANNERS_API_BASE}/banners`);
+    
+    url.searchParams.set('page', page.toString());
+    url.searchParams.set('limit', limit.toString());
 
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers,
-  });
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers,
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch banners: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch banners: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (e) {
+    // Fallback: direct DB query using RLS (works for admins)
+    const offset = (page - 1) * limit;
+    const { data, error, count } = await supabase
+      .from('banners')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    return {
+      data: (data || []) as unknown as Banner[],
+      total: count || 0,
+      page,
+      limit,
+      totalPages: Math.ceil((count || 0) / limit)
+    };
   }
-
-  return response.json();
 };
 
 const createBanner = async (bannerData: BannerFormData): Promise<Banner> => {
-  const headers = await getAuthHeaders();
+  try {
+    const headers = await getAuthHeaders();
 
-  const response = await fetch(`${BANNERS_API_BASE}/banners`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(bannerData),
-  });
+    const response = await fetch(`${BANNERS_API_BASE}/banners`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(bannerData),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to create banner: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to create banner: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (e) {
+    const { data, error } = await supabase
+      .from('banners')
+      .insert([bannerData as any])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as unknown as Banner;
   }
-
-  return response.json();
 };
 
 const updateBanner = async ({ id, data }: { id: string; data: Partial<BannerFormData> }): Promise<Banner> => {
-  const headers = await getAuthHeaders();
+  try {
+    const headers = await getAuthHeaders();
 
-  const response = await fetch(`${BANNERS_API_BASE}/banners/${id}`, {
-    method: 'PATCH',
-    headers,
-    body: JSON.stringify(data),
-  });
+    const response = await fetch(`${BANNERS_API_BASE}/banners/${id}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to update banner: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to update banner: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (e) {
+    const { data: banner, error } = await supabase
+      .from('banners')
+      .update(data as any)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return banner as unknown as Banner;
   }
-
-  return response.json();
 };
 
 const toggleBanner = async (id: string): Promise<Banner> => {
-  const headers = await getAuthHeaders();
+  try {
+    const headers = await getAuthHeaders();
 
-  const response = await fetch(`${BANNERS_API_BASE}/banners/${id}/toggle`, {
-    method: 'POST',
-    headers,
-  });
+    const response = await fetch(`${BANNERS_API_BASE}/banners/${id}/toggle`, {
+      method: 'POST',
+      headers,
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to toggle banner: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to toggle banner: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (e) {
+    const { data: current, error: fetchError } = await supabase
+      .from('banners')
+      .select('visible')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !current) throw fetchError || new Error('Banner not found');
+
+    const { data: banner, error } = await supabase
+      .from('banners')
+      .update({ visible: !current.visible })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return banner as unknown as Banner;
   }
-
-  return response.json();
 };
 
 export const useBannersAdmin = (page: number = 1, limit: number = 20) => {

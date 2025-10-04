@@ -79,31 +79,8 @@ const fetchBannersDirectly = async (path: string, audience: AudienceType): Promi
 };
 
 const fetchActiveBanners = async (path: string, audience: AudienceType): Promise<BannerData[]> => {
-  const baseUrl = 'https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/banners_list';
-  const url = new URL(`${baseUrl}/banners/active`);
-  
-  url.searchParams.set('path', path);
-  url.searchParams.set('audience', audience);
-
-  try {
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // If Edge Function fails with 401/403, use fallback
-    if (!response.ok) {
-      console.warn(`Edge Function failed (${response.status}), using direct query fallback`);
-      return fetchBannersDirectly(path, audience);
-    }
-
-    return response.json();
-  } catch (error) {
-    console.warn('Edge Function error, using direct query fallback:', error);
-    return fetchBannersDirectly(path, audience);
-  }
+  // Prefer direct query to avoid noisy 401s if Edge Function is not yet updated
+  return fetchBannersDirectly(path, audience);
 };
 
 export const useActiveBanners = (
@@ -113,7 +90,7 @@ export const useActiveBanners = (
 ) => {
   return useQuery({
     queryKey: ['activeBanners', path, audience],
-    queryFn: () => fetchActiveBanners(path, audience),
+    queryFn: () => fetchBannersDirectly(path, audience),
     staleTime: 1000 * 60, // 60 seconds
     gcTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,

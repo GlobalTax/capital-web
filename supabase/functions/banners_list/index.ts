@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 // Version stamp to force cache invalidation
-const VERSION = '2025-01-04T17:00:00Z';
+const VERSION = '2025-01-04T17:10:00Z';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
