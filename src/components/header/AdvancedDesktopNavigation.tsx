@@ -100,7 +100,7 @@ const RecursosMenu = () => (
     <div className="lg:col-span-1">
       <Link
         to="/lp/calculadora"
-        className="group relative flex h-full flex-col overflow-hidden rounded-lg bg-gradient-to-br from-gray-900 to-black text-white p-6 hover:from-gray-800 hover:to-gray-900 transition-all duration-300"
+        className="group relative flex h-full flex-col overflow-hidden rounded-lg bg-primary text-primary-foreground p-6 hover:bg-primary/90 transition-all duration-300"
       >
         <div className="relative z-10 flex flex-col text-left h-full">
           <span className="mb-4 text-xs font-medium tracking-wider uppercase opacity-80">

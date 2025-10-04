@@ -12,7 +12,7 @@ export const FinalCTASection = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5 relative overflow-hidden">
+    <section className="py-20 bg-muted relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-10 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>

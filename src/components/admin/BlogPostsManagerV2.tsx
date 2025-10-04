@@ -215,7 +215,7 @@ const BlogPostsManagerV2 = memo(() => {
           <DialogTrigger asChild>
             <Button 
               onClick={resetForm}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="bg-primary text-primary-foreground border-0 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Post Pro
@@ -256,7 +256,7 @@ const BlogPostsManagerV2 = memo(() => {
                       <Button
                         type="button"
                         onClick={() => handleAIStudio('title')}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Zap className="h-4 w-4 mr-1" />
                         IA
@@ -290,7 +290,7 @@ const BlogPostsManagerV2 = memo(() => {
                         <Button
                           type="button"
                           onClick={() => handleAIStudio('excerpt')}
-                          className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90"
                         >
                           <Zap className="h-4 w-4 mr-1" />
                           IA
@@ -300,7 +300,7 @@ const BlogPostsManagerV2 = memo(() => {
                   </div>
 
                   {/* Herramientas de investigación */}
-                  <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                  <Card className="bg-muted border-border">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Brain className="h-5 w-5 text-blue-600" />
@@ -314,7 +314,7 @@ const BlogPostsManagerV2 = memo(() => {
                       <Button
                         type="button"
                         onClick={() => handleAIStudio('research')}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Brain className="h-4 w-4 mr-2" />
                         Investigar con IA
@@ -330,7 +330,7 @@ const BlogPostsManagerV2 = memo(() => {
                         <Button
                           type="button"
                           onClick={() => handleAIStudio('content')}
-                          className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 font-semibold"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                         >
                           <Brain className="h-4 w-4 mr-2" />
                           Generar Artículo Completo con IA
@@ -393,7 +393,7 @@ const BlogPostsManagerV2 = memo(() => {
                       <Button
                         type="button"
                         onClick={() => handleAIStudio('tags')}
-                        className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                         disabled={!formData.title && !formData.content}
                       >
                         <Zap className="h-4 w-4 mr-1" />
@@ -442,7 +442,7 @@ const BlogPostsManagerV2 = memo(() => {
                 </TabsContent>
 
                 <TabsContent value="seo" className="space-y-4">
-                  <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                  <Card className="bg-muted border-border">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Brain className="h-5 w-5 text-green-600" />
@@ -456,7 +456,7 @@ const BlogPostsManagerV2 = memo(() => {
                       <Button
                         type="button"
                         onClick={() => handleAIStudio('seo')}
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                         disabled={!formData.title}
                       >
                         <Zap className="h-4 w-4 mr-2" />
@@ -497,7 +497,7 @@ const BlogPostsManagerV2 = memo(() => {
                 </Button>
                 <Button 
                   type="submit"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {editingPost ? 'Actualizar' : 'Crear'} Post
                 </Button>

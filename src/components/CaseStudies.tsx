@@ -85,7 +85,7 @@ const CaseStudies = () => {
                 
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-200">
+                    <div className="inline-flex items-center px-3 py-1.5 bg-card text-primary rounded-full text-sm font-semibold border border-border">
                       {case_.sector} • {case_.year}
                     </div>
                     

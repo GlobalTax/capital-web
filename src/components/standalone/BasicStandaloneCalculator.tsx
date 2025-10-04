@@ -90,16 +90,16 @@ Calculado con Capittal.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header con gradiente y animación */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
+            <div className="p-2 rounded-xl bg-primary shadow-lg">
               <Calculator className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-foreground">
               Simulador de Valoración
             </h1>
           </div>

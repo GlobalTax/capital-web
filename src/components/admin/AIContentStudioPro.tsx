@@ -137,8 +137,8 @@ const AIContentStudioPro = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-6xl max-h-[90vh] overflow-hidden border-2 border-blue-200 shadow-2xl">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+      <Card className="w-full max-w-6xl max-h-[90vh] overflow-hidden border shadow-2xl">
+        <CardHeader className="bg-card border-b">
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -268,7 +268,7 @@ const AIContentStudioPro = ({
                 <Button 
                   onClick={handleGenerate} 
                   disabled={isGenerating || !prompt.trim()}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold py-3"
                 >
                   {isGenerating ? (
                     <>

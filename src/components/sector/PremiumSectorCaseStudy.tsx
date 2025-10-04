@@ -29,7 +29,7 @@ const PremiumSectorCaseStudy: React.FC<PremiumSectorCaseStudyProps> = ({
   timeline
 }) => {
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
+    <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-3xl"></div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const HeroSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center px-4">
+  <div className="min-h-screen bg-muted flex items-center justify-center px-4">
     <div className="max-w-7xl mx-auto text-center">
       <Skeleton className="h-16 w-3/4 mx-auto mb-6" />
       <Skeleton className="h-6 w-2/3 mx-auto mb-8" />

@@ -92,7 +92,7 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
         </DialogHeader>
 
         {/* Financial Information Card */}
-        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6 border border-primary/20">
+        <div className="bg-muted rounded-lg p-6 border border-border">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
             <TrendingUp className="mr-2 h-5 w-5 text-primary" />
             Información Financiera

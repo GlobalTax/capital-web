@@ -22,7 +22,7 @@ const PremiumSectorCTA: React.FC<PremiumSectorCTAProps> = ({
   contactInfo
 }) => {
   return (
-    <section className="py-24 bg-gradient-to-br from-white to-slate-50 relative overflow-hidden">
+    <section className="py-24 bg-background relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{

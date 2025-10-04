@@ -231,7 +231,7 @@ const OperationDetailsModalEnhanced: React.FC<OperationDetailsModalEnhancedProps
 
           {/* Financial Tab */}
           <TabsContent value="financial" className="space-y-4 mt-4">
-            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <Card className="bg-muted border-border">
               <CardContent className="pt-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
                   <TrendingUp className="mr-2 h-5 w-5 text-primary" />

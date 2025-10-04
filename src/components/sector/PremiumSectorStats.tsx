@@ -41,7 +41,7 @@ const PremiumSectorStats: React.FC<PremiumSectorStatsProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="group text-center">
-              <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 border-0.5 border-gray-200 hover:shadow-xl hover:border-gray-300 transition-all duration-500 hover:-translate-y-2">
+              <div className="bg-card rounded-2xl p-8 border border-border hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
                 <div className="text-4xl md:text-5xl font-bold text-black mb-3 group-hover:scale-110 transition-transform duration-300">
                   {stat.number}
                 </div>

@@ -97,7 +97,7 @@ const LeadMagnetLandingPage = ({ leadMagnet }: LeadMagnetLandingPageProps) => {
 
   if (downloadComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
           <CardContent className="pt-6">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -118,7 +118,7 @@ const LeadMagnetLandingPage = ({ leadMagnet }: LeadMagnetLandingPageProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">

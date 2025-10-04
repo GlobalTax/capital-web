@@ -17,7 +17,7 @@ interface PremiumSectorServicesProps {
 
 const PremiumSectorServices: React.FC<PremiumSectorServicesProps> = ({ title, subtitle, services }) => {
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-50 to-white relative overflow-hidden">
+    <section className="py-24 bg-background relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{

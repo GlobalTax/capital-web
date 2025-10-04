@@ -23,9 +23,7 @@ const DueDiligenceTypes = () => {
         "Mejor capacidad de negociación", 
         "Reducción de riesgos post-adquisición",
         "Identificación de oportunidades de valor"
-      ],
-      gradientFrom: "from-gray-800",
-      gradientTo: "to-black"
+      ]
     },
     {
       type: "vendor",
@@ -44,9 +42,7 @@ const DueDiligenceTypes = () => {
         "Mayor transparencia con compradores",
         "Valoración optimizada",
         "Reducción de contingencias"
-      ],
-      gradientFrom: "from-gray-800",
-      gradientTo: "to-black"
+      ]
     }
   ];
 
@@ -67,7 +63,7 @@ const DueDiligenceTypes = () => {
           {dueDiligenceTypes.map((ddType, index) => (
             <Card key={index} className="border border-gray-300 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 ease-out h-full">
               <CardContent className="p-8">
-                <div className={`bg-gradient-to-r ${ddType.gradientFrom} ${ddType.gradientTo} text-white p-6 rounded-lg mb-6`}>
+                <div className="bg-primary text-primary-foreground p-6 rounded-lg mb-6">
                   <div className="flex items-center space-x-4 mb-4">
                     <div className="text-white">
                       {ddType.icon}
