@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
@@ -11,60 +11,20 @@ export const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const { getMenuVisibility, userRole, isLoading, error } = useRoleBasedPermissions();
   const mountedRef = useRef(true);
+  const [searchQuery, setSearchQuery] = useState('');
   
-  // Estado para controlar secciones expandidas
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-  
-  // Cleanup on unmount to prevent React #300 error
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       mountedRef.current = false;
     };
   }, []);
-  
-  // Función para encontrar qué sección contiene la ruta activa
-  const getActiveSectionTitle = (): string | null => {
-    const currentPath = location.pathname;
-    
-    for (const section of sidebarSections) {
-      const hasActiveItem = section.items.some(item => item.url === currentPath);
-      if (hasActiveItem) {
-        return section.title;
-      }
-    }
-    return null;
-  };
-  
-  // Expandir automáticamente la sección que contiene la ruta activa
-  useEffect(() => {
-    if (!mountedRef.current) return;
-    
-    const activeSection = getActiveSectionTitle();
-    if (activeSection && mountedRef.current) {
-      setExpandedSections(prev => ({
-        ...prev,
-        [activeSection]: true
-      }));
-    }
-  }, [location.pathname]);
-  
-  // Función para toggle de secciones
-  const toggleSection = (sectionTitle: string) => {
-    if (!mountedRef.current) return;
-    
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionTitle]: !prev[sectionTitle]
-    }));
-  };
 
-  // TODOS LOS HOOKS DEBEN EJECUTARSE SIEMPRE - NUNCA EARLY RETURNS
-  const menuVisibility = React.useMemo(() => {
+  const menuVisibility = useMemo(() => {
     try {
       return getMenuVisibility();
     } catch (error) {
       console.error('Error getting menu visibility:', error);
-      // Fallback básico - solo dashboard visible
       return {
         dashboard: true,
         leadScoring: false,
@@ -94,7 +54,6 @@ export const AdminSidebar: React.FC = () => {
         integrations: false,
         adminUsers: false,
         settings: false,
-        // Nuevas funcionalidades de tracking y contenido
         contentPerformance: false,
         contentStudio: false,
         designResources: false,
@@ -105,17 +64,26 @@ export const AdminSidebar: React.FC = () => {
     }
   }, [getMenuVisibility]);
 
+  // Filtrar items por búsqueda
+  const filterItemsBySearch = useCallback((items: typeof sidebarSections[0]['items']) => {
+    if (!searchQuery.trim()) return items;
+    
+    const query = searchQuery.toLowerCase();
+    return items.filter(item => 
+      item.title.toLowerCase().includes(query) ||
+      item.description?.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
 
-  // RENDERIZADO CONDICIONAL - NUNCA EARLY RETURNS
-  // Modo degradado en caso de error crítico
+
   if (error) {
     return (
-      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
-        <SidebarHeader userRole="Error" />
+      <Sidebar className="border-r border-sidebar-border" collapsible="icon">
+        <SidebarHeader userRole="Error" onSearch={setSearchQuery} />
         <SidebarContent>
           <div className="p-4 text-center">
             <p className="text-sm text-red-500 mb-2">Error de permisos</p>
-            <p className="text-xs text-gray-500">Modo básico activo</p>
+            <p className="text-xs text-sidebar-foreground/60">Modo básico activo</p>
           </div>
         </SidebarContent>
       </Sidebar>
@@ -124,12 +92,12 @@ export const AdminSidebar: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
-        <SidebarHeader userRole="Cargando..." />
+      <Sidebar className="border-r border-sidebar-border" collapsible="icon">
+        <SidebarHeader userRole="Cargando..." onSearch={setSearchQuery} />
         <SidebarContent>
           <div className="p-4 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-            <p className="text-sm text-gray-500">Cargando permisos...</p>
+            <p className="text-sm text-sidebar-foreground/60">Cargando permisos...</p>
           </div>
         </SidebarContent>
       </Sidebar>
@@ -190,23 +158,24 @@ export const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <Sidebar className="border-r border-sidebar-border bg-sidebar-background" collapsible="icon">
-      <SidebarHeader userRole={userRole} />
+    <Sidebar className="border-r border-sidebar-border" collapsible="icon">
+      <SidebarHeader userRole={userRole} onSearch={setSearchQuery} />
       
-      <SidebarContent>
+      <SidebarContent className="py-2">
         {sidebarSections.map((section) => {
-          // Filtrar items visibles según permisos y configuración
           const visibleItems = section.items.filter(item => 
             getItemVisibility(item.url) && (item.visible !== false)
           );
+          
+          const filteredItems = filterItemsBySearch(visibleItems);
+          
+          if (filteredItems.length === 0) return null;
           
           return (
             <SidebarSection 
               key={section.title} 
               section={section} 
-              visibleItems={visibleItems} 
-              isExpanded={expandedSections[section.title] || false}
-              onToggle={() => toggleSection(section.title)}
+              visibleItems={filteredItems}
             />
           );
         })}

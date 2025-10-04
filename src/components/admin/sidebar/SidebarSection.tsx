@@ -1,49 +1,35 @@
-import React, { useState } from 'react';
-import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarSeparator } from '@/components/ui/sidebar';
 import { SidebarSection as SidebarSectionType } from '@/features/admin/config/sidebar-config';
 import { SidebarMenuItem } from './SidebarMenuItem';
 
 interface SidebarSectionProps {
   section: SidebarSectionType;
   visibleItems: SidebarSectionType['items'];
-  isExpanded?: boolean;
-  onToggle?: () => void;
 }
 
 export const SidebarSection: React.FC<SidebarSectionProps> = ({ 
   section, 
-  visibleItems, 
-  isExpanded = false, 
-  onToggle 
+  visibleItems
 }) => {
   if (visibleItems.length === 0) return null;
 
   return (
-    <SidebarGroup className="px-3">
-      <Collapsible open={isExpanded} onOpenChange={onToggle}>
-        <CollapsibleTrigger asChild>
-          <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider mb-2 px-2 cursor-pointer hover:text-sidebar-foreground transition-colors flex items-center justify-between group">
-            <span>{section.title}</span>
-            {isExpanded ? (
-              <ChevronDown className="h-3 w-3 transition-transform group-hover:text-sidebar-foreground" />
-            ) : (
-              <ChevronRight className="h-3 w-3 transition-transform group-hover:text-sidebar-foreground" />
-            )}
-          </SidebarGroupLabel>
-        </CollapsibleTrigger>
+    <>
+      <SidebarGroup className="px-2 py-2">
+        <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-wider mb-2 px-2">
+          {section.title}
+        </SidebarGroupLabel>
         
-        <CollapsibleContent className="space-y-1">
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.title} item={item} />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </SidebarGroup>
+        <SidebarGroupContent>
+          <SidebarMenu className="space-y-0.5">
+            {visibleItems.map((item) => (
+              <SidebarMenuItem key={item.title} item={item} />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+      <SidebarSeparator className="my-2" />
+    </>
   );
 };
