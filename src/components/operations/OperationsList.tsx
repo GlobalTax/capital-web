@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, X, Sparkles } from 'lucide-react';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
 import { useDebounce } from '@/hooks/useDebounce';
-import OperationCard from './OperationCard';
+import OperationsTable from './OperationsTable';
 
 interface Operation {
   id: string;
@@ -132,104 +130,98 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0); // Reset pagination
   };
 
-  if (isLoading && operations.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-6 bg-gray-200 rounded w-full"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar operaciones..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10 pr-20"
-            maxLength={100}
-          />
-          {searchTerm && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-              <span className="text-xs text-muted-foreground">{searchTerm.length}/100</span>
-              <button 
-                onClick={() => handleSearch('')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Limpiar búsqueda"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          
-          {/* Sector Suggestions */}
-          {searchTerm.length >= 2 && sectors.filter(s => 
-            s.toLowerCase().includes(searchTerm.toLowerCase())
-          ).length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
-              {sectors
-                .filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
-                .slice(0, 5)
-                .map((sector) => (
-                  <button
-                    key={sector}
-                    onClick={() => {
-                      setSelectedSector(sector);
-                      setSearchTerm('');
-                      setOffset(0);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
+      {/* Filters Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Filter className="h-5 w-5" />
+            Filtros y Búsqueda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por empresa o descripción..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10 pr-20"
+                maxLength={100}
+              />
+              {searchTerm && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                  <span className="text-xs text-muted-foreground">{searchTerm.length}/100</span>
+                  <button 
+                    onClick={() => handleSearch('')}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Limpiar búsqueda"
                   >
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <span className="text-sm">{sector}</span>
+                    <X className="h-4 w-4" />
                   </button>
-                ))}
+                </div>
+              )}
+              
+              {/* Sector Suggestions */}
+              {searchTerm.length >= 2 && sectors.filter(s => 
+                s.toLowerCase().includes(searchTerm.toLowerCase())
+              ).length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                  {sectors
+                    .filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .slice(0, 5)
+                    .map((sector) => (
+                      <button
+                        key={sector}
+                        onClick={() => {
+                          setSelectedSector(sector);
+                          setSearchTerm('');
+                          setOffset(0);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
+                      >
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-sm">{sector}</span>
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        
-        <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Todos los sectores" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los sectores</SelectItem>
-            {sectors.map((sector) => (
-              <SelectItem key={sector} value={sector}>
-                {sector}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            
+            {/* Sector Filter */}
+            <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos los sectores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los sectores</SelectItem>
+                {sectors.map((sector) => (
+                  <SelectItem key={sector} value={sector}>
+                    {sector}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-        <Select value={sortBy} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="created_at">Más recientes</SelectItem>
-            <SelectItem value="year">Año</SelectItem>
-            <SelectItem value="valuation_amount">Valoración</SelectItem>
-            <SelectItem value="company_name">Nombre</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+            {/* Sort */}
+            <Select value={sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Más recientes</SelectItem>
+                <SelectItem value="year">Año</SelectItem>
+                <SelectItem value="valuation_amount">Valoración</SelectItem>
+                <SelectItem value="company_name">Nombre</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Results count */}
       <div className="flex items-center justify-between">
@@ -244,24 +236,11 @@ const OperationsList: React.FC<OperationsListProps> = ({
         )}
       </div>
 
-      {/* Operations Grid */}
-      {operations.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {operations.map((operation) => (
-            <OperationCard 
-              key={operation.id} 
-              operation={operation}
-              searchTerm={debouncedSearchTerm}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            No se encontraron operaciones que coincidan con los criterios de búsqueda.
-          </p>
-        </div>
-      )}
+      {/* Operations Table */}
+      <OperationsTable 
+        operations={operations}
+        isLoading={isLoading}
+      />
 
       {/* Pagination */}
       {totalCount > limit && (

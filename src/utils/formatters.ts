@@ -113,6 +113,24 @@ export const formatCompactNumber = (value: number): string => {
   return value.toString();
 };
 
+export const formatCompactCurrency = (
+  amount: number | undefined, 
+  currency: string = 'EUR'
+): string => {
+  if (!amount || amount <= 0) return 'Consultar';
+  
+  const normalized = normalizeValuationAmount(amount);
+  const currencySymbol = currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€';
+  
+  if (normalized >= 1_000_000) {
+    return `${currencySymbol}${(normalized / 1_000_000).toFixed(1)}M`;
+  }
+  if (normalized >= 1_000) {
+    return `${currencySymbol}${(normalized / 1_000).toFixed(0)}K`;
+  }
+  return `${currencySymbol}${normalized.toFixed(0)}`;
+};
+
 export const formatDate = (date: string | Date): string => {
   return new Intl.DateTimeFormat('es-ES', {
     year: 'numeric',
