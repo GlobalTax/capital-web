@@ -117,11 +117,14 @@ Deno.serve(async (req) => {
     );
 
     const url = new URL(req.url);
-    const path = url.pathname;
+    const fullPath = url.pathname;
     
-    console.log(`Processing ${req.method} ${path}`);
+    // Normalize path by removing function prefix
+    const path = fullPath.replace(/^.*\/banners_list/, '');
+    
+    console.log(`Processing ${req.method} ${fullPath} -> normalized to ${path}`);
 
-    // GET /banners/active - Public endpoint for active banners
+    // GET /banners/active - Public endpoint for active banners (NO AUTH REQUIRED)
     if (req.method === 'GET' && path === '/banners/active') {
       const requestedPath = url.searchParams.get('path') || '/';
       const audience = url.searchParams.get('audience') || 'anon';
@@ -237,9 +240,73 @@ Deno.serve(async (req) => {
       );
     }
 
+    // POST /banners/:id/track - Track banner events (PUBLIC - NO AUTH REQUIRED)
+    const trackMatch = path.match(/^\/banners\/([^\/]+)\/track$/);
+    if (req.method === 'POST' && trackMatch) {
+      const bannerId = trackMatch[1];
+      const { event } = await req.json();
+      
+      // Validate event type
+      if (!event || !['impression', 'click'].includes(event)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid event type. Must be "impression" or "click"' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Get request metadata
+      const currentPath = url.searchParams.get('path') || '/';
+      const userAgent = req.headers.get('user-agent') || null;
+      const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                        req.headers.get('x-real-ip') || null;
+
+      // Get user ID if authenticated (optional)
+      let userId = null;
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.replace('Bearer ', '');
+          const { data: { user } } = await supabaseClient.auth.getUser(token);
+          if (user) {
+            userId = user.id;
+          }
+        } catch (error) {
+          console.log('Auth error in tracking (ignored):', error);
+        }
+      }
+
+      // Insert banner event
+      const { error: insertError } = await supabaseClient
+        .from('banner_events')
+        .insert({
+          banner_id: bannerId,
+          event: event,
+          path: currentPath,
+          user_id: userId,
+          ip_address: ipAddress,
+          user_agent: userAgent
+        });
+
+      if (insertError) {
+        console.error('Error inserting banner event:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to track banner event' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Tracked ${event} event for banner ${bannerId} on path ${currentPath}`);
+      
+      return new Response(
+        JSON.stringify({ success: true, event, banner_id: bannerId }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // All other endpoints require authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log(`Auth required for ${path} - no auth header provided`);
       return new Response(
         JSON.stringify({ error: 'Missing or invalid authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -247,6 +314,10 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    
+    // CRITICAL: Set session FIRST before any admin checks
+    await supabaseClient.auth.setSession({ access_token: token, refresh_token: '' });
+    
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
@@ -257,17 +328,19 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log(`User authenticated: ${user.id}, checking admin status...`);
+
     // Check if user is admin
     const isAdmin = await isUserAdmin(supabaseClient, user.id);
+    console.log(`User ${user.id} admin status: ${isAdmin}`);
+    
     if (!isAdmin) {
+      console.log(`Access denied for user ${user.id} - not an admin`);
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    // Set auth context for subsequent queries
-    supabaseClient.auth.setSession({ access_token: token, refresh_token: '' });
 
     // GET /banners - Admin endpoint for all banners with pagination
     if (req.method === 'GET' && path === '/banners') {
@@ -390,71 +463,6 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify(banner),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // POST /banners/:id/track - Track banner events (impression/click)
-    const trackMatch = path.match(/^\/banners\/([^\/]+)\/track$/);
-    if (req.method === 'POST' && trackMatch) {
-      const bannerId = trackMatch[1];
-      const { event } = await req.json();
-      
-      // Validate event type
-      if (!event || !['impression', 'click'].includes(event)) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid event type. Must be "impression" or "click"' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Get request metadata
-      const url = new URL(req.url);
-      const currentPath = url.searchParams.get('path') || '/';
-      const userAgent = req.headers.get('user-agent') || null;
-      const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0] || 
-                        req.headers.get('x-real-ip') || null;
-
-      // Get user ID if authenticated (but don't require authentication)
-      let userId = null;
-      const authHeader = req.headers.get('Authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        try {
-          const token = authHeader.replace('Bearer ', '');
-          const { data: { user } } = await supabaseClient.auth.getUser(token);
-          if (user) {
-            userId = user.id;
-          }
-        } catch (error) {
-          // Ignore auth errors for tracking - we allow anonymous tracking
-          console.log('Auth error in tracking (ignored):', error);
-        }
-      }
-
-      // Insert banner event
-      const { error: insertError } = await supabaseClient
-        .from('banner_events')
-        .insert({
-          banner_id: bannerId,
-          event: event,
-          path: currentPath,
-          user_id: userId,
-          ip_address: ipAddress,
-          user_agent: userAgent
-        });
-
-      if (insertError) {
-        console.error('Error inserting banner event:', insertError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to track banner event' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      console.log(`Tracked ${event} event for banner ${bannerId} on path ${currentPath}`);
-      
-      return new Response(
-        JSON.stringify({ success: true, event, banner_id: bannerId }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
