@@ -24,22 +24,8 @@ const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
     e.preventDefault();
     const { error } = await signIn(email, password);
     if (!error) {
-      // Detectar si estamos en sandbox
-      const isSandbox = window.location.hostname.includes('lovableproject.com') ||
-                       window.location.hostname.includes('localhost') ||
-                       window.location.hostname.includes('127.0.0.1');
-      
-      // Verificar bypass en sandbox
-      const forceBypass = isSandbox && (
-        new URLSearchParams(window.location.search).get('bypass') === '1' ||
-        localStorage.getItem('capittal-admin-bypass') === '1'
-      );
-      
-      const targetRoute = (isSandbox && forceBypass) ? '/admin/v2/no-guard' : '/admin/v2/demo';
-      
-      console.log(`✅ [AdminAuth] Login successful, redirecting to ${targetRoute}`);
       onAuthSuccess();
-      navigate(targetRoute, { replace: true });
+      navigate('/admin', { replace: true });
     }
   };
 

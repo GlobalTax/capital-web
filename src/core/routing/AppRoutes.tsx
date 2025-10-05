@@ -9,11 +9,6 @@ const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
-// === ADMIN V2 (NEW LIQUID GLASS) ===
-const AdminV2Demo = lazy(() => import('@/features/admin-v2/components/DashboardDemo'));
-import { AdminV2GuardDebug } from '@/features/admin-v2/guards/AdminV2GuardDebug';
-import { MainLayout } from '@/features/admin-v2/components/MainLayout';
-
 // === BUSINESS PAGES ===
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
 const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
@@ -77,28 +72,6 @@ export const AppRoutes = () => {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/*" element={<Admin />} />
-        
-        {/* === ADMIN V2 ROUTES (Liquid Glass UI) === */}
-        <Route 
-          path="/admin/v2/demo" 
-          element={
-            <AdminV2GuardDebug>
-              <MainLayout>
-                <AdminV2Demo />
-              </MainLayout>
-            </AdminV2GuardDebug>
-          } 
-        />
-        
-        {/* Admin V2 No-Guard Route (Sandbox Emergency Access) */}
-        <Route 
-          path="/admin/v2/no-guard" 
-          element={
-            <MainLayout>
-              <AdminV2Demo />
-            </MainLayout>
-          } 
-        />
         
         {/* === BUSINESS ROUTES === */}
         <Route path="/venta-empresas" element={<VentaEmpresas />} />
