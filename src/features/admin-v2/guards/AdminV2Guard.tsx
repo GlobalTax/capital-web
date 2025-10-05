@@ -89,7 +89,7 @@ export const AdminV2Guard: React.FC<AdminV2GuardProps> = ({ children }) => {
 
   // Redirigir a login si no hay usuario
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   // Redirigir al admin normal si no tiene acceso a v2
