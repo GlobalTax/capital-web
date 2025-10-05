@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { LeadTasksManager } from '@/features/admin/components/leads/LeadTasksManager';
+import { LeadTasksQuickView } from '@/features/admin/components/leads/LeadTasksQuickView';
 import { LeadAssignmentSelect } from '@/components/admin/leads/LeadAssignmentSelect';
 import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
 import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
@@ -54,7 +54,6 @@ export default function LeadDetailPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [notes, setNotes] = useState('');
-  const [showTasksModal, setShowTasksModal] = useState(false);
 
   // Fetch lead data
   const { data: lead, isLoading, refetch } = useQuery({
@@ -191,39 +190,33 @@ export default function LeadDetailPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          {/* Botón "Pasar a Fase 1" solo para valoraciones con 100% completado */}
-          {lead.origin === 'valuation' && lead.lead_status_crm !== 'calificado' && lead.lead_status_crm !== 'ganado' && (
-            <Button 
-              variant="default"
-              onClick={() => {
-                // Actualizar estado a 'calificado' (Fase 1)
-                supabase
-                  .from('company_valuations')
-                  .update({ 
-                    lead_status_crm: 'calificado',
-                    status_updated_at: new Date().toISOString()
-                  })
-                  .eq('id', lead.id)
-                  .then(() => {
-                    refetch();
-                    toast({
-                      title: "Lead pasado a Fase 1",
-                      description: "El lead ha sido calificado y está listo para ROD",
-                    });
+        {/* Botón "Pasar a Fase 1" solo para valoraciones */}
+        {lead.origin === 'valuation' && lead.lead_status_crm !== 'calificado' && lead.lead_status_crm !== 'ganado' && (
+          <Button 
+            variant="default"
+            onClick={() => {
+              // Actualizar estado a 'calificado' (Fase 1)
+              supabase
+                .from('company_valuations')
+                .update({ 
+                  lead_status_crm: 'calificado',
+                  status_updated_at: new Date().toISOString()
+                })
+                .eq('id', lead.id)
+                .then(() => {
+                  refetch();
+                  toast({
+                    title: "Lead pasado a Fase 1",
+                    description: "El lead ha sido calificado y está listo para ROD",
                   });
-              }}
-              disabled={lead.lead_status_crm === 'calificado'}
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Pasar a Fase 1 (ROD)
-            </Button>
-          )}
-          <Button onClick={() => setShowTasksModal(true)}>
-            <CheckCircle2 className="mr-2 h-4 w-4" />
-            Gestionar Tareas
+                });
+            }}
+            disabled={lead.lead_status_crm === 'calificado'}
+          >
+            <TrendingUp className="mr-2 h-4 w-4" />
+            Pasar a Fase 1 (ROD)
           </Button>
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -345,6 +338,11 @@ export default function LeadDetailPage() {
             </Card>
           )}
 
+          {/* Control de Fase 0 - Solo para valoraciones */}
+          {lead.origin === 'valuation' && (
+            <LeadTasksQuickView leadId={lead.id} leadType={lead.origin} />
+          )}
+
           {/* Notas internas */}
           <Card>
             <CardHeader>
@@ -454,16 +452,6 @@ export default function LeadDetailPage() {
           </Card>
         </div>
       </div>
-
-      {/* Modal de tareas */}
-      {showTasksModal && (
-        <LeadTasksManager
-          leadId={lead.id}
-          leadType={lead.origin}
-          open={showTasksModal}
-          onOpenChange={setShowTasksModal}
-        />
-      )}
     </div>
   );
 }
