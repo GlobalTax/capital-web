@@ -43,10 +43,10 @@ const DueDiligenceCTA = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <a 
-                href="tel:620273552"
+                href="tel:+34695717490"
                 className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-300"
               >
-                <span>📞 620273552</span>
+                <span>📞 +34 695 717 490</span>
               </a>
               <a 
                 href="mailto:samuel@capittal.es"

@@ -34,7 +34,7 @@ const Header = () => {
                 size="sm"
               />
             </Link>
-            <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors border border-gray-300 rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 ease-out">
+            <a href="tel:+34695717490" className="p-2 text-black hover:text-gray-600 transition-colors border border-gray-300 rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 ease-out">
               <Phone size={18} />
             </a>
           </div>

@@ -36,7 +36,7 @@ const AcquisitionCTA = () => {
                   variant="primary"
                   size="lg"
                   className="w-full bg-primary text-white hover:bg-primary/90"
-                  onClick={() => window.open('tel:+34911237778')}
+                  onClick={() => window.open('tel:+34695717490')}
                 />
                 <InteractiveHoverButton
                   text="Enviar Email"
@@ -60,7 +60,7 @@ const AcquisitionCTA = () => {
                     <Phone className="w-4 h-4 text-primary mt-1" />
                     <div>
                       <div className="font-medium text-slate-900 text-sm">Teléfono</div>
-                      <div className="text-slate-600 text-sm">+34 911 23 77 78</div>
+                      <div className="text-slate-600 text-sm">+34 695 717 490</div>
                     </div>
                   </div>
                   

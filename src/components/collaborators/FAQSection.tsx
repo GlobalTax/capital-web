@@ -98,7 +98,7 @@ export const FAQSection = () => {
                 📧 colaboradores@capittal.com
               </div>
               <div className="flex items-center gap-2">
-                📞 +34 91 123 45 67
+                📞 +34 695 717 490
               </div>
             </div>
           </div>

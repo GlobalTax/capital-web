@@ -84,10 +84,10 @@ const ValoracionesFAQ = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
-              href="tel:+34917702717" 
+              href="tel:+34695717490" 
               className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
             >
-              📞 +34 917 702 717
+              📞 +34 695 717 490
             </a>
             <a 
               href="mailto:contacto@capittal.com" 

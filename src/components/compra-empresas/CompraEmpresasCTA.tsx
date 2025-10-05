@@ -219,8 +219,8 @@ const CompraEmpresasCTA = () => {
           <div className="text-center mt-8">
             <p className="text-blue-100 mb-4">¿Prefieres hablar directamente con nuestros expertos?</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a href="tel:+34620273552" className="text-white hover:text-blue-200 font-medium">
-                📞 +34 620 27 35 52
+              <a href="tel:+34695717490" className="text-white hover:text-blue-200 font-medium">
+                📞 +34 695 717 490
               </a>
               <a href="mailto:adquisiciones@capittal.es" className="text-white hover:text-blue-200 font-medium">
                 ✉️ adquisiciones@capittal.es

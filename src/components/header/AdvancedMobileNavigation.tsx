@@ -119,7 +119,7 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
           </Link>
           
           <a 
-            href="tel:+34912345678" 
+            href="tel:+34695717490" 
             className="flex items-center justify-center p-3 text-black hover:text-gray-600 transition-colors border border-black rounded-md w-full"
           >
             <Phone size={20} className="mr-2" />

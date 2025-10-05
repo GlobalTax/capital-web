@@ -119,7 +119,7 @@ const MobileNavigation = ({
               Contacto
             </Button>
           </Link>
-          <a href="tel:+34912345678" className="p-2 text-black hover:text-gray-600 transition-colors border-0.5 border-black rounded-md">
+          <a href="tel:+34695717490" className="p-2 text-black hover:text-gray-600 transition-colors border-0.5 border-black rounded-md">
             <Phone size={20} />
           </a>
         </div>

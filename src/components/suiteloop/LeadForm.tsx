@@ -293,7 +293,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
 
         {/* Footer */}
         <p className="text-xs text-muted-foreground text-center">
-          📞 También puedes llamarnos directamente al <strong>+34 91 123 45 67</strong>
+          📞 También puedes llamarnos directamente al <strong>+34 695 717 490</strong>
         </p>
       </form>
     </div>

@@ -263,7 +263,7 @@ const LegalConsultationForm = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="font-medium text-foreground">Llamada Directa</p>
-                  <p className="text-muted-foreground">+34 91 000 0000</p>
+                  <p className="text-muted-foreground">+34 695 717 490</p>
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Email Especializado</p>
