@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, CheckCircle2, Mail, Eye } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Trash2, CheckCircle2, Mail, Eye, Search, Download, Filter, X } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ContactsTableProps {
   contacts: UnifiedContact[];
@@ -25,6 +34,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   onViewDetails,
   onDeleteContact,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [originFilters, setOriginFilters] = useState<ContactOrigin[]>([]);
 
   const getOriginBadge = (origin: ContactOrigin) => {
     const badges = {
@@ -119,13 +130,138 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
     );
   }
 
+  const toggleOriginFilter = (origin: ContactOrigin) => {
+    setOriginFilters(prev => 
+      prev.includes(origin) 
+        ? prev.filter(o => o !== origin)
+        : [...prev, origin]
+    );
+  };
+
+  const filteredContacts = contacts.filter(contact => {
+    const matchesSearch = !searchQuery || 
+      contact.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.company?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesOrigin = originFilters.length === 0 || originFilters.includes(contact.origin);
+    
+    return matchesSearch && matchesOrigin;
+  });
+
+  const handleExport = () => {
+    // TODO: Implementar exportación
+    console.log('Exportar contactos');
+  };
+
+  const hasActiveFilters = originFilters.length > 0 || searchQuery !== '';
+
   return (
     <div className="relative rounded-md border overflow-hidden">
-      {/* Barra superior con contador */}
-      <div className="bg-muted/30 px-4 py-3 border-b">
-        <p className="text-sm text-muted-foreground">
-          Mostrando {contacts.length} contacto{contacts.length !== 1 ? 's' : ''}
-        </p>
+      {/* Barra superior con herramientas */}
+      <div className="bg-muted/30 border-b">
+        {/* Fila principal con búsqueda y acciones */}
+        <div className="flex items-center gap-3 px-4 py-3">
+          {/* Búsqueda */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre, email o empresa..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 bg-background"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+
+          {/* Filtro por origen */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+                {originFilters.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 px-1 min-w-5 h-5">
+                    {originFilters.length}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Filtrar por origen</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {(['contact', 'valuation', 'collaborator', 'acquisition', 'company_acquisition'] as ContactOrigin[]).map((origin) => (
+                <DropdownMenuCheckboxItem
+                  key={origin}
+                  checked={originFilters.includes(origin)}
+                  onCheckedChange={() => toggleOriginFilter(origin)}
+                >
+                  {origin === 'contact' && 'Comercial'}
+                  {origin === 'valuation' && 'Valoración'}
+                  {origin === 'collaborator' && 'Colaborador'}
+                  {origin === 'acquisition' && 'Adquisición'}
+                  {origin === 'company_acquisition' && 'Compra'}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Acciones */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-9"
+              onClick={handleExport}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+
+            {selectedContacts.length > 0 && (
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="h-9"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar ({selectedContacts.length})
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Fila de info y filtros activos */}
+        <div className="flex items-center justify-between px-4 pb-3">
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">
+              Mostrando {filteredContacts.length} de {contacts.length} contacto{contacts.length !== 1 ? 's' : ''}
+            </p>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs"
+                onClick={() => {
+                  setSearchQuery('');
+                  setOriginFilters([]);
+                }}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Limpiar filtros
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
       
       {/* Tabla con scroll */}
@@ -154,7 +290,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {contacts.map((contact) => (
+          {filteredContacts.map((contact) => (
             <TableRow 
               key={contact.id}
               className="cursor-pointer hover:bg-muted/50 transition-colors"
