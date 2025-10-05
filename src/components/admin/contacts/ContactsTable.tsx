@@ -121,6 +121,14 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
 
   return (
     <div className="relative rounded-md border overflow-hidden">
+      {/* Barra superior con contador */}
+      <div className="bg-muted/30 px-4 py-3 border-b">
+        <p className="text-sm text-muted-foreground">
+          Mostrando {contacts.length} contacto{contacts.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+      
+      {/* Tabla con scroll */}
       <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-400px)]">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-background border-b shadow-sm">
