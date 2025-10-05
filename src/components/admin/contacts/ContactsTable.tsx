@@ -39,6 +39,32 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
     return <Badge variant={badge.variant}>{badge.label}</Badge>;
   };
 
+  const getLeadStatusBadge = (status: string | null | undefined) => {
+    if (!status) return <Badge variant="outline" className="text-xs text-muted-foreground">Sin estado</Badge>;
+    
+    const configs: Record<string, { label: string; color: string }> = {
+      'nuevo': { label: 'Nuevo', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+      'contactado': { label: 'Contactado', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+      'contactando': { label: 'Contactando', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+      'calificado': { label: 'Calificado', color: 'bg-green-100 text-green-700 border-green-300' },
+      'en_espera': { label: 'En Espera', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+      'propuesta_enviada': { label: 'Propuesta Enviada', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
+      'negociacion': { label: 'Negociación', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+      'ganado': { label: 'Ganado', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+      'perdido': { label: 'Perdido', color: 'bg-red-100 text-red-700 border-red-300' },
+      'descartado': { label: 'Descartado', color: 'bg-rose-100 text-rose-700 border-rose-300' },
+      'archivado': { label: 'Archivado', color: 'bg-slate-100 text-slate-700 border-slate-300' },
+    };
+    
+    const config = configs[status] || { label: status, color: 'bg-gray-100 text-gray-700' };
+    
+    return (
+      <Badge variant="outline" className={`${config.color} text-xs`}>
+        {config.label}
+      </Badge>
+    );
+  };
+
   const getEmailStatusBadge = (contact: UnifiedContact) => {
     if (contact.email_opened) {
       return (
@@ -105,6 +131,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               />
             </TableHead>
             <TableHead>Origen</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Asignado a</TableHead>
             <TableHead>Contacto</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Empresa</TableHead>
@@ -129,6 +157,16 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 />
               </TableCell>
               <TableCell>{getOriginBadge(contact.origin)}</TableCell>
+              <TableCell>{getLeadStatusBadge(contact.lead_status_crm)}</TableCell>
+              <TableCell>
+                {contact.assigned_to_name ? (
+                  <Badge variant="outline" className="text-xs">
+                    {contact.assigned_to_name}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">No asignado</span>
+                )}
+              </TableCell>
               <TableCell>
                 <div className="font-medium hover:text-primary transition-colors">
                   {contact.name}

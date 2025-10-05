@@ -62,6 +62,11 @@ export interface UnifiedContact {
   priority?: 'hot' | 'warm' | 'cold';
   score?: number;
   
+  // CRM fields
+  lead_status_crm?: 'nuevo' | 'contactado' | 'calificado' | 'descartado' | 'contactando' | 'en_espera' | 'propuesta_enviada' | 'negociacion' | 'ganado' | 'perdido' | 'archivado' | null;
+  assigned_to?: string;
+  assigned_to_name?: string | null;
+  
   // Legacy compatibility
   source?: string;
 }
@@ -122,7 +127,7 @@ export const useUnifiedContacts = () => {
       // Fetch contact_leads
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
-        .select('*')
+        .select('*, lead_status_crm, assigned_to')
         .order('created_at', { ascending: false });
 
       if (contactError) throw contactError;
@@ -130,7 +135,7 @@ export const useUnifiedContacts = () => {
       // Fetch company_valuations
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*')
+        .select('*, lead_status_crm, assigned_to')
         .order('created_at', { ascending: false });
 
       if (valuationError) throw valuationError;
@@ -138,7 +143,7 @@ export const useUnifiedContacts = () => {
       // Fetch collaborator_applications
       const { data: collaboratorLeads, error: collaboratorError } = await supabase
         .from('collaborator_applications')
-        .select('*')
+        .select('*, lead_status_crm, assigned_to')
         .order('created_at', { ascending: false });
 
       if (collaboratorError) throw collaboratorError;
@@ -194,6 +199,8 @@ export const useUnifiedContacts = () => {
           user_agent: lead.user_agent,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+          lead_status_crm: lead.lead_status_crm,
+          assigned_to: lead.assigned_to,
         })),
         
         // Valuation leads
@@ -224,6 +231,8 @@ export const useUnifiedContacts = () => {
           referrer: lead.referrer,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+          lead_status_crm: lead.lead_status_crm,
+          assigned_to: lead.assigned_to,
         })),
         
         // Collaborator applications
@@ -250,6 +259,8 @@ export const useUnifiedContacts = () => {
           user_agent: lead.user_agent,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+          lead_status_crm: lead.lead_status_crm,
+          assigned_to: lead.assigned_to,
         })),
         
         // General contact leads (if table exists)
@@ -339,14 +350,43 @@ export const useUnifiedContacts = () => {
         })),
       ];
 
-      // Sort by creation date
-      unifiedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Get all unique assigned_to IDs
+      const assignedToIds = new Set(
+        unifiedData
+          .map(c => c.assigned_to)
+          .filter(Boolean) as string[]
+      );
 
-      setContacts(unifiedData);
-      setFilteredContacts(unifiedData);
+      // Fetch admin names if there are any assigned contacts
+      let adminNames: Record<string, string> = {};
+      if (assignedToIds.size > 0) {
+        const { data: admins } = await supabase
+          .from('admin_users')
+          .select('user_id, full_name')
+          .in('user_id', Array.from(assignedToIds));
+        
+        adminNames = (admins || []).reduce((acc, admin) => {
+          acc[admin.user_id] = admin.full_name;
+          return acc;
+        }, {} as Record<string, string>);
+      }
+
+      // Add admin names to each contact
+      const unifiedDataWithNames = unifiedData.map(contact => ({
+        ...contact,
+        assigned_to_name: contact.assigned_to 
+          ? adminNames[contact.assigned_to] || null
+          : null,
+      }));
+
+      // Sort by creation date
+      unifiedDataWithNames.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setContacts(unifiedDataWithNames);
+      setFilteredContacts(unifiedDataWithNames);
       
       // Calculate stats
-      calculateStats(unifiedData);
+      calculateStats(unifiedDataWithNames);
 
     } catch (error) {
       console.error('Error fetching unified contacts:', error);
