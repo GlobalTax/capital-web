@@ -137,7 +137,9 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
           <div class="content">
             <div class="info-box">
               <p>Hola <strong>${data.fullName}</strong>,</p>
-              <p>Hemos recibido tu consulta sobre la operación <strong>${data.company_name}</strong>.</p>
+              <p>Hemos recibido tu consulta sobre la operación <strong>${data.companyName}</strong>.</p>
+              <p><span class="label">ID de operación:</span> ${data.operationId}</p>
+              ${data.message ? `<p><span class="label">Tu mensaje:</span> ${data.message}</p>` : ''}
               <p>Nuestro equipo revisará tu perfil de inversor y se pondrá en contacto contigo en las próximas 24-48 horas para proporcionarte más información detallada sobre esta oportunidad.</p>
               <p>Te recordamos que todas nuestras operaciones están sujetas a:</p>
               <ul>
@@ -310,10 +312,13 @@ const getEmailTemplate = (formType: string, data: any) => {
             <div class="info-box">
               <p><span class="label">Nombre:</span> ${data.fullName}</p>
               <p><span class="label">Email:</span> ${data.email}</p>
+              <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
               <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">Operación de interés:</span> ${data.company_name}</p>
-              <p><span class="label">ID de operación:</span> ${data.operation_id}</p>
-              <p><span class="label">Mensaje:</span> ${data.message}</p>
+              <p><span class="label">Tipo de servicio:</span> ${data.serviceType || 'No especificado'}</p>
+              <p><span class="label">Operación de interés:</span> ${data.companyName}</p>
+              <p><span class="label">ID de operación:</span> <a href="https://capittal.es/oportunidades?operation=${data.operationId}">${data.operationId}</a></p>
+              <p><span class="label">Mensaje:</span> ${data.message || 'Sin mensaje'}</p>
+              <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES')}</p>
             </div>
           </div>
           <div class="footer">
