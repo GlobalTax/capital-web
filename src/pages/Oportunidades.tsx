@@ -1,12 +1,8 @@
 import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
-import { useOperationsStats } from '@/hooks/useOperationsStats';
-import { formatCompactNumber } from '@/shared/utils/format';
 
 const Oportunidades = () => {
-  const { data: stats, isLoading } = useOperationsStats();
-
   // Set page metadata
   React.useEffect(() => {
     document.title = 'Oportunidades de Inversión - Capittal';
@@ -27,30 +23,10 @@ const Oportunidades = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
                 Marketplace de Oportunidades
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Explora empresas disponibles para adquisición con información detallada sobre 
                 valoración, sector y rendimiento financiero.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <div className="bg-card border rounded-lg px-6 py-4">
-                  <div className="text-2xl font-bold text-primary">
-                    {isLoading ? '...' : stats?.activeOperations || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Oportunidades Activas</div>
-                </div>
-                <div className="bg-card border rounded-lg px-6 py-4">
-                  <div className="text-2xl font-bold text-primary">
-                    {isLoading ? '...' : `€${formatCompactNumber(stats?.averageValuation || 0)}`}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Valoración Promedio</div>
-                </div>
-                <div className="bg-card border rounded-lg px-6 py-4">
-                  <div className="text-2xl font-bold text-primary">
-                    {isLoading ? '...' : stats?.uniqueSectors || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Sectores Diversos</div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
