@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminRouter from '@/features/admin/components/AdminRouter';
 import AdminLayout from '@/features/admin/components/AdminLayout';
@@ -10,25 +10,39 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import AdminLoadingState from '@/components/admin/states/AdminLoadingState';
 
 const Admin = () => {
-  const { user, isLoading, signIn, signUp, isAdmin } = useAuth();
+  const { user, isLoading, signIn, signUp, isAdmin, getDebugInfo } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showDetailedLoading, setShowDetailedLoading] = useState(false);
 
-  // Loading state
-  if (isLoading) {
+  // ⚡ Loading progresivo: spinner simple inicial → mensaje detallado solo si tarda
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => setShowDetailedLoading(true), 1500);
+      return () => clearTimeout(timer);
+    } else {
+      setShowDetailedLoading(false);
+    }
+  }, [isLoading]);
+
+  // Loading state - Spinner simple inicial (primeros 1.5s)
+  if (isLoading && !showDetailedLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verificando acceso administrativo...</p>
-        </div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
+  }
+
+  // Loading state - Mensaje completo solo si tarda más de 1.5s
+  if (isLoading && showDetailedLoading) {
+    return <AdminLoadingState debugInfo={JSON.stringify(getDebugInfo(), null, 2)} />;
   }
 
   // Authenticated and admin - show admin panel

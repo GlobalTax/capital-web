@@ -112,9 +112,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsCheckingAdmin(true);
     
     try {
-      // Add timeout to prevent hanging
+      // ⚡ Timeout reducido 5s → 3s (optimización)
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Admin check timeout')), 5000);
+        setTimeout(() => reject(new Error('Admin check timeout')), 3000);
       });
 
       const checkPromise = supabase
@@ -136,9 +136,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .eq('user_id', userId)
             .maybeSingle();
             
+          // ⚡ Retry timeout reducido 3s → 2s
           const { data: retryData, error: retryError } = await Promise.race([
             retryPromise, 
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Retry timeout')), 3000))
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Retry timeout')), 2000))
           ]);
             
           if (!retryError && retryData) {
@@ -192,12 +193,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
     
-    // ⚡ OPTIMIZACIÓN: Timeout reducido a 6s
+    // ⚡ Timeout global reducido 6s → 5s
     const globalTimeout = setTimeout(() => {
       if (mounted && isLoading) {
         setIsLoading(false);
       }
-    }, 6000);
+    }, 5000);
     
     setAuthTimeout(globalTimeout);
     
@@ -245,8 +246,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!mounted) return;
       
       try {
+        // ⚡ Session init timeout reducido 8s → 6s
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Session initialization timeout')), 8000);
+          setTimeout(() => reject(new Error('Session initialization timeout')), 6000);
         });
 
         const sessionPromise = supabase.auth.getSession();
@@ -254,11 +256,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (error) {
           logger.error('Error getting initial session', error, { context: 'auth', component: 'AuthContext' });
-          // Try to refresh session on error
+          // ⚡ Refresh timeout reducido 5s → 3s
           const refreshPromise = supabase.auth.refreshSession();
           const { data: refreshData, error: refreshError } = await Promise.race([
             refreshPromise,
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Refresh timeout')), 5000))
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Refresh timeout')), 3000))
           ]);
           
           if (!refreshError && refreshData.session) {

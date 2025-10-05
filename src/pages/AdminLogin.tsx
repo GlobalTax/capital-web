@@ -22,6 +22,7 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [recoveryAttempted, setRecoveryAttempted] = useState(false);
   const [showStuckHelp, setShowStuckHelp] = useState(false);
+  const [showDetailedLoading, setShowDetailedLoading] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Si ya está autenticado y es admin, redirigir al panel
@@ -30,14 +31,24 @@ const AdminLogin = () => {
       navigate('/admin/dashboard', { replace: true });
     }
 
-    // Show stuck help if loading takes too long
+    // ⚡ Loading progresivo: mostrar mensaje completo solo si tarda
+    const detailedTimer = setTimeout(() => {
+      if (isLoading) {
+        setShowDetailedLoading(true);
+      }
+    }, 1500);
+
+    // Show stuck help if loading takes too long (reducido de 8s a 6s)
     const stuckTimer = setTimeout(() => {
       if (isLoading) {
         setShowStuckHelp(true);
       }
-    }, 8000);
+    }, 6000);
 
-    return () => clearTimeout(stuckTimer);
+    return () => {
+      clearTimeout(detailedTimer);
+      clearTimeout(stuckTimer);
+    };
   }, [user, isAdmin, isLoading, navigate]);
 
   // Función de recuperación de sesión para admins existentes
@@ -130,8 +141,17 @@ const AdminLogin = () => {
     setAuthLoading(false);
   };
 
-  // Pantalla de carga
-  if (isLoading) {
+  // Pantalla de carga - Spinner simple inicial (primeros 1.5s)
+  if (isLoading && !showDetailedLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Pantalla de carga - Mensaje completo solo si tarda más de 1.5s
+  if (isLoading && showDetailedLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4">
