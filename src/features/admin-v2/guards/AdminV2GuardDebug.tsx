@@ -19,8 +19,9 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
   const [isChecking, setIsChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [isSandbox] = useState(isSandboxEnvironment());
-  const SANDBOX_BYPASS_TIMEOUT_MS = 3000;
+  const SANDBOX_BYPASS_TIMEOUT_MS = 1000; // Reduced to 1 second
   const timeoutRef = useRef<number | null>(null);
+  const sessionCheckedRef = useRef(false);
 
   // Debug: log state transitions
   useEffect(() => {
@@ -86,6 +87,35 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
     };
   }, [isSandbox, authLoading, hasAccess, user]);
 
+  // 🔥 NEW: Proactive session check on mount in sandbox
+  useEffect(() => {
+    const checkSessionDirectly = async () => {
+      if (!isSandbox || sessionCheckedRef.current) return;
+      
+      sessionCheckedRef.current = true;
+      console.log('🔍 [AdminV2GuardDebug] Checking session directly on mount (sandbox)');
+      
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('[AdminV2GuardDebug] Session check error:', error);
+        return;
+      }
+      
+      if (session?.user) {
+        console.log(`✅ [AdminV2GuardDebug] Session found: ${session.user.email} - Granting immediate access`);
+        setHasAccess(true);
+        setIsChecking(false);
+        // Fire-and-forget verification for logging
+        setTimeout(() => verifyAdminDirect(), 0);
+      } else {
+        console.warn('⚠️ [AdminV2GuardDebug] No session found');
+      }
+    };
+    
+    checkSessionDirectly();
+  }, [isSandbox]);
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (authLoading) return;
@@ -98,12 +128,13 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
 
       // 🏖️ Sandbox: immediate access for any authenticated user
       if (isSandbox) {
-        console.log('🏖️ [AdminV2GuardDebug] Sandbox mode - Immediate access for authenticated users');
-        console.log(`📧 [AdminV2GuardDebug] User: ${user.email}`);
-        setHasAccess(true);
-        setIsChecking(false);
-        // Fire-and-forget verification to help debugging
-        setTimeout(() => verifyAdminDirect(), 0);
+        // Already handled by direct session check above
+        if (!hasAccess) {
+          console.log('🏖️ [AdminV2GuardDebug] Sandbox fallback - Immediate access for authenticated users');
+          console.log(`📧 [AdminV2GuardDebug] User: ${user.email}`);
+          setHasAccess(true);
+          setIsChecking(false);
+        }
         return;
       }
 

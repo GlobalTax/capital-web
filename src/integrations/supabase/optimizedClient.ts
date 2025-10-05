@@ -2,12 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { SUPABASE_CONFIG, validateSupabaseConfig } from '@/config/supabase';
 
-// Sandbox detection helpers
-const isInIframe = typeof window !== 'undefined' && window.top !== window.self;
-const isSandboxHost = typeof window !== 'undefined' && /sandbox\.lovable\.dev$/.test(location.hostname);
-const isSandbox = isInIframe || isSandboxHost;
-
-// Memory storage implementation for sandbox environments
+// Memory storage implementation fallback
 const memoryStorage = (() => {
   const storage = new Map<string, string>();
   
@@ -27,18 +22,15 @@ const memoryStorage = (() => {
   };
 })();
 
-// Safe localStorage access with fallback
+// Safe localStorage access with fallback (always try localStorage first)
 const safeLocalStorage = (() => {
-  if (isSandbox) {
-    return memoryStorage;
-  }
-  
   try {
     // Test localStorage access
     if (typeof window !== 'undefined' && window.localStorage) {
       const testKey = '__capittal_storage_test__';
       window.localStorage.setItem(testKey, 'test');
       window.localStorage.removeItem(testKey);
+      console.log('✅ localStorage available');
       return window.localStorage;
     }
   } catch (error) {
@@ -47,6 +39,8 @@ const safeLocalStorage = (() => {
   
   return memoryStorage;
 })();
+
+const canPersistSession = safeLocalStorage !== memoryStorage;
 
 // Singleton pattern global más robusto para evitar múltiples instancias
 class SupabaseClientSingleton {
@@ -75,10 +69,10 @@ class SupabaseClientSingleton {
           SUPABASE_CONFIG.anonKey,
           {
             auth: {
-              persistSession: !isSandbox,
+              persistSession: canPersistSession,
               storage: safeLocalStorage,
               storageKey: 'capittal-auth-token',
-              autoRefreshToken: !isSandbox,
+              autoRefreshToken: canPersistSession,
               detectSessionInUrl: true,
             },
             // Completely disable realtime by not configuring it
@@ -94,11 +88,7 @@ class SupabaseClientSingleton {
           console.warn('⚠️ Could not store global singleton reference');
         }
         
-        if (isSandbox) {
-          console.log('🏖️ Supabase client initialized in sandbox mode (memory storage)');
-        } else {
-          console.log('✅ Optimized Supabase client initialized (singleton)');
-        }
+        console.log(`✅ Supabase client initialized (persistSession: ${canPersistSession}, autoRefresh: ${canPersistSession})`);
       } catch (error) {
         console.error('❌ Failed to initialize Supabase client:', error);
         throw error;

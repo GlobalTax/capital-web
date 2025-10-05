@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ interface AdminAuthProps {
 
 const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
   const { signIn, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showSetup, setShowSetup] = useState(false);
@@ -22,8 +24,10 @@ const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
     e.preventDefault();
     const { error } = await signIn(email, password);
     if (!error) {
-      setShowSetup(true);
+      console.log('✅ [AdminAuth] Login successful, redirecting to /admin/v2/demo');
       onAuthSuccess();
+      // Navigate to admin v2 after successful login
+      navigate('/admin/v2/demo', { replace: true });
     }
   };
 
