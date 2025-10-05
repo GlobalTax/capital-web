@@ -46,15 +46,6 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
     navigate(`/contacto?${params.toString()}`);
   };
 
-  const calculateEbitdaMultiple = () => {
-    if (operation.ebitda_amount && operation.valuation_amount) {
-      const multiple = normalizeValuationAmount(operation.valuation_amount) / normalizeValuationAmount(operation.ebitda_amount);
-      return multiple.toFixed(2);
-    }
-    return null;
-  };
-
-  const ebitdaMultiple = calculateEbitdaMultiple();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -122,12 +113,6 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                 }
               </p>
             </div>
-            {ebitdaMultiple && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Múltiplo EBITDA</p>
-                <p className="text-xl font-bold text-purple-600">{ebitdaMultiple}x</p>
-              </div>
-            )}
           </div>
         </div>
 
