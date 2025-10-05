@@ -3,6 +3,7 @@
 
 // Guards
 export { AdminV2Guard } from './guards/AdminV2Guard';
+export { AdminV2GuardDebug } from './guards/AdminV2GuardDebug';
 
 // Layouts
 export { MainLayout } from './components/MainLayout';

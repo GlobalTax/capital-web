@@ -11,7 +11,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // === ADMIN V2 (NEW LIQUID GLASS) ===
 const AdminV2Demo = lazy(() => import('@/features/admin-v2/components/DashboardDemo'));
-import { AdminV2Guard } from '@/features/admin-v2/guards/AdminV2Guard';
+import { AdminV2GuardDebug } from '@/features/admin-v2/guards/AdminV2GuardDebug';
 import { MainLayout } from '@/features/admin-v2/components/MainLayout';
 
 // === BUSINESS PAGES ===
@@ -82,11 +82,11 @@ export const AppRoutes = () => {
         <Route 
           path="/admin/v2/demo" 
           element={
-            <AdminV2Guard>
+            <AdminV2GuardDebug>
               <MainLayout>
                 <AdminV2Demo />
               </MainLayout>
-            </AdminV2Guard>
+            </AdminV2GuardDebug>
           } 
         />
         
