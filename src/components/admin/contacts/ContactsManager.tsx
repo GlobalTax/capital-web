@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import BulkActionsToolbar from './BulkActionsToolbar';
 import ContactDetailsModal from './ContactDetailsModal';
 
 const ContactsManager = () => {
+  const navigate = useNavigate();
   const { contacts, stats, isLoading, filters, applyFilters, updateContactStatus, bulkUpdateStatus, exportContacts, refetch } = useUnifiedContacts();
   const { toast } = useToast();
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
@@ -42,8 +44,8 @@ const ContactsManager = () => {
     }
   };
 
-  const handleViewDetails = (contactId: string) => {
-    setSelectedContact(contactId);
+  const handleViewDetails = (contactId: string, origin: ContactOrigin) => {
+    navigate(`/admin/contacts/${origin}_${contactId}`);
   };
 
   const handleDeleteContact = async (contactId: string) => {

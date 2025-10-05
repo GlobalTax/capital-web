@@ -13,7 +13,7 @@ interface ContactsTableProps {
   selectedContacts: string[];
   onSelectContact: (contactId: string) => void;
   onSelectAll: () => void;
-  onViewDetails: (contactId: string) => void;
+  onViewDetails: (contactId: string, origin: ContactOrigin) => void;
   onDeleteContact: (contactId: string) => void;
 }
 
@@ -117,8 +117,12 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <TableRow key={contact.id}>
-              <TableCell>
+            <TableRow 
+              key={contact.id}
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => onViewDetails(contact.id, contact.origin)}
+            >
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={selectedContacts.includes(contact.id)}
                   onCheckedChange={() => onSelectContact(contact.id)}
@@ -126,7 +130,9 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               </TableCell>
               <TableCell>{getOriginBadge(contact.origin)}</TableCell>
               <TableCell>
-                <div className="font-medium">{contact.name}</div>
+                <div className="font-medium hover:text-primary transition-colors">
+                  {contact.name}
+                </div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
@@ -150,15 +156,25 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                   locale: es,
                 })}
               </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onDeleteContact(contact.id)}
-                  title="Eliminar contacto"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewDetails(contact.id, contact.origin)}
+                    title="Abrir ficha completa"
+                  >
+                    Ver Ficha
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onDeleteContact(contact.id)}
+                    title="Eliminar contacto"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
