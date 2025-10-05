@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
 import { isRecentOperation } from '@/utils/dateHelpers';
-import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, ChevronLeft } from 'lucide-react';
+import OperationContactForm from './OperationContactForm';
 
 interface Operation {
   id: string;
@@ -35,15 +35,19 @@ interface OperationDetailsModalProps {
 }
 
 const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation, isOpen, onClose }) => {
-  const navigate = useNavigate();
+  const [showContactForm, setShowContactForm] = useState(false);
 
   const handleRequestInfo = () => {
-    const params = new URLSearchParams({
-      ref: 'marketplace',
-      operation: operation.id,
-      company: operation.company_name,
-    });
-    navigate(`/contacto?${params.toString()}`);
+    setShowContactForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    setShowContactForm(false);
+    onClose();
+  };
+
+  const handleBackToDetails = () => {
+    setShowContactForm(false);
   };
 
 
@@ -53,6 +57,17 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
         <DialogHeader>
           {/* Logo/Company Initial */}
           <div className="flex items-center space-x-4 mb-4">
+            {showContactForm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackToDetails}
+                className="mr-2"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Volver
+              </Button>
+            )}
             {operation.logo_url ? (
               <img 
                 src={operation.logo_url} 
@@ -82,8 +97,20 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
           </div>
         </DialogHeader>
 
-        {/* Financial Information Card */}
-        <div className="bg-muted rounded-lg p-6 border border-border">
+        {showContactForm ? (
+          /* Contact Form View */
+          <div className="py-4">
+            <OperationContactForm
+              operationId={operation.id}
+              companyName={operation.company_name}
+              onSuccess={handleFormSuccess}
+            />
+          </div>
+        ) : (
+          /* Operation Details View */
+          <>
+            {/* Financial Information Card */}
+            <div className="bg-muted rounded-lg p-6 border border-border">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
             <TrendingUp className="mr-2 h-5 w-5 text-primary" />
             Información Financiera
@@ -180,16 +207,18 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
           </div>
         )}
 
-        {/* CTA Footer */}
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
-          <Button variant="outline" onClick={onClose} className="sm:flex-1">
-            Cerrar
-          </Button>
-          <Button onClick={handleRequestInfo} className="sm:flex-1">
-            Solicitar Información
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </DialogFooter>
+            {/* CTA Footer */}
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
+              <Button variant="outline" onClick={onClose} className="sm:flex-1">
+                Cerrar
+              </Button>
+              <Button onClick={handleRequestInfo} className="sm:flex-1">
+                Solicitar Información
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

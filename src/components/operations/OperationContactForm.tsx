@@ -13,12 +13,14 @@ interface OperationContactFormProps {
   operationId: string;
   companyName: string;
   className?: string;
+  onSuccess?: () => void;
 }
 
 const OperationContactForm: React.FC<OperationContactFormProps> = ({ 
   operationId, 
   companyName,
-  className = '' 
+  className = '',
+  onSuccess
 }) => {
   const { submitOperationContactForm, isSubmitting } = useContactForm();
   const [formData, setFormData] = useState<OperationContactFormData>({
@@ -52,6 +54,11 @@ const OperationContactForm: React.FC<OperationContactFormProps> = ({
         operationId: operationId,
         website: '',
       });
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     }
   };
 
