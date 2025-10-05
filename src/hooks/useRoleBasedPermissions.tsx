@@ -368,7 +368,7 @@ export const useRoleBasedPermissions = () => {
       testimonials: userRole !== 'none' && userRole !== 'viewer',
       carouselTestimonials: userRole !== 'none' && userRole !== 'viewer',
       carouselLogos: userRole !== 'none' && userRole !== 'viewer',
-      banners: userRole !== 'none' && userRole !== 'viewer',
+      banners: userRole !== 'none',
       
       // Marketing & Analytics - Visible para todos excepto 'none'
       marketingAutomation: isAdminLevel,
