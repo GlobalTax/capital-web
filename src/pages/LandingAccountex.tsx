@@ -51,9 +51,6 @@ const LandingAccountex = () => {
         
         {/* CTA Banner */}
         <AccountexCTABanner />
-        
-        {/* Lead Form */}
-        <AccountexLeadForm />
       </main>
       
       <LandingFooterMinimal />
