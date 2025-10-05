@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      accountex_leads: {
+        Row: {
+          brevo_sent: boolean | null
+          brevo_sent_at: string | null
+          company: string
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          ip_address: unknown | null
+          message: string | null
+          phone: string | null
+          preferred_meeting_date: string | null
+          priority: string | null
+          processed_at: string | null
+          processed_by: string | null
+          referrer: string | null
+          sectors_of_interest: string | null
+          status: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          brevo_sent?: boolean | null
+          brevo_sent_at?: string | null
+          company: string
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string | null
+          phone?: string | null
+          preferred_meeting_date?: string | null
+          priority?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          brevo_sent?: boolean | null
+          brevo_sent_at?: string | null
+          company?: string
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message?: string | null
+          phone?: string | null
+          preferred_meeting_date?: string | null
+          priority?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       acquisition_leads: {
         Row: {
           acquisition_type: string | null
@@ -1663,8 +1750,10 @@ export type Database = {
           mandato_id: string | null
           mime_type: string
           storage_path: string
+          tags: string[] | null
           tipo: string | null
           updated_at: string | null
+          uploaded_by: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1674,8 +1763,10 @@ export type Database = {
           mandato_id?: string | null
           mime_type: string
           storage_path: string
+          tags?: string[] | null
           tipo?: string | null
           updated_at?: string | null
+          uploaded_by?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1685,8 +1776,10 @@ export type Database = {
           mandato_id?: string | null
           mime_type?: string
           storage_path?: string
+          tags?: string[] | null
           tipo?: string | null
           updated_at?: string | null
+          uploaded_by?: string | null
         }
         Relationships: [
           {
