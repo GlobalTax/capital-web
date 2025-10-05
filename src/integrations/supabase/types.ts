@@ -1605,6 +1605,51 @@ export type Database = {
         }
         Relationships: []
       }
+      contacto_documentos: {
+        Row: {
+          compartido_por: string | null
+          contacto_id: string
+          created_at: string | null
+          documento_id: string
+          fecha_compartido: string | null
+          id: string
+          notas: string | null
+        }
+        Insert: {
+          compartido_por?: string | null
+          contacto_id: string
+          created_at?: string | null
+          documento_id: string
+          fecha_compartido?: string | null
+          id?: string
+          notas?: string | null
+        }
+        Update: {
+          compartido_por?: string | null
+          contacto_id?: string
+          created_at?: string | null
+          documento_id?: string
+          fecha_compartido?: string | null
+          id?: string
+          notas?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacto_documentos_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacto_documentos_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contactos: {
         Row: {
           apellidos: string | null
@@ -1874,6 +1919,51 @@ export type Database = {
         }
         Relationships: []
       }
+      empresa_documentos: {
+        Row: {
+          compartido_por: string | null
+          created_at: string | null
+          documento_id: string
+          empresa_id: string
+          fecha_compartido: string | null
+          id: string
+          notas: string | null
+        }
+        Insert: {
+          compartido_por?: string | null
+          created_at?: string | null
+          documento_id: string
+          empresa_id: string
+          fecha_compartido?: string | null
+          id?: string
+          notas?: string | null
+        }
+        Update: {
+          compartido_por?: string | null
+          created_at?: string | null
+          documento_id?: string
+          empresa_id?: string
+          fecha_compartido?: string | null
+          id?: string
+          notas?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresa_documentos_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empresa_documentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           capital_circulante: number | null
@@ -2134,6 +2224,85 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      interacciones: {
+        Row: {
+          contacto_id: string | null
+          created_at: string | null
+          created_by: string | null
+          descripcion: string | null
+          documentos_adjuntos: Json | null
+          duracion_minutos: number | null
+          empresa_id: string | null
+          fecha: string
+          fecha_siguiente_accion: string | null
+          id: string
+          mandato_id: string | null
+          resultado: string | null
+          siguiente_accion: string | null
+          tipo: string
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          contacto_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          descripcion?: string | null
+          documentos_adjuntos?: Json | null
+          duracion_minutos?: number | null
+          empresa_id?: string | null
+          fecha?: string
+          fecha_siguiente_accion?: string | null
+          id?: string
+          mandato_id?: string | null
+          resultado?: string | null
+          siguiente_accion?: string | null
+          tipo: string
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          contacto_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          descripcion?: string | null
+          documentos_adjuntos?: Json | null
+          duracion_minutos?: number | null
+          empresa_id?: string | null
+          fecha?: string
+          fecha_siguiente_accion?: string | null
+          id?: string
+          mandato_id?: string | null
+          resultado?: string | null
+          siguiente_accion?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interacciones_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interacciones_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interacciones_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       key_statistics: {
         Row: {
