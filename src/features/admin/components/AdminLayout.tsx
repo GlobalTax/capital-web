@@ -6,6 +6,7 @@ import { useAdminDebug } from '@/hooks/useAdminDebug';
 import { AdminSidebar } from '@/components/admin/sidebar/AdminSidebar';
 import { EmergencyNavigation } from '@/components/admin/EmergencyNavigation';
 import AdminHeader from '@/components/admin/AdminHeader';
+import { AdminScrollBar } from '@/components/admin/AdminScrollBar';
 import { ErrorBoundaryProvider } from '@/components/admin/ErrorBoundaryProvider';
 import { resetWebSocketState } from '@/utils/resetWebSocketState';
 
@@ -80,12 +81,15 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
           
           <SidebarInset className="flex-1">
             {/* Header global con trigger siempre visible */}
-            <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm">
+            <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm sticky top-0 z-30">
               <SidebarTrigger className="-ml-1" />
               <div className="flex-1">
                 <AdminHeader onLogout={onLogout} />
               </div>
             </header>
+
+            {/* Barra de contexto con breadcrumbs y scroll progress */}
+            <AdminScrollBar />
 
             {/* Contenido principal */}
             <main className="flex-1 pl-4 pr-6 py-6 md:pl-6 md:pr-8 lg:pl-8 lg:pr-8 overflow-auto bg-background">
