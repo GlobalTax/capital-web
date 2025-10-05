@@ -14,12 +14,31 @@ const isSandboxEnvironment = (): boolean => {
          window.location.hostname.includes('127.0.0.1');
 };
 
+// Detectar si el bypass está forzado (solo sandbox)
+const isBypassForced = (): boolean => {
+  if (!isSandboxEnvironment()) return false;
+  
+  // Check query param
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('bypass') === '1') return true;
+  
+  // Check localStorage
+  try {
+    if (localStorage.getItem('capittal-admin-bypass') === '1') return true;
+  } catch (e) {
+    // localStorage blocked
+  }
+  
+  return false;
+};
+
 export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }) => {
   const { user, isLoading: authLoading, isAdmin } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [isSandbox] = useState(isSandboxEnvironment());
-  const SANDBOX_BYPASS_TIMEOUT_MS = 1000; // Reduced to 1 second
+  const [forceBypass] = useState(isBypassForced());
+  const SANDBOX_BYPASS_TIMEOUT_MS = 1000;
   const timeoutRef = useRef<number | null>(null);
   const sessionCheckedRef = useRef(false);
 
@@ -27,13 +46,14 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
   useEffect(() => {
     console.debug('[AdminV2GuardDebug] State', {
       isSandbox,
+      forceBypass,
       authLoading,
       isChecking,
       hasAccess,
       isAdmin,
       user: { id: user?.id, email: user?.email }
     });
-  }, [isSandbox, authLoading, isChecking, hasAccess, isAdmin, user]);
+  }, [isSandbox, forceBypass, authLoading, isChecking, hasAccess, isAdmin, user]);
 
   // Background: direct admin_users verification (for logs only in sandbox)
   const verifyAdminDirect = async () => {
@@ -87,10 +107,23 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
     };
   }, [isSandbox, authLoading, hasAccess, user]);
 
-  // 🔥 NEW: Proactive session check on mount in sandbox
+  // 🚨 EMERGENCY BYPASS: Immediate access in sandbox with bypass flag
+  useEffect(() => {
+    if (!isSandbox || !forceBypass) return;
+    
+    console.warn('🚨 [AdminV2GuardDebug] EMERGENCY BYPASS ACTIVE');
+    
+    if (user) {
+      console.log(`✅ [AdminV2GuardDebug] Emergency bypass - immediate access for ${user.email}`);
+      setHasAccess(true);
+      setIsChecking(false);
+    }
+  }, [isSandbox, forceBypass, user]);
+
+  // 🔥 Proactive session check on mount in sandbox (fallback)
   useEffect(() => {
     const checkSessionDirectly = async () => {
-      if (!isSandbox || sessionCheckedRef.current) return;
+      if (!isSandbox || sessionCheckedRef.current || forceBypass) return;
       
       sessionCheckedRef.current = true;
       console.log('🔍 [AdminV2GuardDebug] Checking session directly on mount (sandbox)');
@@ -114,7 +147,7 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
     };
     
     checkSessionDirectly();
-  }, [isSandbox]);
+  }, [isSandbox, forceBypass]);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -229,7 +262,7 @@ export const AdminV2GuardDebug: React.FC<AdminV2GuardDebugProps> = ({ children }
     <>
       {isSandbox && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 text-yellow-200 text-sm text-center backdrop-blur-sm">
-          🏖️ Sandbox Mode - Using simplified admin verification for development
+          {forceBypass ? '🚨 Sandbox Emergency Bypass activo' : '🏖️ Sandbox Mode - Using simplified admin verification for development'}
         </div>
       )}
       <div className={isSandbox ? 'pt-10' : ''}>

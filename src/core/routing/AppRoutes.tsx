@@ -90,6 +90,16 @@ export const AppRoutes = () => {
           } 
         />
         
+        {/* Admin V2 No-Guard Route (Sandbox Emergency Access) */}
+        <Route 
+          path="/admin/v2/no-guard" 
+          element={
+            <MainLayout>
+              <AdminV2Demo />
+            </MainLayout>
+          } 
+        />
+        
         {/* === BUSINESS ROUTES === */}
         <Route path="/venta-empresas" element={<VentaEmpresas />} />
         <Route path="/compra-empresas" element={<CompraEmpresas />} />
