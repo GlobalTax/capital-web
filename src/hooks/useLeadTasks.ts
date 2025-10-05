@@ -21,6 +21,10 @@ export interface LeadTask {
   is_automated: boolean;
   created_at: string;
   updated_at: string;
+  // Info adicional del lead
+  lead_status_crm: 'nuevo' | 'contactado' | 'calificado' | 'descartado' | null;
+  assigned_to_name: string | null;
+  assigned_to_email: string | null;
 }
 
 export const useLeadTasks = (leadId: string, leadType: 'valuation' | 'contact' | 'collaborator') => {
@@ -30,15 +34,56 @@ export const useLeadTasks = (leadId: string, leadType: 'valuation' | 'contact' |
   const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ['lead-tasks', leadId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Obtener las tareas
+      const { data: tasksData, error: tasksError } = await supabase
         .from('lead_tasks')
         .select('*')
         .eq('lead_id', leadId)
         .eq('lead_type', leadType)
         .order('task_order', { ascending: true });
 
-      if (error) throw error;
-      return data as LeadTask[];
+      if (tasksError) throw tasksError;
+
+      // Obtener información del lead (solo para valuation)
+      if (leadType === 'valuation') {
+        const { data: leadData, error: leadError } = await supabase
+          .from('company_valuations')
+          .select('lead_status_crm, assigned_to')
+          .eq('id', leadId)
+          .single();
+
+        if (leadError) throw leadError;
+
+        // Si hay assigned_to, obtener info del admin
+        let adminData = null;
+        if (leadData?.assigned_to) {
+          const { data: admin, error: adminError } = await supabase
+            .from('admin_users')
+            .select('full_name, email')
+            .eq('user_id', leadData.assigned_to)
+            .single();
+
+          if (!adminError && admin) {
+            adminData = admin;
+          }
+        }
+
+        // Combinar datos
+        return tasksData.map(task => ({
+          ...task,
+          lead_status_crm: leadData?.lead_status_crm || null,
+          assigned_to_name: adminData?.full_name || null,
+          assigned_to_email: adminData?.email || null,
+        })) as LeadTask[];
+      }
+
+      // Para otros tipos de leads, retornar sin info adicional
+      return tasksData.map(task => ({
+        ...task,
+        lead_status_crm: null,
+        assigned_to_name: null,
+        assigned_to_email: null,
+      })) as LeadTask[];
     },
     enabled: !!leadId,
   });

@@ -111,6 +111,25 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
     );
   };
 
+  const getLeadStatusBadge = (status: string | null) => {
+    if (!status) return null;
+    
+    const configs: Record<string, { label: string; color: string }> = {
+      'nuevo': { label: 'Nuevo', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+      'contactado': { label: 'Contactado', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+      'calificado': { label: 'Calificado', color: 'bg-green-100 text-green-700 border-green-300' },
+      'descartado': { label: 'Descartado', color: 'bg-red-100 text-red-700 border-red-300' },
+    };
+    
+    const config = configs[status] || configs['nuevo'];
+    
+    return (
+      <Badge variant="outline" className={`${config.color} text-xs`}>
+        {config.label}
+      </Badge>
+    );
+  };
+
   const isOverdue = (task: LeadTask) => {
     if (task.status === 'completed' || !task.due_date) return false;
     return isPast(parseISO(task.due_date));
@@ -146,11 +165,22 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
                 )}
                 {getResponsibleSystemBadge(task.responsible_system)}
               </div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {getStatusBadge(task.status)}
                 {task.task_category && (
                   <Badge variant="secondary" className="text-xs capitalize">
                     {task.task_category}
+                  </Badge>
+                )}
+                {getLeadStatusBadge(task.lead_status_crm)}
+                {task.assigned_to_name ? (
+                  <Badge variant="outline" className="text-xs flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    {task.assigned_to_name}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-xs text-muted-foreground">
+                    Sin asignar
                   </Badge>
                 )}
               </div>
