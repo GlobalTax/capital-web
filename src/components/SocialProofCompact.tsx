@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { useCarouselLogos } from '@/hooks/useCarouselLogos';
+import { LazyImage } from '@/components/shared/LazyImage';
 
 interface CarouselLogo {
   id: string;
@@ -21,63 +23,38 @@ interface CarouselTestimonial {
 }
 
 const SocialProofCompact = () => {
-  const [logos, setLogos] = useState<CarouselLogo[]>([]);
+  const { data: logos = [], isLoading: logosLoading } = useCarouselLogos();
   const [testimonial, setTestimonial] = useState<CarouselTestimonial | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTestimonials = async () => {
       try {
-        console.log('🏢 Fetching social proof data (logos and testimonials)...');
-        
-        // Use Promise.allSettled for better error handling
-        const [logosResult, testimonialsResult] = await Promise.allSettled([
-          supabase
-            .from('carousel_logos')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true })
-            .limit(6),
-          supabase
-            .from('carousel_testimonials')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true })
-            .limit(1)
-        ]);
+        const { data, error } = await supabase
+          .from('carousel_testimonials')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(1);
 
-        console.log('📊 Social proof results:', { logosResult, testimonialsResult });
-
-        // Handle logos result
-        if (logosResult.status === 'fulfilled' && !logosResult.value.error) {
-          console.log('✅ Logos loaded:', logosResult.value.data?.length || 0);
-          setLogos(logosResult.value.data || []);
-        } else {
-          console.error('❌ Error fetching logos:', logosResult.status === 'fulfilled' ? logosResult.value.error : logosResult.reason);
-          setLogos([]);
-        }
-
-        // Handle testimonials result  
-        if (testimonialsResult.status === 'fulfilled' && !testimonialsResult.value.error) {
-          console.log('✅ Testimonial loaded:', testimonialsResult.value.data?.[0] ? 'yes' : 'no');
-          setTestimonial(testimonialsResult.value.data?.[0] || null);
-        } else {
-          console.error('❌ Error fetching testimonials:', testimonialsResult.status === 'fulfilled' ? testimonialsResult.value.error : testimonialsResult.reason);
+        if (error) {
+          console.error('❌ Error fetching testimonials:', error);
           setTestimonial(null);
+        } else {
+          setTestimonial(data?.[0] || null);
         }
       } catch (error) {
-        console.error('💥 Social proof fetch completely failed:', error);
-        setLogos([]);
+        console.error('💥 Testimonials fetch failed:', error);
         setTestimonial(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchTestimonials();
   }, []);
 
-  if (isLoading) {
+  if (isLoading || logosLoading) {
     return (
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -117,20 +94,17 @@ const SocialProofCompact = () => {
                 className="flex items-center justify-center p-4 grayscale hover:grayscale-0 transition-all duration-300"
               >
                 {logo.logo_url ? (
-                  <img
+                  <LazyImage
                     src={logo.logo_url}
                     alt={logo.company_name}
                     className="max-h-12 w-auto object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling!.classList.remove('hidden');
-                    }}
+                    priority={false}
                   />
-                ) : null}
-                <span className={`text-gray-600 font-medium ${logo.logo_url ? 'hidden' : ''}`}>
-                  {logo.company_name}
-                </span>
+                ) : (
+                  <span className="text-gray-600 font-medium">
+                    {logo.company_name}
+                  </span>
+                )}
               </div>
             ))}
           </div>

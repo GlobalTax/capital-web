@@ -1,49 +1,15 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AutoScroll from "embla-carousel-auto-scroll";
-import { cn } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { supabase } from '@/integrations/supabase/client';
-
-interface CarouselLogo {
-  id: string;
-  company_name: string;
-  logo_url: string | null;
-  display_order: number;
-  is_active: boolean;
-}
+import { useCarouselLogos } from '@/hooks/useCarouselLogos';
+import { LazyImage } from '@/components/shared/LazyImage';
 
 const LogoCarousel = () => {
-  const [logos, setLogos] = useState<CarouselLogo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchLogos();
-  }, []);
-
-  const fetchLogos = async () => {
-    try {
-      const { data: logosData, error: logosError } = await supabase
-        .from('carousel_logos')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
-
-      if (logosError) {
-        console.error('Error fetching carousel logos:', logosError);
-      } else {
-        setLogos(logosData || []);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: logos = [], isLoading } = useCarouselLogos();
 
   if (isLoading) {
     return (
@@ -87,10 +53,11 @@ const LogoCarousel = () => {
                 <div className="flex shrink-0 items-center justify-center lg:mx-10">
                   <div>
                     {logo.logo_url ? (
-                      <img
+                      <LazyImage
                         src={logo.logo_url}
                         alt={logo.company_name}
                         className="h-7 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300"
+                        priority={false}
                       />
                     ) : (
                       <div className="h-7 w-20 bg-muted rounded flex items-center justify-center">
