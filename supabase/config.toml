@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.banners_list]
 verify_jwt = false
+
+[functions.sync-to-brevo]
+verify_jwt = false

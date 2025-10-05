@@ -18,9 +18,13 @@ import {
   Filter,
   Search,
   Euro,
-  Briefcase
+  Briefcase,
+  CheckCircle2,
+  ListTodo
 } from 'lucide-react';
 import { useUnifiedLeads } from '@/hooks/useUnifiedLeads';
+import { useLeadTasks } from '@/hooks/useLeadTasks';
+import { LeadTasksManager } from '@/features/admin/components/leads/LeadTasksManager';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatCurrency as formatCurrencyShared } from '@/shared/utils/format';
@@ -31,6 +35,13 @@ const UnifiedLeadsManager = () => {
   const [originFilter, setOriginFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
+  const [tasksModalOpen, setTasksModalOpen] = useState(false);
+  const [selectedTaskLead, setSelectedTaskLead] = useState<{ id: string; type: 'valuation' | 'contact' } | null>(null);
+
+  const handleOpenTasks = (leadId: string, leadType: 'valuation' | 'contact') => {
+    setSelectedTaskLead({ id: leadId, type: leadType });
+    setTasksModalOpen(true);
+  };
 
   const getOriginBadge = (origin: string) => {
     switch (origin) {
@@ -220,12 +231,13 @@ const UnifiedLeadsManager = () => {
             <Table className="table-fixed">
               <colgroup>
                 <col className="w-[110px]" />
+                <col className="w-[200px]" />
+                <col className="w-[260px]" />
                 <col className="w-[220px]" />
                 <col className="w-[280px]" />
-                <col className="w-[240px]" />
-                <col className="w-[320px]" />
-                <col className="w-[140px]" />
-                <col className="w-[180px]" />
+                <col className="w-[120px]" />
+                <col className="w-[100px]" />
+                <col className="w-[150px]" />
                 <col className="w-[120px]" />
               </colgroup>
               <TableHeader>
@@ -235,6 +247,7 @@ const UnifiedLeadsManager = () => {
                   <TableHead className="whitespace-nowrap">Email</TableHead>
                   <TableHead className="whitespace-nowrap">Empresa</TableHead>
                   <TableHead className="whitespace-nowrap">Información Específica</TableHead>
+                  <TableHead className="whitespace-nowrap">Tareas</TableHead>
                   <TableHead className="whitespace-nowrap">Estado</TableHead>
                   <TableHead className="whitespace-nowrap">Fecha</TableHead>
                   <TableHead className="whitespace-nowrap">Acciones</TableHead>
@@ -310,6 +323,13 @@ const UnifiedLeadsManager = () => {
                           )}
                         </div>
                       )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <TasksCell 
+                        leadId={lead.id} 
+                        leadType={lead.origin === 'collaborator' ? 'contact' : lead.origin as 'valuation' | 'contact'}
+                        onOpenTasks={handleOpenTasks}
+                      />
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {lead.origin === 'valuation' ? (
@@ -395,7 +415,48 @@ const UnifiedLeadsManager = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tasks Modal */}
+      {selectedTaskLead && (
+        <LeadTasksManager
+          leadId={selectedTaskLead.id}
+          leadType={selectedTaskLead.type}
+          open={tasksModalOpen}
+          onOpenChange={setTasksModalOpen}
+        />
+      )}
     </div>
+  );
+};
+
+// Component to display tasks progress for each lead
+const TasksCell: React.FC<{
+  leadId: string;
+  leadType: 'valuation' | 'contact';
+  onOpenTasks: (leadId: string, leadType: 'valuation' | 'contact') => void;
+}> = ({ leadId, leadType, onOpenTasks }) => {
+  const { completedCount, totalCount, isLoading } = useLeadTasks(leadId, leadType);
+
+  if (isLoading) {
+    return <div className="text-xs text-muted-foreground">Cargando...</div>;
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenTasks(leadId, leadType);
+      }}
+      className="flex items-center gap-1.5 h-8"
+    >
+      <ListTodo className="h-4 w-4" />
+      <span className="font-medium">{completedCount}/{totalCount}</span>
+      {completedCount === totalCount && totalCount > 0 && (
+        <CheckCircle2 className="h-4 w-4 text-green-600" />
+      )}
+    </Button>
   );
 };
 

@@ -2288,6 +2288,72 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          is_system_task: boolean | null
+          lead_id: string
+          lead_type: string
+          notes: string | null
+          status: string
+          task_name: string
+          task_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          is_system_task?: boolean | null
+          lead_id: string
+          lead_type: string
+          notes?: string | null
+          status?: string
+          task_name: string
+          task_order: number
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          is_system_task?: boolean | null
+          lead_id?: string
+          lead_type?: string
+          notes?: string | null
+          status?: string
+          task_name?: string
+          task_order?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lead_tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       lead_valuation_initial: {
         Row: {
           assumptions: Json
@@ -2726,39 +2792,66 @@ export type Database = {
           descripcion: string | null
           empresa_principal_id: string | null
           estado: string
+          estado_negociacion: string | null
           fecha_cierre: string | null
           fecha_inicio: string | null
           id: string
+          numero_ofertas_recibidas: number | null
+          perfil_empresa_buscada: string | null
           prioridad: string | null
+          rango_inversion_max: number | null
+          rango_inversion_min: number | null
+          sectores_interes: string[] | null
+          timeline_objetivo: string | null
           tipo: string
+          tipo_comprador_buscado: string | null
           updated_at: string | null
           valor: number | null
+          valoracion_esperada: number | null
         }
         Insert: {
           created_at?: string | null
           descripcion?: string | null
           empresa_principal_id?: string | null
           estado?: string
+          estado_negociacion?: string | null
           fecha_cierre?: string | null
           fecha_inicio?: string | null
           id?: string
+          numero_ofertas_recibidas?: number | null
+          perfil_empresa_buscada?: string | null
           prioridad?: string | null
+          rango_inversion_max?: number | null
+          rango_inversion_min?: number | null
+          sectores_interes?: string[] | null
+          timeline_objetivo?: string | null
           tipo?: string
+          tipo_comprador_buscado?: string | null
           updated_at?: string | null
           valor?: number | null
+          valoracion_esperada?: number | null
         }
         Update: {
           created_at?: string | null
           descripcion?: string | null
           empresa_principal_id?: string | null
           estado?: string
+          estado_negociacion?: string | null
           fecha_cierre?: string | null
           fecha_inicio?: string | null
           id?: string
+          numero_ofertas_recibidas?: number | null
+          perfil_empresa_buscada?: string | null
           prioridad?: string | null
+          rango_inversion_max?: number | null
+          rango_inversion_min?: number | null
+          sectores_interes?: string[] | null
+          timeline_objetivo?: string | null
           tipo?: string
+          tipo_comprador_buscado?: string | null
           updated_at?: string | null
           valor?: number | null
+          valoracion_esperada?: number | null
         }
         Relationships: [
           {
