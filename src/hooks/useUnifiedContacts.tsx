@@ -18,6 +18,7 @@ export interface UnifiedContact {
   valuation_amount?: number;
   final_valuation?: number;
   ebitda?: number;
+  revenue?: number;
   industry?: string;
   profession?: string;
   motivation?: string;
@@ -217,6 +218,7 @@ export const useUnifiedContacts = () => {
           employee_range: lead.employee_range,
           final_valuation: lead.final_valuation,
           ebitda: lead.ebitda,
+          revenue: lead.revenue,
           valuation_amount: lead.final_valuation,
           location: lead.location,
           email_sent: lead.email_sent,

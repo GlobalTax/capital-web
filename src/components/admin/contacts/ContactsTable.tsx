@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, CheckCircle2, Mail } from 'lucide-react';
+import { Trash2, CheckCircle2, Mail, Eye } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -130,17 +130,18 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 onCheckedChange={onSelectAll}
               />
             </TableHead>
-            <TableHead>Origen</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Asignado a</TableHead>
-            <TableHead>Contacto</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Empresa</TableHead>
-            <TableHead className="text-right">Valoración</TableHead>
-            <TableHead className="text-right">EBITDA</TableHead>
-            <TableHead>Detalles</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead className="w-24">Origen</TableHead>
+            <TableHead className="w-32">Estado</TableHead>
+            <TableHead className="w-28">Asignado</TableHead>
+            <TableHead className="w-40">Contacto</TableHead>
+            <TableHead className="w-52">Email</TableHead>
+            <TableHead className="w-40">Empresa</TableHead>
+            <TableHead className="w-32">Sector</TableHead>
+            <TableHead className="text-right w-32">Facturación</TableHead>
+            <TableHead className="text-right w-28">Valoración</TableHead>
+            <TableHead className="text-right w-28">EBITDA</TableHead>
+            <TableHead className="w-28">Fecha</TableHead>
+            <TableHead className="text-right w-20">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -178,15 +179,16 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                   {getEmailStatusBadge(contact)}
                 </div>
               </TableCell>
-              <TableCell>{contact.company || '-'}</TableCell>
+              <TableCell className="truncate max-w-[160px]">{contact.company || '-'}</TableCell>
+              <TableCell className="truncate max-w-[128px]">{contact.industry || '-'}</TableCell>
+              <TableCell className="text-right text-sm">
+                {contact.revenue ? formatCurrency(contact.revenue) : '-'}
+              </TableCell>
               <TableCell className="text-right text-sm">
                 {contact.final_valuation ? formatCurrency(contact.final_valuation) : '-'}
               </TableCell>
               <TableCell className="text-right text-sm">
                 {contact.ebitda ? formatCurrency(contact.ebitda) : '-'}
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {getContactDetails(contact)}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(contact.created_at), {
@@ -195,22 +197,22 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 })}
               </TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-1">
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onViewDetails(contact.id, contact.origin)}
-                    title="Abrir ficha completa"
+                    title="Ver ficha completa"
                   >
-                    Ver Ficha
+                    <Eye className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="destructive"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onDeleteContact(contact.id)}
                     title="Eliminar contacto"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               </TableCell>
