@@ -18,6 +18,13 @@ export const recursosData: MenuCategory[] = [
         href: "/recursos/case-studies",
         icon: 'book-open',
         description: "Casos de éxito reales de nuestros clientes"
+      },
+      {
+        id: "marketplace",
+        label: "Marketplace",
+        href: "/oportunidades",
+        icon: 'store',
+        description: "Explora oportunidades de compra y venta de empresas"
       }
     ]
   },
