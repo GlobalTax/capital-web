@@ -62,7 +62,6 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                   <TableHead className="min-w-[150px]">Sector</TableHead>
                   <TableHead className="text-right min-w-[120px]">Facturación</TableHead>
                   <TableHead className="text-right min-w-[120px]">EBITDA</TableHead>
-                  <TableHead className="text-right min-w-[120px]">Valoración</TableHead>
                   <TableHead className="text-center hidden md:table-cell">Año</TableHead>
                   <TableHead className="text-center hidden lg:table-cell">Tipo</TableHead>
                   <TableHead className="text-center w-[100px]">Acciones</TableHead>
@@ -77,7 +76,6 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                       <TableCell><div className="h-4 bg-muted rounded w-24 animate-pulse" /></TableCell>
                       <TableCell><div className="h-4 bg-muted rounded w-20 animate-pulse ml-auto" /></TableCell>
                       <TableCell><div className="h-4 bg-muted rounded w-20 animate-pulse ml-auto" /></TableCell>
-                      <TableCell><div className="h-4 bg-muted rounded w-20 animate-pulse ml-auto" /></TableCell>
                       <TableCell className="hidden md:table-cell"><div className="h-4 bg-muted rounded w-16 animate-pulse mx-auto" /></TableCell>
                       <TableCell className="hidden lg:table-cell"><div className="h-4 bg-muted rounded w-20 animate-pulse mx-auto" /></TableCell>
                       <TableCell><div className="h-8 bg-muted rounded w-16 animate-pulse mx-auto" /></TableCell>
@@ -85,7 +83,7 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                   ))
                 ) : operations.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                       No se encontraron operaciones
                     </TableCell>
                   </TableRow>
@@ -180,22 +178,6 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                                 <p>{formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency)}</p>
                               </TooltipContent>
                             )}
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-
-                      {/* Valuation */}
-                      <TableCell className="text-right">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="font-bold text-primary cursor-help">
-                                {formatCompactCurrency(operation.valuation_amount, operation.valuation_currency)}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{formatCurrency(normalizeValuationAmount(operation.valuation_amount), operation.valuation_currency)}</p>
-                            </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
