@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 export interface LeadTask {
   id: string;
   lead_id: string;
-  lead_type: 'valuation' | 'contact';
+  lead_type: 'valuation' | 'contact' | 'collaborator';
   task_name: string;
   task_order: number;
   status: 'pending' | 'in_progress' | 'completed' | 'skipped';
@@ -19,7 +19,7 @@ export interface LeadTask {
   updated_at: string;
 }
 
-export const useLeadTasks = (leadId: string, leadType: 'valuation' | 'contact') => {
+export const useLeadTasks = (leadId: string, leadType: 'valuation' | 'contact' | 'collaborator') => {
   const queryClient = useQueryClient();
 
   // Fetch tasks for a lead

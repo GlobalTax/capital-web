@@ -12,6 +12,12 @@ export interface UnifiedLead {
   company?: string;
   created_at: string;
   status: string;
+  lead_status_crm?: string;
+  assigned_to?: string;
+  assigned_admin?: {
+    full_name: string;
+    email: string;
+  };
   // Campos específicos
   valuation_amount?: number;
   industry?: string;
@@ -38,34 +44,52 @@ export const useUnifiedLeads = () => {
     try {
       setIsLoading(true);
       
-      // Fetch contact leads
+      // Fetch contact leads with assigned admin
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
-        .select('*')
+        .select(`
+          *,
+          assigned_admin:admin_users!contact_leads_assigned_to_fkey(
+            full_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
 
-      if (contactError) throw contactError;
+      if (contactError) console.error('Contact leads error:', contactError);
 
-      // Fetch company valuations
+      // Fetch company valuations with assigned admin
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*')
+        .select(`
+          *,
+          assigned_admin:admin_users!company_valuations_assigned_to_fkey(
+            full_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
 
-      if (valuationError) throw valuationError;
+      if (valuationError) console.error('Valuation leads error:', valuationError);
 
-      // Fetch collaborator applications
+      // Fetch collaborator applications with assigned admin
       const { data: collaboratorLeads, error: collaboratorError } = await supabase
         .from('collaborator_applications')
-        .select('*')
+        .select(`
+          *,
+          assigned_admin:admin_users!collaborator_applications_assigned_to_fkey(
+            full_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
 
-      if (collaboratorError) throw collaboratorError;
+      if (collaboratorError) console.error('Collaborator leads error:', collaboratorError);
 
       // Transform and unify data
       const unifiedData: UnifiedLead[] = [
         // Contact leads
-        ...(contactLeads || []).map(lead => ({
+        ...(contactLeads || []).map((lead: any) => ({
           id: lead.id,
           origin: 'contact' as const,
           name: lead.full_name,
@@ -74,12 +98,15 @@ export const useUnifiedLeads = () => {
           company: lead.company,
           created_at: lead.created_at,
           status: lead.status,
+          lead_status_crm: lead.lead_status_crm,
+          assigned_to: lead.assigned_to,
+          assigned_admin: lead.assigned_admin,
           company_size: lead.company_size,
           referral: lead.referral,
         })),
         
         // Valuation leads
-        ...(valuationLeads || []).map(lead => ({
+        ...(valuationLeads || []).map((lead: any) => ({
           id: lead.id,
           origin: 'valuation' as const,
           name: lead.contact_name,
@@ -87,14 +114,17 @@ export const useUnifiedLeads = () => {
           phone: lead.phone,
           company: lead.company_name,
           created_at: lead.created_at,
-          status: 'pending', // No hay status en valuations, usar pending
+          status: 'pending',
+          lead_status_crm: lead.lead_status_crm,
+          assigned_to: lead.assigned_to,
+          assigned_admin: lead.assigned_admin,
           industry: lead.industry,
           final_valuation: lead.final_valuation,
           valuation_amount: lead.final_valuation,
         })),
         
         // Collaborator applications
-        ...(collaboratorLeads || []).map(lead => ({
+        ...(collaboratorLeads || []).map((lead: any) => ({
           id: lead.id,
           origin: 'collaborator' as const,
           name: lead.full_name,
@@ -103,6 +133,9 @@ export const useUnifiedLeads = () => {
           company: lead.company,
           created_at: lead.created_at,
           status: lead.status,
+          lead_status_crm: lead.lead_status_crm,
+          assigned_to: lead.assigned_to,
+          assigned_admin: lead.assigned_admin,
           profession: lead.profession,
           motivation: lead.motivation,
           experience: lead.experience,

@@ -63,8 +63,8 @@ export function RoleBasedSidebar() {
       title: "🎯 Leads & Workflows",
       items: [
         { 
-          title: "Leads de Contacto",
-          url: "/admin/contact-leads", 
+          title: "Leads",
+          url: "/admin/contacts", 
           icon: Mail,
           visible: menuVisibility.contactLeads
         },

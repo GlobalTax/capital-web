@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
   Users, 
   Calculator, 
@@ -20,27 +21,36 @@ import {
   Euro,
   Briefcase,
   CheckCircle2,
-  ListTodo
+  ListTodo,
+  UserCircle
 } from 'lucide-react';
 import { useUnifiedLeads } from '@/hooks/useUnifiedLeads';
 import { useLeadTasks } from '@/hooks/useLeadTasks';
 import { LeadTasksManager } from '@/features/admin/components/leads/LeadTasksManager';
+import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatCurrency as formatCurrencyShared } from '@/shared/utils/format';
 
 const UnifiedLeadsManager = () => {
-  const { leads, stats, isLoading, refetch, updateLeadStatus } = useUnifiedLeads();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { leads, stats, isLoading, refetch } = useUnifiedLeads();
   const [searchTerm, setSearchTerm] = useState('');
   const [originFilter, setOriginFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [assignedFilter, setAssignedFilter] = useState<string>('my-leads'); // Default: Mis Leads
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [tasksModalOpen, setTasksModalOpen] = useState(false);
-  const [selectedTaskLead, setSelectedTaskLead] = useState<{ id: string; type: 'valuation' | 'contact' } | null>(null);
+  const [selectedTaskLead, setSelectedTaskLead] = useState<{ id: string; type: 'valuation' | 'contact' | 'collaborator' } | null>(null);
 
-  const handleOpenTasks = (leadId: string, leadType: 'valuation' | 'contact') => {
+  const handleOpenTasks = (leadId: string, leadType: 'valuation' | 'contact' | 'collaborator') => {
     setSelectedTaskLead({ id: leadId, type: leadType });
     setTasksModalOpen(true);
+  };
+
+  const handleRowClick = (lead: any) => {
+    navigate(`/admin/contacts/${lead.origin}_${lead.id}`);
   };
 
   const getOriginBadge = (origin: string) => {
@@ -56,7 +66,13 @@ const UnifiedLeadsManager = () => {
     }
   };
 
-  const getStatusBadge = (status: string, origin: string) => {
+  const getStatusBadge = (status: string, origin: string, crmStatus?: string) => {
+    // Si existe lead_status_crm, usar ese en lugar del status antiguo
+    if (crmStatus) {
+      return <LeadStatusBadge status={crmStatus} />;
+    }
+
+    // Fallback al sistema antiguo
     if (origin === 'valuation') {
       return <Badge variant="outline" className="bg-gray-100">Valoración</Badge>;
     }
@@ -78,7 +94,8 @@ const UnifiedLeadsManager = () => {
   };
 
   const handleStatusChange = async (leadId: string, origin: string, newStatus: string) => {
-    await updateLeadStatus(leadId, origin, newStatus);
+    // Esta función ya no se usa porque ahora el estado se cambia desde la página de detalle
+    console.log('Status change deprecated - use detail page');
   };
 
   const filteredLeads = leads.filter(lead => {
@@ -88,9 +105,14 @@ const UnifiedLeadsManager = () => {
       (lead.company && lead.company.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesOrigin = originFilter === 'all' || lead.origin === originFilter;
-    const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+    
+    // Filtro de asignación
+    const matchesAssigned = 
+      assignedFilter === 'all' || 
+      (assignedFilter === 'my-leads' && lead.assigned_to === user?.id) ||
+      (assignedFilter === 'unassigned' && !lead.assigned_to);
 
-    return matchesSearch && matchesOrigin && matchesStatus;
+    return matchesSearch && matchesOrigin && matchesAssigned;
   });
 
   const formatCurrency = (amount: number | undefined) => {
@@ -192,6 +214,17 @@ const UnifiedLeadsManager = () => {
               />
             </div>
             
+            <Select value={assignedFilter} onValueChange={setAssignedFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por asignación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="my-leads">Mis Leads</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="unassigned">Sin asignar</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={originFilter} onValueChange={setOriginFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por origen" />
@@ -201,20 +234,6 @@ const UnifiedLeadsManager = () => {
                 <SelectItem value="contact">Contactos</SelectItem>
                 <SelectItem value="valuation">Valoraciones</SelectItem>
                 <SelectItem value="collaborator">Colaboradores</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="new">Nuevo</SelectItem>
-                <SelectItem value="pending">Pendiente</SelectItem>
-                <SelectItem value="contacted">Contactado</SelectItem>
-                <SelectItem value="qualified">Calificado</SelectItem>
-                <SelectItem value="closed">Cerrado</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -233,9 +252,8 @@ const UnifiedLeadsManager = () => {
                 <col className="w-[110px]" />
                 <col className="w-[200px]" />
                 <col className="w-[260px]" />
-                <col className="w-[220px]" />
-                <col className="w-[280px]" />
-                <col className="w-[120px]" />
+                <col className="w-[180px]" />
+                <col className="w-[200px]" />
                 <col className="w-[100px]" />
                 <col className="w-[150px]" />
                 <col className="w-[120px]" />
@@ -246,19 +264,18 @@ const UnifiedLeadsManager = () => {
                   <TableHead className="whitespace-nowrap">Nombre</TableHead>
                   <TableHead className="whitespace-nowrap">Email</TableHead>
                   <TableHead className="whitespace-nowrap">Empresa</TableHead>
-                  <TableHead className="whitespace-nowrap">Información Específica</TableHead>
+                  <TableHead className="whitespace-nowrap">Asignado a</TableHead>
                   <TableHead className="whitespace-nowrap">Tareas</TableHead>
-                  <TableHead className="whitespace-nowrap">Estado</TableHead>
+                  <TableHead className="whitespace-nowrap">Estado CRM</TableHead>
                   <TableHead className="whitespace-nowrap">Fecha</TableHead>
-                  <TableHead className="whitespace-nowrap">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredLeads.map((lead) => (
-                  <TableRow key={`${lead.origin}-${lead.id}`} 
-                    onClick={() => setSelectedLead(selectedLead && selectedLead.id === lead.id && selectedLead.origin === lead.origin ? null : lead)}
-                    className="cursor-pointer"
-                    data-state={selectedLead && selectedLead.id === lead.id && selectedLead.origin === lead.origin ? 'selected' : undefined}
+                  <TableRow 
+                    key={`${lead.origin}-${lead.id}`} 
+                    onClick={() => handleRowClick(lead)}
+                    className="cursor-pointer hover:bg-muted/50"
                   >
                     <TableCell>{getOriginBadge(lead.origin)}</TableCell>
                     <TableCell className="font-medium truncate">{lead.name}</TableCell>

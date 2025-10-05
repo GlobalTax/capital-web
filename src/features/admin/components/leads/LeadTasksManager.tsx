@@ -25,7 +25,7 @@ import { es } from 'date-fns/locale';
 
 interface LeadTasksManagerProps {
   leadId: string;
-  leadType: 'valuation' | 'contact';
+  leadType: 'valuation' | 'contact' | 'collaborator';
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

@@ -33,6 +33,7 @@ import ContactsPage from '@/pages/admin/ContactsPage';
 import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
+import LeadDetailPage from '@/pages/admin/LeadDetailPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -61,7 +62,8 @@ const AdminRouter = () => {
       {/* Lead Management */}
       <Route path="/proposals" element={<ProposalsManager />} />
       <Route path="/contacts" element={<ContactsPage />} />
-      <Route path="/contact-leads" element={<ContactLeadsAdminPage />} />
+      <Route path="/contacts/:id" element={<LeadDetailPage />} />
+      <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
       
       
       {/* Content Management */}
