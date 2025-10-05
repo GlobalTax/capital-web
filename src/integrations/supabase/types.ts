@@ -2354,13 +2354,17 @@ export type Database = {
           completed_at: string | null
           completed_by: string | null
           created_at: string | null
+          deliverable_url: string | null
           due_date: string | null
           id: string
+          is_automated: boolean | null
           is_system_task: boolean | null
           lead_id: string
           lead_type: string
           notes: string | null
+          responsible_system: string | null
           status: string
+          task_category: string | null
           task_name: string
           task_order: number
           updated_at: string | null
@@ -2370,13 +2374,17 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string | null
+          deliverable_url?: string | null
           due_date?: string | null
           id?: string
+          is_automated?: boolean | null
           is_system_task?: boolean | null
           lead_id: string
           lead_type: string
           notes?: string | null
+          responsible_system?: string | null
           status?: string
+          task_category?: string | null
           task_name: string
           task_order: number
           updated_at?: string | null
@@ -2386,13 +2394,17 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string | null
+          deliverable_url?: string | null
           due_date?: string | null
           id?: string
+          is_automated?: boolean | null
           is_system_task?: boolean | null
           lead_id?: string
           lead_type?: string
           notes?: string | null
+          responsible_system?: string | null
           status?: string
+          task_category?: string | null
           task_name?: string
           task_order?: number
           updated_at?: string | null
@@ -2657,6 +2669,56 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      mandato_checklist_task_files: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_category: string | null
+          file_name: string
+          file_path: string
+          file_size_bytes: number
+          id: string
+          mime_type: string
+          task_id: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_category?: string | null
+          file_name: string
+          file_path: string
+          file_size_bytes: number
+          id?: string
+          mime_type: string
+          task_id: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_category?: string | null
+          file_name?: string
+          file_path?: string
+          file_size_bytes?: number
+          id?: string
+          mime_type?: string
+          task_id?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandato_checklist_task_files_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_checklist_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mandato_checklist_tasks: {
         Row: {

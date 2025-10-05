@@ -17,7 +17,11 @@ import {
   StickyNote,
   Plus,
   Trash2,
-  SkipForward
+  SkipForward,
+  Link as LinkIcon,
+  Database,
+  Mail,
+  FileText
 } from 'lucide-react';
 import { useLeadTasks, LeadTask } from '@/hooks/useLeadTasks';
 import { format, isPast, parseISO } from 'date-fns';
@@ -47,6 +51,7 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
     assignTask,
     updateDueDate,
     updateNotes,
+    uploadDeliverable,
     createTask,
     deleteTask,
   } = useLeadTasks(leadId, leadType);
@@ -85,6 +90,27 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
     return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
+  const getResponsibleSystemBadge = (system: string | null) => {
+    if (!system) return null;
+    
+    const configs: Record<string, { icon: React.ReactNode; color: string }> = {
+      'Brevo': { icon: <Mail className="h-3 w-3" />, color: 'bg-blue-100 text-blue-700' },
+      'Supabase': { icon: <Database className="h-3 w-3" />, color: 'bg-green-100 text-green-700' },
+      'CRM': { icon: <FileText className="h-3 w-3" />, color: 'bg-purple-100 text-purple-700' },
+      'ROD': { icon: <FileText className="h-3 w-3" />, color: 'bg-orange-100 text-orange-700' },
+      'Manual': { icon: <User className="h-3 w-3" />, color: 'bg-gray-100 text-gray-700' },
+    };
+
+    const config = configs[system] || { icon: <User className="h-3 w-3" />, color: 'bg-gray-100 text-gray-700' };
+
+    return (
+      <Badge variant="outline" className={`${config.color} flex items-center gap-1 text-xs`}>
+        {config.icon}
+        {system}
+      </Badge>
+    );
+  };
+
   const isOverdue = (task: LeadTask) => {
     if (task.status === 'completed' || !task.due_date) return false;
     return isPast(parseISO(task.due_date));
@@ -100,6 +126,8 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
   const TaskCard = ({ task }: { task: LeadTask }) => {
     const [editingNotes, setEditingNotes] = useState(false);
     const [notes, setNotes] = useState(task.notes || '');
+    const [editingUrl, setEditingUrl] = useState(false);
+    const [deliverableUrl, setDeliverableUrl] = useState(task.deliverable_url || '');
 
     return (
       <div 
@@ -111,13 +139,21 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
           <div className="flex items-start gap-3 flex-1">
             {getStatusIcon(task.status)}
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h4 className="font-medium">{task.task_name}</h4>
                 {task.is_system_task && (
                   <Badge variant="outline" className="text-xs">Sistema</Badge>
                 )}
+                {getResponsibleSystemBadge(task.responsible_system)}
               </div>
-              {getStatusBadge(task.status)}
+              <div className="flex items-center gap-2 mb-2">
+                {getStatusBadge(task.status)}
+                {task.task_category && (
+                  <Badge variant="secondary" className="text-xs capitalize">
+                    {task.task_category}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
 
@@ -128,6 +164,7 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
                   size="sm"
                   variant="ghost"
                   onClick={() => updateStatus({ taskId: task.id, status: 'completed' })}
+                  title="Marcar como completada"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                 </Button>
@@ -136,6 +173,7 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={() => updateStatus({ taskId: task.id, status: 'in_progress' })}
+                    title="Marcar en progreso"
                   >
                     <Clock className="h-4 w-4" />
                   </Button>
@@ -144,6 +182,7 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
                   size="sm"
                   variant="ghost"
                   onClick={() => updateStatus({ taskId: task.id, status: 'skipped' })}
+                  title="Omitir tarea"
                 >
                   <SkipForward className="h-4 w-4" />
                 </Button>
@@ -154,6 +193,7 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
                 size="sm"
                 variant="ghost"
                 onClick={() => deleteTask(task.id)}
+                title="Eliminar tarea"
               >
                 <Trash2 className="h-4 w-4 text-red-600" />
               </Button>
@@ -173,6 +213,75 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
                 <AlertCircle className="h-3 w-3 mr-1" />
                 Atrasada
               </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Deliverable URL (solo para tareas de valoración) */}
+        {task.task_category === 'valoracion' && (
+          <div className="space-y-2 pt-2 border-t">
+            <div className="flex items-center gap-2">
+              <LinkIcon className="h-4 w-4" />
+              <span className="text-sm font-medium">Entregable</span>
+            </div>
+            {editingUrl ? (
+              <div className="space-y-2">
+                <Input
+                  value={deliverableUrl}
+                  onChange={(e) => setDeliverableUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      uploadDeliverable({ taskId: task.id, url: deliverableUrl });
+                      setEditingUrl(false);
+                    }}
+                  >
+                    Guardar URL
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setDeliverableUrl(task.deliverable_url || '');
+                      setEditingUrl(false);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : task.deliverable_url ? (
+              <div className="flex items-center gap-2">
+                <a 
+                  href={task.deliverable_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex-1 truncate"
+                >
+                  {task.deliverable_url}
+                </a>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setEditingUrl(true)}
+                >
+                  Editar
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setEditingUrl(true)}
+                className="w-full"
+              >
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Añadir URL del entregable
+              </Button>
             )}
           </div>
         )}
@@ -228,6 +337,9 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
 
   const filteredTasks = {
     all: tasks,
+    recepcion: tasks.filter(t => t.task_category === 'recepcion'),
+    valoracion: tasks.filter(t => t.task_category === 'valoracion'),
+    decision: tasks.filter(t => t.task_category === 'decision'),
     pending: tasks.filter(t => t.status === 'pending'),
     in_progress: tasks.filter(t => t.status === 'in_progress'),
     completed: tasks.filter(t => t.status === 'completed'),
@@ -236,9 +348,9 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Gestión de Tareas del Lead</DialogTitle>
+          <DialogTitle className="text-2xl">Gestión de Tareas - Fase 0</DialogTitle>
         </DialogHeader>
 
         {/* Progress bar */}
@@ -250,6 +362,14 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
             <span className="text-2xl font-bold text-primary">{progressPercentage}%</span>
           </div>
           <Progress value={progressPercentage} className="h-3" />
+          {leadType === 'valuation' && progressPercentage === 100 && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <span className="text-sm font-medium text-green-900">
+                ✅ Fase 0 completada - Lead auto-calificado
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Overdue warning */}
@@ -288,20 +408,29 @@ export const LeadTasksManager: React.FC<LeadTasksManagerProps> = ({
 
         {/* Tasks tabs */}
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all">
+          <TabsList className="grid w-full grid-cols-8 h-auto">
+            <TabsTrigger value="all" className="text-xs">
               Todas ({filteredTasks.all.length})
             </TabsTrigger>
-            <TabsTrigger value="pending">
+            <TabsTrigger value="recepcion" className="text-xs">
+              Recepción ({filteredTasks.recepcion.length})
+            </TabsTrigger>
+            <TabsTrigger value="valoracion" className="text-xs">
+              Valoración ({filteredTasks.valoracion.length})
+            </TabsTrigger>
+            <TabsTrigger value="decision" className="text-xs">
+              Decisión ({filteredTasks.decision.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="text-xs">
               Pendientes ({filteredTasks.pending.length})
             </TabsTrigger>
-            <TabsTrigger value="in_progress">
+            <TabsTrigger value="in_progress" className="text-xs">
               En Progreso ({filteredTasks.in_progress.length})
             </TabsTrigger>
-            <TabsTrigger value="completed">
+            <TabsTrigger value="completed" className="text-xs">
               Completadas ({filteredTasks.completed.length})
             </TabsTrigger>
-            <TabsTrigger value="overdue">
+            <TabsTrigger value="overdue" className="text-xs">
               Atrasadas ({filteredTasks.overdue.length})
             </TabsTrigger>
           </TabsList>

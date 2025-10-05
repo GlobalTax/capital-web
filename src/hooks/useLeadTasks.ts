@@ -15,6 +15,10 @@ export interface LeadTask {
   completed_by: string | null;
   notes: string | null;
   is_system_task: boolean;
+  task_category: 'recepcion' | 'valoracion' | 'decision' | null;
+  responsible_system: string | null;
+  deliverable_url: string | null;
+  is_automated: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -152,6 +156,25 @@ export const useLeadTasks = (leadId: string, leadType: 'valuation' | 'contact' |
     },
   });
 
+  // Update deliverable URL
+  const uploadDeliverable = useMutation({
+    mutationFn: async ({ taskId, url }: { taskId: string; url: string }) => {
+      const { error } = await supabase
+        .from('lead_tasks')
+        .update({ deliverable_url: url })
+        .eq('id', taskId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-tasks', leadId] });
+      toast.success('URL del entregable guardada');
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error.message}`);
+    },
+  });
+
   // Delete task (solo custom tasks)
   const deleteTask = useMutation({
     mutationFn: async (taskId: string) => {
@@ -195,6 +218,7 @@ export const useLeadTasks = (leadId: string, leadType: 'valuation' | 'contact' |
     assignTask: assignTask.mutate,
     updateDueDate: updateDueDate.mutate,
     updateNotes: updateNotes.mutate,
+    uploadDeliverable: uploadDeliverable.mutate,
     createTask: createTask.mutate,
     deleteTask: deleteTask.mutate,
   };
