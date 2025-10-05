@@ -120,10 +120,11 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
+    <div className="relative rounded-md border overflow-hidden">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-400px)]">
+        <Table>
+          <TableHeader className="sticky top-0 z-10 bg-background border-b shadow-sm">
+            <TableRow>
             <TableHead className="w-12">
               <Checkbox
                 checked={selectedContacts.length === contacts.length}
@@ -220,6 +221,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 };
