@@ -8,8 +8,12 @@ import { RecentBlogPosts } from './dashboard/RecentBlogPosts';
 import { RecentAcquisitions } from './dashboard/RecentAcquisitions';
 import { RecentCollaborations } from './dashboard/RecentCollaborations';
 import { ActivityTimeline } from './dashboard/ActivityTimeline';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export const AdminDashboard = () => {
+  const navigate = useNavigate();
+  
   // Queries simples para métricas básicas
   const { data: leadsCount } = useQuery({
     queryKey: ['admin-leads-count'],
@@ -124,6 +128,28 @@ export const AdminDashboard = () => {
         <RecentContacts />
         <RecentBlogPosts />
       </div>
+
+      {/* Centro de Ayuda - Marketplace */}
+      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            Centro de Ayuda - Marketplace
+          </CardTitle>
+          <CardDescription>
+            Aprende a publicar y gestionar operaciones en el marketplace
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            onClick={() => navigate('/admin/operations')}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Ver Guía Completa
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Sección media - 2 columnas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

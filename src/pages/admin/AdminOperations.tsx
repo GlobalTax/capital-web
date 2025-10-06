@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
+import { SellerGuideDialog } from '@/components/operations/SellerGuideDialog';
 
 interface Operation {
   id: string;
@@ -69,10 +70,22 @@ const AdminOperations = () => {
   });
   const [selectedOperations, setSelectedOperations] = useState<Set<string>>(new Set());
   const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
+  const [showSellerGuide, setShowSellerGuide] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchOperations();
+  }, []);
+
+  // Auto-open seller guide on first visit
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem('seller-guide-shown');
+    const isDisabled = localStorage.getItem('seller-guide-disabled');
+    
+    if (!hasSeenGuide && !isDisabled) {
+      setShowSellerGuide(true);
+      localStorage.setItem('seller-guide-shown', 'true');
+    }
   }, []);
 
   const fetchOperations = async () => {
@@ -783,6 +796,14 @@ const AdminOperations = () => {
         </div>
         <div className="flex gap-3">
           <Button
+            onClick={() => setShowSellerGuide(true)}
+            variant="outline"
+            className="border-primary/20 hover:bg-primary/10 text-primary"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Guía de Publicación
+          </Button>
+          <Button
             onClick={extractFinancialData}
             disabled={isExtracting}
             variant="outline"
@@ -1310,6 +1331,12 @@ const AdminOperations = () => {
           </Card>
         </div>
       )}
+
+      {/* Seller Guide Dialog */}
+      <SellerGuideDialog 
+        open={showSellerGuide}
+        onOpenChange={setShowSellerGuide}
+      />
     </div>
   );
 };
