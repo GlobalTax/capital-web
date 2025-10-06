@@ -79,6 +79,7 @@ export interface ContactFilters {
   emailStatus?: 'all' | 'opened' | 'sent' | 'not_contacted';
   dateFrom?: string;
   dateTo?: string;
+  dateRangeLabel?: string;
   utmSource?: string;
   budget?: string;
   sector?: string;
@@ -125,48 +126,54 @@ export const useUnifiedContacts = () => {
     try {
       setIsLoading(true);
       
-      // Fetch contact_leads
+      // Fetch contact_leads (exclude soft deleted)
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
         .select('*, lead_status_crm, assigned_to')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (contactError) throw contactError;
 
-      // Fetch company_valuations
+      // Fetch company_valuations (exclude soft deleted)
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
         .select('*, lead_status_crm, assigned_to')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (valuationError) throw valuationError;
 
-      // Fetch collaborator_applications
+      // Fetch collaborator_applications (exclude soft deleted)
       const { data: collaboratorLeads, error: collaboratorError } = await supabase
         .from('collaborator_applications')
         .select('*, lead_status_crm, assigned_to')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (collaboratorError) throw collaboratorError;
 
-      // Fetch general_contact_leads (if exists)
+      // Fetch general_contact_leads (if exists, exclude soft deleted)
       const { data: generalLeads, error: generalError } = await supabase
         .from('general_contact_leads')
         .select('*')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
-      // Fetch acquisition_leads
+      // Fetch acquisition_leads (exclude soft deleted)
       const { data: acquisitionLeads, error: acquisitionError } = await supabase
         .from('acquisition_leads')
         .select('*')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (acquisitionError) throw acquisitionError;
 
-      // Fetch company_acquisition_inquiries
+      // Fetch company_acquisition_inquiries (exclude soft deleted)
       const { data: companyAcquisitionLeads, error: companyAcquisitionError } = await supabase
         .from('company_acquisition_inquiries')
         .select('*')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (companyAcquisitionError) throw companyAcquisitionError;

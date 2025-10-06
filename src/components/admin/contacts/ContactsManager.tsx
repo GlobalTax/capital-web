@@ -48,52 +48,98 @@ const ContactsManager = () => {
     navigate(`/admin/contacts/${origin}_${contactId}`);
   };
 
-  const handleDeleteContact = async (contactId: string) => {
-    const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este contacto?');
+  const handleSoftDelete = async (contactId: string) => {
+    const contact = contacts.find(c => c.id === contactId);
+    if (!contact) return;
+    
+    const confirmed = window.confirm(
+      `¿Archivar "${contact.name}"?\n\nSe puede restaurar después desde la sección de archivados.`
+    );
     if (!confirmed) return;
 
     try {
-      const contact = contacts.find(c => c.id === contactId);
-      if (!contact) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      const updates = {
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        deleted_by: user?.id,
+        deletion_reason: 'Archivado desde gestión de contactos'
+      };
 
       let error = null;
       
-      // Delete based on origin
       if (contact.origin === 'contact') {
-        const result = await supabase
-          .from('contact_leads')
-          .delete()
-          .eq('id', contactId);
+        const result = await supabase.from('contact_leads').update(updates).eq('id', contactId);
         error = result.error;
       } else if (contact.origin === 'valuation') {
-        const result = await supabase
-          .from('company_valuations')
-          .delete()
-          .eq('id', contactId);
+        const result = await supabase.from('company_valuations').update(updates).eq('id', contactId);
         error = result.error;
       } else if (contact.origin === 'collaborator') {
-        const result = await supabase
-          .from('collaborator_applications')
-          .delete()
-          .eq('id', contactId);
+        const result = await supabase.from('collaborator_applications').update(updates).eq('id', contactId);
         error = result.error;
       } else if (contact.origin === 'acquisition') {
-        const result = await supabase
-          .from('acquisition_leads')
-          .delete()
-          .eq('id', contactId);
+        const result = await supabase.from('acquisition_leads').update(updates).eq('id', contactId);
         error = result.error;
       } else if (contact.origin === 'company_acquisition') {
-        const result = await supabase
-          .from('company_acquisition_inquiries')
-          .delete()
-          .eq('id', contactId);
+        const result = await supabase.from('company_acquisition_inquiries').update(updates).eq('id', contactId);
         error = result.error;
       } else if (contact.origin === 'general') {
-        const result = await supabase
-          .from('general_contact_leads')
-          .delete()
-          .eq('id', contactId);
+        const result = await supabase.from('general_contact_leads').update(updates).eq('id', contactId);
+        error = result.error;
+      }
+
+      if (error) throw error;
+
+      toast({
+        title: "Contacto archivado",
+        description: "Se puede restaurar desde la sección 'Archivados'",
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error('Error archivando contacto:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo archivar el contacto",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleHardDelete = async (contactId: string) => {
+    const contact = contacts.find(c => c.id === contactId);
+    if (!contact) return;
+    
+    const confirmed1 = window.confirm(
+      `⚠️ ELIMINAR DEFINITIVAMENTE "${contact.name}"?\n\nEsta acción NO se puede deshacer y eliminará el contacto permanentemente de la base de datos.`
+    );
+    if (!confirmed1) return;
+
+    const confirmed2 = window.confirm(
+      '⚠️ CONFIRMACIÓN FINAL\n\n¿Estás 100% seguro? Esta acción es IRREVERSIBLE.\n\nEscribe "ELIMINAR" para confirmar.'
+    );
+    if (!confirmed2) return;
+
+    try {
+      let error = null;
+      
+      if (contact.origin === 'contact') {
+        const result = await supabase.from('contact_leads').delete().eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'valuation') {
+        const result = await supabase.from('company_valuations').delete().eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'collaborator') {
+        const result = await supabase.from('collaborator_applications').delete().eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'acquisition') {
+        const result = await supabase.from('acquisition_leads').delete().eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'company_acquisition') {
+        const result = await supabase.from('company_acquisition_inquiries').delete().eq('id', contactId);
+        error = result.error;
+      } else if (contact.origin === 'general') {
+        const result = await supabase.from('general_contact_leads').delete().eq('id', contactId);
         error = result.error;
       }
 
@@ -101,15 +147,121 @@ const ContactsManager = () => {
 
       toast({
         title: "Contacto eliminado",
-        description: "El contacto ha sido eliminado correctamente",
+        description: "Eliminación permanente completada",
       });
-
+      
       refetch();
     } catch (error) {
-      console.error('Error deleting contact:', error);
+      console.error('Error eliminando contacto:', error);
       toast({
         title: "Error",
         description: "No se pudo eliminar el contacto",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkSoftDelete = async () => {
+    const count = selectedContacts.length;
+    const confirmed = window.confirm(
+      `¿Archivar ${count} contacto${count > 1 ? 's' : ''}?\n\nSe pueden restaurar después.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const updates = {
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        deleted_by: user?.id,
+        deletion_reason: 'Archivado masivamente desde gestión de contactos'
+      };
+
+      const byOrigin: Record<string, string[]> = {};
+      selectedContacts.forEach(id => {
+        const contact = contacts.find(c => c.id === id);
+        if (contact) {
+          if (!byOrigin[contact.origin]) byOrigin[contact.origin] = [];
+          byOrigin[contact.origin].push(id);
+        }
+      });
+
+      const promises = Object.entries(byOrigin).map(([origin, ids]) => {
+        const table = origin === 'contact' ? 'contact_leads' :
+                      origin === 'valuation' ? 'company_valuations' :
+                      origin === 'collaborator' ? 'collaborator_applications' :
+                      origin === 'acquisition' ? 'acquisition_leads' :
+                      origin === 'company_acquisition' ? 'company_acquisition_inquiries' :
+                      'general_contact_leads';
+        
+        return supabase.from(table).update(updates).in('id', ids);
+      });
+
+      await Promise.all(promises);
+
+      toast({
+        title: `${count} contacto${count > 1 ? 's' : ''} archivado${count > 1 ? 's' : ''}`,
+      });
+      
+      setSelectedContacts([]);
+      refetch();
+    } catch (error) {
+      console.error('Error archivando contactos:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron archivar los contactos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkHardDelete = async () => {
+    const count = selectedContacts.length;
+    
+    const confirmed1 = window.confirm(
+      `⚠️ ELIMINAR ${count} CONTACTO${count > 1 ? 'S' : ''} DEFINITIVAMENTE?\n\nEsta acción NO se puede deshacer.`
+    );
+    if (!confirmed1) return;
+
+    const confirmed2 = window.confirm(
+      '⚠️ CONFIRMACIÓN FINAL\n\n¿Eliminar permanentemente? IRREVERSIBLE.'
+    );
+    if (!confirmed2) return;
+
+    try {
+      const byOrigin: Record<string, string[]> = {};
+      selectedContacts.forEach(id => {
+        const contact = contacts.find(c => c.id === id);
+        if (contact) {
+          if (!byOrigin[contact.origin]) byOrigin[contact.origin] = [];
+          byOrigin[contact.origin].push(id);
+        }
+      });
+
+      const promises = Object.entries(byOrigin).map(([origin, ids]) => {
+        const table = origin === 'contact' ? 'contact_leads' :
+                      origin === 'valuation' ? 'company_valuations' :
+                      origin === 'collaborator' ? 'collaborator_applications' :
+                      origin === 'acquisition' ? 'acquisition_leads' :
+                      origin === 'company_acquisition' ? 'company_acquisition_inquiries' :
+                      'general_contact_leads';
+        
+        return supabase.from(table).delete().in('id', ids);
+      });
+
+      await Promise.all(promises);
+
+      toast({
+        title: `${count} contacto${count > 1 ? 's' : ''} eliminado${count > 1 ? 's' : ''} permanentemente`,
+      });
+      
+      setSelectedContacts([]);
+      refetch();
+    } catch (error) {
+      console.error('Error eliminando contactos:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron eliminar los contactos",
         variant: "destructive",
       });
     }
@@ -246,7 +398,10 @@ const ContactsManager = () => {
             onSelectContact={handleSelectContact}
             onSelectAll={handleSelectAll}
             onViewDetails={handleViewDetails}
-            onDeleteContact={handleDeleteContact}
+            onSoftDelete={handleSoftDelete}
+            onHardDelete={handleHardDelete}
+            onBulkSoftDelete={handleBulkSoftDelete}
+            onBulkHardDelete={handleBulkHardDelete}
           />
         </TabsContent>
       </Tabs>

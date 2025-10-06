@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { ContactFilters as ContactFiltersType } from '@/hooks/useUnifiedContacts';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import DateRangeQuickSelector from './DateRangeQuickSelector';
 
 interface ContactFiltersProps {
   filters: ContactFiltersType;
@@ -140,26 +141,27 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Date From */}
+              <div className="space-y-4">
+                {/* Date Range Quick Selector */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Desde</label>
-                  <Input
-                    type="date"
-                    value={localFilters.dateFrom || ''}
-                    onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                  <label className="text-sm font-medium mb-2 block">Rango de fechas</label>
+                  <DateRangeQuickSelector
+                    onRangeSelect={(dateFrom, dateTo, label) => {
+                      const newFilters = { 
+                        ...localFilters, 
+                        dateFrom, 
+                        dateTo,
+                        dateRangeLabel: label 
+                      };
+                      setLocalFilters(newFilters);
+                      onFiltersChange(newFilters);
+                      localStorage.setItem('contactFilters', JSON.stringify(newFilters));
+                    }}
+                    selectedLabel={localFilters.dateRangeLabel}
                   />
                 </div>
 
-                {/* Date To */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Hasta</label>
-                  <Input
-                    type="date"
-                    value={localFilters.dateTo || ''}
-                    onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                 {/* UTM Source */}
                 <div>
@@ -220,6 +222,7 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
                       <SelectItem value="500+">500+</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
                 </div>
               </div>
             </CollapsibleContent>

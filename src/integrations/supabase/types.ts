@@ -107,6 +107,9 @@ export type Database = {
           additional_details: string | null
           company: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           email: string
           email_sent: boolean | null
           email_sent_at: string | null
@@ -116,6 +119,7 @@ export type Database = {
           id: string
           investment_range: string | null
           ip_address: unknown | null
+          is_deleted: boolean | null
           phone: string | null
           referrer: string | null
           sectors_of_interest: string | null
@@ -132,6 +136,9 @@ export type Database = {
           additional_details?: string | null
           company: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email: string
           email_sent?: boolean | null
           email_sent_at?: string | null
@@ -141,6 +148,7 @@ export type Database = {
           id?: string
           investment_range?: string | null
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -157,6 +165,9 @@ export type Database = {
           additional_details?: string | null
           company?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string
           email_sent?: boolean | null
           email_sent_at?: string | null
@@ -166,6 +177,7 @@ export type Database = {
           id?: string
           investment_range?: string | null
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -928,6 +940,9 @@ export type Database = {
           assigned_to: string | null
           company: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           email: string
           email_message_id: string | null
           email_opened: boolean | null
@@ -940,6 +955,7 @@ export type Database = {
           hubspot_sent_at: string | null
           id: string
           ip_address: unknown | null
+          is_deleted: boolean | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
           phone: string
@@ -954,6 +970,9 @@ export type Database = {
           assigned_to?: string | null
           company?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -966,6 +985,7 @@ export type Database = {
           hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           phone: string
@@ -980,6 +1000,9 @@ export type Database = {
           assigned_to?: string | null
           company?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -992,6 +1015,7 @@ export type Database = {
           hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           phone?: string
@@ -1016,6 +1040,9 @@ export type Database = {
           acquisition_type: string | null
           company: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           email: string
           email_message_id: string | null
           email_opened: boolean | null
@@ -1028,6 +1055,7 @@ export type Database = {
           id: string
           investment_budget: string | null
           ip_address: unknown | null
+          is_deleted: boolean | null
           message: string | null
           notes: string | null
           page_origin: string
@@ -1052,6 +1080,9 @@ export type Database = {
           acquisition_type?: string | null
           company: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -1064,6 +1095,7 @@ export type Database = {
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -1088,6 +1120,9 @@ export type Database = {
           acquisition_type?: string | null
           company?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -1100,6 +1135,7 @@ export type Database = {
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -1231,6 +1267,8 @@ export type Database = {
           created_at: string
           current_step: number | null
           deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           ebitda: number | null
           ebitda_multiple_used: number | null
           email: string
@@ -1289,6 +1327,8 @@ export type Database = {
           created_at?: string
           current_step?: number | null
           deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email: string
@@ -1347,6 +1387,8 @@ export type Database = {
           created_at?: string
           current_step?: number | null
           deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email?: string
@@ -1410,6 +1452,9 @@ export type Database = {
           company_size: string | null
           country: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           email: string
           email_message_id: string | null
           email_opened: boolean | null
@@ -1422,6 +1467,7 @@ export type Database = {
           id: string
           investment_budget: string | null
           ip_address: unknown | null
+          is_deleted: boolean | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           phone: string | null
           referral: string | null
@@ -1439,6 +1485,9 @@ export type Database = {
           company_size?: string | null
           country?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -1451,6 +1500,7 @@ export type Database = {
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
           referral?: string | null
@@ -1468,6 +1518,9 @@ export type Database = {
           company_size?: string | null
           country?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -1480,6 +1533,7 @@ export type Database = {
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
           referral?: string | null
@@ -2094,6 +2148,9 @@ export type Database = {
           company: string
           country: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           email: string
           email_message_id: string | null
           email_opened: boolean | null
@@ -2106,6 +2163,7 @@ export type Database = {
           hubspot_sent_at: string | null
           id: string
           ip_address: unknown | null
+          is_deleted: boolean | null
           message: string
           page_origin: string
           phone: string | null
@@ -2124,6 +2182,9 @@ export type Database = {
           company: string
           country?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -2136,6 +2197,7 @@ export type Database = {
           hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           message: string
           page_origin: string
           phone?: string | null
@@ -2154,6 +2216,9 @@ export type Database = {
           company?: string
           country?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           email?: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -2166,6 +2231,7 @@ export type Database = {
           hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
+          is_deleted?: boolean | null
           message?: string
           page_origin?: string
           phone?: string | null

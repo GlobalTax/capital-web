@@ -23,7 +23,10 @@ interface ContactsTableProps {
   onSelectContact: (contactId: string) => void;
   onSelectAll: () => void;
   onViewDetails: (contactId: string, origin: ContactOrigin) => void;
-  onDeleteContact: (contactId: string) => void;
+  onSoftDelete: (contactId: string) => void;
+  onHardDelete: (contactId: string) => void;
+  onBulkSoftDelete: () => void;
+  onBulkHardDelete: () => void;
 }
 
 const ContactsTable: React.FC<ContactsTableProps> = ({
@@ -32,7 +35,10 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   onSelectContact,
   onSelectAll,
   onViewDetails,
-  onDeleteContact,
+  onSoftDelete,
+  onHardDelete,
+  onBulkSoftDelete,
+  onBulkHardDelete,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [originFilters, setOriginFilters] = useState<ContactOrigin[]>([]);
@@ -228,14 +234,33 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             </Button>
 
             {selectedContacts.length > 0 && (
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="h-9"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Eliminar ({selectedContacts.length})
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="h-9"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Eliminar ({selectedContacts.length})
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Opciones de eliminación</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    onSelect={() => onBulkSoftDelete()}
+                  >
+                    🗂️ Archivar seleccionados
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    onSelect={() => onBulkHardDelete()}
+                    className="text-destructive"
+                  >
+                    🗑️ Eliminar definitivamente
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
@@ -351,14 +376,32 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDeleteContact(contact.id)}
-                    title="Eliminar contacto"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Opciones de eliminación"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Eliminar contacto</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem
+                        onSelect={() => onSoftDelete(contact.id)}
+                      >
+                        🗂️ Archivar
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        onSelect={() => onHardDelete(contact.id)}
+                        className="text-destructive"
+                      >
+                        🗑️ Eliminar definitivamente
+                      </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TableCell>
             </TableRow>
