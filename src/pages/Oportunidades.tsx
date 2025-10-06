@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
+import { MarketplaceGuideDialog } from '@/components/operations/MarketplaceGuideDialog';
+import { useFirstVisit } from '@/hooks/useFirstVisit';
+import { Button } from '@/components/ui/button';
+import { HelpCircle } from 'lucide-react';
 
 const Oportunidades = () => {
+  const [guideOpen, setGuideOpen] = useState(false);
+  const { isFirstVisit, markAsVisited, isDisabled } = useFirstVisit('marketplace-guide');
+
+  // Auto-open guide on first visit
+  useEffect(() => {
+    if (isFirstVisit && !isDisabled) {
+      setGuideOpen(true);
+      markAsVisited();
+    }
+  }, [isFirstVisit, isDisabled, markAsVisited]);
+
   // Set page metadata
-  React.useEffect(() => {
+  useEffect(() => {
     document.title = 'Oportunidades de Inversión - Capittal';
     
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -23,10 +38,19 @@ const Oportunidades = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
                 Marketplace de Oportunidades
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
                 Explora empresas disponibles para adquisición con información detallada sobre 
                 valoración, sector y rendimiento financiero.
               </p>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setGuideOpen(true)}
+                className="gap-2"
+              >
+                <HelpCircle className="h-5 w-5" />
+                ¿Cómo funciona?
+              </Button>
             </div>
           </div>
         </section>
@@ -67,6 +91,9 @@ const Oportunidades = () => {
             </div>
           </div>
         </section>
+
+        {/* Guide Dialog */}
+        <MarketplaceGuideDialog open={guideOpen} onOpenChange={setGuideOpen} />
       </div>
     </UnifiedLayout>
   );
