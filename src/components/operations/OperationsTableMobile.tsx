@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Building2, Calendar, TrendingUp, Eye, Star, Sparkles, MoreVertical } from 'lucide-react';
+import { Building2, Calendar, TrendingUp, Eye, Star, Sparkles, MoreVertical, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
 import { formatCompactCurrency } from '@/utils/formatters';
 import { isRecentOperation } from '@/utils/dateHelpers';
@@ -40,6 +40,7 @@ interface OperationsTableMobileProps {
   onEdit: (operation: Operation) => void;
   onDuplicate: (operation: Operation) => void;
   onToggleActive: (operation: Operation) => void;
+  onDelete: (operation: Operation) => void;
 }
 
 export const OperationsTableMobile: React.FC<OperationsTableMobileProps> = ({
@@ -50,6 +51,7 @@ export const OperationsTableMobile: React.FC<OperationsTableMobileProps> = ({
   onEdit,
   onDuplicate,
   onToggleActive,
+  onDelete,
 }) => {
   const getCompanyInitials = (name: string) => {
     return name
@@ -146,7 +148,24 @@ export const OperationsTableMobile: React.FC<OperationsTableMobileProps> = ({
                         Duplicar
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onToggleActive(operation)}>
-                        {operation.is_active ? 'Desactivar' : 'Activar'}
+                        {operation.is_active ? (
+                          <>
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Desactivar
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Activar
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => onDelete(operation)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

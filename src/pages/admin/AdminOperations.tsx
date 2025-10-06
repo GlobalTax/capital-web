@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatDate, formatCurrency } from '@/shared/utils/format';
-import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2 } from 'lucide-react';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
@@ -93,6 +93,7 @@ const AdminOperations = () => {
       const { data, error } = await supabase
         .from('company_operations')
         .select('*')
+        .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -411,6 +412,35 @@ const AdminOperations = () => {
     }
   };
 
+  const handleDelete = async (operation: Operation) => {
+    if (!confirm(`¿Estás seguro de eliminar "${operation.company_name}"? Esta acción se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_deleted: true })
+        .eq('id', operation.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operación eliminada',
+        description: `"${operation.company_name}" se eliminó correctamente`,
+      });
+      
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error deleting operation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la operación',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Get status badge classes
   const getStatusBadgeClass = (status?: string) => {
     switch (status) {
@@ -567,6 +597,38 @@ const AdminOperations = () => {
       toast({
         title: 'Error',
         description: 'No se pudieron desmarcar las operaciones',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedOperations);
+    
+    if (!confirm(`¿Eliminar ${ids.length} operaciones seleccionadas? Esta acción se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('company_operations')
+        .update({ is_deleted: true })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Operaciones eliminadas',
+        description: `Se eliminaron ${ids.length} operaciones correctamente`,
+      });
+
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error bulk deleting:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron eliminar las operaciones',
         variant: 'destructive',
       });
     }
@@ -769,6 +831,14 @@ const AdminOperations = () => {
                 <Archive className="mr-2 h-4 w-4" />
                 {operation.is_active ? 'Desactivar' : 'Activar'}
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => handleDelete(operation)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -894,6 +964,7 @@ const AdminOperations = () => {
           onUnfeature={handleBulkUnfeature}
           onExport={handleBulkExport}
           onChangeDisplayLocations={handleBulkChangeDisplayLocations}
+          onDelete={handleBulkDelete}
         />
       )}
 
@@ -1008,6 +1079,7 @@ const AdminOperations = () => {
             onEdit={setEditingOperation}
             onDuplicate={handleDuplicate}
             onToggleActive={handleToggleActive}
+            onDelete={handleDelete}
           />
         )}
       </div>

@@ -1136,6 +1136,7 @@ export type Database = {
           company_size_employees: string | null
           created_at: string
           deal_type: string | null
+          deleted_at: string | null
           description: string
           display_locations: string[] | null
           ebitda_amount: number | null
@@ -1145,6 +1146,7 @@ export type Database = {
           highlights: string[] | null
           id: string
           is_active: boolean | null
+          is_deleted: boolean | null
           is_featured: boolean | null
           logo_url: string | null
           revenue_amount: number | null
@@ -1162,6 +1164,7 @@ export type Database = {
           company_size_employees?: string | null
           created_at?: string
           deal_type?: string | null
+          deleted_at?: string | null
           description: string
           display_locations?: string[] | null
           ebitda_amount?: number | null
@@ -1171,6 +1174,7 @@ export type Database = {
           highlights?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
           revenue_amount?: number | null
@@ -1188,6 +1192,7 @@ export type Database = {
           company_size_employees?: string | null
           created_at?: string
           deal_type?: string | null
+          deleted_at?: string | null
           description?: string
           display_locations?: string[] | null
           ebitda_amount?: number | null
@@ -1197,6 +1202,7 @@ export type Database = {
           highlights?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
           revenue_amount?: number | null
@@ -1831,6 +1837,13 @@ export type Database = {
             foreignKeyName: "documentos_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "documentos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "mandatos"
             referencedColumns: ["id"]
           },
@@ -2294,6 +2307,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interacciones_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
           },
           {
             foreignKeyName: "interacciones_mandato_id_fkey"
@@ -2980,6 +3000,13 @@ export type Database = {
             referencedRelation: "mandato_checklist_tasks"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "mandato_checklist_task_files_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "task_time_summary"
+            referencedColumns: ["task_id"]
+          },
         ]
       }
       mandato_checklist_tasks: {
@@ -3035,6 +3062,13 @@ export type Database = {
           url_relacionada?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
           {
             foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
             columns: ["mandato_id"]
@@ -3112,6 +3146,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contactos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_contactos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
           },
           {
             foreignKeyName: "mandato_contactos_mandato_id_fkey"
@@ -3201,8 +3242,104 @@ export type Database = {
             foreignKeyName: "mandato_empresas_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_empresas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "mandatos"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      mandato_time_entries: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          description: string
+          duration_minutes: number | null
+          end_time: string | null
+          id: string
+          is_billable: boolean | null
+          mandato_id: string
+          notes: string | null
+          rejection_reason: string | null
+          start_time: string
+          status: string | null
+          task_id: string
+          updated_at: string | null
+          user_id: string
+          work_type: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          description: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          is_billable?: boolean | null
+          mandato_id: string
+          notes?: string | null
+          rejection_reason?: string | null
+          start_time: string
+          status?: string | null
+          task_id: string
+          updated_at?: string | null
+          user_id: string
+          work_type: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          description?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          is_billable?: boolean | null
+          mandato_id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          start_time?: string
+          status?: string | null
+          task_id?: string
+          updated_at?: string | null
+          user_id?: string
+          work_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandato_time_entries_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_time_entries_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_checklist_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "task_time_summary"
+            referencedColumns: ["task_id"]
           },
         ]
       }
@@ -3969,6 +4106,13 @@ export type Database = {
             foreignKeyName: "tareas_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "tareas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "mandatos"
             referencedColumns: ["id"]
           },
@@ -4437,6 +4581,46 @@ export type Database = {
             columns: ["banner_id"]
             isOneToOne: false
             referencedRelation: "banners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mandato_time_summary: {
+        Row: {
+          descripcion: string | null
+          horas_facturables: number | null
+          mandato_id: string | null
+          promedio_horas_por_entrada: number | null
+          tipo: string | null
+          total_entradas: number | null
+          total_horas: number | null
+          trabajadores_asignados: number | null
+        }
+        Relationships: []
+      }
+      task_time_summary: {
+        Row: {
+          fase: string | null
+          mandato_id: string | null
+          tarea: string | null
+          task_id: string | null
+          total_entradas: number | null
+          total_horas: number | null
+          usuarios_trabajando: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
             referencedColumns: ["id"]
           },
         ]

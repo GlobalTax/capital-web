@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckSquare, X, Eye, EyeOff, Star, Download, MapPin } from 'lucide-react';
+import { CheckSquare, X, Eye, EyeOff, Star, Download, MapPin, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ interface BulkActionsToolbarProps {
   onUnfeature: () => void;
   onExport: () => void;
   onChangeDisplayLocations: () => void;
+  onDelete: () => void;
 }
 
 export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
@@ -31,6 +32,7 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   onUnfeature,
   onExport,
   onChangeDisplayLocations,
+  onDelete,
 }) => {
   return (
     <Card className="p-3 mb-4 bg-primary/5 border-primary/20 animate-fade-in">
@@ -115,6 +117,16 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
           >
             <Download className="h-4 w-4 mr-2" />
             Exportar
+          </Button>
+
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
+            className="h-8"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Eliminar
           </Button>
         </div>
       </div>
