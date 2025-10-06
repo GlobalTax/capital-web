@@ -308,7 +308,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             <TableHead className="w-40">Empresa</TableHead>
             <TableHead className="w-32">Sector</TableHead>
             <TableHead className="text-right w-32">Facturación</TableHead>
-            <TableHead className="text-right w-28">Valoración</TableHead>
+            <TableHead className="text-right w-36 whitespace-nowrap">Valoración</TableHead>
             <TableHead className="text-right w-28">EBITDA</TableHead>
             <TableHead className="w-28">Fecha</TableHead>
             <TableHead className="text-right w-20">Acciones</TableHead>
@@ -354,7 +354,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               <TableCell className="text-right text-sm">
                 {contact.revenue ? formatCurrency(contact.revenue) : '-'}
               </TableCell>
-              <TableCell className="text-right text-sm">
+              <TableCell className="text-right text-sm whitespace-nowrap">
                 {contact.final_valuation ? formatCurrency(contact.final_valuation) : '-'}
               </TableCell>
               <TableCell className="text-right text-sm">
