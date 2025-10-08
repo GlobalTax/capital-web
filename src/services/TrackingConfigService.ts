@@ -6,6 +6,8 @@ export interface TrackingConfiguration {
   facebookPixelId?: string;
   linkedInInsightTag?: string;
   hotjarId?: string;
+  cookiebotId?: string;
+  enableCMP?: boolean;
   enableHeatmaps?: boolean;
   enableSessionRecording?: boolean;
   enableLeadTracking?: boolean;
@@ -44,9 +46,11 @@ export class TrackingConfigService {
         enableHeatmaps: true,
         enableSessionRecording: false,
         enableLeadTracking: true,
+        enableCMP: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
         googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
+        cookiebotId: '', // Configurar con ID real de Cookiebot
       };
     } catch (error) {
       console.error('Error loading tracking configuration:', error);
@@ -54,9 +58,11 @@ export class TrackingConfigService {
         enableHeatmaps: true,
         enableSessionRecording: false,
         enableLeadTracking: true,
+        enableCMP: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
         googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
+        cookiebotId: '',
       };
     }
   }

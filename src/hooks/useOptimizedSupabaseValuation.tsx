@@ -421,6 +421,43 @@ export const useOptimizedSupabaseValuation = () => {
             }
           }, { component: 'OptimizedSupabaseValuation', action: 'backgroundEmail' });
 
+          // Background: Meta Pixel Advanced Matching
+          await handleAsyncError(async () => {
+            if (typeof (window as any).fbq === 'function') {
+              const fbq = (window as any).fbq;
+              
+              // Extraer ciudad de location (formato: "Ciudad, Provincia")
+              const city = companyData.location?.split(',')[0]?.trim().toLowerCase() || '';
+              
+              // Preparar datos de Advanced Matching
+              const advancedMatchingData = {
+                em: companyData.email?.toLowerCase().trim(),
+                ph: companyData.phone?.replace(/\s+/g, ''),
+                fn: companyData.contactName?.split(' ')[0]?.toLowerCase().trim(),
+                ln: companyData.contactName?.split(' ').slice(1).join(' ')?.toLowerCase().trim(),
+                ct: city,
+                country: 'es'
+              };
+              
+              // Enviar evento Lead con Advanced Matching
+              fbq('track', 'Lead', {
+                content_name: 'Valoración de Empresa',
+                content_category: companyData.industry || 'General',
+                value: result.finalValuation || 0,
+                currency: 'EUR'
+              }, advancedMatchingData);
+              
+              console.log('✅ [Tracking] Meta Pixel Lead event sent with Advanced Matching:', {
+                hasEmail: !!advancedMatchingData.em,
+                hasPhone: !!advancedMatchingData.ph,
+                hasName: !!advancedMatchingData.fn,
+                hasCity: !!advancedMatchingData.ct
+              });
+            } else {
+              console.warn('⚠️ [Tracking] Meta Pixel not loaded, skipping Lead event');
+            }
+          }, { component: 'OptimizedSupabaseValuation', action: 'metaPixelTracking' });
+
           // Background: Sync with external systems
           await handleAsyncError(async () => {
             const urlParams = new URLSearchParams(window.location.search);
