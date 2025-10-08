@@ -50,7 +50,7 @@ export class TrackingConfigService {
         googleAnalyticsId: 'G-Z97ZB4YKPF',
         googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
-        cookiebotId: '', // Configurar con ID real de Cookiebot
+        cookiebotId: 'c5f326c2-c1a3-48af-89ee-2113cd3c0399',
       };
     } catch (error) {
       console.error('Error loading tracking configuration:', error);
@@ -62,7 +62,7 @@ export class TrackingConfigService {
         googleAnalyticsId: 'G-Z97ZB4YKPF',
         googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
-        cookiebotId: '',
+        cookiebotId: 'c5f326c2-c1a3-48af-89ee-2113cd3c0399',
       };
     }
   }
