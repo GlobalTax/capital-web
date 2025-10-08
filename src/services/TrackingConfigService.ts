@@ -71,10 +71,11 @@ export class TrackingConfigService {
   // Helper method to check if tracking should be enabled based on domain
   static shouldEnableTracking(): boolean {
     const domain = window.location.hostname;
-    return domain === 'capittal.es' || 
-           domain.endsWith('.capittal.es') || 
-           domain === 'localhost' || 
-           domain === '127.0.0.1';
+    const isProduction = domain === 'capittal.es' || domain.endsWith('.capittal.es');
+    const isLocal = domain === 'localhost' || domain === '127.0.0.1';
+    const isStaging = domain.endsWith('.lovable.app') || domain.endsWith('.lovable.dev');
+    
+    return isProduction || isLocal || isStaging;
   }
 
   static validateConfiguration(config: TrackingConfiguration): { isValid: boolean; errors: string[] } {

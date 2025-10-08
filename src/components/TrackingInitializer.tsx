@@ -8,9 +8,15 @@ import { TrackingConfigService } from '@/services/TrackingConfigService';
 export const TrackingInitializer = () => {
   useEffect(() => {
     const initializeTracking = async () => {
-      // Solo cargar en dominios permitidos (capittal.es y localhost)
-      if (!TrackingConfigService.shouldEnableTracking()) {
-        console.log('[Tracking] Disabled - not in allowed domain');
+      const currentHost = window.location.hostname;
+      const isTrackingEnabled = TrackingConfigService.shouldEnableTracking();
+      
+      console.log('[Tracking] 🌐 Current host:', currentHost);
+      console.log('[Tracking] 🎯 Tracking enabled:', isTrackingEnabled);
+      
+      // Solo cargar en dominios permitidos
+      if (!isTrackingEnabled) {
+        console.log('[Tracking] ❌ Disabled - not in allowed domain');
         return;
       }
 
@@ -40,7 +46,18 @@ export const TrackingInitializer = () => {
           cookiebotScript.type = 'text/javascript';
           document.head.appendChild(cookiebotScript);
           
+          // Helper global para desarrollo: mostrar banner manualmente
+          (window as any).showCookieBanner = () => {
+            if ((window as any).Cookiebot?.show) {
+              (window as any).Cookiebot.show();
+              console.log('[Tracking] 🍪 Banner shown manually');
+            } else {
+              console.warn('[Tracking] ⚠️ Cookiebot not loaded yet');
+            }
+          };
+          
           console.log('✅ [Tracking] Cookiebot CMP initialized:', cookiebotId);
+          console.log('💡 [Tracking] Tip: Run window.showCookieBanner() to show banner manually');
         }
       }
 
@@ -136,20 +153,28 @@ export const TrackingInitializer = () => {
             const cookiebot = (window as any).Cookiebot;
             
             const checkAndLoadScripts = () => {
-              console.log('[Tracking] Checking consent status:', {
+              console.log('[Tracking] 🔍 Checking consent status:', {
                 marketing: cookiebot.consent?.marketing,
-                statistics: cookiebot.consent?.statistics
+                statistics: cookiebot.consent?.statistics,
+                preferences: cookiebot.consent?.preferences,
+                necessary: cookiebot.consent?.necessary
               });
               
               // Cargar scripts solo si hay consentimiento de marketing
               if (cookiebot.consent?.marketing) {
+                console.log('[Tracking] ✅ Marketing consent granted - loading Meta Pixel');
                 loadMetaPixel();
+              } else {
+                console.log('[Tracking] ⏸️ Marketing consent not granted - Meta Pixel blocked');
               }
               
               // Cargar analytics solo si hay consentimiento de estadísticas
               if (cookiebot.consent?.statistics) {
+                console.log('[Tracking] ✅ Statistics consent granted - loading GA & GTM');
                 loadGoogleAnalytics();
                 loadGoogleTagManager();
+              } else {
+                console.log('[Tracking] ⏸️ Statistics consent not granted - GA & GTM blocked');
               }
             };
             
