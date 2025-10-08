@@ -111,7 +111,16 @@ class GlobalErrorHandler {
       'iframe which has both allow-scripts',
       'pushLogsToGrafana',
       'firestore.googleapis.com',
-      'lovable-api.com'
+      'lovable-api.com',
+      'runtime.lastError',
+      'message port closed',
+      'message channel closed',
+      'listener indicated an asynchronous response',
+      'Extension context invalidated',
+      'chrome-extension://',
+      'moz-extension://',
+      'safari-extension://',
+      'edge-extension://'
     ];
 
     return knownErrors.some(pattern => message.includes(pattern));

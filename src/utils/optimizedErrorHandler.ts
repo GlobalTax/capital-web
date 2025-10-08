@@ -95,7 +95,16 @@ class OptimizedErrorHandler {
       'Module script',
       'MIME type',
       'Failed to execute \'put\' on \'Cache\'',
-      'Max reconnect attempts'
+      'Max reconnect attempts',
+      'runtime.lastError',
+      'message port closed',
+      'message channel closed',
+      'listener indicated an asynchronous response',
+      'Extension context invalidated',
+      'chrome-extension://',
+      'moz-extension://',
+      'safari-extension://',
+      'edge-extension://'
     ];
 
     return knownErrors.some(pattern => message.includes(pattern));
