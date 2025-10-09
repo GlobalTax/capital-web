@@ -54,6 +54,10 @@ const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => 
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
 
+// === JOB POSTS ===
+const JobsPage = lazy(() => import('@/pages/JobsPage').catch(() => import('@/pages/VentaEmpresas')));
+const JobDetailPage = lazy(() => import('@/pages/JobDetailPage').catch(() => import('@/pages/NotFound')));
+
 // === LEGAL PAGES ===
 const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos/index').catch(() => import('@/pages/VentaEmpresas')));
 const Experiencia = lazy(() => import('@/pages/por-que-elegirnos/experiencia').catch(() => import('@/pages/VentaEmpresas')));
@@ -126,6 +130,10 @@ export const AppRoutes = () => {
         <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
         <Route path="/sectores/energia" element={<Energia />} />
         <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
+        
+        {/* === JOB POSTS ROUTES === */}
+        <Route path="/oportunidades/empleo" element={<JobsPage />} />
+        <Route path="/oportunidades/empleo/:slug" element={<JobDetailPage />} />
         
         {/* === RESOURCE ROUTES === */}
         <Route path="/blog" element={<Navigate to="/recursos/blog" replace />} />

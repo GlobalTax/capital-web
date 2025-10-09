@@ -178,9 +178,9 @@ export interface JobApplicationFormData {
   years_of_experience?: number;
   current_position?: string;
   current_company?: string;
-  education_level?: EducationLevel;
+  education_level?: string;
   cover_letter?: string;
-  availability?: Availability;
+  availability?: string;
   expected_salary_min?: number;
   expected_salary_max?: number;
 }
