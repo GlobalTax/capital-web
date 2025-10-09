@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, MapPin, Clock, TrendingUp, Search } from 'lucide-react';
+import { Briefcase, MapPin, Clock, TrendingUp, Search, Building2, Euro, Users, Calendar } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -42,36 +42,59 @@ const JobsPage = () => {
       <Header />
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 to-primary/10 py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold">
-                Únete a Capittal
+        <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-24 overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">
+                <Briefcase className="h-4 w-4" />
+                <span>Carreras en M&A</span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                Únete al equipo de <span className="text-blue-400">Capittal</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
-                Construye tu carrera en el mundo de las fusiones y adquisiciones.
+              <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+                Construye tu carrera en el mundo de las fusiones y adquisiciones. 
                 Trabajamos con las empresas más innovadoras de España.
               </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400">+50</div>
+                  <div className="text-sm text-slate-400">Operaciones anuales</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400">15+</div>
+                  <div className="text-sm text-slate-400">Años de experiencia</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400">7</div>
+                  <div className="text-sm text-slate-400">Oficinas en España</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400">30+</div>
+                  <div className="text-sm text-slate-400">Profesionales</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Filters Section */}
-        <section className="container mx-auto px-4 -mt-8">
-          <Card className="p-6">
+        <section className="container mx-auto px-4 -mt-12">
+          <Card className="p-6 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
             <div className="grid md:grid-cols-3 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   placeholder="Buscar ofertas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-12"
                 />
               </div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Categoría" />
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Todas las categorías" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las categorías</SelectItem>
@@ -83,8 +106,8 @@ const JobsPage = () => {
                 </SelectContent>
               </Select>
               <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Ubicación" />
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Todas las ubicaciones" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las ubicaciones</SelectItem>
@@ -99,56 +122,79 @@ const JobsPage = () => {
         </section>
 
         {/* Jobs List */}
-        <section className="container mx-auto px-4 py-12">
+        <section className="container mx-auto px-4 py-16">
           {isLoading ? (
-            <div className="text-center py-12">Cargando ofertas...</div>
+            <div className="text-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Cargando ofertas...</p>
+            </div>
           ) : filteredJobs && filteredJobs.length > 0 ? (
             <div className="grid gap-6">
               {filteredJobs.map((job) => (
                 <Link key={job.id} to={`/oportunidades/empleo/${job.slug}`}>
-                  <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-2xl font-semibold">{job.title}</h3>
-                          {job.is_featured && (
-                            <Badge variant="default">Destacada</Badge>
-                          )}
-                          {job.is_urgent && (
-                            <Badge variant="destructive">Urgente</Badge>
-                          )}
-                        </div>
-                        <p className="text-muted-foreground mb-4">
-                          {job.short_description}
-                        </p>
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>{job.location}</span>
-                            {job.is_remote && <Badge variant="outline">Remoto</Badge>}
+                  <Card className="group p-8 hover:shadow-2xl hover:border-primary/50 transition-all duration-300 cursor-pointer border-2">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                      <div className="flex-1 space-y-4">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                            <Briefcase className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Briefcase className="h-4 w-4" />
-                            <span className="capitalize">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2 flex-wrap">
+                              <h3 className="text-2xl font-bold group-hover:text-primary transition-colors">
+                                {job.title}
+                              </h3>
+                              {job.is_featured && (
+                                <Badge className="bg-blue-500 hover:bg-blue-600">
+                                  ⭐ Destacada
+                                </Badge>
+                              )}
+                              {job.is_urgent && (
+                                <Badge variant="destructive" className="animate-pulse">
+                                  🔥 Urgente
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-muted-foreground text-lg leading-relaxed">
+                              {job.short_description}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-4 text-sm">
+                          <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-lg">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            <span className="font-medium">{job.location}</span>
+                            {job.is_remote && (
+                              <Badge variant="secondary" className="ml-1">Remoto</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-lg">
+                            <Building2 className="h-4 w-4 text-primary" />
+                            <span className="capitalize font-medium">
                               {job.employment_type.replace('_', ' ')}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>
-                              Publicado {formatDistanceToNow(new Date(job.published_at!), {
+                          <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-lg">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="font-medium">
+                              {formatDistanceToNow(new Date(job.published_at!), {
                                 addSuffix: true,
                                 locale: es,
                               })}
                             </span>
                           </div>
                           {job.category && (
-                            <Badge variant="outline">{job.category.name}</Badge>
+                            <Badge variant="outline" className="px-3 py-1">
+                              {job.category.name}
+                            </Badge>
                           )}
                         </div>
                       </div>
-                      <Button>
+                      
+                      <Button size="lg" className="shrink-0 group-hover:bg-primary group-hover:scale-105 transition-transform">
                         Ver oferta
+                        <TrendingUp className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
                   </Card>
@@ -156,25 +202,73 @@ const JobsPage = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No se encontraron ofertas con los filtros seleccionados.
-              </p>
+            <div className="text-center py-20">
+              <div className="max-w-md mx-auto space-y-6">
+                <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                  <Briefcase className="h-12 w-12 text-slate-400" />
+                </div>
+                <h3 className="text-2xl font-bold">No hay ofertas disponibles</h3>
+                <p className="text-muted-foreground text-lg">
+                  No se encontraron ofertas con los filtros seleccionados. 
+                  Intenta ajustar tus criterios de búsqueda.
+                </p>
+                <Button onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('all');
+                  setSelectedLocation('all');
+                }} variant="outline" size="lg">
+                  Limpiar filtros
+                </Button>
+              </div>
             </div>
           )}
         </section>
 
         {/* CTA Section */}
-        <section className="bg-primary/5 py-16">
-          <div className="container mx-auto px-4 text-center space-y-6">
-            <h2 className="text-3xl font-bold">¿No encuentras lo que buscas?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Envíanos tu candidatura espontánea y te contactaremos cuando tengamos
-              una posición que se ajuste a tu perfil.
-            </p>
-            <Button size="lg" asChild>
-              <Link to="/contacto">Enviar candidatura espontánea</Link>
-            </Button>
+        <section className="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-4xl md:text-5xl font-bold">
+                  ¿No encuentras lo que buscas?
+                </h2>
+                <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                  Envíanos tu candidatura espontánea y te contactaremos cuando tengamos
+                  una posición que se ajuste a tu perfil y experiencia.
+                </p>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-6 py-8">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-3">
+                  <Users className="h-10 w-10 text-blue-400 mx-auto" />
+                  <h3 className="font-semibold text-lg">Equipo diverso</h3>
+                  <p className="text-sm text-slate-300">
+                    Profesionales con diferentes backgrounds y experiencias
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-3">
+                  <TrendingUp className="h-10 w-10 text-blue-400 mx-auto" />
+                  <h3 className="font-semibold text-lg">Desarrollo continuo</h3>
+                  <p className="text-sm text-slate-300">
+                    Formación constante y oportunidades de crecimiento
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-3">
+                  <Building2 className="h-10 w-10 text-blue-400 mx-auto" />
+                  <h3 className="font-semibold text-lg">Proyectos únicos</h3>
+                  <p className="text-sm text-slate-300">
+                    Participa en operaciones M&A de alto impacto
+                  </p>
+                </div>
+              </div>
+              
+              <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100" asChild>
+                <Link to="/contacto">
+                  Enviar candidatura espontánea
+                  <TrendingUp className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
       </main>
