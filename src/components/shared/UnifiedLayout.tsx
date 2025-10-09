@@ -36,7 +36,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
     <div className="min-h-screen bg-white">
       <BannerContainer position="top" />
       <HeaderComponent />
-      <main role="main" className={`pt-16 ${mainClassName}`}>
+      <main role="main" className={`pt-24 ${mainClassName}`}>
         {children}
       </main>
       <BannerContainer position="bottom" />
