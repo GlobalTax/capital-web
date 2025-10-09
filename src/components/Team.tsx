@@ -11,6 +11,7 @@ interface TeamMember {
   phone?: string;
   email?: string;
   linkedin_url?: string;
+  section?: string;
   is_active: boolean;
   display_order: number;
 }
@@ -98,6 +99,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
 
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [sections, setSections] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,10 +112,17 @@ const Team = () => {
         .from('team_members')
         .select('*')
         .eq('is_active', true)
+        .order('section', { ascending: true })
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      setTeamMembers(data || []);
+      
+      const members = data || [];
+      setTeamMembers(members);
+      
+      // Extract unique sections
+      const uniqueSections = Array.from(new Set(members.map(m => m.section || 'Equipo Principal')));
+      setSections(uniqueSections);
     } catch (err) {
       console.error('Error fetching team members:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -164,16 +173,16 @@ const Team = () => {
         </div>
       </section>
 
-      {/* Team Members */}
+      {/* Team Members by Section */}
       <section>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="animate-pulse text-center">
-                  <div className="bg-gray-200 aspect-square mb-6 mx-auto w-48"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2 mx-auto w-32"></div>
-                  <div className="h-3 bg-gray-200 rounded mx-auto w-24"></div>
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted aspect-[4/5] mb-4 rounded-2xl"></div>
+                  <div className="h-4 bg-muted rounded mb-2 w-32"></div>
+                  <div className="h-3 bg-muted rounded w-24"></div>
                 </div>
               ))}
             </div>
@@ -185,10 +194,29 @@ const Team = () => {
               </Button>
             </div>
           ) : teamMembers && teamMembers.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-              {teamMembers.map((member) => (
-                <TeamMemberCard key={member.id} member={member} />
-              ))}
+            <div className="space-y-16">
+              {sections.map(section => {
+                const sectionMembers = teamMembers.filter(
+                  m => (m.section || 'Equipo Principal') === section
+                );
+                
+                if (sectionMembers.length === 0) return null;
+                
+                return (
+                  <div key={section}>
+                    {sections.length > 1 && (
+                      <h2 className="text-2xl font-bold text-foreground mb-8 text-center">
+                        {section}
+                      </h2>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {sectionMembers.map((member) => (
+                        <TeamMemberCard key={member.id} member={member} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12">

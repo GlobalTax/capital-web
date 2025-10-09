@@ -10,7 +10,7 @@ import CollaboratorApplicationsManager from '@/components/admin/CollaboratorAppl
 import TestimonialsManager from '@/components/admin/TestimonialsManager';
 import CarouselTestimonialsManager from '@/components/admin/CarouselTestimonialsManager';
 import CarouselLogosManager from '@/components/admin/CarouselLogosManager';
-import TeamMembersManager from '@/components/admin/TeamMembersManager';
+import TeamMembersManagerAdvanced from '@/components/admin/TeamMembersManagerAdvanced';
 import AdminOperations from '@/pages/admin/AdminOperations';
 import OperationDetails from '@/pages/admin/OperationDetails';
 
@@ -87,7 +87,7 @@ const AdminRouter = () => {
       <Route path="/statistics" element={<StatisticsManager />} />
       
       {/* Team & Testimonials */}
-      <Route path="/team" element={<TeamMembersManager />} />
+      <Route path="/team" element={<TeamMembersManagerAdvanced />} />
       <Route path="/testimonials" element={<TestimonialsManager />} />
       <Route path="/carousel-testimonials" element={<CarouselTestimonialsManager />} />
       <Route path="/carousel-logos" element={<CarouselLogosManager />} />

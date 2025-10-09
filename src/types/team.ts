@@ -7,6 +7,7 @@ export interface TeamMember {
   phone: string | null;
   email: string | null;
   linkedin_url: string | null;
+  section: string | null;
   display_order: number | null;
   is_active: boolean;
   created_at: string;

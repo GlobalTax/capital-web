@@ -4200,6 +4200,7 @@ export type Database = {
           name: string
           phone: string | null
           position: string | null
+          section: string | null
           updated_at: string
         }
         Insert: {
@@ -4214,6 +4215,7 @@ export type Database = {
           name: string
           phone?: string | null
           position?: string | null
+          section?: string | null
           updated_at?: string
         }
         Update: {
@@ -4228,6 +4230,7 @@ export type Database = {
           name?: string
           phone?: string | null
           position?: string | null
+          section?: string | null
           updated_at?: string
         }
         Relationships: []
