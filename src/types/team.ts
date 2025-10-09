@@ -4,6 +4,9 @@ export interface TeamMember {
   position: string | null;
   bio: string | null;
   image_url: string | null;
+  phone: string | null;
+  email: string | null;
+  linkedin_url: string | null;
   display_order: number | null;
   is_active: boolean;
   created_at: string;

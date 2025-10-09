@@ -1,6 +1,5 @@
-
 import React, { useCallback, useState } from 'react';
-import { Users } from 'lucide-react';
+import { Users, Phone, Mail, Linkedin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 
@@ -9,17 +8,21 @@ interface TeamMember {
   name: string;
   position?: string;
   image_url?: string;
+  phone?: string;
+  email?: string;
+  linkedin_url?: string;
   is_active: boolean;
   display_order: number;
 }
 
-// Enhanced Team Member Card
+// Enhanced Team Member Card with Contact Info
 const TeamMemberCard = ({ member }: { member: TeamMember }) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-      <div className="relative overflow-hidden bg-gray-100 aspect-square mb-6 mx-auto w-48 rounded-lg">
+    <div className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ease-out border border-border">
+      {/* Photo - Larger rectangular format */}
+      <div className="relative overflow-hidden bg-muted aspect-[4/5]">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
@@ -29,20 +32,66 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg">
-            <Users className="w-12 h-12 text-gray-400" />
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <Users className="w-20 h-20 text-muted-foreground/40" />
           </div>
         )}
       </div>
       
-      <h3 className="text-lg font-bold text-foreground mb-2">
-        {member.name}
-      </h3>
-      {member.position && (
-        <p className="text-muted-foreground text-sm">
-          {member.position}
-        </p>
-      )}
+      {/* Info Section */}
+      <div className="p-6 space-y-4">
+        {/* Name & Position */}
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-foreground mb-1">
+            {member.name}
+          </h3>
+          {member.position && (
+            <p className="text-muted-foreground text-sm font-medium">
+              {member.position}
+            </p>
+          )}
+        </div>
+
+        {/* Contact Information */}
+        {(member.phone || member.email || member.linkedin_url) && (
+          <div className="space-y-2 pt-2 border-t border-border">
+            {/* Phone */}
+            {member.phone && (
+              <a 
+                href={`tel:${member.phone}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                <span>{member.phone}</span>
+              </a>
+            )}
+
+            {/* Email */}
+            {member.email && (
+              <a 
+                href={`mailto:${member.email}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                <span className="truncate">{member.email}</span>
+              </a>
+            )}
+
+            {/* LinkedIn Connect Button */}
+            {member.linkedin_url && (
+              <a
+                href={member.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-[#0A66C2] hover:bg-[#004182] text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+              >
+                <Linkedin className="w-4 h-4" />
+                <span>Connect</span>
+              </a>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -18,6 +18,9 @@ interface TeamMember {
   position?: string;
   bio?: string;
   image_url?: string;
+  phone?: string;
+  email?: string;
+  linkedin_url?: string;
   display_order: number;
   is_active: boolean;
 }
@@ -32,6 +35,9 @@ const TeamMembersManager = () => {
     position: '',
     bio: '',
     image_url: '',
+    phone: '',
+    email: '',
+    linkedin_url: '',
     is_active: true
   });
   const { toast } = useToast();
@@ -72,6 +78,9 @@ const TeamMembersManager = () => {
             position: formData.position || null,
             bio: formData.bio || null,
             image_url: formData.image_url || null,
+            phone: formData.phone || null,
+            email: formData.email || null,
+            linkedin_url: formData.linkedin_url || null,
             is_active: formData.is_active
           })
           .eq('id', editingMember.id);
@@ -92,6 +101,9 @@ const TeamMembersManager = () => {
             position: formData.position || null,
             bio: formData.bio || null,
             image_url: formData.image_url || null,
+            phone: formData.phone || null,
+            email: formData.email || null,
+            linkedin_url: formData.linkedin_url || null,
             is_active: formData.is_active,
             display_order: maxOrder + 1
           });
@@ -177,6 +189,9 @@ const TeamMembersManager = () => {
       position: member.position || '',
       bio: member.bio || '',
       image_url: member.image_url || '',
+      phone: member.phone || '',
+      email: member.email || '',
+      linkedin_url: member.linkedin_url || '',
       is_active: member.is_active
     });
     setIsDialogOpen(true);
@@ -189,6 +204,9 @@ const TeamMembersManager = () => {
       position: '',
       bio: '',
       image_url: '',
+      phone: '',
+      email: '',
+      linkedin_url: '',
       is_active: true
     });
   };
@@ -261,6 +279,42 @@ const TeamMembersManager = () => {
                 folder="team"
                 placeholder="URL de la imagen del miembro del equipo"
               />
+
+              <div>
+                <Label htmlFor="phone" className="text-sm font-medium text-black">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+34 600 000 000"
+                  className="border-0.5 border-black rounded-lg focus:ring-2 focus:ring-black/20"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium text-black">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="nombre@capittal.es"
+                  className="border-0.5 border-black rounded-lg focus:ring-2 focus:ring-black/20"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="linkedin_url" className="text-sm font-medium text-black">URL de LinkedIn</Label>
+                <Input
+                  id="linkedin_url"
+                  type="url"
+                  value={formData.linkedin_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                  placeholder="https://linkedin.com/in/perfil"
+                  className="border-0.5 border-black rounded-lg focus:ring-2 focus:ring-black/20"
+                />
+              </div>
 
               <div className="flex items-center space-x-2">
                 <input

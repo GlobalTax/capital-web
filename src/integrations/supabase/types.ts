@@ -3476,6 +3476,7 @@ export type Database = {
           created_at: string | null
           descripcion: string | null
           empresa_principal_id: string | null
+          es_interno: boolean | null
           estado: string
           estado_negociacion: string | null
           fecha_cierre: string | null
@@ -3498,6 +3499,7 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           empresa_principal_id?: string | null
+          es_interno?: boolean | null
           estado?: string
           estado_negociacion?: string | null
           fecha_cierre?: string | null
@@ -3520,6 +3522,7 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           empresa_principal_id?: string | null
+          es_interno?: boolean | null
           estado?: string
           estado_negociacion?: string | null
           fecha_cierre?: string | null
@@ -4189,10 +4192,13 @@ export type Database = {
           bio: string | null
           created_at: string
           display_order: number | null
+          email: string | null
           id: string
           image_url: string | null
           is_active: boolean | null
+          linkedin_url: string | null
           name: string
+          phone: string | null
           position: string | null
           updated_at: string
         }
@@ -4200,10 +4206,13 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_order?: number | null
+          email?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          linkedin_url?: string | null
           name: string
+          phone?: string | null
           position?: string | null
           updated_at?: string
         }
@@ -4211,10 +4220,13 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_order?: number | null
+          email?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          linkedin_url?: string | null
           name?: string
+          phone?: string | null
           position?: string | null
           updated_at?: string
         }
