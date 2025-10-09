@@ -25,6 +25,13 @@ export const recursosData: MenuCategory[] = [
         href: "/oportunidades",
         icon: 'store',
         description: "Explora oportunidades de compra y venta de empresas"
+      },
+      {
+        id: "empleos",
+        label: "Empleos",
+        href: "/oportunidades/empleo",
+        icon: 'briefcase',
+        description: "Ofertas de trabajo en el sector M&A"
       }
     ]
   },
