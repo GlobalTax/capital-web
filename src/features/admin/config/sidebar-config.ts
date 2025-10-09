@@ -22,7 +22,8 @@ import {
   Tags,
   Image,
   Calculator,
-  Megaphone
+  Megaphone,
+  Briefcase
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -151,6 +152,31 @@ export const sidebarSections: SidebarSection[] = [
         icon: Megaphone,
         badge: "NEW",
         description: "Gestión de banners del sitio"
+      },
+    ]
+  },
+  {
+    title: "💼 EMPLEO",
+    description: "Gestión de ofertas de trabajo",
+    items: [
+      { 
+        title: "Ofertas de Trabajo",
+        url: "/admin/jobs", 
+        icon: Briefcase,
+        description: "Gestionar job posts"
+      },
+      { 
+        title: "Aplicaciones",
+        url: "/admin/job-applications", 
+        icon: Users,
+        badge: "NEW",
+        description: "Revisar candidatos"
+      },
+      { 
+        title: "Categorías",
+        url: "/admin/job-categories", 
+        icon: Tags,
+        description: "Gestionar categorías"
       },
     ]
   },
