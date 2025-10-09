@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, MapPin, Clock, TrendingUp, Search } from 'lucide-react';
-import UnifiedLayout from '@/components/shared/UnifiedLayout';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,8 +38,10 @@ const JobsPage = () => {
   });
 
   return (
-    <UnifiedLayout mainClassName="min-h-screen bg-background">
-      {/* Hero Section */}
+    <>
+      <Header />
+      <main className="min-h-screen bg-background">
+        {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/5 to-primary/10 py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -174,7 +177,9 @@ const JobsPage = () => {
             </Button>
           </div>
         </section>
-    </UnifiedLayout>
+      </main>
+      <Footer />
+    </>
   );
 };
 
