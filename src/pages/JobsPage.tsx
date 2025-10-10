@@ -40,7 +40,7 @@ const JobsPage = () => {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background pt-24">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/5 to-primary/10 py-20">
           <div className="container mx-auto px-4">
