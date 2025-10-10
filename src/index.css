@@ -52,10 +52,10 @@
     --ring: 215 27% 23%;
 
     /* Modern radius system */
-    --radius: 8px;
-    --radius-sm: 6px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
+    --radius: 5px;
+    --radius-sm: 5px;
+    --radius-lg: 5px;
+    --radius-xl: 5px;
 
 
     /* Shadows */
@@ -138,7 +138,7 @@
 @layer components {
   /* Enhanced admin components */
   .admin-card {
-    @apply bg-card border border-border rounded-lg p-6 
+    @apply bg-card border border-border rounded-[5px] p-6 
            shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1),0_1px_2px_0_hsl(215_27%_23%_/_0.06)]
            transition-all duration-300 ease-out 
            hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1),0_2px_4px_-1px_hsl(215_27%_23%_/_0.06)]
@@ -213,7 +213,7 @@
   }
 
   .admin-input {
-    @apply bg-background border border-input rounded-lg px-4 py-3 text-sm
+    @apply bg-background border border-input rounded-[5px] px-4 py-3 text-sm
            transition-all duration-200 ease-out
            focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
            focus:shadow-[0_0_0_3px_hsl(var(--ring)_/_0.1)]
@@ -223,7 +223,7 @@
   .admin-button-primary {
     @apply bg-primary text-primary-foreground 
            hover:bg-[hsl(var(--primary-hover))]
-           rounded-lg px-6 py-3 text-sm font-semibold 
+           rounded-[5px] px-6 py-3 text-sm font-semibold 
            transition-all duration-200 ease-out
            shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1)]
            hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1)]
@@ -235,7 +235,7 @@
   .admin-button-secondary {
     @apply bg-secondary text-secondary-foreground 
            hover:bg-secondary/80
-           border border-border rounded-lg px-6 py-3 text-sm font-medium 
+           border border-border rounded-[5px] px-6 py-3 text-sm font-medium 
            transition-all duration-200 ease-out
            shadow-[0_1px_2px_0_hsl(215_27%_23%_/_0.05)]
            hover:shadow-[0_2px_4px_0_hsl(215_27%_23%_/_0.1)]

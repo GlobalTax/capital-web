@@ -13,7 +13,7 @@ const SimpleButton = React.forwardRef<HTMLButtonElement, SimpleButtonProps>(({
   className = "",
   ...props 
 }, ref) => {
-  const baseClasses = "relative cursor-pointer rounded-lg font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20 flex items-center justify-center text-center";
+  const baseClasses = "relative cursor-pointer rounded-[5px] font-medium transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-black/20 flex items-center justify-center text-center";
   
   const variantClasses = {
     primary: "bg-black text-white border border-black hover:shadow-lg hover:-translate-y-1",
