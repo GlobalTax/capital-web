@@ -42,7 +42,7 @@ const JobsPage = () => {
       <Header />
       <main className="min-h-screen bg-background pt-24">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 to-primary/10 py-20">
+        <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold">
