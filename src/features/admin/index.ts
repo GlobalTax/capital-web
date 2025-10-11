@@ -1,9 +1,11 @@
 // ============= ADMIN FEATURE EXPORTS =============
 
-// Hooks (por implementar cuando se necesiten)
-// export { useAdminAuth } from './hooks/useAdminAuth';
+// Hooks
+export { useAdminAuth } from './hooks/useAdminAuth';
+export { useAdminNavigation } from './hooks/useAdminNavigation';
 
-// Components (por consolidar cuando se necesiten)
-// export { AdminDashboard } from './components/AdminDashboard';
-// export { AdminLayout } from './components/AdminLayout';
-// export { AdminRouter } from './components/AdminRouter';
+// Components
+export { default as AdminLayoutWrapper } from './components/AdminLayout';
+
+// Types
+export type { AdminUser } from './types';

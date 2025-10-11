@@ -2,10 +2,9 @@
 
 // Hooks
 export { useBlogPosts } from '@/hooks/useBlogPosts';
+export { useBlogForm } from './hooks/useBlogForm';
+export { useBlogValidation } from './hooks/useBlogValidation';
 
-// Components (por implementar cuando se necesiten)
-// export { BlogPostEditor } from './components/BlogPostEditor';
-// export { BlogPostList } from './components/BlogPostList';
-
-// Services (por implementar)
-// export * from './services';
+// Components
+export { BlogEditorContent } from './components/BlogEditorContent';
+export { BlogEditorSidebar } from './components/BlogEditorSidebar';
