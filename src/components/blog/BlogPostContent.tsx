@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUp, Calendar, Clock, Facebook, Home, Instagram, Lightbulb, Linkedin, Twitter } from 'lucide-react';
+import { ArrowUp, Calendar, Clock } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -204,42 +204,6 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
                 <Separator className="my-6" />
               </>
             )}
-            
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Compartir artículo</p>
-              <ul className="flex gap-2">
-                <li>
-                  <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:bg-muted inline-flex rounded-full border p-2 transition-colors"
-                  >
-                    <Facebook className="h-4 w-4" />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:bg-muted inline-flex rounded-full border p-2 transition-colors"
-                  >
-                    <Twitter className="h-4 w-4" />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:bg-muted inline-flex rounded-full border p-2 transition-colors"
-                  >
-                    <Linkedin className="h-4 w-4" />
-                  </a>
-                </li>
-              </ul>
-            </div>
             
               <div className="mt-6">
                 <Button
