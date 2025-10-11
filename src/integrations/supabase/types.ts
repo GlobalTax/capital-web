@@ -415,6 +415,51 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          changed_fields: string[] | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       banner_events: {
         Row: {
           banner_id: string
@@ -695,6 +740,45 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      brevo_sync_log: {
+        Row: {
+          brevo_id: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          last_sync_at: string | null
+          sync_attempts: number | null
+          sync_error: string | null
+          sync_status: string
+          updated_at: string | null
+        }
+        Insert: {
+          brevo_id?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          last_sync_at?: string | null
+          sync_attempts?: number | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          brevo_id?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          last_sync_at?: string | null
+          sync_attempts?: number | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1719,6 +1803,7 @@ export type Database = {
           email: string
           empresa_principal_id: string | null
           id: string
+          import_log_id: string | null
           linkedin: string | null
           nombre: string
           notas: string | null
@@ -1733,6 +1818,7 @@ export type Database = {
           email: string
           empresa_principal_id?: string | null
           id?: string
+          import_log_id?: string | null
           linkedin?: string | null
           nombre: string
           notas?: string | null
@@ -1747,6 +1833,7 @@ export type Database = {
           email?: string
           empresa_principal_id?: string | null
           id?: string
+          import_log_id?: string | null
           linkedin?: string | null
           nombre?: string
           notas?: string | null
@@ -1759,6 +1846,13 @@ export type Database = {
             columns: ["empresa_principal_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contactos_import_log_id_fkey"
+            columns: ["import_log_id"]
+            isOneToOne: false
+            referencedRelation: "import_logs"
             referencedColumns: ["id"]
           },
         ]
@@ -2044,6 +2138,7 @@ export type Database = {
           estado_target: string | null
           facturacion: number | null
           id: string
+          import_log_id: string | null
           margen_ebitda: number | null
           nivel_interes: string | null
           nombre: string
@@ -2066,6 +2161,7 @@ export type Database = {
           estado_target?: string | null
           facturacion?: number | null
           id?: string
+          import_log_id?: string | null
           margen_ebitda?: number | null
           nivel_interes?: string | null
           nombre: string
@@ -2088,6 +2184,7 @@ export type Database = {
           estado_target?: string | null
           facturacion?: number | null
           id?: string
+          import_log_id?: string | null
           margen_ebitda?: number | null
           nivel_interes?: string | null
           nombre?: string
@@ -2098,7 +2195,15 @@ export type Database = {
           ubicacion?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "empresas_import_log_id_fkey"
+            columns: ["import_log_id"]
+            isOneToOne: false
+            referencedRelation: "import_logs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fee_templates: {
         Row: {
@@ -2303,6 +2408,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      import_logs: {
+        Row: {
+          completed_at: string | null
+          config: Json | null
+          created_at: string
+          errors: Json | null
+          failed: number
+          file_name: string | null
+          id: string
+          import_type: string
+          imported_by: string | null
+          skipped: number
+          status: string
+          successful: number
+          total_records: number
+        }
+        Insert: {
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string
+          errors?: Json | null
+          failed?: number
+          file_name?: string | null
+          id?: string
+          import_type: string
+          imported_by?: string | null
+          skipped?: number
+          status?: string
+          successful?: number
+          total_records?: number
+        }
+        Update: {
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string
+          errors?: Json | null
+          failed?: number
+          file_name?: string | null
+          id?: string
+          import_type?: string
+          imported_by?: string | null
+          skipped?: number
+          status?: string
+          successful?: number
+          total_records?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_logs_imported_by_fkey"
+            columns: ["imported_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       interacciones: {
         Row: {
@@ -2612,6 +2773,89 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      job_post_templates: {
+        Row: {
+          benefits_template: string[] | null
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          default_contract_type: string | null
+          default_employment_type: string | null
+          default_experience_level: string | null
+          default_is_hybrid: boolean | null
+          default_is_remote: boolean | null
+          default_location: string | null
+          default_sector: string | null
+          description: string | null
+          description_template: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          requirements_template: string[] | null
+          responsibilities_template: string[] | null
+          short_description_template: string | null
+          times_used: number | null
+          title_template: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          benefits_template?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_contract_type?: string | null
+          default_employment_type?: string | null
+          default_experience_level?: string | null
+          default_is_hybrid?: boolean | null
+          default_is_remote?: boolean | null
+          default_location?: string | null
+          default_sector?: string | null
+          description?: string | null
+          description_template?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          requirements_template?: string[] | null
+          responsibilities_template?: string[] | null
+          short_description_template?: string | null
+          times_used?: number | null
+          title_template?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          benefits_template?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_contract_type?: string | null
+          default_employment_type?: string | null
+          default_experience_level?: string | null
+          default_is_hybrid?: boolean | null
+          default_is_remote?: boolean | null
+          default_location?: string | null
+          default_sector?: string | null
+          description?: string | null
+          description_template?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          requirements_template?: string[] | null
+          responsibilities_template?: string[] | null
+          short_description_template?: string | null
+          times_used?: number | null
+          title_template?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_post_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       job_posts: {
         Row: {
@@ -3687,6 +3931,39 @@ export type Database = {
           },
         ]
       }
+      mandato_kanban_config: {
+        Row: {
+          activo: boolean | null
+          color: string
+          created_at: string | null
+          fase_id: string
+          id: string
+          label: string
+          orden: number
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          color: string
+          created_at?: string | null
+          fase_id: string
+          id?: string
+          label: string
+          orden: number
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          color?: string
+          created_at?: string | null
+          fase_id?: string
+          id?: string
+          label?: string
+          orden?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       mandato_time_entries: {
         Row: {
           approved_at: string | null
@@ -3849,6 +4126,7 @@ export type Database = {
           fecha_cierre: string | null
           fecha_inicio: string | null
           id: string
+          import_log_id: string | null
           numero_ofertas_recibidas: number | null
           perfil_empresa_buscada: string | null
           prioridad: string | null
@@ -3872,6 +4150,7 @@ export type Database = {
           fecha_cierre?: string | null
           fecha_inicio?: string | null
           id?: string
+          import_log_id?: string | null
           numero_ofertas_recibidas?: number | null
           perfil_empresa_buscada?: string | null
           prioridad?: string | null
@@ -3895,6 +4174,7 @@ export type Database = {
           fecha_cierre?: string | null
           fecha_inicio?: string | null
           id?: string
+          import_log_id?: string | null
           numero_ofertas_recibidas?: number | null
           perfil_empresa_buscada?: string | null
           prioridad?: string | null
@@ -3914,6 +4194,13 @@ export type Database = {
             columns: ["empresa_principal_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandatos_import_log_id_fkey"
+            columns: ["import_log_id"]
+            isOneToOne: false
+            referencedRelation: "import_logs"
             referencedColumns: ["id"]
           },
         ]
@@ -5149,6 +5436,10 @@ export type Database = {
         Args: { check_user_id: string }
         Returns: string
       }
+      cleanup_old_audit_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       cleanup_old_tracking_events: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -5304,6 +5595,10 @@ export type Database = {
         Args: { reason?: string; request_id: string }
         Returns: boolean
       }
+      rollback_import: {
+        Args: { p_import_log_id: string }
+        Returns: Json
+      }
       set_limit: {
         Args: { "": number }
         Returns: number
@@ -5315,6 +5610,10 @@ export type Database = {
       show_trgm: {
         Args: { "": string }
         Returns: string[]
+      }
+      update_kanban_order: {
+        Args: { updates: Json }
+        Returns: undefined
       }
       validate_data_access_security: {
         Args: Record<PropertyKey, never>
