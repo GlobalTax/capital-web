@@ -12,5 +12,24 @@ export { JobsErrorBoundary } from './components/JobsErrorBoundary';
 export { useJobForm } from './hooks/useJobForm';
 export { useJobListManagement } from './hooks/useJobListManagement';
 
+// Types
+export type {
+  JobPost,
+  JobPostFormData,
+  JobCategory,
+  JobApplication,
+  JobTemplate,
+  ContractType,
+  EmploymentType,
+  ExperienceLevel,
+  ApplicationMethod,
+  JobStatus,
+  ApplicationStatus
+} from './types';
+
+// Validation Schemas
+export { jobPostSchema, jobApplicationSchema, jobCategorySchema } from './validation/schemas';
+export type { JobApplicationFormData, JobCategoryFormData } from './validation/schemas';
+
 // Services (re-export from base services)
 export * from '@/services/jobs';

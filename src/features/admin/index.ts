@@ -14,4 +14,4 @@ export { AdminErrorBoundary } from './components/AdminErrorBoundary';
 export * from './components/LazyAdminComponents';
 
 // Types
-export type { AdminUser } from './types';
+export type { AdminUser, AdminStats, AdminActivity, AdminNotification } from './types';

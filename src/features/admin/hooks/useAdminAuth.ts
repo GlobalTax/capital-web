@@ -12,7 +12,8 @@ export const useAdminAuth = () => {
       id: user.id,
       email: user.email,
       role: 'admin', // Could be enhanced with actual role detection
-      permissions: [] // Could be enhanced with actual permissions
+      permissions: [], // Could be enhanced with actual permissions
+      created_at: user.created_at || new Date().toISOString(),
     };
   }, [user, isAdmin]);
 
