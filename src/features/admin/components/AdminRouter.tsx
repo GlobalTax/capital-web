@@ -1,45 +1,43 @@
-
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import AdminSettings from '@/components/admin/AdminSettings';
-import ModernBlogManager from '@/components/admin/ModernBlogManager';
-import BlogEditorPage from '@/pages/admin/BlogEditorPage';
-import CaseStudiesManager from '@/components/admin/CaseStudiesManager';
-import CollaboratorApplicationsManager from '@/components/admin/CollaboratorApplicationsManager';
-import TestimonialsManager from '@/components/admin/TestimonialsManager';
-import CarouselTestimonialsManager from '@/components/admin/CarouselTestimonialsManager';
-import CarouselLogosManager from '@/components/admin/CarouselLogosManager';
-import TeamMembersManagerAdvanced from '@/components/admin/TeamMembersManagerAdvanced';
-import AdminOperations from '@/pages/admin/AdminOperations';
-import OperationDetails from '@/pages/admin/OperationDetails';
+import { AdminErrorBoundary } from './AdminErrorBoundary';
+import { PageLoadingSkeleton } from '@/components/LoadingStates';
 
-import MultiplesManager from '@/components/admin/MultiplesManager';
-import StatisticsManager from '@/components/admin/StatisticsManager';
-import SectorReportsGenerator from '@/components/admin/SectorReportsGenerator';
-import AdminUsersManager from '@/components/admin/AdminUsersManager';
-import ProposalsManager from '@/components/admin/ProposalsManager';
-import ContentPerformancePage from '@/pages/admin/ContentPerformancePage';
-import ContentStudioPage from '@/pages/admin/ContentStudioPage';
-// import VideoManager from './VideoManager';
-import SectorsPage from '@/pages/admin/SectorsPage';
-// import PageManager from './pages/PageManager';
-// import ContentEditor from './content/ContentEditor';
-import { AdminDashboard } from './AdminDashboard';
-
-import LandingPagesPage from '@/pages/admin/LandingPagesPage';
-import AdminBanners from '@/pages/AdminBanners';
-import ContactsPage from '@/pages/admin/ContactsPage';
-import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
-import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
-import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
-import LeadDetailPage from '@/pages/admin/LeadDetailPage';
-import { JobPostsManager } from '@/pages/admin/JobPostsManager';
-import { JobPostEditor } from '@/pages/admin/JobPostEditor';
-import { JobApplicationsManager } from '@/pages/admin/JobApplicationsManager';
-import { JobCategoriesManager } from '@/pages/admin/JobCategoriesManager';
-import { JobTemplatesManager } from '@/pages/admin/JobTemplatesManager';
-import CollaboratorApplicationsManagerPage from '@/pages/admin/CollaboratorApplicationsManagerPage';
+// Lazy imports optimizados
+import {
+  LazyAdminDashboard,
+  LazyAdminSettings,
+  LazyModernBlogManager,
+  LazyBlogEditorPage,
+  LazyCaseStudiesManager,
+  LazyTestimonialsManager,
+  LazyCarouselTestimonialsManager,
+  LazyCarouselLogosManager,
+  LazyTeamMembersManagerAdvanced,
+  LazySectorReportsGenerator,
+  LazyMultiplesManager,
+  LazyStatisticsManager,
+  LazyAdminUsersManager,
+  LazyProposalsManager,
+  LazyContentPerformancePage,
+  LazyContentStudioPage,
+  LazySectorsPage,
+  LazyLandingPagesPage,
+  LazyAdminBanners,
+  LazyContactsPage,
+  LazyLeadMagnetsPage,
+  LazyValuationDetailPage,
+  LazyLeadDetailPage,
+  LazyAdminOperations,
+  LazyOperationDetails,
+  LazyJobPostsManager,
+  LazyJobPostEditor,
+  LazyJobApplicationsManager,
+  LazyJobCategoriesManager,
+  LazyJobTemplatesManager,
+  LazyCollaboratorApplicationsManagerPage
+} from './LazyAdminComponents';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -60,67 +58,66 @@ const AdminRouter = () => {
   }
 
   return (
-    <Routes>
-      {/* Dashboard */}
-      <Route index element={<AdminDashboard />} />
-      <Route path="/dashboard" element={<AdminDashboard />} />
-      
-      {/* Lead Management */}
-      <Route path="/proposals" element={<ProposalsManager />} />
-      <Route path="/contacts" element={<ContactsPage />} />
-      <Route path="/contacts/:id" element={<LeadDetailPage />} />
-      <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
-      
-      
-      {/* Content Management */}
-      <Route path="/content-performance" element={<ContentPerformancePage />} />
-      <Route path="/content-studio" element={<ContentStudioPage />} />
-      {/* <Route path="/video-manager" element={<VideoManager />} /> */}
-      <Route path="/lead-magnets" element={<LeadMagnetsPage />} />
-      <Route path="/blog-v2" element={<ModernBlogManager />} />
-      <Route path="/blog/new" element={<BlogEditorPage />} />
-      <Route path="/blog/edit/:id" element={<BlogEditorPage />} />
-      <Route path="/sector-reports" element={<SectorReportsGenerator />} />
-      <Route path="/sectors" element={<SectorsPage />} />
-      <Route path="/case-studies" element={<CaseStudiesManager />} />
-      <Route path="/landing-pages" element={<LandingPagesPage />} />
-      <Route path="/banners" element={<AdminBanners />} />
-      
-      {/* Job Posts Management - Complete */}
-      <Route path="/jobs" element={<JobPostsManager />} />
-      <Route path="/jobs/new" element={<JobPostEditor />} />
-      <Route path="/jobs/edit/:id" element={<JobPostEditor />} />
-      <Route path="/job-applications" element={<JobApplicationsManager />} />
-      <Route path="/job-categories" element={<JobCategoriesManager />} />
-      <Route path="/job-templates" element={<JobTemplatesManager />} />
-      <Route path="/collaborator-applications" element={<CollaboratorApplicationsManagerPage />} />
-      
-      {/* Company Data */}
-      <Route path="/operations" element={<AdminOperations />} />
-      <Route path="/operations/:id" element={<OperationDetails />} />
-      <Route path="/multiples" element={<MultiplesManager />} />
-      <Route path="/statistics" element={<StatisticsManager />} />
-      
-      {/* Team & Testimonials */}
-      <Route path="/team" element={<TeamMembersManagerAdvanced />} />
-      <Route path="/testimonials" element={<TestimonialsManager />} />
-      <Route path="/carousel-testimonials" element={<CarouselTestimonialsManager />} />
-      <Route path="/carousel-logos" element={<CarouselLogosManager />} />
-      
-      {/* Valuations */}
-      <Route path="/valuations/:id" element={<ValuationDetailPage />} />
-      
-      {/* Page Management - Commented out for now */}
-      {/* <Route path="/pages" element={<PageManager />} /> */}
-      {/* <Route path="/content-editor" element={<ContentEditor />} /> */}
-      
-      {/* Settings */}
-      <Route path="/admin-users" element={<AdminUsersManager />} />
-      <Route path="/settings" element={<AdminSettings />} />
-      
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/admin" replace />} />
-    </Routes>
+    <AdminErrorBoundary>
+      <Suspense fallback={<PageLoadingSkeleton />}>
+        <Routes>
+          {/* Dashboard */}
+          <Route index element={<LazyAdminDashboard />} />
+          <Route path="/dashboard" element={<LazyAdminDashboard />} />
+          
+          {/* Lead Management */}
+          <Route path="/proposals" element={<LazyProposalsManager />} />
+          <Route path="/contacts" element={<LazyContactsPage />} />
+          <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
+          <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
+          
+          
+          {/* Content Management */}
+          <Route path="/content-performance" element={<LazyContentPerformancePage />} />
+          <Route path="/content-studio" element={<LazyContentStudioPage />} />
+          <Route path="/lead-magnets" element={<LazyLeadMagnetsPage />} />
+          <Route path="/blog-v2" element={<LazyModernBlogManager />} />
+          <Route path="/blog/new" element={<LazyBlogEditorPage />} />
+          <Route path="/blog/edit/:id" element={<LazyBlogEditorPage />} />
+          <Route path="/sector-reports" element={<LazySectorReportsGenerator />} />
+          <Route path="/sectors" element={<LazySectorsPage />} />
+          <Route path="/case-studies" element={<LazyCaseStudiesManager />} />
+          <Route path="/landing-pages" element={<LazyLandingPagesPage />} />
+          <Route path="/banners" element={<LazyAdminBanners />} />
+          
+          {/* Job Posts Management - Complete */}
+          <Route path="/jobs" element={<LazyJobPostsManager />} />
+          <Route path="/jobs/new" element={<LazyJobPostEditor />} />
+          <Route path="/jobs/edit/:id" element={<LazyJobPostEditor />} />
+          <Route path="/job-applications" element={<LazyJobApplicationsManager />} />
+          <Route path="/job-categories" element={<LazyJobCategoriesManager />} />
+          <Route path="/job-templates" element={<LazyJobTemplatesManager />} />
+          <Route path="/collaborator-applications" element={<LazyCollaboratorApplicationsManagerPage />} />
+          
+          {/* Company Data */}
+          <Route path="/operations" element={<LazyAdminOperations />} />
+          <Route path="/operations/:id" element={<LazyOperationDetails />} />
+          <Route path="/multiples" element={<LazyMultiplesManager />} />
+          <Route path="/statistics" element={<LazyStatisticsManager />} />
+          
+          {/* Team & Testimonials */}
+          <Route path="/team" element={<LazyTeamMembersManagerAdvanced />} />
+          <Route path="/testimonials" element={<LazyTestimonialsManager />} />
+          <Route path="/carousel-testimonials" element={<LazyCarouselTestimonialsManager />} />
+          <Route path="/carousel-logos" element={<LazyCarouselLogosManager />} />
+          
+          {/* Valuations */}
+          <Route path="/valuations/:id" element={<LazyValuationDetailPage />} />
+          
+          {/* Settings */}
+          <Route path="/admin-users" element={<LazyAdminUsersManager />} />
+          <Route path="/settings" element={<LazyAdminSettings />} />
+          
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Routes>
+      </Suspense>
+    </AdminErrorBoundary>
   );
 };
 

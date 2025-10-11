@@ -6,6 +6,7 @@ export { JobRequirements } from './components/JobRequirements';
 export { JobLocationSalary } from './components/JobLocationSalary';
 export { JobApplicationMethod } from './components/JobApplicationMethod';
 export { JobPreview } from './components/JobPreview';
+export { JobsErrorBoundary } from './components/JobsErrorBoundary';
 
 // Hooks
 export { useJobForm } from './hooks/useJobForm';

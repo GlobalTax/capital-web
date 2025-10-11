@@ -8,3 +8,4 @@ export { useBlogValidation } from './hooks/useBlogValidation';
 // Components
 export { BlogEditorContent } from './components/BlogEditorContent';
 export { BlogEditorSidebar } from './components/BlogEditorSidebar';
+export { BlogErrorBoundary } from './components/BlogErrorBoundary';

@@ -2,6 +2,7 @@
 // Components
 export { ContactStatsCards } from './components/ContactStatsCards';
 export { ContactTabs } from './components/ContactTabs';
+export { ContactsErrorBoundary } from './components/ContactsErrorBoundary';
 
 // Hooks
 export { useContactActions } from './hooks/useContactActions';
