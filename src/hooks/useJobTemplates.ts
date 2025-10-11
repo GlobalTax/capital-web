@@ -1,168 +1,133 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+/**
+ * useJobTemplates Hook
+ * Refactored to use JobTemplatesService
+ */
 
-export interface JobTemplate {
-  id: string;
-  name: string;
-  description: string | null;
-  category: string | null;
-  title_template: string | null;
-  short_description_template: string | null;
-  description_template: string | null;
-  requirements_template: string[] | null;
-  responsibilities_template: string[] | null;
-  benefits_template: string[] | null;
-  default_location: string | null;
-  default_contract_type: string | null;
-  default_employment_type: string | null;
-  default_is_remote: boolean | null;
-  default_is_hybrid: boolean | null;
-  default_experience_level: string | null;
-  default_sector: string | null;
-  is_active: boolean | null;
-  times_used: number | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { jobTemplatesService } from '@/services/jobs/JobTemplatesService';
+import type { JobTemplate as ServiceJobTemplate, JobTemplateInsert } from '@/services/jobs/JobTemplatesService';
+
+// Re-export JobTemplate type for backward compatibility
+export type { JobTemplate } from '@/services/jobs/JobTemplatesService';
+
+interface UseJobTemplatesFilters {
+  category?: string;
 }
 
-export type JobTemplateInsert = Omit<JobTemplate, 'id' | 'created_at' | 'updated_at'>;
-
-export const useJobTemplates = (filters?: { category?: string }) => {
-  const { toast } = useToast();
+export const useJobTemplates = (filters?: UseJobTemplatesFilters) => {
   const queryClient = useQueryClient();
 
-  // Obtener todas las plantillas
+  // Fetch templates
   const { data: templates, isLoading } = useQuery({
     queryKey: ['job-templates', filters],
     queryFn: async () => {
-      let query = supabase
-        .from('job_post_templates')
-        .select('*')
-        .eq('is_active', true)
-        .order('times_used', { ascending: false });
-
       if (filters?.category) {
-        query = query.eq('category', filters.category);
+        const result = await jobTemplatesService.getByCategory(filters.category);
+        if (!result.success) throw new Error(result.error);
+        return result.data;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as JobTemplate[];
+      
+      const result = await jobTemplatesService.getActiveTemplates();
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Crear plantilla
-  const { mutateAsync: createTemplate } = useMutation({
-    mutationFn: async (template: Partial<JobTemplateInsert>) => {
-      const { data, error } = await supabase
-        .from('job_post_templates')
-        .insert([template as any])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as JobTemplate;
+  // Create template mutation
+  const createTemplate = useMutation({
+    mutationFn: async (template: JobTemplateInsert) => {
+      const result = await jobTemplatesService.create(template);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-templates'] });
-      toast({
-        title: 'Plantilla creada',
-        description: 'La plantilla se ha creado correctamente',
-      });
+      toast.success('Plantilla creada correctamente');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error creating template:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo crear la plantilla',
-        variant: 'destructive',
-      });
-    },
+      toast.error('Error al crear la plantilla');
+    }
   });
 
-  // Actualizar plantilla
-  const { mutateAsync: updateTemplate } = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<JobTemplate> }) => {
-      const { data, error } = await supabase
-        .from('job_post_templates')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+  // Update template mutation
+  const updateTemplate = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ServiceJobTemplate> }) => {
+      const result = await jobTemplatesService.update(id, data);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-templates'] });
-      toast({
-        title: 'Plantilla actualizada',
-        description: 'La plantilla se ha actualizado correctamente',
-      });
+      toast.success('Plantilla actualizada correctamente');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error updating template:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo actualizar la plantilla',
-        variant: 'destructive',
-      });
-    },
+      toast.error('Error al actualizar la plantilla');
+    }
   });
 
-  // Eliminar plantilla (soft delete)
-  const { mutateAsync: deleteTemplate } = useMutation({
+  // Delete template mutation (soft delete)
+  const deleteTemplate = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('job_post_templates')
-        .update({ is_active: false })
-        .eq('id', id);
-
-      if (error) throw error;
+      const result = await jobTemplatesService.update(id, { is_active: false });
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-templates'] });
-      toast({
-        title: 'Plantilla eliminada',
-        description: 'La plantilla se ha eliminado correctamente',
-      });
+      toast.success('Plantilla eliminada correctamente');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error deleting template:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo eliminar la plantilla',
-        variant: 'destructive',
-      });
-    },
+      toast.error('Error al eliminar la plantilla');
+    }
   });
 
-  // Incrementar contador de uso
-  const { mutateAsync: incrementUsage } = useMutation({
+  // Increment usage mutation
+  const incrementUsage = useMutation({
     mutationFn: async (id: string) => {
-      const template = templates?.find(t => t.id === id);
-      if (template) {
-        const { error } = await supabase
-          .from('job_post_templates')
-          .update({ times_used: (template.times_used || 0) + 1 })
-          .eq('id', id);
-        
-        if (error) throw error;
-      }
+      const result = await jobTemplatesService.incrementUsage(id);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-templates'] });
     },
+    onError: (error: Error) => {
+      console.error('Error incrementing usage:', error);
+    }
+  });
+
+  // Duplicate template mutation
+  const duplicateTemplate = useMutation({
+    mutationFn: async ({ id, newName }: { id: string; newName: string }) => {
+      const result = await jobTemplatesService.duplicateTemplate(id, newName);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-templates'] });
+      toast.success('Plantilla duplicada correctamente');
+    },
+    onError: (error: Error) => {
+      console.error('Error duplicating template:', error);
+      toast.error('Error al duplicar la plantilla');
+    }
   });
 
   return {
-    templates,
+    templates: templates || [],
     isLoading,
-    createTemplate,
-    updateTemplate,
-    deleteTemplate,
-    incrementUsage,
+    createTemplate: createTemplate.mutate,
+    updateTemplate: updateTemplate.mutate,
+    deleteTemplate: deleteTemplate.mutate,
+    incrementUsage: incrementUsage.mutate,
+    duplicateTemplate: duplicateTemplate.mutate,
+    isCreating: createTemplate.isPending,
+    isUpdating: updateTemplate.isPending,
+    isDeleting: deleteTemplate.isPending
   };
 };
