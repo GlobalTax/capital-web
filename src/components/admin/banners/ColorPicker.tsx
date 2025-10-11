@@ -5,8 +5,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Palette, Check, AlertTriangle } from 'lucide-react';
-import { COLOR_THEMES, getContrastInfo, isValidHex } from '@/utils/colorUtils';
-import type { ColorTheme } from '@/utils/colorUtils';
+import { COLOR_THEMES, getContrastInfo, isValidHex } from '@/shared/utils/color';
+import type { ColorTheme } from '@/shared/utils/color';
 
 interface ColorPickerProps {
   value: string;

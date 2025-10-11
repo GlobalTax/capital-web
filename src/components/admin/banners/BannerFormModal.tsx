@@ -22,8 +22,8 @@ import type { BannerFormData } from '@/schemas/bannerSchema';
 import { Banner } from '@/hooks/useBannersAdmin';
 import { UniversalBanner } from '@/components/ui/universal-banner';
 import { ColorPicker } from '@/components/admin/banners/ColorPicker';
-import { COLOR_THEMES } from '@/utils/colorUtils';
-import type { ColorTheme } from '@/utils/colorUtils';
+import { COLOR_THEMES } from '@/shared/utils/color';
+import type { ColorTheme } from '@/shared/utils/color';
 import { MultiSelect } from '@/components/admin/banners/MultiSelect';
 
 interface BannerFormModalProps {
