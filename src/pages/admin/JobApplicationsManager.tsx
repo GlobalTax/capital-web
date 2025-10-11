@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Download, Star, ExternalLink, Mail, Phone, Linkedin, Calendar, FileText } from 'lucide-react';
+import { Download, Star, ExternalLink, Mail, Phone, Linkedin, Calendar, FileText, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -28,6 +30,7 @@ import { es } from 'date-fns/locale';
 import type { JobApplication, ApplicationStatus } from '@/types/jobs';
 
 export const JobApplicationsManager = () => {
+  const { toast } = useToast();
   const [jobFilter, setJobFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,8 +94,56 @@ export const JobApplicationsManager = () => {
     await rateApplication({ id: applicationId, rating });
   };
 
-  const downloadCV = (cvUrl: string) => {
-    window.open(cvUrl, '_blank');
+  const downloadCV = async (cvUrl: string, candidateName: string) => {
+    try {
+      const cvPath = cvUrl.replace('/storage/v1/object/public/job-applications/', '');
+      const { data, error } = await supabase.storage
+        .from('job-applications')
+        .download(cvPath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `CV_${candidateName.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "CV descargado",
+        description: `CV de ${candidateName} descargado correctamente`,
+      });
+    } catch (error) {
+      console.error('Error downloading CV:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo descargar el CV",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const viewCV = async (cvUrl: string) => {
+    try {
+      const cvPath = cvUrl.replace('/storage/v1/object/public/job-applications/', '');
+      const { data, error } = await supabase.storage
+        .from('job-applications')
+        .createSignedUrl(cvPath, 3600);
+
+      if (error) throw error;
+
+      window.open(data.signedUrl, '_blank');
+    } catch (error) {
+      console.error('Error viewing CV:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo abrir el CV",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -206,6 +257,12 @@ export const JobApplicationsManager = () => {
                       LinkedIn
                     </a>
                   )}
+                  {application.cv_url && (
+                    <Badge variant="success" className="flex items-center gap-1 w-fit">
+                      <FileText className="h-3 w-3" />
+                      CV adjunto
+                    </Badge>
+                  )}
                 </div>
 
                 {application.current_position && (
@@ -250,14 +307,24 @@ export const JobApplicationsManager = () => {
 
               <div className="flex flex-col gap-2">
                 {application.cv_url && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => downloadCV(application.cv_url!)}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Descargar CV
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => viewCV(application.cv_url!)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      Ver CV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadCV(application.cv_url!, application.full_name)}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Descargar CV
+                    </Button>
+                  </>
                 )}
 
                 <Dialog>
