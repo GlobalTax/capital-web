@@ -2,6 +2,10 @@
 // Components
 export { JobBasicInfo } from './components/JobBasicInfo';
 export { JobTemplateSelector } from './components/JobTemplateSelector';
+export { JobRequirements } from './components/JobRequirements';
+export { JobLocationSalary } from './components/JobLocationSalary';
+export { JobApplicationMethod } from './components/JobApplicationMethod';
+export { JobPreview } from './components/JobPreview';
 
 // Hooks
 export { useJobForm } from './hooks/useJobForm';
