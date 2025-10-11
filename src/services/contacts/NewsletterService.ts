@@ -28,7 +28,7 @@ export class NewsletterService extends BaseDataService<NewsletterSubscriber> {
    */
   async getByStatus(status: string): Promise<ServiceResult<NewsletterSubscriber[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('status', status)
@@ -59,7 +59,7 @@ export class NewsletterService extends BaseDataService<NewsletterSubscriber> {
    */
   async subscribe(email: string, source?: string): Promise<ServiceResult<NewsletterSubscriber>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .insert({
           email,
@@ -95,7 +95,7 @@ export class NewsletterService extends BaseDataService<NewsletterSubscriber> {
    */
   async unsubscribe(email: string): Promise<ServiceResult<NewsletterSubscriber>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .update({
           status: 'unsubscribed',
@@ -130,7 +130,7 @@ export class NewsletterService extends BaseDataService<NewsletterSubscriber> {
    */
   async getActiveCount(): Promise<ServiceResult<number>> {
     try {
-      const { count, error } = await supabase
+      const { count, error } = await (supabase as any)
         .from(this.tableName)
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active');

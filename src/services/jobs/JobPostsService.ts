@@ -45,7 +45,7 @@ export class JobPostsService extends BaseDataService<JobPost> {
    */
   async getActiveJobs(): Promise<ServiceResult<JobPost[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('is_active', true)
@@ -76,7 +76,7 @@ export class JobPostsService extends BaseDataService<JobPost> {
    */
   async getFeaturedJobs(): Promise<ServiceResult<JobPost[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('is_active', true)
@@ -108,7 +108,7 @@ export class JobPostsService extends BaseDataService<JobPost> {
    */
   async publishJob(id: string): Promise<ServiceResult<JobPost>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .update({
           is_active: true,
@@ -143,7 +143,7 @@ export class JobPostsService extends BaseDataService<JobPost> {
    */
   async unpublishJob(id: string): Promise<ServiceResult<JobPost>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .update({
           is_active: false

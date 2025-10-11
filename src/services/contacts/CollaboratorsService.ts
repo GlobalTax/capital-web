@@ -40,7 +40,7 @@ export class CollaboratorsService extends BaseDataService<CollaboratorApplicatio
    */
   async getByStatus(status: string): Promise<ServiceResult<CollaboratorApplication[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('status', status)
@@ -72,7 +72,7 @@ export class CollaboratorsService extends BaseDataService<CollaboratorApplicatio
    */
   async assignCollaborator(id: string, userId: string): Promise<ServiceResult<CollaboratorApplication>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .update({
           assigned_to: userId,
@@ -107,7 +107,7 @@ export class CollaboratorsService extends BaseDataService<CollaboratorApplicatio
    */
   async updateStatus(id: string, status: string): Promise<ServiceResult<CollaboratorApplication>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .update({
           status,
@@ -142,7 +142,7 @@ export class CollaboratorsService extends BaseDataService<CollaboratorApplicatio
    */
   async getActiveCollaborators(): Promise<ServiceResult<CollaboratorApplication[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('is_deleted', false)

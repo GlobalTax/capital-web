@@ -44,7 +44,7 @@ export class JobTemplatesService extends BaseDataService<JobTemplate> {
    */
   async getActiveTemplates(): Promise<ServiceResult<JobTemplate[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('is_active', true)
@@ -75,7 +75,7 @@ export class JobTemplatesService extends BaseDataService<JobTemplate> {
    */
   async getByCategory(category: string): Promise<ServiceResult<JobTemplate[]>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('category', category)
@@ -108,7 +108,7 @@ export class JobTemplatesService extends BaseDataService<JobTemplate> {
   async incrementUsage(id: string): Promise<ServiceResult<JobTemplate>> {
     try {
       // Get current template
-      const { data: template, error: fetchError } = await supabase
+      const { data: template, error: fetchError } = await (supabase as any)
         .from(this.tableName)
         .select('times_used')
         .eq('id', id)
@@ -123,9 +123,9 @@ export class JobTemplatesService extends BaseDataService<JobTemplate> {
       }
 
       // Increment times_used
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
-        .update({ times_used: (template.times_used || 0) + 1 })
+        .update({ times_used: (template?.times_used || 0) + 1 })
         .eq('id', id)
         .select()
         .single();
@@ -156,7 +156,7 @@ export class JobTemplatesService extends BaseDataService<JobTemplate> {
   async duplicateTemplate(id: string, newName: string): Promise<ServiceResult<JobTemplate>> {
     try {
       // Get original template
-      const { data: original, error: fetchError } = await supabase
+      const { data: original, error: fetchError } = await (supabase as any)
         .from(this.tableName)
         .select('*')
         .eq('id', id)
@@ -171,9 +171,9 @@ export class JobTemplatesService extends BaseDataService<JobTemplate> {
       }
 
       // Create duplicate
-      const { id: _, created_at, updated_at, times_used, ...templateData } = original;
+      const { id: _id, created_at, updated_at, times_used, ...templateData } = original as any;
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(this.tableName)
         .insert({
           ...templateData,

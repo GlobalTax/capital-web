@@ -40,7 +40,8 @@ export class ContactsService extends BaseDataService<ContactLead> {
    */
   async getByStatus(status: string): Promise<ServiceResult<ContactLead[]>> {
     try {
-      const { data, error } = await this.getTable()
+      const { data, error } = await (supabase as any)
+        .from(this.tableName)
         .select('*')
         .eq('status', status)
         .eq('is_deleted', false)
@@ -71,7 +72,8 @@ export class ContactsService extends BaseDataService<ContactLead> {
    */
   async assignContact(id: string, userId: string): Promise<ServiceResult<ContactLead>> {
     try {
-      const { data, error } = await this.getTable()
+      const { data, error } = await (supabase as any)
+        .from(this.tableName)
         .update({
           assigned_to: userId,
           assigned_at: new Date().toISOString()
@@ -105,7 +107,8 @@ export class ContactsService extends BaseDataService<ContactLead> {
    */
   async updateStatus(id: string, status: string): Promise<ServiceResult<ContactLead>> {
     try {
-      const { data, error } = await this.getTable()
+      const { data, error } = await (supabase as any)
+        .from(this.tableName)
         .update({
           status,
           status_updated_at: new Date().toISOString()
@@ -139,7 +142,8 @@ export class ContactsService extends BaseDataService<ContactLead> {
    */
   async getActiveContacts(): Promise<ServiceResult<ContactLead[]>> {
     try {
-      const { data, error } = await this.getTable()
+      const { data, error } = await (supabase as any)
+        .from(this.tableName)
         .select('*')
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });

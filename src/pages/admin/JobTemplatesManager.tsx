@@ -72,9 +72,9 @@ export const JobTemplatesManager = () => {
 
     try {
       if (editingTemplate) {
-        await updateTemplate({ id: editingTemplate.id, updates: templateData });
+        await updateTemplate({ id: editingTemplate.id, data: templateData });
       } else {
-        await createTemplate(templateData);
+        await createTemplate(templateData as any);
       }
       setIsDialogOpen(false);
       setEditingTemplate(null);
@@ -94,7 +94,7 @@ export const JobTemplatesManager = () => {
     };
     
     try {
-      await createTemplate(duplicateData);
+      await createTemplate(duplicateData as any);
     } catch (error) {
       console.error('Error duplicating template:', error);
     }

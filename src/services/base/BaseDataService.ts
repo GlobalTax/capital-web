@@ -15,10 +15,10 @@ export abstract class BaseDataService<T extends { id: string }> {
 
   /**
    * Get Supabase query builder for this table
-   * Using 'as any' to bypass TypeScript's strict table name checking
+   * Using direct supabase access to bypass TypeScript's strict table name checking
    */
   protected getTable() {
-    return supabase.from(this.tableName as any);
+    return supabase.from(this.tableName as any) as any;
   }
 
   /**
