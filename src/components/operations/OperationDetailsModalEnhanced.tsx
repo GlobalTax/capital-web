@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
-import { isRecentOperation } from '@/utils/dateHelpers';
+import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { isRecentOperation } from '@/shared/utils/date';
 import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, MapPin, Edit, History, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

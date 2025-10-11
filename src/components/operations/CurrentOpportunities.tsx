@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ArrowRight } from 'lucide-react';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
+import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
 import OperationCard from './OperationCard';
 
 interface Operation {

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
-import { highlightSearchTerm } from '@/utils/highlightText';
-import { isRecentOperation } from '@/utils/dateHelpers';
+import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { highlightText } from '@/shared/utils/string';
+import { isRecentOperation } from '@/shared/utils/date';
 import { Eye } from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
 
@@ -65,7 +65,11 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             
             <div className="flex-1">
               <h3 className="font-semibold text-lg line-clamp-1">
-                {searchTerm ? highlightSearchTerm(operation.company_name, searchTerm) : operation.company_name}
+                {searchTerm ? (
+                  <span dangerouslySetInnerHTML={{ __html: highlightText(operation.company_name, searchTerm) }} />
+                ) : (
+                  operation.company_name
+                )}
               </h3>
               <div className="flex items-center gap-1 mt-1">
                 {operation.is_featured && (
@@ -89,10 +93,13 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           
           {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-3">
-            {searchTerm 
-              ? highlightSearchTerm(operation.short_description || operation.description, searchTerm)
-              : (operation.short_description || operation.description)
-            }
+            {searchTerm ? (
+              <span dangerouslySetInnerHTML={{ 
+                __html: highlightText(operation.short_description || operation.description, searchTerm) 
+              }} />
+            ) : (
+              operation.short_description || operation.description
+            )}
           </p>
           
           {/* Highlights */}

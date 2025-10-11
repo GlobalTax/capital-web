@@ -1,50 +1,110 @@
 // ============= VALIDATION UTILITIES =============
-// Utilidades de validación centralizadas
+// Utilidades para validación de datos
 
-import { z } from 'zod';
-
-// Schema para validar datos de marketing metrics
-export const marketingDataSchema = z.object({
-  contactLeads: z.array(z.any()),
-  leadScores: z.array(z.any()),
-  companyValuations: z.array(z.any()),
-  blogAnalytics: z.array(z.any()),
-  blogPostMetrics: z.array(z.any()),
-  leadBehavior: z.array(z.any()),
-});
-
-// Schema para validar métricas calculadas
-export const metricsSchema = z.object({
-  totalVisitors: z.number().min(0),
-  identifiedCompanies: z.number().min(0),
-  totalLeads: z.number().min(0),
-  qualifiedLeads: z.number().min(0),
-  leadConversionRate: z.number().min(0).max(100),
-  averageLeadScore: z.number().min(0).max(100),
-  totalRevenue: z.number().min(0),
-});
-
-// Validadores de datos
-export const validateMarketingData = (data: unknown) => {
-  return marketingDataSchema.safeParse(data);
-};
-
-export const validateMetrics = (metrics: unknown) => {
-  return metricsSchema.safeParse(metrics);
-};
-
-// Validadores de formato
+/**
+ * Validate email format
+ */
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-export const isValidDomain = (domain: string): boolean => {
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-  return domainRegex.test(domain);
+/**
+ * Validate Spanish phone number
+ */
+export const isValidPhone = (phone: string): boolean => {
+  // Spanish phone: +34 XXX XXX XXX or 9 digits
+  const phoneRegex = /^(\+34)?[6-9]\d{8}$/;
+  return phoneRegex.test(phone.replace(/\s/g, ''));
 };
 
-export const isValidPhone = (phone: string): boolean => {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+/**
+ * Validate URL format
+ */
+export const isValidURL = (url: string): boolean => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Validate Spanish NIF/CIF
+ */
+export const isValidNIF = (nif: string): boolean => {
+  const nifRegex = /^[0-9]{8}[A-Z]$/;
+  return nifRegex.test(nif.toUpperCase());
+};
+
+/**
+ * Validate Spanish postal code
+ */
+export const isValidPostalCode = (postalCode: string): boolean => {
+  const postalCodeRegex = /^[0-5]\d{4}$/;
+  return postalCodeRegex.test(postalCode);
+};
+
+/**
+ * Sanitize input string (remove HTML tags)
+ */
+export const sanitizeInput = (input: string): string => {
+  return input.replace(/<[^>]*>/g, '');
+};
+
+/**
+ * Validate password strength
+ * Returns: { valid: boolean, score: number, feedback: string[] }
+ */
+export const validatePasswordStrength = (password: string): {
+  valid: boolean;
+  score: number;
+  feedback: string[];
+} => {
+  const feedback: string[] = [];
+  let score = 0;
+  
+  if (password.length >= 8) score++;
+  else feedback.push('Mínimo 8 caracteres');
+  
+  if (/[a-z]/.test(password)) score++;
+  else feedback.push('Al menos una minúscula');
+  
+  if (/[A-Z]/.test(password)) score++;
+  else feedback.push('Al menos una mayúscula');
+  
+  if (/\d/.test(password)) score++;
+  else feedback.push('Al menos un número');
+  
+  if (/[@$!%*?&#]/.test(password)) score++;
+  else feedback.push('Al menos un carácter especial');
+  
+  return {
+    valid: score >= 4,
+    score,
+    feedback
+  };
+};
+
+/**
+ * Validate IBAN format
+ */
+export const isValidIBAN = (iban: string): boolean => {
+  const ibanRegex = /^ES\d{22}$/;
+  return ibanRegex.test(iban.replace(/\s/g, ''));
+};
+
+/**
+ * Check if string is empty or whitespace
+ */
+export const isEmpty = (value: string | null | undefined): boolean => {
+  return !value || value.trim().length === 0;
+};
+
+/**
+ * Check if value is numeric
+ */
+export const isNumeric = (value: string): boolean => {
+  return !isNaN(parseFloat(value)) && isFinite(Number(value));
 };

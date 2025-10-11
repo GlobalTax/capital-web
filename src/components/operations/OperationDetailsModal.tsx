@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
-import { isRecentOperation } from '@/utils/dateHelpers';
+import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { isRecentOperation } from '@/shared/utils/date';
 import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, ChevronLeft } from 'lucide-react';
 import OperationContactForm from './OperationContactForm';
 

@@ -1,5 +1,7 @@
-// ============= DASHBOARD FEATURE EXPORTS =============
-// Punto de entrada para todas las funcionalidades del dashboard
+// ============= DASHBOARD FEATURE BARREL EXPORT =============
+// Export principal del feature de dashboard
 
-export { ConversionChart } from './components/ConversionChart';
-export { default as PerformanceDashboard } from '@/components/admin/dashboard/PerformanceDashboard';
+export * from './components';
+export * from './hooks';
+export * from './types';
+export * from './validation/schemas';

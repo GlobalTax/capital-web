@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Building2, DollarSign, FileText, Calendar, MapPin, Settings, Loader2, Plus, Trash2 } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/shared/utils/format';
 import { useToast } from '@/hooks/use-toast';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
 

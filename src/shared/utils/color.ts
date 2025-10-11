@@ -1,6 +1,5 @@
-/**
- * Color utility functions for accessibility and validation
- */
+// ============= COLOR UTILITIES =============
+// Utilidades para manejo de colores y accesibilidad
 
 export interface ColorTheme {
   name: string;

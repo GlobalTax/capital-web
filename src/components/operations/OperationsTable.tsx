@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Eye, Star, Sparkles } from 'lucide-react';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
-import { formatCompactCurrency } from '@/utils/formatters';
-import { isRecentOperation } from '@/utils/dateHelpers';
+import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
+import { isRecentOperation } from '@/shared/utils/date';
 import OperationDetailsModal from './OperationDetailsModal';
 
 interface Operation {

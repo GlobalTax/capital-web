@@ -4,9 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Building2, Calendar, TrendingUp, Eye, Star, Sparkles, MoreVertical, Trash2, CheckCircle, XCircle } from 'lucide-react';
-import { formatCurrency, normalizeValuationAmount } from '@/utils/formatters';
-import { formatCompactCurrency } from '@/utils/formatters';
-import { isRecentOperation } from '@/utils/dateHelpers';
+import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
+import { isRecentOperation } from '@/shared/utils/date';
 import {
   DropdownMenu,
   DropdownMenuContent,
