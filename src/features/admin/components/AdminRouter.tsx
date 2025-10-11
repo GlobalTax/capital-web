@@ -34,6 +34,7 @@ import LeadMagnetsPage from '@/pages/admin/LeadMagnetsPage';
 import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
 import LeadDetailPage from '@/pages/admin/LeadDetailPage';
+import { JobPostsManager } from '@/pages/admin/JobPostsManager';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -79,6 +80,9 @@ const AdminRouter = () => {
       <Route path="/case-studies" element={<CaseStudiesManager />} />
       <Route path="/landing-pages" element={<LandingPagesPage />} />
       <Route path="/banners" element={<AdminBanners />} />
+      
+      {/* Job Posts Management */}
+      <Route path="/jobs" element={<JobPostsManager />} />
       
       {/* Company Data */}
       <Route path="/operations" element={<AdminOperations />} />
