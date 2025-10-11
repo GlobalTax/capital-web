@@ -38,7 +38,9 @@ import {
   TestTube,
   Image,
   AlertCircle,
-  Flag
+  Flag,
+  Briefcase,
+  Tags
 } from 'lucide-react';
 
 const menuSections = [
@@ -82,6 +84,14 @@ const menuSections = [
       { title: "Testimonios", url: "/admin/testimonials", icon: MessageSquare },
       { title: "Test. Carrusel", url: "/admin/carousel-testimonials", icon: TestTube },
       { title: "Logos Carrusel", url: "/admin/carousel-logos", icon: Image },
+    ]
+  },
+  {
+    title: "💼 Empleo",
+    items: [
+      { title: "Ofertas de Trabajo", url: "/admin/jobs", icon: Briefcase },
+      { title: "Aplicaciones", url: "/admin/job-applications", icon: Users, badge: "NEW" },
+      { title: "Categorías", url: "/admin/job-categories", icon: Tags },
     ]
   },
   {

@@ -35,6 +35,10 @@ import ValuationDetailPage from '@/pages/admin/ValuationDetailPage';
 import ContactLeadsAdminPage from '@/pages/admin/ContactLeadsAdminPage';
 import LeadDetailPage from '@/pages/admin/LeadDetailPage';
 import { JobPostsManager } from '@/pages/admin/JobPostsManager';
+import { JobPostEditor } from '@/pages/admin/JobPostEditor';
+import { JobApplicationsManager } from '@/pages/admin/JobApplicationsManager';
+import { JobCategoriesManager } from '@/pages/admin/JobCategoriesManager';
+import CollaboratorApplicationsManagerPage from '@/pages/admin/CollaboratorApplicationsManagerPage';
 
 const AdminRouter = () => {
   const { isAdmin } = useAuth();
@@ -81,8 +85,13 @@ const AdminRouter = () => {
       <Route path="/landing-pages" element={<LandingPagesPage />} />
       <Route path="/banners" element={<AdminBanners />} />
       
-      {/* Job Posts Management */}
+      {/* Job Posts Management - Complete */}
       <Route path="/jobs" element={<JobPostsManager />} />
+      <Route path="/jobs/new" element={<JobPostEditor />} />
+      <Route path="/jobs/edit/:id" element={<JobPostEditor />} />
+      <Route path="/job-applications" element={<JobApplicationsManager />} />
+      <Route path="/job-categories" element={<JobCategoriesManager />} />
+      <Route path="/collaborator-applications" element={<CollaboratorApplicationsManagerPage />} />
       
       {/* Company Data */}
       <Route path="/operations" element={<AdminOperations />} />
