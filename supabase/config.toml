@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.sync-to-brevo]
 verify_jwt = false
+
+[functions.generate-job-offer-ai]
+verify_jwt = false

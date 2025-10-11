@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Sparkles, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,8 +17,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useJobPosts, useJobPost } from '@/hooks/useJobPosts';
 import { useJobCategories } from '@/hooks/useJobCategories';
+import { useJobTemplates } from '@/hooks/useJobTemplates';
+import { useJobOfferAI } from '@/hooks/useJobOfferAI';
 import { useToast } from '@/hooks/use-toast';
 import type { JobPostFormData, ContractType, EmploymentType, ExperienceLevel, ApplicationMethod } from '@/types/jobs';
 
@@ -57,12 +66,21 @@ export const JobPostEditor = () => {
 
   const { data: jobPost, isLoading: isLoadingPost } = useJobPost(id || '');
   const { categories } = useJobCategories();
+  const { templates } = useJobTemplates();
   const { createJobPost, updateJobPost, isCreating, isUpdating } = useJobPosts({});
+  const { generateField, generateList, generateFullOffer, isGenerating } = useJobOfferAI();
 
   const [newRequirement, setNewRequirement] = useState('');
   const [newResponsibility, setNewResponsibility] = useState('');
   const [newBenefit, setNewBenefit] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
+  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+  const [aiContext, setAiContext] = useState({
+    title: '',
+    level: 'mid',
+    sector: '',
+    keywords: '',
+  });
 
   const {
     control,
@@ -173,6 +191,84 @@ export const JobPostEditor = () => {
     }
   };
 
+  const handleLoadTemplate = (templateId: string) => {
+    if (templateId === 'blank') return;
+    
+    const template = templates?.find(t => t.id === templateId);
+    if (!template) return;
+
+    if (template.title_template) setValue('title', template.title_template);
+    if (template.short_description_template) setValue('short_description', template.short_description_template);
+    if (template.description_template) setValue('description', template.description_template);
+    if (template.requirements_template) setValue('requirements', template.requirements_template);
+    if (template.responsibilities_template) setValue('responsibilities', template.responsibilities_template);
+    if (template.benefits_template) setValue('benefits', template.benefits_template);
+    if (template.default_location) setValue('location', template.default_location);
+    if (template.default_contract_type) setValue('contract_type', template.default_contract_type as ContractType);
+    if (template.default_employment_type) setValue('employment_type', template.default_employment_type as EmploymentType);
+    if (template.default_is_remote !== null) setValue('is_remote', template.default_is_remote);
+    if (template.default_is_hybrid !== null) setValue('is_hybrid', template.default_is_hybrid);
+    if (template.default_experience_level) setValue('experience_level', template.default_experience_level as ExperienceLevel);
+    if (template.default_sector) setValue('sector', template.default_sector);
+
+    toast({
+      title: 'Plantilla cargada',
+      description: 'Los datos de la plantilla se han aplicado correctamente',
+    });
+  };
+
+  const handleGenerateField = async (field: 'title' | 'short_description' | 'description') => {
+    try {
+      const context = {
+        title: watch('title') || aiContext.title,
+        level: watch('experience_level') || aiContext.level,
+        sector: watch('sector') || aiContext.sector,
+        keywords: aiContext.keywords,
+      };
+      
+      const content = await generateField(field, context);
+      setValue(field, content);
+    } catch (error) {
+      console.error('Error generating field:', error);
+    }
+  };
+
+  const handleGenerateList = async (type: 'requirements' | 'responsibilities' | 'benefits') => {
+    try {
+      const context = {
+        title: watch('title') || aiContext.title,
+        level: watch('experience_level') || aiContext.level,
+        sector: watch('sector') || aiContext.sector,
+      };
+      
+      const items = await generateList(type, context);
+      setValue(type, items);
+    } catch (error) {
+      console.error('Error generating list:', error);
+    }
+  };
+
+  const handleGenerateFull = async () => {
+    try {
+      const result = await generateFullOffer(aiContext);
+      
+      if (result.title) setValue('title', result.title);
+      if (result.short_description) setValue('short_description', result.short_description);
+      if (result.description) setValue('description', result.description);
+      if (result.requirements) setValue('requirements', result.requirements);
+      if (result.responsibilities) setValue('responsibilities', result.responsibilities);
+      if (result.benefits) setValue('benefits', result.benefits);
+      
+      setIsAIDialogOpen(false);
+      toast({
+        title: '¡Oferta generada!',
+        description: 'La oferta completa se ha generado con IA. Revisa y ajusta según necesites.',
+      });
+    } catch (error) {
+      console.error('Error generating full offer:', error);
+    }
+  };
+
   if (isEditMode && isLoadingPost) {
     return <div className="p-8">Cargando...</div>;
   }
@@ -196,6 +292,45 @@ export const JobPostEditor = () => {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Selector de Plantilla - Solo en modo creación */}
+        {!isEditMode && templates && templates.length > 0 && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wand2 className="h-5 w-5" />
+                ¿Usar una plantilla?
+              </CardTitle>
+              <CardDescription>
+                Empieza desde una plantilla existente o genera contenido con IA
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-4">
+              <Select onValueChange={handleLoadTemplate}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Selecciona una plantilla..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name} • {template.category}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="blank">🆕 Empezar desde cero</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => setIsAIDialogOpen(true)}
+                disabled={isGenerating}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generar con IA
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Información Básica */}
         <Card>
           <CardHeader>
@@ -204,7 +339,19 @@ export const JobPostEditor = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="title">Título de la oferta *</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="title">Título de la oferta *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleGenerateField('title')}
+                  disabled={isGenerating}
+                >
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  IA
+                </Button>
+              </div>
               <Controller
                 name="title"
                 control={control}
@@ -236,7 +383,19 @@ export const JobPostEditor = () => {
             </div>
 
             <div>
-              <Label htmlFor="short_description">Descripción corta *</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="short_description">Descripción corta *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleGenerateField('short_description')}
+                  disabled={isGenerating}
+                >
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  IA
+                </Button>
+              </div>
               <Controller
                 name="short_description"
                 control={control}
@@ -248,7 +407,19 @@ export const JobPostEditor = () => {
             </div>
 
             <div>
-              <Label htmlFor="description">Descripción completa *</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="description">Descripción completa *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleGenerateField('description')}
+                  disabled={isGenerating}
+                >
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  Generar
+                </Button>
+              </div>
               <Controller
                 name="description"
                 control={control}
@@ -264,8 +435,22 @@ export const JobPostEditor = () => {
         {/* Requisitos */}
         <Card>
           <CardHeader>
-            <CardTitle>Requisitos *</CardTitle>
-            <CardDescription>Requisitos necesarios para el puesto</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Requisitos *</CardTitle>
+                <CardDescription>Requisitos necesarios para el puesto</CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleGenerateList('requirements')}
+                disabled={isGenerating}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Sugerir con IA
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
@@ -301,8 +486,22 @@ export const JobPostEditor = () => {
         {/* Responsabilidades */}
         <Card>
           <CardHeader>
-            <CardTitle>Responsabilidades *</CardTitle>
-            <CardDescription>Principales responsabilidades del puesto</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Responsabilidades *</CardTitle>
+                <CardDescription>Principales responsabilidades del puesto</CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleGenerateList('responsibilities')}
+                disabled={isGenerating}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Sugerir con IA
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
@@ -338,8 +537,22 @@ export const JobPostEditor = () => {
         {/* Beneficios */}
         <Card>
           <CardHeader>
-            <CardTitle>Beneficios</CardTitle>
-            <CardDescription>Beneficios que ofrece el puesto</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Beneficios</CardTitle>
+                <CardDescription>Beneficios que ofrece el puesto</CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleGenerateList('benefits')}
+                disabled={isGenerating}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Sugerir con IA
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
@@ -686,6 +899,78 @@ export const JobPostEditor = () => {
           </Button>
         </div>
       </form>
+
+      {/* Diálogo de Generación con IA */}
+      <Dialog open={isAIDialogOpen} onOpenChange={setIsAIDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Generar Oferta con IA
+            </DialogTitle>
+            <DialogDescription>
+              Completa los datos básicos para generar una oferta completa con inteligencia artificial
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="ai-title">Título del puesto *</Label>
+              <Input
+                id="ai-title"
+                value={aiContext.title}
+                onChange={(e) => setAiContext({ ...aiContext, title: e.target.value })}
+                placeholder="Ej: Desarrollador Full Stack Senior"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ai-level">Nivel del puesto *</Label>
+              <Select value={aiContext.level} onValueChange={(val) => setAiContext({ ...aiContext, level: val })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="junior">Junior</SelectItem>
+                  <SelectItem value="mid">Mid-level</SelectItem>
+                  <SelectItem value="senior">Senior</SelectItem>
+                  <SelectItem value="lead">Lead/Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="ai-sector">Sector *</Label>
+              <Input
+                id="ai-sector"
+                value={aiContext.sector}
+                onChange={(e) => setAiContext({ ...aiContext, sector: e.target.value })}
+                placeholder="Ej: Tecnología"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ai-keywords">Keywords opcionales</Label>
+              <Input
+                id="ai-keywords"
+                value={aiContext.keywords}
+                onChange={(e) => setAiContext({ ...aiContext, keywords: e.target.value })}
+                placeholder="Ej: React, TypeScript, Agile..."
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={handleGenerateFull}
+              disabled={isGenerating || !aiContext.title || !aiContext.sector}
+            >
+              {isGenerating ? (
+                <>Generando oferta completa...</>
+              ) : (
+                <>
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Generar Oferta Completa
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

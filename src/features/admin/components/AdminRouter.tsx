@@ -38,6 +38,7 @@ import { JobPostsManager } from '@/pages/admin/JobPostsManager';
 import { JobPostEditor } from '@/pages/admin/JobPostEditor';
 import { JobApplicationsManager } from '@/pages/admin/JobApplicationsManager';
 import { JobCategoriesManager } from '@/pages/admin/JobCategoriesManager';
+import { JobTemplatesManager } from '@/pages/admin/JobTemplatesManager';
 import CollaboratorApplicationsManagerPage from '@/pages/admin/CollaboratorApplicationsManagerPage';
 
 const AdminRouter = () => {
@@ -91,6 +92,7 @@ const AdminRouter = () => {
       <Route path="/jobs/edit/:id" element={<JobPostEditor />} />
       <Route path="/job-applications" element={<JobApplicationsManager />} />
       <Route path="/job-categories" element={<JobCategoriesManager />} />
+      <Route path="/job-templates" element={<JobTemplatesManager />} />
       <Route path="/collaborator-applications" element={<CollaboratorApplicationsManagerPage />} />
       
       {/* Company Data */}
