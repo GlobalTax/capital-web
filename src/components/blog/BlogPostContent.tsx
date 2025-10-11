@@ -175,10 +175,26 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
                 </div>
               </div>
             )}
+
+            <div className="mt-8 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                  })
+                }
+                className="w-full sm:w-auto"
+              >
+                <ArrowUp className="h-4 w-4 mr-2" />
+                Volver arriba
+              </Button>
+            </div>
           </div>
 
           <div className="lg:col-span-4">
-            <div className="sticky top-8 space-y-6">
+            <div className="sticky top-8 space-y-4">
             {sections.length > 0 && (
               <>
                 <span className="text-lg font-medium">En esta página</span>
@@ -204,21 +220,6 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
                 <Separator className="my-6" />
               </>
             )}
-            
-              <div className="mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    window.scrollTo({
-                      top: 0,
-                      behavior: 'smooth',
-                    })
-                  }
-                >
-                  <ArrowUp className="h-4 w-4" />
-                  Volver arriba
-                </Button>
-              </div>
             </div>
           </div>
         </div>
