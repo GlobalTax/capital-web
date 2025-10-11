@@ -59,15 +59,13 @@ export const AdminScrollBar: React.FC = () => {
                   <span>Dashboard</span>
                 </BreadcrumbPage>
               ) : (
-                <>
-                  <BreadcrumbLink href="/admin" className="flex items-center gap-1">
-                    <Home className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </BreadcrumbLink>
-                  <BreadcrumbSeparator />
-                </>
+                <BreadcrumbLink href="/admin" className="flex items-center gap-1">
+                  <Home className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </BreadcrumbLink>
               )}
             </BreadcrumbItem>
+            {!isHome && <BreadcrumbSeparator />}
             
             {!isHome && pathSegments.map((segment, index) => {
               if (segment === 'admin') return null;
@@ -77,16 +75,16 @@ export const AdminScrollBar: React.FC = () => {
               const isLast = index === pathSegments.length - 1;
 
               return (
-                <BreadcrumbItem key={path}>
-                  {isLast ? (
-                    <BreadcrumbPage>{label}</BreadcrumbPage>
-                  ) : (
-                    <>
+                <React.Fragment key={path}>
+                  <BreadcrumbItem>
+                    {isLast ? (
+                      <BreadcrumbPage>{label}</BreadcrumbPage>
+                    ) : (
                       <BreadcrumbLink href={path}>{label}</BreadcrumbLink>
-                      <BreadcrumbSeparator />
-                    </>
-                  )}
-                </BreadcrumbItem>
+                    )}
+                  </BreadcrumbItem>
+                  {!isLast && <BreadcrumbSeparator />}
+                </React.Fragment>
               );
             })}
           </BreadcrumbList>
