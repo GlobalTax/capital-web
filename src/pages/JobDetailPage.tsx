@@ -58,9 +58,9 @@ const JobDetailPage = () => {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-12">
-          <Button variant="ghost" asChild className="mb-6">
+      <main className="min-h-screen bg-background pt-20">
+        <div className="container mx-auto px-4 py-8 md:py-12">
+          <Button variant="ghost" asChild className="mb-8">
             <Link to="/oportunidades/empleo">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Volver a ofertas
@@ -146,7 +146,7 @@ const JobDetailPage = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <Card className="p-6 sticky top-6">
+              <Card className="p-6 lg:sticky lg:top-24">
                 <Button 
                   size="lg" 
                   className="w-full mb-6"
