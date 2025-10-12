@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useJobPost, useJobPosts } from '@/hooks/useJobPosts';
+import { useJobPosts, useJobPostById } from '@/hooks/useJobPosts';
 import type { JobPostFormData, ContractType, EmploymentType, ExperienceLevel, ApplicationMethod } from '@/types/jobs';
 
 const jobPostSchema = z.object({
@@ -39,7 +39,7 @@ export const useJobForm = (jobId?: string) => {
   const { toast } = useToast();
   const isEditMode = !!jobId;
 
-  const { data: jobPost, isLoading: isLoadingPost } = useJobPost(jobId || '');
+  const { data: jobPost, isLoading: isLoadingPost } = useJobPostById(jobId || '');
   const { createJobPost, updateJobPost, isCreating, isUpdating } = useJobPosts({});
 
   const form = useForm<JobPostFormData>({

@@ -188,3 +188,23 @@ export const useJobPost = (slug: string) => {
     enabled: !!slug,
   });
 };
+
+export const useJobPostById = (id: string) => {
+  return useQuery({
+    queryKey: ['job-post-by-id', id],
+    queryFn: async (): Promise<JobPost | null> => {
+      const { data, error } = await supabase
+        .from('job_posts')
+        .select(`
+          *,
+          category:job_categories(*)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+};

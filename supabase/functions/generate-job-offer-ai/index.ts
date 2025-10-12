@@ -156,6 +156,36 @@ Requisitos generales:
 Responde SOLO con el JSON válido, sin explicaciones adicionales.`;
         break;
 
+      case 'parse':
+        userPrompt = `Analiza el siguiente texto de una oferta de trabajo y extrae toda la información en formato JSON estructurado:
+
+TEXTO:
+${context.rawText}
+
+Genera un JSON con esta estructura exacta:
+{
+  "title": "Título extraído",
+  "short_description": "Descripción corta (2-3 líneas)",
+  "description": "Descripción completa",
+  "requirements": ["Requisito 1", "Requisito 2", ...],
+  "responsibilities": ["Responsabilidad 1", "Responsabilidad 2", ...],
+  "benefits": ["Beneficio 1", "Beneficio 2", ...],
+  "location": "Ubicación extraída",
+  "is_remote": true/false,
+  "is_hybrid": true/false,
+  "contract_type": "indefinido/temporal/practicas/freelance",
+  "employment_type": "full_time/part_time/contract",
+  "experience_level": "junior/mid/senior/lead",
+  "sector": "Sector identificado",
+  "required_languages": ["Idioma 1", "Idioma 2", ...],
+  "salary_min": número o null,
+  "salary_max": número o null
+}
+
+Si no encuentras algún dato, usa null o valores vacíos.
+Responde SOLO con el JSON válido, sin explicaciones.`;
+        break;
+
       default:
         throw new Error('Tipo de generación no válido');
     }

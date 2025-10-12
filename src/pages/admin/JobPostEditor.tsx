@@ -32,6 +32,7 @@ import {
   useJobForm,
   useJobListManagement,
 } from '@/features/jobs';
+import { JobPasteParser } from '@/features/jobs/components/JobPasteParser';
 import type { ContractType, EmploymentType, ExperienceLevel, ApplicationMethod } from '@/types/jobs';
 
 export const JobPostEditor = () => {
@@ -166,13 +167,17 @@ export const JobPostEditor = () => {
         </Button>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">
-          {isEditMode ? 'Editar Oferta de Trabajo' : 'Nueva Oferta de Trabajo'}
-        </h1>
-        <p className="text-muted-foreground">
-          {isEditMode ? 'Modifica los datos de la oferta' : 'Completa los datos de la nueva oferta'}
-        </p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {isEditMode ? 'Editar Oferta de Trabajo' : 'Nueva Oferta de Trabajo'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isEditMode ? 'Modifica los datos de la oferta' : 'Completa los datos de la nueva oferta'}
+          </p>
+        </div>
+        
+        {!isEditMode && <JobPasteParser setValue={setValue} />}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

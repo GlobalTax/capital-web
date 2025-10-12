@@ -7,6 +7,7 @@ interface GenerationContext {
   level?: string;
   sector?: string;
   keywords?: string;
+  rawText?: string;
 }
 
 interface GenerationResult {
@@ -18,6 +19,16 @@ interface GenerationResult {
   requirements?: string[];
   responsibilities?: string[];
   benefits?: string[];
+  location?: string;
+  is_remote?: boolean;
+  is_hybrid?: boolean;
+  contract_type?: string;
+  employment_type?: string;
+  experience_level?: string;
+  sector?: string;
+  required_languages?: string[];
+  salary_min?: number;
+  salary_max?: number;
 }
 
 export const useJobOfferAI = () => {
@@ -89,15 +100,20 @@ export const useJobOfferAI = () => {
   const generateFullOffer = async (context: GenerationContext): Promise<GenerationResult> => {
     setIsGenerating(true);
     try {
+      // Determinar el tipo de generación basado en si hay rawText
+      const type = context.rawText ? 'parse' : 'full';
+      
       const { data, error } = await supabase.functions.invoke('generate-job-offer-ai', {
-        body: { type: 'full', context }
+        body: { type, context }
       });
 
       if (error) throw error;
 
       toast({
-        title: '¡Oferta completa generada!',
-        description: 'La oferta se ha generado correctamente con IA',
+        title: context.rawText ? '¡Oferta analizada!' : '¡Oferta completa generada!',
+        description: context.rawText 
+          ? 'Los datos se han extraído correctamente del texto'
+          : 'La oferta se ha generado correctamente con IA',
       });
 
       return data;
