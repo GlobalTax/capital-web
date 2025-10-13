@@ -1940,6 +1940,89 @@ export type Database = {
         }
         Relationships: []
       }
+      document_downloads: {
+        Row: {
+          created_at: string | null
+          document_id: string
+          download_method: string | null
+          downloaded_at: string | null
+          id: string
+          ip_address: unknown | null
+          page_url: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_company: string | null
+          user_email: string
+          user_id: string | null
+          user_name: string | null
+          user_phone: string | null
+          user_position: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_id: string
+          download_method?: string | null
+          downloaded_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          page_url?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_company?: string | null
+          user_email: string
+          user_id?: string | null
+          user_name?: string | null
+          user_phone?: string | null
+          user_position?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string
+          download_method?: string | null
+          downloaded_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          page_url?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_company?: string | null
+          user_email?: string
+          user_id?: string | null
+          user_name?: string | null
+          user_phone?: string | null
+          user_position?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_downloads_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documentos: {
         Row: {
           created_at: string | null
@@ -1993,6 +2076,129 @@ export type Database = {
             columns: ["mandato_id"]
             isOneToOne: false
             referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          access_level: string
+          author_name: string | null
+          category: string
+          created_at: string | null
+          created_by: string | null
+          cta_text: string | null
+          description: string | null
+          download_count: number | null
+          file_size_bytes: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          is_featured: boolean | null
+          landing_page_id: string | null
+          lead_conversion_count: number | null
+          meta_description: string | null
+          meta_title: string | null
+          og_image_url: string | null
+          previous_version_id: string | null
+          published_at: string | null
+          reading_time_minutes: number | null
+          requires_form: boolean | null
+          sector: string | null
+          slug: string
+          status: string
+          tags: string[] | null
+          target_audience: string[] | null
+          thumbnail_url: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          version: number | null
+          view_count: number | null
+        }
+        Insert: {
+          access_level?: string
+          author_name?: string | null
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          cta_text?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_size_bytes?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          is_featured?: boolean | null
+          landing_page_id?: string | null
+          lead_conversion_count?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image_url?: string | null
+          previous_version_id?: string | null
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          requires_form?: boolean | null
+          sector?: string | null
+          slug: string
+          status?: string
+          tags?: string[] | null
+          target_audience?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          version?: number | null
+          view_count?: number | null
+        }
+        Update: {
+          access_level?: string
+          author_name?: string | null
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          cta_text?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_size_bytes?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          is_featured?: boolean | null
+          landing_page_id?: string | null
+          lead_conversion_count?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image_url?: string | null
+          previous_version_id?: string | null
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          requires_form?: boolean | null
+          sector?: string | null
+          slug?: string
+          status?: string
+          tags?: string[] | null
+          target_audience?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          version?: number | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "documents_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
         ]
@@ -5042,6 +5248,45 @@ export type Database = {
         }
         Relationships: []
       }
+      tv_dashboard_fase_mapping: {
+        Row: {
+          activo: boolean
+          color: string
+          columna_tv: string
+          created_at: string
+          fase_id: string
+          fase_tipo: string
+          icono: string
+          id: string
+          orden: number
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          color: string
+          columna_tv: string
+          created_at?: string
+          fase_id: string
+          fase_tipo: string
+          icono: string
+          id?: string
+          orden: number
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          color?: string
+          columna_tv?: string
+          created_at?: string
+          fase_id?: string
+          fase_tipo?: string
+          icono?: string
+          id?: string
+          orden?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_dashboard_layouts: {
         Row: {
           created_at: string
@@ -5449,6 +5694,14 @@ export type Database = {
         Returns: number
       }
       create_temporary_user: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_role?: Database["public"]["Enums"]["admin_role"]
+        }
+        Returns: Json
+      }
+      create_temporary_user_enhanced: {
         Args: {
           p_email: string
           p_full_name: string
