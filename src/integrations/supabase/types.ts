@@ -2757,6 +2757,163 @@ export type Database = {
           },
         ]
       }
+      investor_leads: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          brevo_sent: boolean | null
+          brevo_sent_at: string | null
+          company: string | null
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
+          document_format: string
+          document_id: string | null
+          email: string
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          gdpr_consent: boolean
+          hubspot_sent: boolean | null
+          hubspot_sent_at: string | null
+          id: string
+          investment_range: string | null
+          investor_type: string | null
+          ip_address: unknown | null
+          is_deleted: boolean | null
+          lead_score: number | null
+          marketing_consent: boolean | null
+          notes: string | null
+          phone: string | null
+          preferred_location: string | null
+          referrer: string | null
+          sectors_of_interest: string | null
+          status: string
+          status_updated_at: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          brevo_sent?: boolean | null
+          brevo_sent_at?: string | null
+          company?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
+          document_format: string
+          document_id?: string | null
+          email: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          gdpr_consent?: boolean
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          investment_range?: string | null
+          investor_type?: string | null
+          ip_address?: unknown | null
+          is_deleted?: boolean | null
+          lead_score?: number | null
+          marketing_consent?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          preferred_location?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string
+          status_updated_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          brevo_sent?: boolean | null
+          brevo_sent_at?: string | null
+          company?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
+          document_format?: string
+          document_id?: string | null
+          email?: string
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          gdpr_consent?: boolean
+          hubspot_sent?: boolean | null
+          hubspot_sent_at?: string | null
+          id?: string
+          investment_range?: string | null
+          investor_type?: string | null
+          ip_address?: unknown | null
+          is_deleted?: boolean | null
+          lead_score?: number | null
+          marketing_consent?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          preferred_location?: string | null
+          referrer?: string | null
+          sectors_of_interest?: string | null
+          status?: string
+          status_updated_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "investor_leads_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "investor_leads_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_application_activities: {
         Row: {
           activity_type: string

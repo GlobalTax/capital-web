@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { MarketplaceGuideDialog } from '@/components/operations/MarketplaceGuideDialog';
+import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import { useFirstVisit } from '@/hooks/useFirstVisit';
 import { Button } from '@/components/ui/button';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Download } from 'lucide-react';
 
 const Oportunidades = () => {
   const [guideOpen, setGuideOpen] = useState(false);
+  const [rodFormOpen, setRodFormOpen] = useState(false);
   const { isFirstVisit, markAsVisited, isDisabled } = useFirstVisit('marketplace-guide');
 
   // Auto-open guide on first visit
@@ -38,19 +40,29 @@ const Oportunidades = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
                 Marketplace de Oportunidades
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
                 Explora empresas disponibles para adquisición con información detallada sobre 
                 valoración, sector y rendimiento financiero.
               </p>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setGuideOpen(true)}
-                className="gap-2"
-              >
-                <HelpCircle className="h-5 w-5" />
-                ¿Cómo funciona?
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  onClick={() => setRodFormOpen(true)}
+                  className="gap-2"
+                >
+                  <Download className="h-5 w-5" />
+                  Descargar Relación de Open Deals
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setGuideOpen(true)}
+                  className="gap-2"
+                >
+                  <HelpCircle className="h-5 w-5" />
+                  ¿Cómo funciona?
+                </Button>
+              </div>
             </div>
           </div>
         </section>
@@ -94,6 +106,9 @@ const Oportunidades = () => {
 
         {/* Guide Dialog */}
         <MarketplaceGuideDialog open={guideOpen} onOpenChange={setGuideOpen} />
+        
+        {/* ROD Download Form */}
+        <RODDownloadForm open={rodFormOpen} onOpenChange={setRodFormOpen} />
       </div>
     </UnifiedLayout>
   );
