@@ -58,6 +58,18 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     });
 
+    // ===== Extraer y validar IP del cliente =====
+    const rawIpHeader = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
+    const clientIp = rawIpHeader ? rawIpHeader.split(',')[0].trim() : null;
+    const isValidIp = clientIp && /^(\d{1,3}\.){3}\d{1,3}$/.test(clientIp);
+    
+    console.log('🔍 IP Debug:', {
+      raw_header: rawIpHeader,
+      extracted_ip: clientIp,
+      is_valid: isValidIp,
+      will_use: isValidIp ? clientIp : null
+    });
+
     // ===== 1. Obtener operaciones activas =====
     const { data: operations, error: opsError } = await supabase
       .from('company_operations')
@@ -115,7 +127,7 @@ serve(async (req) => {
         utm_campaign: requestData.utm_campaign,
         utm_term: requestData.utm_term,
         utm_content: requestData.utm_content,
-        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+        ip_address: isValidIp ? clientIp : null,
         user_agent: req.headers.get('user-agent'),
         status: 'new'
       })
