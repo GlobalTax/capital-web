@@ -1,34 +1,39 @@
 import { useEffect } from 'react';
 import { TrackingConfigService } from '@/services/TrackingConfigService';
+import { useStorageFallback } from '@/hooks/useStorageFallback';
 
 /**
  * TrackingInitializer - Inicializa scripts de tracking con CMP (Cookiebot)
  * Cumple con RGPD - solo carga scripts tras consentimiento de marketing
  */
 export const TrackingInitializer = () => {
+  const { isStorageBlocked, canUseLocalStorage } = useStorageFallback();
+
   useEffect(() => {
     const initializeTracking = async () => {
       const currentHost = window.location.hostname;
-      const isTrackingEnabled = TrackingConfigService.shouldEnableTracking();
       
-      console.log('[Tracking] 🌐 Current host:', currentHost);
-      console.log('[Tracking] 🎯 Tracking enabled:', isTrackingEnabled);
+      // Guard: No cargar tracking en preview/sandbox
+      if (currentHost.endsWith('.lovableproject.com') || currentHost.includes('preview--')) {
+        console.info('🚫 [Tracking] Disabled in preview/sandbox environment:', currentHost);
+        return;
+      }
+
+      const isTrackingEnabled = TrackingConfigService.shouldEnableTracking();
       
       // Solo cargar en dominios permitidos
       if (!isTrackingEnabled) {
-        console.log('[Tracking] ❌ Disabled - not in allowed domain');
+        return;
+      }
+
+      // Guard: No cargar tracking si storage está bloqueado
+      if (isStorageBlocked || !canUseLocalStorage) {
+        console.info('🚫 [Tracking] Storage blocked - tracking disabled for compliance');
         return;
       }
 
       // Cargar configuración de tracking
       const config = await TrackingConfigService.loadConfiguration();
-      console.log('[Tracking] Configuration loaded:', {
-        hasPixel: !!config.facebookPixelId,
-        hasGA: !!config.googleAnalyticsId,
-        hasGTM: !!config.googleTagManagerId,
-        hasCMP: !!config.cookiebotId,
-        cmpEnabled: config.enableCMP
-      });
 
       // ========== COOKIEBOT CMP (Consent Management Platform) ==========
       if (config.enableCMP && config.cookiebotId) {
@@ -50,14 +55,8 @@ export const TrackingInitializer = () => {
           (window as any).showCookieBanner = () => {
             if ((window as any).Cookiebot?.show) {
               (window as any).Cookiebot.show();
-              console.log('[Tracking] 🍪 Banner shown manually');
-            } else {
-              console.warn('[Tracking] ⚠️ Cookiebot not loaded yet');
             }
           };
-          
-          console.log('✅ [Tracking] Cookiebot CMP initialized:', cookiebotId);
-          console.log('💡 [Tracking] Tip: Run window.showCookieBanner() to show banner manually');
         }
       }
 
@@ -90,8 +89,6 @@ export const TrackingInitializer = () => {
         noscript.innerHTML = `<img height="1" width="1" style="display:none" 
           src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
         document.body.appendChild(noscript);
-        
-        console.log('✅ [Tracking] Meta Pixel loaded with Advanced Matching:', pixelId);
       };
 
       const loadGoogleAnalytics = () => {
@@ -115,8 +112,6 @@ export const TrackingInitializer = () => {
           });
         `;
         document.head.appendChild(gaConfigScript);
-        
-        console.log('✅ [Tracking] Google Analytics loaded:', gaId);
       };
 
       const loadGoogleTagManager = () => {
@@ -138,8 +133,6 @@ export const TrackingInitializer = () => {
         gtmNoscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
           height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
         document.body.appendChild(gtmNoscript);
-        
-        console.log('✅ [Tracking] Google Tag Manager loaded:', gtmId);
       };
 
       // ========== GESTIÓN DE CONSENTIMIENTO ==========
@@ -153,28 +146,15 @@ export const TrackingInitializer = () => {
             const cookiebot = (window as any).Cookiebot;
             
             const checkAndLoadScripts = () => {
-              console.log('[Tracking] 🔍 Checking consent status:', {
-                marketing: cookiebot.consent?.marketing,
-                statistics: cookiebot.consent?.statistics,
-                preferences: cookiebot.consent?.preferences,
-                necessary: cookiebot.consent?.necessary
-              });
-              
               // Cargar scripts solo si hay consentimiento de marketing
               if (cookiebot.consent?.marketing) {
-                console.log('[Tracking] ✅ Marketing consent granted - loading Meta Pixel');
                 loadMetaPixel();
-              } else {
-                console.log('[Tracking] ⏸️ Marketing consent not granted - Meta Pixel blocked');
               }
               
               // Cargar analytics solo si hay consentimiento de estadísticas
               if (cookiebot.consent?.statistics) {
-                console.log('[Tracking] ✅ Statistics consent granted - loading GA & GTM');
                 loadGoogleAnalytics();
                 loadGoogleTagManager();
-              } else {
-                console.log('[Tracking] ⏸️ Statistics consent not granted - GA & GTM blocked');
               }
             };
             
@@ -184,16 +164,8 @@ export const TrackingInitializer = () => {
             }
             
             // Escuchar eventos de consentimiento
-            window.addEventListener('CookiebotOnAccept', () => {
-              console.log('[Tracking] User accepted cookies');
-              checkAndLoadScripts();
-            });
-            
-            window.addEventListener('CookiebotOnDecline', () => {
-              console.log('[Tracking] User declined cookies');
-            });
-            
-            console.log('✅ [Tracking] Cookiebot consent listeners configured');
+            window.addEventListener('CookiebotOnAccept', checkAndLoadScripts);
+            window.addEventListener('CookiebotOnDecline', () => {});
           }
         }, 100);
         
@@ -201,7 +173,6 @@ export const TrackingInitializer = () => {
         setTimeout(() => clearInterval(checkCookiebot), 5000);
       } else {
         // Si CMP está deshabilitado, cargar directamente (modo legacy)
-        console.warn('[Tracking] CMP disabled - loading scripts directly (not RGPD compliant)');
         loadMetaPixel();
         loadGoogleAnalytics();
         loadGoogleTagManager();
@@ -211,9 +182,7 @@ export const TrackingInitializer = () => {
       if (config.linkedInInsightTag) {
         const linkedInId = config.linkedInInsightTag;
         
-        if ((window as any)._linkedin_data_partner_ids) {
-          console.log('[Tracking] LinkedIn Insight Tag already loaded');
-        } else {
+        if (!(window as any)._linkedin_data_partner_ids) {
           const linkedInScript = document.createElement('script');
           linkedInScript.type = 'text/javascript';
           linkedInScript.textContent = `
@@ -228,8 +197,6 @@ export const TrackingInitializer = () => {
           linkedInTag.async = true;
           linkedInTag.src = 'https://snap.licdn.com/li.lms-analytics/insight.min.js';
           document.head.appendChild(linkedInTag);
-          
-          console.log('✅ [Tracking] LinkedIn Insight Tag initialized:', linkedInId);
         }
       }
 
@@ -237,9 +204,7 @@ export const TrackingInitializer = () => {
       if (config.hotjarId && config.enableHeatmaps) {
         const hotjarId = config.hotjarId;
         
-        if ((window as any).hj) {
-          console.log('[Tracking] Hotjar already loaded');
-        } else {
+        if (!(window as any).hj) {
           const hotjarScript = document.createElement('script');
           hotjarScript.textContent = `
             (function(h,o,t,j,a,r){
@@ -252,19 +217,13 @@ export const TrackingInitializer = () => {
             })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
           `;
           document.head.appendChild(hotjarScript);
-          
-          console.log('✅ [Tracking] Hotjar initialized:', hotjarId);
         }
       }
-
-      console.log('✅ [Tracking] All tracking scripts initialized successfully');
     };
 
     // Ejecutar inicialización
-    initializeTracking().catch(error => {
-      console.error('❌ [Tracking] Error initializing tracking scripts:', error);
-    });
-  }, []); // Solo ejecutar una vez al montar
+    initializeTracking().catch(() => {});
+  }, [isStorageBlocked, canUseLocalStorage]);
 
   return null;
 };

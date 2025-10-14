@@ -180,7 +180,7 @@ export const useJobPost = (slug: string) => {
           category:job_categories(*)
         `)
         .eq('slug', slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -200,7 +200,7 @@ export const useJobPostById = (id: string) => {
           category:job_categories(*)
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
