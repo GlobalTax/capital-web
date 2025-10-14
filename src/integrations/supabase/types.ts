@@ -5931,6 +5931,14 @@ export type Database = {
         }
         Returns: Json
       }
+      create_temporary_user_bypass: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_role?: Database["public"]["Enums"]["admin_role"]
+        }
+        Returns: Json
+      }
       create_temporary_user_enhanced: {
         Args: {
           p_email: string

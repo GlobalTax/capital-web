@@ -93,22 +93,72 @@ export const CreateUser: React.FC = () => {
     setError('');
 
     try {
-      // Use the secure temporary user creation function
-      const { data, error } = await supabase.rpc('create_temporary_user', {
+      console.log('🔵 Iniciando creación de usuario:', {
+        email: formData.email,
+        role: formData.role,
+        timestamp: new Date().toISOString()
+      });
+
+      // Intentar primero con la función estándar
+      let result = await supabase.rpc('create_temporary_user', {
         p_email: formData.email,
         p_full_name: formData.fullName,
         p_role: formData.role
       });
 
-      if (error) throw error;
+      // Si falla con error de email inválido, intentar bypass
+      if (result.error) {
+        console.error('🔴 Error RPC create_temporary_user:', {
+          message: result.error.message,
+          code: result.error.code,
+          details: result.error.details,
+          hint: result.error.hint
+        });
+
+        // Detectar si es error de validación de dominio de email
+        const isEmailDomainError = 
+          result.error.message?.toLowerCase().includes('email') &&
+          (result.error.message?.toLowerCase().includes('invalid') ||
+           result.error.message?.toLowerCase().includes('inválido'));
+
+        if (isEmailDomainError) {
+          console.warn('⚠️ Dominio de email rechazado por Supabase Auth. Usando bypass...');
+          
+          // Intentar con bypass
+          result = await supabase.rpc('create_temporary_user_bypass', {
+            p_email: formData.email,
+            p_full_name: formData.fullName,
+            p_role: formData.role
+          });
+
+          if (result.error) {
+            console.error('🔴 Error RPC create_temporary_user_bypass:', {
+              message: result.error.message,
+              code: result.error.code,
+              details: result.error.details,
+              hint: result.error.hint
+            });
+            throw result.error;
+          }
+
+          console.log('✅ Usuario creado con bypass exitosamente');
+        } else {
+          throw result.error;
+        }
+      } else {
+        console.log('✅ Usuario creado con método estándar exitosamente');
+      }
 
       // Type assertion for the returned data
-      const userData = data as {
+      const userData = result.data as {
         user_id: string;
         email: string;
         temporary_password: string;
         requires_password_change: boolean;
+        method?: string;
       };
+
+      console.log('📧 Enviando credenciales por email...');
 
       // Send credentials via secure email
       const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
@@ -122,16 +172,21 @@ export const CreateUser: React.FC = () => {
       });
 
       if (emailError) {
-        console.error('Error sending email:', emailError);
+        console.error('🔴 Error enviando email:', emailError);
         toast({
           title: "Usuario preparado",
           description: `Usuario creado pero no se pudo enviar el email. Credenciales temporales: ${userData.temporary_password}`,
           variant: "destructive",
         });
       } else {
+        console.log('✅ Email enviado exitosamente');
+        const methodUsed = userData.method === 'bypass' 
+          ? ' (método bypass usado debido a validación de dominio)'
+          : '';
+        
         toast({
           title: "Usuario creado exitosamente",
-          description: `Se ha preparado la cuenta para ${formData.fullName} y se le han enviado las credenciales de forma segura por email.`,
+          description: `Se ha preparado la cuenta para ${formData.fullName} y se le han enviado las credenciales de forma segura por email.${methodUsed}`,
         });
       }
 
@@ -151,11 +206,25 @@ export const CreateUser: React.FC = () => {
       }, 3000);
 
     } catch (err: any) {
-      console.error('Error creating user:', err);
-      setError(err.message || 'Error desconocido al crear el usuario');
+      console.error('🔴 Error crítico creando usuario:', {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        hint: err.hint,
+        stack: err.stack
+      });
+
+      let errorMessage = err.message || 'Error desconocido al crear el usuario';
+      
+      // Mensajes de error mejorados
+      if (errorMessage.includes('email')) {
+        errorMessage = `Error de validación de email: ${errorMessage}. Verifica la configuración de Supabase Auth.`;
+      }
+
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: err.message || "Error al crear el usuario",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
