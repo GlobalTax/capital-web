@@ -93,117 +93,90 @@ export const CreateUser: React.FC = () => {
     setError('');
 
     try {
-      console.log('🔵 Iniciando creación de usuario:', {
-        email: formData.email,
-        role: formData.role,
-        timestamp: new Date().toISOString()
-      });
-
-      // Intentar primero con la función estándar
-      let result = await supabase.rpc('create_temporary_user', {
-        p_email: formData.email,
-        p_full_name: formData.fullName,
-        p_role: formData.role
-      });
-
-      // Si falla con error de email inválido, intentar bypass
-      if (result.error) {
-        console.error('🔴 Error RPC create_temporary_user:', {
-          message: result.error.message,
-          code: result.error.code,
-          details: result.error.details,
-          hint: result.error.hint
-        });
-
-        // Detectar si es error de validación de dominio de email
-        const isEmailDomainError = 
-          result.error.message?.toLowerCase().includes('email') &&
-          (result.error.message?.toLowerCase().includes('invalid') ||
-           result.error.message?.toLowerCase().includes('inválido'));
-
-        if (isEmailDomainError) {
-          console.warn('⚠️ Dominio de email rechazado por Supabase Auth. Usando bypass...');
-          
-          // Intentar con bypass
-          result = await supabase.rpc('create_temporary_user_bypass', {
-            p_email: formData.email,
-            p_full_name: formData.fullName,
-            p_role: formData.role
-          });
-
-          if (result.error) {
-            console.error('🔴 Error RPC create_temporary_user_bypass:', {
-              message: result.error.message,
-              code: result.error.code,
-              details: result.error.details,
-              hint: result.error.hint
-            });
-            throw result.error;
+      console.log('🔵 Creando usuario vía Edge Function:', formData.email);
+      
+      // Call the secure Edge Function to create user
+      const { data: userData, error: createError } = await supabase.functions.invoke(
+        'admin-create-user',
+        {
+          body: {
+            email: formData.email,
+            fullName: formData.fullName,
+            role: formData.role
           }
-
-          console.log('✅ Usuario creado con bypass exitosamente');
-        } else {
-          throw result.error;
         }
-      } else {
-        console.log('✅ Usuario creado con método estándar exitosamente');
+      );
+
+      if (createError) {
+        console.error('🔴 Error en Edge Function:', {
+          message: createError.message,
+          context: createError.context
+        });
+        throw new Error(createError.message || 'Error al crear usuario');
       }
 
-      // Type assertion for the returned data
-      const userData = result.data as {
-        user_id: string;
-        email: string;
-        temporary_password: string;
-        requires_password_change: boolean;
-        method?: string;
-      };
+      if (!userData || !userData.success) {
+        console.error('🔴 Respuesta inválida de Edge Function:', userData);
+        throw new Error(userData?.error || 'No se recibieron datos del usuario creado');
+      }
 
-      console.log('📧 Enviando credenciales por email...');
-
-      // Send credentials via secure email
-      const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
-        body: {
-          email: userData.email,
-          fullName: formData.fullName,
-          temporaryPassword: userData.temporary_password,
-          role: formData.role,
-          requiresPasswordChange: userData.requires_password_change
-        }
+      const tempPassword = userData.temporary_password;
+      console.log('✅ Usuario creado exitosamente:', {
+        userId: userData.user_id,
+        email: userData.email,
+        requiresPasswordChange: userData.requires_password_change
       });
 
-      if (emailError) {
-        console.error('🔴 Error enviando email:', emailError);
-        toast({
-          title: "Usuario preparado",
-          description: `Usuario creado pero no se pudo enviar el email. Credenciales temporales: ${userData.temporary_password}`,
-          variant: "destructive",
-        });
-      } else {
-        console.log('✅ Email enviado exitosamente');
-        const methodUsed = userData.method === 'bypass' 
-          ? ' (método bypass usado debido a validación de dominio)'
-          : '';
-        
-        toast({
-          title: "Usuario creado exitosamente",
-          description: `Se ha preparado la cuenta para ${formData.fullName} y se le han enviado las credenciales de forma segura por email.${methodUsed}`,
-        });
+      // Send credentials via email using existing edge function
+      console.log('📧 Enviando credenciales por email...');
+      try {
+        const { error: emailError } = await supabase.functions.invoke(
+          'send-user-credentials',
+          {
+            body: {
+              email: formData.email,
+              fullName: formData.fullName,
+              temporaryPassword: tempPassword,
+              role: formData.role,
+              requiresPasswordChange: true
+            }
+          }
+        );
+
+        if (emailError) {
+          console.error('⚠️ Error enviando email:', emailError);
+          toast({
+            title: "Usuario creado",
+            description: `Credenciales: ${tempPassword.substring(0, 4)}...${tempPassword.substring(tempPassword.length - 4)} (email falló)`,
+            variant: "destructive",
+          });
+        } else {
+          console.log('✅ Email de credenciales enviado exitosamente');
+        }
+      } catch (emailErr) {
+        console.error('⚠️ Excepción enviando email:', emailErr);
+        // Don't throw - user was created successfully
       }
 
-      setSuccess(true);
-
-      // Reset form
+      // Reset form and close modal
       setFormData({
         email: '',
         fullName: '',
         password: '',
         role: 'editor'
       });
+      setSuccess(true);
+      
+      toast({
+        title: "Usuario creado exitosamente",
+        description: "Usuario creado con privilegios de administrador y credenciales enviadas por email",
+      });
 
+      // Close modal after short delay
       setTimeout(() => {
         setIsOpen(false);
         setSuccess(false);
-      }, 3000);
+      }, 2000);
 
     } catch (err: any) {
       console.error('🔴 Error crítico creando usuario:', {

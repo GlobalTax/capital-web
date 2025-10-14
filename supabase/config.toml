@@ -1,5 +1,8 @@
 project_id = "fwhqtzkkvnjkazhaficj"
 
+[functions.admin-create-user]
+verify_jwt = true
+
 [functions.claim-valuation]
 verify_jwt = true
 
