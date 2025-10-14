@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, X, Sparkles } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
-import OperationsTable from './OperationsTable';
+import { EnhancedOperationsTable } from './enhanced/EnhancedOperationsTable';
 
 interface Operation {
   id: string;
@@ -237,9 +237,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
       </div>
 
       {/* Operations Table */}
-      <OperationsTable 
+      <EnhancedOperationsTable 
         operations={operations}
         isLoading={isLoading}
+        onBulkAction={(action, ids) => {
+          console.log('Bulk action:', action, 'IDs:', ids);
+          // TODO: Implementar acciones masivas
+        }}
       />
 
       {/* Pagination */}

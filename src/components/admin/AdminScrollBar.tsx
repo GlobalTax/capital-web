@@ -47,7 +47,7 @@ export const AdminScrollBar: React.FC = () => {
   const isHome = location.pathname === '/admin' || location.pathname === '/admin/';
 
   return (
-    <div className="sticky top-16 z-20 bg-muted/50 border-b backdrop-blur-sm">
+    <div className="sticky top-16 z-40 bg-muted/50 border-b backdrop-blur-sm">
       <div className="flex items-center justify-between px-4 h-12">
         {/* Breadcrumbs */}
         <Breadcrumb>

@@ -81,7 +81,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
           
           <SidebarInset className="flex-1">
             {/* Header global con trigger siempre visible */}
-            <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm sticky top-0 z-30">
+            <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm sticky top-0 z-50">
               <SidebarTrigger className="-ml-1" />
               <div className="flex-1">
                 <AdminHeader onLogout={onLogout} />
