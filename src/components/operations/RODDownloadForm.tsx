@@ -101,7 +101,19 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
 
       if (error) {
         console.error('Error generando ROD:', error);
-        throw new Error(error.message || 'Error al generar el documento');
+        
+        // Intentar extraer mensaje específico del servidor
+        let errorMessage = 'Error al generar el documento';
+        if (error.message) {
+          try {
+            const errorData = JSON.parse(error.message);
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            errorMessage = error.message;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       // Descargar automáticamente el documento

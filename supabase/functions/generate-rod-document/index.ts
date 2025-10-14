@@ -58,14 +58,20 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     });
 
-    // ===== Extraer y validar IP del cliente =====
+    // ===== Extraer y validar IP del cliente (IPv4/IPv6) =====
     const rawIpHeader = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
     const clientIp = rawIpHeader ? rawIpHeader.split(',')[0].trim() : null;
-    const isValidIp = clientIp && /^(\d{1,3}\.){3}\d{1,3}$/.test(clientIp);
+    
+    // Validar IPv4 o IPv6
+    const isValidIpv4 = clientIp && /^(\d{1,3}\.){3}\d{1,3}$/.test(clientIp);
+    const isValidIpv6 = clientIp && /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(clientIp);
+    const isValidIp = isValidIpv4 || isValidIpv6;
     
     console.log('🔍 IP Debug:', {
       raw_header: rawIpHeader,
       extracted_ip: clientIp,
+      is_ipv4: isValidIpv4,
+      is_ipv6: isValidIpv6,
       is_valid: isValidIp,
       will_use: isValidIp ? clientIp : null
     });
