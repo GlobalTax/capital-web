@@ -125,11 +125,46 @@ export const useAdminUsers = () => {
 
       console.log('✅ User created via Edge Function:', data.user_id);
 
+      // Enviar email con credenciales temporales
+      console.log('📧 Sending credentials email to:', userData.email);
+
+      const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
+        body: {
+          email: userData.email,
+          fullName: userData.full_name,
+          temporaryPassword: data.temporary_password,
+          role: userData.role,
+          requiresPasswordChange: true
+        }
+      });
+
+      if (emailError) {
+        console.error('⚠️ Failed to send credentials email:', emailError);
+        
+        // Mostrar contraseña temporal si falla el email
+        const pwdPreview = `${data.temporary_password.substring(0, 4)}...${data.temporary_password.substring(data.temporary_password.length - 4)}`;
+        
+        toast({
+          title: "⚠️ Usuario creado pero email no enviado",
+          description: `${userData.full_name} ha sido creado con éxito. Contraseña temporal: ${pwdPreview} (Ver consola para contraseña completa)`,
+          variant: "destructive",
+          duration: 15000
+        });
+        
+        console.warn('🔑 CONTRASEÑA TEMPORAL COMPLETA:', data.temporary_password);
+        console.warn('📋 Email del usuario:', userData.email);
+      } else {
+        console.log('✅ Credentials email sent successfully to:', userData.email);
+      }
+
       await fetchUsers();
       
       toast({
-        title: "Usuario creado exitosamente",
-        description: `${userData.full_name} ha sido añadido como ${userData.role}. Se ha enviado un email con la contraseña temporal.`,
+        title: emailError ? "Usuario creado (email pendiente)" : "Usuario creado exitosamente",
+        description: emailError 
+          ? `${userData.full_name} ha sido añadido como ${userData.role}. ⚠️ Email no enviado. Revisa la consola.`
+          : `${userData.full_name} ha sido añadido como ${userData.role}. Email con credenciales enviado a ${userData.email}.`,
+        variant: emailError ? "destructive" : "default"
       });
 
       logger.info('Admin user created successfully', {
