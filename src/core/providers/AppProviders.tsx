@@ -6,6 +6,7 @@ import ErrorBoundaryProvider from '@/components/ErrorBoundaryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
 import { TrackingInitializer } from '@/components/TrackingInitializer';
+import { ConsoleNoiseFilter } from '@/core/providers/ConsoleNoiseFilter';
 
 // ============= CONDITIONAL TRACKING =============
 // Solo cargar tracking fuera de rutas /admin/*
@@ -48,18 +49,20 @@ interface AppProvidersProps {
 
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <ErrorBoundaryProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Router>
-            <AuthProvider>
-              <ConditionalTracking>
-                {children}
-              </ConditionalTracking>
-            </AuthProvider>
-          </Router>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundaryProvider>
+    <ConsoleNoiseFilter>
+      <ErrorBoundaryProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Router>
+              <AuthProvider>
+                <ConditionalTracking>
+                  {children}
+                </ConditionalTracking>
+              </AuthProvider>
+            </Router>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ErrorBoundaryProvider>
+    </ConsoleNoiseFilter>
   );
 };

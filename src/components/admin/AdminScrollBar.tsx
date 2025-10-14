@@ -75,7 +75,7 @@ export const AdminScrollBar: React.FC = () => {
               const isLast = index === pathSegments.length - 1;
 
               return (
-                <React.Fragment key={path}>
+                <span className="contents" key={path}>
                   <BreadcrumbItem>
                     {isLast ? (
                       <BreadcrumbPage>{label}</BreadcrumbPage>
@@ -84,7 +84,7 @@ export const AdminScrollBar: React.FC = () => {
                     )}
                   </BreadcrumbItem>
                   {!isLast && <BreadcrumbSeparator />}
-                </React.Fragment>
+                </span>
               );
             })}
           </BreadcrumbList>

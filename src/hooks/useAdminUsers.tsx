@@ -103,58 +103,39 @@ export const useAdminUsers = () => {
 
   const createUser = useCallback(async (userData: CreateAdminUserData): Promise<void> => {
     try {
-      // First create the auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password,
-        options: {
-          data: {
-            full_name: userData.full_name
-          }
+      console.log('📝 Creating new admin user via Edge Function:', { email: userData.email, role: userData.role });
+
+      // Invocar Edge Function admin-create-user
+      const { data, error: edgeFunctionError } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: userData.email,
+          fullName: userData.full_name,
+          role: userData.role
         }
       });
 
-      if (authError) {
-        throw new Error(`Error creating user: ${authError.message}`);
+      if (edgeFunctionError) {
+        console.error('❌ Edge Function error:', edgeFunctionError);
+        throw new Error(edgeFunctionError.message || 'Error al crear usuario');
       }
 
-      if (!authData.user) {
-        throw new Error('No user data returned from signup');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Error desconocido al crear usuario');
       }
 
-      // Then create the admin user record
-      const { error: adminError } = await supabase
-        .from('admin_users')
-        .insert({
-          user_id: authData.user.id,
-          email: userData.email,
-          full_name: userData.full_name,
-          role: userData.role,
-          is_active: true
-        });
-
-      if (adminError) {
-        throw adminError;
-      }
+      console.log('✅ User created via Edge Function:', data.user_id);
 
       await fetchUsers();
       
-      // Enviar notificación de bienvenida
-      await sendNotification(
-        'welcome',
-        userData.email,
-        userData.full_name,
-        { role: userData.role }
-      );
-      
       toast({
         title: "Usuario creado exitosamente",
-        description: `${userData.full_name} ha sido añadido como ${userData.role}`,
+        description: `${userData.full_name} ha sido añadido como ${userData.role}. Se ha enviado un email con la contraseña temporal.`,
       });
 
       logger.info('Admin user created successfully', {
         email: userData.email,
-        role: userData.role
+        role: userData.role,
+        user_id: data.user_id
       }, { context: 'system', component: 'useAdminUsers' });
 
     } catch (err) {

@@ -19,6 +19,12 @@ export const TrackingInitializer = () => {
         return;
       }
 
+      // Guard: No cargar si está dentro de un iframe
+      if (window.top !== window.self) {
+        console.info('🚫 [Tracking] Disabled inside iframe');
+        return;
+      }
+
       const isTrackingEnabled = TrackingConfigService.shouldEnableTracking();
       
       // Solo cargar en dominios permitidos

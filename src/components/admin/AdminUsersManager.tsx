@@ -243,6 +243,9 @@ const AdminUsersManager = () => {
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Crear Nuevo Usuario Admin</DialogTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Se generará una contraseña temporal y se enviará por email
+                  </p>
                 </DialogHeader>
                 
                 <form onSubmit={handleCreateSubmit(onCreateUser)} className="space-y-4">
@@ -271,21 +274,6 @@ const AdminUsersManager = () => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="create-password">Contraseña</Label>
-                    <Input
-                      id="create-password"
-                      type="password"
-                      {...registerCreate('password', { 
-                        required: 'La contraseña es obligatoria',
-                        minLength: { value: 6, message: 'Mínimo 6 caracteres' }
-                      })}
-                      placeholder="••••••••"
-                    />
-                    {createErrors.password && (
-                      <p className="text-sm text-destructive">{createErrors.password.message}</p>
-                    )}
-                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="create-role">Rol</Label>
