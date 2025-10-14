@@ -190,6 +190,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Users,
         description: "Base de contactos"
       },
+      { 
+        title: "Leads Inversores (ROD)",
+        url: "/admin/investor-leads", 
+        icon: TrendingUp,
+        badge: "NEW",
+        description: "Gestión de leads ROD"
+      },
     ]
   },
   {

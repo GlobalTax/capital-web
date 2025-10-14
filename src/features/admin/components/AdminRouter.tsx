@@ -36,7 +36,8 @@ import {
   LazyJobApplicationsManager,
   LazyJobCategoriesManager,
   LazyJobTemplatesManager,
-  LazyCollaboratorApplicationsManagerPage
+  LazyCollaboratorApplicationsManagerPage,
+  LazyInvestorLeadsManager
 } from './LazyAdminComponents';
 
 const AdminRouter = () => {
@@ -70,6 +71,7 @@ const AdminRouter = () => {
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
+          <Route path="/investor-leads" element={<LazyInvestorLeadsManager />} />
           
           
           {/* Content Management */}

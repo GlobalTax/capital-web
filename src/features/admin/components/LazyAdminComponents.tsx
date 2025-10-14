@@ -26,6 +26,7 @@ export const LazyMultiplesManager = lazy(() => import('@/components/admin/Multip
 export const LazyStatisticsManager = lazy(() => import('@/components/admin/StatisticsManager'));
 export const LazyAdminUsersManager = lazy(() => import('@/components/admin/AdminUsersManager'));
 export const LazyProposalsManager = lazy(() => import('@/components/admin/ProposalsManager'));
+export const LazyInvestorLeadsManager = lazy(() => import('@/components/admin/InvestorLeadsManager').then(m => ({ default: m.InvestorLeadsManager })));
 
 // === PAGES ===
 export const LazyContentPerformancePage = lazy(() => import('@/pages/admin/ContentPerformancePage'));
