@@ -74,55 +74,26 @@ serve(async (req) => {
 
     console.log(`✅ Fetched ${operations?.length || 0} active operations`);
 
-    // ===== 2. Generar contenido del documento =====
-    const documentContent = generateDocumentContent(operations || [], requestData.document_format);
-    const fileName = `ROD_Capittal_${new Date().toISOString().split('T')[0]}.${requestData.document_format}`;
-
-    // ===== 3. Subir documento a Storage =====
-    const { data: uploadData, error: uploadError } = await supabase
-      .storage
-      .from('documents')
-      .upload(`rod/${fileName}`, documentContent, {
-        contentType: requestData.document_format === 'pdf' 
-          ? 'application/pdf' 
-          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error('❌ Error uploading document:', uploadError);
-      throw new Error('Failed to upload document');
-    }
-
-    console.log('✅ Document uploaded to storage:', uploadData.path);
-
-    // ===== 4. Crear registro en tabla documents =====
-    const { data: publicUrl } = supabase.storage
-      .from('documents')
-      .getPublicUrl(uploadData.path);
-
-    const { data: documentRecord, error: docError } = await supabase
-      .from('documents')
-      .insert({
-        title: `ROD - Relación de Open Deals ${new Date().toISOString().split('T')[0]}`,
-        type: 'rod_document',
-        file_url: publicUrl.publicUrl,
-        file_size_bytes: documentContent.length,
-        access_level: 'gated',
-        requires_form: true,
-        status: 'active'
-      })
-      .select()
+    // ===== 2. Obtener ROD activa de la base de datos =====
+    const { data: activeROD, error: rodError } = await supabase
+      .from('rod_documents')
+      .select('*')
+      .eq('is_active', true)
+      .eq('is_deleted', false)
       .single();
 
-    if (docError) {
-      console.error('❌ Error creating document record:', docError);
-      throw new Error('Failed to create document record');
+    if (rodError || !activeROD) {
+      console.error('❌ No active ROD document found:', rodError);
+      throw new Error('No hay documento ROD activo disponible. Por favor contacte al administrador.');
     }
 
-    console.log('✅ Document record created:', documentRecord.id);
+    console.log('✅ Using active ROD:', {
+      id: activeROD.id,
+      version: activeROD.version,
+      title: activeROD.title
+    });
 
-    // ===== 5. Crear lead de inversor =====
+    // ===== 3. Crear lead de inversor con referencia a ROD =====
     const { data: leadData, error: leadError } = await supabase
       .from('investor_leads')
       .insert({
@@ -135,7 +106,7 @@ serve(async (req) => {
         sectors_of_interest: requestData.sectors_of_interest,
         preferred_location: requestData.preferred_location,
         document_format: requestData.document_format,
-        document_id: documentRecord.id,
+        rod_document_id: activeROD.id,
         gdpr_consent: requestData.gdpr_consent,
         marketing_consent: requestData.marketing_consent || false,
         referrer: requestData.referrer,
@@ -158,27 +129,17 @@ serve(async (req) => {
 
     console.log('✅ Investor lead created:', leadData.id);
 
-    // ===== 6. Registrar descarga =====
-    const { error: downloadError } = await supabase
-      .from('document_downloads')
-      .insert({
-        document_id: documentRecord.id,
-        user_email: requestData.email,
-        user_name: requestData.full_name,
-        user_company: requestData.company,
-        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
-        user_agent: req.headers.get('user-agent'),
-        referrer: requestData.referrer,
-        utm_source: requestData.utm_source,
-        utm_medium: requestData.utm_medium,
-        utm_campaign: requestData.utm_campaign
-      });
+    // ===== 4. Incrementar contador de descargas en ROD =====
+    const { error: updateError } = await supabase
+      .from('rod_documents')
+      .update({ total_downloads: (activeROD.total_downloads || 0) + 1 })
+      .eq('id', activeROD.id);
 
-    if (downloadError) {
-      console.warn('⚠️ Error registering download (non-critical):', downloadError);
+    if (updateError) {
+      console.warn('⚠️ Error updating download count (non-critical):', updateError);
     }
 
-    // ===== 7. Enviar email con Resend =====
+    // ===== 5. Enviar email con Resend =====
     if (resendApiKey) {
       try {
         const resend = new Resend(resendApiKey);
@@ -187,7 +148,7 @@ serve(async (req) => {
           from: 'Capittal <oportunidades@capittal.es>',
           to: [requestData.email],
           subject: 'Tu Relación de Open Deals (ROD) - Capittal',
-          html: generateEmailHTML(requestData.full_name, publicUrl.publicUrl, operations?.length || 0)
+          html: generateEmailHTML(requestData.full_name, activeROD.file_url, operations?.length || 0)
         });
 
         if (emailError) {
@@ -210,14 +171,15 @@ serve(async (req) => {
       }
     }
 
-    // ===== 8. Responder con éxito =====
+    // ===== 6. Responder con éxito =====
     return new Response(
       JSON.stringify({
         success: true,
-        download_url: publicUrl.publicUrl,
+        download_url: activeROD.file_url,
         lead_id: leadData.id,
         operations_count: operations?.length || 0,
-        message: 'ROD generado exitosamente'
+        rod_version: activeROD.version,
+        message: 'ROD enviada exitosamente'
       }),
       {
         status: 200,

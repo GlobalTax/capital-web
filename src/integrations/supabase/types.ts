@@ -2791,6 +2791,7 @@ export type Database = {
           phone: string | null
           preferred_location: string | null
           referrer: string | null
+          rod_document_id: string | null
           sectors_of_interest: string | null
           status: string
           status_updated_at: string | null
@@ -2835,6 +2836,7 @@ export type Database = {
           phone?: string | null
           preferred_location?: string | null
           referrer?: string | null
+          rod_document_id?: string | null
           sectors_of_interest?: string | null
           status?: string
           status_updated_at?: string | null
@@ -2879,6 +2881,7 @@ export type Database = {
           phone?: string | null
           preferred_location?: string | null
           referrer?: string | null
+          rod_document_id?: string | null
           sectors_of_interest?: string | null
           status?: string
           status_updated_at?: string | null
@@ -2910,6 +2913,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_leads_rod_document_id_fkey"
+            columns: ["rod_document_id"]
+            isOneToOne: false
+            referencedRelation: "rod_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -4839,6 +4849,69 @@ export type Database = {
           id?: string
           identifier?: string
           window_start?: string
+        }
+        Relationships: []
+      }
+      rod_documents: {
+        Row: {
+          activated_at: string | null
+          created_at: string | null
+          created_by: string | null
+          deactivated_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          file_size_bytes: number | null
+          file_type: string
+          file_url: string
+          id: string
+          is_active: boolean | null
+          is_deleted: boolean | null
+          is_latest: boolean | null
+          title: string
+          total_downloads: number | null
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deactivated_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          file_size_bytes?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          is_deleted?: boolean | null
+          is_latest?: boolean | null
+          title: string
+          total_downloads?: number | null
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deactivated_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          file_size_bytes?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          is_deleted?: boolean | null
+          is_latest?: boolean | null
+          title?: string
+          total_downloads?: number | null
+          updated_at?: string | null
+          version?: string
         }
         Relationships: []
       }

@@ -37,7 +37,8 @@ import {
   LazyJobCategoriesManager,
   LazyJobTemplatesManager,
   LazyCollaboratorApplicationsManagerPage,
-  LazyInvestorLeadsManager
+  LazyInvestorLeadsManager,
+  LazyRODDocumentsManager
 } from './LazyAdminComponents';
 
 const AdminRouter = () => {
@@ -101,6 +102,7 @@ const AdminRouter = () => {
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
           <Route path="/statistics" element={<LazyStatisticsManager />} />
+          <Route path="/rod-documents" element={<LazyRODDocumentsManager />} />
           
           {/* Team & Testimonials */}
           <Route path="/team" element={<LazyTeamMembersManagerAdvanced />} />

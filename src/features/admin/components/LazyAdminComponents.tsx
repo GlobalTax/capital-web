@@ -27,6 +27,7 @@ export const LazyStatisticsManager = lazy(() => import('@/components/admin/Stati
 export const LazyAdminUsersManager = lazy(() => import('@/components/admin/AdminUsersManager'));
 export const LazyProposalsManager = lazy(() => import('@/components/admin/ProposalsManager'));
 export const LazyInvestorLeadsManager = lazy(() => import('@/components/admin/InvestorLeadsManager').then(m => ({ default: m.InvestorLeadsManager })));
+export const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumentsManager').then(m => ({ default: m.RODDocumentsManager })));
 
 // === PAGES ===
 export const LazyContentPerformancePage = lazy(() => import('@/pages/admin/ContentPerformancePage'));

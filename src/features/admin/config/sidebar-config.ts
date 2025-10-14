@@ -128,6 +128,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Datos de valoración"
       },
       { 
+        title: "Documentos ROD",
+        url: "/admin/rod-documents", 
+        icon: FileText,
+        badge: "NEW",
+        description: "Gestión de ROD"
+      },
+      { 
         title: "Equipo", 
         url: "/admin/team", 
         icon: Users,
