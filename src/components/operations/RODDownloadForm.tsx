@@ -305,7 +305,7 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
               />
               <label htmlFor="gdpr_consent" className="text-sm leading-tight">
                 Acepto la{' '}
-                <a href="/privacidad" target="_blank" className="text-primary underline">
+                <a href="/politica-privacidad" target="_blank" className="text-primary underline">
                   política de privacidad
                 </a>{' '}
                 y el tratamiento de mis datos para el envío del documento solicitado. *
