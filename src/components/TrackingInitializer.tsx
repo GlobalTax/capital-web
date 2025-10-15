@@ -66,8 +66,55 @@ export const TrackingInitializer = () => {
         }
       }
 
+      // ========== GOOGLE CONSENT MODE V2 ==========
+      // Inicializar Consent Mode ANTES de cargar cualquier script de Google
+      const initializeConsentMode = () => {
+        // Definir dataLayer y gtag si no existen
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        function gtag(...args: any[]) {
+          (window as any).dataLayer.push(args);
+        }
+        
+        // Configuración por defecto (ANTES del consentimiento)
+        gtag('consent', 'default', {
+          'ad_storage': 'denied',              // Para Google Ads
+          'ad_user_data': 'denied',            // Para Google Ads (datos de usuario)
+          'ad_personalization': 'denied',      // Para Google Ads (personalización)
+          'analytics_storage': 'denied',       // Para Google Analytics
+          'functionality_storage': 'granted',  // Cookies técnicas (siempre permitidas)
+          'personalization_storage': 'denied', // Personalización
+          'security_storage': 'granted',       // Seguridad (siempre permitida)
+          'wait_for_update': 500              // Esperar 500ms a Cookiebot
+        });
+        
+        console.log('✅ [Tracking] Google Consent Mode v2 initialized');
+      };
+
+      // Actualizar consentimiento desde Cookiebot
+      const updateConsentFromCookiebot = (cookiebot: any) => {
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        function gtag(...args: any[]) {
+          (window as any).dataLayer.push(args);
+        }
+        
+        // Mapear categorías de Cookiebot a Consent Mode v2
+        const consentState = {
+          'ad_storage': cookiebot.consent?.marketing ? 'granted' : 'denied',
+          'ad_user_data': cookiebot.consent?.marketing ? 'granted' : 'denied',
+          'ad_personalization': cookiebot.consent?.marketing ? 'granted' : 'denied',
+          'analytics_storage': cookiebot.consent?.statistics ? 'granted' : 'denied',
+          'functionality_storage': 'granted', // Siempre permitida
+          'personalization_storage': cookiebot.consent?.preferences ? 'granted' : 'denied',
+          'security_storage': 'granted' // Siempre permitida
+        };
+        
+        // Actualizar consentimiento en GTM
+        gtag('consent', 'update', consentState);
+        
+        console.log('✅ [Tracking] Consent updated:', consentState);
+      };
+
       // ========== FUNCIONES DE CARGA DE TRACKING ==========
-      // Estas funciones se ejecutarán SOLO tras consentimiento
       
       const loadMetaPixel = () => {
         if (!config.facebookPixelId || (window as any).fbq) return;
@@ -124,6 +171,8 @@ export const TrackingInitializer = () => {
         if (!config.googleTagManagerId || (window as any).google_tag_manager) return;
         
         const gtmId = config.googleTagManagerId;
+        
+        // GTM se carga SIEMPRE, incluso sin consentimiento (respeta Consent Mode v2)
         const gtmScript = document.createElement('script');
         gtmScript.id = 'google-tag-manager';
         gtmScript.textContent = `
@@ -139,39 +188,55 @@ export const TrackingInitializer = () => {
         gtmNoscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
           height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
         document.body.appendChild(gtmNoscript);
+        
+        console.log('✅ [Tracking] GTM loaded (waiting for consent):', gtmId);
       };
 
-      // ========== GESTIÓN DE CONSENTIMIENTO ==========
+      // ========== INICIALIZACIÓN DE TRACKING CON CONSENT MODE V2 ==========
+      
+      // 1. Inicializar Consent Mode v2 PRIMERO (antes de GTM)
+      initializeConsentMode();
+      
+      // 2. Cargar GTM inmediatamente (respeta Consent Mode v2)
+      loadGoogleTagManager();
+      
+      // 3. Cargar GA4 (también respeta Consent Mode v2)
+      loadGoogleAnalytics();
+      
+      // 4. Gestionar Cookiebot y actualizar consentimiento
       if (config.enableCMP && config.cookiebotId) {
         // Esperar a que Cookiebot esté disponible
         const checkCookiebot = setInterval(() => {
           if ((window as any).Cookiebot) {
             clearInterval(checkCookiebot);
             
-            // Verificar consentimiento actual
             const cookiebot = (window as any).Cookiebot;
             
-            const checkAndLoadScripts = () => {
-              // Cargar scripts solo si hay consentimiento de marketing
+            // Actualizar consentimiento inicial si ya existe
+            if (cookiebot.consent) {
+              updateConsentFromCookiebot(cookiebot);
+              
+              // Cargar Facebook Pixel solo si marketing está aceptado
               if (cookiebot.consent?.marketing) {
                 loadMetaPixel();
               }
-              
-              // Cargar analytics solo si hay consentimiento de estadísticas
-              if (cookiebot.consent?.statistics) {
-                loadGoogleAnalytics();
-                loadGoogleTagManager();
-              }
-            };
-            
-            // Verificar consentimiento inicial
-            if (cookiebot.consent) {
-              checkAndLoadScripts();
             }
             
-            // Escuchar eventos de consentimiento
-            window.addEventListener('CookiebotOnAccept', checkAndLoadScripts);
-            window.addEventListener('CookiebotOnDecline', () => {});
+            // Escuchar cambios de consentimiento
+            window.addEventListener('CookiebotOnAccept', () => {
+              updateConsentFromCookiebot(cookiebot);
+              
+              // Cargar Facebook Pixel si marketing está aceptado
+              if (cookiebot.consent?.marketing) {
+                loadMetaPixel();
+              }
+            });
+            
+            window.addEventListener('CookiebotOnDecline', () => {
+              updateConsentFromCookiebot(cookiebot);
+            });
+            
+            console.log('✅ [Tracking] Cookiebot integration with Consent Mode v2 ready');
           }
         }, 100);
         
@@ -180,8 +245,6 @@ export const TrackingInitializer = () => {
       } else {
         // Si CMP está deshabilitado, cargar directamente (modo legacy)
         loadMetaPixel();
-        loadGoogleAnalytics();
-        loadGoogleTagManager();
       }
 
       // ========== LINKEDIN INSIGHT TAG ==========
