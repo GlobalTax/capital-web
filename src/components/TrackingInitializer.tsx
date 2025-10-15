@@ -200,8 +200,8 @@ export const TrackingInitializer = () => {
       // 2. Cargar GTM inmediatamente (respeta Consent Mode v2)
       loadGoogleTagManager();
       
-      // 3. Cargar GA4 (también respeta Consent Mode v2)
-      loadGoogleAnalytics();
+      // 3. GA4 se carga desde GTM (no cargar directamente para evitar duplicación)
+      // loadGoogleAnalytics(); // ❌ DESACTIVADO: GA4 cargado desde GTM
       
       // 4. Gestionar Cookiebot y actualizar consentimiento
       if (config.enableCMP && config.cookiebotId) {

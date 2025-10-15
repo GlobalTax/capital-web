@@ -113,7 +113,14 @@ class OptimizedErrorHandler {
       'chrome-extension://',
       'moz-extension://',
       'safari-extension://',
-      'edge-extension://'
+      'edge-extension://',
+      // Errores de GTM Preview/Debug Mode
+      'gtm_debug',
+      'Input must have uuid',
+      'ChromePolyfill',
+      'classifier.js',
+      'Chrome API support enabled',
+      'Unchecked runtime.lastError'
     ];
 
     return knownErrors.some(pattern => message.includes(pattern));

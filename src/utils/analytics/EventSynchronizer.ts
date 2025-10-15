@@ -73,6 +73,9 @@ export class EventSynchronizer {
         }
       }
 
+      // Bridge al dataLayer para triggers de GTM (Google Ads)
+      await this.pushToDataLayer(eventName, unifiedParams);
+
       // Determinar éxito general
       result.success = (this.config.enableFacebook ? result.facebookSent : true) && 
                       (this.config.enableGA4 ? result.ga4Sent : true);
@@ -245,6 +248,41 @@ export class EventSynchronizer {
         console.error('❌ GA4 send failed:', error);
       }
       return false;
+    }
+  }
+
+  // Push al dataLayer para triggers de GTM (Google Ads conversions)
+  private async pushToDataLayer(eventName: string, parameters: Record<string, any>): Promise<void> {
+    try {
+      // Inicializar dataLayer si no existe
+      (window as any).dataLayer = (window as any).dataLayer || [];
+
+      // Eventos críticos que disparan conversiones de Google Ads en GTM
+      const adsConversionEvents = [
+        'calculator_used',
+        'contact_form_submit', 
+        'demo_request',
+        'lead_qualified',
+        'valuation_completed'
+      ];
+
+      // Solo empujar eventos relevantes al dataLayer para GTM
+      if (adsConversionEvents.includes(eventName)) {
+        const dataLayerEvent: Record<string, any> = {
+          event: eventName,
+          ...parameters
+        };
+
+        (window as any).dataLayer.push(dataLayerEvent);
+
+        if (this.config.debugMode) {
+          console.log('📤 DataLayer push for GTM:', eventName, dataLayerEvent);
+        }
+      }
+    } catch (error) {
+      if (this.config.debugMode) {
+        console.error('❌ DataLayer push failed:', error);
+      }
     }
   }
 
