@@ -11,6 +11,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Calculadora cabecera
     'calc.title': 'Calculadora de Valoración Empresarial',
     'calc.subtitle': 'Obtén una valoración estimada de tu empresa en pocos pasos',
+    'calc.title.meta': 'Bienvenido a la Calculadora de Capittal',
+    'calc.subtitle.meta': 'Obtén una valoración estimada gratuita en menos de 2 minutos',
 
     // Pasos
     'steps.basic_info': 'Información básica',
@@ -207,6 +209,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'calc.title': 'Calculadora de Valoració Empresarial',
     'calc.subtitle': 'Obté una valoració estimada de la teva empresa en pocs passos',
+    'calc.title.meta': 'Benvingut a la Calculadora de Capittal',
+    'calc.subtitle.meta': 'Obté una valoració estimada gratuïta en menys de 2 minuts',
 
     'steps.basic_info': 'Informació bàsica',
     'steps.financial_data': 'Dades financeres',
@@ -376,6 +380,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'calc.title': 'Calculadora de Valoració Empresarial',
     'calc.subtitle': 'Obté una valoració estimada de la teua empresa en pocs passos',
+    'calc.title.meta': 'Benvingut a la Calculadora de Capittal',
+    'calc.subtitle.meta': 'Obté una valoració estimada gratuïta en menys de 2 minuts',
 
     'steps.basic_info': 'Informació bàsica',
     'steps.financial_data': 'Dades financeres',
@@ -545,6 +551,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'calc.title': 'Calculadora de Valoración Empresarial',
     'calc.subtitle': 'Obtén unha valoración estimada da túa empresa en poucos pasos',
+    'calc.title.meta': 'Benvido á Calculadora de Capittal',
+    'calc.subtitle.meta': 'Obtén unha valoración estimada gratuíta en menos de 2 minutos',
 
     'steps.basic_info': 'Información básica',
     'steps.financial_data': 'Datos financeiros',

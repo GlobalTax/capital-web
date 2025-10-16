@@ -148,6 +148,9 @@ export interface CalculatorConfig {
     theme: 'default' | 'minimal' | 'advanced';
     showProgress: boolean;
     showSaveStatus: boolean;
+    customTitle?: string; // Clave de traducción personalizada para título
+    customSubtitle?: string; // Clave de traducción personalizada para subtítulo
+    showMetaBadge?: boolean; // Mostrar badge "Meta Ads" para identificación
   };
 }
 

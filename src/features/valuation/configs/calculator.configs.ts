@@ -58,7 +58,10 @@ export const V2_META_CONFIG: CalculatorConfig = {
   ui: {
     theme: 'default',
     showProgress: true,
-    showSaveStatus: false
+    showSaveStatus: false,
+    customTitle: 'calc.title.meta', // 🔥 NUEVO: Título personalizado
+    customSubtitle: 'calc.subtitle.meta', // 🔥 NUEVO: Subtítulo personalizado
+    showMetaBadge: true // 🔥 NUEVO: Mostrar badge "Meta Ads"
   }
 };
 

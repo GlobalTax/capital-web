@@ -215,12 +215,19 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   const renderV2 = () => (
     <div className="min-h-screen bg-white py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          {/* 🔥 Badge Meta Ads para identificación */}
+          {config.ui.showMetaBadge && (
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-semibold shadow-sm">
+              Meta Ads
+            </div>
+          )}
+          
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {t('calc.title')}
+            {config.ui.customTitle ? t(config.ui.customTitle) : t('calc.title')}
           </h1>
           <p className="text-lg text-gray-600">
-            {t('calc.subtitle')}
+            {config.ui.customSubtitle ? t(config.ui.customSubtitle) : t('calc.subtitle')}
           </p>
         </div>
 
