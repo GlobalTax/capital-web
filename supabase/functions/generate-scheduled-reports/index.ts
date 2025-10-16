@@ -24,6 +24,7 @@ interface ReportData {
   contentMetrics: any;
   systemMetrics: any;
   leads: any;
+  incompleteValuations?: any[];
   period: {
     start: string;
     end: string;
@@ -234,6 +235,70 @@ async function generateReportData(supabase: any, config: ReportConfig): Promise<
       converted: (totalLeads || 0) - (newLeads || 0)
     };
   }
+
+  // Obtener valoraciones incompletas con filtros de calidad
+  if (config.metrics.includes('valuations') || config.type === 'daily') {
+    const { data: incompleteValuations, error: valuationsError } = await supabase
+      .from('company_valuations')
+      .select('id, contact_name, company_name, email, industry, created_at, revenue, ebitda, current_step, time_spent_seconds, ip_address')
+      .eq('valuation_status', 'in_progress')
+      .eq('is_deleted', false) // Excluir soft-deleted
+      .gte('created_at', format(startDate, 'yyyy-MM-dd'))
+      .lte('created_at', format(endDate, 'yyyy-MM-dd'))
+      .gte('time_spent_seconds', 10) // Excluir abandonos inmediatos (<10s)
+      .not('email', 'ilike', '%test%') // Excluir emails de prueba
+      .not('email', 'ilike', '%prueba%')
+      .not('contact_name', 'ilike', '%test%')
+      .not('contact_name', 'ilike', '%prueba%')
+      .order('created_at', { ascending: false });
+
+    if (valuationsError) {
+      console.error('Error fetching incomplete valuations:', valuationsError);
+      reportData.incompleteValuations = [];
+    } else {
+      // Filtrar duplicados del mismo IP en menos de 5 minutos
+      const filteredValuations = filterDuplicateIPs(incompleteValuations || []);
+      reportData.incompleteValuations = filteredValuations;
+    }
+  }
+
+  return reportData;
+}
+
+// Función auxiliar para filtrar múltiples intentos del mismo IP en <5 minutos
+function filterDuplicateIPs(valuations: any[]): any[] {
+  if (!valuations || valuations.length === 0) return [];
+
+  const ipGroups = new Map<string, any[]>();
+  
+  // Agrupar por IP
+  valuations.forEach(val => {
+    if (val.ip_address) {
+      const ipKey = val.ip_address.toString();
+      if (!ipGroups.has(ipKey)) {
+        ipGroups.set(ipKey, []);
+      }
+      ipGroups.get(ipKey)!.push(val);
+    }
+  });
+  
+  // Filtrar IPs con múltiples intentos en <5 minutos
+  return valuations.filter(val => {
+    if (!val.ip_address) return true; // Mantener si no hay IP
+    
+    const ipKey = val.ip_address.toString();
+    const sameIpVals = ipGroups.get(ipKey) || [];
+    
+    if (sameIpVals.length <= 1) return true; // Solo 1 intento, ok
+    
+    // Verificar si hay múltiples intentos en <5 minutos
+    const timestamps = sameIpVals.map(v => new Date(v.created_at).getTime());
+    const minTime = Math.min(...timestamps);
+    const maxTime = Math.max(...timestamps);
+    const diffMinutes = (maxTime - minTime) / (1000 * 60);
+    
+    return diffMinutes > 5; // Mantener si >5 min entre intentos
+  });
 
   return reportData;
 }
