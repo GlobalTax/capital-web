@@ -132,7 +132,7 @@ export interface SectorMultiple {
 
 // ============= CALCULATOR CONFIG =============
 export interface CalculatorConfig {
-  version: 'v1' | 'v2' | 'v3' | 'v4' | 'master' | 'standalone';
+  version: 'v1' | 'v2' | 'v2-meta' | 'v3' | 'v4' | 'master' | 'standalone';
   steps: number;
   features: {
     autosave: boolean;
@@ -141,6 +141,8 @@ export interface CalculatorConfig {
     scenarios: boolean;
     realTime: boolean;
     standalone: boolean;
+    redirectOnCalculate?: boolean; // 🔥 NUEVO: Flag para redirección
+    redirectUrl?: string; // 🔥 NUEVO: URL de destino
   };
   ui: {
     theme: 'default' | 'minimal' | 'advanced';

@@ -2,6 +2,7 @@
 // Single component to replace V1, V2, V3, Master, Standalone (NOT V4)
 
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUnifiedCalculator } from '../hooks/useUnifiedCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import { CalculatorConfig, ExtendedCompanyData } from '../types/unified.types';
@@ -32,6 +33,7 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   className = ''
 }) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   
   // Initialize unified calculator
   const calculator = useUnifiedCalculator(config, initialData);
@@ -68,6 +70,8 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
       currentStep: calculator.currentStep,
       configSteps: config.steps,
       version: config.version,
+      redirectOnCalculate: config.features.redirectOnCalculate,
+      redirectUrl: config.features.redirectUrl,
       isFormValid: calculator.isFormValid,
       companyData: {
         contactName: calculator.companyData.contactName,
@@ -88,8 +92,21 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
       try {
         const result = await calculator.calculateValuation();
         console.log('🔥 Calculation result:', result);
+        
         if (result) {
           tracking.trackCalculationComplete();
+          
+          // 🔥 NUEVO: Redirigir si está configurado
+          if (config.features.redirectOnCalculate && config.features.redirectUrl) {
+            console.log('🔥 Redirecting to:', config.features.redirectUrl);
+            
+            // Guardar datos en sessionStorage para acceder en página de gracias
+            sessionStorage.setItem('valuationResult', JSON.stringify(result));
+            sessionStorage.setItem('valuationCompanyData', JSON.stringify(calculator.companyData));
+            
+            // Redirigir a página de gracias
+            navigate(config.features.redirectUrl);
+          }
         }
       } catch (error) {
         console.error('🔥 Calculation error:', error);

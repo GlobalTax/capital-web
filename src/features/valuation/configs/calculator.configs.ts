@@ -41,6 +41,27 @@ export const V2_CONFIG: CalculatorConfig = {
   }
 };
 
+// ============= V2 META CONFIG (para Meta Ads) =============
+export const V2_META_CONFIG: CalculatorConfig = {
+  version: 'v2-meta',
+  steps: 1, // Solo 1 paso de datos
+  features: {
+    autosave: false,
+    tracking: true,
+    taxCalculation: false,
+    scenarios: false,
+    realTime: false,
+    standalone: false,
+    redirectOnCalculate: true, // 🔥 NUEVO: Flag para activar redirección
+    redirectUrl: '/lp/calculadora-meta/gracias' // 🔥 URL de destino
+  },
+  ui: {
+    theme: 'default',
+    showProgress: true,
+    showSaveStatus: false
+  }
+};
+
 // ============= V3 CONFIG =============
 export const V3_CONFIG: CalculatorConfig = {
   version: 'v3',
