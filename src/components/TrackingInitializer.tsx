@@ -116,33 +116,34 @@ export const TrackingInitializer = () => {
 
       // ========== FUNCIONES DE CARGA DE TRACKING ==========
       
-      const loadMetaPixel = () => {
-        if (!config.facebookPixelId || (window as any).fbq) return;
-        
-        const pixelId = config.facebookPixelId;
-        const script = document.createElement('script');
-        script.id = 'facebook-pixel-script';
-        script.textContent = `
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-          (window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${pixelId}', {
-            autoConfig: true,
-            debug: false
-          });
-          fbq('track', 'PageView');
-        `;
-        document.head.appendChild(script);
-        
-        const noscript = document.createElement('noscript');
-        noscript.innerHTML = `<img height="1" width="1" style="display:none" 
-          src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
-        document.body.appendChild(noscript);
-      };
+      // ❌ DESACTIVADO: Facebook Pixel ahora se carga desde GTM
+      // const loadMetaPixel = () => {
+      //   if (!config.facebookPixelId || (window as any).fbq) return;
+      //   
+      //   const pixelId = config.facebookPixelId;
+      //   const script = document.createElement('script');
+      //   script.id = 'facebook-pixel-script';
+      //   script.textContent = `
+      //     !function(f,b,e,v,n,t,s)
+      //     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      //     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      //     if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      //     n.queue=[];t=b.createElement(e);t.async=!0;
+      //     t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+      //     (window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      //     fbq('init', '${pixelId}', {
+      //       autoConfig: true,
+      //       debug: false
+      //     });
+      //     fbq('track', 'PageView');
+      //   `;
+      //   document.head.appendChild(script);
+      //   
+      //   const noscript = document.createElement('noscript');
+      //   noscript.innerHTML = `<img height="1" width="1" style="display:none" 
+      //     src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
+      //   document.body.appendChild(noscript);
+      // };
 
       const loadGoogleAnalytics = () => {
         if (!config.googleAnalyticsId || (window as any).gtag) return;
@@ -216,20 +217,20 @@ export const TrackingInitializer = () => {
             if (cookiebot.consent) {
               updateConsentFromCookiebot(cookiebot);
               
-              // Cargar Facebook Pixel solo si marketing está aceptado
-              if (cookiebot.consent?.marketing) {
-                loadMetaPixel();
-              }
+              // ❌ DESACTIVADO: Facebook Pixel cargado desde GTM
+              // if (cookiebot.consent?.marketing) {
+              //   loadMetaPixel();
+              // }
             }
             
             // Escuchar cambios de consentimiento
             window.addEventListener('CookiebotOnAccept', () => {
               updateConsentFromCookiebot(cookiebot);
               
-              // Cargar Facebook Pixel si marketing está aceptado
-              if (cookiebot.consent?.marketing) {
-                loadMetaPixel();
-              }
+              // ❌ DESACTIVADO: Facebook Pixel cargado desde GTM
+              // if (cookiebot.consent?.marketing) {
+              //   loadMetaPixel();
+              // }
             });
             
             window.addEventListener('CookiebotOnDecline', () => {
@@ -243,8 +244,8 @@ export const TrackingInitializer = () => {
         // Timeout después de 5 segundos
         setTimeout(() => clearInterval(checkCookiebot), 5000);
       } else {
-        // Si CMP está deshabilitado, cargar directamente (modo legacy)
-        loadMetaPixel();
+        // ❌ DESACTIVADO: Facebook Pixel cargado desde GTM
+        // loadMetaPixel();
       }
 
       // ========== LINKEDIN INSIGHT TAG ==========
