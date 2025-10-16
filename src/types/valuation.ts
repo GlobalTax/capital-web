@@ -18,10 +18,10 @@ export interface CompanyData {
   hasAdjustments: boolean;
   adjustmentAmount: number;
   
-  // Paso 3: Características
-  location: string;
-  ownershipParticipation: string;
-  competitiveAdvantage: string;
+  // Paso 3: Características (opcionales para versiones simplificadas)
+  location?: string;
+  ownershipParticipation?: string;
+  competitiveAdvantage?: string;
 }
 
 export interface ValuationResult {

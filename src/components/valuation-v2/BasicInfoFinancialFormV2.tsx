@@ -39,32 +39,6 @@ const employeeRangeOptions = [
   { value: '100+', label: 'Más de 100 empleados' }
 ];
 
-const locationOptions = [
-  { value: 'madrid', label: 'Madrid' },
-  { value: 'barcelona', label: 'Barcelona' },
-  { value: 'valencia', label: 'Valencia' },
-  { value: 'sevilla', label: 'Sevilla' },
-  { value: 'bilbao', label: 'Bilbao' },
-  { value: 'otros', label: 'Otros' }
-];
-
-const ownershipOptions = [
-  { value: '100%', label: '100%' },
-  { value: '75-99%', label: '75-99%' },
-  { value: '50-74%', label: '50-74%' },
-  { value: '25-49%', label: '25-49%' },
-  { value: '<25%', label: 'Menos del 25%' }
-];
-
-const competitiveAdvantageOptions = [
-  { value: 'tecnologia', label: 'Tecnología propia' },
-  { value: 'marca', label: 'Marca reconocida' },
-  { value: 'ubicacion', label: 'Ubicación privilegiada' },
-  { value: 'experiencia', label: 'Experiencia del equipo' },
-  { value: 'costes', label: 'Ventaja en costes' },
-  { value: 'otros', label: 'Otros' }
-];
-
 interface BasicInfoFinancialFormV2Props {
   companyData: any;
   updateField: (field: string, value: string | number | boolean) => void;
