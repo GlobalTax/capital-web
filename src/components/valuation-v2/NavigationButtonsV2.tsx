@@ -44,15 +44,20 @@ const NavigationButtonsV2: React.FC<NavigationButtonsProps> = ({
         </div>
       )}
       
-      <Button
-        onClick={handleCalculateClick}
-        disabled={isNextDisabled}
-        variant="outline"
-        className="flex items-center border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"
-      >
-        <Calculator className="h-4 w-4 mr-2" />
-        Calcular
-      </Button>
+      <div className="space-y-2 flex-1 max-w-xs">
+        <Button
+          onClick={handleCalculateClick}
+          disabled={isNextDisabled}
+          variant="outline"
+          className="w-full flex items-center justify-center border-gray-900 text-gray-900 hover:shadow-md hover:-translate-y-0.5"
+        >
+          <Calculator className="h-4 w-4 mr-2" />
+          Calcular
+        </Button>
+        <p className="text-xs text-gray-500 text-center leading-tight">
+          Al calcular acepto que Capittal procese mis datos para la valoración y envío por WhatsApp si proporciono mi teléfono.
+        </p>
+      </div>
     </div>
   );
 };
