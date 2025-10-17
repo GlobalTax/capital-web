@@ -11,6 +11,7 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAdmin: boolean;
+  role: 'super_admin' | 'admin' | 'viewer' | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<'super_admin' | 'admin' | 'viewer' | null>(null);
   const [authTimeout, setAuthTimeout] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
@@ -57,22 +59,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (error) {
+      if (error || !data || !data.is_active) {
         setIsAdmin(false);
+        setRole(null);
         return false;
       }
 
-      const adminStatus = !!(data && data.is_active === true);
-      setIsAdmin(adminStatus);
+      // Solo admins, super_admins y viewers tienen acceso
+      const validRoles = ['super_admin', 'admin', 'viewer'];
+      const hasValidRole = validRoles.includes(data.role);
       
-      if (adminStatus) {
+      if (hasValidRole) {
+        setIsAdmin(true);
+        setRole(data.role as 'super_admin' | 'admin' | 'viewer');
         logger.info('Admin access granted', {
           userId,
-          role: data?.role
+          role: data.role
+        }, { context: 'auth', component: 'AuthContext' });
+      } else {
+        setIsAdmin(false);
+        setRole(null);
+        logger.warn('User has active admin record but invalid role', {
+          userId,
+          role: data.role
         }, { context: 'auth', component: 'AuthContext' });
       }
       
-      return adminStatus;
+      return hasValidRole;
     } catch (error) {
       logger.error('Failed to check admin status', error as Error, { 
         context: 'auth', 
@@ -81,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       setIsAdmin(false);
+      setRole(null);
       return false;
     } finally {
       setIsCheckingAdmin(false);
@@ -265,6 +279,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setSession(null);
     setIsAdmin(false);
+    setRole(null);
     setIsLoading(false);
     
     toast({
@@ -276,6 +291,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Force admin reload for debugging
   const forceAdminReload = useCallback(async () => {
     setIsAdmin(false);
+    setRole(null);
     setIsCheckingAdmin(false);
     
     if (user?.id) {
@@ -322,6 +338,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
       setSession(null);
       setIsAdmin(false);
+      setRole(null);
       setIsLoading(false);
       setIsCheckingAdmin(false);
       
@@ -358,6 +375,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       auth: {
         isLoading,
         isAdmin,
+        role,
         isCheckingAdmin,
         hasTimeout: !!authTimeout
       },
@@ -375,6 +393,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     isLoading,
     isAdmin,
+    role,
     signIn,
     signUp,
     signOut,
