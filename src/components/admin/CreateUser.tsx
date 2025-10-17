@@ -95,10 +95,23 @@ export const CreateUser: React.FC = () => {
     try {
       console.log('🔵 Creando usuario vía Edge Function:', formData.email);
       
+      // Get current session and token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
+      }
+
+      console.log('🔑 Token presente:', !!session.access_token);
+      
       // Call the secure Edge Function to create user
       const { data: userData, error: createError } = await supabase.functions.invoke(
         'admin-create-user',
         {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
           body: {
             email: formData.email,
             fullName: formData.fullName,
@@ -133,6 +146,10 @@ export const CreateUser: React.FC = () => {
         const { error: emailError } = await supabase.functions.invoke(
           'send-user-credentials',
           {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            },
             body: {
               email: formData.email,
               fullName: formData.fullName,

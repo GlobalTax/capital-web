@@ -105,8 +105,21 @@ export const useAdminUsers = () => {
     try {
       console.log('📝 Creating new admin user via Edge Function:', { email: userData.email, role: userData.role });
 
+      // Get current session and token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
+      }
+
+      console.log('🔑 Token presente:', !!session.access_token);
+
       // Invocar Edge Function admin-create-user
       const { data, error: edgeFunctionError } = await supabase.functions.invoke('admin-create-user', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
         body: {
           email: userData.email,
           fullName: userData.full_name,
@@ -129,6 +142,10 @@ export const useAdminUsers = () => {
       console.log('📧 Sending credentials email to:', userData.email);
 
       const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
         body: {
           email: userData.email,
           fullName: userData.full_name,
@@ -304,10 +321,21 @@ export const useAdminUsers = () => {
       const user = users.find(u => u.id === userId);
       if (!user) throw new Error('Usuario no encontrado');
 
+      // Get current session and token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
+      }
+
       // Generate temporary password
       const temporaryPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
       
       const { error } = await supabase.functions.invoke('send-user-credentials', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
         body: {
           email: user.email,
           fullName: user.full_name,

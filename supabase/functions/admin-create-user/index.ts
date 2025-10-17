@@ -35,24 +35,36 @@ serve(async (req) => {
       );
     }
 
-    // Create user client to verify caller identity
-    const userClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { authorization: authHeader }
-        }
-      }
-    );
-
-    // Get current user
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    // Extract and decode JWT (verify_jwt=true ensures it's already validated by gateway)
+    const token = authHeader.replace(/^Bearer\s+/i, '');
     
-    if (userError || !user) {
-      console.error('Error getting user:', userError);
+    let userId: string;
+    let userEmail: string | undefined;
+    
+    try {
+      // Decode JWT payload (base64url)
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+      
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = atob(base64);
+      const claims = JSON.parse(jsonPayload);
+      
+      userId = claims.sub;
+      userEmail = claims.email;
+      
+      if (!userId) {
+        throw new Error('No user ID in token');
+      }
+      
+      console.log('✅ JWT decoded successfully:', { userId, userEmail });
+    } catch (decodeError) {
+      console.error('Error decoding JWT:', decodeError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: Invalid token' }),
+        JSON.stringify({ error: 'Invalid token format' }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -60,28 +72,40 @@ serve(async (req) => {
       );
     }
 
+    // Create admin client to verify role
+    const adminClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    if (!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+      console.error('⚠️ SUPABASE_SERVICE_ROLE_KEY not configured!');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     // Verify user is super_admin using existing RPC
-    const { data: userRole, error: roleError } = await userClient.rpc(
+    const { data: userRole, error: roleError } = await adminClient.rpc(
       'check_user_admin_role',
-      { check_user_id: user.id }
+      { check_user_id: userId }
     );
 
     if (roleError || userRole !== 'super_admin') {
       console.error('Role check failed:', roleError, 'Role:', userRole);
       
       // Log security event
-      const adminClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-      
       await adminClient.from('security_events').insert({
         event_type: 'UNAUTHORIZED_USER_CREATION_ATTEMPT',
         severity: 'high',
-        user_id: user.id,
+        user_id: userId,
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
         details: {
-          attempted_by: user.email,
+          attempted_by: userEmail,
           user_role: userRole,
           timestamp: new Date().toISOString()
         }
@@ -133,12 +157,6 @@ serve(async (req) => {
 
     console.log('Creating user with admin privileges:', { email, role });
 
-    // Create admin client with service role
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     // Create user using admin API (bypasses email validation)
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
@@ -147,7 +165,7 @@ serve(async (req) => {
       user_metadata: {
         full_name: fullName,
         created_by_admin: true,
-        created_by: user.email
+        created_by: userEmail
       }
     });
 
@@ -224,12 +242,12 @@ serve(async (req) => {
     await adminClient.from('security_events').insert({
       event_type: 'USER_CREATED_BY_ADMIN',
       severity: 'high',
-      user_id: user.id,
+      user_id: userId,
       details: {
         created_user_id: newUser.user.id,
         created_user_email: email,
         created_user_role: role,
-        created_by: user.email,
+        created_by: userEmail,
         timestamp: new Date().toISOString()
       }
     });
