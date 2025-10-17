@@ -53,10 +53,16 @@ export const useStorageFallback = () => {
       localStorage.removeItem(testKey);
       result.localStorage = true;
     } catch (error) {
-      logger.warn('localStorage blocked or unavailable', { error: (error as Error).message }, {
-        context: 'system',
-        component: 'useStorageFallback'
-      });
+      // Log solo una vez por sesión para reducir ruido en consola
+      if (!(window as any).__storageBlockLogged) {
+        (window as any).__storageBlockLogged = true;
+        logger.debug('Storage blocked by browser - using memory fallback', { 
+          error: (error as Error).message 
+        }, {
+          context: 'system',
+          component: 'useStorageFallback'
+        });
+      }
     }
 
     // Test sessionStorage
@@ -66,10 +72,7 @@ export const useStorageFallback = () => {
       sessionStorage.removeItem(testKey);
       result.sessionStorage = true;
     } catch (error) {
-      logger.warn('sessionStorage blocked or unavailable', { error: (error as Error).message }, {
-        context: 'system',
-        component: 'useStorageFallback'
-      });
+      // Silenciar - ya logueado en localStorage test
     }
 
     // Test IndexedDB
@@ -87,10 +90,7 @@ export const useStorageFallback = () => {
         result.indexedDB = true;
       }
     } catch (error) {
-      logger.warn('IndexedDB blocked or unavailable', { error: (error as Error).message }, {
-        context: 'system',
-        component: 'useStorageFallback'
-      });
+      // Silenciar - ya logueado en localStorage test
     }
 
     // Detect tracking prevention (Safari/Edge specific)

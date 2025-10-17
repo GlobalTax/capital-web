@@ -31,8 +31,16 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5,
       retry: (failureCount, error: any) => {
-        // No reintentar errores de red específicos
-        if (error?.status === 404 || error?.status === 403) return false;
+        // No reintentar errores de autenticación/autorización
+        if (error?.status === 401 || error?.code === 'PGRST301') {
+          return false;
+        }
+        if (error?.status === 403 || error?.code === 'PGRST116') {
+          return false;
+        }
+        if (error?.status === 404) {
+          return false;
+        }
         return failureCount < 2;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),

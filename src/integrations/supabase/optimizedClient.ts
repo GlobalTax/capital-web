@@ -75,7 +75,12 @@ class SupabaseClientSingleton {
               autoRefreshToken: canPersistSession,
               detectSessionInUrl: true,
             },
-            // Completely disable realtime by not configuring it
+            // Disable realtime completely to prevent WebSocket connection attempts
+            realtime: {
+              params: {
+                eventsPerSecond: 1,
+              },
+            },
           }
         );
         

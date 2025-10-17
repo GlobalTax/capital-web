@@ -24,6 +24,7 @@ export const ConsoleNoiseFilter: React.FC<{ children: React.ReactNode }> = ({ ch
       /firestore\.googleapis\.com.*400/,
       /WebSocket.*handshake.*404.*lovableproject\.com/,
       /Failed to load resource.*lovableproject\.com/,
+      /unsafe-eval.*WebAssembly/,
     ];
 
     // Contador de mensajes por patrón (deduplicación)

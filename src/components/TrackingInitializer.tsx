@@ -15,13 +15,16 @@ export const TrackingInitializer = () => {
       
       // Guard: No cargar tracking en preview/sandbox
       if (currentHost.endsWith('.lovableproject.com') || currentHost.includes('preview--')) {
-        console.info('🚫 [Tracking] Disabled in preview/sandbox environment:', currentHost);
+        console.groupCollapsed('🚫 [Tracking] Initialization skipped');
+        console.log('Environment: preview/sandbox');
+        console.log('Host:', currentHost);
+        console.groupEnd();
         return;
       }
 
       // Guard: No cargar si está dentro de un iframe
       if (window.top !== window.self) {
-        console.info('🚫 [Tracking] Disabled inside iframe');
+        console.debug('🚫 [Tracking] Disabled inside iframe');
         return;
       }
 
@@ -34,12 +37,23 @@ export const TrackingInitializer = () => {
 
       // Guard: No cargar tracking si storage está bloqueado
       if (isStorageBlocked || !canUseLocalStorage) {
-        console.info('🚫 [Tracking] Storage blocked - tracking disabled for compliance');
+        console.groupCollapsed('🚫 [Tracking] Initialization skipped');
+        console.log('Reason: Storage blocked');
+        console.log('Compliance: GDPR');
+        console.groupEnd();
         return;
       }
 
       // Cargar configuración de tracking
       const config = await TrackingConfigService.loadConfiguration();
+      
+      // Log consolidado de inicialización
+      console.groupCollapsed('🎯 [Tracking] Initialization');
+      console.log('Host:', currentHost);
+      console.log('Storage available:', !isStorageBlocked);
+      console.log('GTM:', config.googleTagManagerId ? 'enabled' : 'disabled');
+      console.log('Cookiebot:', config.enableCMP ? 'enabled' : 'disabled');
+      console.groupEnd();
 
       // ========== COOKIEBOT CMP (Consent Management Platform) ==========
       if (config.enableCMP && config.cookiebotId) {
@@ -77,17 +91,15 @@ export const TrackingInitializer = () => {
         
         // Configuración por defecto (ANTES del consentimiento)
         gtag('consent', 'default', {
-          'ad_storage': 'denied',              // Para Google Ads
-          'ad_user_data': 'denied',            // Para Google Ads (datos de usuario)
-          'ad_personalization': 'denied',      // Para Google Ads (personalización)
-          'analytics_storage': 'denied',       // Para Google Analytics
-          'functionality_storage': 'granted',  // Cookies técnicas (siempre permitidas)
-          'personalization_storage': 'denied', // Personalización
-          'security_storage': 'granted',       // Seguridad (siempre permitida)
-          'wait_for_update': 500              // Esperar 500ms a Cookiebot
+          'ad_storage': 'denied',
+          'ad_user_data': 'denied',
+          'ad_personalization': 'denied',
+          'analytics_storage': 'denied',
+          'functionality_storage': 'granted',
+          'personalization_storage': 'denied',
+          'security_storage': 'granted',
+          'wait_for_update': 500
         });
-        
-        console.log('✅ [Tracking] Google Consent Mode v2 initialized');
       };
 
       // Actualizar consentimiento desde Cookiebot
@@ -110,8 +122,6 @@ export const TrackingInitializer = () => {
         
         // Actualizar consentimiento en GTM
         gtag('consent', 'update', consentState);
-        
-        console.log('✅ [Tracking] Consent updated:', consentState);
       };
 
       // ========== FUNCIONES DE CARGA DE TRACKING ==========
@@ -189,8 +199,6 @@ export const TrackingInitializer = () => {
         gtmNoscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
           height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
         document.body.appendChild(gtmNoscript);
-        
-        console.log('✅ [Tracking] GTM loaded (waiting for consent):', gtmId);
       };
 
       // ========== INICIALIZACIÓN DE TRACKING CON CONSENT MODE V2 ==========
@@ -236,8 +244,6 @@ export const TrackingInitializer = () => {
             window.addEventListener('CookiebotOnDecline', () => {
               updateConsentFromCookiebot(cookiebot);
             });
-            
-            console.log('✅ [Tracking] Cookiebot integration with Consent Mode v2 ready');
           }
         }, 100);
         
