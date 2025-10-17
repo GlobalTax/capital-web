@@ -35,10 +35,18 @@ export async function createAdminUser(input: CreateAdminUserInput): Promise<Crea
       return { success: false, error: 'No hay sesión activa' };
     }
 
+    // Debug: Log invocation (non-sensitive data only)
+    logger.debug('Invoking admin-create-user', { 
+      payloadKeys: ['email', 'fullName', 'role'],
+      role 
+    }, { 
+      context: 'user_management', 
+      component: 'userManagementService' 
+    });
+
     const { data, error } = await supabase.functions.invoke('admin-create-user', {
       headers: {
         Authorization: `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json',
       },
       body: { email, fullName, role },
     });

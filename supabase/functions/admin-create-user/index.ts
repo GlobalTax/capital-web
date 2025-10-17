@@ -196,33 +196,36 @@ serve(async (req) => {
       );
     }
 
-    // Log request details for debugging
-    const contentType = req.headers.get('content-type') ?? 'unknown';
-    const contentLength = req.headers.get('content-length') ?? 'unknown';
-    console.log('📥 Content-Type:', contentType, 'Content-Length:', contentLength);
-
-// Parse and validate request body using raw text for robustness
-let payload: any;
-try {
-  const raw = await req.text();
-  console.log('🧪 Raw body length:', raw ? raw.length : 0, 'preview:', raw ? raw.slice(0, 200) : '');
-
-  if (!raw || raw.trim() === '') {
-    console.error('❌ Empty request body');
-    return new Response(
-      JSON.stringify({ error: 'Empty request body' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-
-  payload = JSON.parse(raw);
-} catch (parseError) {
-  console.error('❌ Failed to parse JSON body:', parseError);
-  return new Response(
-    JSON.stringify({ error: 'Invalid JSON body' }),
-    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
+    // ============= PARSE REQUEST BODY =============
+    // Use req.json() for robust parsing (Supabase handles Content-Type correctly)
+    let payload: any;
+    try {
+      payload = await req.json();
+      
+      if (!payload || typeof payload !== 'object') {
+        console.error('❌ Invalid or empty JSON payload');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Invalid or empty JSON payload',
+            code: 'INVALID_JSON_PAYLOAD'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Log only keys for debugging (avoid logging PII)
+      console.log('📥 Request payload keys:', Object.keys(payload));
+      
+    } catch (parseError) {
+      console.error('❌ Failed to parse JSON body:', parseError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid JSON body',
+          code: 'JSON_PARSE_ERROR'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Normalize and validate fields
     const email = (payload.email ?? '').toString().trim().toLowerCase();
