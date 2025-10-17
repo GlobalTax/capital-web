@@ -6,54 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
 
-// ============= ADMIN CACHE =============
-/**
- * Admin Status Cache Configuration
- * 
- * TTL: 10 minutos (600,000ms) - Balance entre UX y seguridad
- * Storage: sessionStorage (se limpia al cerrar pestaña)
- * Key Format: "admin_status:{userId}"
- * Invalidación: 
- *   - Automática: Al superar TTL
- *   - Manual: clearAuthSession() limpia toda la caché
- * 
- * Flujo optimista:
- * 1. checkAdminStatus() consulta caché primero
- * 2. Cache hit → retorno inmediato + actualización background
- * 3. Cache miss → consulta DB + guardar resultado
- */
-const ADMIN_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
-const ADMIN_CACHE_KEY_PREFIX = 'admin_status:';
-
-const getCachedAdminStatus = (userId: string): boolean | null => {
-  try {
-    const cacheKey = `${ADMIN_CACHE_KEY_PREFIX}${userId}`;
-    const cached = sessionStorage.getItem(cacheKey);
-    if (!cached) return null;
-    
-    const { status, timestamp } = JSON.parse(cached);
-    if (Date.now() - timestamp > ADMIN_CACHE_TTL) {
-      sessionStorage.removeItem(cacheKey);
-      return null;
-    }
-    return status;
-  } catch {
-    return null;
-  }
-};
-
-const setCachedAdminStatus = (userId: string, status: boolean): void => {
-  try {
-    const cacheKey = `${ADMIN_CACHE_KEY_PREFIX}${userId}`;
-    sessionStorage.setItem(cacheKey, JSON.stringify({
-      status,
-      timestamp: Date.now()
-    }));
-  } catch {
-    // Silently fail if sessionStorage is unavailable
-  }
-};
-
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -86,17 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!targetUserId) {
       setIsAdmin(false);
       return false;
-    }
-
-    // 🚀 OPTIMIZACIÓN: Verificar caché primero (resolución optimista)
-    const cachedStatus = getCachedAdminStatus(targetUserId);
-    if (cachedStatus !== null) {
-      setIsAdmin(cachedStatus);
-      // Actualizar en background para mantener caché fresca
-      setTimeout(() => {
-        checkAdminStatusFromDB(targetUserId);
-      }, 100);
-      return cachedStatus;
     }
     
     // Prevent concurrent admin checks
@@ -145,7 +86,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!retryError && retryData) {
             const adminStatus = !!(retryData && retryData.is_active === true);
             setIsAdmin(adminStatus);
-            setCachedAdminStatus(userId, adminStatus); // ✅ Guardar en caché
             return adminStatus;
           }
         }
@@ -156,7 +96,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const adminStatus = !!(data && data.is_active === true);
       setIsAdmin(adminStatus);
-      setCachedAdminStatus(userId, adminStatus); // ✅ Guardar en caché
       
       if (adminStatus) {
         logger.info('Admin access granted', {
@@ -396,21 +335,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setAuthTimeout(null);
       }
       
-      // Clear auth-related localStorage and sessionStorage (incluye caché admin)
+      // Clear auth-related localStorage and sessionStorage
       const authKeys = Object.keys(localStorage).filter(key => 
         key.includes('auth') || 
         key.includes('supabase') || 
-        key.includes('session') ||
-        key.includes('admin')
+        key.includes('session')
       );
       
       authKeys.forEach(key => {
         localStorage.removeItem(key);
-      });
-
-      // Limpiar caché de admin en sessionStorage
-      Object.keys(sessionStorage).filter(key => key.startsWith(ADMIN_CACHE_KEY_PREFIX)).forEach(key => {
-        sessionStorage.removeItem(key);
       });
       
       // Clear auth-related cookies

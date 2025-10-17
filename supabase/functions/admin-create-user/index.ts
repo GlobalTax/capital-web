@@ -4,6 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import * as djwt from "https://deno.land/x/djwt@v3.0.2/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,36 +36,61 @@ serve(async (req) => {
       );
     }
 
-    // Extract and decode JWT (verify_jwt=true ensures it's already validated by gateway)
+    // Extract and VALIDATE JWT with signature verification
     const token = authHeader.replace(/^Bearer\s+/i, '');
     
     let userId: string;
     let userEmail: string | undefined;
     
     try {
-      // Decode JWT payload (base64url)
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
+      // Get JWT secret from environment
+      const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
+      if (!jwtSecret) {
+        throw new Error('JWT secret not configured');
+      }
+
+      // Import cryptographic key for JWT verification
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(jwtSecret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["verify"]
+      );
+
+      // Verify JWT signature using djwt
+      const payload = await djwt.verify(token, key) as any;
+      
+      // Validate required claims
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const expectedIssuer = supabaseUrl;
+      const expectedAudience = 'authenticated';
+      
+      if (payload.iss !== expectedIssuer) {
+        throw new Error(`Invalid issuer: ${payload.iss}`);
       }
       
-      const base64Url = parts[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = atob(base64);
-      const claims = JSON.parse(jsonPayload);
+      if (payload.aud !== expectedAudience) {
+        throw new Error(`Invalid audience: ${payload.aud}`);
+      }
       
-      userId = claims.sub;
-      userEmail = claims.email;
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now) {
+        throw new Error('Token expired');
+      }
+      
+      userId = payload.sub;
+      userEmail = payload.email;
       
       if (!userId) {
         throw new Error('No user ID in token');
       }
       
-      console.log('✅ JWT decoded successfully:', { userId, userEmail });
+      console.log('✅ JWT validated with signature:', { userId, userEmail });
     } catch (decodeError) {
-      console.error('Error decoding JWT:', decodeError);
+      console.error('❌ JWT validation failed:', decodeError);
       return new Response(
-        JSON.stringify({ error: 'Invalid token format' }),
+        JSON.stringify({ error: 'Invalid or expired token' }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -121,8 +147,9 @@ serve(async (req) => {
     }
 
     // Log request details for debugging
-const contentLength = req.headers.get('content-length') ?? 'unknown';
-console.log('📥 Content-Type:', contentType, 'Content-Length:', contentLength);
+    const contentType = req.headers.get('content-type') ?? 'unknown';
+    const contentLength = req.headers.get('content-length') ?? 'unknown';
+    console.log('📥 Content-Type:', contentType, 'Content-Length:', contentLength);
 
 // Parse and validate request body using raw text for robustness
 let payload: any;
@@ -322,12 +349,47 @@ try {
 
     console.log('User creation completed successfully');
 
+    // Send credentials via secure email (NEVER expose password in HTTP response)
+    try {
+      const { data: emailData, error: emailError } = await adminClient.functions.invoke(
+        'send-user-credentials',
+        {
+          body: {
+            email,
+            fullName,
+            temporaryPassword: tempPassword,
+            role,
+            requiresPasswordChange: true
+          }
+        }
+      );
+
+      if (emailError) {
+        console.error('⚠️ Failed to send credentials email:', emailError);
+        // Log but don't fail - user was created successfully
+        await adminClient.from('security_events').insert({
+          event_type: 'CREDENTIALS_EMAIL_FAILED',
+          severity: 'high',
+          user_id: newUser.user.id,
+          details: {
+            email,
+            error: emailError.message,
+            note: 'User created but credentials email failed to send'
+          }
+        });
+      } else {
+        console.log('✅ Credentials email sent successfully');
+      }
+    } catch (emailError) {
+      console.error('⚠️ Error invoking send-user-credentials:', emailError);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true,
         user_id: newUser.user.id,
         email,
-        temporary_password: tempPassword,
+        message: 'User created successfully. Credentials sent via secure email.',
         requires_password_change: true
       }),
       { 
