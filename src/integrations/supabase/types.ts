@@ -5972,6 +5972,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_signed_valuation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_unique_proposal_url: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -6122,6 +6126,10 @@ export type Database = {
       validate_valuation_token: {
         Args: { _token: string }
         Returns: string
+      }
+      verify_valuation_token: {
+        Args: { token: string }
+        Returns: boolean
       }
     }
     Enums: {
