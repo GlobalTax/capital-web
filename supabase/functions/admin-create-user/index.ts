@@ -120,8 +120,67 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
-    const { email, fullName, role }: CreateUserRequest = await req.json();
+    // Log request details for debugging
+    const contentType = req.headers.get('content-type') ?? '';
+    console.log('📥 Content-Type:', contentType);
+
+    // Parse and validate request body
+    let payload: any;
+    try {
+      payload = await req.json();
+    } catch (parseError) {
+      console.error('❌ Failed to parse JSON body:', parseError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Normalize and validate fields
+    const email = (payload.email ?? '').toString().trim().toLowerCase();
+    const fullName = (payload.fullName ?? '').toString().trim();
+    const role = (payload.role ?? '').toString();
+
+    console.log('📋 Creating user - sanitized payload:', { email, role, requestedBy: userEmail });
+
+    // Validate required fields
+    if (!email) {
+      console.error('❌ Missing required field: email');
+      return new Response(
+        JSON.stringify({ error: 'Missing required field', field: 'email' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!fullName) {
+      console.error('❌ Missing required field: fullName');
+      return new Response(
+        JSON.stringify({ error: 'Missing required field', field: 'fullName' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!role) {
+      console.error('❌ Missing required field: role');
+      return new Response(
+        JSON.stringify({ error: 'Missing required field', field: 'role' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate role
+    const allowedRoles = ['super_admin', 'admin', 'editor'] as const;
+    if (!allowedRoles.includes(role as any)) {
+      console.error('❌ Invalid role:', role);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid role', 
+          provided: role,
+          allowed: allowedRoles 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Validate input
     if (!email || !fullName || !role) {
@@ -135,14 +194,12 @@ serve(async (req) => {
     }
 
     // Validate email format
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.error('❌ Invalid email format:', email);
       return new Response(
         JSON.stringify({ error: 'Invalid email format' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -212,11 +269,11 @@ serve(async (req) => {
       console.error('Error inserting into admin_users:', adminInsertError);
       
       // User was created in auth but failed to add to admin_users
-      // Log this critical issue
+      // Log this critical issue (Fixed: use userId instead of user.id)
       await adminClient.from('security_events').insert({
         event_type: 'USER_CREATION_PARTIAL_FAILURE',
         severity: 'critical',
-        user_id: user.id,
+        user_id: userId,
         details: {
           created_user_id: newUser.user.id,
           created_user_email: email,

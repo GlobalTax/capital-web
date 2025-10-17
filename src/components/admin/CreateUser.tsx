@@ -93,7 +93,18 @@ export const CreateUser: React.FC = () => {
     setError('');
 
     try {
-      console.log('🔵 Creando usuario vía Edge Function:', formData.email);
+      // Normalize data before sending
+      const email = formData.email.trim().toLowerCase();
+      const fullName = formData.fullName.trim();
+      const role = formData.role;
+
+      if (!email || !fullName) {
+        setError("Email y nombre completo son obligatorios");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('🔵 Creando usuario vía Edge Function:', email);
       
       // Get current session and token
       const { data: { session } } = await supabase.auth.getSession();
@@ -104,7 +115,7 @@ export const CreateUser: React.FC = () => {
 
       console.log('🔑 Token presente:', !!session.access_token);
       
-      // Call the secure Edge Function to create user
+      // Call the secure Edge Function to create user with normalized data
       const { data: userData, error: createError } = await supabase.functions.invoke(
         'admin-create-user',
         {
@@ -113,19 +124,19 @@ export const CreateUser: React.FC = () => {
             'Content-Type': 'application/json'
           },
           body: {
-            email: formData.email,
-            fullName: formData.fullName,
-            role: formData.role
+            email,
+            fullName,
+            role
           }
         }
       );
 
       if (createError) {
-        console.error('🔴 Error en Edge Function:', {
-          message: createError.message,
-          context: createError.context
-        });
-        throw new Error(createError.message || 'Error al crear usuario');
+        console.error('🔴 Error en Edge Function:', createError);
+        const errorMsg = typeof createError === 'object' && createError !== null
+          ? (createError as any).message || (createError as any).details || JSON.stringify(createError)
+          : String(createError);
+        throw new Error(errorMsg);
       }
 
       if (!userData || !userData.success) {

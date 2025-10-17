@@ -103,7 +103,16 @@ export const useAdminUsers = () => {
 
   const createUser = useCallback(async (userData: CreateAdminUserData): Promise<void> => {
     try {
-      console.log('📝 Creating new admin user via Edge Function:', { email: userData.email, role: userData.role });
+      // Normalize data before sending
+      const email = userData.email.trim().toLowerCase();
+      const fullName = userData.full_name.trim();
+      const role = userData.role;
+
+      if (!email || !fullName) {
+        throw new Error("Email y nombre completo son obligatorios");
+      }
+
+      console.log('📝 Creating new admin user via Edge Function:', { email, role });
 
       // Get current session and token
       const { data: { session } } = await supabase.auth.getSession();
@@ -114,22 +123,25 @@ export const useAdminUsers = () => {
 
       console.log('🔑 Token presente:', !!session.access_token);
 
-      // Invocar Edge Function admin-create-user
+      // Invocar Edge Function admin-create-user with normalized data
       const { data, error: edgeFunctionError } = await supabase.functions.invoke('admin-create-user', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
         body: {
-          email: userData.email,
-          fullName: userData.full_name,
-          role: userData.role
+          email,
+          fullName,
+          role
         }
       });
 
       if (edgeFunctionError) {
         console.error('❌ Edge Function error:', edgeFunctionError);
-        throw new Error(edgeFunctionError.message || 'Error al crear usuario');
+        const errorMsg = typeof edgeFunctionError === 'object' && edgeFunctionError !== null
+          ? (edgeFunctionError as any).message || (edgeFunctionError as any).details || JSON.stringify(edgeFunctionError)
+          : String(edgeFunctionError);
+        throw new Error(errorMsg);
       }
 
       if (!data?.success) {
