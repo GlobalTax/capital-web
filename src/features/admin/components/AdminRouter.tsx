@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminErrorBoundary } from './AdminErrorBoundary';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 
@@ -42,7 +42,11 @@ import {
 } from './LazyAdminComponents';
 
 const AdminRouter = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isLoading } = useAdminAuth();
+
+  if (isLoading) {
+    return <PageLoadingSkeleton />;
+  }
 
   if (!isAdmin) {
     return (

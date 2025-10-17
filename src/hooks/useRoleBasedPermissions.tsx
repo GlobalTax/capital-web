@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -263,7 +263,7 @@ const ROLE_PERMISSIONS: Record<AdminRole, RolePermissions> = {
 };
 
 export const useRoleBasedPermissions = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin } = useAdminAuth();
   const mountedRef = useRef(true);
   
   // Cleanup on unmount to prevent React #300 error

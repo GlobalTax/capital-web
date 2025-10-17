@@ -5,9 +5,12 @@ import { PageLoadingSkeleton } from '@/components/LoadingStates';
 // === CORE PAGES ===
 const Index = lazy(() => import('@/pages/Index'));
 const Admin = lazy(() => import('@/pages/Admin'));
-const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
+const AdminLoginNew = lazy(() => import('@/pages/AdminLoginNew'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+
+// === ADMIN PROTECTION ===
+import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
 
 // === BUSINESS PAGES ===
 const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
@@ -77,8 +80,9 @@ export const AppRoutes = () => {
         {/* === CORE ROUTES === */}
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/*" element={<Admin />} />
+        <Route path="/admin/login" element={<AdminLoginNew />} />
+        <Route path="/admin/login-new" element={<AdminLoginNew />} />
+        <Route path="/admin/*" element={<AdminProtectedRoute><Admin /></AdminProtectedRoute>} />
         
         {/* === BUSINESS ROUTES === */}
         <Route path="/venta-empresas" element={<VentaEmpresas />} />
