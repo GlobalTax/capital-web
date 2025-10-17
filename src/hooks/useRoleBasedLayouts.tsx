@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useRoleBasedPermissions } from './useRoleBasedPermissions';
+import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import './useRoleBasedLayouts.css';
 
 // Importar las interfaces de permisos
 interface RolePermissions {
@@ -365,7 +366,7 @@ const defaultLayouts: Record<string, DashboardLayout> = {
 };
 
 export function useRoleBasedLayouts() {
-  const { userRole, hasPermission } = useRoleBasedPermissions();
+  const { role: userRole, hasPermission } = useSimpleAuth();
   const [customLayouts, setCustomLayouts] = useState<Record<string, DashboardLayout>>({});
   const [activeLayoutId, setActiveLayoutId] = useState<string>('');
 

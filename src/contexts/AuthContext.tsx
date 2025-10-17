@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     }
     
-    // Prevent concurrent admin checks
     if (isCheckingAdmin) {
       return isAdmin;
     }
@@ -48,72 +47,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return checkAdminStatusFromDB(targetUserId);
   }, [user?.id, isCheckingAdmin, isAdmin]);
 
-  // Función interna para consultar DB (reutilizable)
   const checkAdminStatusFromDB = async (userId: string): Promise<boolean> => {
     setIsCheckingAdmin(true);
     
     try {
-      // ⚡ Timeout reducido 5s → 3s (optimización)
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Admin check timeout')), 3000);
-      });
-
-      const checkPromise = supabase
+      const { data, error } = await supabase
         .from('admin_users')
         .select('is_active, role')
         .eq('user_id', userId)
         .maybeSingle();
-      
-      const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
 
       if (error) {
-        // ✅ Si es 401, intentar refresh token antes de reintentar
-        if ((error as any).code === 'PGRST301' || (error as any).status === 401) {
-          console.log('🔄 401 Unauthorized detected, refreshing session...');
-          try {
-            const { error: refreshError } = await supabase.auth.refreshSession();
-            if (!refreshError) {
-              // Reintentar después de refresh exitoso
-              const { data: retryData, error: retryError } = await supabase
-                .from('admin_users')
-                .select('is_active, role')
-                .eq('user_id', userId)
-                .maybeSingle();
-                
-              if (!retryError && retryData) {
-                const adminStatus = !!(retryData && retryData.is_active === true);
-                setIsAdmin(adminStatus);
-                return adminStatus;
-              }
-            }
-          } catch (refreshErr) {
-            console.error('Failed to refresh session:', refreshErr);
-          }
-        }
-        
-        // If it's a network error, try one more time after a short delay
-        if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('timeout')) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          const retryPromise = supabase
-            .from('admin_users')
-            .select('is_active, role')
-            .eq('user_id', userId)
-            .maybeSingle();
-            
-          // ⚡ Retry timeout reducido 3s → 2s
-          const { data: retryData, error: retryError } = await Promise.race([
-            retryPromise, 
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Retry timeout')), 2000))
-          ]);
-            
-          if (!retryError && retryData) {
-            const adminStatus = !!(retryData && retryData.is_active === true);
-            setIsAdmin(adminStatus);
-            return adminStatus;
-          }
-        }
-        
         setIsAdmin(false);
         return false;
       }
@@ -135,15 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         component: 'AuthContext',
         userId 
       });
-      
-      // Toast genérico para timeouts (no alarmante)
-      if (error instanceof Error && error.message.includes('timeout')) {
-        toast({
-          title: "Verificación lenta",
-          description: "La verificación de permisos está tardando. Intenta recargar si el problema persiste.",
-          variant: "default",
-        });
-      }
       
       setIsAdmin(false);
       return false;

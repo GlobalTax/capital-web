@@ -13,14 +13,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, Send, Mail, UserPlus2 } from 'lucide-react';
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
-import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
+import { useSimpleAuth } from '@/hooks/useSimpleAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useForm, Controller } from 'react-hook-form';
 
 const ROLE_LABELS = {
   super_admin: { label: 'Super Admin', icon: Crown, color: 'destructive' },
   admin: { label: 'Admin', icon: Shield, color: 'default' },
-  editor: { label: 'Editor', icon: PenTool, color: 'secondary' },
   viewer: { label: 'Viewer', icon: Eye, color: 'outline' }
 };
 
@@ -47,9 +46,9 @@ const AdminUsersManager = () => {
     
     console.log('🔗 [AdminUsersManager] useAdminUsers hook loaded successfully - Users count:', users.length);
     
-    const { hasPermission, userRole, isLoading: permissionsLoading } = useRoleBasedPermissions();
+    const { canManageUsers, role: userRole, isLoading: permissionsLoading } = useSimpleAuth();
     
-    console.log('🔐 [AdminUsersManager] useRoleBasedPermissions hook loaded - Role:', userRole, 'Can manage users:', hasPermission('canManageUsers'));
+    console.log('🔐 [AdminUsersManager] useSimpleAuth hook loaded - Role:', userRole, 'Can manage users:', canManageUsers);
     
     const { toast } = useToast();
     
@@ -66,7 +65,7 @@ const AdminUsersManager = () => {
       formState: { errors: createErrors }
     } = useForm<CreateAdminUserData>({
       defaultValues: {
-        role: 'editor'
+        role: 'admin'
       }
     });
 
@@ -157,7 +156,7 @@ const AdminUsersManager = () => {
       isLoading,
       permissionsLoading,
       usersCount: users.length,
-      hasPermission: hasPermission('canManageUsers'),
+      canManageUsers,
       userRole,
       error
     });
@@ -175,7 +174,7 @@ const AdminUsersManager = () => {
     }
 
     // Verificar permisos para acceder a esta página
-    if (!hasPermission('canManageUsers')) {
+    if (!canManageUsers) {
       console.log('🚫 [AdminUsersManager] Permission denied, showing restricted view');
       return (
         <div className="flex items-center justify-center h-64">

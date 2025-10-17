@@ -1,12 +1,12 @@
 
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRoleBasedPermissions } from './useRoleBasedPermissions';
+import { useSimpleAuth } from '@/hooks/useSimpleAuth';
 import { logger } from '@/utils/logger';
 
 export const useAdminDebug = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
-  const { userRole, permissions, isLoading: permissionsLoading } = useRoleBasedPermissions();
+  const { role, isLoading: permissionsLoading, canViewLeads, canEditContent, canManageUsers } = useSimpleAuth();
 
   useEffect(() => {
     if (!authLoading && !permissionsLoading) {
@@ -21,11 +21,11 @@ export const useAdminDebug = () => {
           authLoading
         },
         permissions: {
-          userRole,
+          userRole: role,
           permissionsLoading,
-          canViewLeads: permissions.canViewLeads,
-          canManageContent: permissions.canManageContent,
-          canManageUsers: permissions.canManageUsers
+          canViewLeads,
+          canManageContent: canEditContent,
+          canManageUsers
         }
       }, { context: 'admin', component: 'useAdminDebug' });
     }
@@ -35,8 +35,8 @@ export const useAdminDebug = () => {
     debugInfo: {
       user,
       isAdmin,
-      userRole,
-      permissions,
+      userRole: role,
+      permissions: { canViewLeads, canEditContent, canManageUsers },
       authLoading,
       permissionsLoading
     }
