@@ -75,6 +75,13 @@ export const sidebarSections: SidebarSection[] = [
         visible: false
       },
       { 
+        title: "Calculadora Meta",
+        url: "/lp/calculadora-meta", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Herramienta de valoración Meta Ads"
+      },
+      { 
         title: "Landing Pages", 
         url: "/admin/landing-pages", 
         icon: LayoutDashboard,

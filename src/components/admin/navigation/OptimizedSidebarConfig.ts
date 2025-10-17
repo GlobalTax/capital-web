@@ -12,7 +12,8 @@ import {
   Settings,
   Target,
   Eye,
-  Megaphone
+  Megaphone,
+  Calculator
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -70,6 +71,13 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         url: "/admin/lead-magnets", 
         icon: Zap,
         description: "Recursos descargables"
+      },
+      { 
+        title: "Calculadora Meta", 
+        url: "/lp/calculadora-meta", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Herramienta de valoración Meta Ads"
       },
       { 
         title: "Blog & Contenido", 
