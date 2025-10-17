@@ -421,42 +421,31 @@ export const useOptimizedSupabaseValuation = () => {
             }
           }, { component: 'OptimizedSupabaseValuation', action: 'backgroundEmail' });
 
-          // Background: Meta Pixel Advanced Matching
+          // Background: Unified tracking via EventSynchronizer (Facebook Pixel + GA4)
           await handleAsyncError(async () => {
-            if (typeof (window as any).fbq === 'function') {
-              const fbq = (window as any).fbq;
-              
-              // Extraer ciudad de location (formato: "Ciudad, Provincia")
-              const city = companyData.location?.split(',')[0]?.trim().toLowerCase() || '';
-              
-              // Preparar datos de Advanced Matching
-              const advancedMatchingData = {
-                em: companyData.email?.toLowerCase().trim(),
-                ph: companyData.phone?.replace(/\s+/g, ''),
-                fn: companyData.contactName?.split(' ')[0]?.toLowerCase().trim(),
-                ln: companyData.contactName?.split(' ').slice(1).join(' ')?.toLowerCase().trim(),
-                ct: city,
-                country: 'es'
-              };
-              
-              // Enviar evento Lead con Advanced Matching
-              fbq('track', 'Lead', {
-                content_name: 'Valoración de Empresa',
-                content_category: companyData.industry || 'General',
-                value: result.finalValuation || 0,
-                currency: 'EUR'
-              }, advancedMatchingData);
-              
-              console.log('✅ [Tracking] Meta Pixel Lead event sent with Advanced Matching:', {
-                hasEmail: !!advancedMatchingData.em,
-                hasPhone: !!advancedMatchingData.ph,
-                hasName: !!advancedMatchingData.fn,
-                hasCity: !!advancedMatchingData.ct
-              });
-            } else {
-              console.warn('⚠️ [Tracking] Meta Pixel not loaded, skipping Lead event');
-            }
-          }, { component: 'OptimizedSupabaseValuation', action: 'metaPixelTracking' });
+            const { getEventSynchronizer } = await import('@/utils/analytics/EventSynchronizer');
+            const eventSync = getEventSynchronizer();
+            
+            // Extraer ciudad de location (formato: "Ciudad, Provincia")
+            const city = companyData.location?.split(',')[0]?.trim().toLowerCase() || '';
+            
+            // Unified event tracking (FB Pixel + GA4 + Advanced Matching)
+            await eventSync.syncEvent('VALUATION_COMPLETED', {
+              content_name: 'Valoración de Empresa',
+              content_category: companyData.industry || 'General',
+              value: result.finalValuation || 0,
+              currency: 'EUR',
+              // Advanced Matching parameters
+              em: companyData.email?.toLowerCase().trim(),
+              ph: companyData.phone?.replace(/\s+/g, ''),
+              fn: companyData.contactName?.split(' ')[0]?.toLowerCase().trim(),
+              ln: companyData.contactName?.split(' ').slice(1).join(' ')?.toLowerCase().trim(),
+              ct: city,
+              country: 'es'
+            });
+            
+            console.log('✅ [Tracking] EventSynchronizer: VALUATION_COMPLETED sent with Advanced Matching');
+          }, { component: 'OptimizedSupabaseValuation', action: 'unifiedTracking' });
 
           // Background: Sync with external systems
           await handleAsyncError(async () => {

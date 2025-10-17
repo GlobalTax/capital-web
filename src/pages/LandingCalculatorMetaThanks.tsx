@@ -12,25 +12,36 @@ const LandingCalculatorMetaThanksInner = () => {
   const [result, setResult] = useState<any>(null);
   const [companyData, setCompanyData] = useState<any>(null);
 
-  // Recuperar datos de sessionStorage
+  // Recuperar datos de sessionStorage y enviar tracking unificado
   useEffect(() => {
     const storedResult = sessionStorage.getItem('valuationResult');
     const storedCompanyData = sessionStorage.getItem('valuationCompanyData');
 
     if (storedResult && storedCompanyData) {
       try {
-        setResult(JSON.parse(storedResult));
-        setCompanyData(JSON.parse(storedCompanyData));
+        const parsedResult = JSON.parse(storedResult);
+        const parsedCompanyData = JSON.parse(storedCompanyData);
+        setResult(parsedResult);
+        setCompanyData(parsedCompanyData);
         
-        // Disparar evento de conversión para Meta Pixel
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'Lead', {
-            content_name: 'Valoración Completada',
-            value: JSON.parse(storedResult).finalValuation,
-            currency: 'EUR'
-          });
-          console.log('🎯 Meta Pixel: Lead event triggered');
-        }
+        // Tracking unificado via EventSynchronizer (Facebook Pixel + GA4)
+        (async () => {
+          try {
+            const { getEventSynchronizer } = await import('@/utils/analytics/EventSynchronizer');
+            const eventSync = getEventSynchronizer();
+            
+            await eventSync.syncEvent('LEAD_THANK_YOU_PAGE', {
+              content_name: 'Valoración Completada - Thank You Page',
+              value: parsedResult.finalValuation,
+              currency: 'EUR',
+              industry: parsedCompanyData.industry || 'General'
+            });
+            
+            console.log('✅ EventSynchronizer: LEAD_THANK_YOU_PAGE event sent');
+          } catch (error) {
+            console.error('⚠️ Error sending tracking event:', error);
+          }
+        })();
       } catch (error) {
         console.error('Error parsing sessionStorage data:', error);
         navigate('/lp/calculadora-meta'); // Redirigir si hay error

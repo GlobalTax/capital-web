@@ -82,6 +82,9 @@ export const FacebookPixelStatus: React.FC<FacebookPixelStatusProps> = ({ pixelI
   const testPixelEvent = async () => {
     setIsTestingEvent(true);
     try {
+      // NOTA: Uso directo de fbq() aquí es intencional para verificar
+      // el estado del Pixel sin pasar por EventSynchronizer.
+      // Este es un test de diagnóstico específico del componente FacebookPixelStatus.
       if ((window as any).fbq) {
         (window as any).fbq('track', 'ViewContent', {
           content_name: 'Test Event from Admin Panel',
@@ -89,7 +92,7 @@ export const FacebookPixelStatus: React.FC<FacebookPixelStatusProps> = ({ pixelI
           value: 0,
           currency: 'EUR'
         });
-        console.log('✅ Test event sent to Facebook Pixel');
+        console.log('✅ Test event sent to Facebook Pixel (direct call for status verification)');
       }
     } catch (error) {
       console.error('❌ Failed to send test event:', error);

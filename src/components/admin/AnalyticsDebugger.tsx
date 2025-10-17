@@ -34,59 +34,29 @@ export const AnalyticsDebugger = () => {
     setDebugOutput(JSON.stringify(domainInfo, null, 2));
   }, []);
 
-  const sendTestEvent = () => {
+  const sendTestEvent = async () => {
     try {
       let eventsSuccessful = 0;
-      let eventsTotal = 0;
+      let eventsTotal = 1; // Solo contamos el evento unificado
 
-      // Test Google Analytics
-      if (typeof (window as any).gtag !== 'undefined') {
-        eventsTotal++;
-        (window as any).gtag('event', 'test_debug_event', {
-          event_category: 'debugging',
-          event_label: 'manual_test_from_debugger',
-          value: 1,
-          debug_mode: true,
-          custom_parameter_1: 'analytics_debugger',
-          timestamp: new Date().toISOString()
-        });
-        console.log('✅ Test event sent to Google Analytics (GA4)');
-        eventsSuccessful++;
-      } else {
-        console.warn('⚠️ Google Analytics (gtag) not available');
-        eventsTotal++;
-      }
-
-      // Test Facebook Pixel
-      if (typeof (window as any).fbq !== 'undefined') {
-        eventsTotal++;
-        (window as any).fbq('track', 'Lead', {
+      // Unified test event via EventSynchronizer (reemplaza llamadas directas a gtag/fbq)
+      try {
+        const { getEventSynchronizer } = await import('@/utils/analytics/EventSynchronizer');
+        const eventSync = getEventSynchronizer();
+        
+        await eventSync.syncEvent('DEBUG_TEST', {
           content_name: 'Debug Test Event',
           content_category: 'debugging',
           value: 1.00,
           currency: 'EUR',
-          source: 'analytics_debugger'
-        });
-        console.log('✅ Test event sent to Facebook Pixel');
-        eventsSuccessful++;
-      } else {
-        console.warn('⚠️ Facebook Pixel (fbq) not available');
-        eventsTotal++;
-      }
-
-      // Test Event Synchronizer
-      if (typeof (window as any).eventSynchronizer !== 'undefined') {
-        eventsTotal++;
-        (window as any).eventSynchronizer.track('debug_test_event', {
           source: 'analytics_debugger',
-          timestamp: new Date().toISOString(),
-          debug: true
+          timestamp: new Date().toISOString()
         });
-        console.log('✅ Test event sent to Event Synchronizer');
+        
+        console.log('✅ Test event sent via EventSynchronizer (FB Pixel + GA4)');
         eventsSuccessful++;
-      } else {
-        console.warn('⚠️ Event Synchronizer not available');
-        eventsTotal++;
+      } catch (error) {
+        console.error('❌ Error sending unified test event:', error);
       }
 
       toast.success(`Eventos enviados: ${eventsSuccessful}/${eventsTotal}. Revisa Google Analytics Real-time y la consola.`);
