@@ -24,6 +24,61 @@ serve(async (req) => {
   }
 
   try {
+    // ============= RATE LIMITING =============
+    // Limit: 5 user creations per hour per IP address
+    const clientIp = req.headers.get('x-forwarded-for') || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    // Create admin client for rate limit check
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    
+    const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
+      .rpc('check_rate_limit_enhanced', {
+        p_identifier: clientIp,
+        p_category: 'admin_user_creation',
+        p_max_requests: 5,
+        p_window_minutes: 60
+      });
+    
+    if (rateLimitError) {
+      console.error('❌ Rate limit check failed:', rateLimitError);
+      // Continue execution but log the error
+    } else if (!rateLimitOk) {
+      console.warn('⚠️ Rate limit exceeded for IP:', clientIp);
+      
+      // Log rate limit violation
+      await supabaseAdmin.from('security_events').insert({
+        event_type: 'RATE_LIMIT_EXCEEDED_USER_CREATION',
+        severity: 'medium',
+        ip_address: clientIp,
+        details: {
+          category: 'admin_user_creation',
+          limit: 5,
+          window: '60 minutes',
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Demasiadas solicitudes. Por favor, intenta más tarde.',
+          code: 'RATE_LIMIT_EXCEEDED'
+        }),
+        { 
+          status: 429, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '3600' } 
+        }
+      );
+    }
+    
+    console.log('✅ Rate limit check passed for IP:', clientIp);
+    
+    // ============= JWT VALIDATION =============
     // Get authorization header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
