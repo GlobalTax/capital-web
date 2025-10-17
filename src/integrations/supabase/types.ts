@@ -24,8 +24,6 @@ export type Database = {
           email_sent: boolean | null
           email_sent_at: string | null
           full_name: string
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           ip_address: unknown | null
           message: string | null
@@ -52,8 +50,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
           message?: string | null
@@ -80,8 +76,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name?: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
           message?: string | null
@@ -114,8 +108,6 @@ export type Database = {
           email_sent: boolean | null
           email_sent_at: string | null
           full_name: string
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           investment_range: string | null
           ip_address: unknown | null
@@ -143,8 +135,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_range?: string | null
           ip_address?: unknown | null
@@ -172,8 +162,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name?: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_range?: string | null
           ip_address?: unknown | null
@@ -1035,8 +1023,6 @@ export type Database = {
           email_sent_at: string | null
           experience: string | null
           full_name: string
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           ip_address: unknown | null
           is_deleted: boolean | null
@@ -1065,8 +1051,6 @@ export type Database = {
           email_sent_at?: string | null
           experience?: string | null
           full_name: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
           is_deleted?: boolean | null
@@ -1095,8 +1079,6 @@ export type Database = {
           email_sent_at?: string | null
           experience?: string | null
           full_name?: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
           is_deleted?: boolean | null
@@ -1134,8 +1116,6 @@ export type Database = {
           email_sent: boolean | null
           email_sent_at: string | null
           full_name: string
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           investment_budget: string | null
           ip_address: unknown | null
@@ -1174,8 +1154,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
@@ -1214,8 +1192,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name?: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
@@ -1366,8 +1342,6 @@ export type Database = {
           form_submitted_at: string | null
           growth_rate: number | null
           has_adjustments: boolean | null
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           industry: string
           ip_address: unknown | null
@@ -1426,8 +1400,6 @@ export type Database = {
           form_submitted_at?: string | null
           growth_rate?: number | null
           has_adjustments?: boolean | null
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           industry: string
           ip_address?: unknown | null
@@ -1486,8 +1458,6 @@ export type Database = {
           form_submitted_at?: string | null
           growth_rate?: number | null
           has_adjustments?: boolean | null
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           industry?: string
           ip_address?: unknown | null
@@ -1546,8 +1516,6 @@ export type Database = {
           email_sent: boolean | null
           email_sent_at: string | null
           full_name: string
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           investment_budget: string | null
           ip_address: unknown | null
@@ -1579,8 +1547,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
@@ -1612,8 +1578,6 @@ export type Database = {
           email_sent?: boolean | null
           email_sent_at?: string | null
           full_name?: string
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_budget?: string | null
           ip_address?: unknown | null
@@ -2470,8 +2434,6 @@ export type Database = {
           email_sent_at: string | null
           full_name: string
           how_did_you_hear: string | null
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           ip_address: unknown | null
           is_deleted: boolean | null
@@ -2504,8 +2466,6 @@ export type Database = {
           email_sent_at?: string | null
           full_name: string
           how_did_you_hear?: string | null
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
           is_deleted?: boolean | null
@@ -2538,8 +2498,6 @@ export type Database = {
           email_sent_at?: string | null
           full_name?: string
           how_did_you_hear?: string | null
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown | null
           is_deleted?: boolean | null
@@ -2778,8 +2736,6 @@ export type Database = {
           email_sent_at: string | null
           full_name: string
           gdpr_consent: boolean
-          hubspot_sent: boolean | null
-          hubspot_sent_at: string | null
           id: string
           investment_range: string | null
           investor_type: string | null
@@ -2823,8 +2779,6 @@ export type Database = {
           email_sent_at?: string | null
           full_name: string
           gdpr_consent?: boolean
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_range?: string | null
           investor_type?: string | null
@@ -2868,8 +2822,6 @@ export type Database = {
           email_sent_at?: string | null
           full_name?: string
           gdpr_consent?: boolean
-          hubspot_sent?: boolean | null
-          hubspot_sent_at?: string | null
           id?: string
           investment_range?: string | null
           investor_type?: string | null
@@ -5972,6 +5924,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_secure_temp_password: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_signed_valuation_token: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -5989,6 +5945,10 @@ export type Database = {
           last_login: string
           role: Database["public"]["Enums"]["admin_role"]
         }[]
+      }
+      get_user_role: {
+        Args: { check_user_id: string }
+        Returns: string
       }
       gtrgm_compress: {
         Args: { "": unknown }

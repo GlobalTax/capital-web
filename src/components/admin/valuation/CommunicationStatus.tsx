@@ -6,12 +6,12 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface ValuationData {
-  whatsapp_sent: boolean;
-  whatsapp_sent_at: string | null;
-  email_sent: boolean;
-  email_sent_at: string | null;
-  hubspot_sent: boolean;
-  hubspot_sent_at: string | null;
+  whatsapp_sent?: boolean;
+  whatsapp_sent_at?: string | null;
+  email_sent?: boolean;
+  email_sent_at?: string | null;
+  hubspot_sent?: boolean;
+  hubspot_sent_at?: string | null;
 }
 
 interface MessageLog {
@@ -37,7 +37,7 @@ const CommunicationStatus: React.FC<CommunicationStatusProps> = ({
   latestEmail,
   latestHubspot
 }) => {
-  const getStatusBadge = (sent: boolean, sentAt: string | null, log: MessageLog | null) => {
+  const getStatusBadge = (sent?: boolean, sentAt?: string | null, log?: MessageLog | null) => {
     if (!sent) {
       return <Badge variant="outline" className="text-muted-foreground"><Clock className="w-3 h-3 mr-1" />No enviado</Badge>;
     }
