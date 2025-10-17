@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,8 +7,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserPlus, Mail, User, Lock, Shield, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import * as userManagementService from '@/services/userManagementService';
+import { CreateAdminUserSchema } from '@/schemas/userSchemas';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateUserFormData {
   email: string;
@@ -93,113 +94,31 @@ export const CreateUser: React.FC = () => {
     setError('');
 
     try {
-      // Normalize data before sending
-      const email = formData.email.trim().toLowerCase();
-      const fullName = formData.fullName.trim();
-      const role = formData.role;
-
-      if (!email || !fullName) {
-        setError("Email y nombre completo son obligatorios");
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('🔵 Creando usuario vía Edge Function:', email);
-      
-      // Get current session and token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
-      }
-
-      console.log('🔑 Token presente:', !!session.access_token);
-      
-      // Call the secure Edge Function to create user with normalized data
-      const { data: userData, error: createError } = await supabase.functions.invoke(
-        'admin-create-user',
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: {
-            email,
-            fullName,
-            role
-          }
-        }
-      );
-
-if (createError) {
-  console.error('🔴 Error en Edge Function:', createError);
-  let errorMsg = typeof createError === 'object' && createError !== null
-    ? (createError as any).message || (createError as any).details || JSON.stringify(createError)
-    : String(createError);
-  // Intentar extraer detalles del cuerpo de la respuesta si está disponible
-  try {
-    const resp = (createError as any).context?.response;
-    if (resp && typeof resp.text === 'function') {
-      const text = await resp.text();
-      if (text) {
-        try {
-          const parsed = JSON.parse(text);
-          errorMsg = parsed.error || parsed.message || errorMsg;
-          if (parsed.field) errorMsg += ` (campo: ${parsed.field})`;
-        } catch {
-          errorMsg = text || errorMsg;
-        }
-      }
-    }
-  } catch {}
-  throw new Error(errorMsg);
-}
-
-      if (!userData || !userData.success) {
-        console.error('🔴 Respuesta inválida de Edge Function:', userData);
-        throw new Error(userData?.error || 'No se recibieron datos del usuario creado');
-      }
-
-      const tempPassword = userData.temporary_password;
-      console.log('✅ Usuario creado exitosamente:', {
-        userId: userData.user_id,
-        email: userData.email,
-        requiresPasswordChange: userData.requires_password_change
+      // Validate with Zod schema
+      const validatedData = CreateAdminUserSchema.parse({
+        email: formData.email.trim().toLowerCase(),
+        fullName: formData.fullName.trim(),
+        role: formData.role
       });
 
-      // Send credentials via email using existing edge function
-      console.log('📧 Enviando credenciales por email...');
-      try {
-        const { error: emailError } = await supabase.functions.invoke(
-          'send-user-credentials',
-          {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json'
-            },
-            body: {
-              email: formData.email,
-              fullName: formData.fullName,
-              temporaryPassword: tempPassword,
-              role: formData.role,
-              requiresPasswordChange: true
-            }
-          }
-        );
+      console.log('🔵 Creating user via service:', validatedData.email);
+      
+      // Create user using service
+      const result = await userManagementService.createAdminUser(validatedData);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Error al crear usuario');
+      }
 
-        if (emailError) {
-          console.error('⚠️ Error enviando email:', emailError);
-          toast({
-            title: "Usuario creado",
-            description: `Credenciales: ${tempPassword.substring(0, 4)}...${tempPassword.substring(tempPassword.length - 4)} (email falló)`,
-            variant: "destructive",
-          });
-        } else {
-          console.log('✅ Email de credenciales enviado exitosamente');
-        }
-      } catch (emailErr) {
-        console.error('⚠️ Excepción enviando email:', emailErr);
-        // Don't throw - user was created successfully
+      console.log('✅ User created successfully:', result.userId);
+
+      // Send credentials if user was created
+      if (result.userId) {
+        await userManagementService.sendUserCredentials(result.userId, {
+          email: validatedData.email,
+          fullName: validatedData.fullName,
+          role: validatedData.role
+        });
       }
 
       // Reset form and close modal
@@ -213,7 +132,7 @@ if (createError) {
       
       toast({
         title: "Usuario creado exitosamente",
-        description: "Usuario creado con privilegios de administrador y credenciales enviadas por email",
+        description: "Usuario creado y credenciales enviadas por email",
       });
 
       // Close modal after short delay
@@ -223,21 +142,10 @@ if (createError) {
       }, 2000);
 
     } catch (err: any) {
-      console.error('🔴 Error crítico creando usuario:', {
-        message: err.message,
-        code: err.code,
-        details: err.details,
-        hint: err.hint,
-        stack: err.stack
-      });
+      console.error('🔴 Error creating user:', err);
 
-      let errorMessage = err.message || 'Error desconocido al crear el usuario';
+      const errorMessage = err.message || 'Error desconocido al crear el usuario';
       
-      // Mensajes de error mejorados
-      if (errorMessage.includes('email')) {
-        errorMessage = `Error de validación de email: ${errorMessage}. Verifica la configuración de Supabase Auth.`;
-      }
-
       setError(errorMessage);
       toast({
         title: "Error",

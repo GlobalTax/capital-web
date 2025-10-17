@@ -253,11 +253,11 @@ const AdminUsersManager = () => {
                     <Label htmlFor="create-full-name">Nombre Completo</Label>
                     <Input
                       id="create-full-name"
-                      {...registerCreate('full_name', { required: 'El nombre es obligatorio' })}
+                      {...registerCreate('fullName', { required: 'El nombre es obligatorio' })}
                       placeholder="Juan Pérez"
                     />
-                    {createErrors.full_name && (
-                      <p className="text-sm text-destructive">{createErrors.full_name.message}</p>
+                    {createErrors.fullName && (
+                      <p className="text-sm text-destructive">{createErrors.fullName.message}</p>
                     )}
                   </div>
 
