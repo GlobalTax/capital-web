@@ -121,32 +121,6 @@ const LandingCalculatorMetaThanksInner = () => {
           />
         </div>
 
-        {/* Call to action adicional */}
-        <div className="mt-8 bg-slate-900 text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-3">
-            ¿Quieres una valoración profesional completa?
-          </h2>
-          <p className="text-slate-200 mb-6">
-            Nuestro equipo de expertos puede realizar un análisis exhaustivo de tu empresa con valoración profesional en 48 horas.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={() => window.open('https://calendly.com/capittal/30min', '_blank')}
-              size="lg"
-              className="bg-white text-slate-900 hover:bg-gray-100"
-            >
-              Reservar llamada gratuita
-            </Button>
-            <Button
-              onClick={() => window.location.href = 'https://capittal.es/contacto'}
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-slate-800"
-            >
-              Más información
-            </Button>
-          </div>
-        </div>
       </div>
     </UnifiedLayout>
   );
