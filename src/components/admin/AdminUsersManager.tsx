@@ -75,6 +75,7 @@ const AdminUsersManager = () => {
       handleSubmit: handleEditSubmit,
       reset: resetEdit,
       setValue: setEditValue,
+      control: editControl,
       formState: { errors: editErrors }
     } = useForm<Partial<AdminUser>>();
 
@@ -491,21 +492,31 @@ const AdminUsersManager = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="edit-role">Rol</Label>
-                <Select onValueChange={(value) => registerEdit('role').onChange({ target: { value } })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un rol" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
-                      <SelectItem key={key} value={key}>
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4" />
-                          {label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="role"
+                  control={editControl}
+                  rules={{ required: 'El rol es obligatorio' }}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4" />
+                              {label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {editErrors.role && (
+                  <p className="text-sm text-destructive">{editErrors.role.message}</p>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-4">

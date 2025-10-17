@@ -1,10 +1,10 @@
 // ============= ADMIN CREATE USER EDGE FUNCTION =============
 // Secure Edge Function to create users bypassing standard email validation
 // Only accessible by super_admin users
+// JWT validation is handled by Supabase Gateway (verify_jwt = true in config.toml)
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import * as djwt from "https://deno.land/x/djwt@v3.0.2/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,18 +36,37 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
     
-    const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
-      .rpc('check_rate_limit_enhanced', {
-        p_identifier: clientIp,
-        p_category: 'admin_user_creation',
-        p_max_requests: 5,
-        p_window_minutes: 60
-      });
+    let rateLimitOk = true;
+    try {
+      const { data, error: rateLimitError } = await supabaseAdmin
+        .rpc('check_rate_limit_enhanced', {
+          p_identifier: clientIp,
+          p_category: 'admin_user_creation',
+          p_max_requests: 5,
+          p_window_minutes: 60
+        });
+      
+      if (rateLimitError) {
+        console.error('❌ Rate limit RPC failed:', rateLimitError.message, 'Code:', rateLimitError.code);
+        // Log but continue - don't block user creation due to rate limit infrastructure issues
+        await supabaseAdmin.from('security_events').insert({
+          event_type: 'RATE_LIMIT_RPC_FAILED',
+          severity: 'medium',
+          details: {
+            error: rateLimitError.message,
+            code: rateLimitError.code,
+            category: 'admin_user_creation'
+          }
+        });
+      } else {
+        rateLimitOk = !!data;
+      }
+    } catch (rateLimitException) {
+      console.error('❌ Rate limit check exception:', rateLimitException);
+      // Continue execution
+    }
     
-    if (rateLimitError) {
-      console.error('❌ Rate limit check failed:', rateLimitError);
-      // Continue execution but log the error
-    } else if (!rateLimitOk) {
+    if (!rateLimitOk) {
       console.warn('⚠️ Rate limit exceeded for IP:', clientIp);
       
       // Log rate limit violation
@@ -78,12 +97,16 @@ serve(async (req) => {
     
     console.log('✅ Rate limit check passed for IP:', clientIp);
     
-    // ============= JWT VALIDATION =============
-    // Get authorization header
+    // ============= JWT VALIDATION VIA GATEWAY =============
+    // Since verify_jwt = true in config.toml, the Supabase Gateway has already validated the JWT
+    // We just need to extract the user info using auth.getUser()
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
+        JSON.stringify({ 
+          error: 'No authorization header',
+          code: 'MISSING_AUTH_HEADER'
+        }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -91,67 +114,39 @@ serve(async (req) => {
       );
     }
 
-    // Extract and VALIDATE JWT with signature verification
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-    
-    let userId: string;
-    let userEmail: string | undefined;
-    
-    try {
-      // Get JWT secret from environment
-      const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
-      if (!jwtSecret) {
-        throw new Error('JWT secret not configured');
+    // Create auth client to get user from validated JWT
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: {
+            Authorization: authHeader
+          }
+        }
       }
+    );
 
-      // Import cryptographic key for JWT verification
-      const key = await crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(jwtSecret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["verify"]
-      );
-
-      // Verify JWT signature using djwt
-      const payload = await djwt.verify(token, key) as any;
-      
-      // Validate required claims
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const expectedIssuer = supabaseUrl;
-      const expectedAudience = 'authenticated';
-      
-      if (payload.iss !== expectedIssuer) {
-        throw new Error(`Invalid issuer: ${payload.iss}`);
-      }
-      
-      if (payload.aud !== expectedAudience) {
-        throw new Error(`Invalid audience: ${payload.aud}`);
-      }
-      
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp && payload.exp < now) {
-        throw new Error('Token expired');
-      }
-      
-      userId = payload.sub;
-      userEmail = payload.email;
-      
-      if (!userId) {
-        throw new Error('No user ID in token');
-      }
-      
-      console.log('✅ JWT validated with signature:', { userId, userEmail });
-    } catch (decodeError) {
-      console.error('❌ JWT validation failed:', decodeError);
+    const { data: { user }, error: userError } = await authClient.auth.getUser();
+    
+    if (userError || !user) {
+      console.error('❌ Failed to get user from JWT:', userError);
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ 
+          error: 'Invalid or expired token',
+          code: 'JWT_VALIDATION_VIA_GATEWAY'
+        }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
+
+    const userId = user.id;
+    const userEmail = user.email;
+    
+    console.log('✅ JWT validated via gateway:', { userId, userEmail });
 
     // Create admin client to verify role
     const adminClient = createClient(
@@ -261,15 +256,16 @@ try {
       );
     }
 
-    // Validate role
-    const allowedRoles = ['super_admin', 'admin', 'editor'] as const;
+    // Validate role (aligned with UI)
+    const allowedRoles = ['super_admin', 'admin', 'editor', 'viewer'] as const;
     if (!allowedRoles.includes(role as any)) {
       console.error('❌ Invalid role:', role);
       return new Response(
         JSON.stringify({ 
           error: 'Invalid role', 
           provided: role,
-          allowed: allowedRoles 
+          allowed: allowedRoles,
+          code: 'ROLE_NOT_ALLOWED'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
