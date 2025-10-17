@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
 
 interface ToolRatingProps {
@@ -22,6 +23,7 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { toast } = useToast();
+  const { createToolRating } = useHubSpotIntegration();
   const { saveToolRating } = useOptimizedSupabaseValuation();
 
   const setRating = (category: keyof typeof ratings, value: number) => {
@@ -51,8 +53,15 @@ const ToolRating: React.FC<ToolRatingProps> = ({ companyData }) => {
         company_size: companyData?.employeeRange || ''
       };
 
-      // Guardar en Supabase
+      // Guardar primero en Supabase
       await saveToolRating(ratingData);
+
+      // Luego enviar a HubSpot
+      try {
+        await createToolRating(ratingData);
+      } catch (hubspotError) {
+        console.warn('Error enviando a HubSpot, pero datos guardados en Supabase:', hubspotError);
+      }
 
       setIsSubmitted(true);
       toast({

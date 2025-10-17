@@ -241,6 +241,7 @@ const ValuationDetailPage = () => {
               valuation={valuation}
               latestWhatsapp={logs.latestWhatsapp}
               latestEmail={logs.latestEmail}
+              latestHubspot={logs.latestHubspot}
             />
           )}
         </div>

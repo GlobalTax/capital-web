@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Badge } from '@/components/ui/badge';
 import {
   Sidebar,
@@ -43,30 +43,9 @@ import {
 
 export function RoleBasedSidebar() {
   const location = useLocation();
-  const { role, isLoading, canEditContent, canViewLeads } = useSimpleAuth();
+  const { getMenuVisibility, userRole, isLoading } = useRoleBasedPermissions();
 
-  // Simple visibility based on role
-  const menuVisibility = {
-    contactLeads: canViewLeads,
-    collaboratorApplications: canViewLeads,
-    marketingAutomation: canEditContent,
-    alerts: canEditContent,
-    blogV2: canEditContent,
-    sectorReports: canEditContent,
-    caseStudies: canEditContent,
-    leadMagnets: canEditContent,
-    operations: canEditContent,
-    multiples: canEditContent,
-    statistics: canEditContent,
-    team: canEditContent,
-    testimonials: canEditContent,
-    carouselTestimonials: canEditContent,
-    carouselLogos: canEditContent,
-    marketingIntelligence: canEditContent,
-    marketingHub: canEditContent,
-    adminUsers: role === 'super_admin',
-    settings: role === 'super_admin',
-  };
+  const menuVisibility = getMenuVisibility();
 
   const menuSections = [
     {
@@ -285,7 +264,7 @@ export function RoleBasedSidebar() {
             <div className="flex items-center gap-2 mt-1">
               <p className="text-xs text-sidebar-foreground/60">Panel de Control</p>
               <Badge variant="outline" className="text-xs border-sidebar-border text-sidebar-foreground/80">
-                {role || 'viewer'}
+                {userRole}
               </Badge>
             </div>
           </div>

@@ -12,11 +12,13 @@ interface MessageLog {
   retry_count: number | null;
 }
 
-export interface ValuationLogData {
+interface ValuationLogData {
   whatsappLogs: MessageLog[];
   emailLogs: MessageLog[];
+  hubspotLogs: MessageLog[];
   latestWhatsapp: MessageLog | null;
-  latestEmail: MessageLog | null;
+  latestEmail: MessageLog | null; 
+  latestHubspot: MessageLog | null;
 }
 
 export const useValuationLogs = (valuationId: string) => {
@@ -39,12 +41,15 @@ export const useValuationLogs = (valuationId: string) => {
       // Separar logs por tipo
       const whatsappLogs = logs.filter(log => log.type === 'whatsapp');
       const emailLogs = logs.filter(log => log.type === 'email');
+      const hubspotLogs = logs.filter(log => log.type === 'hubspot');
 
       return {
         whatsappLogs,
         emailLogs,
+        hubspotLogs,
         latestWhatsapp: whatsappLogs[0] || null,
         latestEmail: emailLogs[0] || null,
+        latestHubspot: hubspotLogs[0] || null,
       };
     },
     enabled: !!valuationId,

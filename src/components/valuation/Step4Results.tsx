@@ -3,6 +3,7 @@ import { TrendingUp, Download, RefreshCw, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { useHubSpotIntegration } from '@/hooks/useHubSpotIntegration';
 import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
 import ReferralPrompt from './ReferralPrompt';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,7 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [dataSaved, setDataSaved] = useState(false);
   const { toast } = useToast();
+  const { createCompanyValuation } = useHubSpotIntegration();
   const { saveValuation } = useOptimizedSupabaseValuation();
   const { t } = useI18n();
 
@@ -54,6 +56,28 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
               variant: "destructive",
             });
             return; // No continuar si Supabase falla
+          }
+          
+          // PASO 2: Intentar HubSpot (opcional)
+          try {
+            console.log('📧 Intentando enviar a HubSpot...');
+            await createCompanyValuation({
+              companyName: companyData.companyName,
+              cif: companyData.cif,
+              contactName: companyData.contactName,
+              email: companyData.email,
+              phone: companyData.phone,
+              industry: companyData.industry,
+              revenue: companyData.revenue,
+              ebitda: companyData.ebitda,
+              finalValuation: result.finalValuation,
+              employeeRange: companyData.employeeRange,
+              location: companyData.location
+            });
+            console.log('✅ Datos enviados correctamente a HubSpot');
+          } catch (hubspotError) {
+            console.warn('⚠️ Error enviando a HubSpot (no crítico):', hubspotError);
+            // No mostramos error al usuario porque los datos sí se guardaron en Supabase
           }
           
           setDataSaved(true);

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
-import './useRoleBasedLayouts.css';
+import { useRoleBasedPermissions } from './useRoleBasedPermissions';
 
 // Importar las interfaces de permisos
 interface RolePermissions {
@@ -366,13 +365,13 @@ const defaultLayouts: Record<string, DashboardLayout> = {
 };
 
 export function useRoleBasedLayouts() {
-  const { role: userRole, hasPermission } = useSimpleAuth();
+  const { userRole, hasPermission } = useRoleBasedPermissions();
   const [customLayouts, setCustomLayouts] = useState<Record<string, DashboardLayout>>({});
   const [activeLayoutId, setActiveLayoutId] = useState<string>('');
 
   // Obtener permisos del rol
   const rolePermissions = useMemo(() => {
-    if (!userRole) {
+    if (!userRole || userRole === 'none') {
       return ROLE_PERMISSIONS.none;
     }
     return ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || ROLE_PERMISSIONS.none;
@@ -387,15 +386,15 @@ export function useRoleBasedLayouts() {
   const filteredLayout = useMemo(() => {
     if (!defaultLayout) return null;
 
-    // For now, allow all widgets for the user's role
-    // In production, implement proper permission checking
-    const allowedWidgets = defaultLayout.widgets;
+    const allowedWidgets = defaultLayout.widgets.filter(widget => 
+      widget.permissions.every(permission => hasPermission(permission as keyof RolePermissions))
+    );
 
     return {
       ...defaultLayout,
       widgets: allowedWidgets
     };
-  }, [defaultLayout, rolePermissions]);
+  }, [defaultLayout, hasPermission, rolePermissions]);
 
   // Cargar layouts personalizados (esto sería desde Supabase)
   useEffect(() => {

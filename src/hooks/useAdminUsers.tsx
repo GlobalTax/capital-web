@@ -1,16 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import * as userManagementService from '@/services/userManagementService';
-import type { AdminUserData, CreateAdminUserInput } from '@/schemas/userSchemas';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
+import { useAuth } from '@/contexts/AuthContext';
 
-// Re-export types from service layer
-export type AdminUser = AdminUserData;
-export type CreateAdminUserData = CreateAdminUserInput;
+export interface AdminUser {
+  id: string;
+  user_id: string;
+  email?: string;
+  full_name?: string;
+  role: 'super_admin' | 'admin' | 'editor' | 'viewer';
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+  last_login?: string;
+  needs_credentials?: boolean;
+  credentials_sent_at?: string;
+}
+
+export interface CreateAdminUserData {
+  email: string;
+  password: string;
+  full_name: string;
+  role: 'super_admin' | 'admin' | 'editor' | 'viewer';
+}
 
 export const useAdminUsers = () => {
-  const [users, setUsers] = useState<AdminUserData[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,61 +58,173 @@ export const useAdminUsers = () => {
   }, [currentUser]);
 
   const fetchUsers = useCallback(async () => {
-    console.log('🔄 [useAdminUsers] Starting fetchUsers via service...');
+    console.log('🔄 [useAdminUsers] Starting fetchUsers...');
     try {
       setIsLoading(true);
       setError(null);
       
-      const data = await userManagementService.fetchAdminUsers();
-      console.log('✅ [useAdminUsers] Users fetched:', data.length);
-      setUsers(data);
+      console.log('📡 [useAdminUsers] Making Supabase query...');
+      const { data, error: fetchError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      console.log('📊 [useAdminUsers] Query result:', { 
+        hasError: !!fetchError, 
+        dataCount: data?.length, 
+        error: fetchError?.message 
+      });
+
+      if (fetchError) {
+        console.error('❌ [useAdminUsers] Supabase error:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('✅ [useAdminUsers] Setting users data:', data);
+      setUsers(data || []);
+      
+      logger.info('Admin users fetched successfully', {
+        count: data?.length || 0
+      }, { context: 'system', component: 'useAdminUsers' });
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar usuarios';
       console.error('💥 [useAdminUsers] Fetch failed:', err);
       setError(errorMessage);
-      toast({
-        title: "Error al cargar usuarios",
-        description: errorMessage,
-        variant: "destructive",
+      logger.error('Failed to fetch admin users', err as Error, {
+        context: 'system',
+        component: 'useAdminUsers'
       });
     } finally {
-      console.log('🏁 [useAdminUsers] Fetch completed');
+      console.log('🏁 [useAdminUsers] Fetch completed, setting loading false');
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
-  const createUser = useCallback(async (userData: CreateAdminUserInput): Promise<void> => {
+  const createUser = useCallback(async (userData: CreateAdminUserData): Promise<void> => {
     try {
-      console.log('📝 Creating user via service:', userData.email);
-      
-      const result = await userManagementService.createAdminUser(userData);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Error al crear usuario');
+      // Normalize data before sending
+      const email = userData.email.trim().toLowerCase();
+      const fullName = userData.full_name.trim();
+      const role = userData.role;
+
+      if (!email || !fullName) {
+        throw new Error("Email y nombre completo son obligatorios");
       }
 
-      console.log('✅ User created successfully:', result.userId);
+      console.log('📝 Creating new admin user via Edge Function:', { email, role });
+
+      // Get current session and token
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Send credentials if user was created
-      if (result.userId && userData.email && userData.fullName) {
-        await userManagementService.sendUserCredentials(result.userId, {
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
+      }
+
+      console.log('🔑 Token presente:', !!session.access_token);
+
+      // Invocar Edge Function admin-create-user with normalized data
+      const { data, error: edgeFunctionError } = await supabase.functions.invoke('admin-create-user', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: {
+          email,
+          fullName,
+          role
+        }
+      });
+
+if (edgeFunctionError) {
+  console.error('❌ Edge Function error:', edgeFunctionError);
+  let errorMsg = typeof edgeFunctionError === 'object' && edgeFunctionError !== null
+    ? (edgeFunctionError as any).message || (edgeFunctionError as any).details || JSON.stringify(edgeFunctionError)
+    : String(edgeFunctionError);
+  // Intentar leer el cuerpo de respuesta para obtener más detalles
+  try {
+    const resp = (edgeFunctionError as any).context?.response;
+    if (resp && typeof resp.text === 'function') {
+      const text = await resp.text();
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          errorMsg = parsed.error || parsed.message || errorMsg;
+          if (parsed.field) errorMsg += ` (campo: ${parsed.field})`;
+        } catch {
+          errorMsg = text || errorMsg;
+        }
+      }
+    }
+  } catch {}
+  throw new Error(errorMsg);
+}
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Error desconocido al crear usuario');
+      }
+
+      console.log('✅ User created via Edge Function:', data.user_id);
+
+      // Enviar email con credenciales temporales
+      console.log('📧 Sending credentials email to:', userData.email);
+
+      const { error: emailError } = await supabase.functions.invoke('send-user-credentials', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: {
           email: userData.email,
-          fullName: userData.fullName,
-          role: userData.role
+          fullName: userData.full_name,
+          temporaryPassword: data.temporary_password,
+          role: userData.role,
+          requiresPasswordChange: true
+        }
+      });
+
+      if (emailError) {
+        console.error('⚠️ Failed to send credentials email:', emailError);
+        
+        // Mostrar contraseña temporal si falla el email
+        const pwdPreview = `${data.temporary_password.substring(0, 4)}...${data.temporary_password.substring(data.temporary_password.length - 4)}`;
+        
+        toast({
+          title: "⚠️ Usuario creado pero email no enviado",
+          description: `${userData.full_name} ha sido creado con éxito. Contraseña temporal: ${pwdPreview} (Ver consola para contraseña completa)`,
+          variant: "destructive",
+          duration: 15000
         });
+        
+        console.warn('🔑 CONTRASEÑA TEMPORAL COMPLETA:', data.temporary_password);
+        console.warn('📋 Email del usuario:', userData.email);
+      } else {
+        console.log('✅ Credentials email sent successfully to:', userData.email);
       }
 
       await fetchUsers();
       
       toast({
-        title: "Usuario creado exitosamente",
-        description: `${userData.fullName} ha sido añadido como ${userData.role}`,
+        title: emailError ? "Usuario creado (email pendiente)" : "Usuario creado exitosamente",
+        description: emailError 
+          ? `${userData.full_name} ha sido añadido como ${userData.role}. ⚠️ Email no enviado. Revisa la consola.`
+          : `${userData.full_name} ha sido añadido como ${userData.role}. Email con credenciales enviado a ${userData.email}.`,
+        variant: emailError ? "destructive" : "default"
       });
+
+      logger.info('Admin user created successfully', {
+        email: userData.email,
+        role: userData.role,
+        user_id: data.user_id
+      }, { context: 'system', component: 'useAdminUsers' });
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al crear usuario';
-      console.error('Failed to create user:', err);
+      logger.error('Failed to create admin user', err as Error, {
+        context: 'system',
+        component: 'useAdminUsers',
+        data: { email: userData.email, role: userData.role }
+      });
       
       toast({
         title: "Error al crear usuario",
@@ -110,17 +238,21 @@ export const useAdminUsers = () => {
 
   const updateUser = useCallback(async (userId: string, updates: Partial<AdminUser>): Promise<void> => {
     try {
+      // Obtener datos del usuario antes de actualizar para notificaciones
       const oldUser = users.find(u => u.id === userId);
       
-      const result = await userManagementService.updateAdminUser(userId, updates);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Error al actualizar usuario');
+      const { error } = await supabase
+        .from('admin_users')
+        .update(updates)
+        .eq('id', userId);
+
+      if (error) {
+        throw error;
       }
 
       await fetchUsers();
       
-      // Send notifications if needed
+      // Enviar notificaciones según el tipo de cambio
       if (oldUser && updates.role && oldUser.role !== updates.role) {
         await sendNotification(
           'role_changed',
@@ -145,23 +277,38 @@ export const useAdminUsers = () => {
         description: "Los cambios se han guardado correctamente",
       });
 
+      logger.info('Admin user updated successfully', {
+        userId,
+        updates
+      }, { context: 'system', component: 'useAdminUsers' });
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al actualizar usuario';
+      logger.error('Failed to update admin user', err as Error, {
+        context: 'system',
+        component: 'useAdminUsers',
+        data: { userId, updates }
+      });
+      
       toast({
         title: "Error al actualizar usuario",
         description: errorMessage,
         variant: "destructive",
       });
+      
       throw err;
     }
-  }, [users, fetchUsers, toast, sendNotification, currentUser]);
+  }, [fetchUsers, toast]);
 
   const deleteUser = useCallback(async (userId: string): Promise<void> => {
     try {
-      const result = await userManagementService.deleteAdminUser(userId);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Error al eliminar usuario');
+      const { error } = await supabase
+        .from('admin_users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        throw error;
       }
 
       await fetchUsers();
@@ -171,13 +318,24 @@ export const useAdminUsers = () => {
         description: "El usuario ha sido eliminado del sistema",
       });
 
+      logger.info('Admin user deleted successfully', {
+        userId
+      }, { context: 'system', component: 'useAdminUsers' });
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al eliminar usuario';
+      logger.error('Failed to delete admin user', err as Error, {
+        context: 'system',
+        component: 'useAdminUsers',
+        data: { userId }
+      });
+      
       toast({
         title: "Error al eliminar usuario",
         description: errorMessage,
         variant: "destructive",
       });
+      
       throw err;
     }
   }, [fetchUsers, toast]);
@@ -189,21 +347,39 @@ export const useAdminUsers = () => {
   const sendCredentials = useCallback(async (userId: string): Promise<void> => {
     try {
       const user = users.find(u => u.id === userId);
-      if (!user || !user.email || !user.full_name) {
-        throw new Error('Usuario no encontrado o datos incompletos');
+      if (!user) throw new Error('Usuario no encontrado');
+
+      // Get current session and token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
       }
 
-      const result = await userManagementService.sendUserCredentials(userId, {
-        email: user.email,
-        fullName: user.full_name,
-        role: user.role
+      // Generate temporary password
+      const temporaryPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
+      
+      const { error } = await supabase.functions.invoke('send-user-credentials', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: {
+          email: user.email,
+          fullName: user.full_name,
+          temporaryPassword,
+          role: user.role,
+          requiresPasswordChange: true
+        }
       });
 
-      if (!result.success) {
-        throw new Error(result.error || 'Error al enviar credenciales');
-      }
+      if (error) throw error;
 
-      await fetchUsers();
+      // Update user to mark credentials as sent
+      await updateUser(userId, { 
+        needs_credentials: false, 
+        credentials_sent_at: new Date().toISOString() 
+      });
 
       toast({
         title: "Credenciales enviadas",
@@ -219,7 +395,7 @@ export const useAdminUsers = () => {
       });
       throw err;
     }
-  }, [users, fetchUsers, toast]);
+  }, [users, updateUser, toast]);
 
   const sendMassCredentials = useCallback(async (userIds: string[]): Promise<void> => {
     const results = { success: 0, failed: 0 };
@@ -259,13 +435,14 @@ export const useAdminUsers = () => {
     try {
       // Create multiple users for Capittal team
       const teamMembers = [
-        { email: 'director@capittal.com', fullName: 'Director Capittal', role: 'admin' as const },
-        { email: 'analista@capittal.com', fullName: 'Analista Senior', role: 'editor' as const },
-        { email: 'consultor@capittal.com', fullName: 'Consultor Financiero', role: 'editor' as const },
+        { email: 'director@capittal.com', full_name: 'Director Capittal', role: 'admin' as const },
+        { email: 'analista@capittal.com', full_name: 'Analista Senior', role: 'editor' as const },
+        { email: 'consultor@capittal.com', full_name: 'Consultor Financiero', role: 'editor' as const },
       ];
 
       for (const member of teamMembers) {
-        await createUser(member);
+        const password = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
+        await createUser({ ...member, password });
       }
 
       toast({

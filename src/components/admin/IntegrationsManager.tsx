@@ -20,6 +20,14 @@ interface Integration {
 const IntegrationsManager = () => {
   const [integrations, setIntegrations] = useState<Integration[]>([
     {
+      id: 'hubspot',
+      name: 'HubSpot CRM',
+      description: 'Sincronizar leads y contactos con HubSpot',
+      status: 'connected',
+      lastSync: '2024-01-15 10:30',
+      config: { apiKey: '••••••••••••', autoSync: true }
+    },
+    {
       id: 'apollo',
       name: 'Apollo.io',
       description: 'Enriquecimiento de datos y prospección',
@@ -292,6 +300,17 @@ const IntegrationsManager = () => {
               />
             </div>
 
+            {selectedIntegration.id === 'hubspot' && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Sincronización Automática</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Sincronizar leads automáticamente cada hora
+                  </p>
+                </div>
+                <Switch checked={selectedIntegration.config?.autoSync || false} />
+              </div>
+            )}
 
             <div className="flex gap-2">
               <Button onClick={() => setSelectedIntegration(null)}>

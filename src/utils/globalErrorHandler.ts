@@ -98,48 +98,29 @@ class GlobalErrorHandler {
   }
 
   private isKnownPlatformError(message: string): boolean {
-    // ✅ Errores categorizados por severidad
-    const ignorableErrors = [
-      // Tracking & Privacy
-      'Tracking Prevention blocked access to storage',
-      'Tracking Prevention blocked',
-      
-      // WebSocket (ya deshabilitado en optimizedClient)
-      'WebSocket connection',
-      'WebSocket handshake',
-      'Unexpected response code: 404',
-      'Unexpected response code: 412',
-      'Unexpected response code: 502',
-      
-      // CORS & Network (externos a la app)
+    const knownErrors = [
       'Failed to load resource',
       'Access to fetch',
       'CORS policy',
+      'WebSocket connection',
+      'WebSocket handshake',
+      'Unexpected response code: 404',
       'ERR_NETWORK',
       'ERR_CONNECTION',
-      'ERR_HTTP2_PROTOCOL_ERROR',
-      'net::ERR_FAILED',
-      
-      // Lovable Platform (externos)
-      'lovable-api.com',
-      'lovableproject.com',
-      '/_sandbox/dev-server',
-      
-      // Browser Features
+      'GoTrueClient instances detected',
+      'Tracking Prevention blocked access to storage',
+      'Tracking Prevention blocked',
       'Unrecognized feature',
       'Unrecognized feature: \'vr\'',
       'Unrecognized feature: \'ambient-light-sensor\'',
       'Unrecognized feature: \'battery\'',
       'iframe which has both allow-scripts',
-      
-      // External Services
-      'GoTrueClient instances detected',
       'pushLogsToGrafana',
       'firestore.googleapis.com',
+      'lovable-api.com',
+      'lovableproject.com',
       'Cookiebot',
       'domain is not authorized',
-      
-      // Browser Extensions
       'runtime.lastError',
       'message port closed',
       'message channel closed',
@@ -148,18 +129,10 @@ class GlobalErrorHandler {
       'chrome-extension://',
       'moz-extension://',
       'safari-extension://',
-      'edge-extension://',
-      
-      // Content Security Policy (reportados, no críticos)
-      'Refused to compile or instantiate WebAssembly',
-      'unsafe-eval',
-      
-      // Intervention (optimizaciones del navegador)
-      'Images loaded lazily',
-      'Load events are deferred'
+      'edge-extension://'
     ];
 
-    return ignorableErrors.some(pattern => message.includes(pattern));
+    return knownErrors.some(pattern => message.includes(pattern));
   }
 
   private isKnownResourceError(src: string): boolean {

@@ -11,7 +11,6 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAdmin: boolean;
-  role: 'super_admin' | 'admin' | 'viewer' | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -28,7 +27,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [role, setRole] = useState<'super_admin' | 'admin' | 'viewer' | null>(null);
   const [authTimeout, setAuthTimeout] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
@@ -42,6 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     }
     
+    // Prevent concurrent admin checks
     if (isCheckingAdmin) {
       return isAdmin;
     }
@@ -49,43 +48,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return checkAdminStatusFromDB(targetUserId);
   }, [user?.id, isCheckingAdmin, isAdmin]);
 
+  // Función interna para consultar DB (reutilizable)
   const checkAdminStatusFromDB = async (userId: string): Promise<boolean> => {
     setIsCheckingAdmin(true);
     
     try {
-      const { data, error } = await supabase
+      // ⚡ Timeout reducido 5s → 3s (optimización)
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Admin check timeout')), 3000);
+      });
+
+      const checkPromise = supabase
         .from('admin_users')
         .select('is_active, role')
         .eq('user_id', userId)
         .maybeSingle();
+      
+      const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
 
-      if (error || !data || !data.is_active) {
+      if (error) {
+        // If it's a network error, try one more time after a short delay
+        if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('timeout')) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const retryPromise = supabase
+            .from('admin_users')
+            .select('is_active, role')
+            .eq('user_id', userId)
+            .maybeSingle();
+            
+          // ⚡ Retry timeout reducido 3s → 2s
+          const { data: retryData, error: retryError } = await Promise.race([
+            retryPromise, 
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Retry timeout')), 2000))
+          ]);
+            
+          if (!retryError && retryData) {
+            const adminStatus = !!(retryData && retryData.is_active === true);
+            setIsAdmin(adminStatus);
+            return adminStatus;
+          }
+        }
+        
         setIsAdmin(false);
-        setRole(null);
         return false;
       }
 
-      // Solo admins, super_admins y viewers tienen acceso
-      const validRoles = ['super_admin', 'admin', 'viewer'];
-      const hasValidRole = validRoles.includes(data.role);
+      const adminStatus = !!(data && data.is_active === true);
+      setIsAdmin(adminStatus);
       
-      if (hasValidRole) {
-        setIsAdmin(true);
-        setRole(data.role as 'super_admin' | 'admin' | 'viewer');
+      if (adminStatus) {
         logger.info('Admin access granted', {
           userId,
-          role: data.role
-        }, { context: 'auth', component: 'AuthContext' });
-      } else {
-        setIsAdmin(false);
-        setRole(null);
-        logger.warn('User has active admin record but invalid role', {
-          userId,
-          role: data.role
+          role: data?.role
         }, { context: 'auth', component: 'AuthContext' });
       }
       
-      return hasValidRole;
+      return adminStatus;
     } catch (error) {
       logger.error('Failed to check admin status', error as Error, { 
         context: 'auth', 
@@ -93,8 +112,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         userId 
       });
       
+      // Toast genérico para timeouts (no alarmante)
+      if (error instanceof Error && error.message.includes('timeout')) {
+        toast({
+          title: "Verificación lenta",
+          description: "La verificación de permisos está tardando. Intenta recargar si el problema persiste.",
+          variant: "default",
+        });
+      }
+      
       setIsAdmin(false);
-      setRole(null);
       return false;
     } finally {
       setIsCheckingAdmin(false);
@@ -279,7 +306,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setSession(null);
     setIsAdmin(false);
-    setRole(null);
     setIsLoading(false);
     
     toast({
@@ -291,7 +317,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Force admin reload for debugging
   const forceAdminReload = useCallback(async () => {
     setIsAdmin(false);
-    setRole(null);
     setIsCheckingAdmin(false);
     
     if (user?.id) {
@@ -338,7 +363,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
       setSession(null);
       setIsAdmin(false);
-      setRole(null);
       setIsLoading(false);
       setIsCheckingAdmin(false);
       
@@ -375,7 +399,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       auth: {
         isLoading,
         isAdmin,
-        role,
         isCheckingAdmin,
         hasTimeout: !!authTimeout
       },
@@ -393,7 +416,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     isLoading,
     isAdmin,
-    role,
     signIn,
     signUp,
     signOut,

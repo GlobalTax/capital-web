@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Eye, Crown, Lock } from 'lucide-react';
+import { Shield, Users, Edit, Eye, Crown, Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ROLE_CONFIG = {
@@ -15,7 +15,13 @@ const ROLE_CONFIG = {
     label: 'Admin',
     icon: Shield,
     color: 'default' as const,
-    description: 'Gestión operativa completa'
+    description: 'Gestión operativa completa excepto usuarios'
+  },
+  editor: {
+    label: 'Editor',
+    icon: Edit,
+    color: 'secondary' as const,
+    description: 'Creación y edición de contenido'
   },
   viewer: {
     label: 'Viewer',
@@ -36,18 +42,15 @@ interface RoleIndicatorProps {
   showIcon?: boolean;
   showTooltip?: boolean;
   className?: string;
-  role?: string | null;
 }
 
 export const RoleIndicator: React.FC<RoleIndicatorProps> = ({
   size = 'default',
   showIcon = true,
   showTooltip = true,
-  className = '',
-  role: propRole
+  className = ''
 }) => {
-  const { role: hookRole, isLoading } = useSimpleAuth();
-  const role = propRole || hookRole;
+  const { userRole, isLoading } = useRoleBasedPermissions();
 
   if (isLoading) {
     return (
@@ -57,7 +60,7 @@ export const RoleIndicator: React.FC<RoleIndicatorProps> = ({
     );
   }
 
-  const roleConfig = ROLE_CONFIG[role as keyof typeof ROLE_CONFIG] || ROLE_CONFIG.none;
+  const roleConfig = ROLE_CONFIG[userRole] || ROLE_CONFIG.none;
   const Icon = roleConfig.icon;
 
   const badge = (
@@ -82,11 +85,19 @@ export const RoleIndicator: React.FC<RoleIndicatorProps> = ({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger>
           {badge}
         </TooltipTrigger>
-        <TooltipContent>
-          <p className="text-sm">{roleConfig.description}</p>
+        <TooltipContent className="max-w-xs">
+          <div className="space-y-2">
+            <p className="font-medium flex items-center gap-2">
+              <Icon className="h-4 w-4" />
+              {roleConfig.label}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {roleConfig.description}
+            </p>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -98,115 +109,67 @@ interface PermissionListProps {
 }
 
 export const PermissionList: React.FC<PermissionListProps> = ({ compact = false }) => {
-  const { 
-    role, 
-    isLoading,
-    canManageUsers,
-    canEditContent,
-    canPublishContent,
-    canViewLeads,
-    canEditLeads,
-    canExportLeads,
-    canViewBasicAnalytics,
-    canViewAdvancedAnalytics,
-    canManageSettings,
-    canManageIntegrations,
-    canViewAuditLogs
-  } = useSimpleAuth();
+  const { permissions, userRole } = useRoleBasedPermissions();
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-      </div>
-    );
-  }
-
-  const permissionGroups = [
-    {
-      title: 'Gestión de Usuarios',
-      permissions: [
-        { name: 'Gestionar usuarios', value: canManageUsers }
-      ]
-    },
-    {
-      title: 'Gestión de Contenido',
-      permissions: [
-        { name: 'Editar contenido', value: canEditContent },
-        { name: 'Publicar contenido', value: canPublishContent }
-      ]
-    },
-    {
-      title: 'Leads',
-      permissions: [
-        { name: 'Ver leads', value: canViewLeads },
-        { name: 'Editar leads', value: canEditLeads },
-        { name: 'Exportar leads', value: canExportLeads }
-      ]
-    },
-    {
-      title: 'Analytics',
-      permissions: [
-        { name: 'Analytics básicos', value: canViewBasicAnalytics },
-        { name: 'Analytics avanzados', value: canViewAdvancedAnalytics }
-      ]
-    },
-    {
-      title: 'Configuración',
-      permissions: [
-        { name: 'Configuración del sistema', value: canManageSettings },
-        { name: 'Gestionar integraciones', value: canManageIntegrations },
-        { name: 'Ver logs de auditoría', value: canViewAuditLogs }
-      ]
-    }
-  ];
-
-  const activePermissions = permissionGroups.reduce((acc, group) => 
-    acc + group.permissions.filter(p => p.value).length, 0
-  );
-  const totalPermissions = permissionGroups.reduce((acc, group) => 
-    acc + group.permissions.length, 0
-  );
+  const permissionGroups = {
+    'Gestión de Usuarios': [
+      { key: 'canManageUsers', label: 'Gestionar usuarios' },
+      { key: 'canCreateUsers', label: 'Crear usuarios' },
+      { key: 'canEditUsers', label: 'Editar usuarios' },
+      { key: 'canDeleteUsers', label: 'Eliminar usuarios' }
+    ],
+    'Gestión de Contenido': [
+      { key: 'canManageContent', label: 'Gestionar contenido' },
+      { key: 'canCreateContent', label: 'Crear contenido' },
+      { key: 'canPublishContent', label: 'Publicar contenido' }
+    ],
+    'Analytics & Reportes': [
+      { key: 'canViewAnalytics', label: 'Ver analytics' },
+      { key: 'canViewAdvancedAnalytics', label: 'Analytics avanzados' },
+      { key: 'canCreateReports', label: 'Crear reportes' }
+    ],
+    'Marketing': [
+      { key: 'canManageMarketing', label: 'Gestionar marketing' },
+      { key: 'canManageCampaigns', label: 'Gestionar campañas' },
+      { key: 'canViewMarketingIntelligence', label: 'Marketing intelligence' }
+    ]
+  };
 
   if (compact) {
+    const totalPermissions = Object.values(permissions).filter(Boolean).length;
+    const maxPermissions = Object.keys(permissions).length;
+    
     return (
-      <div className="text-sm text-muted-foreground">
-        {activePermissions} de {totalPermissions} permisos activos
+      <div className="text-sm text-gray-600">
+        {totalPermissions}/{maxPermissions} permisos activos
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium">Permisos del Rol</h3>
-        <RoleIndicator role={role} size="sm" showTooltip={false} />
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="font-medium">Permisos por Rol</h3>
+        <RoleIndicator size="sm" />
       </div>
       
-      {permissionGroups.map((group, groupIndex) => (
-        <div key={groupIndex} className="space-y-2">
-          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {group.title}
-          </h4>
-          <div className="space-y-1">
-            {group.permissions.map((permission, permIndex) => (
-              <div 
-                key={permIndex}
-                className="flex items-center justify-between text-sm py-1"
-              >
-                <span className={permission.value ? 'text-foreground' : 'text-muted-foreground'}>
-                  {permission.name}
-                </span>
-                <Badge 
-                  variant={permission.value ? 'default' : 'outline'}
-                  className="text-xs"
-                >
-                  {permission.value ? '✓' : '✗'}
-                </Badge>
-              </div>
-            ))}
+      {Object.entries(permissionGroups).map(([groupName, groupPermissions]) => (
+        <div key={groupName} className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-700">{groupName}</h4>
+          <div className="grid grid-cols-1 gap-1">
+            {groupPermissions.map(({ key, label }) => {
+              const hasPermission = permissions[key as keyof typeof permissions];
+              return (
+                <div key={key} className="flex items-center gap-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${
+                    hasPermission ? 'bg-green-500' : 'bg-gray-300'
+                  }`} />
+                  <span className={hasPermission ? 'text-gray-900' : 'text-gray-500'}>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}

@@ -13,13 +13,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lock, Send, Mail, UserPlus2 } from 'lucide-react';
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { useToast } from '@/hooks/use-toast';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 const ROLE_LABELS = {
   super_admin: { label: 'Super Admin', icon: Crown, color: 'destructive' },
   admin: { label: 'Admin', icon: Shield, color: 'default' },
+  editor: { label: 'Editor', icon: PenTool, color: 'secondary' },
   viewer: { label: 'Viewer', icon: Eye, color: 'outline' }
 };
 
@@ -46,9 +47,9 @@ const AdminUsersManager = () => {
     
     console.log('🔗 [AdminUsersManager] useAdminUsers hook loaded successfully - Users count:', users.length);
     
-    const { canManageUsers, role: userRole, isLoading: permissionsLoading } = useSimpleAuth();
+    const { hasPermission, userRole, isLoading: permissionsLoading } = useRoleBasedPermissions();
     
-    console.log('🔐 [AdminUsersManager] useSimpleAuth hook loaded - Role:', userRole, 'Can manage users:', canManageUsers);
+    console.log('🔐 [AdminUsersManager] useRoleBasedPermissions hook loaded - Role:', userRole, 'Can manage users:', hasPermission('canManageUsers'));
     
     const { toast } = useToast();
     
@@ -61,20 +62,14 @@ const AdminUsersManager = () => {
       register: registerCreate,
       handleSubmit: handleCreateSubmit,
       reset: resetCreate,
-      control: createControl,
       formState: { errors: createErrors }
-    } = useForm<CreateAdminUserData>({
-      defaultValues: {
-        role: 'admin'
-      }
-    });
+    } = useForm<CreateAdminUserData>();
 
     const {
       register: registerEdit,
       handleSubmit: handleEditSubmit,
       reset: resetEdit,
       setValue: setEditValue,
-      control: editControl,
       formState: { errors: editErrors }
     } = useForm<Partial<AdminUser>>();
 
@@ -156,7 +151,7 @@ const AdminUsersManager = () => {
       isLoading,
       permissionsLoading,
       usersCount: users.length,
-      canManageUsers,
+      hasPermission: hasPermission('canManageUsers'),
       userRole,
       error
     });
@@ -174,7 +169,7 @@ const AdminUsersManager = () => {
     }
 
     // Verificar permisos para acceder a esta página
-    if (!canManageUsers) {
+    if (!hasPermission('canManageUsers')) {
       console.log('🚫 [AdminUsersManager] Permission denied, showing restricted view');
       return (
         <div className="flex items-center justify-center h-64">
@@ -258,11 +253,11 @@ const AdminUsersManager = () => {
                     <Label htmlFor="create-full-name">Nombre Completo</Label>
                     <Input
                       id="create-full-name"
-                      {...registerCreate('fullName', { required: 'El nombre es obligatorio' })}
+                      {...registerCreate('full_name', { required: 'El nombre es obligatorio' })}
                       placeholder="Juan Pérez"
                     />
-                    {createErrors.fullName && (
-                      <p className="text-sm text-destructive">{createErrors.fullName.message}</p>
+                    {createErrors.full_name && (
+                      <p className="text-sm text-destructive">{createErrors.full_name.message}</p>
                     )}
                   </div>
 
@@ -282,28 +277,21 @@ const AdminUsersManager = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="create-role">Rol</Label>
-                    <Controller
-                      name="role"
-                      control={createControl}
-                      rules={{ required: 'El rol es obligatorio' }}
-                      render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un rol" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
-                              <SelectItem key={key} value={key}>
-                                <div className="flex items-center gap-2">
-                                  <Icon className="h-4 w-4" />
-                                  {label}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                    <Select onValueChange={(value) => registerCreate('role').onChange({ target: { value } })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4" />
+                              {label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {createErrors.role && (
                       <p className="text-sm text-destructive">{createErrors.role.message}</p>
                     )}
@@ -491,31 +479,21 @@ const AdminUsersManager = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="edit-role">Rol</Label>
-                <Controller
-                  name="role"
-                  control={editControl}
-                  rules={{ required: 'El rol es obligatorio' }}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
-                          <SelectItem key={key} value={key}>
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4" />
-                              {label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {editErrors.role && (
-                  <p className="text-sm text-destructive">{editErrors.role.message}</p>
-                )}
+                <Select onValueChange={(value) => registerEdit('role').onChange({ target: { value } })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          {label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
