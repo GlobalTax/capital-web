@@ -11,6 +11,28 @@ interface LeadData {
   data: any;
 }
 
+// ✅ Validación de secrets requeridos
+function validateSecrets(): { valid: boolean; error?: string } {
+  const secondaryUrl = Deno.env.get('SECONDARY_SUPABASE_URL');
+  const secondaryKey = Deno.env.get('SECONDARY_SUPABASE_ANON_KEY');
+  
+  if (!secondaryUrl || secondaryUrl === '') {
+    return { 
+      valid: false, 
+      error: 'SECONDARY_SUPABASE_URL not configured. Contact administrator.' 
+    };
+  }
+  
+  if (!secondaryKey || secondaryKey === '') {
+    return { 
+      valid: false, 
+      error: 'SECONDARY_SUPABASE_ANON_KEY not configured. Contact administrator.' 
+    };
+  }
+  
+  return { valid: true };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -18,12 +40,29 @@ serve(async (req) => {
   }
 
   try {
+    // ✅ Validar secrets antes de procesar
+    const secretsCheck = validateSecrets();
+    if (!secretsCheck.valid) {
+      console.error('❌ Missing secrets:', secretsCheck.error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: secretsCheck.error,
+          code: 'SERVICE_UNAVAILABLE'
+        }),
+        { 
+          status: 503, // Service Unavailable
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     const { type, data }: LeadData = await req.json();
 
     // Crear cliente para la segunda base de datos
     const secondarySupabase = createClient(
-      Deno.env.get('SECONDARY_SUPABASE_URL') ?? '',
-      Deno.env.get('SECONDARY_SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SECONDARY_SUPABASE_URL')!,
+      Deno.env.get('SECONDARY_SUPABASE_ANON_KEY')!
     );
 
     let leadData: any = {};
@@ -183,14 +222,15 @@ serve(async (req) => {
 
     // Si no hay CRM y el tipo es valuation_pdf, no intentamos fallback inseguro
     if (type === 'valuation_pdf') {
-      console.warn('sync-leads: CRM no configurado, no se puede procesar valuation_pdf sin ingestión CRM');
+      console.error('❌ CRM not configured for valuation_pdf - refusing insecure fallback');
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'CRM ingest no configurado para valuation_pdf. Configure CRM_INGEST_SECRET/URL.'
+          error: 'CRM integration not configured for PDF valuations',
+          code: 'CRM_NOT_CONFIGURED'
         }),
         {
-          status: 400,
+          status: 503, // Service Unavailable
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );

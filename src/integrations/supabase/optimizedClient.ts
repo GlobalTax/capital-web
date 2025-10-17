@@ -75,14 +75,19 @@ class SupabaseClientSingleton {
               autoRefreshToken: canPersistSession,
               detectSessionInUrl: true,
             },
-            // Disable realtime completely to prevent WebSocket connection attempts
+            // ✅ Disable realtime completely to prevent WebSocket errors
             realtime: {
               params: {
-                eventsPerSecond: 1,
+                eventsPerSecond: 0, // Cambiar de 1 a 0
+              },
+            },
+            global: {
+              headers: {
+                'x-client-info': 'capittal-web-app',
               },
             },
           }
-        );
+        ) as ReturnType<typeof createClient<Database>>;
         
         // Almacenar en ventana global para verdadero singleton (con acceso seguro)
         try {

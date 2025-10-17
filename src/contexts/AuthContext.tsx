@@ -67,6 +67,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
 
       if (error) {
+        // ✅ Si es 401, intentar refresh token antes de reintentar
+        if ((error as any).code === 'PGRST301' || (error as any).status === 401) {
+          console.log('🔄 401 Unauthorized detected, refreshing session...');
+          try {
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (!refreshError) {
+              // Reintentar después de refresh exitoso
+              const { data: retryData, error: retryError } = await supabase
+                .from('admin_users')
+                .select('is_active, role')
+                .eq('user_id', userId)
+                .maybeSingle();
+                
+              if (!retryError && retryData) {
+                const adminStatus = !!(retryData && retryData.is_active === true);
+                setIsAdmin(adminStatus);
+                return adminStatus;
+              }
+            }
+          } catch (refreshErr) {
+            console.error('Failed to refresh session:', refreshErr);
+          }
+        }
+        
         // If it's a network error, try one more time after a short delay
         if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('timeout')) {
           await new Promise(resolve => setTimeout(resolve, 1000));
