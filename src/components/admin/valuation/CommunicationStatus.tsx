@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Clock, MessageSquare, Mail, Building2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, MessageSquare, Mail } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -10,8 +10,6 @@ interface ValuationData {
   whatsapp_sent_at: string | null;
   email_sent: boolean;
   email_sent_at: string | null;
-  hubspot_sent: boolean;
-  hubspot_sent_at: string | null;
 }
 
 interface MessageLog {
@@ -28,14 +26,12 @@ interface CommunicationStatusProps {
   valuation: ValuationData;
   latestWhatsapp: MessageLog | null;
   latestEmail: MessageLog | null;
-  latestHubspot: MessageLog | null;
 }
 
 const CommunicationStatus: React.FC<CommunicationStatusProps> = ({
   valuation,
   latestWhatsapp,
-  latestEmail,
-  latestHubspot
+  latestEmail
 }) => {
   const getStatusBadge = (sent: boolean, sentAt: string | null, log: MessageLog | null) => {
     if (!sent) {
@@ -120,27 +116,6 @@ const CommunicationStatus: React.FC<CommunicationStatusProps> = ({
           {getStatusBadge(valuation.email_sent, valuation.email_sent_at, latestEmail)}
         </div>
 
-        {/* HubSpot Status */}
-        <div className="flex items-center justify-between p-3 border rounded-lg">
-          <div className="flex items-center gap-3">
-            <Building2 className="w-5 h-5 text-orange-600" />
-            <div>
-              <p className="font-medium">HubSpot</p>
-              {valuation.hubspot_sent_at && (
-                <p className="text-sm text-muted-foreground">
-                  {formatTimestamp(valuation.hubspot_sent_at)}
-                  <span className="ml-1">({formatRelativeTime(valuation.hubspot_sent_at)})</span>
-                </p>
-              )}
-              {latestHubspot?.error_details && (
-                <p className="text-sm text-destructive mt-1">
-                  {latestHubspot.error_details}
-                </p>
-              )}
-            </div>
-          </div>
-          {getStatusBadge(valuation.hubspot_sent, valuation.hubspot_sent_at, latestHubspot)}
-        </div>
       </CardContent>
     </Card>
   );

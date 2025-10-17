@@ -188,7 +188,6 @@ export const useSupabaseValuation = () => {
           user_agent: userAgent,
           email_sent: false,
           whatsapp_sent: false,
-          hubspot_sent: false,
           valuation_status: 'completed',
           completion_percentage: 100
         };

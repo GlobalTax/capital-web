@@ -81,8 +81,6 @@ export interface CompanyValuation extends BaseEntity {
   email_opened?: boolean;
   email_opened_at?: string;
   email_message_id?: string;
-  hubspot_sent?: boolean;
-  hubspot_sent_at?: string;
   whatsapp_sent?: boolean;
   whatsapp_sent_at?: string;
   v4_link_sent?: boolean;

@@ -42,10 +42,6 @@ export interface UnifiedContact {
   email_opened_at?: string;
   email_message_id?: string;
   
-  // HubSpot tracking
-  hubspot_sent?: boolean;
-  hubspot_sent_at?: string;
-  
   // UTM tracking
   utm_source?: string;
   utm_medium?: string;
@@ -201,8 +197,6 @@ export const useUnifiedContacts = () => {
           email_opened: lead.email_opened,
           email_opened_at: lead.email_opened_at,
           email_message_id: lead.email_message_id,
-          hubspot_sent: lead.hubspot_sent,
-          hubspot_sent_at: lead.hubspot_sent_at,
           ip_address: lead.ip_address?.toString(),
           user_agent: lead.user_agent,
           priority: determinePriority(lead),
@@ -233,8 +227,6 @@ export const useUnifiedContacts = () => {
           email_opened: lead.email_opened,
           email_opened_at: lead.email_opened_at,
           email_message_id: lead.email_message_id,
-          hubspot_sent: lead.hubspot_sent,
-          hubspot_sent_at: lead.hubspot_sent_at,
           ip_address: lead.ip_address?.toString(),
           user_agent: lead.user_agent,
           referrer: lead.referrer,
@@ -262,8 +254,6 @@ export const useUnifiedContacts = () => {
           email_opened: lead.email_opened,
           email_opened_at: lead.email_opened_at,
           email_message_id: lead.email_message_id,
-          hubspot_sent: lead.hubspot_sent,
-          hubspot_sent_at: lead.hubspot_sent_at,
           ip_address: lead.ip_address?.toString(),
           user_agent: lead.user_agent,
           priority: determinePriority(lead),
@@ -286,8 +276,6 @@ export const useUnifiedContacts = () => {
           email_sent_at: lead.email_sent_at,
           email_opened: lead.email_opened,
           email_opened_at: lead.email_opened_at,
-          hubspot_sent: lead.hubspot_sent,
-          hubspot_sent_at: lead.hubspot_sent_at,
           ip_address: lead.ip_address?.toString(),
           user_agent: lead.user_agent,
           utm_source: lead.utm_source,
@@ -315,8 +303,6 @@ export const useUnifiedContacts = () => {
           acquisition_type: lead.acquisition_type,
           email_sent: lead.email_sent,
           email_sent_at: lead.email_sent_at,
-          hubspot_sent: lead.hubspot_sent,
-          hubspot_sent_at: lead.hubspot_sent_at,
           ip_address: lead.ip_address?.toString(),
           user_agent: lead.user_agent,
           utm_source: lead.utm_source,
@@ -346,8 +332,6 @@ export const useUnifiedContacts = () => {
           email_sent_at: lead.email_sent_at,
           email_opened: lead.email_opened,
           email_opened_at: lead.email_opened_at,
-          hubspot_sent: lead.hubspot_sent,
-          hubspot_sent_at: lead.hubspot_sent_at,
           ip_address: lead.ip_address?.toString(),
           user_agent: lead.user_agent,
           utm_source: lead.utm_source,
