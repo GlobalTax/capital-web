@@ -21,7 +21,7 @@ export const useAdminDebug = () => {
           authLoading
         },
         permissions: {
-          userRole: role,
+          role,
           permissionsLoading,
           canViewLeads,
           canManageContent: canEditContent,
@@ -29,13 +29,13 @@ export const useAdminDebug = () => {
         }
       }, { context: 'admin', component: 'useAdminDebug' });
     }
-  }, [user, isAdmin, authLoading, userRole, permissions, permissionsLoading]);
+  }, [user, isAdmin, authLoading, role, permissionsLoading, canViewLeads, canEditContent, canManageUsers]);
 
   return {
     debugInfo: {
       user,
       isAdmin,
-      userRole: role,
+      role,
       permissions: { canViewLeads, canEditContent, canManageUsers },
       authLoading,
       permissionsLoading
