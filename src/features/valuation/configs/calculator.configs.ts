@@ -43,7 +43,7 @@ export const V2_CONFIG: CalculatorConfig = {
 
 // ============= V2 META CONFIG (para Meta Ads) =============
 export const V2_META_CONFIG: CalculatorConfig = {
-  version: 'v2-meta',
+  version: 'v2',
   steps: 1, // Solo 1 paso de datos
   features: {
     autosave: false,
