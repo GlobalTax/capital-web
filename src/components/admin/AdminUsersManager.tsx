@@ -15,7 +15,7 @@ import { Users, Plus, Edit, Trash2, Shield, Eye, PenTool, Crown, AlertCircle, Lo
 import { useAdminUsers, CreateAdminUserData, AdminUser } from '@/hooks/useAdminUsers';
 import { useRoleBasedPermissions } from '@/hooks/useRoleBasedPermissions';
 import { useToast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 
 const ROLE_LABELS = {
   super_admin: { label: 'Super Admin', icon: Crown, color: 'destructive' },
@@ -62,8 +62,13 @@ const AdminUsersManager = () => {
       register: registerCreate,
       handleSubmit: handleCreateSubmit,
       reset: resetCreate,
+      control: createControl,
       formState: { errors: createErrors }
-    } = useForm<CreateAdminUserData>();
+    } = useForm<CreateAdminUserData>({
+      defaultValues: {
+        role: 'editor'
+      }
+    });
 
     const {
       register: registerEdit,
@@ -277,21 +282,28 @@ const AdminUsersManager = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="create-role">Rol</Label>
-                    <Select onValueChange={(value) => registerCreate('role').onChange({ target: { value } })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
-                          <SelectItem key={key} value={key}>
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4" />
-                              {label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      name="role"
+                      control={createControl}
+                      rules={{ required: 'El rol es obligatorio' }}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un rol" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(ROLE_LABELS).map(([key, { label, icon: Icon }]) => (
+                              <SelectItem key={key} value={key}>
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4" />
+                                  {label}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                     {createErrors.role && (
                       <p className="text-sm text-destructive">{createErrors.role.message}</p>
                     )}
