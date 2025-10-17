@@ -121,20 +121,31 @@ serve(async (req) => {
     }
 
     // Log request details for debugging
-    const contentType = req.headers.get('content-type') ?? '';
-    console.log('📥 Content-Type:', contentType);
+const contentLength = req.headers.get('content-length') ?? 'unknown';
+console.log('📥 Content-Type:', contentType, 'Content-Length:', contentLength);
 
-    // Parse and validate request body
-    let payload: any;
-    try {
-      payload = await req.json();
-    } catch (parseError) {
-      console.error('❌ Failed to parse JSON body:', parseError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON body' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+// Parse and validate request body using raw text for robustness
+let payload: any;
+try {
+  const raw = await req.text();
+  console.log('🧪 Raw body length:', raw ? raw.length : 0, 'preview:', raw ? raw.slice(0, 200) : '');
+
+  if (!raw || raw.trim() === '') {
+    console.error('❌ Empty request body');
+    return new Response(
+      JSON.stringify({ error: 'Empty request body' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  payload = JSON.parse(raw);
+} catch (parseError) {
+  console.error('❌ Failed to parse JSON body:', parseError);
+  return new Response(
+    JSON.stringify({ error: 'Invalid JSON body' }),
+    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
 
     // Normalize and validate fields
     const email = (payload.email ?? '').toString().trim().toLowerCase();

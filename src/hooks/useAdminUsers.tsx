@@ -136,13 +136,29 @@ export const useAdminUsers = () => {
         }
       });
 
-      if (edgeFunctionError) {
-        console.error('❌ Edge Function error:', edgeFunctionError);
-        const errorMsg = typeof edgeFunctionError === 'object' && edgeFunctionError !== null
-          ? (edgeFunctionError as any).message || (edgeFunctionError as any).details || JSON.stringify(edgeFunctionError)
-          : String(edgeFunctionError);
-        throw new Error(errorMsg);
+if (edgeFunctionError) {
+  console.error('❌ Edge Function error:', edgeFunctionError);
+  let errorMsg = typeof edgeFunctionError === 'object' && edgeFunctionError !== null
+    ? (edgeFunctionError as any).message || (edgeFunctionError as any).details || JSON.stringify(edgeFunctionError)
+    : String(edgeFunctionError);
+  // Intentar leer el cuerpo de respuesta para obtener más detalles
+  try {
+    const resp = (edgeFunctionError as any).context?.response;
+    if (resp && typeof resp.text === 'function') {
+      const text = await resp.text();
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          errorMsg = parsed.error || parsed.message || errorMsg;
+          if (parsed.field) errorMsg += ` (campo: ${parsed.field})`;
+        } catch {
+          errorMsg = text || errorMsg;
+        }
       }
+    }
+  } catch {}
+  throw new Error(errorMsg);
+}
 
       if (!data?.success) {
         throw new Error(data?.error || 'Error desconocido al crear usuario');

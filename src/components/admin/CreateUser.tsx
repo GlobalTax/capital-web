@@ -131,13 +131,29 @@ export const CreateUser: React.FC = () => {
         }
       );
 
-      if (createError) {
-        console.error('🔴 Error en Edge Function:', createError);
-        const errorMsg = typeof createError === 'object' && createError !== null
-          ? (createError as any).message || (createError as any).details || JSON.stringify(createError)
-          : String(createError);
-        throw new Error(errorMsg);
+if (createError) {
+  console.error('🔴 Error en Edge Function:', createError);
+  let errorMsg = typeof createError === 'object' && createError !== null
+    ? (createError as any).message || (createError as any).details || JSON.stringify(createError)
+    : String(createError);
+  // Intentar extraer detalles del cuerpo de la respuesta si está disponible
+  try {
+    const resp = (createError as any).context?.response;
+    if (resp && typeof resp.text === 'function') {
+      const text = await resp.text();
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          errorMsg = parsed.error || parsed.message || errorMsg;
+          if (parsed.field) errorMsg += ` (campo: ${parsed.field})`;
+        } catch {
+          errorMsg = text || errorMsg;
+        }
       }
+    }
+  } catch {}
+  throw new Error(errorMsg);
+}
 
       if (!userData || !userData.success) {
         console.error('🔴 Respuesta inválida de Edge Function:', userData);
