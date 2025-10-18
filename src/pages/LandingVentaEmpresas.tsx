@@ -8,7 +8,7 @@ import VentaEmpresasValuationLanding from '@/components/venta-empresas/VentaEmpr
 import VentaEmpresasFAQLanding from '@/components/venta-empresas/VentaEmpresasFAQLanding';
 import VentaEmpresasConversionCTA from '@/components/venta-empresas/VentaEmpresasConversionCTA';
 import StickyNavigationLanding from '@/components/venta-empresas/StickyNavigationLanding';
-import VentaEmpresasGuarantees from '@/components/venta-empresas/VentaEmpresasGuarantees';
+
 import VentaEmpresasTestimonials from '@/components/venta-empresas/VentaEmpresasTestimonials';
 import VentaEmpresasComparison from '@/components/venta-empresas/VentaEmpresasComparison';
 import VentaEmpresasUrgencyTimer from '@/components/venta-empresas/VentaEmpresasUrgencyTimer';
@@ -90,7 +90,7 @@ const LandingVentaEmpresas = () => {
       <StickyNavigationLanding />
       <VentaEmpresasHeroLanding />
       <VentaEmpresasBenefitsLanding />
-      <VentaEmpresasGuarantees />
+      
       <VentaEmpresasProcessLanding />
       <VentaEmpresasComparison />
       <VentaEmpresasCaseStudies />
