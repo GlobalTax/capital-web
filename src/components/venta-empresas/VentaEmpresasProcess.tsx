@@ -13,25 +13,25 @@ const VentaEmpresasProcess = () => {
       icon: FileText,
       title: 'Preparación y Optimización',
       description: 'Preparamos tu empresa para maximizar su atractivo y valor ante potenciales compradores.',
-      duration: '3-4 semanas'
+      duration: '1 mes'
     },
     {
       icon: Users,
       title: 'Identificación de Compradores',
       description: 'Búsqueda y calificación de compradores estratégicos que valoren al máximo tu empresa.',
-      duration: '6-10 semanas'
+      duration: '2-3 meses'
     },
     {
       icon: Handshake,
       title: 'Negociación y Estructuración',
       description: 'Gestión profesional de ofertas y negociación de términos óptimos para la transacción.',
-      duration: '4-8 semanas'
+      duration: '1-2 meses'
     },
     {
       icon: CheckCircle,
       title: 'Cierre de Operación',
       description: 'Finalización de due diligence y firma de acuerdos definitivos para el cierre exitoso.',
-      duration: '6-12 semanas'
+      duration: '2-3 meses'
     }
   ];
 
