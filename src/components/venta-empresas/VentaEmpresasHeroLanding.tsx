@@ -62,38 +62,54 @@ const VentaEmpresasHeroLanding = () => {
 
           {/* Visual Card Right */}
           <div className="relative">
-            <div className="bg-card border border-border rounded-xl p-8 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-black">Capittal M&A</h3>
-                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-lg font-semibold text-slate-900">Capittal M&A</h3>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               </div>
               
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-success">+25%</div>
-                    <div className="text-sm text-black">Precio vs. mercado</div>
+              <div className="space-y-8">
+                {/* Stats Row */}
+                <div className="flex items-center justify-between px-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-600 mb-1">+25%</div>
+                    <div className="text-sm text-slate-600">Precio vs. mercado</div>
                   </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">6-9</div>
-                    <div className="text-sm text-black">Meses proceso</div>
+                  <div className="h-12 w-px bg-slate-200"></div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600 mb-1">6-9</div>
+                    <div className="text-sm text-slate-600">Meses proceso</div>
                   </div>
                 </div>
 
+                {/* Sectors List */}
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-black">Sectores Principales</h4>
-                  <div className="text-sm text-black space-y-1">
-                    <div>• Tecnología y Software</div>
-                    <div>• E-commerce y Retail</div>
-                    <div>• Servicios Profesionales</div>
-                    <div>• Industria y Manufactura</div>
+                  <h4 className="font-semibold text-slate-900 text-sm">Sectores Principales</h4>
+                  <div className="text-sm text-slate-700 space-y-2">
+                    <div className="flex items-center">
+                      <span className="text-slate-400 mr-2">•</span>
+                      <span>Tecnología y Software</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-slate-400 mr-2">•</span>
+                      <span>E-commerce y Retail</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-slate-400 mr-2">•</span>
+                      <span>Servicios Profesionales</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-slate-400 mr-2">•</span>
+                      <span>Industria y Manufactura</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-muted/50 border border-border p-3 rounded-lg text-center">
-                  <p className="text-sm font-medium text-black">
+                {/* CTA Button */}
+                <div className="pt-2">
+                  <button className="w-full py-3 px-4 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
                     Valoración gratuita disponible
-                  </p>
+                  </button>
                 </div>
               </div>
             </div>
