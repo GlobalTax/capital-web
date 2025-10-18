@@ -80,13 +80,19 @@ const VentaEmpresasProcess = () => {
         </div>
 
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out max-w-4xl mx-auto text-center">
-          <h3 className="text-xl font-bold text-black mb-6">
-            Duración Total del Proceso
+          <h3 className="text-xl font-bold text-black mb-4">
+            Timeline del Proceso
           </h3>
-          <p className="text-black mb-8">
-            El proceso completo suele durar entre <strong>8-12 meses (hasta 1 año)</strong>, 
-            desde que entra hasta que se firma la compraventa en el notario.
-          </p>
+          <div className="mb-8 space-y-3">
+            <p className="text-black">
+              <strong className="text-primary">9-12 meses</strong> para alcanzar un{" "}
+              <strong>acuerdo de intenciones (LOI)</strong> con el comprador.
+            </p>
+            <p className="text-black text-sm">
+              Posteriormente, el periodo de due diligence y cierre final añade 3-6 meses adicionales 
+              hasta la firma definitiva en el notario.
+            </p>
+          </div>
           <div className="grid grid-cols-3 gap-8">
             <div>
               <div className="text-2xl font-bold text-black mb-2">98,7%</div>
@@ -97,8 +103,8 @@ const VentaEmpresasProcess = () => {
               <div className="text-sm text-black">Múltiplo promedio</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black mb-2">270</div>
-              <div className="text-sm text-black">Días promedio</div>
+              <div className="text-2xl font-bold text-black mb-2">9-12</div>
+              <div className="text-sm text-black">Meses hasta LOI</div>
             </div>
           </div>
         </div>
