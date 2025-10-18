@@ -1,8 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -10,50 +8,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 const VentaEmpresasCaseStudies = () => {
-  const caseStudies = [
-    {
-      sector: "Industrial y Manufacturero",
-      company: "Componentes Mecánicos SA",
-      valuation: "€12.5M",
-      multiple: "6.2x EBITDA",
-      roi: "+320%",
-      before: "€2M EBITDA",
-      after: "Vendida a grupo internacional",
-      highlights: ["Empresa familiar 3ª generación", "Contratos a largo plazo", "Expansión europea"]
-    },
-    {
-      sector: "Retail y Consumo",
-      company: "Cadena Tiendas Familiar", 
-      valuation: "€8.7M",
-      multiple: "4.8x EBITDA",
-      roi: "+280%",
-      before: "€1.8M EBITDA",
-      after: "Adquirida por competidor estratégico", 
-      highlights: ["Red de 15 tiendas", "Marca reconocida", "Sin problemas de sucesión"]
-    },
-    {
-      sector: "Construcción",
-      company: "Constructora Regional SL",
-      valuation: "€15.2M", 
-      multiple: "7.1x EBITDA",
-      roi: "+450%",
-      before: "€2.1M EBITDA",
-      after: "Vendida a fondo de private equity",
-      highlights: ["Cartera de obra pública", "Equipo experimentado", "Diversificación geográfica"]
-    },
-    {
-      sector: "Servicios B2B", 
-      company: "ConsultPro Group",
-      valuation: "€6.3M",
-      multiple: "5.5x EBITDA", 
-      roi: "+190%",
-      before: "€1.1M EBITDA",
-      after: "Integración con grupo consultor",
-      highlights: ["Contratos recurrentes", "Equipo especializado", "Diversificación sectorial"]
-    }
-  ];
+  const { caseStudies, isLoading } = useCaseStudies();
+  
+  // Limitar a 6 casos máximo para el carrusel
+  const displayedCases = caseStudies.slice(0, 6);
 
   return (
     <section id="casos" className="py-24 bg-background">
@@ -69,72 +30,92 @@ const VentaEmpresasCaseStudies = () => {
         </div>
 
         {/* Case Studies Carousel */}
-        <Carousel className="w-full max-w-6xl mx-auto mb-16">
-          <CarouselContent className="-ml-1">
-            {caseStudies.map((study, index) => (
-              <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3">
-                <Card className="h-full bg-gradient-to-br from-card to-card/80 border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group">
-                  <CardContent className="p-6">
-                    {/* Header with sector and ROI */}
-                    <div className="flex items-center justify-between mb-6">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-medium">
-                        {study.sector}
-                      </Badge>
-                      <div className="text-right bg-success/10 rounded-lg px-3 py-1.5">
-                        <div className="text-xs text-success/70 font-medium">ROI</div>
-                        <div className="text-lg font-bold text-success">{study.roi}</div>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-xl font-bold text-foreground mb-6 group-hover:text-primary transition-colors">
-                      {study.company}
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      {/* Key metrics */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-muted/50 rounded-xl p-4 text-center border border-border/50 hover:bg-muted/70 transition-colors">
-                          <div className="text-xs text-muted-foreground mb-1 font-medium">Valoración</div>
-                          <div className="text-lg font-bold text-foreground">{study.valuation}</div>
-                        </div>
-                        <div className="bg-muted/50 rounded-xl p-4 text-center border border-border/50 hover:bg-muted/70 transition-colors">
-                          <div className="text-xs text-muted-foreground mb-1 font-medium">Múltiplo</div>
-                          <div className="text-lg font-bold text-foreground">{study.multiple}</div>
-                        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : displayedCases.length > 0 ? (
+          <Carousel className="w-full max-w-6xl mx-auto mb-16">
+            <CarouselContent className="-ml-1">
+              {displayedCases.map((study) => (
+                <CarouselItem key={study.id} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full bg-gradient-to-br from-card to-card/80 border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group">
+                    <CardContent className="p-6">
+                      {/* Header con Sector + Año */}
+                      <div className="flex items-center justify-between mb-4">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-medium">
+                          {study.sector}
+                        </Badge>
+                        {study.year && (
+                          <div className="text-xs font-semibold text-muted-foreground bg-muted/50 rounded-full px-3 py-1">
+                            {study.year}
+                          </div>
+                        )}
                       </div>
                       
-                      {/* Before/After */}
-                      <div className="bg-gradient-to-r from-muted/30 to-success/10 rounded-xl p-4 border border-border/50">
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-sm text-muted-foreground font-medium">Situación inicial</span>
-                          <span className="text-sm font-semibold text-foreground bg-background/80 px-2 py-1 rounded">{study.before}</span>
+                      {/* Logo de la empresa (si existe) */}
+                      {study.logo_url && (
+                        <div className="mb-4 flex justify-center">
+                          <img 
+                            src={study.logo_url} 
+                            alt={study.title}
+                            className="h-12 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground font-medium">Resultado final</span>
-                          <span className="text-sm font-semibold text-success bg-success/10 px-2 py-1 rounded border border-success/20">{study.after}</span>
-                        </div>
-                      </div>
+                      )}
                       
-                      {/* Key factors */}
-                      <div>
-                        <div className="text-sm font-semibold text-foreground mb-3">Factores de Éxito</div>
-                        <div className="flex flex-wrap gap-2">
-                          {study.highlights.map((highlight, idx) => (
-                            <span key={idx} className="text-xs bg-primary/5 border border-primary/20 text-primary rounded-full px-3 py-1.5 font-medium hover:bg-primary/10 transition-colors">
-                              {highlight}
-                            </span>
-                          ))}
+                      {/* Título del caso */}
+                      <h3 className="text-lg font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                        {study.title}
+                      </h3>
+                      
+                      {/* Descripción */}
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                        {study.description}
+                      </p>
+                      
+                      {/* Valor de la transacción (si existe y no es confidencial) */}
+                      {study.value_amount && !study.is_value_confidential && (
+                        <div className="mb-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-xl p-3 border border-green-200 dark:border-green-800">
+                          <div className="text-xs text-muted-foreground mb-1">Valor de la transacción</div>
+                          <div className="text-xl font-bold text-green-700 dark:text-green-400">
+                            {study.value_currency}{study.value_amount}M
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+                      )}
+                      
+                      {/* Highlights como tags */}
+                      {study.highlights && study.highlights.length > 0 && (
+                        <div>
+                          <div className="text-xs font-semibold text-foreground mb-2">Factores Clave</div>
+                          <div className="flex flex-wrap gap-2">
+                            {study.highlights.slice(0, 3).map((highlight, idx) => (
+                              <span 
+                                key={idx} 
+                                className="text-xs bg-primary/5 border border-primary/20 text-primary rounded-full px-2.5 py-1 font-medium hover:bg-primary/10 transition-colors"
+                              >
+                                {highlight}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-muted-foreground">No hay casos de éxito disponibles.</p>
+          </div>
+        )}
 
         {/* Global Success Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -152,14 +133,7 @@ const VentaEmpresasCaseStudies = () => {
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="text-center">
-          <Button className="bg-card text-foreground border border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            Ver Más Casos de Éxito
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+    </div>
     </section>
   );
 };
