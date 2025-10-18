@@ -1,19 +1,7 @@
 import React from 'react';
-import { CheckCircle, Phone } from 'lucide-react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { CheckCircle } from 'lucide-react';
 
 const VentaEmpresasHeroLanding = () => {
-  const scrollToContact = () => {
-    const element = document.getElementById('contact');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const callExpert = () => {
-    window.open('tel:+34695717490', '_self');
-  };
-
   const benefits = [
     { text: "Máximo precio de venta" },
     { text: "Proceso 100% confidencial" },
@@ -50,26 +38,6 @@ const VentaEmpresasHeroLanding = () => {
                   <span className="text-sm font-medium text-black">{benefit.text}</span>
                 </div>
               ))}
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <InteractiveHoverButton 
-                variant="primary" 
-                size="lg"
-                onClick={scrollToContact}
-              >
-                Valorar Empresa
-              </InteractiveHoverButton>
-              
-              <InteractiveHoverButton 
-                variant="outline" 
-                size="lg"
-                onClick={callExpert}
-              >
-                <Phone className="mr-2 h-4 w-4" />
-                Contactar Ahora
-              </InteractiveHoverButton>
             </div>
 
             {/* Trust Indicators */}
