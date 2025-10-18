@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActiveBanners, type BannerData } from '@/hooks/useActiveBanners';
 import { UniversalBanner } from '@/components/ui/universal-banner';
-import BannerSkeleton from './BannerSkeleton';
 import type { AudienceType, BannerContainerProps } from '@/types/banners';
 
 const getAudience = (user: any, isAdmin: boolean): AudienceType => {
@@ -21,9 +20,9 @@ const BannerContainer: React.FC<BannerContainerProps> = ({ position }) => {
   
   const { data: banners, isLoading, error } = useActiveBanners(path, audience);
   
-  // Show skeleton while loading
+  // Don't show anything while loading to avoid flash
   if (isLoading) {
-    return <BannerSkeleton />;
+    return null;
   }
   
   // Don't render anything if error or no banners
