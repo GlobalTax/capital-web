@@ -1,76 +1,86 @@
-
 import React from 'react';
+import { Search, FileText, Users, Handshake, CheckCircle } from 'lucide-react';
 
 const VentaEmpresasProcess = () => {
   const steps = [
     {
-      title: 'Análisis Inicial',
-      description: 'Valoración completa de tu empresa, incluyendo situación financiera, posición en el mercado y potencial de crecimiento.',
-      duration: '2-3 semanas'
+      icon: Search,
+      title: 'Valoración Inicial',
+      description: 'Análisis completo de tu empresa para determinar su valor de mercado real y potencial de optimización.',
+      duration: '48-72 horas'
     },
     {
-      title: 'Preparación de Documentación',
-      description: 'Creación del memorando de venta, análisis financiero detallado y documentación legal necesaria.',
+      icon: FileText,
+      title: 'Preparación y Optimización',
+      description: 'Preparamos tu empresa para maximizar su atractivo y valor ante potenciales compradores.',
       duration: '3-4 semanas'
     },
     {
+      icon: Users,
       title: 'Identificación de Compradores',
-      description: 'Búsqueda activa de compradores estratégicos e inversores financieros que encajen con tu empresa.',
-      duration: '6-8 semanas'
+      description: 'Búsqueda y calificación de compradores estratégicos que valoren al máximo tu empresa.',
+      duration: '6-10 semanas'
     },
     {
-      title: 'Marketing y Presentación',
-      description: 'Presentación profesional a compradores cualificados manteniendo la confidencialidad del proceso.',
-      duration: '8-12 semanas'
+      icon: Handshake,
+      title: 'Negociación y Estructuración',
+      description: 'Gestión profesional de ofertas y negociación de términos óptimos para la transacción.',
+      duration: '4-8 semanas'
     },
     {
-      title: 'Negociación',
-      description: 'Gestión de ofertas, negociación de términos y condiciones para maximizar el valor de la transacción.',
-      duration: '4-6 semanas'
-    },
-    {
-      title: 'Cierre',
-      description: 'Acompañamiento en el proceso de due diligence y cierre final de la operación.',
+      icon: CheckCircle,
+      title: 'Cierre de Operación',
+      description: 'Finalización de due diligence y firma de acuerdos definitivos para el cierre exitoso.',
       duration: '6-12 semanas'
     }
   ];
 
   return (
-    <section id="proceso" className="py-24 bg-gray-50">
+    <section id="proceso" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
             Nuestro Proceso de Venta
           </h2>
-          <p className="text-lg text-black max-w-3xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
             Un método probado que garantiza los mejores resultados. Cada paso está diseñado 
             para maximizar el valor de tu empresa y asegurar un proceso eficiente.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        {/* Layout vertical con línea conectora */}
+        <div className="max-w-4xl mx-auto mb-16">
           {steps.map((step, index) => {
+            const Icon = step.icon;
             return (
-              <div key={index} className="relative">
-                <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="bg-gray-50 text-black rounded-lg w-8 h-8 flex items-center justify-center">
-                      <span className="text-xs font-medium">{index + 1}</span>
+              <div key={index} className="relative flex gap-4 md:gap-6 items-start mb-8 last:mb-0">
+                {/* Número grande en círculo con línea conectora */}
+                <div className="flex-shrink-0 relative">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-slate-900 text-white flex items-center justify-center text-lg md:text-xl font-bold z-10 relative">
+                    {index + 1}
+                  </div>
+                  {/* Línea conectora (excepto el último) */}
+                  {index < steps.length - 1 && (
+                    <div className="absolute left-1/2 top-12 md:top-14 w-0.5 h-16 bg-slate-200 -translate-x-1/2"></div>
+                  )}
+                </div>
+                
+                {/* Card horizontal */}
+                <div className="flex-1 bg-white border border-slate-200 rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-3 gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-slate-700" />
+                      </div>
+                      <h3 className="text-base md:text-lg font-semibold text-slate-900">
+                        {step.title}
+                      </h3>
                     </div>
-                    <div className="bg-gray-100 rounded-lg px-3 py-1 text-sm font-semibold text-black">
+                    <div className="text-xs md:text-sm font-medium text-slate-500 bg-slate-50 px-3 py-1 rounded-full whitespace-nowrap">
                       {step.duration}
                     </div>
                   </div>
-                  
-                  <div className="text-xs font-medium text-black mb-2">
-                    Paso {index + 1}
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-black mb-4">
-                    {step.title}
-                  </h3>
-                  
-                  <p className="text-black leading-relaxed">
+                  <p className="text-slate-600 text-sm leading-relaxed">
                     {step.description}
                   </p>
                 </div>
