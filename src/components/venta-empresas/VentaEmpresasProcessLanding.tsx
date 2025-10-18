@@ -1,14 +1,7 @@
 import React from 'react';
 import { Search, FileText, Users, Handshake, CheckCircle } from 'lucide-react';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const VentaEmpresasProcessLanding = () => {
-  const scrollToContact = () => {
-    const element = document.getElementById('contact');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   const steps = [
     {
@@ -113,7 +106,7 @@ const VentaEmpresasProcessLanding = () => {
         <div className="mt-16 bg-card border border-border rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-foreground mb-6">Resultados Comprobados</h3>
           
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="grid md:grid-cols-4 gap-6">
             <div className="space-y-2">
               <div className="text-2xl font-bold text-primary">6-12</div>
               <div className="text-lg font-semibold text-foreground">Meses</div>
@@ -135,14 +128,6 @@ const VentaEmpresasProcessLanding = () => {
               <div className="text-sm text-muted-foreground">Sin compromiso</div>
             </div>
           </div>
-
-          <InteractiveHoverButton
-            variant="primary"
-            size="lg"
-            onClick={scrollToContact}
-          >
-            Comenzar Proceso de Venta
-          </InteractiveHoverButton>
         </div>
       </div>
     </section>
