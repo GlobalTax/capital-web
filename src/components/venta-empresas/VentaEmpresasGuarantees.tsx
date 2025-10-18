@@ -62,7 +62,7 @@ const VentaEmpresasGuarantees = () => {
       <div className="container mx-auto px-4">
         {/* Guarantees Section */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4 border border-green-200">
             <Shield className="h-4 w-4" />
             Tu Tranquilidad es Nuestra Prioridad
           </div>
@@ -74,18 +74,22 @@ const VentaEmpresasGuarantees = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 max-w-7xl mx-auto">
           {guarantees.map((guarantee, index) => (
-            <Card key={index} className="border-2 hover:border-primary transition-colors">
+            <Card key={index} className="border border-slate-200 hover:border-slate-300 transition-colors bg-white shadow-sm">
               <CardContent className="p-6 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                  <guarantee.icon className="h-8 w-8 text-primary" />
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 mb-4">
+                  <guarantee.icon className="h-9 w-9 text-slate-700" />
                 </div>
-                <div className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                <div className="inline-block bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-lg mb-4 border border-green-200">
                   {guarantee.badge}
                 </div>
-                <h3 className="font-bold mb-2">{guarantee.title}</h3>
-                <p className="text-sm text-muted-foreground">{guarantee.description}</p>
+                <h3 className="font-bold text-slate-900 mb-3 text-base">
+                  {guarantee.title}
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {guarantee.description}
+                </p>
               </CardContent>
             </Card>
           ))}
