@@ -38,7 +38,7 @@ export const dataAccessService = {
   },
 
   // === COMPANY VALUATIONS ===
-  async createValuation(valuationData: Partial<AnyCompanyData>, utmData?: any): Promise<string | null> {
+  async createValuation(valuationData: Partial<AnyCompanyData>, utmData?: any, sourceProject?: string): Promise<string | null> {
     const { handleAsyncError } = useErrorHandler();
     
     return await handleAsyncError(async () => {
@@ -58,6 +58,7 @@ export const dataAccessService = {
         whatsapp_opt_in: (valuationData as any).whatsapp_opt_in || false,
         valuation_status: 'started',
         current_step: 1,
+        source_project: sourceProject || 'capittal-main', // 🔥 NEW: Origen del lead
         ip_address: await this.getIPAddress(),
         user_agent: navigator.userAgent,
         ...utmData

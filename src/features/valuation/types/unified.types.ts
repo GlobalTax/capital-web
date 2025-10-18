@@ -134,6 +134,7 @@ export interface SectorMultiple {
 export interface CalculatorConfig {
   version: 'v1' | 'v2' | 'v2-meta' | 'v3' | 'v4' | 'master' | 'standalone';
   steps: number;
+  sourceProject?: string; // 🔥 NEW: Identificador único del origen del lead
   features: {
     autosave: boolean;
     tracking: boolean;

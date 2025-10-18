@@ -26,6 +26,7 @@ export const V1_CONFIG: CalculatorConfig = {
 export const V2_CONFIG: CalculatorConfig = {
   version: 'v2',
   steps: 1, // Solo 1 paso de datos, paso 2 son resultados automáticos
+  sourceProject: 'lp-calculadora-principal', // 🔥 Identificador del origen
   features: {
     autosave: false,
     tracking: true,
@@ -45,6 +46,7 @@ export const V2_CONFIG: CalculatorConfig = {
 export const V2_META_CONFIG: CalculatorConfig = {
   version: 'v2',
   steps: 1, // Solo 1 paso de datos
+  sourceProject: 'lp-calculadora-fiscal', // 🔥 Identificador del origen (Meta/Fiscal)
   features: {
     autosave: false,
     tracking: true,

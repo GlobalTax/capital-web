@@ -14,6 +14,9 @@ export interface UnifiedContact {
   created_at: string;
   status: string;
   
+  // Source tracking
+  source_project?: string; // 🔥 NEW: Origen específico del lead (lp-calculadora-principal, lp-calculadora-fiscal, etc.)
+  
   // Campos específicos por origen
   valuation_amount?: number;
   final_valuation?: number;
@@ -221,6 +224,7 @@ export const useUnifiedContacts = () => {
           company: lead.company_name,
           created_at: lead.created_at,
           status: lead.valuation_status || 'pending',
+          source_project: lead.source_project, // 🔥 NEW: Identificador del origen
           industry: lead.industry,
           employee_range: lead.employee_range,
           final_valuation: lead.final_valuation,

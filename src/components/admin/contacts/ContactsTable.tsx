@@ -43,7 +43,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [originFilters, setOriginFilters] = useState<ContactOrigin[]>([]);
 
-  const getOriginBadge = (origin: ContactOrigin) => {
+  const getOriginBadge = (origin: ContactOrigin, sourceProject?: string) => {
     const badges = {
       contact: { label: 'Comercial', variant: 'default' as const },
       valuation: { label: 'Valoración', variant: 'secondary' as const },
@@ -53,6 +53,27 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
       company_acquisition: { label: 'Compra', variant: 'secondary' as const },
     };
     const badge = badges[origin];
+    
+    // 🔥 Agregar badge adicional para source_project en leads de valoración
+    if (origin === 'valuation' && sourceProject) {
+      const sourceLabels: Record<string, { label: string; color: string }> = {
+        'lp-calculadora-principal': { label: 'LP Principal', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+        'lp-calculadora-fiscal': { label: 'LP Fiscal', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+        'capittal-main': { label: 'Principal', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+      };
+      
+      const sourceConfig = sourceLabels[sourceProject] || { label: sourceProject, color: 'bg-gray-100 text-gray-700 border-gray-300' };
+      
+      return (
+        <div className="flex flex-col gap-1">
+          <Badge variant={badge.variant}>{badge.label}</Badge>
+          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${sourceConfig.color}`}>
+            {sourceConfig.label}
+          </Badge>
+        </div>
+      );
+    }
+    
     return <Badge variant={badge.variant}>{badge.label}</Badge>;
   };
 
@@ -327,7 +348,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                   onCheckedChange={() => onSelectContact(contact.id)}
                 />
               </TableCell>
-              <TableCell>{getOriginBadge(contact.origin)}</TableCell>
+              <TableCell>{getOriginBadge(contact.origin, contact.source_project)}</TableCell>
               <TableCell>{getLeadStatusBadge(contact.lead_status_crm)}</TableCell>
               <TableCell>
                 {contact.assigned_to_name ? (

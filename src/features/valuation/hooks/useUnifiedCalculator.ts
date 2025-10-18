@@ -276,13 +276,17 @@ export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Par
         referrer: document.referrer || null
       };
 
-      const token = await dataAccessService.createValuation(state.companyData, utmData);
+      const token = await dataAccessService.createValuation(
+        state.companyData, 
+        utmData,
+        config.sourceProject // 🔥 NEW: Pasar el origen del lead
+      );
       if (token) {
         setUniqueToken(token);
       }
       return token;
     }, { component: 'UnifiedCalculator', action: 'createInitialValuation' });
-  }, [config.features.autosave, uniqueToken, state.companyData, handleAsyncError]);
+  }, [config.features.autosave, config.sourceProject, uniqueToken, state.companyData, handleAsyncError]);
 
   // ============= RESET =============
   const resetCalculator = useCallback(() => {
