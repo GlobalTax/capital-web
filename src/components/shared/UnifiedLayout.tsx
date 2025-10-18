@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import Header from '@/components/Header';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
 import Footer from '@/components/Footer';
+import LandingFooterNoLinks from '@/components/landing/LandingFooterNoLinks';
 import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import AdminAccessButton from '@/components/AdminAccessButton';
@@ -40,7 +41,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
         {children}
       </main>
       <BannerContainer position="bottom" />
-      <Footer />
+      {variant === 'landing' ? <LandingFooterNoLinks /> : <Footer />}
       {showAccessibilityTools && <AccessibilityTools />}
       {showNotificationCenter && <NotificationCenter className="mr-16" />}
       {shouldShowAdminButton && <AdminAccessButton />}
