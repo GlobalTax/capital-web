@@ -67,18 +67,13 @@ const VentaEmpresasProcess = () => {
                 
                 {/* Card horizontal */}
                 <div className="flex-1 bg-white border border-slate-200 rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3 gap-3">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-slate-700" />
-                      </div>
-                      <h3 className="text-base md:text-lg font-semibold text-slate-900">
-                        {step.title}
-                      </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 md:w-5 md:h-5 text-slate-700" />
                     </div>
-                    <div className="text-xs md:text-sm font-medium text-slate-500 bg-slate-50 px-3 py-1 rounded-full whitespace-nowrap">
-                      {step.duration}
-                    </div>
+                    <h3 className="text-base md:text-lg font-semibold text-slate-900">
+                      {step.title}
+                    </h3>
                   </div>
                   <p className="text-slate-600 text-sm leading-relaxed">
                     {step.description}
