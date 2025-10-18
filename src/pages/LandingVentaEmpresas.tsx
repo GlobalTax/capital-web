@@ -8,6 +8,10 @@ import VentaEmpresasValuationLanding from '@/components/venta-empresas/VentaEmpr
 import VentaEmpresasFAQLanding from '@/components/venta-empresas/VentaEmpresasFAQLanding';
 import VentaEmpresasConversionCTA from '@/components/venta-empresas/VentaEmpresasConversionCTA';
 import StickyNavigationLanding from '@/components/venta-empresas/StickyNavigationLanding';
+import VentaEmpresasGuarantees from '@/components/venta-empresas/VentaEmpresasGuarantees';
+import VentaEmpresasTestimonials from '@/components/venta-empresas/VentaEmpresasTestimonials';
+import VentaEmpresasComparison from '@/components/venta-empresas/VentaEmpresasComparison';
+import VentaEmpresasUrgencyTimer from '@/components/venta-empresas/VentaEmpresasUrgencyTimer';
 
 const LandingVentaEmpresas = () => {
   useEffect(() => {
@@ -35,18 +39,62 @@ const LandingVentaEmpresas = () => {
     }
     metaKeywords.setAttribute('content', 'vender empresa rápido, máximo precio empresa, valoración gratuita, venta empresa exitosa, capittal landing');
 
+    // Open Graph meta tags
+    const setOgTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    setOgTag('og:title', '¡Vende Tu Empresa Ahora! | Máximo Precio Garantizado');
+    setOgTag('og:description', '🚀 +200 operaciones exitosas. Valoración GRATUITA en 48h. Confidencialidad 100%');
+    setOgTag('og:type', 'website');
+    setOgTag('og:url', 'https://capittal.es/lp/venta-empresas');
+
+    // Schema.org JSON-LD
+    const schemaScript = document.createElement('script');
+    schemaScript.type = 'application/ld+json';
+    schemaScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Venta de Empresas",
+      "description": "Servicio profesional de venta de empresas con máximo precio garantizado",
+      "provider": {
+        "@type": "Organization",
+        "name": "Capittal",
+        "url": "https://capittal.es"
+      },
+      "areaServed": "ES",
+      "offers": {
+        "@type": "Offer",
+        "description": "Valoración gratuita de empresa en 48 horas"
+      }
+    });
+    document.head.appendChild(schemaScript);
+
     return () => {
       document.title = "Capittal";
+      if (schemaScript.parentNode) {
+        schemaScript.parentNode.removeChild(schemaScript);
+      }
     };
   }, []);
 
   return (
     <UnifiedLayout variant="landing">
+      <VentaEmpresasUrgencyTimer />
       <StickyNavigationLanding />
       <VentaEmpresasHeroLanding />
       <VentaEmpresasBenefitsLanding />
+      <VentaEmpresasGuarantees />
       <VentaEmpresasProcessLanding />
+      <VentaEmpresasComparison />
       <VentaEmpresasCaseStudies />
+      <VentaEmpresasTestimonials />
       <VentaEmpresasValuationLanding />
       <VentaEmpresasFAQLanding />
       <VentaEmpresasConversionCTA />

@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowRight, CheckCircle, Phone, Mail, Clock } from 'lucide-react';
+import { ArrowRight, CheckCircle, Phone, Clock } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { useVentaEmpresasForm } from '@/hooks/useVentaEmpresasForm';
+import { toast } from 'sonner';
+import VentaEmpresasSuccessModal from './VentaEmpresasSuccessModal';
 
 const VentaEmpresasConversionCTA = () => {
+  const { submitForm, isSubmitting } = useVentaEmpresasForm();
+  const [isSuccess, setIsSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,10 +17,27 @@ const VentaEmpresasConversionCTA = () => {
     urgency: 'medium'
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
-    console.log('Form submitted:', formData);
+    
+    const result = await submitForm(formData);
+    
+    if (result.success) {
+      setIsSuccess(true);
+      toast.success('¡Solicitud enviada! Te contactaremos en 24h');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        revenue: '',
+        urgency: 'medium'
+      });
+    } else {
+      toast.error(result.error || 'Error al enviar. Por favor, intenta de nuevo.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -214,9 +236,10 @@ const VentaEmpresasConversionCTA = () => {
                   variant="primary"
                   size="lg"
                   className="w-full text-lg py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-xl"
+                  disabled={isSubmitting}
                 >
-                  🚀 ¡SOLICITAR VALORACIÓN GRATUITA AHORA!
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  {isSubmitting ? 'Enviando...' : '🚀 ¡SOLICITAR VALORACIÓN GRATUITA AHORA!'}
+                  {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
                 </InteractiveHoverButton>
 
                 <div className="text-center">
@@ -256,6 +279,11 @@ const VentaEmpresasConversionCTA = () => {
           </div>
         </div>
       </div>
+
+      <VentaEmpresasSuccessModal 
+        isOpen={isSuccess} 
+        onClose={() => setIsSuccess(false)} 
+      />
     </section>
   );
 };

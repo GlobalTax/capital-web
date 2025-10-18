@@ -54,11 +54,22 @@ export const staticLandingPages: StaticLandingPage[] = [
     slug: 'venta-empresas',
     url: '/lp/venta-empresas',
     type: 'conversion',
-    description: 'Landing agresiva de conversión para vender empresas',
+    description: 'Landing completa de conversión para vender empresas con máximo precio garantizado',
     source_project: 'lp-venta-empresas',
-    features: ['CTA Agresivo', 'Testimoniales', 'Casos de Éxito', 'FAQ'],
+    features: [
+      'Countdown Timer de Urgencia',
+      'CTA Agresivo Funcional',
+      'Garantías y Trust Signals',
+      'Comparación Visual',
+      'Casos de Éxito',
+      'Testimoniales Expandidos',
+      'FAQ Completo',
+      'Integración BD',
+      'Modal de Confirmación',
+      'SEO Optimizado'
+    ],
     isActive: true,
-    lastUpdated: '2024-12-20'
+    lastUpdated: '2025-01-18'
   },
   {
     id: 'lp-suiteloop',
