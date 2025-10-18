@@ -83,11 +83,10 @@ export const sidebarSections: SidebarSection[] = [
       },
       { 
         title: "Landing Pages", 
-        url: "/admin/landing-pages", 
+        url: "/admin/landing-pages-unified", 
         icon: LayoutDashboard,
         badge: "NEW",
-        description: "Páginas de conversión",
-        visible: false
+        description: "Todas las landing pages"
       },
       { 
         title: "Blog & Contenido", 

@@ -34,6 +34,7 @@ export const LazyContentPerformancePage = lazy(() => import('@/pages/admin/Conte
 export const LazyContentStudioPage = lazy(() => import('@/pages/admin/ContentStudioPage'));
 export const LazySectorsPage = lazy(() => import('@/pages/admin/SectorsPage'));
 export const LazyLandingPagesPage = lazy(() => import('@/pages/admin/LandingPagesPage'));
+export const LazyUnifiedLandingPagesPage = lazy(() => import('@/pages/admin/UnifiedLandingPagesPage'));
 export const LazyAdminBanners = lazy(() => import('@/pages/AdminBanners'));
 export const LazyContactsPage = lazy(() => import('@/pages/admin/ContactsPage'));
 export const LazyLeadMagnetsPage = lazy(() => import('@/pages/admin/LeadMagnetsPage'));

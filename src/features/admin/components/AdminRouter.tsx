@@ -24,6 +24,7 @@ import {
   LazyContentStudioPage,
   LazySectorsPage,
   LazyLandingPagesPage,
+  LazyUnifiedLandingPagesPage,
   LazyAdminBanners,
   LazyContactsPage,
   LazyLeadMagnetsPage,
@@ -90,6 +91,7 @@ const AdminRouter = () => {
           <Route path="/sectors" element={<LazySectorsPage />} />
           <Route path="/case-studies" element={<LazyCaseStudiesManager />} />
           <Route path="/landing-pages" element={<LazyLandingPagesPage />} />
+          <Route path="/landing-pages-unified" element={<LazyUnifiedLandingPagesPage />} />
           <Route path="/banners" element={<LazyAdminBanners />} />
           
           {/* Job Posts Management - Complete */}
