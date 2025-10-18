@@ -84,7 +84,7 @@ const StickyNavigationLanding = () => {
           <div className="hidden md:block">
             <button
               onClick={scrollToContact}
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl animate-pulse"
+              className="inline-flex items-center px-6 py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
             >
               🚀 ¡VALORACIÓN GRATIS!
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -128,7 +128,7 @@ const StickyNavigationLanding = () => {
               <div className="px-4 pt-4 border-t border-gray-200">
                 <button
                   onClick={scrollToContact}
-                  className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-pink-700 transition-all duration-300 shadow-lg animate-pulse"
+                  className="w-full flex items-center justify-center px-6 py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   🚀 ¡VALORACIÓN GRATIS!
                   <ArrowRight className="ml-2 h-4 w-4" />
