@@ -1,5 +1,17 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import { 
+  CheckCircle, 
+  TrendingUp, 
+  Clock, 
+  Target, 
+  Building2, 
+  Cpu, 
+  ShoppingCart, 
+  Briefcase, 
+  Factory,
+  Calculator,
+  ArrowRight 
+} from 'lucide-react';
 
 const VentaEmpresasHeroLanding = () => {
   const benefits = [
@@ -60,57 +72,130 @@ const VentaEmpresasHeroLanding = () => {
             </div>
           </div>
 
-          {/* Visual Card Right */}
+          {/* Visual Card Right - Dashboard Profesional */}
           <div className="relative">
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-lg font-semibold text-slate-900">Capittal M&A</h3>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            {/* Floating Badge - GRATIS */}
+            <div className="absolute -top-4 -right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg rotate-12 animate-pulse z-10">
+              ¡GRATIS!
+            </div>
+
+            {/* Floating Badge - 48H */}
+            <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg -rotate-12 z-10">
+              48 HORAS
+            </div>
+
+            {/* Main Dashboard Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xl">
+              
+              {/* Header with Status Live */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">Capittal M&A</h3>
+                    <p className="text-xs text-slate-500">Dashboard en tiempo real</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-green-700">Activo</span>
+                </div>
               </div>
               
-              <div className="space-y-8">
-                {/* Stats Row */}
-                <div className="flex items-center justify-between px-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600 mb-1">+25%</div>
-                    <div className="text-sm text-slate-600">Precio vs. mercado</div>
+              <div className="space-y-5">
+                
+                {/* Métricas con Gradientes */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Card 1: Precio Premium */}
+                  <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-xl p-4 overflow-hidden group hover:shadow-md transition-shadow">
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-4 w-4 text-green-600" />
+                        <span className="text-xs font-medium text-green-700">Precio Premium</span>
+                      </div>
+                      <div className="text-2xl font-bold text-green-700 mb-1">+25%</div>
+                      <p className="text-xs text-green-600/80">vs. mercado</p>
+                    </div>
+                    <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-green-200/30 rounded-full blur-2xl"></div>
                   </div>
-                  <div className="h-12 w-px bg-slate-200"></div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600 mb-1">6-9</div>
-                    <div className="text-sm text-slate-600">Meses proceso</div>
+
+                  {/* Card 2: Tiempo de Proceso */}
+                  <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 overflow-hidden group hover:shadow-md transition-shadow">
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="text-xs font-medium text-blue-700">Tiempo Medio</span>
+                      </div>
+                      <div className="text-2xl font-bold text-blue-700 mb-1">6-9</div>
+                      <p className="text-xs text-blue-600/80">meses</p>
+                    </div>
+                    <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-blue-200/30 rounded-full blur-2xl"></div>
                   </div>
                 </div>
 
-                {/* Sectors List */}
+                {/* Barra de Progreso - Tasa de Éxito */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-slate-700" />
+                      <span className="text-sm font-medium text-slate-900">Tasa de Éxito</span>
+                    </div>
+                    <span className="text-lg font-bold text-slate-900">98.7%</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-green-500 to-emerald-600 rounded-full transition-all duration-1000 ease-out" 
+                      style={{ width: '98.7%' }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">+200 operaciones completadas</p>
+                </div>
+
+                {/* Sectores con Iconos Profesionales */}
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-slate-900 text-sm">Sectores Principales</h4>
-                  <div className="text-sm text-slate-700 space-y-2">
-                    <div className="flex items-center">
-                      <span className="text-slate-400 mr-2">•</span>
-                      <span>Tecnología y Software</span>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-slate-700" />
+                    <h4 className="font-semibold text-slate-900 text-sm">Sectores de Especialización</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                        <Cpu className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm text-slate-700">Tecnología y Software</span>
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-slate-400 mr-2">•</span>
-                      <span>E-commerce y Retail</span>
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                      <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                        <ShoppingCart className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <span className="text-sm text-slate-700">E-commerce y Retail</span>
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-slate-400 mr-2">•</span>
-                      <span>Servicios Profesionales</span>
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                        <Briefcase className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <span className="text-sm text-slate-700">Servicios Profesionales</span>
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-slate-400 mr-2">•</span>
-                      <span>Industria y Manufactura</span>
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                      <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                        <Factory className="h-4 w-4 text-orange-600" />
+                      </div>
+                      <span className="text-sm text-slate-700">Industria y Manufactura</span>
                     </div>
                   </div>
                 </div>
 
-                {/* CTA Button */}
-                <div className="pt-2">
-                  <button className="w-full py-3 px-4 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-                    Valoración gratuita disponible
-                  </button>
-                </div>
+                {/* CTA Button Premium */}
+                <button className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-[2px] transition-all hover:scale-[1.02] hover:shadow-lg">
+                  <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white transition-all">
+                    <Calculator className="h-5 w-5" />
+                    <span className="font-semibold">Solicitar Valoración Gratuita</span>
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </button>
+
               </div>
             </div>
           </div>
