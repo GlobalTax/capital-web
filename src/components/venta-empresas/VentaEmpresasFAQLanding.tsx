@@ -19,11 +19,6 @@ const VentaEmpresasFAQLanding = () => {
       highlight: "100% Gratuita"
     },
     {
-      question: "¿Cuánto dinero extra puedo conseguir con Capittal?",
-      answer: "Nuestros clientes consiguen entre un 25% y 45% más dinero que con otras consultoras. El récord está en 52% más de lo esperado inicialmente. ¡Tu empresa vale más de lo que crees!",
-      highlight: "+25% a +45%"
-    },
-    {
       question: "¿Cuánto tiempo tarda todo el proceso de venta?",
       answer: "El proceso completo dura entre 6 y 12 meses. La valoración la tienes en 48h, y desde ahí trabajamos sin descanso para conseguir el mejor comprador al mejor precio en el menor tiempo posible.",
       highlight: "6-12 meses"
