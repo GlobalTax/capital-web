@@ -4,7 +4,6 @@ import VentaEmpresasHeroLanding from '@/components/venta-empresas/VentaEmpresasH
 import VentaEmpresasBenefitsLanding from '@/components/venta-empresas/VentaEmpresasBenefitsLanding';
 import VentaEmpresasProcessLanding from '@/components/venta-empresas/VentaEmpresasProcessLanding';
 import VentaEmpresasCaseStudies from '@/components/venta-empresas/VentaEmpresasCaseStudies';
-import VentaEmpresasValuationLanding from '@/components/venta-empresas/VentaEmpresasValuationLanding';
 import VentaEmpresasFAQLanding from '@/components/venta-empresas/VentaEmpresasFAQLanding';
 import VentaEmpresasConversionCTA from '@/components/venta-empresas/VentaEmpresasConversionCTA';
 import StickyNavigationLanding from '@/components/venta-empresas/StickyNavigationLanding';
@@ -95,7 +94,6 @@ const LandingVentaEmpresas = () => {
       <VentaEmpresasComparison />
       <VentaEmpresasCaseStudies />
       <VentaEmpresasTestimonials />
-      <VentaEmpresasValuationLanding />
       <VentaEmpresasFAQLanding />
       <VentaEmpresasConversionCTA />
     </UnifiedLayout>
