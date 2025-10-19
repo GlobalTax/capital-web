@@ -131,13 +131,6 @@ const VentaEmpresasValuationLanding = () => {
                   </div>
                 </div>
 
-                {/* Guarantee */}
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 bg-opacity-20 p-4 rounded-lg border border-green-400">
-                  <p className="text-sm font-bold text-green-300">
-                    🛡️ GARANTÍA TOTAL: Si no conseguimos más valor del que esperabas, 
-                    no cobramos ni un euro. ¡Así de seguros estamos!
-                  </p>
-                </div>
               </div>
             </div>
 
