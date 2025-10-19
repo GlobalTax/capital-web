@@ -6,11 +6,8 @@ import VentaEmpresasProcessLanding from '@/components/venta-empresas/VentaEmpres
 import VentaEmpresasCaseStudies from '@/components/venta-empresas/VentaEmpresasCaseStudies';
 import VentaEmpresasFAQLanding from '@/components/venta-empresas/VentaEmpresasFAQLanding';
 import VentaEmpresasConversionCTA from '@/components/venta-empresas/VentaEmpresasConversionCTA';
-import StickyNavigationLanding from '@/components/venta-empresas/StickyNavigationLanding';
-
 import VentaEmpresasTestimonials from '@/components/venta-empresas/VentaEmpresasTestimonials';
 import VentaEmpresasComparison from '@/components/venta-empresas/VentaEmpresasComparison';
-import VentaEmpresasUrgencyTimer from '@/components/venta-empresas/VentaEmpresasUrgencyTimer';
 
 const LandingVentaEmpresas = () => {
   useEffect(() => {
@@ -84,9 +81,7 @@ const LandingVentaEmpresas = () => {
   }, []);
 
   return (
-    <UnifiedLayout variant="landing">
-      <VentaEmpresasUrgencyTimer />
-      <StickyNavigationLanding />
+    <UnifiedLayout variant="home">
       <VentaEmpresasHeroLanding />
       <VentaEmpresasBenefitsLanding />
       
