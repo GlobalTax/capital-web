@@ -5553,6 +5553,135 @@ export type Database = {
         }
         Relationships: []
       }
+      venta_empresas_comparisons: {
+        Row: {
+          aspect: string
+          created_at: string | null
+          display_order: number
+          id: string
+          is_active: boolean | null
+          is_critical: boolean | null
+          updated_at: string | null
+          with_capittal: string
+          without_capittal: string
+        }
+        Insert: {
+          aspect: string
+          created_at?: string | null
+          display_order: number
+          id?: string
+          is_active?: boolean | null
+          is_critical?: boolean | null
+          updated_at?: string | null
+          with_capittal: string
+          without_capittal: string
+        }
+        Update: {
+          aspect?: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          is_critical?: boolean | null
+          updated_at?: string | null
+          with_capittal?: string
+          without_capittal?: string
+        }
+        Relationships: []
+      }
+      venta_empresas_process_steps: {
+        Row: {
+          created_at: string | null
+          description: string
+          display_order: number
+          duration: string
+          icon_name: string
+          id: string
+          is_active: boolean | null
+          step_number: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          display_order: number
+          duration: string
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          step_number: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          display_order?: number
+          duration?: string
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          step_number?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      venta_empresas_testimonials: {
+        Row: {
+          avatar_initials: string
+          company: string
+          created_at: string | null
+          display_order: number
+          id: string
+          is_active: boolean | null
+          name: string
+          position: string
+          price_increase: string
+          quote: string
+          rating: number | null
+          sector: string
+          time_to_sale: string
+          updated_at: string | null
+          valuation: string
+        }
+        Insert: {
+          avatar_initials: string
+          company: string
+          created_at?: string | null
+          display_order: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          position: string
+          price_increase: string
+          quote: string
+          rating?: number | null
+          sector: string
+          time_to_sale: string
+          updated_at?: string | null
+          valuation: string
+        }
+        Update: {
+          avatar_initials?: string
+          company?: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          position?: string
+          price_increase?: string
+          quote?: string
+          rating?: number | null
+          sector?: string
+          time_to_sale?: string
+          updated_at?: string | null
+          valuation?: string
+        }
+        Relationships: []
+      }
       webinar_registrations: {
         Row: {
           attended: boolean | null

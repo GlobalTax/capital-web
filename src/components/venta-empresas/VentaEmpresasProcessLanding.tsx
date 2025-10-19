@@ -1,45 +1,33 @@
 import React from 'react';
-import { Search, FileText, Users, Handshake, CheckCircle } from 'lucide-react';
+import { Search, FileText, Users, Handshake, CheckCircle, Loader2 } from 'lucide-react';
+import { useProcessSteps } from '@/hooks/useVentaEmpresasContent';
 
 const VentaEmpresasProcessLanding = () => {
+  const { data: steps, isLoading } = useProcessSteps();
 
-  const steps = [
-    {
-      number: "1",
-      icon: <Search className="h-8 w-8" />,
-      title: "Valoración Inicial",
-      description: "Análisis completo de tu empresa para determinar su valor de mercado real y potencial de optimización.",
-      duration: "48-72 horas"
-    },
-    {
-      number: "2", 
-      icon: <FileText className="h-8 w-8" />,
-      title: "Preparación y Optimización",
-      description: "Preparamos tu empresa para maximizar su atractivo y valor ante potenciales compradores.",
-      duration: "3-4 semanas"
-    },
-    {
-      number: "3",
-      icon: <Users className="h-8 w-8" />,
-      title: "Identificación de Compradores",
-      description: "Búsqueda y calificación de compradores estratégicos que valoren al máximo tu empresa.",
-      duration: "6-10 semanas"
-    },
-    {
-      number: "4",
-      icon: <Handshake className="h-8 w-8" />,
-      title: "Negociación y Estructuración",
-      description: "Gestión profesional de ofertas y negociación de términos óptimos para la transacción.",
-      duration: "4-8 semanas"
-    },
-    {
-      number: "5",
-      icon: <CheckCircle className="h-8 w-8" />,
-      title: "Cierre de Operación",
-      description: "Finalización de due diligence y firma de acuerdos definitivos para el cierre exitoso.",
-      duration: "6-12 semanas"
-    }
-  ];
+  const iconMap: Record<string, any> = {
+    Search: <Search className="h-8 w-8" />,
+    FileText: <FileText className="h-8 w-8" />,
+    Users: <Users className="h-8 w-8" />,
+    Handshake: <Handshake className="h-8 w-8" />,
+    CheckCircle: <CheckCircle className="h-8 w-8" />,
+  };
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!steps || steps.length === 0) {
+    return null;
+  }
 
   return (
     <section id="proceso" className="py-20 bg-muted/30">
@@ -63,7 +51,7 @@ const VentaEmpresasProcessLanding = () => {
                 <div className="flex items-start space-x-6">
                   {/* Step Number */}
                   <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold shadow-lg">
-                    {step.number}
+                    {step.step_number}
                   </div>
                   
                   {/* Step Content */}
@@ -71,7 +59,7 @@ const VentaEmpresasProcessLanding = () => {
                     <div className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow duration-300">
                       <div className="flex items-start space-x-4">
                         <div className="flex-shrink-0 w-12 h-12 bg-muted text-primary rounded-lg flex items-center justify-center">
-                          {step.icon}
+                          {iconMap[step.icon_name] || <Search className="h-8 w-8" />}
                         </div>
                         
                         <div className="flex-1">

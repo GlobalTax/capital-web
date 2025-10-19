@@ -1,102 +1,27 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
-const testimonials = [
-  {
-    id: 1,
-    name: 'Carlos M.',
-    position: 'CEO',
-    company: 'Empresa Tecnológica',
-    sector: 'SaaS',
-    avatar: 'CM',
-    rating: 5,
-    quote: 'Capittal superó nuestras expectativas. No solo conseguimos un precio un 35% superior al que esperábamos, sino que el proceso fue completamente confidencial y profesional. Su equipo nos acompañó en cada paso.',
-    metrics: {
-      priceIncrease: '+35%',
-      timeToSale: '6 meses',
-      valuation: '€2.8M'
-    }
-  },
-  {
-    id: 2,
-    name: 'María L.',
-    position: 'Fundadora',
-    company: 'Distribuidora Regional',
-    sector: 'Distribución',
-    avatar: 'ML',
-    rating: 5,
-    quote: 'Después de 25 años al frente de la empresa, Capittal me ayudó a conseguir la mejor operación posible. Su red de compradores cualificados y su experiencia en negociación fueron clave para cerrar la operación en tiempo récord.',
-    metrics: {
-      priceIncrease: '+28%',
-      timeToSale: '4 meses',
-      valuation: '€4.2M'
-    }
-  },
-  {
-    id: 3,
-    name: 'Javier R.',
-    position: 'Socio Fundador',
-    company: 'Consultoría Especializada',
-    sector: 'Servicios Profesionales',
-    avatar: 'JR',
-    rating: 5,
-    quote: 'La valoración inicial fue precisa y realista. Durante todo el proceso, Capittal nos mantuvo informados y manejó las negociaciones de forma experta. El resultado final superó nuestras expectativas iniciales.',
-    metrics: {
-      priceIncrease: '+42%',
-      timeToSale: '7 meses',
-      valuation: '€1.5M'
-    }
-  },
-  {
-    id: 4,
-    name: 'Ana G.',
-    position: 'Directora General',
-    company: 'Empresa Industrial',
-    sector: 'Manufactura',
-    avatar: 'AG',
-    rating: 5,
-    quote: 'Tenía dudas sobre el proceso de venta, pero Capittal hizo que todo fuera transparente y sencillo. Su equipo es muy profesional y me sentí acompañada en todo momento. Recomiendo 100% sus servicios.',
-    metrics: {
-      priceIncrease: '+31%',
-      timeToSale: '8 meses',
-      valuation: '€3.6M'
-    }
-  },
-  {
-    id: 5,
-    name: 'Roberto S.',
-    position: 'Co-fundador',
-    company: 'E-commerce Retail',
-    sector: 'Comercio Electrónico',
-    avatar: 'RS',
-    rating: 5,
-    quote: 'La experiencia con Capittal fue excepcional. Desde el primer día demostraron un conocimiento profundo de nuestro sector. Consiguieron múltiples ofertas competitivas que elevaron el precio final significativamente.',
-    metrics: {
-      priceIncrease: '+48%',
-      timeToSale: '5 meses',
-      valuation: '€2.1M'
-    }
-  },
-  {
-    id: 6,
-    name: 'Laura P.',
-    position: 'CEO',
-    company: 'Empresa de Servicios',
-    sector: 'Consultoría',
-    avatar: 'LP',
-    rating: 5,
-    quote: 'Capittal nos ayudó a estructurar la operación de forma óptima desde el punto de vista fiscal. Su red de contactos nos permitió acceder a compradores que no habríamos encontrado por nuestra cuenta.',
-    metrics: {
-      priceIncrease: '+39%',
-      timeToSale: '6 meses',
-      valuation: '€1.9M'
-    }
-  }
-];
+import { useVentaTestimonials } from '@/hooks/useVentaEmpresasContent';
 
 const VentaEmpresasTestimonials = () => {
+  const { data: testimonials, isLoading } = useVentaTestimonials();
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-background to-secondary/5">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!testimonials || testimonials.length === 0) {
+    return null;
+  }
   return (
     <section className="py-20 bg-gradient-to-b from-background to-secondary/5">
       <div className="container mx-auto px-4">
@@ -117,10 +42,10 @@ const VentaEmpresasTestimonials = () => {
           {testimonials.map((testimonial) => (
             <Card key={testimonial.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex items-start gap-4 mb-4">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {testimonial.avatar}
+                      {testimonial.avatar_initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -143,15 +68,15 @@ const VentaEmpresasTestimonials = () => {
 
                 <div className="border-t pt-4 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <div className="text-lg font-bold text-primary">{testimonial.metrics.priceIncrease}</div>
+                    <div className="text-lg font-bold text-primary">{testimonial.price_increase}</div>
                     <div className="text-xs text-muted-foreground">Sobre precio esperado</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-primary">{testimonial.metrics.timeToSale}</div>
+                    <div className="text-lg font-bold text-primary">{testimonial.time_to_sale}</div>
                     <div className="text-xs text-muted-foreground">Tiempo de venta</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-primary">{testimonial.metrics.valuation}</div>
+                    <div className="text-lg font-bold text-primary">{testimonial.valuation}</div>
                     <div className="text-xs text-muted-foreground">Valoración final</div>
                   </div>
                 </div>

@@ -1,61 +1,25 @@
 import React from 'react';
-import { Check, X, TrendingUp } from 'lucide-react';
-
-const comparisonData = [
-  {
-    aspect: 'Precio de Venta',
-    withCapittal: 'Precio optimizado hasta +40% sobre valor inicial',
-    withoutCapittal: 'Precio basado en intuición o primera oferta',
-    critical: true
-  },
-  {
-    aspect: 'Tiempo de Venta',
-    withCapittal: '4-9 meses con proceso estructurado',
-    withoutCapittal: '1-3 años o más con múltiples intentos fallidos'
-  },
-  {
-    aspect: 'Confidencialidad',
-    withCapittal: 'NDA profesional con todos los compradores',
-    withoutCapittal: 'Alto riesgo de filtración a empleados y competencia'
-  },
-  {
-    aspect: 'Due Diligence',
-    withCapittal: 'Documentación preparada profesionalmente',
-    withoutCapittal: 'Preparación deficiente que reduce el precio'
-  },
-  {
-    aspect: 'Negociación',
-    withCapittal: 'Expertos negociadores con +200 operaciones',
-    withoutCapittal: 'Negociación emocional sin experiencia'
-  },
-  {
-    aspect: 'Compradores',
-    withCapittal: 'Acceso a red exclusiva de +5,000 inversores',
-    withoutCapittal: 'Limitado a tu red personal o intermediarios generalistas'
-  },
-  {
-    aspect: 'Aspectos Fiscales',
-    withCapittal: 'Optimización fiscal con equipo especializado',
-    withoutCapittal: 'Posible pérdida de ahorros fiscales significativos'
-  },
-  {
-    aspect: 'Estrés y Tiempo',
-    withCapittal: 'Nosotros gestionamos todo mientras tú diriges tu empresa',
-    withoutCapittal: 'Dedicación de 20+ horas semanales durante meses'
-  },
-  {
-    aspect: 'Garantías',
-    withCapittal: 'Garantía de mejora de precio o no cobras',
-    withoutCapittal: 'Sin garantías ni protección profesional'
-  },
-  {
-    aspect: 'Soporte Legal',
-    withCapittal: 'Equipo legal experto en M&A incluido',
-    withoutCapittal: 'Necesitas contratar (y pagar) múltiples asesores'
-  }
-];
+import { Check, X, TrendingUp, Loader2 } from 'lucide-react';
+import { useComparisons } from '@/hooks/useVentaEmpresasContent';
 
 const VentaEmpresasComparison = () => {
+  const { data: comparisonData, isLoading } = useComparisons();
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!comparisonData || comparisonData.length === 0) {
+    return null;
+  }
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -93,17 +57,17 @@ const VentaEmpresasComparison = () => {
                 <tbody>
                   {comparisonData.map((item, index) => (
                     <tr 
-                      key={index}
+                      key={item.id}
                       className={`
                         border-b border-slate-100 last:border-0
                         ${index % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}
-                        ${item.critical ? 'bg-red-50/30' : ''}
+                        ${item.is_critical ? 'bg-red-50/30' : ''}
                         hover:bg-slate-50 transition-colors
                       `}
                     >
                       <td className="px-6 py-4 text-sm font-medium text-slate-900">
                         <div className="flex items-center gap-2">
-                          {item.critical && <span className="text-red-500 text-base">★</span>}
+                          {item.is_critical && <span className="text-red-500 text-base">★</span>}
                           {item.aspect}
                         </div>
                       </td>
@@ -111,7 +75,7 @@ const VentaEmpresasComparison = () => {
                         <div className="flex items-start gap-3">
                           <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                           <span className="text-sm text-slate-700 leading-relaxed">
-                            {item.withCapittal}
+                            {item.with_capittal}
                           </span>
                         </div>
                       </td>
@@ -119,7 +83,7 @@ const VentaEmpresasComparison = () => {
                         <div className="flex items-start gap-3">
                           <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
                           <span className="text-sm text-slate-600 leading-relaxed">
-                            {item.withoutCapittal}
+                            {item.without_capittal}
                           </span>
                         </div>
                       </td>
@@ -134,14 +98,14 @@ const VentaEmpresasComparison = () => {
           <div className="md:hidden space-y-1 border border-slate-200 rounded-xl overflow-hidden">
             {comparisonData.map((item, index) => (
               <div 
-                key={index}
+                key={item.id}
                 className={`
                   border-b border-slate-100 last:border-0
                   ${index % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}
                 `}
               >
                 <div className="px-4 py-3 font-semibold text-sm text-slate-900 border-b border-slate-100">
-                  {item.critical && <span className="text-red-500 mr-1">★</span>}
+                  {item.is_critical && <span className="text-red-500 mr-1">★</span>}
                   {item.aspect}
                 </div>
                 
@@ -150,7 +114,7 @@ const VentaEmpresasComparison = () => {
                     <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <div className="text-xs font-semibold text-slate-700 mb-1">Con Capittal</div>
-                      <div className="text-sm text-slate-600">{item.withCapittal}</div>
+                      <div className="text-sm text-slate-600">{item.with_capittal}</div>
                     </div>
                   </div>
                   
@@ -158,7 +122,7 @@ const VentaEmpresasComparison = () => {
                     <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <div>
                       <div className="text-xs font-semibold text-slate-500 mb-1">Por Tu Cuenta</div>
-                      <div className="text-sm text-slate-500">{item.withoutCapittal}</div>
+                      <div className="text-sm text-slate-500">{item.without_capittal}</div>
                     </div>
                   </div>
                 </div>
