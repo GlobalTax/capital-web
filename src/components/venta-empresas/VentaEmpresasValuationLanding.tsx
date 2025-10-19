@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, TrendingUp, DollarSign, Zap } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const VentaEmpresasValuationLanding = () => {
@@ -18,49 +18,54 @@ const VentaEmpresasValuationLanding = () => {
           {/* Left Content */}
           <div className="space-y-8">
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 bg-green-500 bg-opacity-20 text-green-300 rounded-full text-sm font-medium border border-green-500">
+            <div className="inline-flex items-center px-4 py-2 bg-green-500/20 text-green-300 rounded-full text-sm font-bold border border-green-500/50">
               🎯 VALORACIÓN GRATUITA GARANTIZADA
             </div>
 
             <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
-              ¡Descubre Cuánto
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"> Vale Tu Empresa</span>!
+              ¡Descubre Cuánto{" "}
+              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                Vale Tu Empresa
+              </span>!
             </h2>
 
             <p className="text-xl text-blue-100 leading-relaxed">
               <strong className="text-white">¡Tu empresa vale MÁS de lo que crees!</strong> 
-              Nuestro método exclusivo ha conseguido valoraciones hasta un 45% superiores 
-              a las expectativas iniciales de nuestros clientes.
+              Nuestro método exclusivo ha conseguido valoraciones hasta un <strong className="text-yellow-400">45% superiores</strong> a las expectativas iniciales de nuestros clientes.
             </p>
 
             {/* Value Propositions */}
             <div className="space-y-4">
               {[
                 {
-                  icon: <Zap className="h-6 w-6 text-yellow-400" />,
+                  emoji: "⚡",
                   text: "Valoración profesional en 48 horas",
-                  highlight: "GRATIS"
+                  highlight: "GRATIS",
+                  highlightColor: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/50"
                 },
                 {
-                  icon: <TrendingUp className="h-6 w-6 text-green-400" />,
+                  emoji: "📈",
                   text: "Identificamos oportunidades de mejora del valor",
-                  highlight: "+35%"
+                  highlight: "+35%",
+                  highlightColor: "bg-green-500/20 text-green-300 border border-green-500/50"
                 },
                 {
-                  icon: <Calculator className="h-6 w-6 text-blue-400" />,
+                  emoji: "🧮",
                   text: "Múltiples metodologías de valoración",
-                  highlight: "PRECISIÓN"
+                  highlight: "PRECISIÓN",
+                  highlightColor: "bg-blue-500/20 text-blue-300 border border-blue-500/50"
                 },
                 {
-                  icon: <DollarSign className="h-6 w-6 text-purple-400" />,
+                  emoji: "💰",
                   text: "Estrategias para maximizar el precio final",
-                  highlight: "MÁXIMO €"
+                  highlight: "MÁXIMO €",
+                  highlightColor: "bg-purple-500/20 text-purple-300 border border-purple-500/50"
                 }
               ].map((item, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  {item.icon}
-                  <span className="text-blue-100 flex-1">{item.text}</span>
-                  <span className="px-2 py-1 bg-white bg-opacity-20 rounded-full text-xs font-bold text-yellow-300">
+                <div key={index} className="flex items-center gap-4">
+                  <span className="text-2xl">{item.emoji}</span>
+                  <span className="text-blue-100 flex-1 font-medium">{item.text}</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.highlightColor}`}>
                     {item.highlight}
                   </span>
                 </div>
@@ -73,13 +78,13 @@ const VentaEmpresasValuationLanding = () => {
                 variant="primary"
                 size="lg"
                 onClick={scrollToContact}
-                className="w-full sm:w-auto text-lg px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold shadow-2xl"
+                className="w-full sm:w-auto text-lg px-8 py-6 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-extrabold shadow-2xl rounded-xl"
               >
                 🚀 ¡SOLICITAR VALORACIÓN GRATUITA AHORA!
               </InteractiveHoverButton>
               
-              <p className="text-sm text-blue-200">
-                ⏰ <strong>Oferta limitada:</strong> Solo las primeras 10 solicitudes este mes reciben análisis completo gratuito
+              <p className="text-sm text-blue-200 font-medium">
+                ⏰ <strong className="font-bold">Oferta limitada:</strong> Solo las primeras 10 solicitudes este mes reciben análisis completo gratuito
               </p>
             </div>
           </div>
@@ -87,7 +92,7 @@ const VentaEmpresasValuationLanding = () => {
           {/* Right Visual */}
           <div className="relative">
             {/* Main Card */}
-            <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20 shadow-2xl">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl">
               <div className="text-center space-y-6">
                 <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mx-auto flex items-center justify-center shadow-lg">
                   <Calculator className="h-10 w-10 text-white" />
@@ -97,35 +102,35 @@ const VentaEmpresasValuationLanding = () => {
 
                 {/* Success Cases */}
                 <div className="space-y-4">
-                  <div className="bg-white bg-opacity-10 p-4 rounded-lg border border-white border-opacity-20">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-blue-200">TechStart SL</span>
-                      <span className="text-xs bg-green-500 bg-opacity-20 text-green-300 px-2 py-1 rounded-full">+47%</span>
+                  <div className="bg-white/10 p-4 rounded-xl border border-white/20 hover:border-yellow-400/50 transition-all">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm font-semibold text-blue-200">TechStart SL</span>
+                      <span className="text-xs bg-green-500/20 text-green-300 px-3 py-1 rounded-full font-bold border border-green-500/50">+47%</span>
                     </div>
-                    <div className="text-left">
-                      <div className="text-sm text-blue-300">Expectativa inicial: €850K</div>
+                    <div className="text-left space-y-1">
+                      <div className="text-sm text-blue-300">Expectativa inicial: <span className="font-semibold">€850K</span></div>
                       <div className="text-lg font-bold text-yellow-400">Precio final: €1.25M 🎉</div>
                     </div>
                   </div>
 
-                  <div className="bg-white bg-opacity-10 p-4 rounded-lg border border-white border-opacity-20">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-blue-200">Servicios Pro SA</span>
-                      <span className="text-xs bg-green-500 bg-opacity-20 text-green-300 px-2 py-1 rounded-full">+52%</span>
+                  <div className="bg-white/10 p-4 rounded-xl border border-white/20 hover:border-yellow-400/50 transition-all">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm font-semibold text-blue-200">Servicios Pro SA</span>
+                      <span className="text-xs bg-green-500/20 text-green-300 px-3 py-1 rounded-full font-bold border border-green-500/50">+52%</span>
                     </div>
-                    <div className="text-left">
-                      <div className="text-sm text-blue-300">Expectativa inicial: €2.1M</div>
+                    <div className="text-left space-y-1">
+                      <div className="text-sm text-blue-300">Expectativa inicial: <span className="font-semibold">€2.1M</span></div>
                       <div className="text-lg font-bold text-yellow-400">Precio final: €3.2M 🚀</div>
                     </div>
                   </div>
 
-                  <div className="bg-white bg-opacity-10 p-4 rounded-lg border border-white border-opacity-20">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-blue-200">E-commerce Plus</span>
-                      <span className="text-xs bg-green-500 bg-opacity-20 text-green-300 px-2 py-1 rounded-full">+38%</span>
+                  <div className="bg-white/10 p-4 rounded-xl border border-white/20 hover:border-yellow-400/50 transition-all">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm font-semibold text-blue-200">E-commerce Plus</span>
+                      <span className="text-xs bg-green-500/20 text-green-300 px-3 py-1 rounded-full font-bold border border-green-500/50">+38%</span>
                     </div>
-                    <div className="text-left">
-                      <div className="text-sm text-blue-300">Expectativa inicial: €1.6M</div>
+                    <div className="text-left space-y-1">
+                      <div className="text-sm text-blue-300">Expectativa inicial: <span className="font-semibold">€1.6M</span></div>
                       <div className="text-lg font-bold text-yellow-400">Precio final: €2.2M 💰</div>
                     </div>
                   </div>
@@ -135,11 +140,11 @@ const VentaEmpresasValuationLanding = () => {
             </div>
 
             {/* Floating Elements */}
-            <div className="absolute -top-6 -right-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-2 rounded-full text-sm font-bold animate-bounce shadow-lg">
+            <div className="absolute -top-6 -right-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-5 py-2.5 rounded-full text-sm font-extrabold animate-bounce shadow-xl border-2 border-white/30">
               ¡GRATIS!
             </div>
             
-            <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-green-400 to-emerald-500 text-black px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+            <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-green-400 to-emerald-500 text-black px-5 py-2.5 rounded-full text-sm font-extrabold shadow-xl border-2 border-white/30">
               48 HORAS
             </div>
           </div>
