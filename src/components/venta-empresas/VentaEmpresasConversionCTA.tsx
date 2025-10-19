@@ -78,13 +78,12 @@ const VentaEmpresasConversionCTA = () => {
 
             {/* Benefits Checklist */}
             <div className="space-y-4">
-              {[
-                "✅ Consulta GRATUITA con experto en 48h",
-                "✅ Acceso a red exclusiva de compradores cualificados",
-                "✅ Estrategia personalizada para MAXIMIZAR precio de venta",
-                "✅ Proceso 100% confidencial y profesional",
-                "✅ Solo cobramos si vendemos tu empresa"
-              ].map((benefit, index) => (
+            {[
+              "✅ Consulta GRATUITA con experto en 48h",
+              "✅ Acceso a red exclusiva de compradores cualificados",
+              "✅ Estrategia personalizada para MAXIMIZAR precio de venta",
+              "✅ Proceso 100% confidencial y profesional"
+            ].map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <span className="text-lg text-green-300">{benefit}</span>
                 </div>
