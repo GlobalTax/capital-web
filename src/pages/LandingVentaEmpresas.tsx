@@ -20,12 +20,12 @@ const LandingVentaEmpresas = () => {
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 
-        '🚀 ¡Vende tu empresa al MÁXIMO precio! +200 operaciones exitosas. Valoración GRATUITA en 48h. Confidencialidad 100%. ¡Empieza HOY!'
+        '🚀 ¡Vende tu empresa al MÁXIMO precio! +200 operaciones exitosas. Consulta GRATUITA en 48h. Proceso confidencial 100%. ¡Empieza HOY!'
       );
     } else {
       const meta = document.createElement('meta');
       meta.name = 'description';
-      meta.content = '🚀 ¡Vende tu empresa al MÁXIMO precio! +200 operaciones exitosas. Valoración GRATUITA en 48h. Confidencialidad 100%. ¡Empieza HOY!';
+      meta.content = '🚀 ¡Vende tu empresa al MÁXIMO precio! +200 operaciones exitosas. Consulta GRATUITA en 48h. Proceso confidencial 100%. ¡Empieza HOY!';
       document.head.appendChild(meta);
     }
 

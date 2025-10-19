@@ -14,8 +14,8 @@ const VentaEmpresasFAQLanding = () => {
 
   const faqs = [
     {
-      question: "¿Realmente la valoración es GRATUITA y sin compromiso?",
-      answer: "¡SÍ, completamente GRATUITA! En 48 horas recibes un informe completo de valoración profesional sin pagar ni un euro y sin ningún tipo de compromiso. Solo cobramos cuando vendemos tu empresa exitosamente.",
+      question: "¿Realmente la consulta inicial es GRATUITA y sin compromiso?",
+      answer: "¡SÍ, completamente GRATUITA! La consulta inicial es 100% gratuita. Analizamos tu caso, te explicamos nuestro proceso y cómo conseguirte el mejor precio. Sin letra pequeña, sin compromisos. Solo cobramos cuando vendemos tu empresa exitosamente.",
       highlight: "100% Gratuita"
     },
     {

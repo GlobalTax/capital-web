@@ -74,9 +74,9 @@ const VentaEmpresasHeroLanding = () => {
 
           {/* Visual Card Right - Dashboard Profesional */}
           <div className="relative">
-            {/* Floating Badge - GRATIS */}
+            {/* Floating Badge - CONSULTA GRATIS */}
             <div className="absolute -top-4 -right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg rotate-12 animate-pulse z-10">
-              ¡GRATIS!
+              CONSULTA GRATIS
             </div>
 
             {/* Floating Badge - 48H */}
@@ -191,7 +191,7 @@ const VentaEmpresasHeroLanding = () => {
                 <button className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-[2px] transition-all hover:scale-[1.02] hover:shadow-lg">
                   <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white transition-all">
                     <Calculator className="h-5 w-5" />
-                    <span className="font-semibold">Solicitar Valoración Gratuita</span>
+                    <span className="font-semibold">Conseguir Mejor Precio</span>
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </div>
                 </button>

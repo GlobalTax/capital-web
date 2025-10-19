@@ -65,25 +65,25 @@ const VentaEmpresasConversionCTA = () => {
             </div>
 
             <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
-              ¡Consigue Tu
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"> Valoración GRATUITA</span> 
-              en 48 Horas!
+              ¡Vende Tu Empresa al
+              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"> Mejor Precio</span> 
+              en Tiempo Récord!
             </h2>
 
             <p className="text-xl text-blue-100 leading-relaxed">
-              <strong className="text-white">¡No esperes más!</strong> Cada día que pasa sin vender tu empresa, 
-              estás perdiendo oportunidades. <strong className="text-yellow-400">Actúa AHORA</strong> y descubre 
-              el verdadero valor de tu negocio.
+              <strong className="text-white">¡No esperes más!</strong> Cada día que pasa pierdes oportunidades de venta. 
+              <strong className="text-yellow-400">Actúa AHORA</strong> y consigue compradores cualificados dispuestos a 
+              pagar el MÁXIMO por tu empresa.
             </p>
 
             {/* Benefits Checklist */}
             <div className="space-y-4">
               {[
-                "✅ Valoración profesional GRATUITA en 48h",
-                "✅ Análisis completo de oportunidades de mejora",
-                "✅ Estrategia personalizada para MAXIMIZAR precio",
-                "✅ Primera consulta con experto SIN COMPROMISO",
-                "✅ Confidencialidad TOTAL garantizada"
+                "✅ Consulta GRATUITA con experto en 48h",
+                "✅ Acceso a red exclusiva de compradores cualificados",
+                "✅ Estrategia personalizada para MAXIMIZAR precio de venta",
+                "✅ Proceso 100% confidencial y profesional",
+                "✅ Solo cobramos si vendemos tu empresa"
               ].map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <span className="text-lg text-green-300">{benefit}</span>
@@ -126,10 +126,10 @@ const VentaEmpresasConversionCTA = () => {
             <div className="bg-white bg-opacity-95 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white border-opacity-30">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  ¡Solicita Tu Valoración GRATIS!
+                  ¡Empieza a Vender Tu Empresa HOY!
                 </h3>
                 <p className="text-gray-600">
-                  Completa el formulario y recibe tu valoración profesional en 48 horas
+                  Completa el formulario y te contactamos en 48h con los primeros pasos
                 </p>
               </div>
 
@@ -238,7 +238,7 @@ const VentaEmpresasConversionCTA = () => {
                   className="w-full text-lg py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-xl"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Enviando...' : '🚀 ¡SOLICITAR VALORACIÓN GRATUITA AHORA!'}
+                  {isSubmitting ? 'Enviando...' : '🚀 ¡QUIERO VENDER MI EMPRESA AHORA!'}
                   {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
                 </InteractiveHoverButton>
 
@@ -271,10 +271,10 @@ const VentaEmpresasConversionCTA = () => {
 
             {/* Floating Guarantees */}
             <div className="absolute -top-4 -right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-              ¡GRATIS!
+              SIN COSTE
             </div>
             <div className="absolute -bottom-4 -left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-              48 HORAS
+              RESPUESTA 48H
             </div>
           </div>
         </div>
