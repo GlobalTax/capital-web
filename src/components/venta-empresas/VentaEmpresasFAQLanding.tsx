@@ -34,11 +34,6 @@ const VentaEmpresasFAQLanding = () => {
       highlight: "€500K a €50M+"
     },
     {
-      question: "¿Cuándo y cómo cobráis vuestros honorarios?",
-      answer: "¡Solo cobramos cuando TÚ cobras! Nuestros honorarios se pagan únicamente al cierre exitoso de la operación. Trabajamos con un modelo de éxito compartido.",
-      highlight: "Solo al cierre"
-    },
-    {
       question: "¿Qué garantías me dais de que vais a vender mi empresa?",
       answer: "Tenemos un 98,7% de tasa de éxito en nuestras operaciones. Si aceptamos tu empresa es porque estamos seguros de poder venderla al mejor precio del mercado. Nuestro equipo trabaja con máxima dedicación en cada operación.",
       highlight: "98,7% éxito"
