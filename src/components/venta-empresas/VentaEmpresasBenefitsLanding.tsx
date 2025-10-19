@@ -85,7 +85,7 @@ const VentaEmpresasBenefitsLanding = () => {
         <div className="bg-card border border-border rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-foreground mb-6">Resultados que Nos Respaldan</h3>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-6">
+          <div className="grid md:grid-cols-3 gap-8">
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">4.9/5</div>
               <div className="text-lg font-semibold text-foreground">Valoración</div>
@@ -103,15 +103,6 @@ const VentaEmpresasBenefitsLanding = () => {
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto">
-            <p className="italic text-lg text-muted-foreground">
-              "El equipo de Capittal logró un precio de venta superior a nuestras expectativas iniciales. 
-              Su profesionalismo y conocimiento del mercado fueron clave en el éxito de la operación."
-            </p>
-            <p className="mt-4 text-foreground font-semibold">
-              - María González, Fundadora TechSolutions
-            </p>
-          </div>
         </div>
       </div>
     </section>
