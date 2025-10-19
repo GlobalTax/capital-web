@@ -89,6 +89,11 @@ const AdminOperations = () => {
     }
   }, []);
 
+  // Clear selection when changing tabs
+  useEffect(() => {
+    setSelectedOperations(new Set());
+  }, [activeTab]);
+
   const fetchOperations = async () => {
     try {
       const { data, error } = await supabase
@@ -510,7 +515,6 @@ const AdminOperations = () => {
         description: `Se activaron ${ids.length} operaciones correctamente`,
       });
 
-      setSelectedOperations(new Set());
       await fetchOperations();
     } catch (error) {
       console.error('Error activating operations:', error);
@@ -537,7 +541,6 @@ const AdminOperations = () => {
         description: `Se desactivaron ${ids.length} operaciones correctamente`,
       });
 
-      setSelectedOperations(new Set());
       await fetchOperations();
     } catch (error) {
       console.error('Error deactivating operations:', error);
@@ -564,7 +567,6 @@ const AdminOperations = () => {
         description: `Se marcaron ${ids.length} operaciones como destacadas`,
       });
 
-      setSelectedOperations(new Set());
       await fetchOperations();
     } catch (error) {
       console.error('Error featuring operations:', error);
@@ -591,7 +593,6 @@ const AdminOperations = () => {
         description: `Se quitó el destacado de ${ids.length} operaciones`,
       });
 
-      setSelectedOperations(new Set());
       await fetchOperations();
     } catch (error) {
       console.error('Error unfeaturing operations:', error);
@@ -623,7 +624,6 @@ const AdminOperations = () => {
         description: `Se eliminaron ${ids.length} operaciones correctamente`,
       });
 
-      setSelectedOperations(new Set());
       await fetchOperations();
     } catch (error) {
       console.error('Error bulk deleting:', error);
