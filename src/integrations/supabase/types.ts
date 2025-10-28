@@ -25,7 +25,7 @@ export type Database = {
           email_sent_at: string | null
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message: string | null
           phone: string | null
           preferred_meeting_date: string | null
@@ -51,7 +51,7 @@ export type Database = {
           email_sent_at?: string | null
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string | null
           phone?: string | null
           preferred_meeting_date?: string | null
@@ -77,7 +77,7 @@ export type Database = {
           email_sent_at?: string | null
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string | null
           phone?: string | null
           preferred_meeting_date?: string | null
@@ -110,7 +110,7 @@ export type Database = {
           full_name: string
           id: string
           investment_range: string | null
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           phone: string | null
           referrer: string | null
@@ -137,7 +137,7 @@ export type Database = {
           full_name: string
           id?: string
           investment_range?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           phone?: string | null
           referrer?: string | null
@@ -164,7 +164,7 @@ export type Database = {
           full_name?: string
           id?: string
           investment_range?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           phone?: string | null
           referrer?: string | null
@@ -233,7 +233,7 @@ export type Database = {
           admin_user_id: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           target_user_email: string | null
@@ -245,7 +245,7 @@ export type Database = {
           admin_user_id: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           target_user_email?: string | null
@@ -257,7 +257,7 @@ export type Database = {
           admin_user_id?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           target_user_email?: string | null
@@ -409,7 +409,7 @@ export type Database = {
           changed_fields: string[] | null
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -423,7 +423,7 @@ export type Database = {
           changed_fields?: string[] | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -437,7 +437,7 @@ export type Database = {
           changed_fields?: string[] | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -454,7 +454,7 @@ export type Database = {
           created_at: string
           event: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           path: string
           user_agent: string | null
           user_id: string | null
@@ -464,7 +464,7 @@ export type Database = {
           created_at?: string
           event: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           path: string
           user_agent?: string | null
           user_id?: string | null
@@ -474,7 +474,7 @@ export type Database = {
           created_at?: string
           event?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           path?: string
           user_agent?: string | null
           user_id?: string | null
@@ -582,7 +582,7 @@ export type Database = {
       blog_analytics: {
         Row: {
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           post_id: string
           post_slug: string
           reading_time: number | null
@@ -595,7 +595,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           post_id: string
           post_slug: string
           reading_time?: number | null
@@ -608,7 +608,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           post_id?: string
           post_slug?: string
           reading_time?: number | null
@@ -1024,7 +1024,7 @@ export type Database = {
           experience: string | null
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
@@ -1052,7 +1052,7 @@ export type Database = {
           experience?: string | null
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
@@ -1080,7 +1080,7 @@ export type Database = {
           experience?: string | null
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
@@ -1118,7 +1118,7 @@ export type Database = {
           full_name: string
           id: string
           investment_budget: string | null
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           message: string | null
           notes: string | null
@@ -1156,7 +1156,7 @@ export type Database = {
           full_name: string
           id?: string
           investment_budget?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           message?: string | null
           notes?: string | null
@@ -1194,7 +1194,7 @@ export type Database = {
           full_name?: string
           id?: string
           investment_budget?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           message?: string | null
           notes?: string | null
@@ -1344,7 +1344,7 @@ export type Database = {
           has_adjustments: boolean | null
           id: string
           industry: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           last_activity_at: string | null
           last_modified_field: string | null
@@ -1402,7 +1402,7 @@ export type Database = {
           has_adjustments?: boolean | null
           id?: string
           industry: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           last_activity_at?: string | null
           last_modified_field?: string | null
@@ -1460,7 +1460,7 @@ export type Database = {
           has_adjustments?: boolean | null
           id?: string
           industry?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           last_activity_at?: string | null
           last_modified_field?: string | null
@@ -1518,7 +1518,7 @@ export type Database = {
           full_name: string
           id: string
           investment_budget: string | null
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           phone: string | null
@@ -1549,7 +1549,7 @@ export type Database = {
           full_name: string
           id?: string
           investment_budget?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
@@ -1580,7 +1580,7 @@ export type Database = {
           full_name?: string
           id?: string
           investment_budget?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
@@ -1911,7 +1911,7 @@ export type Database = {
           download_method: string | null
           downloaded_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           page_url: string | null
           referrer: string | null
           session_id: string | null
@@ -1935,7 +1935,7 @@ export type Database = {
           download_method?: string | null
           downloaded_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_url?: string | null
           referrer?: string | null
           session_id?: string | null
@@ -1959,7 +1959,7 @@ export type Database = {
           download_method?: string | null
           downloaded_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_url?: string | null
           referrer?: string | null
           session_id?: string | null
@@ -2435,7 +2435,7 @@ export type Database = {
           full_name: string
           how_did_you_hear: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           message: string
           page_origin: string
@@ -2467,7 +2467,7 @@ export type Database = {
           full_name: string
           how_did_you_hear?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           message: string
           page_origin: string
@@ -2499,7 +2499,7 @@ export type Database = {
           full_name?: string
           how_did_you_hear?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           message?: string
           page_origin?: string
@@ -2739,7 +2739,7 @@ export type Database = {
           id: string
           investment_range: string | null
           investor_type: string | null
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           lead_score: number | null
           marketing_consent: boolean | null
@@ -2782,7 +2782,7 @@ export type Database = {
           id?: string
           investment_range?: string | null
           investor_type?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           lead_score?: number | null
           marketing_consent?: boolean | null
@@ -2825,7 +2825,7 @@ export type Database = {
           id?: string
           investment_range?: string | null
           investor_type?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           lead_score?: number | null
           marketing_consent?: boolean | null
@@ -2941,7 +2941,7 @@ export type Database = {
           full_name: string
           id: string
           interview_scheduled_at: string | null
-          ip_address: unknown | null
+          ip_address: unknown
           is_deleted: boolean | null
           job_post_id: string
           linkedin_url: string | null
@@ -2980,7 +2980,7 @@ export type Database = {
           full_name: string
           id?: string
           interview_scheduled_at?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           job_post_id: string
           linkedin_url?: string | null
@@ -3019,7 +3019,7 @@ export type Database = {
           full_name?: string
           id?: string
           interview_scheduled_at?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_deleted?: boolean | null
           job_post_id?: string
           linkedin_url?: string | null
@@ -3367,7 +3367,7 @@ export type Database = {
           created_at: string
           form_data: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           landing_page_id: string
           referrer: string | null
           session_id: string | null
@@ -3382,7 +3382,7 @@ export type Database = {
           created_at?: string
           form_data?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           landing_page_id: string
           referrer?: string | null
           session_id?: string | null
@@ -3397,7 +3397,7 @@ export type Database = {
           created_at?: string
           form_data?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           landing_page_id?: string
           referrer?: string | null
           session_id?: string | null
@@ -3575,7 +3575,7 @@ export type Database = {
           ebitda_band: string | null
           email: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           phone: string | null
           referrer: string | null
           revenue_band: string | null
@@ -3596,7 +3596,7 @@ export type Database = {
           ebitda_band?: string | null
           email: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           phone?: string | null
           referrer?: string | null
           revenue_band?: string | null
@@ -3617,7 +3617,7 @@ export type Database = {
           ebitda_band?: string | null
           email?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           phone?: string | null
           referrer?: string | null
           revenue_band?: string | null
@@ -3841,7 +3841,7 @@ export type Database = {
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message: string | null
           phone: string | null
           referrer: string | null
@@ -3866,7 +3866,7 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string | null
           phone?: string | null
           referrer?: string | null
@@ -3891,7 +3891,7 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string | null
           phone?: string | null
           referrer?: string | null
@@ -3906,6 +3906,33 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          attempted_at: string
+          email: string
+          id: string
+          ip_address: unknown
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          email: string
+          id?: string
+          ip_address?: unknown
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          email?: string
+          id?: string
+          ip_address?: unknown
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       ma_resources_requests: {
         Row: {
           company: string
@@ -3913,7 +3940,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           operation_type: string | null
           phone: string | null
           referrer: string | null
@@ -3928,7 +3955,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           operation_type?: string | null
           phone?: string | null
           referrer?: string | null
@@ -3943,7 +3970,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           operation_type?: string | null
           phone?: string | null
           referrer?: string | null
@@ -4628,6 +4655,72 @@ export type Database = {
           },
         ]
       }
+      news_articles: {
+        Row: {
+          author_avatar_url: string | null
+          author_name: string
+          category: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          is_featured: boolean | null
+          is_published: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          read_time: number | null
+          search_vector: unknown
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_avatar_url?: string | null
+          author_name?: string
+          category: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          read_time?: number | null
+          search_vector?: unknown
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_avatar_url?: string | null
+          author_name?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          read_time?: number | null
+          search_vector?: unknown
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           company: string | null
@@ -4636,7 +4729,7 @@ export type Database = {
           full_name: string | null
           id: string
           interests: string[] | null
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean
           source: string | null
           subscribed_at: string
@@ -4651,7 +4744,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           interests?: string[] | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           source?: string | null
           subscribed_at?: string
@@ -4666,7 +4759,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           interests?: string[] | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           source?: string | null
           subscribed_at?: string
@@ -4683,7 +4776,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message: string
           operation_id: string
           phone: string | null
@@ -4700,7 +4793,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message: string
           operation_id: string
           phone?: string | null
@@ -4717,7 +4810,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string
           operation_id?: string
           phone?: string | null
@@ -4737,7 +4830,7 @@ export type Database = {
           file_size_bytes: number | null
           generation_time_ms: number | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           pdf_type: string
           user_agent: string | null
           user_id: string | null
@@ -4749,7 +4842,7 @@ export type Database = {
           file_size_bytes?: number | null
           generation_time_ms?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           pdf_type: string
           user_agent?: string | null
           user_id?: string | null
@@ -4761,7 +4854,7 @@ export type Database = {
           file_size_bytes?: number | null
           generation_time_ms?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           pdf_type?: string
           user_agent?: string | null
           user_id?: string | null
@@ -4776,6 +4869,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      portfolio_companies: {
+        Row: {
+          country: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          founded_year: number | null
+          id: string
+          investment_date: string | null
+          investment_thesis: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          logo_url: string | null
+          metrics: Json | null
+          name: string
+          search_vector: unknown
+          sector: string
+          slug: string
+          stage: string
+          timeline: Json | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          founded_year?: number | null
+          id?: string
+          investment_date?: string | null
+          investment_thesis?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          logo_url?: string | null
+          metrics?: Json | null
+          name: string
+          search_vector?: unknown
+          sector: string
+          slug: string
+          stage: string
+          timeline?: Json | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          founded_year?: number | null
+          id?: string
+          investment_date?: string | null
+          investment_thesis?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          logo_url?: string | null
+          metrics?: Json | null
+          name?: string
+          search_vector?: unknown
+          sector?: string
+          slug?: string
+          stage?: string
+          timeline?: Json | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
       }
       rate_limits: {
         Row: {
@@ -4803,6 +4965,251 @@ export type Database = {
           window_start?: string
         }
         Relationships: []
+      }
+      rh_departamentos: {
+        Row: {
+          codigo: string
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_departamentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rh_empleados: {
+        Row: {
+          activo_2025: boolean | null
+          codigo_empleado: string
+          coste_total_mensual: number | null
+          created_at: string | null
+          departamento_id: string | null
+          empresa_id: string | null
+          fecha_alta: string | null
+          fecha_antiguedad: string | null
+          fecha_baja: string | null
+          id: string
+          is_active: boolean | null
+          nombre: string
+          puesto: string | null
+          salario_base: number | null
+          tipo_contrato: string | null
+        }
+        Insert: {
+          activo_2025?: boolean | null
+          codigo_empleado: string
+          coste_total_mensual?: number | null
+          created_at?: string | null
+          departamento_id?: string | null
+          empresa_id?: string | null
+          fecha_alta?: string | null
+          fecha_antiguedad?: string | null
+          fecha_baja?: string | null
+          id?: string
+          is_active?: boolean | null
+          nombre: string
+          puesto?: string | null
+          salario_base?: number | null
+          tipo_contrato?: string | null
+        }
+        Update: {
+          activo_2025?: boolean | null
+          codigo_empleado?: string
+          coste_total_mensual?: number | null
+          created_at?: string | null
+          departamento_id?: string | null
+          empresa_id?: string | null
+          fecha_alta?: string | null
+          fecha_antiguedad?: string | null
+          fecha_baja?: string | null
+          id?: string
+          is_active?: boolean | null
+          nombre?: string
+          puesto?: string | null
+          salario_base?: number | null
+          tipo_contrato?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_empleados_departamento_id_fkey"
+            columns: ["departamento_id"]
+            isOneToOne: false
+            referencedRelation: "rh_departamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rh_empleados_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rh_empresas: {
+        Row: {
+          codigo: string
+          created_at: string | null
+          id: string
+          nif: string
+          nombre: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string | null
+          id?: string
+          nif: string
+          nombre: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string | null
+          id?: string
+          nif?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
+      rh_movimientos_laborales: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          empleado_id: string | null
+          fecha_movimiento: string
+          id: string
+          observaciones: string | null
+          tipo_movimiento: string
+          valor_numerico: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          empleado_id?: string | null
+          fecha_movimiento: string
+          id?: string
+          observaciones?: string | null
+          tipo_movimiento: string
+          valor_numerico?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          empleado_id?: string | null
+          fecha_movimiento?: string
+          id?: string
+          observaciones?: string | null
+          tipo_movimiento?: string
+          valor_numerico?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_movimientos_laborales_empleado_id_fkey"
+            columns: ["empleado_id"]
+            isOneToOne: false
+            referencedRelation: "rh_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rh_movimientos_laborales_empleado_id_fkey"
+            columns: ["empleado_id"]
+            isOneToOne: false
+            referencedRelation: "v_empleados_completo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rh_nominas: {
+        Row: {
+          anio: number
+          anticipos: number | null
+          bruto: number | null
+          coste_empresa: number | null
+          created_at: string | null
+          embargos: number | null
+          empleado_id: string | null
+          id: string
+          irpf: number | null
+          mes: number
+          neto: number | null
+          otros_descuentos: number | null
+          pdf_url: string | null
+          ss_empresa: number | null
+          ss_trabajador: number | null
+          total_tc1: number | null
+        }
+        Insert: {
+          anio: number
+          anticipos?: number | null
+          bruto?: number | null
+          coste_empresa?: number | null
+          created_at?: string | null
+          embargos?: number | null
+          empleado_id?: string | null
+          id?: string
+          irpf?: number | null
+          mes: number
+          neto?: number | null
+          otros_descuentos?: number | null
+          pdf_url?: string | null
+          ss_empresa?: number | null
+          ss_trabajador?: number | null
+          total_tc1?: number | null
+        }
+        Update: {
+          anio?: number
+          anticipos?: number | null
+          bruto?: number | null
+          coste_empresa?: number | null
+          created_at?: string | null
+          embargos?: number | null
+          empleado_id?: string | null
+          id?: string
+          irpf?: number | null
+          mes?: number
+          neto?: number | null
+          otros_descuentos?: number | null
+          pdf_url?: string | null
+          ss_empresa?: number | null
+          ss_trabajador?: number | null
+          total_tc1?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_nominas_empleado_id_fkey"
+            columns: ["empleado_id"]
+            isOneToOne: false
+            referencedRelation: "rh_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rh_nominas_empleado_id_fkey"
+            columns: ["empleado_id"]
+            isOneToOne: false
+            referencedRelation: "v_empleados_completo"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rod_documents: {
         Row: {
@@ -5067,7 +5474,7 @@ export type Database = {
           details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           severity: string | null
           user_agent: string | null
           user_id: string | null
@@ -5077,7 +5484,7 @@ export type Database = {
           details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           severity?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -5087,7 +5494,7 @@ export type Database = {
           details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           severity?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -5105,7 +5512,7 @@ export type Database = {
           hubspot_sent: boolean | null
           hubspot_sent_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message: string | null
           page_origin: string | null
           phone: string | null
@@ -5131,7 +5538,7 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string | null
           page_origin?: string | null
           phone?: string | null
@@ -5157,7 +5564,7 @@ export type Database = {
           hubspot_sent?: boolean | null
           hubspot_sent_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message?: string | null
           page_origin?: string | null
           phone?: string | null
@@ -5339,7 +5746,7 @@ export type Database = {
           ease_of_use: number
           feedback_comment: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           recommendation: number
           result_accuracy: number
           user_agent: string | null
@@ -5352,7 +5759,7 @@ export type Database = {
           ease_of_use: number
           feedback_comment?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           recommendation: number
           result_accuracy: number
           user_agent?: string | null
@@ -5365,7 +5772,7 @@ export type Database = {
           ease_of_use?: number
           feedback_comment?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           recommendation?: number
           result_accuracy?: number
           user_agent?: string | null
@@ -5380,7 +5787,7 @@ export type Database = {
           event_data: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           page_path: string
           referrer: string | null
           session_id: string
@@ -5398,7 +5805,7 @@ export type Database = {
           event_data?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_path?: string
           referrer?: string | null
           session_id: string
@@ -5416,7 +5823,7 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_path?: string
           referrer?: string | null
           session_id?: string
@@ -5511,7 +5918,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           processed_at: string | null
           processed_by: string | null
           rejection_reason: string | null
@@ -5526,7 +5933,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           processed_at?: string | null
           processed_by?: string | null
           rejection_reason?: string | null
@@ -5541,7 +5948,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           processed_at?: string | null
           processed_by?: string | null
           rejection_reason?: string | null
@@ -5693,7 +6100,7 @@ export type Database = {
           email_sent_at: string | null
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           job_title: string | null
           phone: string | null
           referrer: string | null
@@ -5719,7 +6126,7 @@ export type Database = {
           email_sent_at?: string | null
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           job_title?: string | null
           phone?: string | null
           referrer?: string | null
@@ -5745,7 +6152,7 @@ export type Database = {
           email_sent_at?: string | null
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           job_title?: string | null
           phone?: string | null
           referrer?: string | null
@@ -5854,6 +6261,20 @@ export type Database = {
       }
     }
     Views: {
+      admin_security_alerts: {
+        Row: {
+          alert_message: string | null
+          alert_type: string | null
+          company_name: string | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          token_expires_at: string | null
+          token_used_at: string | null
+          unique_token: string | null
+        }
+        Relationships: []
+      }
       banner_daily_analytics: {
         Row: {
           banner_id: string | null
@@ -5916,6 +6337,70 @@ export type Database = {
           },
         ]
       }
+      v_empleados_completo: {
+        Row: {
+          codigo_empleado: string | null
+          coste_total_mensual: number | null
+          created_at: string | null
+          departamento_id: string | null
+          departamento_nombre: string | null
+          empresa_id: string | null
+          empresa_nombre: string | null
+          id: string | null
+          is_active: boolean | null
+          nombre: string | null
+          puesto: string | null
+          salario_base: number | null
+          tipo_contrato: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_empleados_departamento_id_fkey"
+            columns: ["departamento_id"]
+            isOneToOne: false
+            referencedRelation: "rh_departamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rh_empleados_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_nominas_completo: {
+        Row: {
+          anio: number | null
+          bruto: number | null
+          coste_empresa: number | null
+          created_at: string | null
+          empleado_id: string | null
+          empleado_nombre: string | null
+          empresa_nombre: string | null
+          id: string | null
+          mes: number | null
+          neto: number | null
+          pdf_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_nominas_empleado_id_fkey"
+            columns: ["empleado_id"]
+            isOneToOne: false
+            referencedRelation: "rh_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rh_nominas_empleado_id_fkey"
+            columns: ["empleado_id"]
+            isOneToOne: false
+            referencedRelation: "v_empleados_completo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approve_user_registration: {
@@ -5933,7 +6418,7 @@ export type Database = {
         }[]
       }
       audit_tracking_data_access: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_count: number
           access_date: string
@@ -5942,7 +6427,7 @@ export type Database = {
         }[]
       }
       audit_valuation_data_access: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_count: number
           access_date: string
@@ -5951,25 +6436,34 @@ export type Database = {
           unique_ips: number
         }[]
       }
-      bootstrap_first_admin: {
-        Args: { user_email: string }
-        Returns: boolean
+      bootstrap_first_admin: { Args: { user_email: string }; Returns: boolean }
+      check_login_rate_limit: {
+        Args: {
+          p_email: string
+          p_ip_address: unknown
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: Json
       }
-      check_rate_limit: {
-        Args:
-          | {
+      check_rate_limit:
+        | {
+            Args: {
+              identifier: string
+              max_requests?: number
+              window_minutes?: number
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
               _action: string
               _identifier: string
               _max_requests?: number
               _window_minutes?: number
             }
-          | {
-              identifier: string
-              max_requests?: number
-              window_minutes?: number
-            }
-        Returns: boolean
-      }
+            Returns: boolean
+          }
       check_rate_limit_enhanced: {
         Args: {
           p_category?: string
@@ -5992,17 +6486,20 @@ export type Database = {
         Args: { check_user_id: string }
         Returns: string
       }
-      cleanup_old_audit_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_old_tracking_events: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cleanup_old_audit_logs: { Args: never; Returns: number }
+      cleanup_old_tracking_events: { Args: never; Returns: number }
       copy_checklist_template_to_mandato: {
         Args: { p_mandato_id: string }
         Returns: number
+      }
+      create_admin_user_record: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_role?: Database["public"]["Enums"]["admin_role"]
+          p_user_id: string
+        }
+        Returns: Json
       }
       create_temporary_user: {
         Args: {
@@ -6028,12 +6525,10 @@ export type Database = {
         }
         Returns: Json
       }
-      current_user_is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      current_user_is_admin: { Args: never; Returns: boolean }
+      deactivate_admin_user: { Args: { p_user_id: string }; Returns: boolean }
       disk_usage_monitor: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           largest_tables: string[]
           recommendations: string[]
@@ -6049,24 +6544,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      generate_proposal_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_secure_temp_password: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_signed_valuation_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_unique_proposal_url: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_proposal_number: { Args: never; Returns: string }
+      generate_secure_temp_password: { Args: never; Returns: string }
+      generate_signed_valuation_token: { Args: never; Returns: string }
+      generate_unique_proposal_url: { Args: never; Returns: string }
       get_admin_basic_info: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           full_name: string
           id: string
@@ -6075,42 +6558,44 @@ export type Database = {
           role: Database["public"]["Enums"]["admin_role"]
         }[]
       }
-      get_user_role: {
+      get_admin_user_info: {
         Args: { check_user_id: string }
-        Returns: string
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          last_login: string
+          role: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }[]
       }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
+      get_news_filter_options: {
+        Args: never
+        Returns: {
+          all_tags: string[]
+          categories: string[]
+        }[]
       }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
+      get_portfolio_filter_options: {
+        Args: never
+        Returns: {
+          countries: string[]
+          sectors: string[]
+          stages: string[]
+        }[]
       }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      is_admin_user: {
-        Args: { _user_id: string }
+      get_user_role: { Args: { check_user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          check_user_id: string
+          required_role: Database["public"]["Enums"]["admin_role"]
+        }
         Returns: boolean
       }
-      is_user_admin: {
-        Args: { check_user_id: string }
-        Returns: boolean
-      }
-      is_user_super_admin: {
-        Args: { check_user_id: string }
-        Returns: boolean
-      }
+      is_admin_user: { Args: { _user_id: string }; Returns: boolean }
+      is_user_admin: { Args: { check_user_id: string }; Returns: boolean }
+      is_user_super_admin: { Args: { check_user_id: string }; Returns: boolean }
       log_auth_security_event: {
         Args: {
           details?: Json
@@ -6121,10 +6606,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      log_behavior_access_violation: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      log_behavior_access_violation: { Args: never; Returns: undefined }
       log_critical_security_event: {
         Args: {
           details?: Json
@@ -6138,18 +6620,30 @@ export type Database = {
         Args: { details?: Json; table_name: string; violation_type: string }
         Returns: undefined
       }
-      log_security_event: {
-        Args:
-          | { _details?: Json; _event_type: string; _severity: string }
-          | {
+      log_login_attempt: {
+        Args: {
+          p_email: string
+          p_ip_address: unknown
+          p_success: boolean
+          p_user_agent?: string
+        }
+        Returns: undefined
+      }
+      log_security_event:
+        | {
+            Args: { _details?: Json; _event_type: string; _severity: string }
+            Returns: string
+          }
+        | {
+            Args: {
               p_action_attempted?: string
               p_details?: Json
               p_event_type: string
               p_severity?: string
               p_table_name?: string
             }
-        Returns: string
-      }
+            Returns: undefined
+          }
       log_security_violation: {
         Args: {
           details?: Json
@@ -6159,48 +6653,80 @@ export type Database = {
         }
         Returns: undefined
       }
-      log_tracking_access_violation: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      log_valuation_access_attempt: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      monitor_security_violations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      refresh_banner_analytics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      log_tracking_access_violation: { Args: never; Returns: undefined }
+      log_valuation_access_attempt: { Args: never; Returns: undefined }
+      monitor_security_violations: { Args: never; Returns: undefined }
+      refresh_banner_analytics: { Args: never; Returns: undefined }
       reject_user_registration: {
         Args: { reason?: string; request_id: string }
         Returns: boolean
       }
-      rollback_import: {
-        Args: { p_import_log_id: string }
-        Returns: Json
+      rollback_import: { Args: { p_import_log_id: string }; Returns: Json }
+      search_news_articles: {
+        Args: {
+          filter_category?: string
+          filter_tags?: string[]
+          limit_count?: number
+          offset_count?: number
+          search_query?: string
+        }
+        Returns: {
+          author_avatar_url: string
+          author_name: string
+          category: string
+          content: string
+          excerpt: string
+          featured_image_url: string
+          id: string
+          is_featured: boolean
+          published_at: string
+          read_time: number
+          relevance: number
+          slug: string
+          tags: string[]
+          title: string
+        }[]
       }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
+      search_portfolio_companies: {
+        Args: {
+          filter_country?: string
+          filter_sector?: string
+          filter_stage?: string
+          limit_count?: number
+          offset_count?: number
+          search_query?: string
+        }
+        Returns: {
+          country: string
+          description: string
+          founded_year: number
+          id: string
+          investment_date: string
+          investment_thesis: string
+          is_featured: boolean
+          logo_url: string
+          metrics: Json
+          name: string
+          relevance: number
+          sector: string
+          slug: string
+          stage: string
+          timeline: Json
+          website_url: string
+        }[]
       }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      update_admin_user_role: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["admin_role"]
+          p_user_id: string
+        }
+        Returns: boolean
       }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
-      update_kanban_order: {
-        Args: { updates: Json }
-        Returns: undefined
-      }
+      update_kanban_order: { Args: { updates: Json }; Returns: undefined }
       validate_data_access_security: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           has_rls: boolean
           policy_count: number
@@ -6212,14 +6738,8 @@ export type Database = {
         Args: { password_text: string }
         Returns: boolean
       }
-      validate_valuation_token: {
-        Args: { _token: string }
-        Returns: string
-      }
-      verify_valuation_token: {
-        Args: { token: string }
-        Returns: boolean
-      }
+      validate_valuation_token: { Args: { _token: string }; Returns: string }
+      verify_valuation_token: { Args: { token: string }; Returns: boolean }
     }
     Enums: {
       admin_role: "super_admin" | "admin" | "editor" | "viewer"
