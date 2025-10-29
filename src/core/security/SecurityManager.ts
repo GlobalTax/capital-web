@@ -82,15 +82,18 @@ export class SecurityManager {
   detectXSSAttempt(input: string): boolean {
     const xssPatterns = [
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-      /javascript:/gi,
+      /<iframe\b/gi,
+      /<object\b/gi,
+      /<embed\b/gi,
       /on\w+\s*=/gi,
+      /javascript:/gi,
+      /data:text\/html/gi,
+      /vbscript:/gi,
+      /expression\s*\(/gi,
+      /-moz-binding/gi,
       /eval\s*\(/gi,
       /document\.cookie/gi,
-      /window\.location/gi,
-      /<iframe/gi,
-      /<object/gi,
-      /<embed/gi,
-      /expression\s*\(/gi
+      /window\.location/gi
     ];
 
     for (const pattern of xssPatterns) {
@@ -99,7 +102,7 @@ export class SecurityManager {
           type: 'XSS_ATTEMPT',
           severity: 'high',
           details: { 
-            input: input.substring(0, 200), 
+            input: input.substring(0, 200),
             pattern: pattern.source,
             detected: true
           }

@@ -306,7 +306,9 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          info_access_count: number | null
           is_active: boolean | null
+          last_info_access_at: string | null
           last_login: string | null
           needs_credentials: boolean | null
           role: Database["public"]["Enums"]["admin_role"]
@@ -319,7 +321,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          info_access_count?: number | null
           is_active?: boolean | null
+          last_info_access_at?: string | null
           last_login?: string | null
           needs_credentials?: boolean | null
           role?: Database["public"]["Enums"]["admin_role"]
@@ -332,7 +336,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          info_access_count?: number | null
           is_active?: boolean | null
+          last_info_access_at?: string | null
           last_login?: string | null
           needs_credentials?: boolean | null
           role?: Database["public"]["Enums"]["admin_role"]
@@ -5501,6 +5507,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_review_log: {
+        Row: {
+          created_at: string
+          findings: string | null
+          id: string
+          object_name: string
+          object_type: string
+          recommendations: string | null
+          review_status: string | null
+          review_type: string
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          findings?: string | null
+          id?: string
+          object_name: string
+          object_type: string
+          recommendations?: string | null
+          review_status?: string | null
+          review_type: string
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          findings?: string | null
+          id?: string
+          object_name?: string
+          object_type?: string
+          recommendations?: string | null
+          review_status?: string | null
+          review_type?: string
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sell_leads: {
         Row: {
           company: string
@@ -6406,6 +6451,23 @@ export type Database = {
       approve_user_registration: {
         Args: { request_id: string }
         Returns: boolean
+      }
+      audit_extensions_location: {
+        Args: never
+        Returns: {
+          extension_name: string
+          schema_name: string
+          security_recommendation: string
+        }[]
+      }
+      audit_security_definer_objects: {
+        Args: never
+        Returns: {
+          object_name: string
+          object_type: string
+          recommendation: string
+          security_level: string
+        }[]
       }
       audit_table_security: {
         Args: { table_name_param: string }
