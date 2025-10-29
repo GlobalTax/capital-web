@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FirmTypeSelect } from './FirmTypeSelect';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useAdvisorValuationMultiples } from '@/hooks/useAdvisorValuationMultiples';
-import { useAdvisorValuationMultiplesByRange } from '@/hooks/useAdvisorValuationMultiplesByRange';
+import { useAdvisorRevenueMultiplesByRange } from '@/hooks/useAdvisorRevenueMultiplesByRange';
+import { useAdvisorEbitdaMultiplesByRange } from '@/hooks/useAdvisorEbitdaMultiplesByRange';
+import { useAdvisorNetProfitMultiplesByRange } from '@/hooks/useAdvisorNetProfitMultiplesByRange';
 import { calculateAdvisorValuationWithRanges } from '@/utils/advisorValuationCalculation';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 import { toast } from 'sonner';
@@ -21,7 +23,9 @@ interface AdvisorStepperFormProps {
 export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalculate }) => {
   const { t } = useI18n();
   const { getMultipleBySector } = useAdvisorValuationMultiples();
-  const { getMultipleForValue } = useAdvisorValuationMultiplesByRange();
+  const { getMultipleForValue: getRevenueMultiple } = useAdvisorRevenueMultiplesByRange();
+  const { getMultipleForValue: getEbitdaMultiple } = useAdvisorEbitdaMultiplesByRange();
+  const { getMultipleForValue: getNetProfitMultiple } = useAdvisorNetProfitMultiplesByRange();
   const [isCalculating, setIsCalculating] = useState(false);
 
   const [formData, setFormData] = useState<AdvisorFormData>({
@@ -103,17 +107,14 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     setIsCalculating(true);
 
     try {
-      // Intentar obtener múltiplos por rangos primero
+      // Obtener múltiplos independientes por rangos
       const netProfit = formData.revenue - formData.ebitda; // Aproximación simple
-      const rangeMultiples = getMultipleForValue(
-        formData.firmType,
-        formData.revenue,
-        formData.ebitda,
-        netProfit
-      );
+      const revenueMultiple = getRevenueMultiple(formData.firmType, formData.revenue);
+      const ebitdaMultiple = getEbitdaMultiple(formData.firmType, formData.ebitda);
+      const netProfitMultiple = getNetProfitMultiple(formData.firmType, netProfit);
 
       // Si hay múltiplos por rangos, usarlos (NUEVO SISTEMA)
-      if (rangeMultiples.revenueMultiple && rangeMultiples.ebitdaMultiple && rangeMultiples.netProfitMultiple) {
+      if (revenueMultiple && ebitdaMultiple && netProfitMultiple) {
         const valuationResult = calculateAdvisorValuationWithRanges(
           {
             sector: formData.firmType,
@@ -121,9 +122,9 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
             ebitda: formData.ebitda,
             netProfit
           },
-          rangeMultiples.revenueMultiple,
-          rangeMultiples.ebitdaMultiple,
-          rangeMultiples.netProfitMultiple
+          revenueMultiple,
+          ebitdaMultiple,
+          netProfitMultiple
         );
 
         const result: AdvisorValuationSimpleResult = {
@@ -132,7 +133,7 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
             min: valuationResult.recommendedRange.min,
             max: valuationResult.recommendedRange.max
           },
-          ebitdaMultiple: rangeMultiples.ebitdaMultiple,
+          ebitdaMultiple: ebitdaMultiple,
           sector: formData.firmType
         };
 

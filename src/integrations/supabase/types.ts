@@ -409,6 +409,123 @@ export type Database = {
           },
         ]
       }
+      advisor_ebitda_multiples_by_range: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          multiple: number
+          range_max: number | null
+          range_min: number
+          sector_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          multiple: number
+          range_max?: number | null
+          range_min?: number
+          sector_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          multiple?: number
+          range_max?: number | null
+          range_min?: number
+          sector_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      advisor_netprofit_multiples_by_range: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          multiple: number
+          range_max: number | null
+          range_min: number
+          sector_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          multiple: number
+          range_max?: number | null
+          range_min?: number
+          sector_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          multiple?: number
+          range_max?: number | null
+          range_min?: number
+          sector_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      advisor_revenue_multiples_by_range: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          multiple: number
+          range_max: number | null
+          range_min: number
+          sector_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          multiple: number
+          range_max?: number | null
+          range_min?: number
+          sector_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          multiple?: number
+          range_max?: number | null
+          range_min?: number
+          sector_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       advisor_valuation_multiples: {
         Row: {
           created_at: string

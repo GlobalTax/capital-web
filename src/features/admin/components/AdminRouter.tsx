@@ -18,7 +18,6 @@ import {
   LazySectorReportsGenerator,
   LazyMultiplesManager,
   LazyAdvisorMultiplesManager,
-  LazyAdvisorMultiplesByRangeManager,
   LazyStatisticsManager,
   LazyAdminUsersManager,
   LazyProposalsManager,
@@ -43,6 +42,8 @@ import {
   LazyInvestorLeadsManager,
   LazyRODDocumentsManager
 } from './LazyAdminComponents';
+
+const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
 
 const AdminRouter = () => {
   const { isAdmin, isLoading } = useAdminAuth();
@@ -110,7 +111,7 @@ const AdminRouter = () => {
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
           <Route path="/advisor-multiples" element={<LazyAdvisorMultiplesManager />} />
-          <Route path="/advisor-multiples-ranges" element={<LazyAdvisorMultiplesByRangeManager />} />
+          <Route path="/advisor-multiples-ranges" element={<LazyAdvisorMultiplesRangesTabs />} />
           <Route path="/statistics" element={<LazyStatisticsManager />} />
           <Route path="/rod-documents" element={<LazyRODDocumentsManager />} />
           
