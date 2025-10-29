@@ -409,6 +409,66 @@ export type Database = {
           },
         ]
       }
+      advisor_valuation_multiples: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_locations: string[] | null
+          display_order: number | null
+          ebitda_multiple_max: number
+          ebitda_multiple_median: number
+          ebitda_multiple_min: number
+          id: string
+          is_active: boolean | null
+          net_profit_multiple_max: number
+          net_profit_multiple_median: number
+          net_profit_multiple_min: number
+          revenue_multiple_max: number
+          revenue_multiple_median: number
+          revenue_multiple_min: number
+          sector_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_locations?: string[] | null
+          display_order?: number | null
+          ebitda_multiple_max: number
+          ebitda_multiple_median: number
+          ebitda_multiple_min: number
+          id?: string
+          is_active?: boolean | null
+          net_profit_multiple_max: number
+          net_profit_multiple_median: number
+          net_profit_multiple_min: number
+          revenue_multiple_max: number
+          revenue_multiple_median: number
+          revenue_multiple_min: number
+          sector_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_locations?: string[] | null
+          display_order?: number | null
+          ebitda_multiple_max?: number
+          ebitda_multiple_median?: number
+          ebitda_multiple_min?: number
+          id?: string
+          is_active?: boolean | null
+          net_profit_multiple_max?: number
+          net_profit_multiple_median?: number
+          net_profit_multiple_min?: number
+          revenue_multiple_max?: number
+          revenue_multiple_median?: number
+          revenue_multiple_min?: number
+          sector_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
