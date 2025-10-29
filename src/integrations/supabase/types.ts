@@ -5217,6 +5217,33 @@ export type Database = {
           },
         ]
       }
+      rh_user_roles: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          notes: string | null
+          role: Database["public"]["Enums"]["rh_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          notes?: string | null
+          role: Database["public"]["Enums"]["rh_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          notes?: string | null
+          role?: Database["public"]["Enums"]["rh_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       rod_documents: {
         Row: {
           activated_at: string | null
@@ -6573,7 +6600,9 @@ export type Database = {
         }
         Returns: Json
       }
+      current_user_has_rh_access: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
+      current_user_is_rh_admin: { Args: never; Returns: boolean }
       deactivate_admin_user: { Args: { p_user_id: string }; Returns: boolean }
       disk_usage_monitor: {
         Args: never
@@ -6648,6 +6677,21 @@ export type Database = {
         }[]
       }
       get_user_role: { Args: { check_user_id: string }; Returns: string }
+      grant_rh_role: {
+        Args: {
+          notes_text?: string
+          target_role: Database["public"]["Enums"]["rh_role"]
+          target_user_id: string
+        }
+        Returns: Json
+      }
+      has_rh_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["rh_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           check_user_id: string
@@ -6722,6 +6766,13 @@ export type Database = {
       reject_user_registration: {
         Args: { reason?: string; request_id: string }
         Returns: boolean
+      }
+      revoke_rh_role: {
+        Args: {
+          target_role: Database["public"]["Enums"]["rh_role"]
+          target_user_id: string
+        }
+        Returns: Json
       }
       rollback_import: { Args: { p_import_log_id: string }; Returns: Json }
       search_news_articles: {
@@ -6827,6 +6878,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "expired"
+      rh_role: "rh_admin" | "rh_manager" | "rh_viewer"
       service_type:
         | "venta_empresas"
         | "due_diligence"
@@ -6999,6 +7051,7 @@ export const Constants = {
         "rejected",
         "expired",
       ],
+      rh_role: ["rh_admin", "rh_manager", "rh_viewer"],
       service_type: [
         "venta_empresas",
         "due_diligence",
