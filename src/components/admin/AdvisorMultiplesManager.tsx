@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowRight, Settings } from 'lucide-react';
 import AdvisorMultiplePreview from './preview/AdvisorMultiplePreview';
 import SectorSelect from './shared/SectorSelect';
 
@@ -37,6 +40,7 @@ const AdvisorMultiplesManager = () => {
   const [editingMultiple, setEditingMultiple] = useState<AdvisorMultiple | null>(null);
   const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const emptyMultiple: Omit<AdvisorMultiple, 'id'> = {
     sector_name: '',
@@ -189,17 +193,47 @@ const AdvisorMultiplesManager = () => {
           <h2 className="text-2xl font-bold text-foreground">Múltiplos para Asesores</h2>
           <p className="text-sm text-muted-foreground mt-1">Gestión de múltiplos de valoración por Facturación, EBITDA y Resultado Neto</p>
         </div>
-        <Button
-          onClick={() => {
-            setFormData(emptyMultiple);
-            setEditingMultiple(null);
-            setShowForm(true);
-          }}
-          className="bg-primary text-primary-foreground"
-        >
-          Nuevo Múltiplo
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={() => navigate('/admin/advisor-multiples-ranges')}
+            variant="outline"
+            className="border-primary text-primary hover:bg-primary/10"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Configurar Rangos
+          </Button>
+          <Button
+            onClick={() => {
+              setFormData(emptyMultiple);
+              setEditingMultiple(null);
+              setShowForm(true);
+            }}
+            className="bg-primary text-primary-foreground"
+          >
+            Nuevo Múltiplo
+          </Button>
+        </div>
       </div>
+
+      <Alert className="bg-blue-50 border-blue-200">
+        <AlertDescription className="flex items-start gap-3">
+          <div className="flex-1">
+            <p className="font-medium text-foreground mb-1">💡 Sistema de Rangos Avanzado</p>
+            <p className="text-sm text-muted-foreground">
+              Para valoraciones más precisas, configura múltiplos específicos según el tamaño de la empresa. 
+              Los rangos permiten aplicar múltiplos diferentes según facturación, EBITDA o resultado neto.
+            </p>
+          </div>
+          <Button 
+            onClick={() => navigate('/admin/advisor-multiples-ranges')}
+            size="sm"
+            className="bg-primary text-primary-foreground whitespace-nowrap"
+          >
+            Configurar Rangos
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </AlertDescription>
+      </Alert>
 
       {showForm && (
         <div className="bg-card border border-border rounded-lg shadow-sm p-6">
