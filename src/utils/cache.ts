@@ -104,3 +104,9 @@ export const sectorMultiplesCache = new Cache({
   ttl: 60 * 60 * 1000, // 1 hora
   maxSize: 20
 });
+
+// Cache para múltiplos de asesores
+export const advisorMultiplesCache = new Cache({
+  ttl: 60 * 60 * 1000, // 1 hora
+  maxSize: 20
+});
