@@ -6306,20 +6306,6 @@ export type Database = {
       }
     }
     Views: {
-      admin_security_alerts: {
-        Row: {
-          alert_message: string | null
-          alert_type: string | null
-          company_name: string | null
-          created_at: string | null
-          email: string | null
-          id: string | null
-          token_expires_at: string | null
-          token_used_at: string | null
-          unique_token: string | null
-        }
-        Relationships: []
-      }
       banner_daily_analytics: {
         Row: {
           banner_id: string | null
@@ -6620,6 +6606,20 @@ export type Database = {
           role: Database["public"]["Enums"]["admin_role"]
         }[]
       }
+      get_admin_security_alerts: {
+        Args: never
+        Returns: {
+          alert_message: string
+          alert_type: string
+          company_name: string
+          created_at: string
+          email: string
+          id: string
+          token_expires_at: string
+          token_used_at: string
+          unique_token: string
+        }[]
+      }
       get_admin_user_info: {
         Args: { check_user_id: string }
         Returns: {
@@ -6777,8 +6777,6 @@ export type Database = {
           website_url: string
         }[]
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       update_admin_user_role: {
         Args: {
           p_new_role: Database["public"]["Enums"]["admin_role"]
