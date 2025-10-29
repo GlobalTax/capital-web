@@ -82,6 +82,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Herramienta de valoración Meta Ads"
       },
       { 
+        title: "Calculadora Asesores",
+        url: "/lp/calculadora-asesores", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Herramienta de valoración para asesores"
+      },
+      { 
         title: "Landing Pages", 
         url: "/admin/landing-pages-unified", 
         icon: LayoutDashboard,
