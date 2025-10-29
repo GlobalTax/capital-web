@@ -416,6 +416,50 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'toast.pdfFail.desc': 'Intentarem enviar-lo per email automàticament.',
     'error.noData.title': 'Error',
     'error.noData.desc': 'No hi ha dades suficients per generar el PDF',
+
+    // Advisor Calculator
+    'calc.title.advisor': 'Calculadora de Valoració per a Assessors',
+    'calc.subtitle.advisor': 'Eina professional amb múltiples mètriques',
+    'calc.description.advisor': 'Calcula la valoració de la teva empresa usant 3 enfocaments: Facturació, EBITDA i Resultat Net',
+    
+    'advisor.badge': 'Per a Assessors Professionals',
+    
+    'advisor.form.title': 'Dades Financeres',
+    'advisor.form.subtitle': 'Introdueix les dades financeres anuals',
+    'advisor.form.revenue': 'Facturació anual (€)',
+    'advisor.form.ebitda': 'EBITDA anual (€)',
+    'advisor.form.netProfit': 'Resultat net (€)',
+    'advisor.form.netProfitHint': 'Pot ser negatiu si hi ha pèrdues',
+    'advisor.form.calculate': 'Calcular Valoració',
+    'advisor.form.calculating': 'Calculant...',
+    
+    'advisor.results.weightedAverage': 'Valoració Promig Ponderada',
+    'advisor.results.confidence.label': 'Confiança',
+    'advisor.results.confidence.high': 'Alta',
+    'advisor.results.confidence.medium': 'Mitjana',
+    'advisor.results.confidence.low': 'Baixa',
+    'advisor.results.recommendedRange': 'Rang de Valoració Recomanat',
+    'advisor.results.analysisTitle': 'Anàlisi i Recomanació',
+    'advisor.results.newValuation': 'Nova Valoració',
+    
+    'advisor.metrics.revenue': 'Facturació',
+    'advisor.metrics.ebitda': 'EBITDA',
+    'advisor.metrics.netProfit': 'Resultat Net',
+    'advisor.metrics.median': 'Valoració mediana',
+    'advisor.metrics.range': 'Rang',
+    'advisor.metrics.multiple': 'Múltiple',
+    'advisor.metrics.base': 'Base',
+    'advisor.metrics.weight': 'Pes',
+    
+    'advisor.validation.revenue_required': 'La facturació ha de ser major que 0',
+    'advisor.validation.revenue_too_high': 'El valor sembla massa alt',
+    'advisor.validation.ebitda_negative': 'EBITDA no pot ser negatiu',
+    'advisor.validation.ebitda_exceeds_revenue': 'EBITDA no pot superar la facturació',
+    'advisor.validation.netProfit_exceeds_revenue': 'Resultat net no pot superar la facturació',
+    'advisor.validation.netProfit_too_low': 'Les pèrdues semblen molt altes',
+    
+    'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
+    'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
   },
   val: {
     'landing.title': "Calculadora de Valoració d'Empreses | Capittal",
@@ -587,6 +631,50 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'toast.pdfFail.desc': 'Intentarem enviar-lo per email automàticament.',
     'error.noData.title': 'Error',
     'error.noData.desc': 'No hi ha dades suficients per a generar el PDF',
+
+    // Advisor Calculator
+    'calc.title.advisor': 'Calculadora de Valoració per a Assessors',
+    'calc.subtitle.advisor': 'Eina professional amb múltiples mètriques',
+    'calc.description.advisor': 'Calcula la valoració de la teua empresa usant 3 enfocaments: Facturació, EBITDA i Resultat Net',
+    
+    'advisor.badge': 'Per a Assessors Professionals',
+    
+    'advisor.form.title': 'Dades Financeres',
+    'advisor.form.subtitle': 'Introdueix les dades financeres anuals',
+    'advisor.form.revenue': 'Facturació anual (€)',
+    'advisor.form.ebitda': 'EBITDA anual (€)',
+    'advisor.form.netProfit': 'Resultat net (€)',
+    'advisor.form.netProfitHint': 'Pot ser negatiu si hi ha pèrdues',
+    'advisor.form.calculate': 'Calcular Valoració',
+    'advisor.form.calculating': 'Calculant...',
+    
+    'advisor.results.weightedAverage': 'Valoració Promig Ponderada',
+    'advisor.results.confidence.label': 'Confiança',
+    'advisor.results.confidence.high': 'Alta',
+    'advisor.results.confidence.medium': 'Mitjana',
+    'advisor.results.confidence.low': 'Baixa',
+    'advisor.results.recommendedRange': 'Rang de Valoració Recomanat',
+    'advisor.results.analysisTitle': 'Anàlisi i Recomanació',
+    'advisor.results.newValuation': 'Nova Valoració',
+    
+    'advisor.metrics.revenue': 'Facturació',
+    'advisor.metrics.ebitda': 'EBITDA',
+    'advisor.metrics.netProfit': 'Resultat Net',
+    'advisor.metrics.median': 'Valoració mediana',
+    'advisor.metrics.range': 'Rang',
+    'advisor.metrics.multiple': 'Múltiple',
+    'advisor.metrics.base': 'Base',
+    'advisor.metrics.weight': 'Pes',
+    
+    'advisor.validation.revenue_required': 'La facturació ha de ser major que 0',
+    'advisor.validation.revenue_too_high': 'El valor sembla massa alt',
+    'advisor.validation.ebitda_negative': 'EBITDA no pot ser negatiu',
+    'advisor.validation.ebitda_exceeds_revenue': 'EBITDA no pot superar la facturació',
+    'advisor.validation.netProfit_exceeds_revenue': 'Resultat net no pot superar la facturació',
+    'advisor.validation.netProfit_too_low': 'Les pèrdues semblen molt altes',
+    
+    'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
+    'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
   },
   gl: {
     'landing.title': 'Calculadora de Valoración de Empresas | Capittal',
@@ -759,5 +847,49 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'toast.pdfFail.desc': 'Tentaremos envialo por email automaticamente.',
     'error.noData.title': 'Erro',
     'error.noData.desc': 'Non hai datos suficientes para xerar o PDF',
+
+    // Advisor Calculator
+    'calc.title.advisor': 'Calculadora de Valoración para Asesores',
+    'calc.subtitle.advisor': 'Ferramenta profesional con múltiples métricas',
+    'calc.description.advisor': 'Calcula a valoración da túa empresa usando 3 enfoques: Facturación, EBITDA e Resultado Neto',
+    
+    'advisor.badge': 'Para Asesores Profesionais',
+    
+    'advisor.form.title': 'Datos Financeiros',
+    'advisor.form.subtitle': 'Introduce os datos financeiros anuais',
+    'advisor.form.revenue': 'Facturación anual (€)',
+    'advisor.form.ebitda': 'EBITDA anual (€)',
+    'advisor.form.netProfit': 'Resultado neto (€)',
+    'advisor.form.netProfitHint': 'Pode ser negativo se hai perdas',
+    'advisor.form.calculate': 'Calcular Valoración',
+    'advisor.form.calculating': 'Calculando...',
+    
+    'advisor.results.weightedAverage': 'Valoración Promedio Ponderada',
+    'advisor.results.confidence.label': 'Confianza',
+    'advisor.results.confidence.high': 'Alta',
+    'advisor.results.confidence.medium': 'Media',
+    'advisor.results.confidence.low': 'Baixa',
+    'advisor.results.recommendedRange': 'Rango de Valoración Recomendado',
+    'advisor.results.analysisTitle': 'Análise e Recomendación',
+    'advisor.results.newValuation': 'Nova Valoración',
+    
+    'advisor.metrics.revenue': 'Facturación',
+    'advisor.metrics.ebitda': 'EBITDA',
+    'advisor.metrics.netProfit': 'Resultado Neto',
+    'advisor.metrics.median': 'Valoración mediana',
+    'advisor.metrics.range': 'Rango',
+    'advisor.metrics.multiple': 'Múltiplo',
+    'advisor.metrics.base': 'Base',
+    'advisor.metrics.weight': 'Peso',
+    
+    'advisor.validation.revenue_required': 'A facturación debe ser maior que 0',
+    'advisor.validation.revenue_too_high': 'O valor parece demasiado alto',
+    'advisor.validation.ebitda_negative': 'EBITDA non pode ser negativo',
+    'advisor.validation.ebitda_exceeds_revenue': 'EBITDA non pode superar a facturación',
+    'advisor.validation.netProfit_exceeds_revenue': 'Resultado neto non pode superar a facturación',
+    'advisor.validation.netProfit_too_low': 'As perdas parecen moi altas',
+    
+    'advisor.error.no_multiples': 'Non se atoparon múltiplos para este sector',
+    'advisor.error.calculation_failed': 'Houbo un problema ao calcular a valoración',
   },
 };
