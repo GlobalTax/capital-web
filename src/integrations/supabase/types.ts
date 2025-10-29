@@ -469,6 +469,63 @@ export type Database = {
         }
         Relationships: []
       }
+      advisor_valuation_multiples_by_range: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          ebitda_multiple: number
+          ebitda_range_max: number | null
+          ebitda_range_min: number
+          id: string
+          is_active: boolean | null
+          net_profit_multiple: number
+          net_profit_range_max: number | null
+          net_profit_range_min: number
+          revenue_multiple: number
+          revenue_range_max: number | null
+          revenue_range_min: number
+          sector_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          ebitda_multiple: number
+          ebitda_range_max?: number | null
+          ebitda_range_min?: number
+          id?: string
+          is_active?: boolean | null
+          net_profit_multiple: number
+          net_profit_range_max?: number | null
+          net_profit_range_min?: number
+          revenue_multiple: number
+          revenue_range_max?: number | null
+          revenue_range_min?: number
+          sector_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          ebitda_multiple?: number
+          ebitda_range_max?: number | null
+          ebitda_range_min?: number
+          id?: string
+          is_active?: boolean | null
+          net_profit_multiple?: number
+          net_profit_range_max?: number | null
+          net_profit_range_min?: number
+          revenue_multiple?: number
+          revenue_range_max?: number | null
+          revenue_range_min?: number
+          sector_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string

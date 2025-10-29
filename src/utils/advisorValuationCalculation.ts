@@ -192,6 +192,171 @@ export const calculateAdvisorValuation = (
 };
 
 /**
+ * Calcula la valoración usando múltiplos específicos (por rangos)
+ */
+export const calculateAdvisorValuationWithRanges = (
+  input: AdvisorValuationInput,
+  revenueMultiple: number,
+  ebitdaMultiple: number,
+  netProfitMultiple: number
+): AdvisorValuationResult => {
+  logger.info('Starting advisor valuation with range-based multiples', { 
+    sector: input.sector,
+    revenue: input.revenue,
+    ebitda: input.ebitda,
+    netProfit: input.netProfit,
+    revenueMultiple,
+    ebitdaMultiple,
+    netProfitMultiple
+  }, { context: 'valuation', component: 'advisorValuationCalculation' });
+
+  const warnings: string[] = [];
+
+  // ===== VALIDACIONES =====
+  if (input.revenue <= 0) {
+    throw new Error('La facturación debe ser positiva');
+  }
+
+  if (input.ebitda < 0) {
+    warnings.push('⚠️ EBITDA negativo: la empresa tiene pérdidas operativas');
+  }
+
+  if (input.ebitda > input.revenue) {
+    warnings.push('⚠️ EBITDA superior a la facturación: revisar datos contables');
+  }
+
+  if (input.netProfit > input.ebitda && input.ebitda > 0) {
+    warnings.push('⚠️ Resultado neto superior a EBITDA: situación contable inusual');
+  }
+
+  if (input.netProfit > input.revenue) {
+    warnings.push('⚠️ Resultado neto superior a facturación: revisar datos');
+  }
+
+  // ===== CÁLCULO POR FACTURACIÓN CON MÚLTIPLO ESPECÍFICO =====
+  const revenueValuation: MetricValuation = {
+    median: input.revenue * revenueMultiple,
+    range: {
+      min: input.revenue * revenueMultiple * 0.9,
+      max: input.revenue * revenueMultiple * 1.1
+    },
+    multiple: revenueMultiple,
+    metricValue: input.revenue
+  };
+
+  // ===== CÁLCULO POR EBITDA CON MÚLTIPLO ESPECÍFICO =====
+  const ebitdaValuation: MetricValuation = {
+    median: input.ebitda * ebitdaMultiple,
+    range: {
+      min: input.ebitda * ebitdaMultiple * 0.9,
+      max: input.ebitda * ebitdaMultiple * 1.1
+    },
+    multiple: ebitdaMultiple,
+    metricValue: input.ebitda
+  };
+
+  // ===== CÁLCULO POR RESULTADO NETO CON MÚLTIPLO ESPECÍFICO =====
+  const netProfitValuation: MetricValuation = {
+    median: input.netProfit * netProfitMultiple,
+    range: {
+      min: input.netProfit * netProfitMultiple * 0.9,
+      max: input.netProfit * netProfitMultiple * 1.1
+    },
+    multiple: netProfitMultiple,
+    metricValue: input.netProfit
+  };
+
+  // Validar si alguna valoración es negativa
+  if (revenueValuation.median < 0 || ebitdaValuation.median < 0 || netProfitValuation.median < 0) {
+    warnings.push('⚠️ Valoración negativa detectada en alguna métrica');
+  }
+
+  // ===== PROMEDIO SIMPLE =====
+  const averageValuation = Math.round(
+    (revenueValuation.median + ebitdaValuation.median + netProfitValuation.median) / 3
+  );
+
+  // ===== PROMEDIO PONDERADO =====
+  // EBITDA: 50%, Facturación: 25%, Resultado Neto: 25%
+  const weightedAverage = Math.round(
+    revenueValuation.median * 0.25 +
+    ebitdaValuation.median * 0.50 +
+    netProfitValuation.median * 0.25
+  );
+
+  // ===== RANGO RECOMENDADO =====
+  const allMedians = [
+    revenueValuation.median,
+    ebitdaValuation.median,
+    netProfitValuation.median
+  ].filter(val => val > 0);
+
+  const minMedian = Math.min(...allMedians);
+  const maxMedian = Math.max(...allMedians);
+
+  const recommendedRange = {
+    min: Math.round(minMedian * 0.9),
+    max: Math.round(maxMedian * 1.1)
+  };
+
+  // ===== ANÁLISIS DE CONFIANZA =====
+  const avgForSpread = allMedians.length > 0 
+    ? allMedians.reduce((sum, val) => sum + val, 0) / allMedians.length 
+    : 1;
+
+  const spread = avgForSpread > 0 ? (maxMedian - minMedian) / avgForSpread : 0;
+
+  let confidence: 'high' | 'medium' | 'low';
+  let confidenceScore: number;
+  let recommendation: string;
+
+  if (spread < 0.20) {
+    confidence = 'high';
+    confidenceScore = 90;
+    recommendation = 'Las tres métricas convergen en valores similares con múltiplos específicos por rango, lo que indica alta consistencia en la valoración. Los datos financieros muestran coherencia y la valoración es confiable.';
+  } else if (spread < 0.40) {
+    confidence = 'medium';
+    confidenceScore = 70;
+    recommendation = 'Existe una variabilidad moderada entre las métricas de valoración. Se recomienda realizar un análisis adicional de la estructura financiera y considerar factores cualitativos del negocio.';
+  } else {
+    confidence = 'low';
+    confidenceScore = 45;
+    recommendation = 'Se detecta alta dispersión entre las diferentes métricas de valoración. Es fundamental revisar los supuestos contables, la estructura financiera y considerar un análisis más profundo antes de tomar decisiones.';
+  }
+
+  // Ajustar confianza si hay warnings
+  if (warnings.length > 0) {
+    confidenceScore = Math.max(30, confidenceScore - (warnings.length * 10));
+    if (confidenceScore < 60 && confidence === 'high') {
+      confidence = 'medium';
+    }
+    if (confidenceScore < 40 && confidence === 'medium') {
+      confidence = 'low';
+    }
+  }
+
+  logger.info('Advisor valuation with ranges completed', {
+    weightedAverage,
+    confidence,
+    confidenceScore,
+    warningsCount: warnings.length
+  }, { context: 'valuation', component: 'advisorValuationCalculation' });
+
+  return {
+    revenueValuation,
+    ebitdaValuation,
+    netProfitValuation,
+    averageValuation,
+    weightedAverage,
+    recommendedRange,
+    confidence,
+    confidenceScore,
+    recommendation,
+    warnings
+  };
+};
+
+/**
  * Valida los datos de entrada antes del cálculo
  */
 export const validateAdvisorInput = (input: AdvisorValuationInput): { isValid: boolean; errors: string[] } => {

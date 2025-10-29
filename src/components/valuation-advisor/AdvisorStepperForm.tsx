@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FirmTypeSelect } from './FirmTypeSelect';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useAdvisorValuationMultiples } from '@/hooks/useAdvisorValuationMultiples';
+import { useAdvisorValuationMultiplesByRange } from '@/hooks/useAdvisorValuationMultiplesByRange';
+import { calculateAdvisorValuationWithRanges } from '@/utils/advisorValuationCalculation';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -19,6 +21,7 @@ interface AdvisorStepperFormProps {
 export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalculate }) => {
   const { t } = useI18n();
   const { getMultipleBySector } = useAdvisorValuationMultiples();
+  const { getMultipleForValue } = useAdvisorValuationMultiplesByRange();
   const [isCalculating, setIsCalculating] = useState(false);
 
   const [formData, setFormData] = useState<AdvisorFormData>({
@@ -100,7 +103,47 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     setIsCalculating(true);
 
     try {
-      // Obtener el múltiplo del sector
+      // Intentar obtener múltiplos por rangos primero
+      const netProfit = formData.revenue - formData.ebitda; // Aproximación simple
+      const rangeMultiples = getMultipleForValue(
+        formData.firmType,
+        formData.revenue,
+        formData.ebitda,
+        netProfit
+      );
+
+      // Si hay múltiplos por rangos, usarlos (NUEVO SISTEMA)
+      if (rangeMultiples.revenueMultiple && rangeMultiples.ebitdaMultiple && rangeMultiples.netProfitMultiple) {
+        const valuationResult = calculateAdvisorValuationWithRanges(
+          {
+            sector: formData.firmType,
+            revenue: formData.revenue,
+            ebitda: formData.ebitda,
+            netProfit
+          },
+          rangeMultiples.revenueMultiple,
+          rangeMultiples.ebitdaMultiple,
+          rangeMultiples.netProfitMultiple
+        );
+
+        const result: AdvisorValuationSimpleResult = {
+          finalValuation: valuationResult.weightedAverage,
+          valuationRange: {
+            min: valuationResult.recommendedRange.min,
+            max: valuationResult.recommendedRange.max
+          },
+          ebitdaMultiple: rangeMultiples.ebitdaMultiple,
+          sector: formData.firmType
+        };
+
+        setTimeout(() => {
+          setIsCalculating(false);
+          onCalculate(formData, result);
+        }, 800);
+        return;
+      }
+
+      // Fallback: Sistema antiguo de múltiplos fijos
       const sectorMultiple = getMultipleBySector(formData.firmType);
       
       if (!sectorMultiple) {
