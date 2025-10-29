@@ -4,6 +4,8 @@ import { AdvisorCalculator } from '@/components/valuation-advisor/AdvisorCalcula
 import { Badge } from '@/components/ui/badge';
 import { Toaster } from '@/components/ui/sonner';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
+import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
+import CapittalBrief from '@/components/landing/CapittalBrief';
 
 const LandingCalculadoraAsesoresInner = () => {
   const { t } = useI18n();
@@ -105,6 +107,11 @@ const LandingCalculadoraAsesoresInner = () => {
         {/* Calculadora principal */}
         <AdvisorCalculator />
       </div>
+      
+      {/* Disclaimers de confidencialidad y empresa */}
+      <ConfidentialityBlock />
+      <CapittalBrief />
+      
       <Toaster />
     </UnifiedLayout>
   );

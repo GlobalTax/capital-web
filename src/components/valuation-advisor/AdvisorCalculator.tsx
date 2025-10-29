@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import { AdvisorCalculatorForm } from './AdvisorCalculatorForm';
-import { AdvisorResultsDisplay } from './AdvisorResultsDisplay';
-import { AdvisorValuationResult } from '@/utils/advisorValuationCalculation';
-
-interface FormData {
-  sector: string;
-  revenue: number;
-  ebitda: number;
-  netProfit: number;
-}
+import { AdvisorStepperForm } from './AdvisorStepperForm';
+import { AdvisorResultsDisplaySimple } from './AdvisorResultsDisplaySimple';
+import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 
 export const AdvisorCalculator: React.FC = () => {
-  const [formData, setFormData] = useState<FormData | null>(null);
-  const [result, setResult] = useState<AdvisorValuationResult | null>(null);
+  const [formData, setFormData] = useState<AdvisorFormData | null>(null);
+  const [result, setResult] = useState<AdvisorValuationSimpleResult | null>(null);
 
-  const handleCalculationComplete = (data: FormData, calculationResult: AdvisorValuationResult) => {
+  const handleCalculationComplete = (data: AdvisorFormData, calculationResult: AdvisorValuationSimpleResult) => {
     setFormData(data);
     setResult(calculationResult);
     
@@ -29,7 +22,7 @@ export const AdvisorCalculator: React.FC = () => {
 
   if (result && formData) {
     return (
-      <AdvisorResultsDisplay 
+      <AdvisorResultsDisplaySimple 
         result={result} 
         formData={formData}
         onBack={handleBack}
@@ -38,6 +31,6 @@ export const AdvisorCalculator: React.FC = () => {
   }
 
   return (
-    <AdvisorCalculatorForm onCalculate={handleCalculationComplete} />
+    <AdvisorStepperForm onCalculate={handleCalculationComplete} />
   );
 };
