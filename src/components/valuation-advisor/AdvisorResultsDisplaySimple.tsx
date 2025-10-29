@@ -39,7 +39,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               {t('advisor.results.estimated_valuation')}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              {formData.industry}
+              {t(`firm_types.${formData.firmType}`)}
             </Badge>
           </div>
           <CardTitle className="text-4xl font-bold text-primary">

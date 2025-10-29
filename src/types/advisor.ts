@@ -11,7 +11,7 @@ export interface AdvisorFormData {
   // Empresa
   companyName: string;
   cif: string;
-  industry: string;
+  firmType: string;
   employeeRange: string;
   
   // Financiero (simplificado)
@@ -37,7 +37,7 @@ export interface AdvisorValidationState {
   whatsapp_opt_in: { isValid: boolean; message?: string };
   companyName: { isValid: boolean; message?: string };
   cif: { isValid: boolean; message?: string };
-  industry: { isValid: boolean; message?: string };
+  firmType: { isValid: boolean; message?: string };
   employeeRange: { isValid: boolean; message?: string };
   revenue: { isValid: boolean; message?: string };
   ebitda: { isValid: boolean; message?: string };

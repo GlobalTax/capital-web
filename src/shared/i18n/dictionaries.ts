@@ -136,6 +136,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'placeholder.cif': 'B12345678',
     'label.industry': 'Sector de actividad *',
     'placeholder.industry': 'Selecciona tu sector',
+    'form.firm_type': 'Tipo de despacho profesional',
+    'placeholder.firm_type': 'Selecciona el tipo de despacho',
     'label.activityDescription': 'Descripción de actividad *',
     'placeholder.activityDescription': 'ej. Distribución HORECA, Consultoría IT, etc.',
     'helper.activityDescription': 'Describe brevemente la actividad principal de tu empresa',
@@ -260,6 +262,17 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.validation.netProfit_exceeds_revenue': 'Resultado neto no puede superar la facturación',
     'advisor.validation.netProfit_too_low': 'Las pérdidas parecen muy altas',
     
+    
+    // Tipos de despacho profesional
+    'firm_types.tax_advisory': 'Asesoría Fiscal',
+    'firm_types.accounting_advisory': 'Asesoría Contable',
+    'firm_types.legal_advisory': 'Asesoría Jurídica',
+    'firm_types.labor_advisory': 'Asesoría Laboral',
+    'firm_types.audit': 'Auditoría',
+    'firm_types.multidisciplinary': 'Despacho Multidisciplinar',
+    'firm_types.consultancy': 'Consultoría',
+    'firm_types.financial_advisory': 'Asesoría Financiera',
+    
     'advisor.error.no_multiples': 'No se encontraron múltiplos para este sector',
     'advisor.error.calculation': 'Error al calcular la valoración',
     'advisor.error.calculation_failed': 'Hubo un problema al calcular la valoración',
@@ -376,6 +389,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'placeholder.cif': 'B12345678',
     'label.industry': 'Sector d’activitat *',
     'placeholder.industry': 'Selecciona el teu sector',
+    'form.firm_type': 'Tipus de despatx professional',
+    'placeholder.firm_type': 'Selecciona el tipus de despatx',
     'label.activityDescription': 'Descripció d’activitat *',
     'placeholder.activityDescription': 'p. ex. Distribució HORECA, Consultoria IT, etc.',
     'helper.activityDescription': 'Descriu breument l’activitat principal de la teva empresa',
@@ -475,6 +490,17 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.validation.ebitda_exceeds_revenue': 'EBITDA no pot superar la facturació',
     'advisor.validation.netProfit_exceeds_revenue': 'Resultat net no pot superar la facturació',
     'advisor.validation.netProfit_too_low': 'Les pèrdues semblen molt altes',
+    
+    
+    // Tipos de despacho profesional
+    'firm_types.tax_advisory': 'Assessoria Fiscal',
+    'firm_types.accounting_advisory': 'Assessoria Comptable',
+    'firm_types.legal_advisory': 'Assessoria Jurídica',
+    'firm_types.labor_advisory': 'Assessoria Laboral',
+    'firm_types.audit': 'Auditoria',
+    'firm_types.multidisciplinary': 'Despatx Multidisciplinari',
+    'firm_types.consultancy': 'Consultoria',
+    'firm_types.financial_advisory': 'Assessoria Financera',
     
     'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
     'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
@@ -591,6 +617,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'placeholder.cif': 'B12345678',
     'label.industry': 'Sector d’activitat *',
     'placeholder.industry': 'Selecciona el teu sector',
+    'form.firm_type': 'Tipus de despatx professional',
+    'placeholder.firm_type': 'Selecciona el tipus de despatx',
     'label.activityDescription': 'Descripció d’activitat *',
     'placeholder.activityDescription': 'p. ex. Distribució HORECA, Consultoria IT, etc.',
     'helper.activityDescription': 'Descriu breument l’activitat principal de la teua empresa',
@@ -708,6 +736,17 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.validation.netProfit_exceeds_revenue': 'Resultat net no pot superar la facturació',
     'advisor.validation.netProfit_too_low': 'Les pèrdues semblen molt altes',
     
+    
+    // Tipos de despacho profesional
+    'firm_types.tax_advisory': 'Assessoria Fiscal',
+    'firm_types.accounting_advisory': 'Assessoria Comptable',
+    'firm_types.legal_advisory': 'Assessoria Jurídica',
+    'firm_types.labor_advisory': 'Assessoria Laboral',
+    'firm_types.audit': 'Auditoria',
+    'firm_types.multidisciplinary': 'Despatx Multidisciplinari',
+    'firm_types.consultancy': 'Consultoria',
+    'firm_types.financial_advisory': 'Assessoria Financera',
+    
     'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
     'advisor.error.calculation': 'Error al calcular la valoració',
     'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
@@ -824,6 +863,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'placeholder.cif': 'B12345678',
     'label.industry': 'Sector de actividade *',
     'placeholder.industry': 'Selecciona o teu sector',
+    'form.firm_type': 'Tipo de despacho profesional',
+    'placeholder.firm_type': 'Selecciona o tipo de despacho',
     'label.activityDescription': 'Descrición de actividade *',
     'placeholder.activityDescription': 'ex. Distribución HORECA, Consultoría IT, etc.',
     'helper.activityDescription': 'Describe brevemente a actividade principal da túa empresa',
@@ -941,6 +982,17 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.validation.ebitda_exceeds_revenue': 'EBITDA non pode superar a facturación',
     'advisor.validation.netProfit_exceeds_revenue': 'Resultado neto non pode superar a facturación',
     'advisor.validation.netProfit_too_low': 'As perdas parecen moi altas',
+    
+    
+    // Tipos de despacho profesional
+    'firm_types.tax_advisory': 'Asesoría Fiscal',
+    'firm_types.accounting_advisory': 'Asesoría Contable',
+    'firm_types.legal_advisory': 'Asesoría Xurídica',
+    'firm_types.labor_advisory': 'Asesoría Laboral',
+    'firm_types.audit': 'Auditoría',
+    'firm_types.multidisciplinary': 'Despacho Multidisciplinar',
+    'firm_types.consultancy': 'Consultoría',
+    'firm_types.financial_advisory': 'Asesoría Financeira',
     
     'advisor.error.no_multiples': 'Non se atoparon múltiplos para este sector',
     'advisor.error.calculation': 'Erro ao calcular a valoración',

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import SectorSelect from '@/components/admin/shared/SectorSelect';
+import { FirmTypeSelect } from './FirmTypeSelect';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useAdvisorValuationMultiples } from '@/hooks/useAdvisorValuationMultiples';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
@@ -29,7 +29,7 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     whatsapp_opt_in: false,
     companyName: '',
     cif: '',
-    industry: '',
+    firmType: '',
     employeeRange: '',
     revenue: 0,
     ebitda: 0,
@@ -70,8 +70,8 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     if (!formData.cif.trim()) {
       newErrors.cif = t('validation.required');
     }
-    if (!formData.industry) {
-      newErrors.industry = t('validation.required');
+    if (!formData.firmType) {
+      newErrors.firmType = t('validation.required');
     }
     if (!formData.employeeRange) {
       newErrors.employeeRange = t('validation.required');
@@ -101,7 +101,7 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
 
     try {
       // Obtener el múltiplo del sector
-      const sectorMultiple = getMultipleBySector(formData.industry);
+      const sectorMultiple = getMultipleBySector(formData.firmType);
       
       if (!sectorMultiple) {
         toast.error(t('advisor.error.no_multiples'));
@@ -123,7 +123,7 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
         finalValuation,
         valuationRange: range,
         ebitdaMultiple: multiple,
-        sector: formData.industry,
+        sector: formData.firmType,
       };
 
       // Simular delay para mostrar loading
@@ -242,17 +242,11 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
             </div>
 
             <div>
-              <Label htmlFor="industry">{t('form.industry')} *</Label>
-              <SectorSelect
-                value={formData.industry}
-                onChange={(value) => handleInputChange('industry', value)}
-                required
-                placeholder={t('placeholder.industry')}
-                className={errors.industry ? 'border-destructive' : ''}
+              <FirmTypeSelect
+                value={formData.firmType}
+                onChange={(value) => handleInputChange('firmType', value)}
+                error={errors.firmType}
               />
-              {errors.industry && (
-                <p className="text-sm text-destructive mt-1">{errors.industry}</p>
-              )}
             </div>
 
             <div>
