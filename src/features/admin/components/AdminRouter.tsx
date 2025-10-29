@@ -17,6 +17,7 @@ import {
   LazyTeamMembersManagerAdvanced,
   LazySectorReportsGenerator,
   LazyMultiplesManager,
+  LazyAdvisorMultiplesManager,
   LazyStatisticsManager,
   LazyAdminUsersManager,
   LazyProposalsManager,
@@ -107,6 +108,7 @@ const AdminRouter = () => {
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
+          <Route path="/advisor-multiples" element={<LazyAdvisorMultiplesManager />} />
           <Route path="/statistics" element={<LazyStatisticsManager />} />
           <Route path="/rod-documents" element={<LazyRODDocumentsManager />} />
           

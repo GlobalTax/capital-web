@@ -134,6 +134,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Datos de valoración"
       },
       { 
+        title: "Múltiplos Asesores", 
+        url: "/admin/advisor-multiples", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Múltiplos para calculadora de asesores"
+      },
+      { 
         title: "Documentos ROD",
         url: "/admin/rod-documents", 
         icon: FileText,

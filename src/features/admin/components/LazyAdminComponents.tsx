@@ -23,6 +23,7 @@ export const LazySectorReportsGenerator = lazy(() => import('@/components/admin/
 
 // === DATA MANAGEMENT ===
 export const LazyMultiplesManager = lazy(() => import('@/components/admin/MultiplesManager'));
+export const LazyAdvisorMultiplesManager = lazy(() => import('@/components/admin/AdvisorMultiplesManager'));
 export const LazyStatisticsManager = lazy(() => import('@/components/admin/StatisticsManager'));
 export const LazyAdminUsersManager = lazy(() => import('@/components/admin/AdminUsersManager'));
 export const LazyProposalsManager = lazy(() => import('@/components/admin/ProposalsManager'));
