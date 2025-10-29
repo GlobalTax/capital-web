@@ -7,7 +7,7 @@ import { AdminSidebar } from '@/components/admin/sidebar/AdminSidebar';
 import { EmergencyNavigation } from '@/components/admin/EmergencyNavigation';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { AdminScrollBar } from '@/components/admin/AdminScrollBar';
-import { ErrorBoundaryProvider } from '@/components/admin/ErrorBoundaryProvider';
+import { AdminErrorBoundary } from '@/features/admin/components/AdminErrorBoundary';
 import { resetWebSocketState } from '@/utils/resetWebSocketState';
 
 interface AdminLayoutProps {
@@ -71,7 +71,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   };
 
   return (
-    <ErrorBoundaryProvider>
+    <AdminErrorBoundary>
       {showEmergencyNav && (
         <EmergencyNavigation onForceNavigate={handleForceNavigate} />
       )}
@@ -100,7 +100,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
           </SidebarInset>
         </div>
       </SidebarProvider>
-    </ErrorBoundaryProvider>
+    </AdminErrorBoundary>
   );
 };
 
