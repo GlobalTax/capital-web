@@ -132,7 +132,7 @@ export interface SectorMultiple {
 
 // ============= CALCULATOR CONFIG =============
 export interface CalculatorConfig {
-  version: 'v1' | 'v2' | 'v2-meta' | 'v3' | 'v4' | 'master' | 'standalone';
+  version: 'v1' | 'v2' | 'v2-meta' | 'v3' | 'v4' | 'master' | 'standalone' | 'advisor';
   steps: number;
   sourceProject?: string; // 🔥 NEW: Identificador único del origen del lead
   features: {
@@ -144,9 +144,11 @@ export interface CalculatorConfig {
     standalone: boolean;
     redirectOnCalculate?: boolean; // 🔥 NUEVO: Flag para redirección
     redirectUrl?: string; // 🔥 NUEVO: URL de destino
+    multipleMetrics?: boolean; // 🔥 NUEVO: Soporte para múltiples métricas (advisor)
+    metricsTypes?: string[]; // 🔥 NUEVO: Tipos de métricas ['revenue', 'ebitda', 'netProfit']
   };
   ui: {
-    theme: 'default' | 'minimal' | 'advanced';
+    theme: 'default' | 'minimal' | 'advanced' | 'advisor';
     showProgress: boolean;
     showSaveStatus: boolean;
     customTitle?: string; // Clave de traducción personalizada para título

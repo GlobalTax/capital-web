@@ -124,6 +124,30 @@ export const STANDALONE_CONFIG: CalculatorConfig = {
   }
 };
 
+// ============= ADVISOR CONFIG =============
+export const ADVISOR_CONFIG: CalculatorConfig = {
+  version: 'advisor',
+  steps: 1, // Solo 1 paso (formulario financiero)
+  sourceProject: 'lp-calculadora-asesores',
+  features: {
+    autosave: false,
+    tracking: true,
+    taxCalculation: false,
+    scenarios: false,
+    realTime: false,
+    standalone: false,
+    multipleMetrics: true, // 🔥 NUEVO: Soporte para múltiples métricas
+    metricsTypes: ['revenue', 'ebitda', 'netProfit'] // 🔥 NUEVO: Tipos de métricas
+  },
+  ui: {
+    theme: 'advisor',
+    showProgress: true,
+    showSaveStatus: false,
+    customTitle: 'calc.title.advisor',
+    customSubtitle: 'calc.subtitle.advisor'
+  }
+};
+
 // ============= CONFIG HELPERS =============
 export const getConfigByVersion = (version: string): CalculatorConfig => {
   switch (version) {
@@ -132,6 +156,7 @@ export const getConfigByVersion = (version: string): CalculatorConfig => {
     case 'v3': return V3_CONFIG;
     case 'master': return MASTER_CONFIG;
     case 'standalone': return STANDALONE_CONFIG;
+    case 'advisor': return ADVISOR_CONFIG; // 🔥 NUEVO
     default: return V1_CONFIG;
   }
 };

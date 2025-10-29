@@ -201,6 +201,50 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'toast.pdfFail.desc': 'Intentaremos enviarlo por email automáticamente.',
     'error.noData.title': 'Error',
     'error.noData.desc': 'No hay datos suficientes para generar el PDF',
+
+    // Advisor Calculator
+    'calc.title.advisor': 'Calculadora de Valoración para Asesores',
+    'calc.subtitle.advisor': 'Herramienta profesional con múltiples métricas',
+    'calc.description.advisor': 'Calcula la valoración de tu empresa usando 3 enfoques: Facturación, EBITDA y Resultado Neto',
+    
+    'advisor.badge': 'Para Asesores Profesionales',
+    
+    'advisor.form.title': 'Datos Financieros',
+    'advisor.form.subtitle': 'Introduce los datos financieros anuales',
+    'advisor.form.revenue': 'Facturación anual (€)',
+    'advisor.form.ebitda': 'EBITDA anual (€)',
+    'advisor.form.netProfit': 'Resultado neto (€)',
+    'advisor.form.netProfitHint': 'Puede ser negativo si hay pérdidas',
+    'advisor.form.calculate': 'Calcular Valoración',
+    'advisor.form.calculating': 'Calculando...',
+    
+    'advisor.results.weightedAverage': 'Valoración Promedio Ponderada',
+    'advisor.results.confidence.label': 'Confianza',
+    'advisor.results.confidence.high': 'Alta',
+    'advisor.results.confidence.medium': 'Media',
+    'advisor.results.confidence.low': 'Baja',
+    'advisor.results.recommendedRange': 'Rango de Valoración Recomendado',
+    'advisor.results.analysisTitle': 'Análisis y Recomendación',
+    'advisor.results.newValuation': 'Nueva Valoración',
+    
+    'advisor.metrics.revenue': 'Facturación',
+    'advisor.metrics.ebitda': 'EBITDA',
+    'advisor.metrics.netProfit': 'Resultado Neto',
+    'advisor.metrics.median': 'Valoración mediana',
+    'advisor.metrics.range': 'Rango',
+    'advisor.metrics.multiple': 'Múltiplo',
+    'advisor.metrics.base': 'Base',
+    'advisor.metrics.weight': 'Peso',
+    
+    'advisor.validation.revenue_required': 'La facturación debe ser mayor que 0',
+    'advisor.validation.revenue_too_high': 'El valor parece demasiado alto',
+    'advisor.validation.ebitda_negative': 'EBITDA no puede ser negativo',
+    'advisor.validation.ebitda_exceeds_revenue': 'EBITDA no puede superar la facturación',
+    'advisor.validation.netProfit_exceeds_revenue': 'Resultado neto no puede superar la facturación',
+    'advisor.validation.netProfit_too_low': 'Las pérdidas parecen muy altas',
+    
+    'advisor.error.no_multiples': 'No se encontraron múltiplos para este sector',
+    'advisor.error.calculation_failed': 'Hubo un problema al calcular la valoración',
   },
   ca: {
     'landing.title': "Calculadora de Valoració d'Empreses | Capittal",

@@ -26,6 +26,7 @@ const Equipo = lazy(() => import('@/pages/Equipo'));
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
 const LandingCalculator = lazy(() => import('@/pages/LandingCalculator'));
 const LandingCalculadoraFiscal = lazy(() => import('@/pages/LandingCalculadoraFiscal'));
+const LandingCalculadoraAsesores = lazy(() => import('@/pages/LandingCalculadoraAsesores'));
 const LandingCalculatorMeta = lazy(() => import('@/pages/LandingCalculatorMeta'));
 const LandingCalculatorMetaThanks = lazy(() => import('@/pages/LandingCalculatorMetaThanks'));
 const LandingVentaEmpresas = lazy(() => import('@/pages/LandingVentaEmpresas'));
@@ -110,6 +111,8 @@ export const AppRoutes = () => {
         <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
         <Route path="/lp/calculadora-fiscal" element={<LandingCalculadoraFiscal />} />
         <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
+        <Route path="/lp/calculadora-asesores" element={<LandingCalculadoraAsesores />} />
+        <Route path="/lp/calculadora-asesores/*" element={<LandingCalculadoraAsesores />} />
         <Route path="/lp/calculadora-meta" element={<LandingCalculatorMeta />} />
         <Route path="/lp/calculadora-meta/*" element={<LandingCalculatorMeta />} />
         <Route path="/lp/calculadora-meta/gracias" element={<LandingCalculatorMetaThanks />} />
