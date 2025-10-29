@@ -92,15 +92,15 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
     
     // Validación final
     if (!formData.sector || formData.revenue <= 0) {
-      toast.error(t('advisor.error.no_multiples'), {
-        description: 'Completa todos los campos requeridos'
+      toast.error(t('validation.error_title'), {
+        description: t('validation.complete_required')
       });
       return;
     }
     
     if (Object.keys(errors).length > 0) {
-      toast.error('Error de validación', {
-        description: 'Corrige los errores antes de continuar'
+      toast.error(t('validation.error_title'), {
+        description: t('validation.fix_errors')
       });
       return;
     }
@@ -157,6 +157,7 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
               value={formData.sector}
               onChange={(value) => handleInputChange('sector', value)}
               required
+              placeholder={t('placeholder.industry')}
               className={errors.sector ? 'border-destructive' : ''}
             />
             {errors.sector && (

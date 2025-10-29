@@ -3,9 +3,9 @@ import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { AdvisorCalculator } from '@/components/valuation-advisor/AdvisorCalculator';
 import { Badge } from '@/components/ui/badge';
 import { Toaster } from '@/components/ui/sonner';
-import { useI18n } from '@/shared/i18n/I18nProvider';
+import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 
-const LandingCalculadoraAsesores = () => {
+const LandingCalculadoraAsesoresInner = () => {
   const { t } = useI18n();
 
   useEffect(() => {
@@ -109,5 +109,11 @@ const LandingCalculadoraAsesores = () => {
     </UnifiedLayout>
   );
 };
+
+const LandingCalculadoraAsesores = () => (
+  <I18nProvider>
+    <LandingCalculadoraAsesoresInner />
+  </I18nProvider>
+);
 
 export default LandingCalculadoraAsesores;

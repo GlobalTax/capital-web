@@ -174,6 +174,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     // Validaciones
     'validation.required': 'Este campo es obligatorio',
+    'validation.complete_required': 'Completa todos los campos requeridos',
+    'validation.error_title': 'Error de validación',
+    'validation.fix_errors': 'Corrige los errores antes de continuar',
 
     // Empleados rango
     'employees.1_10': '1-10 empleados',
@@ -607,6 +610,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'helper.why_important.text': 'Estos factors qualitatius poden impactar significativament la valoració final, ja que representen actius intangibles i posicionament estratègic de l’empresa.',
 
     'validation.required': 'Este camp és obligatori',
+    'validation.complete_required': 'Completa tots els camps requerits',
+    'validation.error_title': 'Error de validació',
+    'validation.fix_errors': 'Corregeix els errors abans de continuar',
 
     'employees.1_10': '1-10 empleats',
     'employees.11_50': '11-50 empleats',
@@ -823,6 +829,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'helper.why_important.text': 'Estes factores cualitativos poden impactar significativamente a valoración final, xa que representan activos intanxibles e posicionamento estratéxico da empresa.',
 
     'validation.required': 'Este campo é obrigatorio',
+    'validation.complete_required': 'Completa todos os campos requiridos',
+    'validation.error_title': 'Erro de validación',
+    'validation.fix_errors': 'Corrixe os erros antes de continuar',
 
     'employees.1_10': '1-10 empregados',
     'employees.11_50': '11-50 empregados',
