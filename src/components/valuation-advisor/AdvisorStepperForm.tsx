@@ -96,6 +96,41 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     return Object.keys(newErrors).length === 0;
   };
 
+  const calculateFlexibleValuation = (
+    revenue: number,
+    ebitda: number,
+    netProfit: number,
+    revenueMultiple: number | null,
+    ebitdaMultiple: number | null,
+    netProfitMultiple: number | null
+  ) => {
+    const valuations: Array<{ value: number; weight: number }> = [];
+    
+    if (revenueMultiple) {
+      valuations.push({ value: revenue * revenueMultiple, weight: 0.2 });
+    }
+    if (ebitdaMultiple) {
+      valuations.push({ value: ebitda * ebitdaMultiple, weight: 0.5 });
+    }
+    if (netProfitMultiple) {
+      valuations.push({ value: netProfit * netProfitMultiple, weight: 0.3 });
+    }
+
+    // Recalcular pesos proporcionalmente
+    const totalWeight = valuations.reduce((sum, v) => sum + v.weight, 0);
+    const weightedAverage = valuations.reduce((sum, v) => 
+      sum + (v.value * (v.weight / totalWeight)), 0
+    );
+
+    return {
+      weightedAverage,
+      recommendedRange: {
+        min: weightedAverage * 0.85,
+        max: weightedAverage * 1.15
+      }
+    };
+  };
+
   const handleCalculate = () => {
     if (!validateForm()) {
       toast.error(t('validation.error_title'), {
@@ -113,15 +148,16 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
       const ebitdaMultiple = getEbitdaMultiple(formData.firmType, formData.ebitda);
       const netProfitMultiple = getNetProfitMultiple(formData.firmType, netProfit);
 
-      // Si hay múltiplos por rangos, usarlos (NUEVO SISTEMA)
-      if (revenueMultiple && ebitdaMultiple && netProfitMultiple) {
-        const valuationResult = calculateAdvisorValuationWithRanges(
-          {
-            sector: formData.firmType,
-            revenue: formData.revenue,
-            ebitda: formData.ebitda,
-            netProfit
-          },
+      // Contar cuántos múltiplos hay disponibles
+      const availableMultiples = [revenueMultiple, ebitdaMultiple, netProfitMultiple]
+        .filter(m => m !== null).length;
+
+      // Si hay AL MENOS 2 múltiplos por rangos, usarlos (SISTEMA FLEXIBLE)
+      if (availableMultiples >= 2) {
+        const valuationResult = calculateFlexibleValuation(
+          formData.revenue,
+          formData.ebitda,
+          netProfit,
           revenueMultiple,
           ebitdaMultiple,
           netProfitMultiple
@@ -133,7 +169,7 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
             min: valuationResult.recommendedRange.min,
             max: valuationResult.recommendedRange.max
           },
-          ebitdaMultiple: ebitdaMultiple,
+          ebitdaMultiple: ebitdaMultiple || 0,
           sector: formData.firmType
         };
 
