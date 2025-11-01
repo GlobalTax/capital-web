@@ -275,16 +275,6 @@ const AdminOperations = () => {
       return;
     }
 
-    // Validar valoración (campo obligatorio en BD)
-    if (!editingOperation.valuation_amount || editingOperation.valuation_amount <= 0) {
-      toast({
-        title: 'Error de validación',
-        description: 'La valoración es obligatoria y debe ser mayor a 0',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsSaving(true);
     try {
       const operationData: Database['public']['Tables']['company_operations']['Insert'] = {
@@ -293,7 +283,7 @@ const AdminOperations = () => {
         subsector: editingOperation.subsector?.trim() || null,
         description: editingOperation.description.trim(),
         revenue_amount: (editingOperation.revenue_amount ?? null),
-        valuation_amount: Number(editingOperation.valuation_amount),
+        valuation_amount: editingOperation.valuation_amount || null,
         valuation_currency: editingOperation.valuation_currency || '€',
         year: editingOperation.year,
         is_active: editingOperation.is_active ?? true,
@@ -304,8 +294,6 @@ const AdminOperations = () => {
         deal_type: editingOperation.deal_type || 'sale',
         status: editingOperation.status || 'available',
       };
-
-      console.debug('Saving operationData', { operationData });
 
       let result;
       if (editingOperation.id) {
@@ -345,19 +333,6 @@ const AdminOperations = () => {
   // Quick update for inline editing
   const handleQuickUpdate = async (id: string, field: string, value: any) => {
     try {
-      if (field === 'valuation_amount') {
-        const parsed = Number(value);
-        if (!Number.isFinite(parsed) || parsed <= 0) {
-          toast({
-            title: 'Valoración inválida',
-            description: 'La valoración debe ser un número mayor a 0',
-            variant: 'destructive',
-          });
-          return;
-        }
-        value = parsed;
-      }
-
       const { error } = await supabase
         .from('company_operations')
         .update({ [field]: value })
@@ -916,7 +891,7 @@ const AdminOperations = () => {
               company_name: '',
               sector: '',
             description: '',
-            valuation_amount: undefined as any,
+            valuation_amount: 0,
             valuation_currency: '€',
               year: new Date().getFullYear(),
               is_active: true,
@@ -1020,7 +995,7 @@ const AdminOperations = () => {
                   company_name: '',
                   sector: '',
                   description: '',
-                  valuation_amount: undefined as any,
+                  valuation_amount: 0,
                   valuation_currency: '€',
                     year: new Date().getFullYear(),
                     is_active: true,
@@ -1070,7 +1045,7 @@ const AdminOperations = () => {
                 company_name: '',
                 sector: '',
                 description: '',
-                valuation_amount: undefined as any,
+                valuation_amount: 0,
                 valuation_currency: '€',
                   year: new Date().getFullYear(),
                   is_active: true,
@@ -1319,37 +1294,23 @@ const AdminOperations = () => {
                   </div>
                 </div>
 
-                {/* Fila 2: Valoración (OBLIGATORIO) y Moneda */}
+                {/* Fila 2: Valoración y Moneda */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="valuation_amount" className="text-xs text-gray-600">
-                      Valoración (€) *
-                      <span className="text-[10px] text-red-500 ml-1">
-                        Obligatorio
-                      </span>
+                      Valoración (€)
                     </Label>
                     <Input
                       id="valuation_amount"
                       type="number"
                       min="0"
-                      required
                       value={editingOperation.valuation_amount || ''}
                       onChange={(e) => setEditingOperation({
                         ...editingOperation,
-                        valuation_amount: parseFloat(e.target.value) || 0
+                        valuation_amount: parseFloat(e.target.value) || undefined
                       })}
                       placeholder="Ej: 1500000"
-                      className={
-                        (!editingOperation.valuation_amount || editingOperation.valuation_amount === 0) 
-                          ? 'border-red-300 focus:border-red-500' 
-                          : ''
-                      }
                     />
-                    {(!editingOperation.valuation_amount || editingOperation.valuation_amount === 0) && (
-                      <p className="text-xs text-red-500 mt-1">
-                        ⚠️ La valoración es obligatoria
-                      </p>
-                    )}
                   </div>
                   <div>
                     <Label htmlFor="valuation_currency" className="text-xs text-gray-600">Moneda</Label>
