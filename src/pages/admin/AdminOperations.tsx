@@ -274,6 +274,15 @@ const AdminOperations = () => {
       return;
     }
 
+    // Validar valoración (campo obligatorio en BD)
+    if (!editingOperation.valuation_amount || editingOperation.valuation_amount <= 0) {
+      toast({
+        title: 'Error de validación',
+        description: 'La valoración es obligatoria y debe ser mayor a 0',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -892,7 +901,7 @@ const AdminOperations = () => {
               company_name: '',
               sector: '',
             description: '',
-            valuation_amount: 0,
+            valuation_amount: undefined as any,
             valuation_currency: '€',
               year: new Date().getFullYear(),
               is_active: true,
@@ -996,7 +1005,7 @@ const AdminOperations = () => {
                   company_name: '',
                   sector: '',
                   description: '',
-                  valuation_amount: 0,
+                  valuation_amount: undefined as any,
                   valuation_currency: '€',
                     year: new Date().getFullYear(),
                     is_active: true,
@@ -1046,7 +1055,7 @@ const AdminOperations = () => {
                 company_name: '',
                 sector: '',
                 description: '',
-                valuation_amount: 0,
+                valuation_amount: undefined as any,
                 valuation_currency: '€',
                   year: new Date().getFullYear(),
                   is_active: true,
@@ -1263,6 +1272,8 @@ const AdminOperations = () => {
               {/* Financial Information */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900">Información Financiera</h3>
+                
+                {/* Fila 1: Facturación y EBITDA */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="revenue_amount" className="text-xs text-gray-600">Facturación (€)</Label>
@@ -1293,7 +1304,38 @@ const AdminOperations = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
+                {/* Fila 2: Valoración (OBLIGATORIO) y Moneda */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="valuation_amount" className="text-xs text-gray-600">
+                      Valoración (€) *
+                      <span className="text-[10px] text-red-500 ml-1">
+                        Obligatorio
+                      </span>
+                    </Label>
+                    <Input
+                      id="valuation_amount"
+                      type="number"
+                      min="0"
+                      required
+                      value={editingOperation.valuation_amount || ''}
+                      onChange={(e) => setEditingOperation({
+                        ...editingOperation,
+                        valuation_amount: parseFloat(e.target.value) || 0
+                      })}
+                      placeholder="Ej: 1500000"
+                      className={
+                        (!editingOperation.valuation_amount || editingOperation.valuation_amount === 0) 
+                          ? 'border-red-300 focus:border-red-500' 
+                          : ''
+                      }
+                    />
+                    {(!editingOperation.valuation_amount || editingOperation.valuation_amount === 0) && (
+                      <p className="text-xs text-red-500 mt-1">
+                        ⚠️ La valoración es obligatoria
+                      </p>
+                    )}
+                  </div>
                   <div>
                     <Label htmlFor="valuation_currency" className="text-xs text-gray-600">Moneda</Label>
                     <Select
