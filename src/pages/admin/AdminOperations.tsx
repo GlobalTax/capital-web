@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -286,14 +287,13 @@ const AdminOperations = () => {
 
     setIsSaving(true);
     try {
-      const operationData = {
+      const operationData: Database['public']['Tables']['company_operations']['Insert'] = {
         company_name: editingOperation.company_name.trim(),
         sector: editingOperation.sector.trim(),
         subsector: editingOperation.subsector?.trim() || null,
         description: editingOperation.description.trim(),
-        revenue_amount: editingOperation.revenue_amount || null,
-        valuation_amount: editingOperation.valuation_amount || null,
-        
+        revenue_amount: (editingOperation.revenue_amount ?? null),
+        valuation_amount: Number(editingOperation.valuation_amount),
         valuation_currency: editingOperation.valuation_currency || '€',
         year: editingOperation.year,
         is_active: editingOperation.is_active ?? true,
@@ -304,6 +304,8 @@ const AdminOperations = () => {
         deal_type: editingOperation.deal_type || 'sale',
         status: editingOperation.status || 'available',
       };
+
+      console.debug('Saving operationData', { operationData });
 
       let result;
       if (editingOperation.id) {
@@ -343,6 +345,19 @@ const AdminOperations = () => {
   // Quick update for inline editing
   const handleQuickUpdate = async (id: string, field: string, value: any) => {
     try {
+      if (field === 'valuation_amount') {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          toast({
+            title: 'Valoración inválida',
+            description: 'La valoración debe ser un número mayor a 0',
+            variant: 'destructive',
+          });
+          return;
+        }
+        value = parsed;
+      }
+
       const { error } = await supabase
         .from('company_operations')
         .update({ [field]: value })
