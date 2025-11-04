@@ -7,11 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FirmTypeSelect } from './FirmTypeSelect';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import { useAdvisorValuationMultiples } from '@/hooks/useAdvisorValuationMultiples';
 import { useAdvisorRevenueMultiplesByRange } from '@/hooks/useAdvisorRevenueMultiplesByRange';
 import { useAdvisorEbitdaMultiplesByRange } from '@/hooks/useAdvisorEbitdaMultiplesByRange';
-import { useAdvisorNetProfitMultiplesByRange } from '@/hooks/useAdvisorNetProfitMultiplesByRange';
-import { calculateAdvisorValuationWithRanges } from '@/utils/advisorValuationCalculation';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -22,10 +19,8 @@ interface AdvisorStepperFormProps {
 
 export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalculate }) => {
   const { t } = useI18n();
-  const { getMultipleBySector } = useAdvisorValuationMultiples();
   const { getMultipleForValue: getRevenueMultiple } = useAdvisorRevenueMultiplesByRange();
   const { getMultipleForValue: getEbitdaMultiple } = useAdvisorEbitdaMultiplesByRange();
-  const { getMultipleForValue: getNetProfitMultiple } = useAdvisorNetProfitMultiplesByRange();
   const [isCalculating, setIsCalculating] = useState(false);
 
   const [formData, setFormData] = useState<AdvisorFormData>({
@@ -96,41 +91,6 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     return Object.keys(newErrors).length === 0;
   };
 
-  const calculateFlexibleValuation = (
-    revenue: number,
-    ebitda: number,
-    netProfit: number,
-    revenueMultiple: number | null,
-    ebitdaMultiple: number | null,
-    netProfitMultiple: number | null
-  ) => {
-    const valuations: Array<{ value: number; weight: number }> = [];
-    
-    if (revenueMultiple) {
-      valuations.push({ value: revenue * revenueMultiple, weight: 0.2 });
-    }
-    if (ebitdaMultiple) {
-      valuations.push({ value: ebitda * ebitdaMultiple, weight: 0.5 });
-    }
-    if (netProfitMultiple) {
-      valuations.push({ value: netProfit * netProfitMultiple, weight: 0.3 });
-    }
-
-    // Recalcular pesos proporcionalmente
-    const totalWeight = valuations.reduce((sum, v) => sum + v.weight, 0);
-    const weightedAverage = valuations.reduce((sum, v) => 
-      sum + (v.value * (v.weight / totalWeight)), 0
-    );
-
-    return {
-      weightedAverage,
-      recommendedRange: {
-        min: weightedAverage * 0.85,
-        max: weightedAverage * 1.15
-      }
-    };
-  };
-
   const handleCalculate = () => {
     if (!validateForm()) {
       toast.error(t('validation.error_title'), {
@@ -142,69 +102,51 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     setIsCalculating(true);
 
     try {
-      // Obtener múltiplos independientes por rangos
-      const netProfit = formData.revenue - formData.ebitda; // Aproximación simple
-      const revenueMultiple = getRevenueMultiple(formData.firmType, formData.revenue);
-      const ebitdaMultiple = getEbitdaMultiple(formData.firmType, formData.ebitda);
-      const netProfitMultiple = getNetProfitMultiple(formData.firmType, netProfit);
+      // Obtener múltiplos por rangos de EBITDA y Revenue
+      let revenueMultiple = getRevenueMultiple(formData.firmType, formData.revenue);
+      let ebitdaMultiple = getEbitdaMultiple(formData.firmType, formData.ebitda);
 
-      // Contar cuántos múltiplos hay disponibles
-      const availableMultiples = [revenueMultiple, ebitdaMultiple, netProfitMultiple]
-        .filter(m => m !== null).length;
+      // Valores por defecto si no hay múltiplos en la base de datos
+      const DEFAULT_REVENUE_MULTIPLE = 0.8;
+      const DEFAULT_EBITDA_MULTIPLE = 5.0;
 
-      // Si hay AL MENOS 2 múltiplos por rangos, usarlos (SISTEMA FLEXIBLE)
-      if (availableMultiples >= 2) {
-        const valuationResult = calculateFlexibleValuation(
-          formData.revenue,
-          formData.ebitda,
-          netProfit,
-          revenueMultiple,
-          ebitdaMultiple,
-          netProfitMultiple
-        );
-
-        const result: AdvisorValuationSimpleResult = {
-          finalValuation: valuationResult.weightedAverage,
-          valuationRange: {
-            min: valuationResult.recommendedRange.min,
-            max: valuationResult.recommendedRange.max
-          },
-          ebitdaMultiple: ebitdaMultiple || 0,
-          sector: formData.firmType
-        };
-
-        setTimeout(() => {
-          setIsCalculating(false);
-          onCalculate(formData, result);
-        }, 800);
-        return;
+      if (!revenueMultiple) {
+        console.warn('No revenue multiple found, using default:', DEFAULT_REVENUE_MULTIPLE);
+        revenueMultiple = DEFAULT_REVENUE_MULTIPLE;
       }
 
-      // Fallback: Sistema antiguo de múltiplos fijos
-      const sectorMultiple = getMultipleBySector(formData.firmType);
-      
-      if (!sectorMultiple) {
-        toast.error(t('advisor.error.no_multiples'));
-        setIsCalculating(false);
-        return;
+      if (!ebitdaMultiple) {
+        console.warn('No EBITDA multiple found, using default:', DEFAULT_EBITDA_MULTIPLE);
+        ebitdaMultiple = DEFAULT_EBITDA_MULTIPLE;
       }
 
-      // Cálculo simplificado: EBITDA × multiple del sector
-      const multiple = sectorMultiple.ebitda_multiple_median;
-      const finalValuation = formData.ebitda * multiple;
+      // Cálculo ponderado: EBITDA (70%) + Revenue (30%)
+      const ebitdaValuation = formData.ebitda * ebitdaMultiple;
+      const revenueValuation = formData.revenue * revenueMultiple;
       
-      // Rango +/- 20%
+      const finalValuation = (ebitdaValuation * 0.7) + (revenueValuation * 0.3);
+
+      // Rango de valoración ±15%
       const range = {
-        min: finalValuation * 0.8,
-        max: finalValuation * 1.2,
+        min: finalValuation * 0.85,
+        max: finalValuation * 1.15,
       };
 
       const result: AdvisorValuationSimpleResult = {
         finalValuation,
         valuationRange: range,
-        ebitdaMultiple: multiple,
+        ebitdaMultiple,
         sector: formData.firmType,
       };
+
+      console.info('Valuation calculated:', {
+        sector: formData.firmType,
+        revenue: formData.revenue,
+        ebitda: formData.ebitda,
+        revenueMultiple,
+        ebitdaMultiple,
+        finalValuation
+      });
 
       // Simular delay para mostrar loading
       setTimeout(() => {
