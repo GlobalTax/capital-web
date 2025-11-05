@@ -120,22 +120,34 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
         ebitdaMultiple = DEFAULT_EBITDA_MULTIPLE;
       }
 
-      // Cálculo ponderado: EBITDA (70%) + Revenue (30%)
+      // Cálculo SEPARADO por EBITDA
       const ebitdaValuation = formData.ebitda * ebitdaMultiple;
-      const revenueValuation = formData.revenue * revenueMultiple;
-      
-      const finalValuation = (ebitdaValuation * 0.7) + (revenueValuation * 0.3);
+      const ebitdaRange = {
+        min: ebitdaValuation * 0.85,
+        max: ebitdaValuation * 1.15,
+      };
 
-      // Rango de valoración ±15%
-      const range = {
-        min: finalValuation * 0.85,
-        max: finalValuation * 1.15,
+      // Cálculo SEPARADO por Facturación
+      const revenueValuation = formData.revenue * revenueMultiple;
+      const revenueRange = {
+        min: revenueValuation * 0.85,
+        max: revenueValuation * 1.15,
       };
 
       const result: AdvisorValuationSimpleResult = {
-        finalValuation,
-        valuationRange: range,
+        // Valoraciones separadas
+        ebitdaValuation,
         ebitdaMultiple,
+        ebitdaRange,
+        
+        revenueValuation,
+        revenueMultiple,
+        revenueRange,
+        
+        // Mantener para compatibilidad (usar EBITDA como principal)
+        finalValuation: ebitdaValuation,
+        valuationRange: ebitdaRange,
+        
         sector: formData.firmType,
       };
 
@@ -145,7 +157,8 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
         ebitda: formData.ebitda,
         revenueMultiple,
         ebitdaMultiple,
-        finalValuation
+        ebitdaValuation,
+        revenueValuation
       });
 
       // Simular delay para mostrar loading

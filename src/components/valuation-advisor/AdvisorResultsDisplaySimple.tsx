@@ -31,7 +31,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header con valoración principal */}
+      {/* Header informativo */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
@@ -42,60 +42,106 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               {t(`firm_types.${formData.firmType}`)}
             </Badge>
           </div>
-          <CardTitle className="text-4xl font-bold text-primary">
-            {formatCurrency(result.finalValuation)}
+          <CardTitle className="text-2xl font-bold text-primary">
+            {formData.companyName}
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            {t('advisor.results.company')}: {formData.companyName}
+            Dos métodos de valoración independientes
           </p>
         </CardHeader>
       </Card>
 
-      {/* Detalles del cálculo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+      {/* DOS VALORACIONES LADO A LADO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* VALORACIÓN POR EBITDA */}
+        <Card className="border-blue-200 bg-blue-50/50">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              {t('advisor.results.calculation_method')}
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              Valoración por EBITDA
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t('form.ebitda')}:</span>
-              <span className="font-medium">{formatCurrency(formData.ebitda)}</span>
+          <CardContent className="space-y-4">
+            {/* Valoración principal EBITDA */}
+            <div className="text-center py-4 bg-white rounded-lg border border-blue-200">
+              <p className="text-sm text-muted-foreground mb-1">Valoración estimada</p>
+              <p className="text-3xl font-bold text-blue-600">
+                {formatCurrency(result.ebitdaValuation)}
+              </p>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t('advisor.results.multiple')}:</span>
-              <span className="font-medium">{result.ebitdaMultiple.toFixed(2)}x</span>
+
+            {/* Detalles del cálculo EBITDA */}
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">EBITDA:</span>
+                <span className="font-medium">{formatCurrency(formData.ebitda)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Múltiplo:</span>
+                <span className="font-medium">{result.ebitdaMultiple.toFixed(2)}x</span>
+              </div>
             </div>
-            <div className="border-t pt-2 flex justify-between text-sm font-semibold">
-              <span>{t('advisor.results.valuation')}:</span>
-              <span className="text-primary">{formatCurrency(result.finalValuation)}</span>
+
+            {/* Rango EBITDA */}
+            <div className="pt-2 border-t">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Rango de valoración:</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Mínimo:</span>
+                <span className="font-medium">{formatCurrency(result.ebitdaRange.min)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Máximo:</span>
+                <span className="font-medium">{formatCurrency(result.ebitdaRange.max)}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* VALORACIÓN POR FACTURACIÓN */}
+        <Card className="border-green-200 bg-green-50/50">
           <CardHeader>
-            <CardTitle className="text-base">
-              {t('advisor.results.valuation_range')}
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              Valoración por Facturación
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t('advisor.results.minimum')}:</span>
-              <span className="font-medium">{formatCurrency(result.valuationRange.min)}</span>
+          <CardContent className="space-y-4">
+            {/* Valoración principal Revenue */}
+            <div className="text-center py-4 bg-white rounded-lg border border-green-200">
+              <p className="text-sm text-muted-foreground mb-1">Valoración estimada</p>
+              <p className="text-3xl font-bold text-green-600">
+                {formatCurrency(result.revenueValuation)}
+              </p>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t('advisor.results.maximum')}:</span>
-              <span className="font-medium">{formatCurrency(result.valuationRange.max)}</span>
+
+            {/* Detalles del cálculo Revenue */}
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Facturación:</span>
+                <span className="font-medium">{formatCurrency(formData.revenue)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Múltiplo:</span>
+                <span className="font-medium">{result.revenueMultiple.toFixed(2)}x</span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {t('advisor.results.range_explanation')}
-            </p>
+
+            {/* Rango Revenue */}
+            <div className="pt-2 border-t">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Rango de valoración:</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Mínimo:</span>
+                <span className="font-medium">{formatCurrency(result.revenueRange.min)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Máximo:</span>
+                <span className="font-medium">{formatCurrency(result.revenueRange.max)}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
+
       </div>
 
       {/* Información adicional */}

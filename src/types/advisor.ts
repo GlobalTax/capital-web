@@ -20,12 +20,29 @@ export interface AdvisorFormData {
 }
 
 export interface AdvisorValuationSimpleResult {
+  // Valoración por EBITDA
+  ebitdaValuation: number;
+  ebitdaMultiple: number;
+  ebitdaRange: {
+    min: number;
+    max: number;
+  };
+  
+  // Valoración por Facturación
+  revenueValuation: number;
+  revenueMultiple: number;
+  revenueRange: {
+    min: number;
+    max: number;
+  };
+  
+  // Mantener para compatibilidad (será igual a ebitdaValuation)
   finalValuation: number;
   valuationRange: {
     min: number;
     max: number;
   };
-  ebitdaMultiple: number;
+  
   sector: string;
 }
 
