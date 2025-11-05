@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { ArrowLeft, TrendingUp, BarChart3 } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
+import { 
+  LazyResponsiveContainer, 
+  LazyBarChart, 
+  LazyBar, 
+  LazyXAxis, 
+  LazyYAxis, 
+  LazyCartesianGrid, 
+  LazyTooltip,
+  LazyCell 
+} from '@/components/shared/LazyChart';
 
 interface AdvisorResultsDisplaySimpleProps {
   result: AdvisorValuationSimpleResult;
@@ -29,6 +39,47 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     return `${value.toFixed(0)} €`;
   };
 
+  // Datos para el gráfico comparativo
+  const chartData = [
+    {
+      name: 'EBITDA',
+      valoracion: result.ebitdaValuation,
+      min: result.ebitdaRange.min,
+      max: result.ebitdaRange.max,
+      color: '#2563eb', // blue-600
+      bgColor: '#dbeafe', // blue-100
+    },
+    {
+      name: 'Facturación',
+      valoracion: result.revenueValuation,
+      min: result.revenueRange.min,
+      max: result.revenueRange.max,
+      color: '#16a34a', // green-600
+      bgColor: '#dcfce7', // green-100
+    },
+  ];
+
+  // Tooltip personalizado para el gráfico
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <Card className="p-3 shadow-lg border-2" style={{ borderColor: data.color }}>
+          <p className="font-semibold text-sm mb-2">{data.name}</p>
+          <div className="space-y-1 text-xs">
+            <p className="font-bold" style={{ color: data.color }}>
+              Valoración: {formatCurrency(data.valoracion)}
+            </p>
+            <p className="text-muted-foreground">
+              Rango: {formatCurrency(data.min)} - {formatCurrency(data.max)}
+            </p>
+          </div>
+        </Card>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header informativo */}
@@ -49,6 +100,70 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
             Dos métodos de valoración independientes
           </p>
         </CardHeader>
+      </Card>
+
+      {/* GRÁFICO COMPARATIVO */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Comparación de Métodos de Valoración
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Visualización de las dos metodologías aplicadas
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Suspense fallback={<div className="h-80 flex items-center justify-center text-muted-foreground">Cargando gráfico...</div>}>
+            <LazyResponsiveContainer height={320}>
+              <LazyBarChart 
+                data={chartData} 
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <LazyCartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke="hsl(var(--border))" 
+                  opacity={0.3}
+                />
+                <LazyXAxis 
+                  dataKey="name" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={13}
+                  fontWeight={500}
+                />
+                <LazyYAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickFormatter={(value) => formatCurrency(value)}
+                  width={80}
+                />
+                <LazyTooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }} />
+                <LazyBar 
+                  dataKey="valoracion" 
+                  name="Valoración" 
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={120}
+                >
+                  {chartData.map((entry, index) => (
+                    <LazyCell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </LazyBar>
+              </LazyBarChart>
+            </LazyResponsiveContainer>
+          </Suspense>
+          
+          {/* Leyenda personalizada */}
+          <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-blue-600" />
+              <span className="text-muted-foreground">Valoración por EBITDA</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-green-600" />
+              <span className="text-muted-foreground">Valoración por Facturación</span>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* DOS VALORACIONES LADO A LADO */}
