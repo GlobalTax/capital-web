@@ -175,82 +175,9 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         variant: "destructive",
       });
       throw err;
-  };
-
-  // Envío de email sin PDF (fallback): el servidor generará un PDF simple
-  const sendEmailFallbackNoPDF = async (): Promise<void> => {
-    console.log('🟡 [ADVISOR EMAIL] Fallback: enviando email sin PDF (lo generará el servidor)');
-    try {
-      const { data, error } = await supabase.functions.invoke('send-valuation-email', {
-        body: {
-          recipientEmail: formData.email,
-          companyData: {
-            contactName: formData.contactName,
-            companyName: formData.companyName,
-            cif: formData.cif,
-            email: formData.email,
-            phone: formData.phone,
-            industry: formData.firmType,
-            employeeRange: formData.employeeRange,
-            revenue: formData.revenue,
-            ebitda: formData.ebitda,
-          },
-          result: {
-            ebitdaMultiple: result.ebitdaMultiple,
-            finalValuation: result.ebitdaValuation,
-            valuationRange: result.ebitdaRange,
-            multiples: {
-              ebitdaMultipleUsed: result.ebitdaMultiple,
-              revenueMultipleUsed: result.revenueMultiple,
-            },
-            revenueValuation: result.revenueValuation,
-            revenueRange: result.revenueRange,
-          },
-          lang: 'es',
-          source: 'advisor',
-        },
-      });
-
-      if (error) {
-        console.error('❌ [ADVISOR EMAIL] Fallback error sending email:', error);
-        throw error;
-      }
-
-      console.log('✅ [ADVISOR EMAIL] Fallback email sent successfully:', data);
-
-      // Guardar entrada mínima en BD
-      await supabase.from('advisor_valuations').insert({
-        contact_name: formData.contactName,
-        email: formData.email,
-        phone: formData.phone,
-        phone_e164: formData.phone_e164,
-        whatsapp_opt_in: formData.whatsapp_opt_in,
-        company_name: formData.companyName,
-        cif: formData.cif,
-        firm_type: formData.firmType,
-        employee_range: formData.employeeRange,
-        revenue: formData.revenue,
-        ebitda: formData.ebitda,
-        ebitda_valuation: result.ebitdaValuation,
-        ebitda_multiple: result.ebitdaMultiple,
-        ebitda_range_min: result.ebitdaRange.min,
-        ebitda_range_max: result.ebitdaRange.max,
-        revenue_valuation: result.revenueValuation,
-        revenue_multiple: result.revenueMultiple,
-        revenue_range_min: result.revenueRange.min,
-        revenue_range_max: result.revenueRange.max,
-        final_valuation: result.ebitdaValuation,
-        email_sent: true,
-        email_sent_at: new Date().toISOString(),
-        user_agent: navigator.userAgent,
-      });
-
-      toast({ title: 'Email enviado (modo respaldo)', description: 'Se envió el informe usando el generador del servidor.' });
-    } catch (e) {
-      console.error('❌ [ADVISOR EMAIL] Fallback también falló:', e);
-      toast({ title: 'Error al enviar email', description: 'No fue posible enviar el email.', variant: 'destructive' });
     }
   };
+
   // Función de descarga de PDF con validación, seguridad y envío de email
   const handleDownloadPDF = async () => {
     console.log('🔵 [ADVISOR] handleDownloadPDF INICIADO');
@@ -367,20 +294,19 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       valoracion: result.ebitdaValuation,
       min: result.ebitdaRange.min,
       max: result.ebitdaRange.max,
-      color: '#2563eb', // blue-600
-      bgColor: '#dbeafe', // blue-100
+      color: '#2563eb',
+      bgColor: '#dbeafe',
     },
     {
       name: 'Facturación',
       valoracion: result.revenueValuation,
       min: result.revenueRange.min,
       max: result.revenueRange.max,
-      color: '#16a34a', // green-600
-      bgColor: '#dcfce7', // green-100
+      color: '#16a34a',
+      bgColor: '#dcfce7',
     },
   ];
 
-  // Tooltip personalizado para el gráfico
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -473,7 +399,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
             </LazyResponsiveContainer>
           </Suspense>
           
-          {/* Leyenda personalizada */}
           <div className="flex items-center justify-center gap-6 mt-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-blue-600" />
@@ -499,7 +424,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Valoración principal EBITDA */}
             <div className="text-center py-4 bg-white rounded-lg border border-blue-200">
               <p className="text-sm text-muted-foreground mb-1">Valoración estimada</p>
               <p className="text-3xl font-bold text-blue-600">
@@ -507,7 +431,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               </p>
             </div>
 
-            {/* Detalles del cálculo EBITDA */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">EBITDA:</span>
@@ -519,7 +442,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               </div>
             </div>
 
-            {/* Rango EBITDA */}
             <div className="pt-2 border-t">
               <p className="text-xs font-semibold text-muted-foreground mb-2">Rango de valoración:</p>
               <div className="flex justify-between text-sm">
@@ -543,7 +465,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Valoración principal Revenue */}
             <div className="text-center py-4 bg-white rounded-lg border border-green-200">
               <p className="text-sm text-muted-foreground mb-1">Valoración estimada</p>
               <p className="text-3xl font-bold text-green-600">
@@ -551,7 +472,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               </p>
             </div>
 
-            {/* Detalles del cálculo Revenue */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Facturación:</span>
@@ -563,7 +483,6 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               </div>
             </div>
 
-            {/* Rango Revenue */}
             <div className="pt-2 border-t">
               <p className="text-xs font-semibold text-muted-foreground mb-2">Rango de valoración:</p>
               <div className="flex justify-between text-sm">
