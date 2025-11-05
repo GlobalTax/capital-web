@@ -48,8 +48,18 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
 
   // Función para enviar email con PDF
   const handleSendEmail = async (pdfBlob: Blob): Promise<void> => {
+    console.log('🚀 [ADVISOR EMAIL] Iniciando envío de email para asesor:', formData.email);
+    console.log('📊 [ADVISOR EMAIL] Datos del formulario:', { 
+      companyName: formData.companyName, 
+      email: formData.email,
+      firmType: formData.firmType 
+    });
+    console.log('💰 [ADVISOR EMAIL] Resultados:', {
+      ebitdaValuation: result.ebitdaValuation,
+      revenueValuation: result.revenueValuation
+    });
+    
     try {
-      console.log('🚀 Iniciando envío de email para asesor:', formData.email);
       
       // 1. Convertir PDF a Base64
       const pdfBase64 = await new Promise<string>((resolve, reject) => {
@@ -64,6 +74,8 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       });
 
       const pdfFilename = `Capittal-Valoracion-Asesores-${sanitizeFileName(formData.companyName)}.pdf`;
+      console.log('📄 [ADVISOR EMAIL] PDF generado, tamaño:', pdfBlob.size, 'bytes');
+      console.log('📧 [ADVISOR EMAIL] Invocando edge function send-valuation-email...');
 
       // 2. Llamar a edge function send-valuation-email
       const { data, error } = await supabase.functions.invoke('send-valuation-email', {
@@ -104,13 +116,16 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       });
 
       if (error) {
-        console.error('❌ Error sending email:', error);
+        console.error('❌ [ADVISOR EMAIL] Error sending email:', error);
+        console.error('❌ [ADVISOR EMAIL] Error details:', JSON.stringify(error, null, 2));
         throw error;
       }
 
-      console.log('✅ Email sent successfully:', data);
+      console.log('✅ [ADVISOR EMAIL] Email sent successfully:', data);
+      console.log('✅ [ADVISOR EMAIL] Response data:', JSON.stringify(data, null, 2));
       
       // 3. Guardar en base de datos
+      console.log('💾 [ADVISOR EMAIL] Guardando en base de datos...');
       const { error: dbError } = await supabase.from('advisor_valuations').insert({
         contact_name: formData.contactName,
         email: formData.email,
@@ -140,10 +155,11 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       });
 
       if (dbError) {
-        console.error('⚠️ Error saving to database (email was sent):', dbError);
+        console.error('⚠️ [ADVISOR EMAIL] Error saving to database (email was sent):', dbError);
+        console.error('⚠️ [ADVISOR EMAIL] DB Error details:', JSON.stringify(dbError, null, 2));
         // No lanzar error, el email ya se envió exitosamente
       } else {
-        console.log('✅ Valuation saved to database');
+        console.log('✅ [ADVISOR EMAIL] Valuation saved to database');
       }
 
       toast({
@@ -151,7 +167,8 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         description: "El informe ha sido enviado a tu email y al equipo Capittal",
       });
     } catch (err) {
-      console.error('❌ Error in handleSendEmail:', err);
+      console.error('❌ [ADVISOR EMAIL] Error in handleSendEmail:', err);
+      console.error('❌ [ADVISOR EMAIL] Error stack:', err instanceof Error ? err.stack : 'No stack trace');
       toast({
         title: "Error al enviar email",
         description: "El PDF se descargó correctamente, pero no se pudo enviar el email",
@@ -219,10 +236,13 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       });
 
       // 5. ENVIAR EMAIL (no bloquear la descarga si falla)
+      console.log('📧 [ADVISOR] Iniciando proceso de envío de email...');
       try {
         await handleSendEmail(blob);
+        console.log('✅ [ADVISOR] Email enviado exitosamente');
       } catch (emailErr) {
-        console.warn('⚠️ Email sending failed, but PDF was downloaded:', emailErr);
+        console.error('❌ [ADVISOR] Email sending failed, but PDF was downloaded:', emailErr);
+        console.error('❌ [ADVISOR] Email error stack:', emailErr instanceof Error ? emailErr.stack : 'No stack trace');
         // El error ya se muestra en handleSendEmail
       }
     } catch (err) {
