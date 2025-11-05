@@ -180,6 +180,10 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
 
   // Función de descarga de PDF con validación, seguridad y envío de email
   const handleDownloadPDF = async () => {
+    console.log('🔵 [ADVISOR] handleDownloadPDF INICIADO');
+    console.log('🔵 [ADVISOR] formData:', formData);
+    console.log('🔵 [ADVISOR] result:', result);
+    
     // Rate limiting: prevenir spam
     const now = Date.now();
     if (now - lastDownloadTime < DOWNLOAD_COOLDOWN) {
