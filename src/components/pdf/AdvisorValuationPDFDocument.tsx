@@ -2,6 +2,8 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import { localeForIntl, LangCode } from '@/shared/i18n/locale';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
+import { sanitizeForPDF, sanitizeEmail, sanitizePhone, sanitizeCIF } from '@/utils/pdfSanitization';
+import { safeNumber } from '@/utils/pdfValidation';
 
 // Registrar fuentes
 Font.register({
@@ -439,12 +441,21 @@ const AdvisorValuationPDFDocument: React.FC<AdvisorValuationPDFDocumentProps> = 
   const T = L[lang];
 
   const formatCurrency = (amount: number) => {
+    // Validar input y usar valor seguro
+    const safeAmount = safeNumber(amount, 0);
+    
+    // Validación adicional para valores extremos
+    if (!Number.isFinite(safeAmount) || safeAmount < 0) {
+      console.warn(`Invalid amount for formatCurrency: ${amount}`);
+      return '0 €';
+    }
+    
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
   };
 
   const formatDate = () => {
@@ -559,11 +570,11 @@ const AdvisorValuationPDFDocument: React.FC<AdvisorValuationPDFDocumentProps> = 
             <View style={styles.dataColumn}>
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>{T.companyName}:</Text>
-                <Text style={styles.dataValue}>{formData.companyName}</Text>
+                <Text style={styles.dataValue}>{sanitizeForPDF(formData.companyName, 100)}</Text>
               </View>
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>{T.cif}:</Text>
-                <Text style={styles.dataValue}>{formData.cif}</Text>
+                <Text style={styles.dataValue}>{sanitizeCIF(formData.cif)}</Text>
               </View>
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>{T.firmType}:</Text>
@@ -577,15 +588,15 @@ const AdvisorValuationPDFDocument: React.FC<AdvisorValuationPDFDocumentProps> = 
             <View style={styles.dataColumn}>
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>{T.contactPerson}:</Text>
-                <Text style={styles.dataValue}>{formData.contactName}</Text>
+                <Text style={styles.dataValue}>{sanitizeForPDF(formData.contactName, 100)}</Text>
               </View>
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>{T.email}:</Text>
-                <Text style={styles.dataValue}>{formData.email}</Text>
+                <Text style={styles.dataValue}>{sanitizeEmail(formData.email)}</Text>
               </View>
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>{T.phone}:</Text>
-                <Text style={styles.dataValue}>{formData.phone}</Text>
+                <Text style={styles.dataValue}>{sanitizePhone(formData.phone)}</Text>
               </View>
             </View>
           </View>

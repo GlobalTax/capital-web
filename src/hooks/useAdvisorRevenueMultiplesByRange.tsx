@@ -52,11 +52,18 @@ export const useAdvisorRevenueMultiplesByRange = () => {
   };
 
   const getMultipleForValue = (sector: string, revenue: number): number | null => {
+    // Validar input
+    if (!Number.isFinite(revenue) || revenue < 0) {
+      logger.warn('Invalid revenue for multiple calculation', { sector, revenue });
+      return null;
+    }
+
     const sectorRanges = ranges.filter(
       r => r.sector_name.toLowerCase() === sector.toLowerCase()
     );
 
     if (sectorRanges.length === 0) {
+      logger.info('No ranges found for sector', { sector });
       return null;
     }
 
@@ -65,13 +72,21 @@ export const useAdvisorRevenueMultiplesByRange = () => {
       (r.range_max === null || revenue < r.range_max)
     );
 
+    const multiple = matchingRange?.multiple || null;
+
+    // Validar que el múltiplo sea razonable
+    if (multiple !== null && (!Number.isFinite(multiple) || multiple <= 0 || multiple > 100)) {
+      logger.error('Invalid multiple found in database', new Error(`Invalid multiple: ${multiple} for sector: ${sector}`));
+      return null;
+    }
+
     logger.info('Revenue multiple found', {
       sector,
       revenue,
-      multiple: matchingRange?.multiple
+      multiple
     });
 
-    return matchingRange?.multiple || null;
+    return multiple;
   };
 
   return {

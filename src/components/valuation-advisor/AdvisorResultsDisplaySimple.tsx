@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,8 @@ import { useI18n } from '@/shared/i18n/I18nProvider';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 import { useAdvisorValuationPDF } from '@/components/shared/LazyAdvisorValuationPDF';
 import { useToast } from '@/hooks/use-toast';
+import { validateDataForPDF } from '@/utils/pdfValidation';
+import { sanitizeFileName } from '@/utils/pdfSanitization';
 import { 
   LazyResponsiveContainer, 
   LazyBarChart, 
@@ -32,6 +34,10 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
   const { t } = useI18n();
   const { toast } = useToast();
 
+  // Rate limiting state
+  const [lastDownloadTime, setLastDownloadTime] = useState<number>(0);
+  const DOWNLOAD_COOLDOWN = 3000; // 3 segundos
+
   // Hook para generación de PDF
   const { generatePDF, isGenerating, error: pdfError } = useAdvisorValuationPDF(
     formData,
@@ -39,35 +45,87 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     'es' // TODO: Usar idioma del contexto i18n cuando esté disponible
   );
 
-  // Función de descarga de PDF
+  // Función de descarga de PDF con validación y seguridad
   const handleDownloadPDF = async () => {
+    // Rate limiting: prevenir spam
+    const now = Date.now();
+    if (now - lastDownloadTime < DOWNLOAD_COOLDOWN) {
+      toast({
+        title: "Espera un momento",
+        description: "Por favor, espera unos segundos antes de descargar de nuevo",
+      });
+      return;
+    }
+
+    // Prevenir múltiples clicks simultáneos
+    if (isGenerating) return;
+
+    let blobUrl: string | null = null;
+
     try {
+      // 1. VALIDAR DATOS antes de generar
+      const validation = validateDataForPDF(formData, result);
+      if (!validation.isValid) {
+        const errorMessages = validation.errors.map(e => e.message).join(', ');
+        toast({
+          title: "Datos inválidos",
+          description: errorMessages,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 2. GENERAR PDF
       const blob = await generatePDF();
-      
-      // Crear nombre del archivo
-      const fileName = `valoracion-${formData.companyName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
-      
-      // Descargar archivo
-      const url = URL.createObjectURL(blob);
+
+      // 3. VALIDAR BLOB
+      if (!blob || blob.size === 0) {
+        throw new Error('PDF generado está vacío');
+      }
+
+      // 4. CREAR DESCARGA con nombre sanitizado
+      const fileName = `valoracion-${sanitizeFileName(formData.companyName)}-${new Date().toISOString().split('T')[0]}.pdf`;
+      blobUrl = URL.createObjectURL(blob);
+
       const link = document.createElement('a');
-      link.href = url;
+      link.href = blobUrl;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
+
+      // Actualizar timestamp de último download
+      setLastDownloadTime(now);
+
       toast({
         title: "PDF descargado",
         description: "El informe se ha descargado correctamente",
       });
     } catch (err) {
+      // Manejo específico por tipo de error
+      let errorMessage = "No se pudo descargar el PDF. Inténtalo de nuevo.";
+
+      if (err instanceof Error) {
+        if (err.message.includes('Memory') || err.message.includes('memory')) {
+          errorMessage = "Error de memoria. Intenta cerrar otras pestañas.";
+        } else if (err.message.includes('Network') || err.message.includes('network')) {
+          errorMessage = "Error de red. Verifica tu conexión.";
+        } else if (err.message.includes('vacío')) {
+          errorMessage = "Error al generar el PDF. Los datos pueden estar incompletos.";
+        }
+      }
+
       console.error('Error downloading PDF:', err);
       toast({
         title: "Error",
-        description: "No se pudo descargar el PDF. Inténtalo de nuevo.",
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      // CLEANUP GARANTIZADO: liberar memoria
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
     }
   };
 
