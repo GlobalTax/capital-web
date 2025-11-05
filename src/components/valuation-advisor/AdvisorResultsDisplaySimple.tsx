@@ -2,9 +2,11 @@ import React, { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, TrendingUp, BarChart3 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, BarChart3, Download, Loader2 } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
+import { useAdvisorValuationPDF } from '@/components/shared/LazyAdvisorValuationPDF';
+import { useToast } from '@/hooks/use-toast';
 import { 
   LazyResponsiveContainer, 
   LazyBarChart, 
@@ -28,6 +30,46 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
   onBack,
 }) => {
   const { t } = useI18n();
+  const { toast } = useToast();
+
+  // Hook para generación de PDF
+  const { generatePDF, isGenerating, error: pdfError } = useAdvisorValuationPDF(
+    formData,
+    result,
+    'es' // TODO: Usar idioma del contexto i18n cuando esté disponible
+  );
+
+  // Función de descarga de PDF
+  const handleDownloadPDF = async () => {
+    try {
+      const blob = await generatePDF();
+      
+      // Crear nombre del archivo
+      const fileName = `valoracion-${formData.companyName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Descargar archivo
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "PDF descargado",
+        description: "El informe se ha descargado correctamente",
+      });
+    } catch (err) {
+      console.error('Error downloading PDF:', err);
+      toast({
+        title: "Error",
+        description: "No se pudo descargar el PDF. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const formatCurrency = (value: number): string => {
     if (value >= 1000000) {
@@ -268,6 +310,45 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           <p className="text-sm text-muted-foreground">
             {t('advisor.results.next_steps_text')}
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Botón de descarga de PDF */}
+      <Card className="border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="text-center">
+              <h3 className="font-semibold text-lg mb-2">
+                Descargar Informe Completo
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Obtén un PDF profesional con el análisis detallado de ambos métodos de valoración
+              </p>
+            </div>
+            <Button
+              onClick={handleDownloadPDF}
+              disabled={isGenerating}
+              size="lg"
+              className="gap-2 min-w-[200px]"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Generando PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="h-5 w-5" />
+                  Descargar PDF
+                </>
+              )}
+            </Button>
+            {pdfError && (
+              <p className="text-sm text-destructive">
+                Error al generar el PDF. Por favor, inténtalo de nuevo.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
