@@ -175,9 +175,82 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         variant: "destructive",
       });
       throw err;
-    }
   };
 
+  // Envío de email sin PDF (fallback): el servidor generará un PDF simple
+  const sendEmailFallbackNoPDF = async (): Promise<void> => {
+    console.log('🟡 [ADVISOR EMAIL] Fallback: enviando email sin PDF (lo generará el servidor)');
+    try {
+      const { data, error } = await supabase.functions.invoke('send-valuation-email', {
+        body: {
+          recipientEmail: formData.email,
+          companyData: {
+            contactName: formData.contactName,
+            companyName: formData.companyName,
+            cif: formData.cif,
+            email: formData.email,
+            phone: formData.phone,
+            industry: formData.firmType,
+            employeeRange: formData.employeeRange,
+            revenue: formData.revenue,
+            ebitda: formData.ebitda,
+          },
+          result: {
+            ebitdaMultiple: result.ebitdaMultiple,
+            finalValuation: result.ebitdaValuation,
+            valuationRange: result.ebitdaRange,
+            multiples: {
+              ebitdaMultipleUsed: result.ebitdaMultiple,
+              revenueMultipleUsed: result.revenueMultiple,
+            },
+            revenueValuation: result.revenueValuation,
+            revenueRange: result.revenueRange,
+          },
+          lang: 'es',
+          source: 'advisor',
+        },
+      });
+
+      if (error) {
+        console.error('❌ [ADVISOR EMAIL] Fallback error sending email:', error);
+        throw error;
+      }
+
+      console.log('✅ [ADVISOR EMAIL] Fallback email sent successfully:', data);
+
+      // Guardar entrada mínima en BD
+      await supabase.from('advisor_valuations').insert({
+        contact_name: formData.contactName,
+        email: formData.email,
+        phone: formData.phone,
+        phone_e164: formData.phone_e164,
+        whatsapp_opt_in: formData.whatsapp_opt_in,
+        company_name: formData.companyName,
+        cif: formData.cif,
+        firm_type: formData.firmType,
+        employee_range: formData.employeeRange,
+        revenue: formData.revenue,
+        ebitda: formData.ebitda,
+        ebitda_valuation: result.ebitdaValuation,
+        ebitda_multiple: result.ebitdaMultiple,
+        ebitda_range_min: result.ebitdaRange.min,
+        ebitda_range_max: result.ebitdaRange.max,
+        revenue_valuation: result.revenueValuation,
+        revenue_multiple: result.revenueMultiple,
+        revenue_range_min: result.revenueRange.min,
+        revenue_range_max: result.revenueRange.max,
+        final_valuation: result.ebitdaValuation,
+        email_sent: true,
+        email_sent_at: new Date().toISOString(),
+        user_agent: navigator.userAgent,
+      });
+
+      toast({ title: 'Email enviado (modo respaldo)', description: 'Se envió el informe usando el generador del servidor.' });
+    } catch (e) {
+      console.error('❌ [ADVISOR EMAIL] Fallback también falló:', e);
+      toast({ title: 'Error al enviar email', description: 'No fue posible enviar el email.', variant: 'destructive' });
+    }
+  };
   // Función de descarga de PDF con validación, seguridad y envío de email
   const handleDownloadPDF = async () => {
     console.log('🔵 [ADVISOR] handleDownloadPDF INICIADO');
