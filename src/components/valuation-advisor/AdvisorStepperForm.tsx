@@ -12,9 +12,11 @@ import { useAdvisorEbitdaMultiplesByRange } from '@/hooks/useAdvisorEbitdaMultip
 import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { getIPAddress } from '@/utils/getIPAddress';
 
 interface AdvisorStepperFormProps {
-  onCalculate: (data: AdvisorFormData, result: AdvisorValuationSimpleResult) => void;
+  onCalculate: (data: AdvisorFormData, result: AdvisorValuationSimpleResult, valuationId?: string) => void;
 }
 
 export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalculate }) => {
@@ -91,7 +93,7 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     if (!validateForm()) {
       toast.error(t('validation.error_title'), {
         description: t('validation.fix_errors')
@@ -161,10 +163,59 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
         revenueValuation
       });
 
+      // 🆕 GUARDAR EN BASE DE DATOS INMEDIATAMENTE
+      const ipAddress = await getIPAddress();
+      const { data: savedValuation, error: dbError } = await supabase
+        .from('advisor_valuations')
+        .insert({
+          // Datos de contacto
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          phone_e164: formData.phone_e164,
+          whatsapp_opt_in: formData.whatsapp_opt_in,
+          
+          // Datos de empresa
+          company_name: formData.companyName,
+          cif: formData.cif,
+          firm_type: formData.firmType,
+          employee_range: formData.employeeRange,
+          
+          // Datos financieros
+          revenue: formData.revenue,
+          ebitda: formData.ebitda,
+          
+          // Resultados de valoración
+          ebitda_valuation: result.ebitdaValuation,
+          ebitda_multiple: result.ebitdaMultiple,
+          ebitda_range_min: result.ebitdaRange.min,
+          ebitda_range_max: result.ebitdaRange.max,
+          revenue_valuation: result.revenueValuation,
+          revenue_multiple: result.revenueMultiple,
+          revenue_range_min: result.revenueRange.min,
+          revenue_range_max: result.revenueRange.max,
+          final_valuation: result.finalValuation,
+          
+          // Metadata
+          source: 'lp-calculadora-asesores',
+          ip_address: ipAddress,
+          user_agent: navigator.userAgent,
+          email_sent: false,
+        })
+        .select()
+        .single();
+      
+      if (dbError) {
+        console.error('Error saving valuation:', dbError);
+        // Continuar mostrando resultados aunque falle el guardado
+      } else {
+        console.log('✅ Valuation saved with ID:', savedValuation.id);
+      }
+
       // Simular delay para mostrar loading
       setTimeout(() => {
         setIsCalculating(false);
-        onCalculate(formData, result);
+        onCalculate(formData, result, savedValuation?.id);
       }, 800);
 
     } catch (error) {

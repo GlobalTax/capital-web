@@ -24,12 +24,14 @@ import {
 interface AdvisorResultsDisplaySimpleProps {
   result: AdvisorValuationSimpleResult;
   formData: AdvisorFormData;
+  valuationId?: string | null;
   onBack: () => void;
 }
 
 export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimpleProps> = ({
   result,
   formData,
+  valuationId,
   onBack,
 }) => {
   const { t } = useI18n();
@@ -124,42 +126,25 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       console.log('✅ [ADVISOR EMAIL] Email sent successfully:', data);
       console.log('✅ [ADVISOR EMAIL] Response data:', JSON.stringify(data, null, 2));
       
-      // 3. Guardar en base de datos
-      console.log('💾 [ADVISOR EMAIL] Guardando en base de datos...');
-      const { error: dbError } = await supabase.from('advisor_valuations').insert({
-        contact_name: formData.contactName,
-        email: formData.email,
-        phone: formData.phone,
-        phone_e164: formData.phone_e164,
-        whatsapp_opt_in: formData.whatsapp_opt_in,
-        company_name: formData.companyName,
-        cif: formData.cif,
-        firm_type: formData.firmType,
-        employee_range: formData.employeeRange,
-        revenue: formData.revenue,
-        ebitda: formData.ebitda,
-        ebitda_valuation: result.ebitdaValuation,
-        ebitda_multiple: result.ebitdaMultiple,
-        ebitda_range_min: result.ebitdaRange.min,
-        ebitda_range_max: result.ebitdaRange.max,
-        revenue_valuation: result.revenueValuation,
-        revenue_multiple: result.revenueMultiple,
-        revenue_range_min: result.revenueRange.min,
-        revenue_range_max: result.revenueRange.max,
-        final_valuation: result.ebitdaValuation,
-        email_sent: true,
-        email_sent_at: new Date().toISOString(),
-        pdf_url: data?.pdfUrl || null,
-        ip_address: null, // Se podría obtener del cliente si es necesario
-        user_agent: navigator.userAgent,
-      });
-
-      if (dbError) {
-        console.error('⚠️ [ADVISOR EMAIL] Error saving to database (email was sent):', dbError);
-        console.error('⚠️ [ADVISOR EMAIL] DB Error details:', JSON.stringify(dbError, null, 2));
-        // No lanzar error, el email ya se envió exitosamente
+      // 3. 🆕 ACTUALIZAR registro existente en lugar de insertar
+      if (valuationId) {
+        console.log('💾 [ADVISOR EMAIL] Actualizando registro en base de datos...');
+        const { error: updateError } = await supabase
+          .from('advisor_valuations')
+          .update({
+            email_sent: true,
+            email_sent_at: new Date().toISOString(),
+            pdf_url: data?.pdfUrl || null,
+          })
+          .eq('id', valuationId);
+        
+        if (updateError) {
+          console.error('⚠️ [ADVISOR EMAIL] Error updating valuation (email was sent):', updateError);
+        } else {
+          console.log('✅ [ADVISOR EMAIL] Valuation updated in database');
+        }
       } else {
-        console.log('✅ [ADVISOR EMAIL] Valuation saved to database');
+        console.warn('⚠️ [ADVISOR EMAIL] No valuationId provided, cannot update record');
       }
 
       toast({
