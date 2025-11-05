@@ -9,6 +9,7 @@ import { useAdvisorValuationPDF } from '@/components/shared/LazyAdvisorValuation
 import { useToast } from '@/hooks/use-toast';
 import { validateDataForPDF } from '@/utils/pdfValidation';
 import { sanitizeFileName } from '@/utils/pdfSanitization';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   LazyResponsiveContainer, 
   LazyBarChart, 
@@ -45,7 +46,122 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     'es' // TODO: Usar idioma del contexto i18n cuando esté disponible
   );
 
-  // Función de descarga de PDF con validación y seguridad
+  // Función para enviar email con PDF
+  const handleSendEmail = async (pdfBlob: Blob): Promise<void> => {
+    try {
+      console.log('🚀 Iniciando envío de email para asesor:', formData.email);
+      
+      // 1. Convertir PDF a Base64
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          const base64 = (dataUrl.split(',')[1]) || '';
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      const pdfFilename = `Capittal-Valoracion-Asesores-${sanitizeFileName(formData.companyName)}.pdf`;
+
+      // 2. Llamar a edge function send-valuation-email
+      const { data, error } = await supabase.functions.invoke('send-valuation-email', {
+        body: {
+          recipientEmail: formData.email,
+          companyData: {
+            contactName: formData.contactName,
+            companyName: formData.companyName,
+            cif: formData.cif,
+            email: formData.email,
+            phone: formData.phone,
+            industry: formData.firmType,
+            employeeRange: formData.employeeRange,
+            revenue: formData.revenue,
+            ebitda: formData.ebitda,
+          },
+          result: {
+            ebitdaMultiple: result.ebitdaMultiple,
+            finalValuation: result.ebitdaValuation,
+            valuationRange: result.ebitdaRange,
+            multiples: {
+              ebitdaMultipleUsed: result.ebitdaMultiple,
+              revenueMultipleUsed: result.revenueMultiple,
+            },
+            // Campos adicionales para asesores
+            revenueValuation: result.revenueValuation,
+            revenueRange: result.revenueRange,
+          },
+          pdfBase64,
+          pdfFilename,
+          enlaces: {
+            escenariosUrl: `${window.location.origin}/lp/calculadora`,
+            calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora-fiscal`,
+          },
+          lang: 'es',
+          source: 'advisor', // Indicador para edge function
+        },
+      });
+
+      if (error) {
+        console.error('❌ Error sending email:', error);
+        throw error;
+      }
+
+      console.log('✅ Email sent successfully:', data);
+      
+      // 3. Guardar en base de datos
+      const { error: dbError } = await supabase.from('advisor_valuations').insert({
+        contact_name: formData.contactName,
+        email: formData.email,
+        phone: formData.phone,
+        phone_e164: formData.phone_e164,
+        whatsapp_opt_in: formData.whatsapp_opt_in,
+        company_name: formData.companyName,
+        cif: formData.cif,
+        firm_type: formData.firmType,
+        employee_range: formData.employeeRange,
+        revenue: formData.revenue,
+        ebitda: formData.ebitda,
+        ebitda_valuation: result.ebitdaValuation,
+        ebitda_multiple: result.ebitdaMultiple,
+        ebitda_range_min: result.ebitdaRange.min,
+        ebitda_range_max: result.ebitdaRange.max,
+        revenue_valuation: result.revenueValuation,
+        revenue_multiple: result.revenueMultiple,
+        revenue_range_min: result.revenueRange.min,
+        revenue_range_max: result.revenueRange.max,
+        final_valuation: result.ebitdaValuation,
+        email_sent: true,
+        email_sent_at: new Date().toISOString(),
+        pdf_url: data?.pdfUrl || null,
+        ip_address: null, // Se podría obtener del cliente si es necesario
+        user_agent: navigator.userAgent,
+      });
+
+      if (dbError) {
+        console.error('⚠️ Error saving to database (email was sent):', dbError);
+        // No lanzar error, el email ya se envió exitosamente
+      } else {
+        console.log('✅ Valuation saved to database');
+      }
+
+      toast({
+        title: "Email enviado",
+        description: "El informe ha sido enviado a tu email y al equipo Capittal",
+      });
+    } catch (err) {
+      console.error('❌ Error in handleSendEmail:', err);
+      toast({
+        title: "Error al enviar email",
+        description: "El PDF se descargó correctamente, pero no se pudo enviar el email",
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  // Función de descarga de PDF con validación, seguridad y envío de email
   const handleDownloadPDF = async () => {
     // Rate limiting: prevenir spam
     const now = Date.now();
@@ -101,6 +217,14 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         title: "PDF descargado",
         description: "El informe se ha descargado correctamente",
       });
+
+      // 5. ENVIAR EMAIL (no bloquear la descarga si falla)
+      try {
+        await handleSendEmail(blob);
+      } catch (emailErr) {
+        console.warn('⚠️ Email sending failed, but PDF was downloaded:', emailErr);
+        // El error ya se muestra en handleSendEmail
+      }
     } catch (err) {
       // Manejo específico por tipo de error
       let errorMessage = "No se pudo descargar el PDF. Inténtalo de nuevo.";

@@ -42,7 +42,10 @@ interface ValuationResultEmail {
 interface SendValuationEmailRequest {
   recipientEmail?: string; // opcional, por defecto se usa el de pruebas
   companyData: CompanyDataEmail;
-  result: ValuationResultEmail;
+  result: ValuationResultEmail & {
+    revenueValuation?: number; // Para calculadora de asesores
+    revenueRange?: { min?: number; max?: number }; // Para calculadora de asesores
+  };
   pdfBase64?: string; // PDF generado en frontend (base64 sin prefijo data:)
   pdfFilename?: string; // nombre sugerido para el adjunto
   enlaces?: {
@@ -58,6 +61,7 @@ interface SendValuationEmailRequest {
   subjectOverride?: string;
   pdfOnly?: boolean; // si true, solo genera/sube PDF y devuelve URL, no envía emails
   lang?: 'es' | 'ca' | 'val' | 'gl';
+  source?: 'advisor' | 'standard'; // Para identificar calculadora de asesores
 }
 
 const euros = (n?: number | null, locale: string = "es-ES") =>
@@ -196,7 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
     const payload = (await req.json()) as SendValuationEmailRequest;
     console.log("Payload received:", JSON.stringify(payload, null, 2));
     
-    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, enlaces, sender, subjectOverride, lang } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl' };
+    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, enlaces, sender, subjectOverride, lang, source } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl'; source?: 'advisor' | 'standard' };
 
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
@@ -214,9 +218,19 @@ const handler = async (req: Request): Promise<Response> => {
     const extraRecipient = recipientEmail?.trim();
     const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
 
-    const subject = `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
+    // Detectar si es calculadora de asesores
+    const isAdvisorCalculation = source === 'advisor' || (companyData.industry && (
+      companyData.industry.includes('asesor') || 
+      companyData.industry.includes('fiscal') ||
+      companyData.industry.includes('contable')
+    ));
 
-    const html = `
+    const subject = isAdvisorCalculation 
+      ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
+      : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
+
+    // HTML para emails internos (equipo Capittal)
+    const htmlInternal = `
       <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
         <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
           <h1 style="margin:0 0 8px; color:#111827; font-size:20px;">Nueva valoración recibida</h1>
@@ -247,12 +261,18 @@ const handler = async (req: Request): Promise<Response> => {
 
           <h2 style="margin:16px 0 8px; color:#111827; font-size:16px;">Resultado de la valoración</h2>
           <table style="width:100%; border-collapse:collapse;">
-            <tr><td style="padding:6px 0; color:#374151;">Valoración final</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.finalValuation ?? result?.valuationRange?.min, locale)}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Rango</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.valuationRange?.min, locale)} - ${euros(result?.valuationRange?.max, locale)}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Valoración final (EBITDA)</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.finalValuation ?? result?.valuationRange?.min, locale)}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Rango EBITDA</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result?.valuationRange?.min, locale)} - ${euros(result?.valuationRange?.max, locale)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Múltiplo EBITDA usado</td><td style="padding:6px 0; color:#111827; font-weight:600;">${result?.multiples?.ebitdaMultipleUsed ?? result?.ebitdaMultiple ?? "-"}x</td></tr>
+            ${isAdvisorCalculation && result.revenueValuation ? `
+              <tr><td colspan="2" style="padding:12px 0 6px; color:#111827; font-weight:700; border-top:1px solid #e5e7eb;">Valoración por Facturación</td></tr>
+              <tr><td style="padding:6px 0; color:#374151;">Valoración (Facturación)</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result.revenueValuation, locale)}</td></tr>
+              <tr><td style="padding:6px 0; color:#374151;">Rango Facturación</td><td style="padding:6px 0; color:#111827; font-weight:700;">${euros(result.revenueRange?.min, locale)} - ${euros(result.revenueRange?.max, locale)}</td></tr>
+              <tr><td style="padding:6px 0; color:#374151;">Múltiplo Facturación</td><td style="padding:6px 0; color:#111827; font-weight:600;">${result?.multiples?.revenueMultipleUsed ?? "-"}x</td></tr>
+            ` : ''}
           </table>
 
-          <p style="margin:16px 0 0; color:#6b7280; font-size:12px;">Este correo se generó automáticamente desde la calculadora de Capittal.</p>
+          <p style="margin:16px 0 0; color:#6b7280; font-size:12px;">Este correo se generó automáticamente desde la calculadora${isAdvisorCalculation ? ' de asesores' : ''} de Capittal.</p>
         </div>
       </div>
     `;
@@ -322,7 +342,7 @@ if (pdfToAttach) {
         from: "Capittal <no-reply@capittal.es>",
         to: recipients,
         subject,
-        html,
+        html: htmlInternal,
         text: internalText,
         reply_to: "samuel@capittal.es",
          headers: { 
@@ -339,7 +359,7 @@ if (pdfToAttach) {
         from: "Capittal (Test) <onboarding@resend.dev>",
         to: recipients,
         subject: `${subject} (pruebas)`,
-        html: `${html}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
+        html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
         reply_to: "samuel@capittal.es",
          headers: { 

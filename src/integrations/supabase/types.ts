@@ -643,6 +643,102 @@ export type Database = {
         }
         Relationships: []
       }
+      advisor_valuations: {
+        Row: {
+          cif: string
+          company_name: string
+          contact_name: string
+          created_at: string
+          ebitda: number
+          ebitda_multiple: number | null
+          ebitda_range_max: number | null
+          ebitda_range_min: number | null
+          ebitda_valuation: number | null
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          employee_range: string
+          final_valuation: number | null
+          firm_type: string
+          id: string
+          ip_address: string | null
+          pdf_url: string | null
+          phone: string | null
+          phone_e164: string | null
+          revenue: number
+          revenue_multiple: number | null
+          revenue_range_max: number | null
+          revenue_range_min: number | null
+          revenue_valuation: number | null
+          source: string | null
+          updated_at: string
+          user_agent: string | null
+          whatsapp_opt_in: boolean | null
+        }
+        Insert: {
+          cif: string
+          company_name: string
+          contact_name: string
+          created_at?: string
+          ebitda: number
+          ebitda_multiple?: number | null
+          ebitda_range_max?: number | null
+          ebitda_range_min?: number | null
+          ebitda_valuation?: number | null
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          employee_range: string
+          final_valuation?: number | null
+          firm_type: string
+          id?: string
+          ip_address?: string | null
+          pdf_url?: string | null
+          phone?: string | null
+          phone_e164?: string | null
+          revenue: number
+          revenue_multiple?: number | null
+          revenue_range_max?: number | null
+          revenue_range_min?: number | null
+          revenue_valuation?: number | null
+          source?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          whatsapp_opt_in?: boolean | null
+        }
+        Update: {
+          cif?: string
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          ebitda?: number
+          ebitda_multiple?: number | null
+          ebitda_range_max?: number | null
+          ebitda_range_min?: number | null
+          ebitda_valuation?: number | null
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          employee_range?: string
+          final_valuation?: number | null
+          firm_type?: string
+          id?: string
+          ip_address?: string | null
+          pdf_url?: string | null
+          phone?: string | null
+          phone_e164?: string | null
+          revenue?: number
+          revenue_multiple?: number | null
+          revenue_range_max?: number | null
+          revenue_range_min?: number | null
+          revenue_valuation?: number | null
+          source?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          whatsapp_opt_in?: boolean | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
