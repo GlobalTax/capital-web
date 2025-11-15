@@ -10,80 +10,27 @@ import { getPreferredLang } from '@/shared/i18n/locale';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 import CapittalBrief from '@/components/landing/CapittalBrief';
 import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const LandingCalculatorInner = () => {
   const location = useLocation();
   const { t } = useI18n();
 
-  // SEO dinámico según idioma con canonical fijo, hreflang y metadatos sociales
+  // Hreflang management for multilanguage support
   useEffect(() => {
-    const title = t('landing.title');
-    const description = t('landing.description');
-    const canonicalUrl = 'https://capittal.es/lp/calculadora';
-    const imageUrl = 'https://capittal.es/src/assets/calculadora-social-preview.jpg';
-
-    document.title = title;
-
-    // Función helper para crear o actualizar meta tags
-    const setMetaTag = (selector: string, content: string, attr: string = 'content') => {
-      let meta = document.querySelector(selector);
-      if (!meta) {
-        meta = document.createElement('meta');
-        const [key, value] = selector.match(/\[([^=]+)="([^"]+)"\]/)?.slice(1) || [];
-        if (key && value) meta.setAttribute(key, value);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute(attr, content);
-    };
-
-    // Meta description básica
-    setMetaTag('meta[name="description"]', description);
-
-    // Open Graph tags
-    setMetaTag('meta[property="og:title"]', title);
-    setMetaTag('meta[property="og:description"]', description);
-    setMetaTag('meta[property="og:type"]', 'website');
-    setMetaTag('meta[property="og:url"]', canonicalUrl);
-    setMetaTag('meta[property="og:image"]', imageUrl);
-    setMetaTag('meta[property="og:image:width"]', '1200');
-    setMetaTag('meta[property="og:image:height"]', '630');
-    setMetaTag('meta[property="og:site_name"]', 'Capittal');
-    setMetaTag('meta[property="og:locale"]', 'es_ES');
-
-    // Twitter Card tags
-    setMetaTag('meta[name="twitter:card"]', 'summary_large_image');
-    setMetaTag('meta[name="twitter:title"]', title);
-    setMetaTag('meta[name="twitter:description"]', description);
-    setMetaTag('meta[name="twitter:image"]', imageUrl);
-    setMetaTag('meta[name="twitter:site"]', '@capittal');
-
-    // Cache control para redes sociales
-    setMetaTag('meta[http-equiv="Cache-Control"]', 'public, max-age=3600');
-
-    // Canonical link fijo
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', canonicalUrl);
-
-    // Limpiar hreflang existentes para evitar duplicados
     const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
     existingHreflang.forEach(link => link.remove());
 
-    // Hreflang links para idiomas soportados
     const hreflangUrls = {
       'es': 'https://capittal.es/lp/calculadora',
       'ca': 'https://capittal.es/lp/calculadora',
-      'val': 'https://capittal.es/lp/calculadora', 
+      'val': 'https://capittal.es/lp/calculadora',
       'gl': 'https://capittal.es/lp/calculadora',
-      'en': 'https://capittal.es/lp/calculadora?lang=en', // Para futuro soporte inglés
+      'en': 'https://capittal.es/lp/calculadora?lang=en',
       'x-default': 'https://capittal.es/lp/calculadora'
     };
 
-    // Crear hreflang links
     Object.entries(hreflangUrls).forEach(([hreflang, href]) => {
       const hreflangLink = document.createElement('link');
       hreflangLink.setAttribute('rel', 'alternate');
@@ -91,7 +38,12 @@ const LandingCalculatorInner = () => {
       hreflangLink.setAttribute('href', href);
       document.head.appendChild(hreflangLink);
     });
-  }, [t]);
+
+    return () => {
+      const links = document.querySelectorAll('link[rel="alternate"][hreflang]');
+      links.forEach(link => link.remove());
+    };
+  }, []);
 
   // Disparador temporal de prueba por query param ?sendTest=1
   useEffect(() => {
@@ -158,7 +110,7 @@ const LandingCalculatorInner = () => {
           });
 
           console.log('Prueba de envío ejecutada', { data, error });
-          // Replicar metadatos hacia sync-leads si tenemos URL del PDF
+
           try {
             const pdfUrl = (data as any)?.pdfUrl;
             if (pdfUrl) {
@@ -195,19 +147,36 @@ const LandingCalculatorInner = () => {
   }, [location.search]);
 
   return (
-    <UnifiedLayout variant="landing">
-      {/* Selector de idioma */}
-      <div className="max-w-6xl mx-auto px-4 flex justify-end">
-        <LanguageSelector />
-      </div>
-      {/* H1 único para SEO, oculto visualmente */}
-      <h1 className="sr-only">{t('landing.h1')}</h1>
-      <UnifiedCalculator config={V2_CONFIG} />
-      {/* Confidencialidad y privacidad de la herramienta */}
-      <ConfidentialityBlock />
-      {/* Breve descripción de Capittal */}
-      <CapittalBrief />
-    </UnifiedLayout>
+    <>
+      <SEOHead 
+        title={t('landing.title')}
+        description={t('landing.description')}
+        canonical="https://capittal.es/lp/calculadora"
+        keywords="calculadora valoración empresas, valorar empresa online, calculadora empresarial España"
+        ogImage="https://capittal.es/src/assets/calculadora-social-preview.jpg"
+        structuredData={[
+          getServiceSchema(
+            t('landing.title'),
+            t('landing.description'),
+            "Business Valuation Service"
+          ),
+          getWebPageSchema(
+            t('landing.title'),
+            t('landing.description'),
+            "https://capittal.es/lp/calculadora"
+          )
+        ]}
+      />
+      <UnifiedLayout variant="landing">
+        <div className="max-w-6xl mx-auto px-4 flex justify-end">
+          <LanguageSelector />
+        </div>
+        <h1 className="sr-only">{t('landing.h1')}</h1>
+        <UnifiedCalculator config={V2_CONFIG} />
+        <ConfidentialityBlock />
+        <CapittalBrief />
+      </UnifiedLayout>
+    </>
   );
 };
 
