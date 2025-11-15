@@ -6,6 +6,8 @@ import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import SectorHero from '@/components/SectorHero';
 import SectorThreePanels from '@/components/sector/SectorThreePanels';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const Energia = () => {
   const panels = [
@@ -31,6 +33,24 @@ const Energia = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead 
+        title="Valoración de Empresas de Energía y Renovables | Capittal"
+        description="Expertos en M&A y valoración de empresas del sector energético: renovables, utilities, oil & gas. Análisis técnico especializado en transición energética en España."
+        canonical="https://capittal.es/sectores/energia"
+        keywords="valoración empresas energía, M&A renovables, valoración utilities, transición energética"
+        structuredData={[
+          getServiceSchema(
+            "Valoración de Empresas de Energía",
+            "Servicios especializados de M&A y valoración para empresas del sector energético y renovables",
+            "Mergers & Acquisitions"
+          ),
+          getWebPageSchema(
+            "Sector Energía y Renovables",
+            "Especialización en M&A y valoración de empresas energéticas",
+            "https://capittal.es/sectores/energia"
+          )
+        ]}
+      />
       <Header />
       <main role="main">
         <SectorHero

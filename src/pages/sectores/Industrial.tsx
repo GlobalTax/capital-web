@@ -3,6 +3,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SectorHero from '@/components/SectorHero';
 import SectorThreePanels from '@/components/sector/SectorThreePanels';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const Industrial = () => {
   const panels = [
@@ -28,6 +30,24 @@ const Industrial = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead 
+        title="Valoración de Empresas Industriales - M&A Industrial | Capittal"
+        description="Expertos en M&A y valoración de empresas industriales: manufactura, logística, distribución. Análisis especializado de activos industriales y eficiencia operativa en España."
+        canonical="https://capittal.es/sectores/industrial"
+        keywords="valoración empresas industriales, M&A manufactura, valoración logística, valoración activos industriales"
+        structuredData={[
+          getServiceSchema(
+            "Valoración de Empresas Industriales",
+            "Servicios especializados de M&A y valoración para empresas del sector industrial",
+            "Mergers & Acquisitions"
+          ),
+          getWebPageSchema(
+            "Sector Industrial",
+            "Especialización en M&A y valoración de empresas industriales",
+            "https://capittal.es/sectores/industrial"
+          )
+        ]}
+      />
       <Header />
       
       <SectorHero

@@ -108,9 +108,13 @@ const CaseStudiesCompact = () => {
 
         {cases.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" role="list" aria-label="Casos de éxito destacados">
               {cases.map((case_) => (
-              <Card key={case_.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 ease-out group overflow-hidden">
+              <Card 
+                key={case_.id} 
+                className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 ease-out group overflow-hidden"
+                role="listitem"
+              >
                 <CardContent className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     {case_.sector && (

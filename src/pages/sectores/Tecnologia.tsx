@@ -1,6 +1,8 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 import SectorHero from '@/components/SectorHero';
 import SectorStats from '@/components/sector/SectorStats';
 import { Computer, TrendingUp, Users, Award } from 'lucide-react';
@@ -38,6 +40,24 @@ const Tecnologia = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead 
+        title="Valoración de Empresas Tecnológicas - M&A Tech | Capittal"
+        description="Expertos en valoración de empresas tecnológicas: SaaS, FinTech, E-commerce y startups tech. Metodologías especializadas para empresas de software y plataformas digitales en España."
+        canonical="https://capittal.es/sectores/tecnologia"
+        keywords="valoración empresas tech, M&A tecnología, valoración SaaS, valoración startups"
+        structuredData={[
+          getServiceSchema(
+            "Valoración de Empresas Tecnológicas",
+            "Servicios especializados de M&A y valoración para empresas del sector tecnológico",
+            "Mergers & Acquisitions"
+          ),
+          getWebPageSchema(
+            "Sector Tecnología",
+            "Especialización en M&A y valoración de empresas tecnológicas",
+            "https://capittal.es/sectores/tecnologia"
+          )
+        ]}
+      />
       <Header />
       <div className="pt-16">
         <SectorHero

@@ -73,12 +73,12 @@ const Services = () => {
 
         {/* Core Services - Enhanced Cards */}
         <div className="mb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8" role="list">
             {coreServices.map((service, index) => (
-              <div key={index} className="group">
-                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
+              <div key={index} className="group" role="listitem">
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out" role="article" aria-labelledby={`service-${index}`}>
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-black mb-4">
+                  <h3 id={`service-${index}`} className="text-xl font-bold text-black mb-4">
                     {service.title}
                   </h3>
                   

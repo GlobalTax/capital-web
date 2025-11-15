@@ -6,6 +6,8 @@ import LegalSectorContent from '@/components/sector/LegalSectorContent';
 import LegalExpertiseGrid from '@/components/sector/LegalExpertiseGrid';
 import LegalTestimonials from '@/components/sector/LegalTestimonials';
 import { Scale, TrendingUp, Shield, Users } from 'lucide-react';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const FinancialServices = () => {
   const contentSections = [
@@ -81,6 +83,24 @@ const FinancialServices = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Valoración de Empresas de Servicios Financieros | Capittal"
+        description="Expertos en M&A y valoración de empresas del sector financiero: banca, seguros, asset management, FinTech. Análisis especializado de instituciones financieras en España."
+        canonical="https://capittal.es/sectores/servicios-financieros"
+        keywords="valoración empresas financieras, M&A banca, valoración seguros, valoración FinTech"
+        structuredData={[
+          getServiceSchema(
+            "Valoración de Empresas de Servicios Financieros",
+            "Servicios especializados de M&A y valoración para empresas del sector financiero",
+            "Mergers & Acquisitions"
+          ),
+          getWebPageSchema(
+            "Sector Servicios Financieros",
+            "Especialización en M&A y valoración de empresas financieras",
+            "https://capittal.es/sectores/servicios-financieros"
+          )
+        ]}
+      />
       <Header />
       
       <SectorHero

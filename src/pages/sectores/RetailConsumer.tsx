@@ -3,6 +3,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SectorHero from '@/components/SectorHero';
 import SectorThreePanels from '@/components/sector/SectorThreePanels';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const RetailConsumer = () => {
   const panels = [
@@ -28,6 +30,24 @@ const RetailConsumer = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead 
+        title="Valoración de Empresas Retail y Consumer - M&A Retail | Capittal"
+        description="Expertos en M&A y valoración de empresas retail: e-commerce, retail físico, marcas de consumo. Análisis especializado en tendencias digitales y comportamiento del consumidor en España."
+        canonical="https://capittal.es/sectores/retail-consumer"
+        keywords="valoración empresas retail, M&A e-commerce, valoración marcas consumo, valoración retail"
+        structuredData={[
+          getServiceSchema(
+            "Valoración de Empresas Retail y Consumer",
+            "Servicios especializados de M&A y valoración para empresas del sector retail y consumo",
+            "Mergers & Acquisitions"
+          ),
+          getWebPageSchema(
+            "Sector Retail & Consumer",
+            "Especialización en M&A y valoración de empresas de retail",
+            "https://capittal.es/sectores/retail-consumer"
+          )
+        ]}
+      />
       <Header />
       
       <SectorHero

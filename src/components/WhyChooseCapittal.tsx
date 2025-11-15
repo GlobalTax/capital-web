@@ -40,11 +40,12 @@ const WhyChooseCapittal = () => {
         </div>
 
         {/* Main reasons grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8" role="list" aria-label="Razones para elegir Capittal">
           {reasons.map((reason, index) => (
             <div 
               key={index} 
               className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group"
+              role="listitem"
             >
               {/* Highlight */}
               <div className="flex items-center justify-between mb-6">

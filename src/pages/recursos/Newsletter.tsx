@@ -4,6 +4,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Newsletter from '@/components/Newsletter';
 import { Mail, TrendingUp, Users, Award } from 'lucide-react';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const NewsletterPage = () => {
   const benefits = [
@@ -39,6 +41,17 @@ const NewsletterPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Newsletter M&A y Valoraciones - Insights Semanales | Capittal"
+        description="Suscríbete al newsletter semanal de Capittal. Análisis de mercado, tendencias M&A, casos de éxito y consejos exclusivos sobre fusiones y adquisiciones en España."
+        canonical="https://capittal.es/recursos/newsletter"
+        keywords="newsletter M&A, insights fusiones adquisiciones, análisis mercado M&A"
+        structuredData={getWebPageSchema(
+          "Newsletter Capittal",
+          "Newsletter semanal con análisis y tendencias del mercado M&A",
+          "https://capittal.es/recursos/newsletter"
+        )}
+      />
       <Header />
       
       <div className="pt-16">
