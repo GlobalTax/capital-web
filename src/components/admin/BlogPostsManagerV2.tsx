@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, Eye, Calendar, Tag, Brain, Zap } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Calendar, Tag, Brain, Zap, Download } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { BlogPost, BlogPostFormData } from '@/types/blog';
 import { useToast } from '@/hooks/use-toast';
 import AIContentStudioPro from './AIContentStudioPro';
+import { downloadBlogSitemap } from '@/utils/seo/blogSitemap';
 
 const BlogPostsManagerV2 = memo(() => {
   const { posts, isLoading, createPost, updatePost, deletePost, fetchPosts } = useBlogPosts();
@@ -211,16 +212,31 @@ const BlogPostsManagerV2 = memo(() => {
           </h2>
           <p className="text-gray-600">La herramienta de IA más avanzada para crear contenido M&A de clase mundial</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              onClick={resetForm}
-              className="bg-primary text-primary-foreground border-0 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Post Pro
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button 
+            onClick={async () => {
+              await downloadBlogSitemap();
+              toast({
+                title: "Sitemap generado",
+                description: "El sitemap del blog se ha descargado correctamente",
+              });
+            }}
+            variant="outline"
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Generar Sitemap Blog
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={resetForm}
+                className="bg-primary text-primary-foreground border-0 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Post Pro
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -505,6 +521,7 @@ const BlogPostsManagerV2 = memo(() => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Lista de posts - mantenemos la funcionalidad existente */}

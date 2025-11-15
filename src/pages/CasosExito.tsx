@@ -1,22 +1,24 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import CaseStudies from '@/components/CaseStudies';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo';
 
 const CasosExito = () => {
-  useEffect(() => {
-    document.title = 'Casos de Éxito - Capittal';
-    
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.setAttribute('name', 'description');
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute('content', 'Descubre nuestros casos de éxito en M&A. Más de 200 transacciones exitosas con resultados excepcionales para nuestros clientes.');
-  }, []);
-
   return (
-    <UnifiedLayout>
+    <>
+      <SEOHead 
+        title="Casos de Éxito M&A - Más de 200 Transacciones | Capittal"
+        description="Descubre nuestros casos de éxito en M&A. Más de 200 transacciones exitosas con resultados excepcionales para nuestros clientes en España."
+        canonical="https://capittal.es/casos-exito"
+        keywords="casos éxito M&A, transacciones exitosas, resultados M&A España, portfolio transacciones"
+        structuredData={getWebPageSchema(
+          "Casos de Éxito Capittal",
+          "Más de 200 transacciones exitosas en fusiones y adquisiciones",
+          "https://capittal.es/casos-exito"
+        )}
+      />
+      <UnifiedLayout>
       <div className="pt-16">
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,7 +35,8 @@ const CasosExito = () => {
         </section>
         <CaseStudies />
       </div>
-    </UnifiedLayout>
+      </UnifiedLayout>
+    </>
   );
 };
 
