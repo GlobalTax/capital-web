@@ -55,12 +55,8 @@ export const TestimonialsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <div 
-              key={testimonial.id} 
-              className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 hover-scale transition-all duration-300 ease-out animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
+          {testimonials.map((testimonial) => (
+            <div key={testimonial.id} className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
               {/* Rating */}
               <div className="flex items-center mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
