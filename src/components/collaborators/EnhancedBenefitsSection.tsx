@@ -84,8 +84,12 @@ export const EnhancedBenefitsSection = () => {
             const BenefitIcon = benefit.icon;
             
             return (
-              <div key={benefit.id} className="group">
-                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out h-full flex flex-col">
+              <div 
+                key={benefit.id} 
+                className="group animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 hover-scale transition-all duration-300 ease-out h-full flex flex-col">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-6">
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">

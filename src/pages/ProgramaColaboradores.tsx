@@ -2,6 +2,8 @@ import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { EnhancedHeroSection } from '@/components/collaborators/EnhancedHeroSection';
+import { ImpactStats } from '@/components/collaborators/ImpactStats';
+import { TrustLogosCarousel } from '@/components/collaborators/TrustLogosCarousel';
 import { EnhancedBenefitsSection } from '@/components/collaborators/EnhancedBenefitsSection';
 import { ProcessTimeline } from '@/components/collaborators/ProcessTimeline';
 import { TestimonialsSection } from '@/components/collaborators/TestimonialsSection';
@@ -29,6 +31,8 @@ const ProgramaColaboradores = () => {
       
       <main>
         <EnhancedHeroSection />
+        <ImpactStats />
+        <TrustLogosCarousel />
         <section id="benefits-section">
           <EnhancedBenefitsSection />
         </section>
