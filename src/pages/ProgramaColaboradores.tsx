@@ -30,7 +30,9 @@ const ProgramaColaboradores = () => {
       
       <main>
         <EnhancedHeroSection />
-        <EnhancedBenefitsSection />
+        <section id="benefits-section">
+          <EnhancedBenefitsSection />
+        </section>
         <ProcessTimeline />
         <TestimonialsSection />
         <section id="application-form" className="py-20 bg-muted/20">
