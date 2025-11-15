@@ -7,9 +7,9 @@ import { Star, Quote } from 'lucide-react';
 const testimonials = [
   {
     id: 1,
-    name: "Carlos Mendoza",
-    role: "Senior M&A Analyst",
-    company: "Ex-Goldman Sachs",
+    name: "Profesional de M&A",
+    role: "M&A Analyst",
+    company: "Big Four",
     avatar: "",
     rating: 5,
     content: "El programa de colaboradores de Capittal me ha permitido trabajar en transacciones de alto nivel mientras mantengo la flexibilidad que buscaba. El equipo es excepcional.",
@@ -18,9 +18,9 @@ const testimonials = [
   },
   {
     id: 2,
-    name: "María García",
-    role: "Valuations Director",
-    company: "Ex-PwC",
+    name: "Director de Valoraciones",
+    role: "Valuations Expert",
+    company: "Consultora Internacional",
     avatar: "",
     rating: 5,
     content: "La calidad de los proyectos y el nivel de los clientes es impresionante. He podido desarrollar mi expertise en valoraciones complejas con el respaldo de un equipo profesional.",
