@@ -1,35 +1,24 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo';
 
 const TerminosUso = () => {
-  useEffect(() => {
-    // SEO Meta Tags
-    document.title = 'Términos y Condiciones de Uso | Herramienta Valoración | Capittal';
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Términos y condiciones completos para el uso de Capittal y su herramienta de valoración de empresas. Marco legal robusto y protección integral.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Términos y condiciones completos para el uso de Capittal y su herramienta de valoración de empresas. Marco legal robusto y protección integral.';
-      document.head.appendChild(meta);
-    }
-
-    // Canonical URL
-    const canonicalUrl = 'https://capittal.es/terminos-uso';
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', canonicalUrl);
-  }, []);
-
   return (
-    <UnifiedLayout variant="home">
+    <>
+      <SEOHead 
+        title="Términos y Condiciones de Uso | Capittal"
+        description="Términos y condiciones completos para el uso de Capittal y su herramienta de valoración de empresas. Marco legal robusto y protección integral."
+        canonical="https://capittal.es/terminos-uso"
+        keywords="términos uso Capittal, condiciones uso, aviso legal, protección datos"
+        structuredData={getWebPageSchema(
+          "Términos y Condiciones de Uso",
+          "Términos y condiciones completos para el uso de Capittal y su herramienta de valoración de empresas.",
+          "https://capittal.es/terminos-uso"
+        )}
+      />
+      <UnifiedLayout variant="home">
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8">
@@ -208,7 +197,8 @@ const TerminosUso = () => {
           </div>
         </div>
       </section>
-    </UnifiedLayout>
+      </UnifiedLayout>
+    </>
   );
 };
 
