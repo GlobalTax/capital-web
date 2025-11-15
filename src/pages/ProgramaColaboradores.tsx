@@ -7,7 +7,6 @@ import { ProcessTimeline } from '@/components/collaborators/ProcessTimeline';
 import { TestimonialsSection } from '@/components/collaborators/TestimonialsSection';
 import { FAQSection } from '@/components/collaborators/FAQSection';
 import { EnhancedCollaboratorForm } from '@/components/collaborators/EnhancedCollaboratorForm';
-import { FinalCTASection } from '@/components/collaborators/FinalCTASection';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema } from '@/utils/seo';
 
@@ -41,7 +40,6 @@ const ProgramaColaboradores = () => {
           </div>
         </section>
         <FAQSection />
-        <FinalCTASection />
       </main>
       
         <Footer />
