@@ -6,6 +6,8 @@ import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import { useFirstVisit } from '@/hooks/useFirstVisit';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, Download } from 'lucide-react';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema, getProductSchema } from '@/utils/seo';
 
 const Oportunidades = () => {
   const [guideOpen, setGuideOpen] = useState(false);
@@ -20,19 +22,29 @@ const Oportunidades = () => {
     }
   }, [isFirstVisit, isDisabled, markAsVisited]);
 
-  // Set page metadata
-  useEffect(() => {
-    document.title = 'Oportunidades de Inversión - Capittal';
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Descubre oportunidades únicas de inversión y adquisición de empresas. Empresas en venta con información detallada de valoración, facturación y sector.');
-    }
-  }, []);
 
   return (
-    <UnifiedLayout variant="home">
-      <div className="min-h-screen bg-background">
+    <>
+      <SEOHead 
+        title="Oportunidades de Inversión - Marketplace M&A | Capittal"
+        description="Descubre oportunidades únicas de inversión y adquisición de empresas. Empresas en venta con información detallada de valoración, facturación y sector. Accede a nuestro ROD."
+        canonical="https://capittal.es/oportunidades"
+        keywords="oportunidades inversión, compra empresas España, marketplace M&A, empresas en venta, ROD"
+        structuredData={[
+          getWebPageSchema(
+            "Oportunidades de Inversión",
+            "Marketplace de empresas en venta con oportunidades exclusivas",
+            "https://capittal.es/oportunidades"
+          ),
+          getProductSchema(
+            "Relación de Open Deals (ROD)",
+            "Accede a nuestro catálogo exclusivo de empresas disponibles para adquisición",
+            "https://capittal.es/images/rod-preview.jpg"
+          )
+        ]}
+      />
+      <UnifiedLayout variant="home">
+        <div className="min-h-screen bg-background">
         {/* Hero Section */}
         <section className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -111,6 +123,7 @@ const Oportunidades = () => {
         <RODDownloadForm open={rodFormOpen} onOpenChange={setRodFormOpen} />
       </div>
     </UnifiedLayout>
+    </>
   );
 };
 
