@@ -73,25 +73,6 @@ export const FAQSection = () => {
               </AccordionItem>
             ))}
           </Accordion>
-
-          {/* Contact CTA */}
-          <div className="text-center mt-12 p-8 bg-primary/5 rounded-lg border border-primary/20">
-            <h3 className="text-xl font-semibold text-foreground mb-4">
-              ¿Tienes más preguntas?
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Nuestro equipo está disponible para resolver cualquier duda adicional 
-              que puedas tener sobre el programa.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                📧 colaboradores@capittal.com
-              </div>
-              <div className="flex items-center gap-2">
-                📞 +34 695 717 490
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
