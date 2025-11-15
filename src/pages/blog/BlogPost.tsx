@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
+import { SEOHead } from '@/components/seo';
+import { getArticleSchema } from '@/utils/seo';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';
@@ -45,23 +47,6 @@ const BlogPost = () => {
         const fetchedPost = await getPostBySlug(slug);
         if (fetchedPost) {
           setPost(fetchedPost);
-          
-          // Actualizar meta tags para SEO
-          if (fetchedPost.meta_title) {
-            document.title = fetchedPost.meta_title;
-          } else {
-            document.title = `${fetchedPost.title} | Blog Capittal`;
-          }
-          
-          if (fetchedPost.meta_description) {
-            const metaDescription = document.querySelector('meta[name="description"]');
-            if (metaDescription) {
-              metaDescription.setAttribute('content', fetchedPost.meta_description);
-            }
-          }
-
-          // Aplicar Open Graph tags
-          applyOpenGraphTags(fetchedPost);
 
           // Trackear vista del post
           trackPostView(fetchedPost.id, fetchedPost.slug);
@@ -100,6 +85,22 @@ const BlogPost = () => {
 
   return (
     <UnifiedLayout variant="home">
+      <SEOHead 
+        title={post.meta_title || `${post.title} | Blog Capittal`}
+        description={post.meta_description || post.excerpt || ''}
+        canonical={`https://capittal.es/blog/${post.slug}`}
+        ogImage={post.featured_image_url || 'https://capittal.es/og-blog-default.jpg'}
+        keywords={post.tags?.join(', ')}
+        structuredData={getArticleSchema(
+          post.title,
+          post.meta_description || post.excerpt || '',
+          `https://capittal.es/blog/${post.slug}`,
+          post.featured_image_url || '',
+          post.published_at || post.created_at,
+          post.updated_at,
+          post.author_name || 'Equipo Capittal'
+        )}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <BlogPostContent post={post} />
         

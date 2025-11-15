@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { SEOHead } from '@/components/seo';
+import { getFAQSchema } from '@/utils/seo';
 import { ChevronDown, Phone, Mail } from 'lucide-react';
 
 const ValoracionesFAQNew = () => {
@@ -45,6 +47,12 @@ const ValoracionesFAQNew = () => {
 
   return (
     <section className="py-12 bg-slate-50">
+      <SEOHead 
+        structuredData={getFAQSchema(faqs.map(faq => ({
+          question: faq.pregunta,
+          answer: faq.respuesta
+        })))}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6">

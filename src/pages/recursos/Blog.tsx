@@ -1,6 +1,7 @@
-
 import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
+import { SEOHead } from '@/components/seo';
+import { getOrganizationSchema } from '@/utils/seo';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
@@ -61,6 +62,20 @@ const Blog = () => {
 
   return (
     <UnifiedLayout variant="home">
+      <SEOHead 
+        title="Blog M&A y Valoraciones - Guías y Análisis de Mercado | Capittal"
+        description="Artículos especializados sobre fusiones y adquisiciones, valoración de empresas, due diligence y reestructuraciones. Análisis de mercado y guías prácticas para empresarios en España."
+        canonical="https://capittal.es/recursos/blog"
+        keywords="blog M&A, artículos valoración empresas, guías fusiones adquisiciones"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "Blog Capittal",
+          "description": "Artículos especializados sobre M&A y valoraciones empresariales",
+          "url": "https://capittal.es/recursos/blog",
+          "publisher": getOrganizationSchema()
+        }}
+      />
       <section className="py-20 bg-white">
           <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">

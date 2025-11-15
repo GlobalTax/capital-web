@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
 interface SEOHeadProps {
-  title: string;
-  description: string;
-  canonical: string;
+  title?: string;
+  description?: string;
+  canonical?: string;
   ogImage?: string;
   structuredData?: object | object[];
   noindex?: boolean;
@@ -21,10 +21,14 @@ export const SEOHead = ({
 }: SEOHeadProps) => {
   useEffect(() => {
     // Set title
-    document.title = title;
+    if (title) {
+      document.title = title;
+    }
     
     // Set description
-    setMetaTag('name', 'description', description);
+    if (description) {
+      setMetaTag('name', 'description', description);
+    }
     
     // Set keywords if provided
     if (keywords) {
@@ -39,21 +43,31 @@ export const SEOHead = ({
     }
     
     // Set canonical
-    setCanonical(canonical);
+    if (canonical) {
+      setCanonical(canonical);
+    }
     
     // Set Open Graph tags
-    setMetaTag('property', 'og:title', title);
-    setMetaTag('property', 'og:description', description);
-    setMetaTag('property', 'og:url', canonical);
-    setMetaTag('property', 'og:image', ogImage);
+    if (title) {
+      setMetaTag('property', 'og:title', title);
+      setMetaTag('name', 'twitter:title', title);
+    }
+    if (description) {
+      setMetaTag('property', 'og:description', description);
+      setMetaTag('name', 'twitter:description', description);
+    }
+    if (canonical) {
+      setMetaTag('property', 'og:url', canonical);
+    }
+    if (ogImage) {
+      setMetaTag('property', 'og:image', ogImage);
+      setMetaTag('name', 'twitter:image', ogImage);
+    }
     setMetaTag('property', 'og:type', 'website');
     setMetaTag('property', 'og:site_name', 'Capittal');
     
     // Set Twitter Card tags
     setMetaTag('name', 'twitter:card', 'summary_large_image');
-    setMetaTag('name', 'twitter:title', title);
-    setMetaTag('name', 'twitter:description', description);
-    setMetaTag('name', 'twitter:image', ogImage);
     
     // Set structured data
     if (structuredData) {

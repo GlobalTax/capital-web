@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema } from '@/utils/seo';
 import PlanificacionFiscalHero from '@/components/planificacion-fiscal/PlanificacionFiscalHero';
 import PlanificacionFiscalWhyOptimize from '@/components/planificacion-fiscal/PlanificacionFiscalWhyOptimize';
 import PlanificacionFiscalServices from '@/components/planificacion-fiscal/PlanificacionFiscalServices';
@@ -7,30 +9,18 @@ import PlanificacionFiscalFAQ from '@/components/planificacion-fiscal/Planificac
 import PlanificacionFiscalCTA from '@/components/planificacion-fiscal/PlanificacionFiscalCTA';
 
 const PlanificacionFiscal = () => {
-  useEffect(() => {
-    document.title = 'Planificación Fiscal M&A en España | Capittal';
-    
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'description');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', 'Optimización fiscal en fusiones y adquisiciones. Reducimos la carga tributaria diseñando estructuras eficientes y conformes a la normativa española.');
-    
-    // Add canonical link
-    const canonicalUrl = 'https://capittal.es/servicios/planificacion-fiscal';
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', canonicalUrl);
-  }, []);
-
   return (
     <UnifiedLayout variant="home">
+      <SEOHead 
+        title="Planificación Fiscal M&A en España | Capittal"
+        description="Optimización fiscal en fusiones y adquisiciones. Reducimos la carga tributaria diseñando estructuras eficientes y conformes a la normativa española."
+        canonical="https://capittal.es/servicios/planificacion-fiscal"
+        keywords="planificación fiscal M&A, optimización fiscal, estructuras fiscales España"
+        structuredData={getServiceSchema(
+          "Planificación Fiscal M&A",
+          "Optimización y estructuración fiscal para operaciones de M&A en España"
+        )}
+      />
       <PlanificacionFiscalHero />
       <PlanificacionFiscalWhyOptimize />
       <PlanificacionFiscalServices />
