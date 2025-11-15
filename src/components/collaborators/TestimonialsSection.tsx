@@ -14,7 +14,7 @@ const testimonials = [
     rating: 5,
     content: "El programa de colaboradores de Capittal me ha permitido trabajar en transacciones de alto nivel mientras mantengo la flexibilidad que buscaba. El equipo es excepcional.",
     sector: "Financial Services",
-    joinedYear: "2022"
+    joinedYear: "2023"
   },
   {
     id: 2,
@@ -25,7 +25,18 @@ const testimonials = [
     rating: 5,
     content: "La calidad de los proyectos y el nivel de los clientes es impresionante. He podido desarrollar mi expertise en valoraciones complejas con el respaldo de un equipo profesional.",
     sector: "Industrial",
-    joinedYear: "2021"
+    joinedYear: "2023"
+  },
+  {
+    id: 3,
+    name: "Profesional Senior M&A",
+    role: "Financial Advisor",
+    company: "Firma Internacional",
+    avatar: "",
+    rating: 5,
+    content: "Excelente oportunidad para crecer profesionalmente en un entorno de transacciones complejas. La experiencia y el networking han superado mis expectativas.",
+    sector: "Technology",
+    joinedYear: "2023"
   }
 ];
 
