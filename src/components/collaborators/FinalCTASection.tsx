@@ -111,25 +111,6 @@ export const FinalCTASection = () => {
             </p>
           </div>
 
-          {/* Social Proof */}
-          <div className="mt-16 pt-12 border-t border-border">
-            <p className="text-sm text-muted-foreground mb-6">
-              Profesionales de estas empresas ya forman parte de nuestro equipo:
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground/60 text-sm font-medium">
-              <span>Goldman Sachs</span>
-              <span>•</span>
-              <span>McKinsey & Company</span>
-              <span>•</span>
-              <span>PwC</span>
-              <span>•</span>
-              <span>Deloitte</span>
-              <span>•</span>
-              <span>EY</span>
-              <span>•</span>
-              <span>KPMG</span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
