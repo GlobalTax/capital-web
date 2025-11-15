@@ -6,36 +6,16 @@ import { Toaster } from '@/components/ui/sonner';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
 import CapittalBrief from '@/components/landing/CapittalBrief';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const LandingCalculadoraAsesoresInner = () => {
   const { t } = useI18n();
 
   useEffect(() => {
-    const title = 'Calculadora de Valoración para Asesores - Capittal';
-    const description = 'Herramienta profesional de valoración con múltiples métricas: Facturación, EBITDA y Resultado Neto. Análisis completo para asesores financieros.';
+    const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
+    existingHreflang.forEach(link => link.remove());
 
-    document.title = title;
-
-    // Meta description
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'description');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', description);
-
-    // Canonical URL (fijo)
-    const canonicalUrl = 'https://capittal.es/lp/calculadora-asesores';
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', canonicalUrl);
-
-    // Hreflang links
     const hreflangUrls = {
       'es': 'https://capittal.es/lp/calculadora-asesores',
       'ca': 'https://capittal.es/lp/calculadora-asesores',
@@ -45,75 +25,58 @@ const LandingCalculadoraAsesoresInner = () => {
     };
 
     Object.entries(hreflangUrls).forEach(([lang, url]) => {
-      let link = document.querySelector(`link[hreflang="${lang}"]`);
-      if (!link) {
-        link = document.createElement('link');
-        link.setAttribute('rel', 'alternate');
-        link.setAttribute('hreflang', lang);
-        document.head.appendChild(link);
-      }
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'alternate');
+      link.setAttribute('hreflang', lang);
       link.setAttribute('href', url);
+      document.head.appendChild(link);
     });
 
-    // Open Graph tags
-    const ogTags = {
-      'og:title': title,
-      'og:description': description,
-      'og:url': canonicalUrl,
-      'og:type': 'website',
-      'og:locale': 'es_ES'
+    return () => {
+      const links = document.querySelectorAll('link[rel="alternate"][hreflang]');
+      links.forEach(link => link.remove());
     };
-
-    Object.entries(ogTags).forEach(([property, content]) => {
-      let ogMeta = document.querySelector(`meta[property="${property}"]`);
-      if (!ogMeta) {
-        ogMeta = document.createElement('meta');
-        ogMeta.setAttribute('property', property);
-        document.head.appendChild(ogMeta);
-      }
-      ogMeta.setAttribute('content', content);
-    });
-
-    // Twitter Card tags
-    const twitterTags = {
-      'twitter:card': 'summary_large_image',
-      'twitter:title': title,
-      'twitter:description': description
-    };
-
-    Object.entries(twitterTags).forEach(([name, content]) => {
-      let twitterMeta = document.querySelector(`meta[name="${name}"]`);
-      if (!twitterMeta) {
-        twitterMeta = document.createElement('meta');
-        twitterMeta.setAttribute('name', name);
-        document.head.appendChild(twitterMeta);
-      }
-      twitterMeta.setAttribute('content', content);
-    });
   }, []);
 
   return (
-    <UnifiedLayout variant="landing">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <h1 className="sr-only">Calculadora de Valoración para Asesores Profesionales</h1>
-        
-        {/* Badge destacado */}
-        <div className="flex justify-center mb-6">
-          <Badge variant="secondary" className="text-sm px-4 py-2 bg-primary/10 text-primary">
-            🎯 {t('advisor.badge')}
-          </Badge>
-        </div>
+    <>
+      <SEOHead 
+        title="Calculadora de Valoración para Asesores - Capittal"
+        description="Herramienta profesional de valoración con múltiples métricas: Facturación, EBITDA y Resultado Neto. Análisis completo para asesores financieros."
+        canonical="https://capittal.es/lp/calculadora-asesores"
+        keywords="calculadora asesores, valoración múltiples métricas, herramienta profesional valoración"
+        structuredData={[
+          getServiceSchema(
+            "Calculadora de Valoración para Asesores",
+            "Herramienta profesional de valoración empresarial para asesores financieros",
+            "Business Advisory Service"
+          ),
+          getWebPageSchema(
+            "Calculadora Asesores",
+            "Herramienta profesional de valoración con múltiples métricas",
+            "https://capittal.es/lp/calculadora-asesores"
+          )
+        ]}
+      />
+      <UnifiedLayout variant="landing">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <h1 className="sr-only">Calculadora de Valoración para Asesores Profesionales</h1>
+          
+          <div className="flex justify-center mb-6">
+            <Badge variant="secondary" className="text-sm px-4 py-2 bg-primary/10 text-primary">
+              🎯 {t('advisor.badge')}
+            </Badge>
+          </div>
 
-        {/* Calculadora principal */}
-        <AdvisorCalculator />
-      </div>
-      
-      {/* Disclaimers de confidencialidad y empresa */}
-      <ConfidentialityBlock />
-      <CapittalBrief />
-      
-      <Toaster />
-    </UnifiedLayout>
+          <AdvisorCalculator />
+        </div>
+        
+        <ConfidentialityBlock />
+        <CapittalBrief />
+        
+        <Toaster />
+      </UnifiedLayout>
+    </>
   );
 };
 
