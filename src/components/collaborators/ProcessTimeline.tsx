@@ -67,7 +67,11 @@ export const ProcessTimeline = () => {
                 const isActive = step.status === 'active';
                 
                 return (
-                  <div key={step.id} className="relative flex items-start space-x-6">
+                  <div 
+                    key={step.id} 
+                    className="relative flex items-start space-x-6 animate-scale-in"
+                    style={{ animationDelay: `${index * 150}ms` }}
+                  >
                     {/* Timeline dot */}
                     <div className={`
                       relative z-10 flex items-center justify-center w-16 h-16 rounded-full border-4 
