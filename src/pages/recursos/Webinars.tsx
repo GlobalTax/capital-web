@@ -2,6 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -95,6 +97,17 @@ const Webinars = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Webinars M&A y Valoración de Empresas | Capittal"
+        description="Webinars gratuitos sobre M&A, valoración de empresas, due diligence y estrategia de salida. Aprende de expertos en fusiones y adquisiciones en España."
+        canonical="https://capittal.es/recursos/webinars"
+        keywords="webinars M&A, formación valoración empresas, webinars fusiones adquisiciones"
+        structuredData={getWebPageSchema(
+          "Webinars Capittal",
+          "Formación especializada en M&A y valoración empresarial",
+          "https://capittal.es/recursos/webinars"
+        )}
+      />
       <Header />
       
       {/* Hero Section */}

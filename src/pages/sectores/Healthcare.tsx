@@ -6,6 +6,8 @@ import LegalSectorContent from '@/components/sector/LegalSectorContent';
 import LegalExpertiseGrid from '@/components/sector/LegalExpertiseGrid';
 import LegalTestimonials from '@/components/sector/LegalTestimonials';
 import { Hospital, Heart, Pill, Stethoscope } from 'lucide-react';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 
 const Healthcare = () => {
   const contentSections = [
@@ -77,6 +79,24 @@ const Healthcare = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Valoración de Empresas Healthcare y Farmacéuticas | Capittal"
+        description="Expertos en M&A y valoración de empresas del sector salud: farmacéuticas, dispositivos médicos, servicios sanitarios. Análisis especializado en healthcare en España."
+        canonical="https://capittal.es/sectores/healthcare"
+        keywords="valoración empresas healthcare, M&A farmacéuticas, valoración dispositivos médicos, valoración salud"
+        structuredData={[
+          getServiceSchema(
+            "Valoración de Empresas Healthcare",
+            "Servicios especializados de M&A y valoración para empresas del sector salud y farmacéutico",
+            "Mergers & Acquisitions"
+          ),
+          getWebPageSchema(
+            "Sector Healthcare",
+            "Especialización en M&A y valoración de empresas de salud",
+            "https://capittal.es/sectores/healthcare"
+          )
+        ]}
+      />
       <Header />
       
       <SectorHero

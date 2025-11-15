@@ -86,7 +86,7 @@ const Hero = () => {
             </div>
 
             {/* Enhanced Visual Right */}
-            <div className="relative">
+            <div className="relative" role="img" aria-label="Equipo de expertos Capittal en fusiones y adquisiciones">
               {/* Floating Badge - Top */}
               <div className="absolute -top-3 -left-3 z-10">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium shadow-lg">
@@ -104,7 +104,11 @@ const Hero = () => {
               </div>
 
               {/* Enhanced Dashboard Card */}
-              <div className="bg-card border border-border rounded-xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div 
+                className="bg-card border border-border rounded-xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
+                role="presentation"
+                aria-label="Panel de estadísticas de Capittal Market"
+              >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-slate-900">Capittal Market</h3>
                   <div className="flex items-center space-x-2">

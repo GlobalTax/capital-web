@@ -47,7 +47,7 @@ export const SEOHead = ({
       setCanonical(canonical);
     }
     
-    // Set Open Graph tags
+    // Set Open Graph tags with enhanced metadata
     if (title) {
       setMetaTag('property', 'og:title', title);
       setMetaTag('name', 'twitter:title', title);
@@ -65,6 +65,9 @@ export const SEOHead = ({
     }
     setMetaTag('property', 'og:type', 'website');
     setMetaTag('property', 'og:site_name', 'Capittal');
+    setMetaTag('property', 'og:locale', 'es_ES');
+    setMetaTag('property', 'og:locale:alternate', 'ca_ES');
+    setMetaTag('property', 'og:locale:alternate', 'gl_ES');
     
     // Set Twitter Card tags
     setMetaTag('name', 'twitter:card', 'summary_large_image');
