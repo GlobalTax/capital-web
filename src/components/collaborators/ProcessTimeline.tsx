@@ -35,14 +35,6 @@ const timelineSteps = [
     duration: "1 semana",
     icon: Handshake,
     status: "pending"
-  },
-  {
-    id: 5,
-    title: "Primer Proyecto",
-    description: "Asignación de tu primer proyecto como colaborador, con supervisión y mentoría del equipo senior para asegurar el éxito.",
-    duration: "Variable",
-    icon: CheckCircle,
-    status: "pending"
   }
 ];
 

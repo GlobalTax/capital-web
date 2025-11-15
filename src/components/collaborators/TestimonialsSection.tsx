@@ -26,17 +26,6 @@ const testimonials = [
     content: "La calidad de los proyectos y el nivel de los clientes es impresionante. He podido desarrollar mi expertise en valoraciones complejas con el respaldo de un equipo profesional.",
     sector: "Industrial",
     joinedYear: "2021"
-  },
-  {
-    id: 3,
-    name: "Alejandro Ruiz",
-    role: "Corporate Development",
-    company: "Ex-McKinsey",
-    avatar: "",
-    rating: 5,
-    content: "Capittal ofrece una oportunidad única de participar en el ecosistema M&A español. Los proyectos son desafiantes y el aprendizaje constante.",
-    sector: "Technology",
-    joinedYear: "2023"
   }
 ];
 
