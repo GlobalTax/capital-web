@@ -56,35 +56,11 @@ const benefits = [
   },
   {
     id: 6,
-    title: 'Tecnología de Vanguardia',
-    description: 'Acceso a herramientas profesionales de valoración, bases de datos especializadas y software exclusivo.',
-    icon: Shield,
-    category: 'Herramientas',
-    highlights: ['Capital IQ/Pitchbook', 'Modelos propietarios', 'Tech stack premium']
-  },
-  {
-    id: 7,
-    title: 'Equipo Internacional',
-    description: 'Colabora con profesionales de diferentes países y culturas en proyectos cross-border.',
-    icon: Globe,
-    category: 'Internacional',
-    highlights: ['Proyectos Europa', 'Equipos diversos', 'Visión global']
-  },
-  {
-    id: 8,
     title: 'Remuneración Competitiva',
     description: 'Tarifas premium del mercado, bonos por performance y oportunidades de equity en deals.',
     icon: DollarSign,
     category: 'Compensación',
     highlights: ['Tarifas top-market', 'Bonos por éxito', 'Equity participation']
-  },
-  {
-    id: 9,
-    title: 'Comunidad Exclusiva',
-    description: 'Forma parte de una comunidad selecta de profesionales de M&A con eventos y networking privados.',
-    icon: Users,
-    category: 'Comunidad',
-    highlights: ['Eventos privados', 'Masterclasses', 'Alumni network']
   }
 ];
 

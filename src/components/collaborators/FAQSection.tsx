@@ -33,16 +33,6 @@ const faqs = [
     id: "faq-6",
     question: "¿Hay posibilidad de convertirse en empleado a tiempo completo?",
     answer: "Sí, consideramos regularmente a nuestros mejores colaboradores para posiciones permanentes cuando surgen oportunidades. De hecho, varios de nuestros empleados actuales comenzaron como colaboradores. Es una excelente manera de conocer nuestra cultura y demostrar tu valor añadido al equipo."
-  },
-  {
-    id: "faq-7",
-    question: "¿Qué herramientas y recursos tendré disponibles?",
-    answer: "Proporcionamos acceso a nuestras bases de datos especializadas (Capital IQ, Pitchbook, etc.), plantillas de valoración propias, metodologías probadas, y herramientas de colaboración. También tendrás acceso a nuestro knowledge center con casos de estudio y mejores prácticas."
-  },
-  {
-    id: "faq-8",
-    question: "¿Cuánto tiempo de compromiso se espera por proyecto?",
-    answer: "Varía según el proyecto. Algunos pueden requerir 10-15 horas semanales durante 2-3 semanas, mientras que proyectos más complejos pueden necesitar mayor dedicación durante 1-2 meses. Siempre acordamos el scope y timeline antes de comenzar, respetando tu disponibilidad."
   }
 ];
 
