@@ -1,3 +1,29 @@
+# Robots.txt - Capittal.es
+# Última actualización: 2025-01-15
+
+# Acceso General
+User-agent: *
+Allow: /
+
+# Bloquear rutas administrativas
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+
+# Bloquear rutas de API internas (si existen)
+Disallow: /api/private/
+
+# Permitir acceso a recursos estáticos
+Allow: /assets/
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.webp$
+Allow: /*.svg$
+
+# Bots específicos
 User-agent: Googlebot
 Allow: /
 
@@ -10,5 +36,5 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+# Referencia al sitemap
+Sitemap: https://capittal.es/sitemap.xml
