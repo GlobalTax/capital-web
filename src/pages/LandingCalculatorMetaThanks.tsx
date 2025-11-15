@@ -5,6 +5,7 @@ import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { SEOHead } from '@/components/seo';
 
 const LandingCalculatorMetaThanksInner = () => {
   const { t } = useI18n();
@@ -52,28 +53,6 @@ const LandingCalculatorMetaThanksInner = () => {
     }
   }, [navigate]);
 
-  // SEO para página de gracias
-  useEffect(() => {
-    document.title = '¡Valoración Completada! | Capittal';
-    
-    const canonicalUrl = 'https://capittal.es/lp/calculadora-meta/gracias';
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', canonicalUrl);
-
-    // Meta robots - NOINDEX para evitar indexar página de gracias
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.setAttribute('name', 'robots');
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.setAttribute('content', 'noindex, nofollow');
-  }, []);
 
   const handleNewCalculation = () => {
     // Limpiar sessionStorage
@@ -94,7 +73,14 @@ const LandingCalculatorMetaThanksInner = () => {
   }
 
   return (
-    <UnifiedLayout variant="landing">
+    <>
+      <SEOHead 
+        title="¡Valoración Completada! | Capittal"
+        description="Gracias por completar la valoración de tu empresa con Capittal. Revisa tus resultados."
+        canonical="https://capittal.es/lp/calculadora-meta/gracias"
+        noindex={true}
+      />
+      <UnifiedLayout variant="landing">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Mensaje de agradecimiento */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-8 mb-8 text-center">
@@ -133,7 +119,8 @@ const LandingCalculatorMetaThanksInner = () => {
         </div>
 
       </div>
-    </UnifiedLayout>
+      </UnifiedLayout>
+    </>
   );
 };
 

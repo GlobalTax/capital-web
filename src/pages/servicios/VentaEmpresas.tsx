@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import VentaEmpresasHeroService from '@/components/venta-empresas/VentaEmpresasHeroService';
 import VentaEmpresasProcess from '@/components/venta-empresas/VentaEmpresasProcess';
@@ -8,40 +8,24 @@ import VentaEmpresasServiceIntegration from '@/components/venta-empresas/VentaEm
 import VentaEmpresasValuationFactors from '@/components/venta-empresas/VentaEmpresasValuationFactors';
 import VentaEmpresasFAQ from '@/components/venta-empresas/VentaEmpresasFAQ';
 import VentaEmpresasCTA from '@/components/venta-empresas/VentaEmpresasCTA';
+import { SEOHead } from '@/components/seo';
+import { getServiceSchema } from '@/utils/seo';
 
 const VentaEmpresas = () => {
-  useEffect(() => {
-    // SEO Meta Tags - Professional service focus
-    document.title = 'Servicio de Venta de Empresas | M&A Profesional | Capittal';
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Servicio profesional integral de M&A para venta de empresas. Metodología probada, due diligence completo, negociación experta. Parte de nuestros servicios financieros.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Servicio profesional integral de M&A para venta de empresas. Metodología probada, due diligence completo, negociación experta. Parte de nuestros servicios financieros.';
-      document.head.appendChild(meta);
-    }
-
-    // Service-focused keywords
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'servicio M&A profesional, asesoramiento venta empresas, metodología M&A, due diligence empresas, servicios financieros Capittal');
-    } else {
-      const keywordsMeta = document.createElement('meta');
-      keywordsMeta.name = 'keywords';
-      keywordsMeta.content = 'servicio M&A profesional, asesoramiento venta empresas, metodología M&A, due diligence empresas, servicios financieros Capittal';
-      document.head.appendChild(keywordsMeta);
-    }
-
-    return () => {
-      document.title = "Capittal";
-    };
-  }, []);
-
   return (
-    <UnifiedLayout variant="home">
+    <>
+      <SEOHead 
+        title="Servicio de Venta de Empresas | M&A Profesional | Capittal"
+        description="Servicio profesional integral de M&A para venta de empresas. Metodología probada, due diligence completo, negociación experta. Parte de nuestros servicios financieros."
+        canonical="https://capittal.es/servicios/venta-empresas"
+        keywords="servicio M&A profesional, asesoramiento venta empresas, metodología M&A, due diligence empresas, servicios financieros Capittal"
+        structuredData={getServiceSchema(
+          "Servicio de Venta de Empresas M&A",
+          "Servicio profesional integral de M&A para venta de empresas con metodología probada y due diligence completo.",
+          "Mergers and Acquisitions"
+        )}
+      />
+      <UnifiedLayout variant="home">
       <VentaEmpresasHeroService />
       <VentaEmpresasProcess />
       <VentaEmpresasBenefits />
@@ -50,7 +34,8 @@ const VentaEmpresas = () => {
       <VentaEmpresasValuationFactors />
       <VentaEmpresasFAQ />
       <VentaEmpresasCTA />
-    </UnifiedLayout>
+      </UnifiedLayout>
+    </>
   );
 };
 
