@@ -11,9 +11,6 @@ export const EnhancedHeroSection = () => {
     { name: 'Retail DD', value: '€18M', status: 'Iniciado', color: 'bg-slate-800', statusColor: 'text-slate-600' }
   ];
 
-  const trustedLogos = [
-    'astro', 'ARC', 'descript', 'MERCURY', 'ramp', 'Retool'
-  ];
 
   return (
     <div className="bg-background">
@@ -119,22 +116,6 @@ export const EnhancedHeroSection = () => {
         </div>
       </section>
 
-      {/* Trusted By Section */}
-      <section className="pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-lg font-medium text-black">Confían en Nosotros</h2>
-          </div>
-          
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-70">
-            {trustedLogos.map((logo, index) => (
-              <div key={index} className="text-lg font-bold text-black uppercase tracking-wider">
-                {logo}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
