@@ -11,6 +11,16 @@ export const EnhancedHeroSection = () => {
     { name: 'Retail DD', value: '€18M', status: 'Iniciado', color: 'bg-slate-800', statusColor: 'text-slate-600' }
   ];
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  };
+
 
   return (
     <div className="bg-background">
@@ -54,11 +64,13 @@ export const EnhancedHeroSection = () => {
                   text="Aplicar Ahora"
                   variant="primary"
                   size="lg"
+                  onClick={() => scrollToSection('application-form')}
                 />
                 <SimpleButton 
                   text="Requisitos"
                   variant="outline"
                   size="lg"
+                  onClick={() => scrollToSection('benefits-section')}
                 />
               </div>
             </div>
