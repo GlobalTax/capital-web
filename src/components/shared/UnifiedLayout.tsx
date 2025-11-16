@@ -7,6 +7,7 @@ import AccessibilityTools from '@/components/AccessibilityTools';
 import NotificationCenter from '@/components/NotificationCenter';
 import AdminAccessButton from '@/components/AdminAccessButton';
 import BannerContainer from '@/components/banners/BannerContainer';
+import BrevoWhatsAppWidget from '@/components/brevo/BrevoWhatsAppWidget';
 
 interface UnifiedLayoutProps {
   children: ReactNode;
@@ -45,6 +46,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
       {showAccessibilityTools && <AccessibilityTools />}
       {showNotificationCenter && <NotificationCenter className="mr-16" />}
       {shouldShowAdminButton && <AdminAccessButton />}
+      {variant === 'home' && <BrevoWhatsAppWidget />}
       <div 
         aria-live="polite" 
         aria-atomic="true" 
