@@ -7,7 +7,7 @@ import { AdvisorFormData, AdvisorValuationSimpleResult } from '@/types/advisor';
 export const useAdvisorValuationPDF = (
   formData: AdvisorFormData,
   result: AdvisorValuationSimpleResult,
-  lang: 'es' | 'ca' | 'val' | 'gl' | 'en' = 'es'
+  lang: 'es' | 'ca' | 'en' = 'es'
 ) => {
   const { generatePDFBlob, isGenerating, error, clearError } = useLazyPDFGeneration();
 
@@ -49,7 +49,7 @@ export const useAdvisorValuationPDF = (
 interface AdvisorValuationPDFGeneratorProps {
   formData: AdvisorFormData;
   result: AdvisorValuationSimpleResult;
-  lang?: 'es' | 'ca' | 'val' | 'gl' | 'en';
+  lang?: 'es' | 'ca' | 'en';
   onGenerated?: (blob: Blob) => void;
   onError?: (error: string) => void;
   children: (props: {

@@ -5,8 +5,6 @@ import { useI18n } from '@/shared/i18n/I18nProvider';
 const labels: Record<LangCode, string> = {
   es: 'Castellano',
   ca: 'Català',
-  val: 'Valencià',
-  gl: 'Galego',
   en: 'English',
 };
 
