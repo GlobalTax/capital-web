@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Star, Quote } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const testimonials = [
   {
@@ -41,6 +42,8 @@ const testimonials = [
 ];
 
 export const TestimonialsSection = () => {
+  const { t } = useI18n();
+  
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
