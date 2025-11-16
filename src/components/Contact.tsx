@@ -1,6 +1,7 @@
 import React from 'react';
 import ContactForm from './ContactForm';
 import ErrorBoundary from './ErrorBoundary';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface ContactProps {
   title?: string;
@@ -19,25 +20,26 @@ const Contact: React.FC<ContactProps> = ({
   id,
   variant = 'default'
 }) => {
-  // Variant-specific content
+  const { t } = useI18n();
+  
   const getVariantContent = () => {
     switch (variant) {
       case 'compra':
         return {
-          title: title || "Contacta",
-          description: description || "Cuéntanos qué tipo de empresa buscas y te ayudaremos a encontrar las mejores oportunidades de inversión en el mercado español.",
+          title: title || t('contact.compra.title'),
+          description: description || t('contact.compra.subtitle'),
           bgClass: "bg-background"
         };
       case 'venta':
         return {
-          title: title || "Vende tu Empresa al Mejor Precio",
-          description: description || "Obtén una valoración profesional y encuentra el comprador perfecto para tu empresa con nuestro proceso especializado.",
+          title: title || t('contact.venta.title'),
+          description: description || t('contact.venta.subtitle'),
           bgClass: "bg-background"
         };
       default:
         return {
-          title: title || "Contacta con Nosotros",
-          description: description || "Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.",
+          title: title || t('contact.title'),
+          description: description || t('contact.subtitle'),
           bgClass: "bg-background"
         };
     }
@@ -65,7 +67,7 @@ const Contact: React.FC<ContactProps> = ({
           <div className="mt-8 text-center">
             <div className="bg-muted/50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                ¿Prefieres contactar directamente?
+                {t('contact.direct.title')}
               </h3>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-2">

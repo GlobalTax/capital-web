@@ -1,22 +1,25 @@
 
 import React from 'react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const WhyChooseCapittal = () => {
+  const { t } = useI18n();
+  
   const reasons = [
     {
-      title: "Experiencia Probada",
-      description: "Más de 15 años especializados exclusivamente en M&A, con un track record excepcional.",
-      highlight: "200+ operaciones"
+      title: t('why.experience.title'),
+      description: t('why.experience.description'),
+      highlight: t('why.experience.highlight')
     },
     {
-      title: "Máximo Valor",
-      description: "Conseguimos valoraciones superiores a la media del mercado gracias a nuestro proceso optimizado.",
-      highlight: "40% más valor"
+      title: t('why.value.title'),
+      description: t('why.value.description'),
+      highlight: t('why.value.highlight')
     },
     {
-      title: "Rapidez y Eficiencia",
-      description: "Procesos optimizados que reducen los tiempos sin comprometer la calidad.",
-      highlight: "6-8 meses"
+      title: t('why.speed.title'),
+      description: t('why.speed.description'),
+      highlight: t('why.speed.highlight')
     }
   ];
 
@@ -26,16 +29,15 @@ const WhyChooseCapittal = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
-            La Diferencia Capittal
+            {t('why.badge')}
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Por Qué Elegir Capittal
+            {t('why.title')}
           </h2>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            No somos una consultora generalista. Somos especialistas en M&A que vivimos 
-            y respiramos compraventa de empresas todos los días.
+            {t('why.subtitle')}
           </p>
         </div>
 
