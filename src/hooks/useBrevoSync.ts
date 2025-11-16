@@ -129,7 +129,14 @@ export const useBrevoSync = () => {
     return syncToBrevo(contactIds, origins);
   };
 
+  const syncSingleContact = async (contactId: string, origin: ContactOrigin) => {
+    const origins = new Map<string, ContactOrigin>();
+    origins.set(contactId, origin);
+    return syncToBrevo([contactId], origins);
+  };
+
   return {
+    syncSingleContact,
     syncBulkContacts,
     isSyncing
   };
