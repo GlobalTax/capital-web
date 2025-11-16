@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
+import LanguageSelector from '@/components/i18n/LanguageSelector';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -27,6 +28,7 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
+            <LanguageSelector />
             <Link to="/contacto">
               <SimpleButton 
                 text="Contacto"
