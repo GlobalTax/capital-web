@@ -11,18 +11,38 @@ interface BrevoContact {
   attributes: {
     LEAD_SOURCE: string;
     LEAD_ID: string;
-    COMPANY?: string;
     CONTACT_NAME?: string;
+    COMPANY?: string;
     PHONE?: string;
+    
+    // Campos financieros (valoraciones)
     INDUSTRY?: string;
     REVENUE?: number;
     EBITDA?: number;
+    FINAL_VALUATION?: number;
     EMPLOYEE_RANGE?: string;
+    
+    // Campos colaboradores
+    PROFESSION?: string;
+    EXPERIENCE?: string;
+    MOTIVATION?: string;
+    
+    // Campos adquisición
+    INVESTMENT_BUDGET?: string;
+    SECTORS_OF_INTEREST?: string;
+    ACQUISITION_TYPE?: string;
+    TARGET_TIMELINE?: string;
+    PREFERRED_LOCATION?: string;
+    
+    // Tracking
     UTM_SOURCE?: string;
     UTM_MEDIUM?: string;
     UTM_CAMPAIGN?: string;
     UTM_TERM?: string;
     UTM_CONTENT?: string;
+    REFERRER?: string;
+    
+    // Status
     LEAD_STATUS: string;
     CREATED_AT: string;
   };
@@ -68,12 +88,14 @@ serve(async (req) => {
           INDUSTRY: record.industry || '',
           REVENUE: record.revenue || 0,
           EBITDA: record.ebitda || 0,
+          FINAL_VALUATION: record.final_valuation || 0,
           EMPLOYEE_RANGE: record.employee_range || '',
           UTM_SOURCE: record.utm_source || '',
           UTM_MEDIUM: record.utm_medium || '',
           UTM_CAMPAIGN: record.utm_campaign || '',
           UTM_TERM: record.utm_term || '',
           UTM_CONTENT: record.utm_content || '',
+          REFERRER: record.referrer || '',
           LEAD_STATUS: record.valuation_status || 'new',
           CREATED_AT: record.created_at,
         },
@@ -96,6 +118,74 @@ serve(async (req) => {
           UTM_CAMPAIGN: record.utm_campaign || '',
           UTM_TERM: record.utm_term || '',
           UTM_CONTENT: record.utm_content || '',
+          REFERRER: record.referral || '',
+          LEAD_STATUS: record.status || 'new',
+          CREATED_AT: record.created_at,
+        },
+        updateEnabled: true
+      };
+    } else if (table === 'collaborator_applications') {
+      leadType = 'collaborator';
+      contact = {
+        email: record.email,
+        attributes: {
+          LEAD_SOURCE: 'collaborator_form',
+          LEAD_ID: record.id,
+          CONTACT_NAME: record.full_name,
+          COMPANY: record.company || '',
+          PHONE: record.phone || '',
+          PROFESSION: record.profession || '',
+          EXPERIENCE: record.experience || '',
+          MOTIVATION: record.motivation || '',
+          LEAD_STATUS: record.status || 'pending',
+          CREATED_AT: record.created_at,
+        },
+        updateEnabled: true
+      };
+    } else if (table === 'acquisition_leads') {
+      leadType = 'acquisition';
+      contact = {
+        email: record.email,
+        attributes: {
+          LEAD_SOURCE: 'acquisition_form',
+          LEAD_ID: record.id,
+          CONTACT_NAME: record.full_name,
+          COMPANY: record.company || '',
+          PHONE: record.phone || '',
+          INVESTMENT_BUDGET: record.investment_range || '',
+          SECTORS_OF_INTEREST: record.sectors_of_interest || '',
+          ACQUISITION_TYPE: record.acquisition_type || '',
+          TARGET_TIMELINE: record.target_timeline || '',
+          UTM_SOURCE: record.utm_source || '',
+          UTM_MEDIUM: record.utm_medium || '',
+          UTM_CAMPAIGN: record.utm_campaign || '',
+          REFERRER: record.referrer || '',
+          LEAD_STATUS: record.status || 'new',
+          CREATED_AT: record.created_at,
+        },
+        updateEnabled: true
+      };
+    } else if (table === 'company_acquisition_inquiries') {
+      leadType = 'company_acquisition';
+      contact = {
+        email: record.email,
+        attributes: {
+          LEAD_SOURCE: 'acquisition_inquiry',
+          LEAD_ID: record.id,
+          CONTACT_NAME: record.full_name,
+          COMPANY: record.company || '',
+          PHONE: record.phone || '',
+          INVESTMENT_BUDGET: record.investment_budget || '',
+          SECTORS_OF_INTEREST: record.sectors_of_interest || '',
+          ACQUISITION_TYPE: record.acquisition_type || '',
+          TARGET_TIMELINE: record.target_timeline || '',
+          PREFERRED_LOCATION: record.preferred_location || '',
+          UTM_SOURCE: record.utm_source || '',
+          UTM_MEDIUM: record.utm_medium || '',
+          UTM_CAMPAIGN: record.utm_campaign || '',
+          UTM_TERM: record.utm_term || '',
+          UTM_CONTENT: record.utm_content || '',
+          REFERRER: record.referrer || '',
           LEAD_STATUS: record.status || 'new',
           CREATED_AT: record.created_at,
         },
@@ -106,11 +196,16 @@ serve(async (req) => {
     }
 
     // Añadir a lista específica si está configurada
-    const listIdEnvVar = leadType === 'valuation' 
-      ? 'BREVO_LIST_ID_VALUATIONS' 
-      : 'BREVO_LIST_ID_CONTACTS';
+    const listIdMapping: Record<string, string> = {
+      'valuation': 'BREVO_LIST_ID_VALUATIONS',
+      'contact': 'BREVO_LIST_ID_CONTACTS',
+      'collaborator': 'BREVO_LIST_ID_COLLABORATORS',
+      'acquisition': 'BREVO_LIST_ID_ACQUISITIONS',
+      'company_acquisition': 'BREVO_LIST_ID_COMPANY_ACQUISITIONS'
+    };
     
-    const listId = Deno.env.get(listIdEnvVar);
+    const listIdEnvVar = listIdMapping[leadType];
+    const listId = listIdEnvVar ? Deno.env.get(listIdEnvVar) : null;
     if (listId) {
       contact.listIds = [parseInt(listId)];
     }

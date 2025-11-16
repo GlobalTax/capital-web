@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Send } from 'lucide-react';
 import { useUnifiedContacts, ContactOrigin } from '@/hooks/useUnifiedContacts';
+import { useBrevoSync } from '@/hooks/useBrevoSync';
 import ContactFilters from './ContactFilters';
 import ContactsTable from './ContactsTable';
 import BulkActionsToolbar from './BulkActionsToolbar';
@@ -22,6 +23,7 @@ const ContactsManager = () => {
 
   const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
   const { softDelete, hardDelete, bulkSoftDelete, bulkHardDelete } = useContactActions(refetch);
+  const { syncBulkContacts, isSyncing } = useBrevoSync();
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as ContactOrigin | 'all');
@@ -55,6 +57,13 @@ const ContactsManager = () => {
     if (success) clearSelection();
   };
 
+  const handleBulkSyncToBrevo = async () => {
+    if (selectedIds.length === 0) return;
+    
+    await syncBulkContacts(selectedIds, contacts);
+    clearSelection();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -76,10 +85,23 @@ const ContactsManager = () => {
             Sistema unificado de gestión de leads y contactos
           </p>
         </div>
-        <Button onClick={refetch} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualizar
-        </Button>
+        <div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <Button 
+              onClick={handleBulkSyncToBrevo} 
+              variant="secondary" 
+              size="sm"
+              disabled={isSyncing}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {isSyncing ? 'Sincronizando...' : `Enviar a Brevo (${selectedIds.length})`}
+            </Button>
+          )}
+          <Button onClick={refetch} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualizar
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards - Componente modular */}
