@@ -86,22 +86,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'services.cta.learnMore': 'Más información',
     'services.cta.allServices': 'Ver Todos los Servicios',
     
-    // Ecosystem
-    'ecosystem.badge': 'Ecosistema Integral',
-    'ecosystem.title': 'Tu Equipo Completo de M&A',
-    'ecosystem.subtitle.line1': 'No somos solo asesores financieros. Somos un equipo completo de especialistas',
-    'ecosystem.subtitle.line2': 'que cubre todas las necesidades de una operación de M&A exitosa.',
-    'ecosystem.stat.professionals': 'Profesionales Especializados',
-    'ecosystem.stat.operations': 'Operaciones Completadas',
-    'ecosystem.stat.experience': 'Años de Experiencia',
-    'ecosystem.stat.success': 'Tasa de Éxito',
-    
-    // Case Studies
-    'cases.title': 'Casos de Éxito Destacados',
-    'cases.subtitle': 'Nuestro historial habla por sí mismo. Estas son algunas de las operaciones más destacadas que hemos liderado.',
-    'cases.confidential': 'Confidencial',
-    'cases.cta': 'Ver Más Casos',
-    
     // Why Choose
     'why.badge': 'La Diferencia Capittal',
     'why.title': 'Por Qué Elegir Capittal',
@@ -173,7 +157,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'equipo.title': 'Nuestro Equipo',
     'equipo.subtitle': 'Profesionales con experiencia global y resultados probados',
     
-    // === FOOTER ===
+    // Venta Empresas Page
     'footer.company.description': 'Asesoría financiera especializada en valoración y venta de empresas en España.',
     'footer.company.address': 'Calle Serrano, 93. 28006 Madrid, España',
     'footer.company.phone': '+34 911 234 567',
@@ -196,13 +180,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'footer.link.terminos': 'Términos de Uso',
     'footer.link.cookies': 'Cookies',
     'footer.copyright': '© {year} Capittal. Todos los derechos reservados.',
-    'nav.servicios': 'Servicios',
-    'nav.sectores': 'Sectores',
-    'nav.nosotros': 'Nosotros',
-    'nav.recursos': 'Recursos',
-    'nav.colaboradores': 'Colaboradores',
-    'nav.contacto': 'Contacto',
-    'nav.llamarAhora': 'Llamar Ahora',
     
     // Ecosystem (Extended translations)
     'ecosystem.titleHighlight': 'Integral',

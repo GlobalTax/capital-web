@@ -6,6 +6,7 @@ import { Calendar, TrendingUp, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { secureLogger } from '@/utils/secureLogger';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface CaseStudy {
   id: string;
@@ -23,6 +24,7 @@ interface CaseStudy {
 }
 
 const CaseStudiesCompact = () => {
+  const { t } = useI18n();
   const [cases, setCases] = useState<CaseStudy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { Users, TrendingUp, Shield, Award, Handshake, Target } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const VentaEmpresasBenefits = () => {
+  const { t } = useI18n();
   const benefits = [
     {
       title: "Experiencia Probada",

@@ -1,7 +1,9 @@
 import React from 'react';
 import { SimpleButton } from '@/components/ui/simple-button';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const CompraEmpresasHero = () => {
+  const { t } = useI18n();
   const benefits = [
     'Deal sourcing especializado en sectores industriales',
     'Red exclusiva de empresas familiares en transición',

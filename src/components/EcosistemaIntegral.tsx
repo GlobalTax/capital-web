@@ -2,6 +2,11 @@ import React, { useMemo } from 'react';
 import { TrendingUp, Calculator, Building2, FileSearch, Scale, Receipt, Users, BarChart3, Briefcase, GraduationCap } from 'lucide-react';
 import { useStatistics, extractNumericValue, extractSuffix } from '@/hooks/useStatistics';
 import StatisticCard from './StatisticCard';
+import { useI18n } from '@/shared/i18n/I18nProvider';
+
+const EcosistemaIntegral = () => {
+  const { t } = useI18n();
+  const { data: dbStatistics, isLoading } = useStatistics('ecosystem');
 
 const EcosistemaIntegral = () => {
   const { data: dbStatistics, isLoading } = useStatistics('ecosystem');
