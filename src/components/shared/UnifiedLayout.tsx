@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import Header from '@/components/Header';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
 import Footer from '@/components/Footer';
@@ -8,6 +8,7 @@ import NotificationCenter from '@/components/NotificationCenter';
 import AdminAccessButton from '@/components/AdminAccessButton';
 import BannerContainer from '@/components/banners/BannerContainer';
 import BrevoWhatsAppWidget from '@/components/brevo/BrevoWhatsAppWidget';
+import { useBrevoVisitorTracking } from '@/hooks/useBrevoVisitorTracking';
 
 interface UnifiedLayoutProps {
   children: ReactNode;
@@ -33,6 +34,12 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
 }) => {
   const shouldShowAdminButton = showAdminButton ?? variant === 'home';
   const HeaderComponent = variant === 'landing' ? LandingHeaderMinimal : Header;
+  const { trackVisitor } = useBrevoVisitorTracking();
+
+  // Track visitor en cada page view
+  useEffect(() => {
+    trackVisitor();
+  }, [trackVisitor]);
 
   return (
     <div className="min-h-screen bg-white">

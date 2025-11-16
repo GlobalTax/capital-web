@@ -49,7 +49,7 @@ export const useBrevoTracking = () => {
   }, []);
 
   /**
-   * Identificar contacto en Brevo
+   * Identificar contacto en Brevo con unificación progresiva
    */
   const identifyContact = useCallback((email: string, attributes: {
     empresa?: string;
@@ -59,15 +59,27 @@ export const useBrevoTracking = () => {
     [key: string]: any;
   }) => {
     if (window.Brevo) {
+      // Recuperar visitor_id previo para unificación
+      const previousVisitorId = localStorage.getItem('brevo_visitor_id');
+      const sessionId = sessionStorage.getItem('brevo_session_id');
+
       window.Brevo.push(['identify', email, {
         EMAIL: email,
         EMPRESA: attributes.empresa || '',
         NOMBRE: attributes.nombre || '',
         TELEFONO: attributes.telefono || '',
         SECTOR: attributes.sector || '',
+        PREVIOUS_VISITOR_ID: previousVisitorId || '',
+        SESSION_ID: sessionId || '',
+        CONVERSION_PAGE: window.location.pathname,
+        CONVERTED_AT: new Date().toISOString(),
         ...attributes,
       }]);
-      console.log('[Brevo] Contact identified:', email, attributes);
+      console.log('[Brevo] Contact identified with progressive unification:', email, {
+        previousVisitorId,
+        sessionId,
+        attributes
+      });
     }
   }, []);
 
