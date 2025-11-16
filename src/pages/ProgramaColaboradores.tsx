@@ -13,8 +13,40 @@ import { getWebPageSchema } from '@/utils/seo';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 
 // Componente interno que usa traducciones
-const ProgramaColaboradoresContent = () => {
-  const { t } = useI18n();
+const ProgramaColaboradores = () => {
+  const location = useLocation();
+  const { t, setLang } = useI18n();
+  
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('col·laboradors') || path.includes('col-laboradors')) {
+      setLang('ca');
+    } else if (path.includes('collaborators-program')) {
+      setLang('en');
+    } else {
+      setLang('es');
+    }
+  }, [location.pathname, setLang]);
+
+  useEffect(() => {
+    const hreflangUrls = {
+      'es': 'https://capittal.es/programa-colaboradores',
+      'ca': 'https://capittal.es/programa-col·laboradors',
+      'en': 'https://capittal.es/collaborators-program',
+      'x-default': 'https://capittal.es/programa-colaboradores'
+    };
+    
+    Object.entries(hreflangUrls).forEach(([hreflang, url]) => {
+      let link = document.querySelector(`link[hreflang="${hreflang}"]`);
+      if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('rel', 'alternate');
+        link.setAttribute('hreflang', hreflang);
+        document.head.appendChild(link);
+      }
+      link.setAttribute('href', url);
+    });
+  }, []);
   
   return (
     <>
@@ -31,54 +63,17 @@ const ProgramaColaboradoresContent = () => {
       />
       <div className="min-h-screen bg-background">
         <Header />
-      
-      <main>
-        <EnhancedHeroSection />
-        <section id="benefits-section">
+        <main>
+          <EnhancedHeroSection />
           <EnhancedBenefitsSection />
-        </section>
-        <ProcessTimeline />
-        <TestimonialsSection />
-        <section id="application-form" className="py-20 bg-muted/20">
-          <div className="container mx-auto px-4">
-            <EnhancedCollaboratorForm />
-          </div>
-        </section>
-        <FAQSection />
-      </main>
-      
+          <ProcessTimeline />
+          <TestimonialsSection />
+          <FAQSection />
+          <EnhancedCollaboratorForm />
+        </main>
         <Footer />
       </div>
     </>
-  );
-};
-
-// Componente detector de idioma por ruta
-const RouteLanguageDetector = ({ path }: { path: string }) => {
-  const { setLang } = useI18n();
-  
-  useEffect(() => {
-    if (path.includes('col·laboradors') || path.includes('col-laboradors')) {
-      setLang('ca');
-    } else if (path.includes('collaborators-program')) {
-      setLang('en');
-    } else {
-      setLang('es');
-    }
-  }, [path, setLang]);
-  
-  return null;
-};
-
-// Componente exportado con Provider
-const ProgramaColaboradores = () => {
-  const location = useLocation();
-  
-  return (
-    <I18nProvider>
-      <RouteLanguageDetector path={location.pathname} />
-      <ProgramaColaboradoresContent />
-    </I18nProvider>
   );
 };
 
