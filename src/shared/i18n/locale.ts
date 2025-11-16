@@ -1,7 +1,7 @@
 // Simple locale utilities for Spain-only languages without external APIs
 // Supported languages: 'es' (Castellano), 'ca' (Català), 'val' (Valencià), 'gl' (Galego)
 
-export type LangCode = 'es' | 'ca' | 'val' | 'gl' | 'en'
+export type LangCode = 'es' | 'ca' | 'en'
 
 export const regionToLang: Record<string, LangCode> = {
   // Comunidades Autónomas (keys are normalized lowercase without accents)
@@ -11,15 +11,15 @@ export const regionToLang: Record<string, LangCode> = {
   cantabria: 'es',
   castilla_la_mancha: 'es',
   castilla_y_leon: 'es',
-  cataluna: 'ca', // Catalunya
+  cataluna: 'ca',
   catalunya: 'ca',
   catalonia: 'ca',
   ceuta: 'es',
   madrid: 'es',
   murcia: 'es',
   extremadura: 'es',
-  galicia: 'gl',
-  islas_baleares: 'ca', // Illes Balears
+  galicia: 'es', // Changed from 'gl' to 'es'
+  islas_baleares: 'ca',
   baleares: 'ca',
   illes_balears: 'ca',
   islas_canarias: 'es',
@@ -28,24 +28,20 @@ export const regionToLang: Record<string, LangCode> = {
   navarra: 'es',
   pais_vasco: 'es',
   euskadi: 'es',
-  valencia: 'val', // Comunitat Valenciana
-  comunitat_valenciana: 'val',
-  comunidad_valenciana: 'val',
-  valenciana: 'val',
+  valencia: 'ca', // Changed from 'val' to 'ca'
+  comunitat_valenciana: 'ca',
+  comunidad_valenciana: 'ca',
+  valenciana: 'ca',
 };
 
 export const langToLocale: Record<LangCode, string> = {
   es: 'es-ES',
   ca: 'ca-ES',
-  val: 'ca-ES-valencia',
-  gl: 'gl-ES',
   en: 'en-US',
 };
 
 export function detectBrowserLang(): LangCode {
   const langs = (navigator.languages || [navigator.language || 'es']).map(l => l.toLowerCase());
-  if (langs.some(l => l.startsWith('ca') && l.includes('val'))) return 'val';
-  if (langs.some(l => l.startsWith('gl'))) return 'gl';
   if (langs.some(l => l.startsWith('ca'))) return 'ca';
   if (langs.some(l => l.startsWith('en'))) return 'en';
   return 'es';

@@ -36,7 +36,7 @@ interface ValuationResult {
 export const generateValuationPDFWithReactPDF = async (
   companyData: CompanyData,
   result: ValuationResult,
-  lang: 'es' | 'ca' | 'val' | 'gl' | 'en' = 'es'
+  lang: 'es' | 'ca' | 'en' = 'es'
 ): Promise<Blob> => {
   try {
     // Usar JSX para crear el ReactElement correcto
