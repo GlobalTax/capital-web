@@ -8,9 +8,6 @@ const EcosistemaIntegral = () => {
   const { t } = useI18n();
   const { data: dbStatistics, isLoading } = useStatistics('ecosystem');
 
-const EcosistemaIntegral = () => {
-  const { data: dbStatistics, isLoading } = useStatistics('ecosystem');
-
   // Statistics data with animated counters
   const statistics = useMemo(() => {
     if (dbStatistics && dbStatistics.length > 0) {
