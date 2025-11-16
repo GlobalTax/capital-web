@@ -22,13 +22,13 @@ export function getLocalizedUrl(page: string, lang: 'es' | 'ca' | 'en'): string 
 export const dictionaries: Record<LangCode, Record<string, string>> = {
   es: {
     // Navigation
-    'nav.services': 'Servicios',
-    'nav.sectors': 'Sectores',
-    'nav.about': 'Nosotros',
-    'nav.resources': 'Recursos',
-    'nav.collaborators': 'Colaboradores',
-    'nav.contact': 'Contacto',
-    'nav.callNow': 'Llamar Ahora',
+    'nav.servicios': 'Servicios',
+    'nav.sectores': 'Sectores',
+    'nav.nosotros': 'Nosotros',
+    'nav.recursos': 'Recursos',
+    'nav.colaboradores': 'Colaboradores',
+    'nav.contacto': 'Contacto',
+    'nav.llamarAhora': 'Llamar Ahora',
     
     // Home SEO
     'home.seo.title': 'Capittal - Especialistas en M&A, Valoraciones y Due Diligence en España',
