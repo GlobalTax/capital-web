@@ -2,8 +2,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
+import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 
-export const Footerdemo = () => {
+export function Footerdemo() {
+  const { t, lang } = useI18n();
+  const currentYear = new Date().getFullYear();
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -16,50 +20,50 @@ export const Footerdemo = () => {
               </Link>
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
-              Expertos en M&A y valoración de empresas. Junto con Navarro Legal, ofrecemos un servicio integral desde la originación hasta el cierre de la operación.
+              {t('footer.company.description')}
             </p>
             <div className="space-y-2">
               <div className="flex items-center text-gray-300">
                 <MapPin className="h-4 w-4 mr-2" />
-                <span>Sede Central: Carrer Ausias March número 36, 08010. Barcelona</span>
-              </div>
-              <div className="flex items-center text-gray-300">
-                <MapPin className="h-4 w-4 mr-2" />
-                <span>Otras oficinas: Madrid - Girona - Lleida - Tarragona - Palma de Mallorca - Zaragoza - Valencia</span>
+                <span>{t('footer.company.address')}</span>
               </div>
               <div className="flex items-center text-gray-300">
                 <Phone className="h-4 w-4 mr-2" />
-                <a href="tel:+34695717490" className="hover:text-white transition-colors" aria-label="Llamar al +34 695 717 490">+34 695 717 490</a>
+                <a href="tel:+34911234567" className="hover:text-white transition-colors">
+                  {t('footer.company.phone')}
+                </a>
               </div>
               <div className="flex items-center text-gray-300">
                 <Mail className="h-4 w-4 mr-2" />
-                <a href="mailto:info@capittal.es" className="hover:text-white transition-colors" aria-label="Enviar email a info@capittal.es">info@capittal.es</a>
+                <a href="mailto:info@capittal.es" className="hover:text-white transition-colors">
+                  {t('footer.company.email')}
+                </a>
               </div>
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Servicios</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.section.services')}</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/servicios/valoraciones" className="text-gray-300 hover:text-white transition-colors">
-                  Valoraciones
+                <Link to={getLocalizedUrl('serviciosValoraciones', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.valoraciones')}
                 </Link>
               </li>
               <li>
-                <Link to="/servicios/venta-empresas" className="text-gray-300 hover:text-white transition-colors">
-                  Venta de Empresas
+                <Link to={getLocalizedUrl('ventaEmpresas', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.ventaEmpresas')}
                 </Link>
               </li>
               <li>
                 <Link to="/servicios/due-diligence" className="text-gray-300 hover:text-white transition-colors">
-                  Due Diligence
+                  {t('footer.link.dueDiligence')}
                 </Link>
               </li>
               <li>
                 <Link to="/servicios/asesoramiento-legal" className="text-gray-300 hover:text-white transition-colors">
-                  Asesoramiento Legal
+                  {t('footer.link.asesoramientoLegal')}
                 </Link>
               </li>
             </ul>
@@ -67,31 +71,26 @@ export const Footerdemo = () => {
 
           {/* Company */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Empresa</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.section.company')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/nosotros" className="text-gray-300 hover:text-white transition-colors">
-                  Nosotros
+                  {t('footer.link.nosotros')}
                 </Link>
               </li>
               <li>
-                <Link to="/de-looper-a-capittal" className="text-gray-300 hover:text-white transition-colors">
-                  Nuestra Historia
+                <Link to={getLocalizedUrl('equipo', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.equipo')}
                 </Link>
               </li>
               <li>
-                <Link to="/equipo" className="text-gray-300 hover:text-white transition-colors">
-                  Equipo
+                <Link to={getLocalizedUrl('casosExito', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.casosExito')}
                 </Link>
               </li>
               <li>
-                <Link to="/casos-exito" className="text-gray-300 hover:text-white transition-colors">
-                  Casos de Éxito
-                </Link>
-              </li>
-              <li>
-                <Link to="/contacto" className="text-gray-300 hover:text-white transition-colors">
-                  Contacto
+                <Link to={getLocalizedUrl('contacto', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.contacto')}
                 </Link>
               </li>
             </ul>
@@ -102,17 +101,17 @@ export const Footerdemo = () => {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © 2025 Capittal. Todos los derechos reservados.
+              {t('footer.copyright', { year: currentYear })}
             </div>
             <div className="flex space-x-6">
               <Link to="/politica-privacidad" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Política de Privacidad
+                {t('footer.link.privacidad')}
               </Link>
               <Link to="/terminos-uso" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Términos de Uso
+                {t('footer.link.terminos')}
               </Link>
               <Link to="/cookies" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Cookies
+                {t('footer.link.cookies')}
               </Link>
             </div>
           </div>

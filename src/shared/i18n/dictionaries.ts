@@ -173,28 +173,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'equipo.title': 'Nuestro Equipo',
     'equipo.subtitle': 'Profesionales con experiencia global y resultados probados',
     
-    // === VENTA EMPRESAS ===
-    'ventaEmpresas.seo.title': 'Venta de Empresas | Asesoría M&A Profesional | Capittal',
-    'ventaEmpresas.seo.description': 'Asesoría especializada en venta de empresas. Maximizamos el valor de tu empresa con un proceso profesional y confidencial.',
-    'ventaEmpresas.seo.keywords': 'venta empresas España, asesoría M&A, vender empresa, valoración empresas profesional',
-    
-    // === COMPRA EMPRESAS ===
-    'compraEmpresas.seo.title': 'Compra de Empresas | Adquisiciones Estratégicas | Capittal',
-    'compraEmpresas.seo.description': 'Asesoría en compra y adquisición de empresas. Te ayudamos a identificar oportunidades y ejecutar adquisiciones estratégicas con éxito.',
-    'compraEmpresas.seo.keywords': 'compra empresas España, adquisiciones estratégicas, comprar empresa, asesoría adquisiciones',
-    
-    // === CONTACTO ===
-    'contacto.seo.title': 'Contacto | Capittal Asesoría M&A',
-    'contacto.seo.description': 'Contacta con nosotros para recibir asesoramiento experto en valoración, venta y compra de empresas. Estamos aquí para ayudarte.',
-    'contacto.seo.keywords': 'contacto Capittal, asesoría financiera, consultoría M&A España',
-    
-    // === CASOS ÉXITO ===
-    'casosExito.seo.title': 'Casos de Éxito | Operaciones M&A Exitosas | Capittal',
-    'casosExito.seo.description': 'Descubre nuestros casos de éxito en operaciones de M&A. Más de 200 empresas vendidas con éxito en diversos sectores.',
-    'casosExito.seo.keywords': 'casos éxito M&A, operaciones empresas España, ventas exitosas empresas',
-    'casosExito.title': 'Nuestros Casos de Éxito',
-    'casosExito.subtitle': 'Más de 200 operaciones exitosas en diversos sectores',
-    
     // === FOOTER ===
     'footer.company.description': 'Asesoría financiera especializada en valoración y venta de empresas en España.',
     'footer.company.address': 'Calle Serrano, 93. 28006 Madrid, España',
@@ -863,6 +841,39 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.subtitle': "Posa't en contacte amb nosaltres per obtenir més informació sobre els nostres serveis de valoració i venda d'empreses.",
     'contact.direct.title': 'Prefereixes contactar directament?',
     
+    // === NAVIGATION ===
+    'nav.servicios': 'Serveis',
+    'nav.sectores': 'Sectors',
+    'nav.nosotros': 'Nosaltres',
+    'nav.recursos': 'Recursos',
+    'nav.colaboradores': 'Col·laboradors',
+    'nav.contacto': 'Contacte',
+    'nav.llamarAhora': 'Trucar Ara',
+    
+    // === FOOTER ===
+    'footer.company.description': 'Assessoria financera especialitzada en valoració i venda d\'empreses a Espanya.',
+    'footer.company.address': 'Carrer Serrano, 93. 28006 Madrid, Espanya',
+    'footer.company.phone': '+34 911 234 567',
+    'footer.company.email': 'info@capittal.es',
+    'footer.section.services': 'Serveis',
+    'footer.section.company': 'Empresa',
+    'footer.link.valoraciones': 'Valoracions',
+    'footer.link.ventaEmpresas': 'Venda d\'Empreses',
+    'footer.link.compraEmpresas': 'Compra d\'Empreses',
+    'footer.link.dueDiligence': 'Due Diligence',
+    'footer.link.asesoramientoLegal': 'Assessorament Legal',
+    'footer.link.nosotros': 'Nosaltres',
+    'footer.link.equipo': 'Equip',
+    'footer.link.casosExito': 'Casos d\'Èxit',
+    'footer.link.porQueElegirnos': 'Per Què Triar-nos',
+    'footer.link.blog': 'Blog',
+    'footer.link.contacto': 'Contacte',
+    'footer.link.programaColaboradores': 'Programa Col·laboradors',
+    'footer.link.privacidad': 'Política de Privacitat',
+    'footer.link.terminos': 'Termes d\'Ús',
+    'footer.link.cookies': 'Cookies',
+    'footer.copyright': '© {year} Capittal. Tots els drets reservats.',
+    
     // Colaboradors - Traduccions completes
     ...collaboratorsTranslations.ca,
   },
@@ -1170,6 +1181,39 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.title': 'Contact Us',
     'contact.subtitle': 'Get in touch with us for more information about our valuation and company sale services.',
     'contact.direct.title': 'Prefer to contact directly?',
+    
+    // === NAVIGATION ===
+    'nav.servicios': 'Services',
+    'nav.sectores': 'Sectors',
+    'nav.nosotros': 'About Us',
+    'nav.recursos': 'Resources',
+    'nav.colaboradores': 'Partners',
+    'nav.contacto': 'Contact',
+    'nav.llamarAhora': 'Call Now',
+    
+    // === FOOTER ===
+    'footer.company.description': 'Specialized financial advisory in business valuation and sale in Spain.',
+    'footer.company.address': 'Calle Serrano, 93. 28006 Madrid, Spain',
+    'footer.company.phone': '+34 911 234 567',
+    'footer.company.email': 'info@capittal.es',
+    'footer.section.services': 'Services',
+    'footer.section.company': 'Company',
+    'footer.link.valoraciones': 'Valuations',
+    'footer.link.ventaEmpresas': 'Sell Companies',
+    'footer.link.compraEmpresas': 'Buy Companies',
+    'footer.link.dueDiligence': 'Due Diligence',
+    'footer.link.asesoramientoLegal': 'Legal Advisory',
+    'footer.link.nosotros': 'About Us',
+    'footer.link.equipo': 'Team',
+    'footer.link.casosExito': 'Success Stories',
+    'footer.link.porQueElegirnos': 'Why Choose Us',
+    'footer.link.blog': 'Blog',
+    'footer.link.contacto': 'Contact',
+    'footer.link.programaColaboradores': 'Partners Program',
+    'footer.link.privacidad': 'Privacy Policy',
+    'footer.link.terminos': 'Terms of Use',
+    'footer.link.cookies': 'Cookies',
+    'footer.copyright': '© {year} Capittal. All rights reserved.',
     
     // Collaborators - Full translations
     ...collaboratorsTranslations.en,
