@@ -103,6 +103,84 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.title': 'Contacta con Nosotros',
     'contact.subtitle': 'Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.',
     'contact.direct.title': '¿Prefieres contactar directamente?',
+    'contact.title.venta': 'Inicia tu proceso de venta',
+    'contact.description.venta': 'Completa el formulario y uno de nuestros expertos se pondrá en contacto contigo para valorar tu empresa.',
+    'contact.title.compra': 'Encuentra tu próxima adquisición',
+    'contact.description.compra': 'Déjanos tus datos y te contactaremos para entender tus objetivos de inversión.',
+    
+    // Venta Empresas Page
+    'ventaEmpresas.seo.title': 'Venta de Empresas - Asesoramiento Profesional | Capittal',
+    'ventaEmpresas.seo.description': 'Servicios profesionales de venta de empresas. Asesoramiento integral, valoración experta y acompañamiento completo en el proceso de compraventa empresarial.',
+    'ventaEmpresas.seo.keywords': 'venta empresas, asesoramiento empresarial, valoración empresas, compraventa empresarial, M&A España',
+    'ventaEmpresas.hero.badge': '+200 empresas vendidas exitosamente',
+    'ventaEmpresas.hero.title': 'Vende tu empresa al',
+    'ventaEmpresas.hero.titleHighlight': 'mejor precio',
+    'ventaEmpresas.hero.subtitle': 'Asesoría especializada en M&A. Maximizamos el valor de tu empresa con un proceso profesional, confidencial y orientado a resultados.',
+    'ventaEmpresas.hero.benefit1': 'Máximo precio de venta',
+    'ventaEmpresas.hero.benefit2': 'Proceso 100% confidencial',
+    'ventaEmpresas.hero.benefit3': 'Experiencia en +200 operaciones',
+    'ventaEmpresas.hero.ctaValuate': 'Valorar Empresa',
+    'ventaEmpresas.hero.ctaContact': 'Contactar Ahora',
+    
+    // Compra Empresas Page
+    'compraEmpresas.seo.title': 'Compra de Empresas - Oportunidades de Adquisición | Capittal',
+    'compraEmpresas.seo.description': 'Accede a oportunidades exclusivas de compra de empresas. Asesoramiento profesional en adquisiciones estratégicas y crecimiento empresarial por M&A en España.',
+    'compraEmpresas.seo.keywords': 'compra empresas España, adquisiciones empresariales, oportunidades M&A, inversión empresarial',
+    
+    // Contacto Page
+    'contacto.seo.title': 'Contacto - Consulta Gratuita M&A | Capittal',
+    'contacto.seo.description': 'Contacta con los expertos de Capittal. Consulta gratuita sobre valoración, venta o compra de empresas. Primera reunión sin compromiso.',
+    'contacto.seo.keywords': 'contacto M&A, consulta valoración empresas, asesoría M&A España, contacto fusiones adquisiciones',
+    
+    // Casos de Éxito Page
+    'casosExito.seo.title': 'Casos de Éxito M&A - Más de 200 Transacciones | Capittal',
+    'casosExito.seo.description': 'Descubre nuestros casos de éxito en M&A. Más de 200 transacciones exitosas con resultados excepcionales para nuestros clientes en España.',
+    'casosExito.seo.keywords': 'casos éxito M&A, transacciones exitosas, resultados M&A España, portfolio transacciones',
+    'casosExito.title': 'Casos de Éxito',
+    'casosExito.subtitle': 'Más de 200 transacciones exitosas que demuestran nuestra capacidad para maximizar el valor en cada operación. Descubre cómo hemos ayudado a nuestros clientes.',
+    
+    // Por Qué Elegirnos Page
+    'porQueElegirnos.seo.title': '¿Por Qué Elegir Capittal? - Tu Socio Estratégico en M&A',
+    'porQueElegirnos.seo.description': 'Descubre por qué más de 200 empresas confían en Capittal para sus operaciones de M&A. Experiencia, red de inversores y resultados probados.',
+    'porQueElegirnos.seo.keywords': 'M&A España, asesor M&A, venta empresas España',
+    'porQueElegirnos.hero.badge': 'Líderes en M&A desde 2008',
+    'porQueElegirnos.hero.title': '¿Por Qué Elegir',
+    'porQueElegirnos.hero.titleHighlight': 'Capittal',
+    'porQueElegirnos.hero.titleEnd': '?',
+    'porQueElegirnos.hero.subtitle': 'Somos tu socio estratégico en fusiones y adquisiciones. Con más de 15 años de experiencia y 200+ transacciones exitosas, te ayudamos a maximizar el valor de tu empresa.',
+    
+    // Equipo Page
+    'equipo.seo.title': 'Nuestro Equipo - Expertos en M&A | Capittal',
+    'equipo.seo.description': 'Conoce al equipo de expertos en M&A de Capittal. Profesionales con experiencia global y resultados probados en transacciones empresariales.',
+    'equipo.seo.keywords': 'equipo M&A, expertos fusiones adquisiciones, profesionales M&A España',
+    'equipo.title': 'Nuestro Equipo',
+    'equipo.subtitle': 'Profesionales con experiencia global y resultados probados',
+    
+    // Ecosystem (Extended translations)
+    'ecosystem.titleHighlight': 'Integral',
+    'ecosystem.titleEnd': 'de Servicios',
+    'ecosystem.subtitle2': 'Un equipo multidisciplinar de más de 60 profesionales con experiencia combinada en M&A, finanzas, derecho mercantil, y planificación fiscal. Ofrecemos soluciones end-to-end para cada operación.',
+    'ecosystem.maTitle': 'M&A Advisory',
+    'ecosystem.maDescription': 'Especialistas en fusiones y adquisiciones para maximizar el valor de tu empresa',
+    'ecosystem.valuationsTitle': 'Valoraciones',
+    'ecosystem.valuationsDescription': 'Expertos en valoración empresarial y análisis financiero detallado',
+    'ecosystem.legalTitle': 'Asesoramiento Legal',
+    'ecosystem.legalDescription': 'Apoyo jurídico especializado en derecho mercantil y operaciones M&A',
+    'ecosystem.taxTitle': 'Planificación Fiscal',
+    'ecosystem.taxDescription': 'Optimización tributaria y estructuración fiscal estratégica',
+    'ecosystem.cfTitle': 'Corporate Finance',
+    'ecosystem.cfDescription': 'Estructuración financiera y levantamiento de capital estratégico',
+    'ecosystem.ddTitle': 'Due Diligence',
+    'ecosystem.ddDescription': 'Análisis exhaustivo de riesgos y oportunidades de inversión',
+    'ecosystem.analystTitle': 'Analistas Financieros',
+    'ecosystem.analystDescription': 'Expertos en modelado financiero y análisis de valoración',
+    'ecosystem.lawyersTitle': 'Abogados',
+    'ecosystem.lawyersDescription': 'Especialistas en derecho mercantil y asesoramiento legal M&A',
+    'ecosystem.economistsTitle': 'Economistas',
+    'ecosystem.economistsDescription': 'Expertos en análisis sectorial y valoración macroeconómica',
+    'ecosystem.taxSpecialistsTitle': 'Fiscalistas',
+    'ecosystem.taxSpecialistsDescription': 'Especialistas en optimización tributaria y planificación fiscal',
+    'ecosystem.cta': 'Conoce Nuestros Servicios',
     
     // Landing
     'landing.title': 'Calculadora de Valoración de Empresas | Capittal',
