@@ -141,17 +141,15 @@ const EcosistemaIntegral = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg text-sm font-medium mb-6">
-            Ecosistema Completo
+            {t('ecosystem.badge')}
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Ecosistema Integral de M&A
+            {t('ecosystem.title')}
           </h2>
           
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Contamos con un equipo multidisciplinar de más de <strong className="text-black">60 profesionales especializados</strong>: 
-            analistas financieros, abogados, economistas y fiscalistas que trabajan de forma integrada 
-            para ofrecer soluciones completas en todas tus necesidades empresariales de M&A.
+            {t('ecosystem.subtitle')}
           </p>
         </div>
 

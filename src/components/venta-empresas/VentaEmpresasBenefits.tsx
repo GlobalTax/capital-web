@@ -7,40 +7,40 @@ const VentaEmpresasBenefits = () => {
   const { t } = useI18n();
   const benefits = [
     {
-      title: "Experiencia Probada",
-      description: "Más de 200 operaciones completadas exitosamente en los últimos 10 años.",
+      title: t('ventaEmpresas.benefits.experience.title'),
+      description: t('ventaEmpresas.benefits.experience.description'),
       icon: Award,
-      stats: "+200 empresas vendidas"
+      stats: t('ventaEmpresas.benefits.experience.stats')
     },
     {
-      title: "Valoración Optimizada", 
-      description: "Maximizamos el precio de venta mediante análisis profundo y estrategia personalizada.",
+      title: t('ventaEmpresas.benefits.valuation.title'),
+      description: t('ventaEmpresas.benefits.valuation.description'),
       icon: TrendingUp,
-      stats: "Incremento promedio del 23%"
+      stats: t('ventaEmpresas.benefits.valuation.stats')
     },
     {
-      title: "Confidencialidad Total",
-      description: "Proceso completamente confidencial que protege tu empresa y empleados.",
+      title: t('ventaEmpresas.benefits.confidentiality.title'),
+      description: t('ventaEmpresas.benefits.confidentiality.description'),
       icon: Shield,
-      stats: "100% confidencial"
+      stats: t('ventaEmpresas.benefits.confidentiality.stats')
     },
     {
-      title: "Red de Compradores",
-      description: "Acceso exclusivo a nuestra amplia red de compradores estratégicos e inversores.",
+      title: t('ventaEmpresas.benefits.network.title'),
+      description: t('ventaEmpresas.benefits.network.description'),
       icon: Users,
-      stats: "+500 compradores activos"
+      stats: t('ventaEmpresas.benefits.network.stats')
     },
     {
-      title: "Asesoramiento Integral",
-      description: "Te acompañamos en todo el proceso, desde la preparación hasta el cierre.",
+      title: t('ventaEmpresas.benefits.advisory.title'),
+      description: t('ventaEmpresas.benefits.advisory.description'),
       icon: Handshake,
-      stats: "Soporte 360°"
+      stats: t('ventaEmpresas.benefits.advisory.stats')
     },
     {
-      title: "Alineación de Intereses",
-      description: "Estructuramos nuestros honorarios para alinear intereses y maximizar el éxito.",
+      title: t('ventaEmpresas.benefits.alignment.title'),
+      description: t('ventaEmpresas.benefits.alignment.description'),
       icon: Target,
-      stats: "Honorarios variables"
+      stats: t('ventaEmpresas.benefits.alignment.stats')
     }
   ];
 
@@ -50,11 +50,10 @@ const VentaEmpresasBenefits = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            ¿Por qué elegir Capittal?
+            {t('why.title')}
           </h2>
           <p className="text-lg text-black max-w-3xl mx-auto">
-            Somos la boutique M&A líder en España. Nuestro enfoque personalizado y 
-            experiencia demostrada garantizan los mejores resultados para tu empresa.
+            {t('why.subtitle')}
           </p>
         </div>
 

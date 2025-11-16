@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const VentaEmpresasFAQ = () => {
+  const { t } = useI18n();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const faqs = [
@@ -41,10 +43,10 @@ const VentaEmpresasFAQ = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            Preguntas Frecuentes
+            {t('ventaEmpresas.faq.title')}
           </h2>
           <p className="text-lg text-black">
-            Resolvemos las dudas más comunes sobre el proceso de venta de empresas
+            {t('ventaEmpresas.faq.subtitle')}
           </p>
         </div>
 

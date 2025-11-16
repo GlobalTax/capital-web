@@ -1,7 +1,9 @@
 
 import React from 'react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const VentaEmpresasValuation = () => {
+  const { t } = useI18n();
   const factors = [
     {
       title: 'Rentabilidad y Crecimiento',
