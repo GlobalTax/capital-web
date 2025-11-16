@@ -11,6 +11,8 @@ export interface TrackingConfiguration {
   enableHeatmaps?: boolean;
   enableSessionRecording?: boolean;
   enableLeadTracking?: boolean;
+  enableBrevoTracking?: boolean;
+  brevoClientKey?: string;
   customTrackingCode?: string;
 }
 
@@ -47,10 +49,12 @@ export class TrackingConfigService {
         enableSessionRecording: false,
         enableLeadTracking: true,
         enableCMP: true,
+        enableBrevoTracking: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
         googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
         cookiebotId: 'c5f326c2-c1a3-48af-89ee-2113cd3c0399',
+        brevoClientKey: 'roxikmpb0134fjx0zxc6vti5',
       };
     } catch (error) {
       console.error('Error loading tracking configuration:', error);
@@ -59,10 +63,12 @@ export class TrackingConfigService {
         enableSessionRecording: false,
         enableLeadTracking: true,
         enableCMP: true,
+        enableBrevoTracking: true,
         googleAnalyticsId: 'G-Z97ZB4YKPF',
         googleTagManagerId: 'GTM-N35CP3R9',
         facebookPixelId: '381068095046019',
         cookiebotId: 'c5f326c2-c1a3-48af-89ee-2113cd3c0399',
+        brevoClientKey: 'roxikmpb0134fjx0zxc6vti5',
       };
     }
   }

@@ -5,11 +5,13 @@ import StepContent from './valuation/StepContent';
 import NavigationButtons from './valuation/NavigationButtons';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
 import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
+import { useBrevoTracking } from '@/hooks/useBrevoTracking';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ValuationCalculator: React.FC = () => {
   const { t } = useI18n();
   const { createInitialValuation, updateValuation } = useOptimizedSupabaseValuation();
+  const { trackValuationCompleted, identifyContact } = useBrevoTracking();
   const uniqueTokenRef = useRef<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveExecutedRef = useRef(false);
@@ -152,6 +154,30 @@ const ValuationCalculator: React.FC = () => {
       nextStep();
     }
   };
+
+  // Trackear valoración completada y identificar contacto cuando hay resultado
+  useEffect(() => {
+    if (result && result.finalValuation > 0) {
+      // Trackear evento de valoración completada
+      trackValuationCompleted({
+        sector: companyData.industry,
+        value: result.finalValuation,
+        employeeRange: companyData.employeeRange,
+        revenue: companyData.revenue || 0,
+        ebitda: companyData.ebitda || 0,
+      });
+
+      // Identificar contacto en Brevo
+      identifyContact(companyData.email, {
+        empresa: companyData.companyName,
+        nombre: companyData.contactName,
+        telefono: companyData.phone,
+        sector: companyData.industry,
+      });
+
+      console.log('📊 [Brevo] Valuation tracked and contact identified');
+    }
+  }, [result, companyData, trackValuationCompleted, identifyContact]);
 
   const progressValue = currentStep === 4 ? 100 : ((currentStep - 1) / 3) * 100;
 

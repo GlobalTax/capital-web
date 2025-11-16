@@ -295,6 +295,34 @@ export const TrackingInitializer = () => {
           document.head.appendChild(hotjarScript);
         }
       }
+
+      // ========== BREVO CLIENT SDK ==========
+      // Tracking, analytics, forms y eventos personalizados
+      if (config.enableBrevoTracking && config.brevoClientKey) {
+        // Comprobar si Cookiebot está habilitado para respetar consentimiento
+        const hasMarketingConsent = config.enableCMP 
+          ? (window as any).Cookiebot?.consent?.marketing 
+          : true;
+
+        if (!(window as any).Brevo) {
+          const brevoSdkScript = document.createElement('script');
+          brevoSdkScript.src = 'https://cdn.brevo.com/js/sdk-loader.js';
+          brevoSdkScript.async = true;
+          brevoSdkScript.onload = () => {
+            (window as any).Brevo = (window as any).Brevo || [];
+            (window as any).Brevo.push([
+              "init",
+              {
+                client_key: config.brevoClientKey,
+                // Respetar Consent Mode v2: solo auto-tracking si hay consentimiento
+                auto_tracking: hasMarketingConsent,
+              }
+            ]);
+            console.log('[Tracking] Brevo SDK initialized with auto_tracking:', hasMarketingConsent);
+          };
+          document.head.appendChild(brevoSdkScript);
+        }
+      }
     };
 
     // Ejecutar inicialización
