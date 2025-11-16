@@ -23,13 +23,16 @@ export function Footerdemo() {
               {t('footer.company.description')}
             </p>
             <div className="space-y-2">
-              <div className="flex items-center text-gray-300">
-                <MapPin className="h-4 w-4 mr-2" />
-                <span>{t('footer.company.address')}</span>
+              <div className="flex items-start text-gray-300">
+                <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
+                <div className="space-y-1">
+                  <span className="block">{t('footer.company.address')}</span>
+                  <span className="block text-sm">{t('footer.company.otherOffices')}</span>
+                </div>
               </div>
               <div className="flex items-center text-gray-300">
                 <Phone className="h-4 w-4 mr-2" />
-                <a href="tel:+34911234567" className="hover:text-white transition-colors">
+                <a href="tel:+34695717490" className="hover:text-white transition-colors">
                   {t('footer.company.phone')}
                 </a>
               </div>
