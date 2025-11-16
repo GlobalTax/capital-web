@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ServicesSkeleton } from '@/components/LoadingStates';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const Services = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useI18n();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
@@ -19,42 +21,42 @@ const Services = () => {
   }
   const coreServices = [
     {
-      title: 'Vender Empresa',
-      description: 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta.',
-      features: ['Valoración precisa', 'Proceso confidencial', 'Acceso a compradores cualificados']
+      title: t('services.sell.title'),
+      description: t('services.sell.description'),
+      features: [t('services.sell.feature1'), t('services.sell.feature2'), t('services.sell.feature3')]
     },
     {
-      title: 'Comprar Empresa',
-      description: 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
-      features: ['Identificación objetivos', 'Due diligence completo', 'Negociación exitosa']
+      title: t('services.buy.title'),
+      description: t('services.buy.description'),
+      features: [t('services.buy.feature1'), t('services.buy.feature2'), t('services.buy.feature3')]
     },
     {
-      title: 'Valoraciones',
-      description: 'Valoraciones precisas con metodologías probadas y análisis exhaustivo.',
-      features: ['Múltiples metodologías', 'Análisis comparables', 'Informe detallado']
+      title: t('services.valuations.title'),
+      description: t('services.valuations.description'),
+      features: [t('services.valuations.feature1'), t('services.valuations.feature2'), t('services.valuations.feature3')]
     },
   ];
 
   const complementaryServices = [
     {
-      title: 'Fusiones y Adquisiciones',
-      description: 'Asesoramiento integral en operaciones de M&A, desde la estrategia inicial hasta el cierre exitoso de la transacción.',
+      title: t('services.ma.title'),
+      description: t('services.ma.description'),
     },
     {
-      title: 'Due Diligence',
-      description: 'Análisis exhaustivo financiero, legal y comercial para identificar riesgos y oportunidades en cada inversión.',
+      title: t('services.dd.title'),
+      description: t('services.dd.description'),
     },
     {
-      title: 'Corporate Finance',
-      description: 'Estructuración financiera, levantamiento de capital y optimización de la estructura de balance.',
+      title: t('services.cf.title'),
+      description: t('services.cf.description'),
     },
     {
-      title: 'Reestructuraciones',
-      description: 'Procesos de reestructuración operativa y financiera para maximizar el valor empresarial.',
+      title: t('services.restructuring.title'),
+      description: t('services.restructuring.description'),
     },
     {
-      title: 'Estrategia Corporativa',
-      description: 'Definición de estrategias de crecimiento inorgánico y identificación de oportunidades de mercado.',
+      title: t('services.strategy.title'),
+      description: t('services.strategy.description'),
     },
   ];
 
@@ -64,10 +66,10 @@ const Services = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            Nuestros Servicios
+            {t('services.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.
+            {t('services.subtitle')}
           </p>
         </div>
 

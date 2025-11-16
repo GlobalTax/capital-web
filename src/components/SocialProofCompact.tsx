@@ -1,9 +1,11 @@
 import React from 'react';
 import { useCarouselLogos } from '@/hooks/useCarouselLogos';
 import { LazyImage } from '@/components/shared/LazyImage';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const SocialProofCompact = () => {
   const { data: logos = [], isLoading } = useCarouselLogos();
+  const { t } = useI18n();
 
   if (isLoading) {
     return (
@@ -28,10 +30,10 @@ const SocialProofCompact = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-            Confían en Nosotros
+            {t('social.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Empresas líderes de diversos sectores han confiado en nuestra experiencia para sus operaciones más importantes.
+            {t('social.subtitle')}
           </p>
         </div>
 

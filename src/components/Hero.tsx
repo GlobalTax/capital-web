@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { SimpleButton } from '@/components/ui/simple-button';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const Hero = () => {
   const { isOnline } = useNetworkStatus();
+  const { t } = useI18n();
 
   const benefits = [
-    { text: "Máximo precio de venta" },
-    { text: "Proceso 100% confidencial" },
-    { text: "Experiencia en +200 operaciones" },
-    { text: "Equipo multidisciplinar de 60+ profesionales" }
+    { text: t('hero.benefit.maxPrice') },
+    { text: t('hero.benefit.confidential') },
+    { text: t('hero.benefit.experience') },
+    { text: t('hero.benefit.team') }
   ];
 
   return (
@@ -24,22 +26,21 @@ const Hero = () => {
             <div className="text-center lg:text-left">
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
-                  Antes Looper · Ahora Capittal
+                  {t('hero.badge.rebrand')}
                 </div>
                 <div className="inline-flex items-center bg-muted border border-border text-slate-900 px-4 py-2 rounded-full text-sm font-medium">
-                  Líderes en M&A desde 2008
+                  {t('hero.badge.leaders')}
                 </div>
               </div>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-                Especialistas en{" "}
-                <span className="text-primary">compraventa</span>{" "}
-                de empresas
+                {t('hero.title')}{" "}
+                <span className="text-primary">{t('hero.title.highlight')}</span>{" "}
+                {t('hero.title.end')}
               </h1>
               
               <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-                Maximizamos el valor de tu empresa con un equipo multidisciplinar 
-                de más de 60 profesionales y enfoque orientado a resultados.
+                {t('hero.subtitle')}
               </p>
 
               {/* Benefits */}
@@ -56,11 +57,11 @@ const Hero = () => {
               <div className="grid grid-cols-2 gap-8 mb-10">
                 <div>
                   <div className="text-3xl font-bold text-slate-900 mb-2">€902M</div>
-                  <div className="text-slate-600">Valor Transaccional</div>
+                  <div className="text-slate-600">{t('hero.stat.transactionalValue')}</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-slate-900 mb-2">98,7%</div>
-                  <div className="text-slate-600">Tasa de Éxito</div>
+                  <div className="text-slate-600">{t('hero.stat.successRate')}</div>
                 </div>
               </div>
 
@@ -68,7 +69,7 @@ const Hero = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/lp/calculadora">
                   <SimpleButton 
-                    text="Valorar Empresa" 
+                    text={t('hero.cta.valuate')}
                     variant="primary" 
                     size="lg" 
                     disabled={!isOnline} 
@@ -76,7 +77,7 @@ const Hero = () => {
                 </Link>
                 <Link to="/casos-exito">
                   <SimpleButton 
-                    text="Ver Casos" 
+                    text={t('hero.cta.cases')}
                     variant="secondary" 
                     size="lg" 
                     disabled={!isOnline} 

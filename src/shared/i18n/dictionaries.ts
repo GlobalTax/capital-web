@@ -4,6 +4,106 @@ import { collaboratorsTranslations } from './collaborators-translations';
 // Diccionarios para la calculadora y landing
 export const dictionaries: Record<LangCode, Record<string, string>> = {
   es: {
+    // Navigation
+    'nav.services': 'Servicios',
+    'nav.sectors': 'Sectores',
+    'nav.about': 'Nosotros',
+    'nav.resources': 'Recursos',
+    'nav.collaborators': 'Colaboradores',
+    'nav.contact': 'Contacto',
+    'nav.callNow': 'Llamar Ahora',
+    
+    // Home SEO
+    'home.seo.title': 'Capittal - Especialistas en M&A, Valoraciones y Due Diligence en España',
+    'home.seo.description': 'Capittal es tu socio estratégico en fusiones y adquisiciones. Más de 200 operaciones exitosas en M&A, valoraciones empresariales, due diligence y reestructuraciones en España.',
+    'home.seo.keywords': 'M&A España, fusiones y adquisiciones, valoración de empresas, due diligence, venta de empresas',
+    
+    // Hero
+    'hero.badge.rebrand': 'Antes Looper · Ahora Capittal',
+    'hero.badge.leaders': 'Líderes en M&A desde 2008',
+    'hero.title': 'Especialistas en',
+    'hero.title.highlight': 'compraventa',
+    'hero.title.end': 'de empresas',
+    'hero.subtitle': 'Maximizamos el valor de tu empresa con un equipo multidisciplinar de más de 60 profesionales y enfoque orientado a resultados.',
+    'hero.benefit.maxPrice': 'Máximo precio de venta',
+    'hero.benefit.confidential': 'Proceso 100% confidencial',
+    'hero.benefit.experience': 'Experiencia en +200 operaciones',
+    'hero.benefit.team': 'Equipo multidisciplinar de 60+ profesionales',
+    'hero.stat.transactionalValue': 'Valor Transaccional',
+    'hero.stat.successRate': 'Tasa de Éxito',
+    'hero.cta.valuate': 'Valorar Empresa',
+    'hero.cta.cases': 'Ver Casos',
+    
+    // Social Proof
+    'social.title': 'Confían en Nosotros',
+    'social.subtitle': 'Empresas líderes de diversos sectores han confiado en nuestra experiencia para sus operaciones más importantes.',
+    
+    // Services
+    'services.title': 'Nuestros Servicios',
+    'services.subtitle': 'Servicios especializados en M&A y finanzas corporativas para impulsar el crecimiento de tu empresa.',
+    'services.sell.title': 'Vender Empresa',
+    'services.sell.description': 'Maximizamos el valor de tu empresa con nuestro proceso probado de venta.',
+    'services.sell.feature1': 'Valoración precisa',
+    'services.sell.feature2': 'Proceso confidencial',
+    'services.sell.feature3': 'Acceso a compradores cualificados',
+    'services.buy.title': 'Comprar Empresa',
+    'services.buy.description': 'Te ayudamos a identificar, evaluar y adquirir empresas estratégicas.',
+    'services.buy.feature1': 'Identificación objetivos',
+    'services.buy.feature2': 'Due diligence completo',
+    'services.buy.feature3': 'Negociación exitosa',
+    'services.valuations.title': 'Valoraciones',
+    'services.valuations.description': 'Valoraciones precis con metodologías probadas y análisis exhaustivo.',
+    'services.valuations.feature1': 'Múltiples metodologías',
+    'services.valuations.feature2': 'Análisis comparables',
+    'services.valuations.feature3': 'Informe detallado',
+    'services.ma.title': 'Fusiones y Adquisiciones',
+    'services.ma.description': 'Asesoramiento integral en operaciones de M&A, desde la estrategia inicial hasta el cierre exitoso de la transacción.',
+    'services.dd.title': 'Due Diligence',
+    'services.dd.description': 'Análisis exhaustivo financiero, legal y comercial para identificar riesgos y oportunidades en cada inversión.',
+    'services.cf.title': 'Corporate Finance',
+    'services.cf.description': 'Estructuración financiera, levantamiento de capital y optimización de la estructura de balance.',
+    'services.restructuring.title': 'Reestructuraciones',
+    'services.restructuring.description': 'Procesos de reestructuración operativa y financiera para maximizar el valor empresarial.',
+    'services.strategy.title': 'Estrategia Corporativa',
+    'services.strategy.description': 'Definición de estrategias de crecimiento inorgánico y identificación de oportunidades de mercado.',
+    'services.cta.learnMore': 'Más información',
+    'services.cta.allServices': 'Ver Todos los Servicios',
+    
+    // Ecosystem
+    'ecosystem.badge': 'Ecosistema Integral',
+    'ecosystem.title': 'Tu Equipo Completo de M&A',
+    'ecosystem.subtitle.line1': 'No somos solo asesores financieros. Somos un equipo completo de especialistas',
+    'ecosystem.subtitle.line2': 'que cubre todas las necesidades de una operación de M&A exitosa.',
+    'ecosystem.stat.professionals': 'Profesionales Especializados',
+    'ecosystem.stat.operations': 'Operaciones Completadas',
+    'ecosystem.stat.experience': 'Años de Experiencia',
+    'ecosystem.stat.success': 'Tasa de Éxito',
+    
+    // Case Studies
+    'cases.title': 'Casos de Éxito Destacados',
+    'cases.subtitle': 'Nuestro historial habla por sí mismo. Estas son algunas de las operaciones más destacadas que hemos liderado.',
+    'cases.confidential': 'Confidencial',
+    'cases.cta': 'Ver Más Casos',
+    
+    // Why Choose
+    'why.badge': 'La Diferencia Capittal',
+    'why.title': 'Por Qué Elegir Capittal',
+    'why.subtitle': 'No somos una consultora generalista. Somos especialistas en M&A que vivimos y respiramos compraventa de empresas todos los días.',
+    'why.experience.title': 'Experiencia Probada',
+    'why.experience.description': 'Más de 15 años especializados exclusivamente en M&A, con un track record excepcional.',
+    'why.experience.highlight': '200+ operaciones',
+    'why.value.title': 'Máximo Valor',
+    'why.value.description': 'Conseguimos valoraciones superiores a la media del mercado gracias a nuestro proceso optimizado.',
+    'why.value.highlight': '40% más valor',
+    'why.speed.title': 'Rapidez y Eficiencia',
+    'why.speed.description': 'Procesos optimizados que reducen los tiempos sin comprometer la calidad.',
+    'why.speed.highlight': '6-8 meses',
+    
+    // Contact
+    'contact.title': 'Contacta con Nosotros',
+    'contact.subtitle': 'Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.',
+    'contact.direct.title': '¿Prefieres contactar directamente?',
+    
     // Landing
     'landing.title': 'Calculadora de Valoración de Empresas | Capittal',
     'landing.description': 'Calculadora de valoración con múltiplos de mercado: estimación rápida y orientativa. Recibe resultados gratuitos al instante.',
@@ -525,6 +625,96 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
     'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
     
+    // Navigation
+    'nav.services': 'Serveis',
+    'nav.sectors': 'Sectors',
+    'nav.about': 'Nosaltres',
+    'nav.resources': 'Recursos',
+    'nav.collaborators': 'Col·laboradors',
+    'nav.contact': 'Contacte',
+    'nav.callNow': 'Trucar Ara',
+    
+    // Home SEO
+    'home.seo.title': 'Capittal - Especialistes en M&A, Valoracions i Due Diligence a Espanya',
+    'home.seo.description': 'Capittal és el teu soci estratègic en fusions i adquisicions. Més de 200 operacions exitoses en M&A, valoracions empresarials, due diligence i reestructuracions a Espanya.',
+    'home.seo.keywords': "M&A Espanya, fusions i adquisicions, valoració d'empreses, due diligence, venda d'empreses",
+    
+    // Hero
+    'hero.badge.rebrand': 'Abans Looper · Ara Capittal',
+    'hero.badge.leaders': 'Líders en M&A des de 2008',
+    'hero.title': 'Especialistes en',
+    'hero.title.highlight': 'compravenda',
+    'hero.title.end': "d'empreses",
+    'hero.subtitle': 'Maximitzem el valor de la teva empresa amb un equip multidisciplinari de més de 60 professionals i enfocament orientat a resultats.',
+    'hero.benefit.maxPrice': 'Màxim preu de venda',
+    'hero.benefit.confidential': 'Procés 100% confidencial',
+    'hero.benefit.experience': 'Experiència en +200 operacions',
+    'hero.benefit.team': 'Equip multidisciplinari de 60+ professionals',
+    'hero.stat.transactionalValue': 'Valor Transaccional',
+    'hero.stat.successRate': "Taxa d'Èxit",
+    'hero.cta.valuate': 'Valorar Empresa',
+    'hero.cta.cases': 'Veure Casos',
+    
+    // Social Proof
+    'social.title': 'Confien en Nosaltres',
+    'social.subtitle': 'Empreses líders de diversos sectors han confiat en la nostra experiència per a les seves operacions més importants.',
+    
+    // Services
+    'services.title': 'Els Nostres Serveis',
+    'services.subtitle': 'Serveis especialitzats en M&A i finances corporatives per impulsar el creixement de la teva empresa.',
+    'services.sell.title': 'Vendre Empresa',
+    'services.sell.description': 'Maximitzem el valor de la teva empresa amb el nostre procés provat de venda.',
+    'services.sell.feature1': 'Valoració precisa',
+    'services.sell.feature2': 'Procés confidencial',
+    'services.sell.feature3': 'Accés a compradors qualificats',
+    'services.buy.title': 'Comprar Empresa',
+    'services.buy.description': "T'ajudem a identificar, avaluar i adquirir empreses estratègiques.",
+    'services.buy.feature1': 'Identificació objectius',
+    'services.buy.feature2': 'Due diligence complet',
+    'services.buy.feature3': 'Negociació exitosa',
+    'services.valuations.title': 'Valoracions',
+    'services.valuations.description': 'Valoracions precises amb metodologies provades i anàlisi exhaustiva.',
+    'services.valuations.feature1': 'Múltiples metodologies',
+    'services.valuations.feature2': 'Anàlisi comparables',
+    'services.valuations.feature3': 'Informe detallat',
+    'services.ma.title': 'Fusions i Adquisicions',
+    'services.ma.description': "Assessorament integral en operacions de M&A, des de l'estratègia inicial fins al tancament exitós de la transacció.",
+    'services.dd.title': 'Due Diligence',
+    'services.dd.description': 'Anàlisi exhaustiva financera, legal i comercial per identificar riscos i oportunitats en cada inversió.',
+    'services.cf.title': 'Corporate Finance',
+    'services.cf.description': "Estructuració financera, aixecament de capital i optimització de l'estructura de balanç.",
+    'services.restructuring.title': 'Reestructuracions',
+    'services.restructuring.description': 'Processos de reestructuració operativa i financera per maximitzar el valor empresarial.',
+    'services.strategy.title': 'Estratègia Corporativa',
+    'services.strategy.description': "Definició d'estratègies de creixement inorgànic i identificació d'oportunitats de mercat.",
+    'services.cta.learnMore': 'Més informació',
+    'services.cta.allServices': 'Veure Tots els Serveis',
+    
+    // Case Studies
+    'cases.title': "Casos d'Èxit Destacats",
+    'cases.subtitle': 'El nostre historial parla per si mateix. Aquestes són algunes de les operacions més destacades que hem liderat.',
+    'cases.confidential': 'Confidencial',
+    'cases.cta': 'Veure Més Casos',
+    
+    // Why Choose
+    'why.badge': 'La Diferència Capittal',
+    'why.title': 'Per Què Triar Capittal',
+    'why.subtitle': "No som una consultora generalista. Som especialistes en M&A que vivim i respirem compravenda d'empreses cada dia.",
+    'why.experience.title': 'Experiència Provada',
+    'why.experience.description': 'Més de 15 anys especialitzats exclusivament en M&A, amb un historial excepcional.',
+    'why.experience.highlight': '200+ operacions',
+    'why.value.title': 'Màxim Valor',
+    'why.value.description': 'Aconseguim valoracions superiors a la mitjana del mercat gràcies al nostre procés optimitzat.',
+    'why.value.highlight': '40% més valor',
+    'why.speed.title': 'Rapidesa i Eficiència',
+    'why.speed.description': 'Processos optimitzats que redueixen els temps sense comprometre la qualitat.',
+    'why.speed.highlight': '6-8 mesos',
+    
+    // Contact
+    'contact.title': 'Contacta amb Nosaltres',
+    'contact.subtitle': "Posa't en contacte amb nosaltres per obtenir més informació sobre els nostres serveis de valoració i venda d'empreses.",
+    'contact.direct.title': 'Prefereixes contactar directament?',
+    
     // Colaboradors - Traduccions completes
     ...collaboratorsTranslations.ca,
   },
@@ -742,6 +932,96 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.no_multiples': 'No multiples found for this sector',
     'advisor.error.calculation': 'Error calculating valuation',
     'advisor.error.calculation_failed': 'There was a problem calculating the valuation',
+    
+    // Navigation
+    'nav.services': 'Services',
+    'nav.sectors': 'Sectors',
+    'nav.about': 'About Us',
+    'nav.resources': 'Resources',
+    'nav.collaborators': 'Partners',
+    'nav.contact': 'Contact',
+    'nav.callNow': 'Call Now',
+    
+    // Home SEO
+    'home.seo.title': 'Capittal - M&A, Valuations and Due Diligence Specialists in Spain',
+    'home.seo.description': 'Capittal is your strategic partner in mergers and acquisitions. Over 200 successful M&A operations, business valuations, due diligence and restructurings in Spain.',
+    'home.seo.keywords': 'M&A Spain, mergers and acquisitions, business valuation, due diligence, sell company',
+    
+    // Hero
+    'hero.badge.rebrand': 'Formerly Looper · Now Capittal',
+    'hero.badge.leaders': 'M&A Leaders since 2008',
+    'hero.title': 'Specialists in',
+    'hero.title.highlight': 'buying and selling',
+    'hero.title.end': 'companies',
+    'hero.subtitle': "We maximize your company's value with a multidisciplinary team of over 60 professionals and a results-oriented approach.",
+    'hero.benefit.maxPrice': 'Maximum sale price',
+    'hero.benefit.confidential': '100% confidential process',
+    'hero.benefit.experience': 'Experience in +200 operations',
+    'hero.benefit.team': 'Multidisciplinary team of 60+ professionals',
+    'hero.stat.transactionalValue': 'Transactional Value',
+    'hero.stat.successRate': 'Success Rate',
+    'hero.cta.valuate': 'Value Company',
+    'hero.cta.cases': 'View Cases',
+    
+    // Social Proof
+    'social.title': 'They Trust Us',
+    'social.subtitle': 'Leading companies from various sectors have trusted our expertise for their most important operations.',
+    
+    // Services
+    'services.title': 'Our Services',
+    'services.subtitle': "Specialized services in M&A and corporate finance to boost your company's growth.",
+    'services.sell.title': 'Sell Company',
+    'services.sell.description': "We maximize your company's value with our proven sales process.",
+    'services.sell.feature1': 'Accurate valuation',
+    'services.sell.feature2': 'Confidential process',
+    'services.sell.feature3': 'Access to qualified buyers',
+    'services.buy.title': 'Buy Company',
+    'services.buy.description': 'We help you identify, evaluate and acquire strategic companies.',
+    'services.buy.feature1': 'Target identification',
+    'services.buy.feature2': 'Complete due diligence',
+    'services.buy.feature3': 'Successful negotiation',
+    'services.valuations.title': 'Valuations',
+    'services.valuations.description': 'Accurate valuations with proven methodologies and comprehensive analysis.',
+    'services.valuations.feature1': 'Multiple methodologies',
+    'services.valuations.feature2': 'Comparable analysis',
+    'services.valuations.feature3': 'Detailed report',
+    'services.ma.title': 'Mergers & Acquisitions',
+    'services.ma.description': 'Comprehensive advisory in M&A operations, from initial strategy to successful transaction closure.',
+    'services.dd.title': 'Due Diligence',
+    'services.dd.description': 'Comprehensive financial, legal and commercial analysis to identify risks and opportunities in every investment.',
+    'services.cf.title': 'Corporate Finance',
+    'services.cf.description': 'Financial structuring, capital raising and balance sheet structure optimization.',
+    'services.restructuring.title': 'Restructurings',
+    'services.restructuring.description': 'Operational and financial restructuring processes to maximize business value.',
+    'services.strategy.title': 'Corporate Strategy',
+    'services.strategy.description': 'Definition of inorganic growth strategies and identification of market opportunities.',
+    'services.cta.learnMore': 'Learn more',
+    'services.cta.allServices': 'View All Services',
+    
+    // Case Studies
+    'cases.title': 'Featured Success Stories',
+    'cases.subtitle': 'Our track record speaks for itself. These are some of the most outstanding operations we have led.',
+    'cases.confidential': 'Confidential',
+    'cases.cta': 'View More Cases',
+    
+    // Why Choose
+    'why.badge': 'The Capittal Difference',
+    'why.title': 'Why Choose Capittal',
+    'why.subtitle': 'We are not a generalist consultancy. We are M&A specialists who live and breathe company buying and selling every day.',
+    'why.experience.title': 'Proven Experience',
+    'why.experience.description': 'Over 15 years specialized exclusively in M&A, with an exceptional track record.',
+    'why.experience.highlight': '200+ operations',
+    'why.value.title': 'Maximum Value',
+    'why.value.description': 'We achieve valuations above market average thanks to our optimized process.',
+    'why.value.highlight': '40% more value',
+    'why.speed.title': 'Speed and Efficiency',
+    'why.speed.description': 'Optimized processes that reduce timelines without compromising quality.',
+    'why.speed.highlight': '6-8 months',
+    
+    // Contact
+    'contact.title': 'Contact Us',
+    'contact.subtitle': 'Get in touch with us for more information about our valuation and company sale services.',
+    'contact.direct.title': 'Prefer to contact directly?',
     
     // Collaborators - Full translations
     ...collaboratorsTranslations.en,
