@@ -158,9 +158,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'equipo.subtitle': 'Profesionales con experiencia global y resultados probados',
     
     // Venta Empresas Page
-    'footer.company.description': 'Asesoría financiera especializada en valoración y venta de empresas en España.',
-    'footer.company.address': 'Calle Serrano, 93. 28006 Madrid, España',
-    'footer.company.phone': '+34 911 234 567',
+    'footer.company.description': 'Expertos en M&A y valoración de empresas. Junto con Navarro Legal, ofrecemos un servicio integral desde la originación hasta el cierre de la operación.',
+    'footer.company.address': 'Sede Central: Carrer Ausias March número 36, 08010 Barcelona',
+    'footer.company.otherOffices': 'Otras oficinas: Madrid · Girona · Lleida · Tarragona · Palma de Mallorca · Zaragoza · Valencia',
+    'footer.company.phone': '+34 695 717 490',
     'footer.company.email': 'info@capittal.es',
     'footer.section.services': 'Servicios',
     'footer.section.company': 'Empresa',
@@ -958,9 +959,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.llamarAhora': 'Trucar Ara',
     
     // === FOOTER ===
-    'footer.company.description': 'Assessoria financera especialitzada en valoració i venda d\'empreses a Espanya.',
-    'footer.company.address': 'Carrer Serrano, 93. 28006 Madrid, Espanya',
-    'footer.company.phone': '+34 911 234 567',
+    'footer.company.description': 'Experts en M&A i valoració d\'empreses. Juntament amb Navarro Legal, oferim un servei integral des de l\'originació fins al tancament de l\'operació.',
+    'footer.company.address': 'Seu Central: Carrer Ausias March número 36, 08010 Barcelona',
+    'footer.company.otherOffices': 'Altres oficines: Madrid · Girona · Lleida · Tarragona · Palma de Mallorca · Saragossa · València',
+    'footer.company.phone': '+34 695 717 490',
     'footer.company.email': 'info@capittal.es',
     'footer.section.services': 'Serveis',
     'footer.section.company': 'Empresa',
@@ -1342,9 +1344,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.llamarAhora': 'Call Now',
     
     // === FOOTER ===
-    'footer.company.description': 'Specialized financial advisory in business valuation and sale in Spain.',
-    'footer.company.address': 'Calle Serrano, 93. 28006 Madrid, Spain',
-    'footer.company.phone': '+34 911 234 567',
+    'footer.company.description': 'Experts in M&A and business valuation. Together with Navarro Legal, we offer a comprehensive service from origination to transaction closure.',
+    'footer.company.address': 'Head Office: Carrer Ausias March number 36, 08010 Barcelona',
+    'footer.company.otherOffices': 'Other offices: Madrid · Girona · Lleida · Tarragona · Palma de Mallorca · Zaragoza · Valencia',
+    'footer.company.phone': '+34 695 717 490',
     'footer.company.email': 'info@capittal.es',
     'footer.section.services': 'Services',
     'footer.section.company': 'Company',
