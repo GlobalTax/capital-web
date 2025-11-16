@@ -12,13 +12,13 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 // === ADMIN PROTECTION ===
 import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
 
-// === BUSINESS PAGES ===
-const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
-const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
-const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
-const Contacto = lazy(() => import('@/pages/Contacto'));
-const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
-const CasosExito = lazy(() => import('@/pages/CasosExito'));
+  // === BUSINESS PAGES ===
+  const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
+  const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
+  const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
+  const Contacto = lazy(() => import('@/pages/Contacto'));
+  const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
+  const CasosExito = lazy(() => import('@/pages/CasosExito'));
 const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
 const Equipo = lazy(() => import('@/pages/Equipo'));
 
@@ -91,8 +91,11 @@ export const AppRoutes = () => {
         <Route path="/oportunidades" element={<Oportunidades />} />
         <Route path="/marketplace" element={<Navigate to="/oportunidades" replace />} />
         <Route path="/contacto" element={<Contacto />} />
-        <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
-        <Route path="/casos-exito" element={<CasosExito />} />
+          <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
+          <Route path="/programa-col·laboradors" element={<ProgramaColaboradores />} />
+          <Route path="/programa-col-laboradors" element={<ProgramaColaboradores />} />
+          <Route path="/collaborators-program" element={<ProgramaColaboradores />} />
+          <Route path="/casos-exito" element={<CasosExito />} />
         <Route path="/nosotros" element={<Navigate to="/por-que-elegirnos" replace />} />
         <Route path="/de-looper-a-capittal" element={<DeLooperACapittal />} />
         <Route path="/equipo" element={<Equipo />} />

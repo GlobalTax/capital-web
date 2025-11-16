@@ -12,55 +12,59 @@ import {
   Globe,
   DollarSign
 } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
-const benefits = [
+export const EnhancedBenefitsSection = () => {
+  const { t } = useI18n();
+  
+  const benefits = [
   {
     id: 1,
-    title: 'Red Profesional Exclusiva',
-    description: 'Accede a una amplia red de profesionales senior, inversores institucionales y ejecutivos de primer nivel.',
+    title: t('collab.benefits.1.title'),
+    description: t('collab.benefits.1.desc'),
     icon: HandshakeIcon,
-    category: 'Networking',
-    highlights: ['50+ expertos', 'Eventos exclusivos', 'Colaboración directa']
+    category: t('collab.benefits.1.category'),
+    highlights: [t('collab.benefits.1.highlight1'), t('collab.benefits.1.highlight2'), t('collab.benefits.1.highlight3')]
   },
   {
     id: 2,
-    title: 'Proyectos de Alto Impacto',
-    description: 'Participa en transacciones complejas de M&A, valoraciones estratégicas y operaciones corporativas.',
+    title: t('collab.benefits.2.title'),
+    description: t('collab.benefits.2.desc'),
     icon: TrendingUp,
-    category: 'Experiencia',
-    highlights: ['€5M-€100M+ deals', 'Sectores diversificados', 'Casos únicos']
+    category: t('collab.benefits.2.category'),
+    highlights: [t('collab.benefits.2.highlight1'), t('collab.benefits.2.highlight2'), t('collab.benefits.2.highlight3')]
   },
   {
     id: 3,
-    title: 'Desarrollo Profesional',
-    description: 'Mentoría personalizada, formación continua y acceso a metodologías propietarias de valoración.',
+    title: t('collab.benefits.3.title'),
+    description: t('collab.benefits.3.desc'),
     icon: BrainCircuit,
-    category: 'Crecimiento',
-    highlights: ['Mentoría 1:1', 'Certificaciones', 'Metodologías avanzadas']
+    category: t('collab.benefits.3.category'),
+    highlights: [t('collab.benefits.3.highlight1'), t('collab.benefits.3.highlight2'), t('collab.benefits.3.highlight3')]
   },
   {
     id: 4,
-    title: 'Flexibilidad Total',
-    description: 'Trabajo remoto, horarios adaptables y proyectos que se ajustan a tu disponibilidad.',
+    title: t('collab.benefits.4.title'),
+    description: t('collab.benefits.4.desc'),
     icon: Zap,
-    category: 'Flexibilidad',
-    highlights: ['100% remoto', 'Horarios flexibles', 'Work-life balance']
+    category: t('collab.benefits.4.category'),
+    highlights: [t('collab.benefits.4.highlight1'), t('collab.benefits.4.highlight2'), t('collab.benefits.4.highlight3')]
   },
   {
     id: 5,
-    title: 'Reconocimiento Profesional',
-    description: 'Firma en informes oficiales, referencias profesionales y reconocimiento público por tu trabajo.',
+    title: t('collab.benefits.5.title'),
+    description: t('collab.benefits.5.desc'),
     icon: Award,
-    category: 'Reconocimiento',
-    highlights: ['Autoría reconocida', 'Portfolio robusto', 'Referencias sólidas']
+    category: t('collab.benefits.5.category'),
+    highlights: [t('collab.benefits.5.highlight1'), t('collab.benefits.5.highlight2'), t('collab.benefits.5.highlight3')]
   },
   {
     id: 6,
-    title: 'Remuneración Competitiva',
-    description: 'Tarifas premium del mercado, bonos por performance y oportunidades de equity en deals.',
+    title: t('collab.benefits.6.title'),
+    description: t('collab.benefits.6.desc'),
     icon: DollarSign,
-    category: 'Compensación',
-    highlights: ['Tarifas top-market', 'Bonos por éxito', 'Equity participation']
+    category: t('collab.benefits.6.category'),
+    highlights: [t('collab.benefits.6.highlight1'), t('collab.benefits.6.highlight2'), t('collab.benefits.6.highlight3')]
   }
 ];
 
@@ -70,11 +74,10 @@ export const EnhancedBenefitsSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            ¿Por qué elegir Capittal?
+            {t('collab.benefits.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Más que un trabajo, es una plataforma de crecimiento profesional diseñada 
-            para expertos que buscan excelencia y impacto en el mundo M&A.
+            {t('collab.benefits.subtitle')}
           </p>
         </div>
 

@@ -2,39 +2,19 @@ import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { HelpCircle } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
-const faqs = [
-  {
-    id: "faq-1",
-    question: "¿Qué tipo de proyectos puedo esperar como colaborador?",
-    answer: "Como colaborador de Capittal trabajarás en una amplia variedad de proyectos de M&A, incluyendo valoraciones de empresas, due diligence financiera, análisis de múltiplos comparables, modelado financiero para transacciones, y apoyo en procesos de venta o compra de empresas. Los proyectos varían desde startups tecnológicas hasta grandes corporaciones industriales."
-  },
-  {
-    id: "faq-2",
-    question: "¿Cuál es la remuneración y estructura de pagos?",
-    answer: "La remuneración se basa en la experiencia y tipo de proyecto. Ofrecemos tarifas competitivas por hora o por proyecto, con pagos mensuales. Además, hay bonificaciones por performance en proyectos exitosos. Durante la entrevista discutimos en detalle la estructura de compensación específica para tu perfil."
-  },
-  {
-    id: "faq-3",
-    question: "¿Qué flexibilidad tengo en términos de horarios y ubicación?",
-    answer: "El programa está diseñado para ser flexible. Puedes trabajar de forma remota en la mayoría de proyectos, aunque algunos pueden requerir presencia ocasional en Madrid. Los horarios son adaptables, pero esperamos disponibilidad para reuniones de coordinación y cumplimiento de deadlines acordados."
-  },
-  {
-    id: "faq-4",
-    question: "¿Necesito experiencia previa específicamente en M&A?",
-    answer: "Valoramos la experiencia en M&A, pero no es exclusivamente necesaria. Aceptamos profesionales con experiencia sólida en finanzas corporativas, banca de inversión, consultoría estratégica, auditoría o roles similares que demuestren competencias analíticas y conocimiento del mundo empresarial."
-  },
-  {
-    id: "faq-5",
-    question: "¿Qué oportunidades de desarrollo profesional ofrece el programa?",
-    answer: "Ofrecemos mentoría continua con nuestros socios senior, acceso a formación especializada en valoraciones y M&A, networking con otros profesionales del sector, y la posibilidad de participar en transacciones de alto perfil que fortalecen significativamente tu CV y experiencia profesional."
-  },
-  {
-    id: "faq-6",
-    question: "¿Hay posibilidad de convertirse en empleado a tiempo completo?",
-    answer: "Sí, consideramos regularmente a nuestros mejores colaboradores para posiciones permanentes cuando surgen oportunidades. De hecho, varios de nuestros empleados actuales comenzaron como colaboradores. Es una excelente manera de conocer nuestra cultura y demostrar tu valor añadido al equipo."
-  }
-];
+export const FAQSection = () => {
+  const { t } = useI18n();
+  
+  const faqs = [
+    { id: "faq-1", question: t('collab.faq.q1'), answer: t('collab.faq.a1') },
+    { id: "faq-2", question: t('collab.faq.q2'), answer: t('collab.faq.a2') },
+    { id: "faq-3", question: t('collab.faq.q3'), answer: t('collab.faq.a3') },
+    { id: "faq-4", question: t('collab.faq.q4'), answer: t('collab.faq.a4') },
+    { id: "faq-5", question: t('collab.faq.q5'), answer: t('collab.faq.a5') },
+    { id: "faq-6", question: t('collab.faq.q6'), answer: t('collab.faq.a6') }
+  ];
 
 export const FAQSection = () => {
   return (
@@ -47,11 +27,10 @@ export const FAQSection = () => {
               Preguntas Frecuentes
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Resolvemos tus dudas
+              {t('collab.faq.title')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Encuentra respuestas a las preguntas más comunes sobre nuestro 
-              Programa de Colaboradores y cómo formar parte del equipo.
+              {t('collab.faq.subtitle')}
             </p>
           </div>
 
