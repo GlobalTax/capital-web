@@ -100,6 +100,18 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'why.speed.description': 'Procesos optimizados que reducen los tiempos sin comprometer la calidad.',
     'why.speed.highlight': '6-8 meses',
     
+    // Case Studies
+    'cases.title': 'Casos de Éxito Destacados',
+    'cases.subtitle': 'Nuestro historial habla por sí mismo. Estas son algunas de las operaciones más destacadas que hemos liderado.',
+    'cases.confidential': 'Confidencial',
+    'cases.cta': 'Ver Más Casos',
+    
+    // Contact Variants
+    'contact.compra.title': 'Encuentra tu próxima adquisición',
+    'contact.compra.subtitle': 'Déjanos tus datos y te contactaremos para entender tus objetivos de inversión.',
+    'contact.venta.title': 'Inicia tu proceso de venta',
+    'contact.venta.subtitle': 'Completa el formulario y uno de nuestros expertos se pondrá en contacto contigo para valorar tu empresa.',
+    
     // Contact
     'contact.title': 'Contacta con Nosotros',
     'contact.subtitle': 'Ponte en contacto con nosotros para obtener más información sobre nuestros servicios de valoración y venta de empresas.',
