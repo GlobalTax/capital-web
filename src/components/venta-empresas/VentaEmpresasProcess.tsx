@@ -7,33 +7,33 @@ const VentaEmpresasProcess = () => {
   const steps = [
     {
       icon: Search,
-      title: 'Valoración Inicial',
-      description: 'Análisis completo de tu empresa para determinar su valor de mercado real y potencial de optimización.',
-      duration: '48-72 horas'
+      title: t('ventaEmpresas.process.step1.title'),
+      description: t('ventaEmpresas.process.step1.description'),
+      duration: t('ventaEmpresas.process.step1.duration')
     },
     {
       icon: FileText,
-      title: 'Preparación y Optimización',
-      description: 'Preparamos tu empresa para maximizar su atractivo y valor ante potenciales compradores.',
-      duration: '1 mes'
+      title: t('ventaEmpresas.process.step2.title'),
+      description: t('ventaEmpresas.process.step2.description'),
+      duration: t('ventaEmpresas.process.step2.duration')
     },
     {
       icon: Users,
-      title: 'Identificación de Compradores',
-      description: 'Búsqueda y calificación de compradores estratégicos que valoren al máximo tu empresa.',
-      duration: '2-3 meses'
+      title: t('ventaEmpresas.process.step3.title'),
+      description: t('ventaEmpresas.process.step3.description'),
+      duration: t('ventaEmpresas.process.step3.duration')
     },
     {
       icon: Handshake,
-      title: 'Negociación y Estructuración',
-      description: 'Gestión profesional de ofertas y negociación de términos óptimos para la transacción.',
-      duration: '1-2 meses'
+      title: t('ventaEmpresas.process.step4.title'),
+      description: t('ventaEmpresas.process.step4.description'),
+      duration: t('ventaEmpresas.process.step4.duration')
     },
     {
       icon: CheckCircle,
-      title: 'Cierre de Operación',
-      description: 'Finalización de due diligence y firma de acuerdos definitivos para el cierre exitoso.',
-      duration: '2-3 meses'
+      title: t('ventaEmpresas.process.step5.title'),
+      description: t('ventaEmpresas.process.step5.description'),
+      duration: t('ventaEmpresas.process.step5.duration')
     }
   ];
 
@@ -42,11 +42,10 @@ const VentaEmpresasProcess = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-            Nuestro Proceso de Venta
+            {t('ventaEmpresas.process.title')}
           </h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Un método probado que garantiza los mejores resultados. Cada paso está diseñado 
-            para maximizar el valor de tu empresa y asegurar un proceso eficiente.
+            {t('ventaEmpresas.process.subtitle')}
           </p>
         </div>
 

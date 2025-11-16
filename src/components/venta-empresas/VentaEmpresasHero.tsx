@@ -7,9 +7,9 @@ const VentaEmpresasHero = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const benefits = [
-    { text: "Máximo precio de venta" },
-    { text: "Proceso 100% confidencial" },
-    { text: "Experiencia en +200 operaciones" }
+    { text: t('ventaEmpresas.hero.benefit1') },
+    { text: t('ventaEmpresas.hero.benefit2') },
+    { text: t('ventaEmpresas.hero.benefit3') }
   ];
 
   return (
@@ -21,17 +21,16 @@ const VentaEmpresasHero = () => {
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-muted border border-border text-sm font-medium text-black mb-8">
               <span className="w-2 h-2 bg-success rounded-full mr-2 animate-pulse"></span>
-              +200 empresas vendidas exitosamente
+              {t('ventaEmpresas.hero.badge')}
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
-              Vende tu empresa al{" "}
-              <span className="text-primary">mejor precio</span>
+              {t('ventaEmpresas.hero.title')}{" "}
+              <span className="text-primary">{t('ventaEmpresas.hero.titleHighlight')}</span>
             </h1>
             
             <p className="text-lg md:text-xl text-black mb-8 max-w-2xl mx-auto lg:mx-0">
-              Asesoría especializada en M&A. Maximizamos el valor de tu empresa con 
-              un proceso profesional, confidencial y orientado a resultados.
+              {t('ventaEmpresas.hero.subtitle')}
             </p>
 
             {/* Benefits */}
@@ -47,13 +46,13 @@ const VentaEmpresasHero = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <InteractiveHoverButton 
-                text="Valorar Empresa" 
+                text={t('ventaEmpresas.hero.ctaValuate')}
                 variant="primary" 
                 size="lg"
                 onClick={() => navigate('/lp/calculadora')}
               />
               <InteractiveHoverButton 
-                text="Contactar Ahora" 
+                text={t('ventaEmpresas.hero.ctaContact')}
                 variant="secondary" 
                 size="lg"
                 onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}

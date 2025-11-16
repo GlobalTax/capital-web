@@ -5,10 +5,10 @@ import { useI18n } from '@/shared/i18n/I18nProvider';
 const CompraEmpresasHero = () => {
   const { t } = useI18n();
   const benefits = [
-    'Deal sourcing especializado en sectores industriales',
-    'Red exclusiva de empresas familiares en transición',
-    'Análisis sectorial para fondos de Private Equity',
-    'Expertise en consolidación y sinergias industriales'
+    t('compraEmpresas.hero.benefit1'),
+    t('compraEmpresas.hero.benefit2'),
+    t('compraEmpresas.hero.benefit3'),
+    t('compraEmpresas.hero.benefit4')
   ];
 
   // Mock dashboard data
@@ -26,11 +26,10 @@ const CompraEmpresasHero = () => {
           {/* Left Content */}
           <div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              Adquisiciones para Empresas Industriales y Private Equity
+              {t('compraEmpresas.hero.title')}
             </h1>
             <p className="text-xl text-slate-700 mb-8 leading-relaxed">
-              Conectamos grupos industriales en procesos de consolidación y fondos de Private Equity con oportunidades exclusivas. 
-              Red especializada de empresas familiares industriales en transición generacional y procesos de expansión.
+              {t('compraEmpresas.hero.subtitle')}
             </p>
             
             {/* Benefits List */}
@@ -46,12 +45,12 @@ const CompraEmpresasHero = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <SimpleButton 
-                text="Ver Oportunidades Actuales" 
+                text={t('compraEmpresas.hero.ctaPrimary')}
                 variant="primary"
                 size="lg"
               />
               <SimpleButton 
-                text="Solicitar Consulta" 
+                text={t('compraEmpresas.hero.ctaSecondary')}
                 variant="outline"
                 size="lg"
               />
