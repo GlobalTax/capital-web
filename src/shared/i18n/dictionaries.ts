@@ -1030,4 +1030,183 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.calculation': 'Erro ao calcular a valoración',
     'advisor.error.calculation_failed': 'Houbo un problema ao calcular a valoración',
   },
+  
+  // English (EN) - Basic copy of Spanish for now, collaborators section fully translated
+  en: {
+    // Landing
+    'landing.title': 'Business Valuation Calculator | Capittal',
+    'landing.description': 'Market multiples valuation calculator: quick and indicative estimation. Get free results instantly.',
+    'landing.h1': 'Business Valuation Calculator',
+
+    // Calculator header
+    'calc.title': 'Business Valuation Calculator',
+    'calc.subtitle': 'Get an estimated valuation of your company in a few steps',
+    'calc.title.meta': 'Welcome to Capittal Calculator',
+    'calc.subtitle.meta': 'Get a free estimated valuation in less than 2 minutes',
+
+    // Steps
+    'steps.basic_info': 'Basic information',
+    'steps.financial_data': 'Financial data',
+    'steps.characteristics': 'Characteristics',
+    'steps.result': 'Result',
+
+    // Navigation
+    'nav.prev': 'Previous',
+    'nav.next': 'Next',
+    'nav.step_of': 'Step {current} of {total}',
+    'nav.calculate': 'Calculate Valuation',
+    'aria.prev': 'Go to previous step',
+    'aria.next': 'Go to next step',
+    'aria.calculate': 'Calculate valuation with entered data',
+
+    // States
+    'calc.loading.title': 'Calculating Valuation',
+    'calc.loading.subtitle': 'Analyzing your company data...',
+    'calc.no_results.title': 'No results yet',
+    'calc.no_results.subtitle': 'Complete all steps to get your company valuation.',
+
+    // Results
+    'calc.results.title': 'Valuation of {company}',
+    'calc.results.subtitle': 'Results based on EBITDA multiples by sector',
+
+    // Summary
+    'summary.title': 'Company Data Summary',
+    'summary.basic': 'Basic Information',
+    'summary.financial': 'Financial Data',
+    'summary.features': 'Characteristics',
+
+    // Fields
+    'fields.company': 'Company',
+    'fields.cif': 'Tax ID',
+    'fields.contact': 'Contact',
+    'fields.sector': 'Sector',
+    'fields.activity': 'Activity description',
+    'fields.employees': 'Employees',
+    'fields.location': 'Location',
+    'fields.annual_revenue': 'Annual revenue',
+    'fields.ebitda': 'EBITDA',
+    'fields.ebitda_adjustments': 'EBITDA adjustments',
+    'fields.ownership': 'Ownership',
+    'fields.competitive_advantage': 'Competitive advantage',
+
+    // Valuation
+    'valuation.estimated': 'Estimated Valuation',
+    'valuation.range': 'Range',
+    'valuation.multiple': 'EBITDA Multiple',
+    'valuation.applied_over': 'Applied over EBITDA of {amount}',
+
+    // Sector multiples
+    'sector.multiple.title': 'Applied Multiple by Sector',
+    'sector.multiple.label': 'EBITDA Multiple',
+    'sector.valuation_formula': 'Valuation: {ebitda} × {multiple} = {valuation}',
+    'sector.sector': 'Sector',
+    'sector.employees': 'Employees',
+
+    // Actions
+    'actions.new': 'New Valuation',
+    'actions.download': 'Download PDF Report',
+    'actions.generating': 'Generating PDF...',
+    'actions.goto_website': 'Go to Main Website',
+
+    // Fiscal
+    'fiscal.title': 'Estimated tax impact (Spain)',
+    'fiscal.description': 'Indicative calculation of possible tax impact on a sale of shares/assets in Spain. Consult with our tax team for a detailed study.',
+    'fiscal.acquisition_value': 'Acquisition value',
+    'fiscal.sale_value': 'Sale value',
+    'fiscal.capital_gain': 'Calculated capital gain',
+    'fiscal.gain_formula': 'Gain = Sale value - Acquisition value',
+    'fiscal.rate': 'Indicative rate',
+    'fiscal.rate_detail': 'Personal tax: 19%–26% | Corporate tax: 25% (depending on case)',
+    'fiscal.withholding': 'Withholdings',
+    'fiscal.withholding_detail': 'Possible 19% withholding on payments to individuals',
+    'fiscal.note': 'Note: this data is indicative and may vary by tax regime, exemptions (e.g. participation exemption), deductions and particular circumstances.',
+    'fiscal.contact_link': 'Talk to a tax advisor',
+
+    // Form - Basic
+    'form.company_name': 'Company name',
+    'form.cif': 'Tax ID (CIF)',
+    'form.contact_name': 'Contact name',
+    'form.contact_email': 'Contact email',
+    'form.phone': 'Phone',
+    'form.sector': 'Sector',
+    'form.activity': 'Activity description',
+    'form.employees': 'Number of employees',
+    'form.location': 'Location',
+    'form.firm_type': 'Firm type',
+
+    // Form - Financial
+    'form.annual_revenue': 'Annual revenue (€)',
+    'form.ebitda': 'EBITDA (€)',
+    'form.ebitda_adjustments': 'EBITDA adjustments',
+    'form.ownership': 'Ownership percentage',
+    'form.competitive_advantage': 'Competitive advantage',
+
+    // Form - Placeholders
+    'placeholder.company_name': 'Your company name',
+    'placeholder.cif': 'A12345678',
+    'placeholder.contact_name': 'Your name',
+    'placeholder.contact_email': 'email@example.com',
+    'placeholder.phone': '+34 600 000 000',
+    'placeholder.sector': 'Select sector',
+    'placeholder.activity': 'Brief description of main activity',
+    'placeholder.employees': 'Select range',
+    'placeholder.location': 'City or region',
+    'placeholder.firm_type': 'Select firm type',
+    'placeholder.annual_revenue': '1000000',
+    'placeholder.ebitda': '150000',
+    'placeholder.ownership': '100',
+
+    // Errors
+    'error.required': 'This field is required',
+    'error.email': 'Invalid email',
+    'error.phone': 'Invalid phone',
+    'error.number': 'Must be a number',
+    'error.min': 'Value too low',
+    'error.max': 'Value too high',
+
+    // Validation
+    'validation.company_required': 'Company name is required',
+    'validation.contact_required': 'Contact name is required',
+    'validation.email_invalid': 'Invalid email',
+    'validation.revenue_required': 'Annual revenue is required',
+    'validation.ebitda_required': 'EBITDA is required',
+
+    // Sectors (same as Spanish)
+    'sector.technology': 'Technology',
+    'sector.retail': 'Retail',
+    'sector.manufacturing': 'Manufacturing',
+    'sector.services': 'Services',
+    'sector.construction': 'Construction',
+    'sector.healthcare': 'Healthcare',
+    'sector.education': 'Education',
+    'sector.financial': 'Financial',
+    'sector.real_estate': 'Real Estate',
+    'sector.hospitality': 'Hospitality',
+    'sector.logistics': 'Logistics',
+    'sector.energy': 'Energy',
+    'sector.agriculture': 'Agriculture',
+    'sector.automotive': 'Automotive',
+    'sector.telecommunications': 'Telecommunications',
+
+    // Employee ranges (same as Spanish)
+    'employees.1_10': '1-10 employees',
+    'employees.11_50': '11-50 employees',
+    'employees.51_200': '51-200 employees',
+    'employees.201_500': '201-500 employees',
+    'employees.501_plus': '501+ employees',
+
+    // Firm types
+    'firm_types.tax_advisory': 'Tax Advisory',
+    'firm_types.accounting_advisory': 'Accounting Advisory',
+    'firm_types.legal_advisory': 'Legal Advisory',
+    'firm_types.labor_advisory': 'Labor Advisory',
+    'firm_types.audit': 'Audit',
+    'firm_types.multidisciplinary': 'Multidisciplinary Firm',
+    'firm_types.consultancy': 'Consultancy',
+    'firm_types.financial_advisory': 'Financial Advisory',
+    
+    'advisor.error.no_multiples': 'No multiples found for this sector',
+    'advisor.error.calculation': 'Error calculating valuation',
+    'advisor.error.calculation_failed': 'There was a problem calculating the valuation',
+  },
 };

@@ -7,6 +7,7 @@ const labels: Record<LangCode, string> = {
   ca: 'Català',
   val: 'Valencià',
   gl: 'Galego',
+  en: 'English',
 };
 
 interface LanguageSelectorProps {

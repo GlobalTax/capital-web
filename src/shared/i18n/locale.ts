@@ -1,7 +1,7 @@
 // Simple locale utilities for Spain-only languages without external APIs
 // Supported languages: 'es' (Castellano), 'ca' (Català), 'val' (Valencià), 'gl' (Galego)
 
-export type LangCode = 'es' | 'ca' | 'val' | 'gl'
+export type LangCode = 'es' | 'ca' | 'val' | 'gl' | 'en'
 
 export const regionToLang: Record<string, LangCode> = {
   // Comunidades Autónomas (keys are normalized lowercase without accents)
@@ -39,6 +39,7 @@ export const langToLocale: Record<LangCode, string> = {
   ca: 'ca-ES',
   val: 'ca-ES-valencia',
   gl: 'gl-ES',
+  en: 'en-US',
 };
 
 export function detectBrowserLang(): LangCode {
@@ -46,6 +47,7 @@ export function detectBrowserLang(): LangCode {
   if (langs.some(l => l.startsWith('ca') && l.includes('val'))) return 'val';
   if (langs.some(l => l.startsWith('gl'))) return 'gl';
   if (langs.some(l => l.startsWith('ca'))) return 'ca';
+  if (langs.some(l => l.startsWith('en'))) return 'en';
   return 'es';
 }
 

@@ -6,7 +6,7 @@ import { logger } from '@/utils/conditionalLogger';
 export const useValuationPDF = (
   companyData: any,
   result: any,
-  lang: 'es' | 'ca' | 'val' | 'gl' = 'es'
+  lang: 'es' | 'ca' | 'val' | 'gl' | 'en' = 'es'
 ) => {
   const { generatePDFBlob, isGenerating, error, clearError } = useLazyPDFGeneration();
 
@@ -48,7 +48,7 @@ export const useValuationPDF = (
 interface ValuationPDFGeneratorProps {
   companyData: any;
   result: any;
-  lang?: 'es' | 'ca' | 'val' | 'gl';
+  lang?: 'es' | 'ca' | 'val' | 'gl' | 'en';
   onGenerated?: (blob: Blob) => void;
   onError?: (error: string) => void;
   children: (props: {

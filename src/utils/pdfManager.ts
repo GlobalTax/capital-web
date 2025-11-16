@@ -6,7 +6,7 @@ interface PDFDownloadOptions {
   valuationId: string;
   pdfType?: 'react_pdf' | 'edge_function' | 'simple_report' | 'auto';
   userId?: string;
-  language?: 'es' | 'ca' | 'val' | 'gl';
+  language?: 'es' | 'ca' | 'val' | 'gl' | 'en';
 }
 
 // Interfaz local para React-PDF que incluye todos los campos necesarios
