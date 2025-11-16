@@ -4,12 +4,15 @@ import { SimpleButton } from '@/components/ui/simple-button';
 import { Menu, X, Phone, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/shared/i18n/I18nProvider';
+import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
 import LanguageSelector from '@/components/i18n/LanguageSelector';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { lang, t } = useI18n();
   const { user } = useAuth();
 
   return (
@@ -18,7 +21,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/" className="flex flex-col">
+            <Link to={getLocalizedUrl('home', lang)} className="flex flex-col">
               <span className="text-2xl font-bold text-black">Capittal</span>
             </Link>
           </div>
@@ -29,9 +32,9 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
             <LanguageSelector />
-            <Link to="/contacto">
+            <Link to={getLocalizedUrl('contacto', lang)}>
               <SimpleButton 
-                text="Contacto"
+                text={t('nav.contacto')}
                 variant="secondary"
                 size="sm"
               />

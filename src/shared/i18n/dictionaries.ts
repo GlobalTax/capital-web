@@ -1,6 +1,23 @@
 import { LangCode } from '@/shared/i18n/locale';
 import { collaboratorsTranslations } from './collaborators-translations';
 
+// Helper function to get localized URL
+export function getLocalizedUrl(page: string, lang: 'es' | 'ca' | 'en'): string {
+  const urlMap: Record<string, Record<string, string>> = {
+    home: { es: '/', ca: '/inici', en: '/home' },
+    ventaEmpresas: { es: '/venta-empresas', ca: '/venda-empreses', en: '/sell-companies' },
+    compraEmpresas: { es: '/compra-empresas', ca: '/compra-empreses', en: '/buy-companies' },
+    contacto: { es: '/contacto', ca: '/contacte', en: '/contact' },
+    casosExito: { es: '/casos-exito', ca: '/casos-exit', en: '/success-stories' },
+    porQueElegirnos: { es: '/por-que-elegirnos', ca: '/per-que-triar-nos', en: '/why-choose-us' },
+    equipo: { es: '/equipo', ca: '/equip', en: '/team' },
+    programaColaboradores: { es: '/programa-colaboradores', ca: '/programa-col·laboradors', en: '/partners-program' },
+    serviciosValoraciones: { es: '/servicios/valoraciones', ca: '/serveis/valoracions', en: '/services/valuations' },
+    blog: { es: '/blog', ca: '/blog', en: '/blog' },
+  };
+  return urlMap[page]?.[lang] || '/';
+}
+
 // Diccionarios para la calculadora y landing
 export const dictionaries: Record<LangCode, Record<string, string>> = {
   es: {
@@ -155,6 +172,59 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'equipo.seo.keywords': 'equipo M&A, expertos fusiones adquisiciones, profesionales M&A España',
     'equipo.title': 'Nuestro Equipo',
     'equipo.subtitle': 'Profesionales con experiencia global y resultados probados',
+    
+    // === VENTA EMPRESAS ===
+    'ventaEmpresas.seo.title': 'Venta de Empresas | Asesoría M&A Profesional | Capittal',
+    'ventaEmpresas.seo.description': 'Asesoría especializada en venta de empresas. Maximizamos el valor de tu empresa con un proceso profesional y confidencial.',
+    'ventaEmpresas.seo.keywords': 'venta empresas España, asesoría M&A, vender empresa, valoración empresas profesional',
+    
+    // === COMPRA EMPRESAS ===
+    'compraEmpresas.seo.title': 'Compra de Empresas | Adquisiciones Estratégicas | Capittal',
+    'compraEmpresas.seo.description': 'Asesoría en compra y adquisición de empresas. Te ayudamos a identificar oportunidades y ejecutar adquisiciones estratégicas con éxito.',
+    'compraEmpresas.seo.keywords': 'compra empresas España, adquisiciones estratégicas, comprar empresa, asesoría adquisiciones',
+    
+    // === CONTACTO ===
+    'contacto.seo.title': 'Contacto | Capittal Asesoría M&A',
+    'contacto.seo.description': 'Contacta con nosotros para recibir asesoramiento experto en valoración, venta y compra de empresas. Estamos aquí para ayudarte.',
+    'contacto.seo.keywords': 'contacto Capittal, asesoría financiera, consultoría M&A España',
+    
+    // === CASOS ÉXITO ===
+    'casosExito.seo.title': 'Casos de Éxito | Operaciones M&A Exitosas | Capittal',
+    'casosExito.seo.description': 'Descubre nuestros casos de éxito en operaciones de M&A. Más de 200 empresas vendidas con éxito en diversos sectores.',
+    'casosExito.seo.keywords': 'casos éxito M&A, operaciones empresas España, ventas exitosas empresas',
+    'casosExito.title': 'Nuestros Casos de Éxito',
+    'casosExito.subtitle': 'Más de 200 operaciones exitosas en diversos sectores',
+    
+    // === FOOTER ===
+    'footer.company.description': 'Asesoría financiera especializada en valoración y venta de empresas en España.',
+    'footer.company.address': 'Calle Serrano, 93. 28006 Madrid, España',
+    'footer.company.phone': '+34 911 234 567',
+    'footer.company.email': 'info@capittal.es',
+    'footer.section.services': 'Servicios',
+    'footer.section.company': 'Empresa',
+    'footer.link.valoraciones': 'Valoraciones',
+    'footer.link.ventaEmpresas': 'Venta de Empresas',
+    'footer.link.compraEmpresas': 'Compra de Empresas',
+    'footer.link.dueDiligence': 'Due Diligence',
+    'footer.link.asesoramientoLegal': 'Asesoramiento Legal',
+    'footer.link.nosotros': 'Nosotros',
+    'footer.link.equipo': 'Equipo',
+    'footer.link.casosExito': 'Casos de Éxito',
+    'footer.link.porQueElegirnos': 'Por Qué Elegirnos',
+    'footer.link.blog': 'Blog',
+    'footer.link.contacto': 'Contacto',
+    'footer.link.programaColaboradores': 'Programa Colaboradores',
+    'footer.link.privacidad': 'Política de Privacidad',
+    'footer.link.terminos': 'Términos de Uso',
+    'footer.link.cookies': 'Cookies',
+    'footer.copyright': '© {year} Capittal. Todos los derechos reservados.',
+    'nav.servicios': 'Servicios',
+    'nav.sectores': 'Sectores',
+    'nav.nosotros': 'Nosotros',
+    'nav.recursos': 'Recursos',
+    'nav.colaboradores': 'Colaboradores',
+    'nav.contacto': 'Contacto',
+    'nav.llamarAhora': 'Llamar Ahora',
     
     // Ecosystem (Extended translations)
     'ecosystem.titleHighlight': 'Integral',
