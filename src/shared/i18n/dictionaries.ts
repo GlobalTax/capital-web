@@ -822,10 +822,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.badge': 'Ecosystem Integral M&A',
     'ecosystem.title': 'Ecosystem Integral de M&A',
     'ecosystem.subtitle': "Un equip complet d'especialistes treballant per l'èxit de la teva operació",
-    'cases.title': "Casos d'Èxit Destacats",
-    'cases.subtitle': 'El nostre historial parla per si mateix. Aquestes són algunes de les operacions més destacades que hem liderat.',
-    'cases.confidential': 'Confidencial',
-    'cases.cta': 'Veure Més Casos',
     
     // ========== VENTA EMPRESAS (CA) ==========
     'ventaEmpresas.hero.badge': '+200 empreses venudes amb èxit',
