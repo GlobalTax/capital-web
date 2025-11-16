@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const VentaEmpresasHero = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const benefits = [
     { text: "Máximo precio de venta" },

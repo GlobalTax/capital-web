@@ -1,6 +1,9 @@
 import React from 'react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const CapittalBrief: React.FC = () => {
+  const { t } = useI18n();
+  
   return (
     <section aria-labelledby="about-capittal" className="bg-white border-t">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
