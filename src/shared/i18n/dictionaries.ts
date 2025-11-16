@@ -185,6 +185,14 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.titleHighlight': 'Integral',
     'ecosystem.titleEnd': 'de Servicios',
     'ecosystem.subtitle2': 'Un equipo multidisciplinar de más de 60 profesionales con experiencia combinada en M&A, finanzas, derecho mercantil, y planificación fiscal. Ofrecemos soluciones end-to-end para cada operación.',
+    
+    // Statistics
+    'ecosystem.stat1.label': 'Profesionales Especializados',
+    'ecosystem.stat2.label': 'Operaciones Completadas',
+    'ecosystem.stat3.label': 'Años de Experiencia',
+    'ecosystem.stat4.label': 'Tasa de Éxito',
+    
+    // Services
     'ecosystem.maTitle': 'M&A Advisory',
     'ecosystem.maDescription': 'Especialistas en fusiones y adquisiciones para maximizar el valor de tu empresa',
     'ecosystem.valuationsTitle': 'Valoraciones',
@@ -197,6 +205,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.cfDescription': 'Estructuración financiera y levantamiento de capital estratégico',
     'ecosystem.ddTitle': 'Due Diligence',
     'ecosystem.ddDescription': 'Análisis exhaustivo de riesgos y oportunidades de inversión',
+    
+    // Professional Profiles
     'ecosystem.analystTitle': 'Analistas Financieros',
     'ecosystem.analystDescription': 'Expertos en modelado financiero y análisis de valoración',
     'ecosystem.lawyersTitle': 'Abogados',
@@ -205,6 +215,15 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.economistsDescription': 'Expertos en análisis sectorial y valoración macroeconómica',
     'ecosystem.taxSpecialistsTitle': 'Fiscalistas',
     'ecosystem.taxSpecialistsDescription': 'Especialistas en optimización tributaria y planificación fiscal',
+    
+    // Team Section
+    'ecosystem.teamTitle': 'Equipo Multidisciplinar',
+    'ecosystem.teamDescription': 'Nuestro equipo de más de 60 profesionales combina diferentes especialidades para ofrecer una perspectiva integral en cada proyecto.',
+    
+    // Commitment Section
+    'ecosystem.commitmentTitle': 'Nuestro Compromiso',
+    'ecosystem.commitmentDescription': 'Creamos valor a través de un enfoque integral y multidisciplinar, donde nuestro equipo de analistas financieros, abogados, economistas y fiscalistas trabajan de forma coordinada para garantizar el éxito de cada operación y maximizar el valor para nuestros clientes.',
+    
     'ecosystem.cta': 'Conoce Nuestros Servicios',
     
     // Landing
@@ -823,6 +842,44 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.title': 'Ecosystem Integral de M&A',
     'ecosystem.subtitle': "Un equip complet d'especialistes treballant per l'èxit de la teva operació",
     
+    // Statistics
+    'ecosystem.stat1.label': 'Professionals Especialitzats',
+    'ecosystem.stat2.label': 'Operacions Completades',
+    'ecosystem.stat3.label': "Anys d'Experiència",
+    'ecosystem.stat4.label': "Taxa d'Èxit",
+    
+    // Services
+    'ecosystem.maTitle': 'Assessoria M&A',
+    'ecosystem.maDescription': 'Especialistes en fusions i adquisicions per maximitzar el valor de la teva empresa',
+    'ecosystem.valuationsTitle': 'Valoracions',
+    'ecosystem.valuationsDescription': 'Experts en valoració empresarial i anàlisi financer detallat',
+    'ecosystem.legalTitle': 'Assessorament Legal',
+    'ecosystem.legalDescription': 'Suport jurídic especialitzat en dret mercantil i operacions M&A',
+    'ecosystem.taxTitle': 'Planificació Fiscal',
+    'ecosystem.taxDescription': 'Optimització tributària i estructuració fiscal estratègica',
+    'ecosystem.cfTitle': 'Corporate Finance',
+    'ecosystem.cfDescription': 'Estructuració financera i captació de capital estratègic',
+    'ecosystem.ddTitle': 'Due Diligence',
+    'ecosystem.ddDescription': "Anàlisi exhaustiu de riscos i oportunitats d'inversió",
+    
+    // Professional Profiles
+    'ecosystem.analystTitle': 'Analistes Financers',
+    'ecosystem.analystDescription': 'Experts en modelització financera i anàlisi de valoració',
+    'ecosystem.lawyersTitle': 'Advocats',
+    'ecosystem.lawyersDescription': 'Especialistes en dret mercantil i assessorament legal M&A',
+    'ecosystem.economistsTitle': 'Economistes',
+    'ecosystem.economistsDescription': 'Experts en anàlisi sectorial i valoració macroeconòmica',
+    'ecosystem.taxSpecialistsTitle': 'Fiscalistes',
+    'ecosystem.taxSpecialistsDescription': 'Especialistes en optimització tributària i planificació fiscal',
+    
+    // Team Section
+    'ecosystem.teamTitle': 'Equip Multidisciplinari',
+    'ecosystem.teamDescription': "El nostre equip de més de 60 professionals combina diferents especialitats per oferir una perspectiva integral en cada projecte.",
+    
+    // Commitment Section
+    'ecosystem.commitmentTitle': 'El Nostre Compromís',
+    'ecosystem.commitmentDescription': "Creem valor a través d'un enfocament integral i multidisciplinari, on el nostre equip d'analistes financers, advocats, economistes i fiscalistes treballen de forma coordinada per garantir l'èxit de cada operació i maximitzar el valor per als nostres clients.",
+    
     // ========== VENTA EMPRESAS (CA) ==========
     'ventaEmpresas.hero.badge': '+200 empreses venudes amb èxit',
     'ventaEmpresas.hero.title': 'Ven la teva empresa al',
@@ -1231,6 +1288,49 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.title': 'Contact Us',
     'contact.subtitle': 'Get in touch with us for more information about our valuation and company sale services.',
     'contact.direct.title': 'Prefer to contact directly?',
+    
+    // ========== ECOSYSTEM (EN) ==========
+    'ecosystem.badge': 'Comprehensive M&A Ecosystem',
+    'ecosystem.title': 'Comprehensive M&A Ecosystem',
+    'ecosystem.subtitle': 'A complete team of specialists working for the success of your operation',
+    
+    // Statistics
+    'ecosystem.stat1.label': 'Specialized Professionals',
+    'ecosystem.stat2.label': 'Completed Transactions',
+    'ecosystem.stat3.label': 'Years of Experience',
+    'ecosystem.stat4.label': 'Success Rate',
+    
+    // Services
+    'ecosystem.maTitle': 'M&A Advisory',
+    'ecosystem.maDescription': 'Specialists in mergers and acquisitions to maximize your company value',
+    'ecosystem.valuationsTitle': 'Valuations',
+    'ecosystem.valuationsDescription': 'Experts in business valuation and detailed financial analysis',
+    'ecosystem.legalTitle': 'Legal Advisory',
+    'ecosystem.legalDescription': 'Specialized legal support in corporate law and M&A operations',
+    'ecosystem.taxTitle': 'Tax Planning',
+    'ecosystem.taxDescription': 'Tax optimization and strategic fiscal structuring',
+    'ecosystem.cfTitle': 'Corporate Finance',
+    'ecosystem.cfDescription': 'Financial structuring and strategic capital raising',
+    'ecosystem.ddTitle': 'Due Diligence',
+    'ecosystem.ddDescription': 'Comprehensive analysis of investment risks and opportunities',
+    
+    // Professional Profiles
+    'ecosystem.analystTitle': 'Financial Analysts',
+    'ecosystem.analystDescription': 'Experts in financial modeling and valuation analysis',
+    'ecosystem.lawyersTitle': 'Lawyers',
+    'ecosystem.lawyersDescription': 'Specialists in corporate law and M&A legal advisory',
+    'ecosystem.economistsTitle': 'Economists',
+    'ecosystem.economistsDescription': 'Experts in sector analysis and macroeconomic valuation',
+    'ecosystem.taxSpecialistsTitle': 'Tax Specialists',
+    'ecosystem.taxSpecialistsDescription': 'Specialists in tax optimization and fiscal planning',
+    
+    // Team Section
+    'ecosystem.teamTitle': 'Multidisciplinary Team',
+    'ecosystem.teamDescription': 'Our team of over 60 professionals combines different specialties to offer a comprehensive perspective on every project.',
+    
+    // Commitment Section
+    'ecosystem.commitmentTitle': 'Our Commitment',
+    'ecosystem.commitmentDescription': 'We create value through a comprehensive and multidisciplinary approach, where our team of financial analysts, lawyers, economists and tax specialists work in coordination to ensure the success of each operation and maximize value for our clients.',
     
     // === NAVIGATION ===
     'nav.servicios': 'Services',

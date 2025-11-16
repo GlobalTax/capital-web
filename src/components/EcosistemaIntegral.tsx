@@ -28,65 +28,65 @@ const EcosistemaIntegral = () => {
 
     // Fallback statistics with proper numeric values for animation
     return [
-      { label: 'Profesionales Especializados', value: '60+', numericValue: 60, suffix: '+', animated: true, delay: 0 },
-      { label: 'Operaciones Completadas', value: '150+', numericValue: 150, suffix: '+', animated: true, delay: 200 },
-      { label: 'Años de Experiencia', value: '25+', numericValue: 25, suffix: '+', animated: true, delay: 400 },
-      { label: 'Tasa de Éxito', value: '98.7%', numericValue: 98.7, suffix: '%', animated: true, delay: 600 }
+      { label: t('ecosystem.stat1.label'), value: '60+', numericValue: 60, suffix: '+', animated: true, delay: 0 },
+      { label: t('ecosystem.stat2.label'), value: '150+', numericValue: 150, suffix: '+', animated: true, delay: 200 },
+      { label: t('ecosystem.stat3.label'), value: '25+', numericValue: 25, suffix: '+', animated: true, delay: 400 },
+      { label: t('ecosystem.stat4.label'), value: '98.7%', numericValue: 98.7, suffix: '%', animated: true, delay: 600 }
     ];
   }, [dbStatistics]);
 
   const ecosystemServices = [
     {
-      title: "M&A Advisory",
-      description: "Especialistas en fusiones y adquisiciones para maximizar el valor de tu empresa",
+      title: t('ecosystem.maTitle'),
+      description: t('ecosystem.maDescription'),
       icon: TrendingUp
     },
     {
-      title: "Valoraciones",
-      description: "Expertos en valoración empresarial y análisis financiero detallado",
+      title: t('ecosystem.valuationsTitle'),
+      description: t('ecosystem.valuationsDescription'),
       icon: Calculator
     },
     {
-      title: "Asesoramiento Legal",
-      description: "Apoyo jurídico especializado en derecho mercantil y operaciones M&A",
+      title: t('ecosystem.legalTitle'),
+      description: t('ecosystem.legalDescription'),
       icon: Scale
     },
     {
-      title: "Planificación Fiscal",
-      description: "Optimización tributaria y estructuración fiscal estratégica",
+      title: t('ecosystem.taxTitle'),
+      description: t('ecosystem.taxDescription'),
       icon: Receipt
     },
     {
-      title: "Corporate Finance",
-      description: "Estructuración financiera y levantamiento de capital estratégico",
+      title: t('ecosystem.cfTitle'),
+      description: t('ecosystem.cfDescription'),
       icon: Building2
     },
     {
-      title: "Due Diligence",
-      description: "Análisis exhaustivo de riesgos y oportunidades de inversión",
+      title: t('ecosystem.ddTitle'),
+      description: t('ecosystem.ddDescription'),
       icon: FileSearch
     }
   ];
 
   const professionalProfiles = [
     {
-      title: "Analistas Financieros",
-      description: "Expertos en modelado financiero y análisis de valoración",
+      title: t('ecosystem.analystTitle'),
+      description: t('ecosystem.analystDescription'),
       icon: BarChart3
     },
     {
-      title: "Abogados",
-      description: "Especialistas en derecho mercantil y asesoramiento legal M&A",
+      title: t('ecosystem.lawyersTitle'),
+      description: t('ecosystem.lawyersDescription'),
       icon: Scale
     },
     {
-      title: "Economistas",
-      description: "Expertos en análisis sectorial y valoración macroeconómica",
+      title: t('ecosystem.economistsTitle'),
+      description: t('ecosystem.economistsDescription'),
       icon: TrendingUp
     },
     {
-      title: "Fiscalistas",
-      description: "Especialistas en optimización tributaria y planificación fiscal",
+      title: t('ecosystem.taxSpecialistsTitle'),
+      description: t('ecosystem.taxSpecialistsDescription'),
       icon: Receipt
     }
   ];
@@ -195,11 +195,10 @@ const EcosistemaIntegral = () => {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
-              Equipo Multidisciplinar
+              {t('ecosystem.teamTitle')}
             </h3>
             <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Nuestro equipo de más de 60 profesionales combina diferentes especialidades 
-              para ofrecer una perspectiva integral en cada proyecto.
+              {t('ecosystem.teamDescription')}
             </p>
           </div>
 
@@ -231,12 +230,10 @@ const EcosistemaIntegral = () => {
         {/* Commitment Message */}
         <div className="text-center bg-white rounded-lg p-8 shadow-sm border border-gray-200">
           <h3 className="text-xl font-bold text-black mb-4">
-            Nuestro Compromiso
+            {t('ecosystem.commitmentTitle')}
           </h3>
           <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Creamos valor a través de un <strong className="text-black">enfoque integral y multidisciplinar</strong>, 
-            donde nuestro equipo de analistas financieros, abogados, economistas y fiscalistas trabajan 
-            de forma coordinada para garantizar el éxito de cada operación y maximizar el valor para nuestros clientes.
+            {t('ecosystem.commitmentDescription')}
           </p>
         </div>
       </div>
