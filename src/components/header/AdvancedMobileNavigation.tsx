@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Phone, ChevronDown, ChevronRight, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/shared/i18n/I18nProvider';
+import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 import { serviciosData } from './data/serviciosData';
 import { sectoresData } from './data/sectoresData';
 import { nosotrosData } from './data/nosotrosData';
@@ -17,6 +19,7 @@ interface AdvancedMobileNavigationProps {
 
 const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileNavigationProps) => {
   const { user, isAdmin } = useAuth();
+  const { lang, t } = useI18n();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
@@ -28,10 +31,10 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
   if (!isMenuOpen) return null;
 
   const navSections = [
-    { id: 'servicios', title: 'Servicios', items: serviciosData.flatMap(category => category.items) },
-    { id: 'nosotros', title: 'Nosotros', items: nosotrosData.flatMap(category => category.items) },
-    { id: 'recursos', title: 'Recursos', items: recursosData.flatMap(category => category.items) },
-    { id: 'colaboradores', title: 'Colaboradores', items: colaboradoresData },
+    { id: 'servicios', title: t('nav.servicios'), items: serviciosData.flatMap(category => category.items) },
+    { id: 'nosotros', title: t('nav.nosotros'), items: nosotrosData.flatMap(category => category.items) },
+    { id: 'recursos', title: t('nav.recursos'), items: recursosData.flatMap(category => category.items) },
+    { id: 'colaboradores', title: t('nav.colaboradores'), items: [{ label: t('nav.colaboradores'), href: getLocalizedUrl('programaColaboradores', lang) }] },
   ];
 
   return (
@@ -76,7 +79,7 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
               onClick={() => toggleSection('sectores')}
               className="flex items-center justify-between w-full text-left text-black text-sm font-medium py-2 hover:text-gray-600 transition-colors"
             >
-              <span>Sectores</span>
+              <span>{t('nav.sectores')}</span>
               {expandedSection === 'sectores' ? 
                 <ChevronDown className="h-4 w-4" /> : 
                 <ChevronRight className="h-4 w-4" />

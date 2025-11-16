@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/navigation-menu-lazy";
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/shared/i18n/I18nProvider';
+import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
 
 const ServiciosMenu = () => (
@@ -206,6 +208,7 @@ const NosotrosMenu = () => (
 
 const AdvancedDesktopNavigation = () => {
   const { user, isAdmin } = useAuth();
+  const { t, lang } = useI18n();
   
   return (
     <nav className="hidden md:flex items-center space-x-6">
@@ -213,7 +216,7 @@ const AdvancedDesktopNavigation = () => {
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-              Servicios
+              {t('nav.servicios')}
             </NavigationMenuTrigger>
             <NavigationMenuContent>
               <div className="w-[800px] p-6">
@@ -225,7 +228,7 @@ const AdvancedDesktopNavigation = () => {
           {sectoresData?.[0]?.items?.length ? (
             <NavigationMenuItem>
               <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-                Sectores
+                {t('nav.sectores')}
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <div className="w-[600px] p-6">
@@ -237,7 +240,7 @@ const AdvancedDesktopNavigation = () => {
 
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-              Nosotros
+              {t('nav.nosotros')}
             </NavigationMenuTrigger>
             <NavigationMenuContent>
               <div className="w-[500px] p-6">
@@ -248,7 +251,7 @@ const AdvancedDesktopNavigation = () => {
 
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
-              Recursos
+              {t('nav.recursos')}
             </NavigationMenuTrigger>
             <NavigationMenuContent>
               <div className="w-[700px] p-6">
@@ -260,15 +263,12 @@ const AdvancedDesktopNavigation = () => {
       </NavigationMenu>
 
 
-      {colaboradoresData.map((item) => (
-        <Link
-          key={item.id}
-          to={item.href}
-          className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
-        >
-          {item.label}
-        </Link>
-      ))}
+      <Link
+        to={getLocalizedUrl('programaColaboradores', lang)}
+        className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
+      >
+        {t('nav.colaboradores')}
+      </Link>
     </nav>
   );
 };
