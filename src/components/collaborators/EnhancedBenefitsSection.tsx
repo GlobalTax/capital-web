@@ -67,8 +67,6 @@ export const EnhancedBenefitsSection = () => {
     highlights: [t('collab.benefits.6.highlight1'), t('collab.benefits.6.highlight2'), t('collab.benefits.6.highlight3')]
   }
 ];
-
-export const EnhancedBenefitsSection = () => {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

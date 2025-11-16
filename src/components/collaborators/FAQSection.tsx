@@ -15,8 +15,6 @@ export const FAQSection = () => {
     { id: "faq-5", question: t('collab.faq.q5'), answer: t('collab.faq.a5') },
     { id: "faq-6", question: t('collab.faq.q6'), answer: t('collab.faq.a6') }
   ];
-
-export const FAQSection = () => {
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
