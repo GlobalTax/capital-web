@@ -2,41 +2,45 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Clock, FileText, Users, Handshake, TrendingUp } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
-const timelineSteps = [
-  {
-    id: 1,
-    title: "Solicitud y Revisión",
-    description: "Envía tu solicitud a través de nuestro formulario. Nuestro equipo revisará tu perfil y experiencia en un plazo de 3-5 días laborables.",
-    duration: "3-5 días",
-    icon: FileText,
-    status: "active"
-  },
-  {
-    id: 2,
-    title: "Entrevista Inicial",
-    description: "Entrevista virtual con nuestro equipo para conocerte mejor, evaluar tu fit cultural y discutir tus expectativas y disponibilidad.",
-    duration: "60 minutos",
-    icon: Users,
-    status: "pending"
-  },
-  {
-    id: 3,
-    title: "Valoración Técnica",
-    description: "Caso práctico de valoración o análisis financiero para evaluar tus competencias técnicas en M&A y finanzas corporativas.",
-    duration: "2-3 horas",
-    icon: TrendingUp,
-    status: "pending"
-  },
-  {
-    id: 4,
-    title: "Onboarding",
-    description: "Proceso de incorporación donde conocerás nuestros procesos, herramientas y recibirás acceso a nuestra plataforma de colaboradores.",
-    duration: "1 semana",
-    icon: Handshake,
-    status: "pending"
-  }
-];
+export const ProcessTimeline = () => {
+  const { t } = useI18n();
+  
+  const timelineSteps = [
+    {
+      id: 1,
+      title: t('collab.process.step1.title'),
+      description: t('collab.process.step1.desc'),
+      duration: t('collab.process.step1.duration'),
+      icon: FileText,
+      status: "active"
+    },
+    {
+      id: 2,
+      title: t('collab.process.step2.title'),
+      description: t('collab.process.step2.desc'),
+      duration: t('collab.process.step2.duration'),
+      icon: Users,
+      status: "pending"
+    },
+    {
+      id: 3,
+      title: t('collab.process.step3.title'),
+      description: t('collab.process.step3.desc'),
+      duration: t('collab.process.step3.duration'),
+      icon: TrendingUp,
+      status: "pending"
+    },
+    {
+      id: 4,
+      title: t('collab.process.step4.title'),
+      description: t('collab.process.step4.desc'),
+      duration: t('collab.process.step4.duration'),
+      icon: Handshake,
+      status: "pending"
+    }
+  ];
 
 export const ProcessTimeline = () => {
   return (
@@ -45,14 +49,13 @@ export const ProcessTimeline = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <Badge variant="outline" className="mb-4">
-              Proceso de Selección
+              {t('collab.process.badge')}
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Tu camino hacia Capittal
+              {t('collab.process.title')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Un proceso transparente y profesional diseñado para identificar 
-              el talento excepcional y asegurar un fit perfecto.
+              {t('collab.process.subtitle')}
             </p>
           </div>
 

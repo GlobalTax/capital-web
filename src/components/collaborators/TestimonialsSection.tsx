@@ -46,11 +46,10 @@ export const TestimonialsSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
-            Lo que dicen nuestros colaboradores
+            {t('collab.testimonials.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Profesionales de primer nivel que han encontrado en Capittal la plataforma 
-            perfecta para desarrollar su carrera en M&A.
+            {t('collab.testimonials.subtitle')}
           </p>
         </div>
 

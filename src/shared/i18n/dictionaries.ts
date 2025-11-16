@@ -1,4 +1,5 @@
 import { LangCode } from '@/shared/i18n/locale';
+import { collaboratorsTranslations } from './collaborators-translations';
 
 // Diccionarios para la calculadora y landing
 export const dictionaries: Record<LangCode, Record<string, string>> = {
@@ -285,6 +286,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.no_multiples': 'No se encontraron múltiplos para este sector',
     'advisor.error.calculation': 'Error al calcular la valoración',
     'advisor.error.calculation_failed': 'Hubo un problema al calcular la valoración',
+    
+    // Colaboradores - Traducciones completas
+    ...collaboratorsTranslations.es,
   },
   ca: {
     'landing.title': "Calculadora de Valoració d'Empreses | Capittal",
@@ -520,6 +524,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     
     'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
     'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
+    
+    // Colaboradors - Traduccions completes
+    ...collaboratorsTranslations.ca,
   },
   val: {
     'landing.title': "Calculadora de Valoració d'Empreses | Capittal",
@@ -773,6 +780,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.no_multiples': "No s'han trobat múltiples per a aquest sector",
     'advisor.error.calculation': 'Error al calcular la valoració',
     'advisor.error.calculation_failed': 'Hi ha hagut un problema en calcular la valoració',
+    
+    // Colaboradors - Usa traduccions catalanes
+    ...collaboratorsTranslations.ca,
   },
   gl: {
     'landing.title': 'Calculadora de Valoración de Empresas | Capittal',
@@ -1029,6 +1039,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.no_multiples': 'Non se atoparon múltiplos para este sector',
     'advisor.error.calculation': 'Erro ao calcular a valoración',
     'advisor.error.calculation_failed': 'Houbo un problema ao calcular a valoración',
+    
+    // Colaboradores - Usa traduccións españolas
+    ...collaboratorsTranslations.es,
   },
   
   // English (EN) - Basic copy of Spanish for now, collaborators section fully translated
@@ -1208,5 +1221,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.no_multiples': 'No multiples found for this sector',
     'advisor.error.calculation': 'Error calculating valuation',
     'advisor.error.calculation_failed': 'There was a problem calculating the valuation',
+    
+    // Collaborators - Full translations
+    ...collaboratorsTranslations.en,
   },
 };

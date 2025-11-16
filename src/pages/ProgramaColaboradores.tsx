@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { EnhancedHeroSection } from '@/components/collaborators/EnhancedHeroSection';
@@ -9,18 +10,22 @@ import { FAQSection } from '@/components/collaborators/FAQSection';
 import { EnhancedCollaboratorForm } from '@/components/collaborators/EnhancedCollaboratorForm';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema } from '@/utils/seo';
+import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 
-const ProgramaColaboradores = () => {
+// Componente interno que usa traducciones
+const ProgramaColaboradoresContent = () => {
+  const { t } = useI18n();
+  
   return (
     <>
       <SEOHead 
-        title="Programa de Colaboradores M&A - Únete a Capittal"
-        description="Únete al programa de colaboradores de Capittal. Gana comisiones atractivas recomendando nuestros servicios M&A. Red de profesionales y expertos del sector."
+        title={t('collab.seo.title')}
+        description={t('collab.seo.description')}
         canonical="https://capittal.es/programa-colaboradores"
-        keywords="programa colaboradores M&A, red asesores M&A, comisiones M&A, partnership M&A España"
+        keywords={t('collab.seo.keywords')}
         structuredData={getWebPageSchema(
-          "Programa de Colaboradores Capittal",
-          "Red de colaboradores profesionales en M&A con comisiones atractivas",
+          t('collab.seo.title'),
+          t('collab.seo.description'),
           "https://capittal.es/programa-colaboradores"
         )}
       />
@@ -45,6 +50,35 @@ const ProgramaColaboradores = () => {
         <Footer />
       </div>
     </>
+  );
+};
+
+// Componente detector de idioma por ruta
+const RouteLanguageDetector = ({ path }: { path: string }) => {
+  const { setLang } = useI18n();
+  
+  useEffect(() => {
+    if (path.includes('col·laboradors') || path.includes('col-laboradors')) {
+      setLang('ca');
+    } else if (path.includes('collaborators-program')) {
+      setLang('en');
+    } else {
+      setLang('es');
+    }
+  }, [path, setLang]);
+  
+  return null;
+};
+
+// Componente exportado con Provider
+const ProgramaColaboradores = () => {
+  const location = useLocation();
+  
+  return (
+    <I18nProvider>
+      <RouteLanguageDetector path={location.pathname} />
+      <ProgramaColaboradoresContent />
+    </I18nProvider>
   );
 };
 

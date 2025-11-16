@@ -1,14 +1,17 @@
 import React from 'react';
 import { SimpleButton } from '@/components/ui/simple-button';
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 // Fixed: Removed undefined variable reference that was causing crashes
 
 export const EnhancedHeroSection = () => {
+  const { t } = useI18n();
+  
   const recentActivity = [
-    { name: 'TechCorp Valuation', value: '€25M', status: 'Completado', color: 'bg-green-500', statusColor: 'text-green-600' },
-    { name: 'Industrial M&A', value: '€45M', status: 'En Progreso', color: 'bg-blue-500', statusColor: 'text-blue-600' },
-    { name: 'Retail DD', value: '€18M', status: 'Iniciado', color: 'bg-slate-800', statusColor: 'text-slate-600' }
+    { name: t('collab.hero.dashboard_activity1'), value: '€25M', status: t('collab.hero.dashboard_status1'), color: 'bg-green-500', statusColor: 'text-green-600' },
+    { name: t('collab.hero.dashboard_activity2'), value: '€45M', status: t('collab.hero.dashboard_status2'), color: 'bg-blue-500', statusColor: 'text-blue-600' },
+    { name: t('collab.hero.dashboard_activity3'), value: '€18M', status: t('collab.hero.dashboard_status3'), color: 'bg-slate-800', statusColor: 'text-slate-600' }
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -31,43 +34,43 @@ export const EnhancedHeroSection = () => {
             {/* Left Content */}
             <div className="space-y-8">
               <Badge className="bg-primary text-primary-foreground px-4 py-1.5">
-                ⭐ Programa Exclusivo
+                {t('collab.hero.badge')}
               </Badge>
               
               <h1 className="text-5xl md:text-6xl font-bold text-black leading-tight">
-                Únete al equipo de expertos en M&A
+                {t('collab.hero.title')}
               </h1>
               
               <p className="text-xl text-black leading-relaxed max-w-lg">
-                Forma parte de nuestra red de profesionales y accede a oportunidades exclusivas de valoración y transacciones
+                {t('collab.hero.subtitle')}
               </p>
 
               {/* Statistics */}
               <div className="grid grid-cols-3 gap-6 py-8">
                 <div>
-                  <div className="text-3xl font-bold text-black">50+</div>
-                  <div className="text-sm text-black">Colaboradores Activos</div>
+                  <div className="text-3xl font-bold text-black">{t('collab.hero.stat1_value')}</div>
+                  <div className="text-sm text-black">{t('collab.hero.stat1')}</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-black">€1.2B</div>
-                  <div className="text-sm text-black">Valor Gestionado</div>
+                  <div className="text-3xl font-bold text-black">{t('collab.hero.stat2_value')}</div>
+                  <div className="text-sm text-black">{t('collab.hero.stat2')}</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-black">98,7%</div>
-                  <div className="text-sm text-black">Satisfacción</div>
+                  <div className="text-3xl font-bold text-black">{t('collab.hero.stat3_value')}</div>
+                  <div className="text-sm text-black">{t('collab.hero.stat3')}</div>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <SimpleButton 
-                  text="Aplicar Ahora"
+                  text={t('collab.hero.cta_apply')}
                   variant="primary"
                   size="lg"
                   onClick={() => scrollToSection('application-form')}
                 />
                 <SimpleButton 
-                  text="Requisitos"
+                  text={t('collab.hero.cta_requirements')}
                   variant="outline"
                   size="lg"
                   onClick={() => scrollToSection('benefits-section')}
