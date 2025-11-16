@@ -42,12 +42,4 @@ const BrevoWhatsAppWidget = () => {
   return null;
 };
 
-// Declaración de tipos para TypeScript
-declare global {
-  interface Window {
-    BrevoConversationsID?: string;
-    BrevoConversations?: (...args: any[]) => void;
-  }
-}
-
 export default BrevoWhatsAppWidget;
