@@ -18,7 +18,8 @@ import {
   MessageSquare,
   CheckCircle2,
   Clock,
-  FileText
+  FileText,
+  Send
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -28,6 +29,7 @@ import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
 import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useBrevoSync } from '@/hooks/useBrevoSync';
 
 interface LeadData {
   id: string;
@@ -53,6 +55,7 @@ export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { syncSingleContact, isSyncing } = useBrevoSync();
   const [notes, setNotes] = useState('');
 
   // Fetch lead data
@@ -117,6 +120,24 @@ export default function LeadDetailPage() {
     },
     enabled: !!id,
   });
+
+  const handleSyncToBrevo = async () => {
+    if (!lead) return;
+    
+    try {
+      await syncSingleContact(lead.id, lead.origin);
+      toast({
+        title: "✅ Contacto enviado a Brevo",
+        description: `${lead.email} sincronizado correctamente`,
+      });
+    } catch (error) {
+      toast({
+        title: "❌ Error al sincronizar",
+        description: "No se pudo enviar el contacto a Brevo",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleAssignmentChange = () => {
     refetch();
@@ -190,33 +211,45 @@ export default function LeadDetailPage() {
           </div>
         </div>
 
-        {/* Botón "Pasar a Fase 1" solo para valoraciones */}
-        {lead.origin === 'valuation' && lead.lead_status_crm !== 'calificado' && lead.lead_status_crm !== 'ganado' && (
+        <div className="flex items-center gap-2">
+          {/* Botón "Enviar a Brevo" */}
           <Button 
-            variant="default"
-            onClick={() => {
-              // Actualizar estado a 'calificado' (Fase 1)
-              supabase
-                .from('company_valuations')
-                .update({ 
-                  lead_status_crm: 'calificado',
-                  status_updated_at: new Date().toISOString()
-                })
-                .eq('id', lead.id)
-                .then(() => {
-                  refetch();
-                  toast({
-                    title: "Lead pasado a Fase 1",
-                    description: "El lead ha sido calificado y está listo para ROD",
-                  });
-                });
-            }}
-            disabled={lead.lead_status_crm === 'calificado'}
+            variant="outline"
+            onClick={handleSyncToBrevo}
+            disabled={isSyncing}
           >
-            <TrendingUp className="mr-2 h-4 w-4" />
-            Pasar a Fase 1 (ROD)
+            <Send className="mr-2 h-4 w-4" />
+            {isSyncing ? 'Enviando...' : 'Enviar a Brevo'}
           </Button>
-        )}
+
+          {/* Botón "Pasar a Fase 1" solo para valoraciones */}
+          {lead.origin === 'valuation' && lead.lead_status_crm !== 'calificado' && lead.lead_status_crm !== 'ganado' && (
+            <Button 
+              variant="default"
+              onClick={() => {
+                // Actualizar estado a 'calificado' (Fase 1)
+                supabase
+                  .from('company_valuations')
+                  .update({ 
+                    lead_status_crm: 'calificado',
+                    status_updated_at: new Date().toISOString()
+                  })
+                  .eq('id', lead.id)
+                  .then(() => {
+                    refetch();
+                    toast({
+                      title: "Lead pasado a Fase 1",
+                      description: "El lead ha sido calificado y está listo para ROD",
+                    });
+                  });
+              }}
+              disabled={lead.lead_status_crm === 'calificado'}
+            >
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Pasar a Fase 1 (ROD)
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
