@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { LeadTrackingProvider } from '@/components/LeadTrackingProvider';
 import { TrackingInitializer } from '@/components/TrackingInitializer';
 import { ConsoleNoiseFilter } from '@/core/providers/ConsoleNoiseFilter';
+import { I18nProvider } from '@/shared/i18n/I18nProvider';
 
 // ============= CONDITIONAL TRACKING =============
 // Solo cargar tracking fuera de rutas /admin/*
@@ -62,11 +63,13 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <Router>
-              <AuthProvider>
-                <ConditionalTracking>
-                  {children}
-                </ConditionalTracking>
-              </AuthProvider>
+              <I18nProvider>
+                <AuthProvider>
+                  <ConditionalTracking>
+                    {children}
+                  </ConditionalTracking>
+                </AuthProvider>
+              </I18nProvider>
             </Router>
           </TooltipProvider>
         </QueryClientProvider>
