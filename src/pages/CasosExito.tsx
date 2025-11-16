@@ -1,20 +1,56 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import CaseStudies from '@/components/CaseStudies';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema } from '@/utils/seo';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const CasosExito = () => {
+  const { t, setLang } = useI18n();
+  const location = useLocation();
+  
+  // Detect language from URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/casos-exit') {
+      setLang('ca');
+    } else if (path === '/success-stories') {
+      setLang('en');
+    } else {
+      setLang('es');
+    }
+  }, [location.pathname, setLang]);
+  
+  // Add hreflang links
+  useEffect(() => {
+    const hreflangUrls = {
+      'es': 'https://capittal.es/casos-exito',
+      'ca': 'https://capittal.es/casos-exit',
+      'en': 'https://capittal.es/success-stories',
+      'x-default': 'https://capittal.es/casos-exito'
+    };
+    
+    document.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
+    Object.entries(hreflangUrls).forEach(([lang, url]) => {
+      const link = document.createElement('link');
+      link.rel = 'alternate';
+      link.hreflang = lang;
+      link.href = url;
+      document.head.appendChild(link);
+    });
+  }, []);
+  
   return (
     <>
       <SEOHead 
-        title="Casos de Éxito M&A - Más de 200 Transacciones | Capittal"
-        description="Descubre nuestros casos de éxito en M&A. Más de 200 transacciones exitosas con resultados excepcionales para nuestros clientes en España."
+        title={t('casosExito.seo.title')}
+        description={t('casosExito.seo.description')}
         canonical="https://capittal.es/casos-exito"
-        keywords="casos éxito M&A, transacciones exitosas, resultados M&A España, portfolio transacciones"
+        keywords={t('casosExito.seo.keywords')}
         structuredData={getWebPageSchema(
-          "Casos de Éxito Capittal",
-          "Más de 200 transacciones exitosas en fusiones y adquisiciones",
+          t('casosExito.seo.title'),
+          t('casosExito.seo.description'),
           "https://capittal.es/casos-exito"
         )}
       />
@@ -24,11 +60,10 @@ const CasosExito = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                Casos de Éxito
+                {t('casosExito.title')}
               </h1>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Más de 200 transacciones exitosas que demuestran nuestra capacidad para maximizar 
-                el valor en cada operación. Descubre cómo hemos ayudado a nuestros clientes.
+                {t('casosExito.subtitle')}
               </p>
             </div>
           </div>

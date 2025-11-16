@@ -19,8 +19,9 @@ import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
   const Contacto = lazy(() => import('@/pages/Contacto'));
   const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
   const CasosExito = lazy(() => import('@/pages/CasosExito'));
-const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
-const Equipo = lazy(() => import('@/pages/Equipo'));
+  const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos'));
+  const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
+  const Equipo = lazy(() => import('@/pages/Equipo'));
 
 // === CALCULATORS ===
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
@@ -64,8 +65,7 @@ const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() =>
 const JobsPage = lazy(() => import('@/pages/JobsPage').catch(() => import('@/pages/VentaEmpresas')));
 const JobDetailPage = lazy(() => import('@/pages/JobDetailPage').catch(() => import('@/pages/NotFound')));
 
-// === LEGAL PAGES ===
-const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos/index').catch(() => import('@/pages/VentaEmpresas')));
+// === LEGAL & SUB-PAGES ===
 const Experiencia = lazy(() => import('@/pages/por-que-elegirnos/experiencia').catch(() => import('@/pages/VentaEmpresas')));
 const Metodologia = lazy(() => import('@/pages/por-que-elegirnos/metodologia').catch(() => import('@/pages/VentaEmpresas')));
 const Resultados = lazy(() => import('@/pages/por-que-elegirnos/resultados').catch(() => import('@/pages/VentaEmpresas')));
@@ -80,6 +80,10 @@ export const AppRoutes = () => {
       <Routes>
         {/* === CORE ROUTES === */}
         <Route path="/" element={<Index />} />
+        <Route path="/ca" element={<Index />} />
+        <Route path="/inici" element={<Index />} />
+        <Route path="/en" element={<Index />} />
+        <Route path="/home" element={<Index />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/admin/login" element={<AdminLoginNew />} />
         <Route path="/admin/login-new" element={<AdminLoginNew />} />
@@ -87,18 +91,39 @@ export const AppRoutes = () => {
         
         {/* === BUSINESS ROUTES === */}
         <Route path="/venta-empresas" element={<VentaEmpresas />} />
+        <Route path="/venda-empreses" element={<VentaEmpresas />} />
+        <Route path="/sell-companies" element={<VentaEmpresas />} />
+        
         <Route path="/compra-empresas" element={<CompraEmpresas />} />
+        <Route path="/compra-empreses" element={<CompraEmpresas />} />
+        <Route path="/buy-companies" element={<CompraEmpresas />} />
+        
         <Route path="/oportunidades" element={<Oportunidades />} />
         <Route path="/marketplace" element={<Navigate to="/oportunidades" replace />} />
+        
         <Route path="/contacto" element={<Contacto />} />
-          <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
-          <Route path="/programa-col·laboradors" element={<ProgramaColaboradores />} />
-          <Route path="/programa-col-laboradors" element={<ProgramaColaboradores />} />
-          <Route path="/collaborators-program" element={<ProgramaColaboradores />} />
-          <Route path="/casos-exito" element={<CasosExito />} />
+        <Route path="/contacte" element={<Contacto />} />
+        <Route path="/contact" element={<Contacto />} />
+        
+        <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
+        <Route path="/programa-col·laboradors" element={<ProgramaColaboradores />} />
+        <Route path="/programa-col-laboradors" element={<ProgramaColaboradores />} />
+        <Route path="/collaborators-program" element={<ProgramaColaboradores />} />
+        
+        <Route path="/casos-exito" element={<CasosExito />} />
+        <Route path="/casos-exit" element={<CasosExito />} />
+        <Route path="/success-stories" element={<CasosExito />} />
+        
+        <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
+        <Route path="/per-que-triar-nos" element={<PorQueElegirnos />} />
+        <Route path="/why-choose-us" element={<PorQueElegirnos />} />
+        
+        <Route path="/equipo" element={<Equipo />} />
+        <Route path="/equip" element={<Equipo />} />
+        <Route path="/team" element={<Equipo />} />
+        
         <Route path="/nosotros" element={<Navigate to="/por-que-elegirnos" replace />} />
         <Route path="/de-looper-a-capittal" element={<DeLooperACapittal />} />
-        <Route path="/equipo" element={<Equipo />} />
         
         {/* === CALCULATOR ROUTES === */}
         <Route path="/calculadora-valoracion" element={<Navigate to="/lp/calculadora" replace />} />

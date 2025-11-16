@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AcquisitionHero from '@/components/landing/AcquisitionHero';
@@ -9,24 +10,57 @@ import SuccessStories from '@/components/landing/SuccessStories';
 import Contact from '@/components/Contact';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const CompraEmpresas = () => {
+  const { t, setLang } = useI18n();
+  const location = useLocation();
+  
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/compra-empreses')) {
+      setLang('ca');
+    } else if (path.includes('/buy-companies')) {
+      setLang('en');
+    } else {
+      setLang('es');
+    }
+  }, [location.pathname, setLang]);
+
+  useEffect(() => {
+    const hreflangUrls = {
+      'es': 'https://capittal.es/compra-empresas',
+      'ca': 'https://capittal.es/compra-empreses',
+      'en': 'https://capittal.es/buy-companies',
+      'x-default': 'https://capittal.es/compra-empresas'
+    };
+    
+    document.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
+    Object.entries(hreflangUrls).forEach(([lang, url]) => {
+      const link = document.createElement('link');
+      link.rel = 'alternate';
+      link.hreflang = lang;
+      link.href = url;
+      document.head.appendChild(link);
+    });
+  }, []);
+
   return (
     <>
       <SEOHead 
-        title="Compra de Empresas - Oportunidades de Adquisición | Capittal"
-        description="Accede a oportunidades exclusivas de compra de empresas. Asesoramiento profesional en adquisiciones estratégicas y crecimiento empresarial por M&A en España."
+        title={t('compraEmpresas.seo.title')}
+        description={t('compraEmpresas.seo.description')}
         canonical="https://capittal.es/compra-empresas"
-        keywords="compra empresas España, adquisiciones empresariales, oportunidades M&A, inversión empresarial"
+        keywords={t('compraEmpresas.seo.keywords')}
         structuredData={[
           getServiceSchema(
-            "Compra de Empresas",
-            "Asesoramiento en adquisiciones empresariales y crecimiento por M&A",
+            t('compraEmpresas.seo.title'),
+            t('compraEmpresas.seo.description'),
             "Business Acquisition Service"
           ),
           getWebPageSchema(
-            "Compra de Empresas",
-            "Oportunidades exclusivas de adquisición empresarial",
+            t('compraEmpresas.seo.title'),
+            t('compraEmpresas.seo.description'),
             "https://capittal.es/compra-empresas"
           )
         ]}
