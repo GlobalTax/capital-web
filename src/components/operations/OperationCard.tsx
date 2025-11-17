@@ -5,7 +5,19 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
 import { highlightText } from '@/shared/utils/string';
 import { isRecentOperation } from '@/shared/utils/date';
-import { Lock, TrendingUp, Heart } from 'lucide-react';
+import { 
+  Building2, 
+  MapPin, 
+  TrendingUp, 
+  Users, 
+  Calendar,
+  ArrowRight,
+  Info,
+  Heart,
+  CheckCircle2,
+  Shield,
+  Lock
+} from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useSavedOperations } from '@/hooks/useSavedOperations';
@@ -118,6 +130,14 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 )}
               </h3>
               <div className="flex items-center gap-1 mt-1 flex-wrap">
+                <Badge variant="outline" className="gap-1 border-green-500/50 text-green-700 bg-green-50 text-xs">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Verificado
+                </Badge>
+                <Badge variant="outline" className="gap-1 border-blue-500/50 text-blue-700 bg-blue-50 text-xs">
+                  <Shield className="h-3 w-3" />
+                  DD Completo
+                </Badge>
                 {operation.is_featured && (
                   <Badge variant="secondary" className="text-xs">
                     Destacado
