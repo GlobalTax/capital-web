@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
 import { highlightText } from '@/shared/utils/string';
 import { isRecentOperation } from '@/shared/utils/date';
-import { Eye } from 'lucide-react';
+import { Lock, TrendingUp } from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface Operation {
   id: string;
@@ -27,6 +28,8 @@ interface Operation {
   highlights?: string[];
   deal_type?: string;
   created_at?: string;
+  urgency_level?: 'high' | 'medium' | 'low';
+  interested_parties_count?: number;
 }
 
 interface OperationCardProps {
@@ -37,6 +40,7 @@ interface OperationCardProps {
 
 const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '', searchTerm }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <>
@@ -71,7 +75,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   operation.company_name
                 )}
               </h3>
-              <div className="flex items-center gap-1 mt-1">
+              <div className="flex items-center gap-1 mt-1 flex-wrap">
                 {operation.is_featured && (
                   <Badge variant="secondary" className="text-xs">
                     Destacado
@@ -80,6 +84,17 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 {isRecentOperation(operation.created_at) && (
                   <Badge className="text-xs bg-green-500 hover:bg-green-600">
                     Nuevo
+                  </Badge>
+                )}
+                {operation.urgency_level === 'high' && (
+                  <Badge className="text-xs bg-orange-500 hover:bg-orange-600">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    {t('operations.badges.highDemand')}
+                  </Badge>
+                )}
+                {operation.interested_parties_count && operation.interested_parties_count > 5 && (
+                  <Badge className="text-xs bg-purple-500 hover:bg-purple-600">
+                    {t('operations.badges.advancedProcess')}
                   </Badge>
                 )}
               </div>
@@ -166,14 +181,14 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             </div>
           </div>
           
-          {/* Ver Detalles Button */}
+          {/* Solicitar Información Button */}
           <Button 
-            variant="outline" 
+            variant="default" 
             className="w-full mt-4"
             onClick={() => setIsModalOpen(true)}
           >
-            <Eye className="mr-2 h-4 w-4" />
-            Ver Detalles
+            <Lock className="mr-2 h-4 w-4" />
+            {t('operations.cta.requestInfo')}
           </Button>
         </div>
       </CardContent>

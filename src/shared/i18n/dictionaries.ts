@@ -318,6 +318,19 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     
     'ecosystem.cta': 'Conoce Nuestros Servicios',
     
+    // Operations/Oportunidades Page
+    'operations.title': 'Operaciones de compraventa',
+    'operations.filters.all': 'Todas',
+    'operations.filters.search': 'Buscar empresas...',
+    'operations.filters.sector': 'Sector',
+    'operations.filters.allSectors': 'Todos los sectores',
+    'operations.cta.requestInfo': 'Solicitar Información',
+    'operations.cta.viewDetails': 'Ver Detalles',
+    'operations.badges.highDemand': 'Alta Demanda',
+    'operations.badges.advancedProcess': 'Proceso Avanzado',
+    'operations.badges.exclusive': 'Exclusiva',
+    
+    
     // Landing
     'landing.title': 'Calculadora de Valoración de Empresas | Capittal',
     'landing.description': 'Calculadora de valoración con múltiplos de mercado: estimación rápida y orientativa. Recibe resultados gratuitos al instante.',
@@ -1061,6 +1074,18 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.commitmentTitle': 'El Nostre Compromís',
     'ecosystem.commitmentDescription': "Creem valor a través d'un enfocament integral i multidisciplinari, on el nostre equip d'analistes financers, advocats, economistes i fiscalistes treballen de forma coordinada per garantir l'èxit de cada operació i maximitzar el valor per als nostres clients.",
     
+    // Operations/Oportunidades Page
+    'operations.title': 'Operacions de compravenda',
+    'operations.filters.all': 'Totes',
+    'operations.filters.search': 'Cercar empreses...',
+    'operations.filters.sector': 'Sector',
+    'operations.filters.allSectors': 'Tots els sectors',
+    'operations.cta.requestInfo': 'Sol·licitar Informació',
+    'operations.cta.viewDetails': 'Veure Detalls',
+    'operations.badges.highDemand': 'Alta Demanda',
+    'operations.badges.advancedProcess': 'Procés Avançat',
+    'operations.badges.exclusive': 'Exclusiva',
+    
     // ========== VENTA EMPRESAS (CA) ==========
     'ventaEmpresas.hero.badge': '+200 empreses venudes amb èxit',
     'ventaEmpresas.hero.title': 'Ven la teva empresa al',
@@ -1556,6 +1581,18 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Commitment Section
     'ecosystem.commitmentTitle': 'Our Commitment',
     'ecosystem.commitmentDescription': 'We create value through a comprehensive and multidisciplinary approach, where our team of financial analysts, lawyers, economists and tax specialists work in coordination to ensure the success of each operation and maximize value for our clients.',
+    
+    // Operations/Oportunidades Page
+    'operations.title': 'M&A Operations',
+    'operations.filters.all': 'All',
+    'operations.filters.search': 'Search companies...',
+    'operations.filters.sector': 'Sector',
+    'operations.filters.allSectors': 'All sectors',
+    'operations.cta.requestInfo': 'Request Information',
+    'operations.cta.viewDetails': 'View Details',
+    'operations.badges.highDemand': 'High Demand',
+    'operations.badges.advancedProcess': 'Advanced Process',
+    'operations.badges.exclusive': 'Exclusive',
     
     // === NAVIGATION ===
     'nav.servicios': 'Services',
