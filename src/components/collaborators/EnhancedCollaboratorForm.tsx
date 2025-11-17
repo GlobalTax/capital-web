@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, ArrowRight, ArrowLeft, User, Briefcase, FileText, Send } from 'lucide-react';
 import { LoadingButton } from '@/components/LoadingButton';
 import { useCollaboratorApplications } from '@/hooks/useCollaboratorApplications';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface FormData {
   // Personal Info
@@ -45,19 +46,20 @@ const INITIAL_FORM_DATA: FormData = {
   portfolio: ''
 };
 
-const STEPS = [
-  { id: 1, title: 'Personal', icon: User, description: 'Información básica' },
-  { id: 2, title: 'Profesional', icon: Briefcase, description: 'Experiencia y rol' },
-  { id: 3, title: 'Detalles', icon: FileText, description: 'Motivación y skills' },
-  { id: 4, title: 'Envío', icon: Send, description: 'Revisar y enviar' }
-];
-
 export const EnhancedCollaboratorForm = () => {
+  const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   
   const { submitApplication, isSubmitting } = useCollaboratorApplications();
+  
+  const STEPS = [
+    { id: 1, title: t('collab.form.step1.title'), icon: User, description: t('collab.form.step1.description') },
+    { id: 2, title: t('collab.form.step2.title'), icon: Briefcase, description: t('collab.form.step2.description') },
+    { id: 3, title: t('collab.form.step3.title'), icon: FileText, description: t('collab.form.step3.description') },
+    { id: 4, title: t('collab.form.step4.title'), icon: Send, description: t('collab.form.step4.description') }
+  ];
 
   const updateFormData = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

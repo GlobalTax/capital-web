@@ -2,6 +2,11 @@
 
 export const collaboratorsTranslations = {
   es: {
+    // SEO
+    'collab.seo.title': 'Programa de Colaboradores - Únete a Capittal | Expertos en M&A',
+    'collab.seo.description': 'Forma parte de nuestra red exclusiva de expertos en M&A. Proyectos premium, flexibilidad total y remuneración competitiva. Solicita unirte hoy.',
+    'collab.seo.keywords': 'colaboradores M&A, programa colaboradores, expertos fusiones adquisiciones, trabajo freelance M&A, red profesional',
+    
     // Hero Section
     'collab.hero.badge': '⭐ Programa Exclusivo',
     'collab.hero.title': 'Únete al equipo de expertos en M&A',
@@ -110,6 +115,11 @@ export const collaboratorsTranslations = {
   },
   
   ca: {
+    // SEO
+    'collab.seo.title': 'Programa de Col·laboradors - Uneix-te a Capittal | Experts en M&A',
+    'collab.seo.description': 'Forma part de la nostra xarxa exclusiva d\'experts en M&A. Projectes premium, flexibilitat total i remuneració competitiva. Sol·licita unir-te avui.',
+    'collab.seo.keywords': 'col·laboradors M&A, programa col·laboradors, experts fusions adquisicions, treball freelance M&A, xarxa professional',
+    
     // Hero Section
     'collab.hero.badge': '⭐ Programa Exclusiu',
     'collab.hero.title': 'Uneix-te a l\'equip d\'experts en M&A',
@@ -218,6 +228,11 @@ export const collaboratorsTranslations = {
   },
   
   en: {
+    // SEO
+    'collab.seo.title': 'Collaborators Program - Join Capittal | M&A Experts',
+    'collab.seo.description': 'Become part of our exclusive network of M&A experts. Premium projects, total flexibility, and competitive compensation. Apply to join today.',
+    'collab.seo.keywords': 'M&A collaborators, collaborators program, mergers acquisitions experts, M&A freelance work, professional network',
+    
     // Hero Section
     'collab.hero.badge': '⭐ Exclusive Program',
     'collab.hero.title': 'Join our team of M&A experts',
