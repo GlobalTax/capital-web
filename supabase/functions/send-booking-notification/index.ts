@@ -62,7 +62,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Recipients for internal notification - actualizados post-migración Exchange
     const recipients = [
-      "info@capittal.es",
       "samuel@capittal.es",
       "pau@capittal.es",
       "marcc@capittal.es",
@@ -146,7 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to internal team
     const emailResponse = await resend.emails.send({
-      from: "Capittal <noreply@capittal.es>",
+      from: "Capittal <s.navarro@capittal.es>",
       to: recipients,
       subject: `🗓️ Nueva Cita Reservada - ${clientName} (${formattedDate} ${formattedTime})`,
       html: emailHtml,

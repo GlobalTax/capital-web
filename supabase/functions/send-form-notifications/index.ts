@@ -21,7 +21,7 @@ interface FormNotificationRequest {
   formData: any;
 }
 
-const ADMIN_EMAILS = ['info@capittal.es', 'lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es', 'marcc@capittal.es', 'l.linares@nrro.es'];
+const ADMIN_EMAILS = ['lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es', 'marcc@capittal.es', 'l.linares@nrro.es'];
 
 const getUserConfirmationTemplate = (formType: string, data: any) => {
   const baseStyle = `
@@ -475,7 +475,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Enviar emails a administradores
     const adminEmailPromises = ADMIN_EMAILS.map(async (adminEmail) => {
       return resend.emails.send({
-        from: "Capittal Forms <noreply@capittal.es>",
+        from: "Capittal Forms <s.navarro@capittal.es>",
         to: [adminEmail],
         subject: adminTemplate.subject,
         html: adminTemplate.html,
@@ -484,7 +484,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Enviar email de confirmación al usuario
     const userEmailPromise = resend.emails.send({
-      from: "Capittal <info@capittal.es>",
+      from: "Capittal <s.navarro@capittal.es>",
       to: [email],
       subject: userTemplate.subject,
       html: userTemplate.html,
