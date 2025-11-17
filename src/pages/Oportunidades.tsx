@@ -10,12 +10,16 @@ import { SEOHead } from '@/components/seo';
 import { getWebPageSchema, getProductSchema } from '@/utils/seo';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useOperationsStats } from '@/hooks/useOperationsStats';
+import { useSectors } from '@/hooks/useSectors';
+import { useOperationLocations } from '@/hooks/useOperationLocations';
 
 const Oportunidades = () => {
   const [rodFormOpen, setRodFormOpen] = useState(false);
   const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
   const { t } = useI18n();
   const { data: stats, isLoading: statsLoading } = useOperationsStats();
+  const { activeSectors } = useSectors();
+  const { data: locations = [] } = useOperationLocations();
 
   return (
     <>
@@ -156,11 +160,11 @@ const Oportunidades = () => {
         <RODDownloadForm open={rodFormOpen} onOpenChange={setRodFormOpen} />
         
         {/* Buyer Preferences Modal */}
-        <BuyerPreferencesModal 
+        <BuyerPreferencesModal
           isOpen={preferencesModalOpen}
           onClose={() => setPreferencesModalOpen(false)}
-          sectors={[]}
-          locations={[]}
+          sectors={activeSectors.map(s => s.name_es)}
+          locations={locations}
         />
       </div>
     </UnifiedLayout>
