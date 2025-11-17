@@ -7,14 +7,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Eye, Star, Sparkles } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
 import { isRecentOperation } from '@/shared/utils/date';
-import { useVirtualizedTable } from '@/hooks/useVirtualizedTable';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
 import OperationDetailsModal from '../OperationDetailsModal';
-import { FixedSizeList } from 'react-window';
 
 interface Operation {
   id: string;
@@ -75,11 +73,6 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
     selectedCount,
   } = useMultiSelect(operations);
 
-  const { listRef, handleItemsRendered, rowHeight, containerHeight, overscanCount } = useVirtualizedTable(
-    operations.length,
-    { rowHeight: 72, containerHeight: 600, overscanCount: 5 }
-  );
-
   // Keyboard navigation
   useKeyboardNavigation({
     onArrowUp: () => setFocusedIndex(prev => Math.max(0, prev - 1)),
@@ -96,21 +89,13 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
     enabled: true,
   });
 
-  // Auto-scroll to focused item
-  useEffect(() => {
-    if (focusedIndex >= 0) {
-      listRef.current?.scrollToItem(focusedIndex, 'smart');
-    }
-  }, [focusedIndex, listRef]);
-
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const operation = operations[index];
+  const renderRow = (operation: Operation, index: number) => {
     const selected = isSelected(operation.id);
     const focused = index === focusedIndex;
 
     return (
       <div
-        style={style}
+        key={operation.id}
         className={`flex items-center border-b transition-colors ${
           selected ? 'bg-primary/5' : focused ? 'bg-muted/50' : 'hover:bg-muted/30'
         }`}
@@ -349,17 +334,9 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                 No se encontraron operaciones
               </div>
             ) : (
-              <FixedSizeList
-                ref={listRef}
-                height={containerHeight}
-                width="100%"
-                itemCount={operations.length}
-                itemSize={rowHeight}
-                overscanCount={overscanCount}
-                onItemsRendered={handleItemsRendered}
-              >
-                {Row}
-              </FixedSizeList>
+              <div className="w-full">
+                {operations.map((operation, index) => renderRow(operation, index))}
+              </div>
             )}
           </div>
         </CardContent>
