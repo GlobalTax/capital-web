@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
 import { highlightText } from '@/shared/utils/string';
 import { isRecentOperation } from '@/shared/utils/date';
-import { Lock, TrendingUp } from 'lucide-react';
+import { Lock, TrendingUp, Heart } from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { useSavedOperations } from '@/hooks/useSavedOperations';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface Operation {
   id: string;
@@ -41,11 +44,50 @@ interface OperationCardProps {
 const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '', searchTerm }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useI18n();
+  const { user } = useAuth();
+  const { 
+    isOperationSaved, 
+    saveOperation, 
+    removeSavedOperation, 
+    isSaving, 
+    isRemoving 
+  } = useSavedOperations();
+
+  const isSaved = isOperationSaved(operation.id);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error('Debes iniciar sesión para guardar favoritos');
+      return;
+    }
+
+    if (isSaved) {
+      removeSavedOperation(operation.id);
+    } else {
+      saveOperation({ operationId: operation.id });
+    }
+  };
 
   return (
     <>
-    <Card className={`hover:shadow-lg transition-shadow ${className} ${operation.is_featured ? 'ring-2 ring-primary' : ''}`}>
+    <Card className={`relative hover:shadow-lg transition-shadow ${className} ${operation.is_featured ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-6">
+        {/* Favorite Button - Top Right */}
+        <button
+          onClick={handleToggleFavorite}
+          disabled={isSaving || isRemoving}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 disabled:opacity-50 z-10"
+          aria-label={isSaved ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+        >
+          <Heart 
+            className={`h-5 w-5 transition-colors ${
+              isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+            }`}
+          />
+        </button>
+
         <div className="space-y-4">
           {/* Logo/Company Initial */}
           <div className="flex items-center space-x-3">

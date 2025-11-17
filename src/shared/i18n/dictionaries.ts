@@ -334,6 +334,27 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'operations.cta.viewDetails': 'Ver Detalles',
     'operations.badges.highDemand': 'Alta Demanda',
     'operations.badges.advancedProcess': 'Proceso Avanzado',
+    
+    // Saved Operations
+    'savedOperations.title': 'Mis Favoritos',
+    'savedOperations.empty': 'No tienes operaciones guardadas',
+    'savedOperations.viewAll': 'Ver todos',
+    'savedOperations.compare': 'Comparar',
+    'savedOperations.removeFromFavorites': 'Quitar de favoritos',
+    'savedOperations.addToFavorites': 'Añadir a favoritos',
+    'savedOperations.loginRequired': 'Debes iniciar sesión para guardar favoritos',
+    
+    // Buyer Preferences
+    'preferences.title': 'Configurar Alertas',
+    'preferences.description': 'Recibe notificaciones sobre nuevas oportunidades',
+    'preferences.sectors': 'Sectores de Interés',
+    'preferences.locations': 'Ubicaciones de Interés',
+    'preferences.valuationRange': 'Rango de Valoración',
+    'preferences.alertFrequency': 'Frecuencia de Alertas',
+    'preferences.daily': 'Diaria',
+    'preferences.weekly': 'Semanal',
+    'preferences.monthly': 'Mensual',
+    'preferences.save': 'Guardar Preferencias',
     'operations.badges.exclusive': 'Exclusiva',
     
     

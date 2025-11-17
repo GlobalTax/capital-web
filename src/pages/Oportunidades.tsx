@@ -3,7 +3,8 @@ import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import { Button } from '@/components/ui/button';
-import { Download, TrendingUp, Building2, DollarSign } from 'lucide-react';
+import { Download, TrendingUp, Building2, DollarSign, Bell } from 'lucide-react';
+import BuyerPreferencesModal from '@/components/operations/BuyerPreferencesModal';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema, getProductSchema } from '@/utils/seo';
 import { useI18n } from '@/shared/i18n/I18nProvider';
@@ -11,6 +12,7 @@ import { useOperationsStats } from '@/hooks/useOperationsStats';
 
 const Oportunidades = () => {
   const [rodFormOpen, setRodFormOpen] = useState(false);
+  const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
   const { t } = useI18n();
   const { data: stats, isLoading: statsLoading } = useOperationsStats();
 
@@ -87,8 +89,8 @@ const Oportunidades = () => {
               </div>
             )}
 
-            {/* CTA Button */}
-            <div className="flex justify-center">
+            {/* CTA Buttons */}
+            <div className="flex justify-center gap-4">
               <Button
                 size="lg"
                 onClick={() => setRodFormOpen(true)}
@@ -96,6 +98,15 @@ const Oportunidades = () => {
               >
                 <Download className="h-5 w-5" />
                 {t('opportunities.hero.cta')}
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setPreferencesModalOpen(true)}
+                className="gap-2"
+              >
+                <Bell className="h-5 w-5" />
+                Configurar Alertas
               </Button>
             </div>
           </div>
@@ -139,6 +150,14 @@ const Oportunidades = () => {
 
         {/* ROD Download Form */}
         <RODDownloadForm open={rodFormOpen} onOpenChange={setRodFormOpen} />
+        
+        {/* Buyer Preferences Modal */}
+        <BuyerPreferencesModal 
+          isOpen={preferencesModalOpen}
+          onClose={() => setPreferencesModalOpen(false)}
+          sectors={[]}
+          locations={[]}
+        />
       </div>
     </UnifiedLayout>
     </>
