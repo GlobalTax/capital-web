@@ -3,14 +3,16 @@ import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, TrendingUp, Building2, DollarSign } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema, getProductSchema } from '@/utils/seo';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { useOperationsStats } from '@/hooks/useOperationsStats';
 
 const Oportunidades = () => {
   const [rodFormOpen, setRodFormOpen] = useState(false);
   const { t } = useI18n();
+  const { data: stats, isLoading: statsLoading } = useOperationsStats();
 
   return (
     <>
@@ -35,25 +37,66 @@ const Oportunidades = () => {
       <UnifiedLayout variant="home">
         <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="bg-white py-20">
+        <section className="bg-gradient-to-br from-slate-50 to-white py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <div className="text-center mb-12">
+              <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
                 {t('opportunities.hero.title')}
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 {t('opportunities.hero.subtitle')}
               </p>
-              <div className="flex justify-center">
-                <Button
-                  size="lg"
-                  onClick={() => setRodFormOpen(true)}
-                  className="gap-2"
-                >
-                  <Download className="h-5 w-5" />
-                  {t('opportunities.hero.cta')}
-                </Button>
+            </div>
+
+            {/* Stats Grid */}
+            {!statsLoading && stats && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-border text-center">
+                  <div className="flex items-center justify-center mb-3">
+                    <Building2 className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {stats.activeOperations}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Operaciones Activas
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-border text-center">
+                  <div className="flex items-center justify-center mb-3">
+                    <TrendingUp className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {stats.uniqueSectors}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Sectores Disponibles
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-border text-center">
+                  <div className="flex items-center justify-center mb-3">
+                    <DollarSign className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {(stats.averageValuation / 1000000).toFixed(1)}M€
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Valoración Media
+                  </div>
+                </div>
               </div>
+            )}
+
+            {/* CTA Button */}
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                onClick={() => setRodFormOpen(true)}
+                className="gap-2"
+              >
+                <Download className="h-5 w-5" />
+                {t('opportunities.hero.cta')}
+              </Button>
             </div>
           </div>
         </section>

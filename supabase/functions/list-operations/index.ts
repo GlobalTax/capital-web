@@ -31,7 +31,10 @@ serve(async (req) => {
 
     const { 
       searchTerm, 
-      sector, 
+      sector,
+      location,
+      companySize,
+      dealType,
       sortBy = 'created_at', 
       limit = 20, 
       offset = 0, 
@@ -40,7 +43,10 @@ serve(async (req) => {
 
     console.log('📋 List operations request:', { 
       searchTerm, 
-      sector, 
+      sector,
+      location,
+      companySize,
+      dealType,
       sortBy, 
       limit, 
       offset, 
@@ -69,6 +75,24 @@ serve(async (req) => {
     if (displayLocation && typeof displayLocation === 'string') {
       query = query.contains('display_locations', [displayLocation]);
       console.log('📍 Location filter applied:', displayLocation);
+    }
+
+    // Additional location filter (separate from display_locations)
+    if (location && typeof location === 'string') {
+      query = query.contains('display_locations', [location]);
+      console.log('📍 Additional location filter applied:', location);
+    }
+
+    // Company size filter
+    if (companySize && typeof companySize === 'string') {
+      query = query.eq('company_size_employees', companySize);
+      console.log('👥 Company size filter applied:', companySize);
+    }
+
+    // Deal type filter
+    if (dealType && typeof dealType === 'string') {
+      query = query.eq('deal_type', dealType);
+      console.log('🤝 Deal type filter applied:', dealType);
     }
 
     // Apply sorting with validation
@@ -106,6 +130,10 @@ serve(async (req) => {
 
     // Get unique sectors for filter options (only if not already filtered)
     let sectors: string[] = [];
+    let locations: string[] = [];
+    let companySizes: string[] = [];
+    let dealTypes: string[] = [];
+    
     if (!sector) {
       const { data: sectorsData, error: sectorsError } = await supabase
         .from('company_operations')
@@ -120,13 +148,58 @@ serve(async (req) => {
       }
     }
 
+    // Get unique locations
+    const { data: locationsData, error: locationsError } = await supabase
+      .from('company_operations')
+      .select('display_locations')
+      .eq('is_active', true)
+      .not('display_locations', 'is', null);
+
+    if (locationsError) {
+      console.warn('⚠️ Locations query error (non-critical):', locationsError.message);
+    } else if (locationsData) {
+      const allLocations = locationsData
+        .flatMap(op => op.display_locations || [])
+        .filter(Boolean);
+      locations = [...new Set(allLocations)].sort();
+    }
+
+    // Get unique company sizes
+    const { data: sizesData, error: sizesError } = await supabase
+      .from('company_operations')
+      .select('company_size_employees')
+      .eq('is_active', true)
+      .not('company_size_employees', 'is', null);
+
+    if (sizesError) {
+      console.warn('⚠️ Company sizes query error (non-critical):', sizesError.message);
+    } else if (sizesData) {
+      companySizes = [...new Set(sizesData.map(op => op.company_size_employees).filter(Boolean))].sort();
+    }
+
+    // Get unique deal types
+    const { data: typesData, error: typesError } = await supabase
+      .from('company_operations')
+      .select('deal_type')
+      .eq('is_active', true)
+      .not('deal_type', 'is', null);
+
+    if (typesError) {
+      console.warn('⚠️ Deal types query error (non-critical):', typesError.message);
+    } else if (typesData) {
+      dealTypes = [...new Set(typesData.map(op => op.deal_type).filter(Boolean))].sort();
+    }
+
     console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
 
     return new Response(
       JSON.stringify({
         data: data || [],
         count: count || 0,
-        sectors: sectors
+        sectors: sectors,
+        locations: locations,
+        companySizes: companySizes,
+        dealTypes: dealTypes
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
