@@ -478,13 +478,6 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
                 <p className="text-sm text-destructive mt-1">{errors.ebitda}</p>
               )}
             </div>
-                placeholder="0"
-                className={errors.ebitda ? 'border-destructive' : ''}
-              />
-              {errors.ebitda && (
-                <p className="text-sm text-destructive mt-1">{errors.ebitda}</p>
-              )}
-            </div>
           </div>
         </div>
 
