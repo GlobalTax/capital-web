@@ -9,6 +9,7 @@ import { calculateAdvisorValuation, AdvisorValuationResult } from '@/utils/advis
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { formatNumberWithDots, parseNumberWithDots } from '@/utils/numberFormatting';
 
 interface FormData {
   sector: string;
@@ -30,6 +31,12 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
     revenue: 0,
     ebitda: 0,
     netProfit: 0
+  });
+  
+  const [displayValues, setDisplayValues] = useState({
+    revenue: '',
+    ebitda: '',
+    netProfit: ''
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -83,8 +90,15 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
   };
 
   const handleInputChange = (field: keyof FormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    validateField(field, value);
+    if (field === 'revenue' || field === 'ebitda' || field === 'netProfit') {
+      const numValue = typeof value === 'string' ? parseNumberWithDots(value) : value;
+      setFormData(prev => ({ ...prev, [field]: numValue }));
+      setDisplayValues(prev => ({ ...prev, [field]: value as string }));
+      validateField(field, numValue);
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value as string }));
+      validateField(field, value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,13 +188,17 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
               </Label>
               <Input
                 id="revenue"
-                type="number"
-                value={formData.revenue || ''}
-                onChange={(e) => handleInputChange('revenue', Number(e.target.value))}
-                onBlur={(e) => validateField('revenue', Number(e.target.value))}
+                type="text"
+                value={displayValues.revenue}
+                onChange={(e) => handleInputChange('revenue', e.target.value)}
+                onBlur={() => {
+                  setDisplayValues(prev => ({ 
+                    ...prev, 
+                    revenue: formatNumberWithDots(formData.revenue) 
+                  }));
+                  validateField('revenue', formData.revenue);
+                }}
                 required
-                min="0"
-                step="1000"
                 placeholder="1.000.000"
                 className={errors.revenue ? 'border-destructive' : ''}
               />
@@ -196,13 +214,17 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
               </Label>
               <Input
                 id="ebitda"
-                type="number"
-                value={formData.ebitda || ''}
-                onChange={(e) => handleInputChange('ebitda', Number(e.target.value))}
-                onBlur={(e) => validateField('ebitda', Number(e.target.value))}
+                type="text"
+                value={displayValues.ebitda}
+                onChange={(e) => handleInputChange('ebitda', e.target.value)}
+                onBlur={() => {
+                  setDisplayValues(prev => ({ 
+                    ...prev, 
+                    ebitda: formatNumberWithDots(formData.ebitda) 
+                  }));
+                  validateField('ebitda', formData.ebitda);
+                }}
                 required
-                min="0"
-                step="1000"
                 placeholder="200.000"
                 className={errors.ebitda ? 'border-destructive' : ''}
               />
@@ -218,12 +240,17 @@ export const AdvisorCalculatorForm: React.FC<AdvisorCalculatorFormProps> = ({ on
               </Label>
               <Input
                 id="netProfit"
-                type="number"
-                value={formData.netProfit || ''}
-                onChange={(e) => handleInputChange('netProfit', Number(e.target.value))}
-                onBlur={(e) => validateField('netProfit', Number(e.target.value))}
+                type="text"
+                value={displayValues.netProfit}
+                onChange={(e) => handleInputChange('netProfit', e.target.value)}
+                onBlur={() => {
+                  setDisplayValues(prev => ({ 
+                    ...prev, 
+                    netProfit: formatNumberWithDots(formData.netProfit) 
+                  }));
+                  validateField('netProfit', formData.netProfit);
+                }}
                 required
-                step="1000"
                 placeholder="150.000"
                 className={errors.netProfit ? 'border-destructive' : ''}
               />
