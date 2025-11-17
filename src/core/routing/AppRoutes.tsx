@@ -16,6 +16,7 @@ import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
   const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
   const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
   const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
+  const SavedOperations = lazy(() => import('@/pages/SavedOperations'));
   const Contacto = lazy(() => import('@/pages/Contacto'));
   const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
   const CasosExito = lazy(() => import('@/pages/CasosExito'));
@@ -99,6 +100,7 @@ export const AppRoutes = () => {
         <Route path="/buy-companies" element={<CompraEmpresas />} />
         
         <Route path="/oportunidades" element={<Oportunidades />} />
+        <Route path="/favoritos" element={<SavedOperations />} />
         <Route path="/marketplace" element={<Navigate to="/oportunidades" replace />} />
         
         <Route path="/contacto" element={<Contacto />} />
