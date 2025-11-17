@@ -11,7 +11,6 @@ import { useVirtualizedTable } from '@/hooks/useVirtualizedTable';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { TableHeaderCell } from './TableHeaderCell';
 import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
 import OperationDetailsModal from '../OperationDetailsModal';
@@ -300,19 +299,43 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead className="sticky top-0 z-10">
-                <tr>
-                  {visibleColumns.map((column) => (
-                    <TableHeaderCell
-                      key={column.key}
-                      column={column}
-                      onResize={(delta) => handleResize(column.key, delta)}
+            {/* Header as flex container to match virtualized body */}
+            <div className="flex border-b bg-muted/50 sticky top-0 z-10">
+              {visibleColumns.map((column) => (
+                <div
+                  key={column.key}
+                  className="relative group border-r last:border-r-0"
+                  style={{ width: column.width, minWidth: column.minWidth || 80 }}
+                >
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <span className="font-medium text-sm">{column.title}</span>
+                  </div>
+                  {column.key !== 'select' && column.key !== 'logo' && column.key !== 'actions' && (
+                    <div
+                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 group-hover:bg-primary/10 z-10"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const startX = e.clientX;
+                        const startWidth = column.width;
+
+                        const handleMouseMove = (moveEvent: MouseEvent) => {
+                          const delta = moveEvent.clientX - startX;
+                          handleResize(column.key, delta);
+                        };
+
+                        const handleMouseUp = () => {
+                          document.removeEventListener('mousemove', handleMouseMove);
+                          document.removeEventListener('mouseup', handleMouseUp);
+                        };
+
+                        document.addEventListener('mousemove', handleMouseMove);
+                        document.addEventListener('mouseup', handleMouseUp);
+                      }}
                     />
-                  ))}
-                </tr>
-              </thead>
-            </table>
+                  )}
+                </div>
+              ))}
+            </div>
 
             {isLoading && operations.length === 0 ? (
               <div className="flex items-center justify-center py-12">
