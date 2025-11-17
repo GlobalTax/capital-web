@@ -565,6 +565,16 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'capittalBrief.coverage.label': 'Cobertura',
     'capittalBrief.coverage.value': 'Operaciones en toda España',
     
+    // ========== CONFIDENTIALITY BLOCK (ES) ==========
+    'confidentiality.title': 'Confidencialidad y privacidad',
+    'confidentiality.subtitle': 'La calculadora está diseñada para proteger tu información y darte control total sobre tus datos.',
+    'confidentiality.secure.title': 'Transmisión segura',
+    'confidentiality.secure.desc': 'Tus datos viajan cifrados mediante TLS/SSL y se almacenan de forma segura.',
+    'confidentiality.gdpr.title': 'Cumplimiento RGPD',
+    'confidentiality.gdpr.desc': 'Tratamos la información conforme al RGPD. Al hacer clic en "Calcular valoración" consientes el procesamiento de tus datos para generar tu valoración y su uso con fines comerciales relacionados con nuestros servicios. Si proporcionas tu teléfono, aceptas que Capittal procese tus datos para la valoración y envío por WhatsApp. Puedes solicitar la eliminación cuando lo desees.',
+    'confidentiality.access.title': 'Acceso restringido',
+    'confidentiality.access.desc': 'Solo el equipo de Capittal accede a la información para preparar tu valoración. No compartimos datos con terceros.',
+    
     // Colaboradores - Traducciones completas
     ...collaboratorsTranslations.es,
   },
@@ -1038,6 +1048,16 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'capittalBrief.coverage.label': 'Cobertura',
     'capittalBrief.coverage.value': 'Operacions a tota Espanya',
     
+    // ========== CONFIDENTIALITY BLOCK (CA) ==========
+    'confidentiality.title': 'Confidencialitat i privacitat',
+    'confidentiality.subtitle': 'La calculadora està dissenyada per protegir la teva informació i donar-te control total sobre les teves dades.',
+    'confidentiality.secure.title': 'Transmissió segura',
+    'confidentiality.secure.desc': 'Les teves dades viatgen xifrades mitjançant TLS/SSL i s\'emmagatzemen de forma segura.',
+    'confidentiality.gdpr.title': 'Compliment RGPD',
+    'confidentiality.gdpr.desc': 'Tractem la informació conforme al RGPD. En fer clic a "Calcular valoració" consenteixes el processament de les teves dades per generar la teva valoració i el seu ús amb fins comercials relacionats amb els nostres serveis. Si proporciones el teu telèfon, acceptes que Capittal processi les teves dades per a la valoració i enviament per WhatsApp. Pots sol·licitar l\'eliminació quan vulguis.',
+    'confidentiality.access.title': 'Accés restringit',
+    'confidentiality.access.desc': 'Només l\'equip de Capittal accedeix a la informació per preparar la teva valoració. No compartim dades amb tercers.',
+    
     // === NAVIGATION ===
     'nav.servicios': 'Serveis',
     'nav.sectores': 'Sectors',
@@ -1499,6 +1519,16 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'capittalBrief.experience.value': '+250 valuations completed',
     'capittalBrief.coverage.label': 'Coverage',
     'capittalBrief.coverage.value': 'Operations throughout Spain',
+    
+    // ========== CONFIDENTIALITY BLOCK (EN) ==========
+    'confidentiality.title': 'Confidentiality and privacy',
+    'confidentiality.subtitle': 'The calculator is designed to protect your information and give you full control over your data.',
+    'confidentiality.secure.title': 'Secure transmission',
+    'confidentiality.secure.desc': 'Your data is transmitted encrypted via TLS/SSL and stored securely.',
+    'confidentiality.gdpr.title': 'GDPR compliance',
+    'confidentiality.gdpr.desc': 'We process information in accordance with GDPR. By clicking "Calculate valuation" you consent to the processing of your data to generate your valuation and its use for commercial purposes related to our services. If you provide your phone number, you accept that Capittal processes your data for valuation and sending via WhatsApp. You can request deletion at any time.',
+    'confidentiality.access.title': 'Restricted access',
+    'confidentiality.access.desc': 'Only the Capittal team accesses the information to prepare your valuation. We do not share data with third parties.',
     
     // Collaborators - Full translations
     ...collaboratorsTranslations.en,

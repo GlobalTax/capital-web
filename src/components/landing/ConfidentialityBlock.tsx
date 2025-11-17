@@ -1,34 +1,37 @@
 import React from 'react';
 import { Lock, ShieldCheck, EyeOff } from 'lucide-react';
-
-const items = [
-  {
-    title: 'Transmisión segura',
-    desc: 'Tus datos viajan cifrados mediante TLS/SSL y se almacenan de forma segura.',
-    Icon: Lock,
-  },
-  {
-    title: 'Cumplimiento RGPD',
-    desc: 'Tratamos la información conforme al RGPD. Al hacer clic en "Calcular valoración" consientes el procesamiento de tus datos para generar tu valoración y su uso con fines comerciales relacionados con nuestros servicios. Si proporcionas tu teléfono, aceptas que Capittal procese tus datos para la valoración y envío por WhatsApp. Puedes solicitar la eliminación cuando lo desees.',
-    Icon: ShieldCheck,
-  },
-  {
-    title: 'Acceso restringido',
-    desc: 'Solo el equipo de Capittal accede a la información para preparar tu valoración. No compartimos datos con terceros.',
-    Icon: EyeOff,
-  },
-];
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const ConfidentialityBlock: React.FC = () => {
+  const { t } = useI18n();
+  
+  const items = [
+    {
+      title: t('confidentiality.secure.title'),
+      desc: t('confidentiality.secure.desc'),
+      Icon: Lock,
+    },
+    {
+      title: t('confidentiality.gdpr.title'),
+      desc: t('confidentiality.gdpr.desc'),
+      Icon: ShieldCheck,
+    },
+    {
+      title: t('confidentiality.access.title'),
+      desc: t('confidentiality.access.desc'),
+      Icon: EyeOff,
+    },
+  ];
+
   return (
     <section aria-labelledby="confidentiality" className="bg-white border-t">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <header className="max-w-3xl">
           <h2 id="confidentiality" className="text-2xl font-semibold text-gray-900">
-            Confidencialidad y privacidad
+            {t('confidentiality.title')}
           </h2>
           <p className="mt-3 text-gray-700">
-            La calculadora está diseñada para proteger tu información y darte control total sobre tus datos.
+            {t('confidentiality.subtitle')}
           </p>
         </header>
 
