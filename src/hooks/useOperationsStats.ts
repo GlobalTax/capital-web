@@ -14,7 +14,7 @@ export const useOperationsStats = () => {
       // Get active operations count and average valuation
       const { data: operations, error: operationsError } = await supabase
         .from('company_operations')
-        .select('valuation_amount, sector')
+        .select('valuation_amount, sector, revenue_amount, ebitda_amount')
         .eq('is_active', true);
 
       if (operationsError) {
@@ -24,8 +24,15 @@ export const useOperationsStats = () => {
 
       const activeOperations = operations?.length || 0;
       
-      // Calculate average valuation
-      const validValuations = operations?.filter(op => op.valuation_amount && op.valuation_amount > 0) || [];
+      // Calculate average valuation - solo operaciones con datos financieros completos
+      const validValuations = operations?.filter(op => 
+        op.valuation_amount && 
+        op.valuation_amount > 0 &&
+        op.revenue_amount && 
+        op.revenue_amount > 0 &&
+        op.ebitda_amount && 
+        op.ebitda_amount > 0
+      ) || [];
       const averageValuation = validValuations.length > 0 
         ? validValuations.reduce((sum, op) => sum + (op.valuation_amount || 0), 0) / validValuations.length
         : 0;
