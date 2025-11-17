@@ -51,14 +51,16 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
       general: { label: 'General', variant: 'default' as const },
       acquisition: { label: 'Adquisición', variant: 'default' as const },
       company_acquisition: { label: 'Compra', variant: 'secondary' as const },
+      advisor: { label: 'Asesores', variant: 'default' as const },
     };
     const badge = badges[origin];
     
-    // 🔥 Agregar badge adicional para source_project en leads de valoración
-    if (origin === 'valuation' && sourceProject) {
+    // 🔥 Agregar badge adicional para source_project en leads de valoración y asesores
+    if ((origin === 'valuation' || origin === 'advisor') && sourceProject) {
       const sourceLabels: Record<string, { label: string; color: string }> = {
         'lp-calculadora-principal': { label: 'LP Principal', color: 'bg-blue-100 text-blue-700 border-blue-300' },
         'lp-calculadora-fiscal': { label: 'LP Fiscal', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+        'lp-calculadora-asesores': { label: 'LP Asesores', color: 'bg-green-100 text-green-700 border-green-300' },
         'capittal-main': { label: 'Principal', color: 'bg-gray-100 text-gray-700 border-gray-300' },
       };
       

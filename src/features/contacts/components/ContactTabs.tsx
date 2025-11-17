@@ -17,7 +17,7 @@ export const ContactTabs: React.FC<ContactTabsProps> = ({
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList className="grid w-full grid-cols-7">
+      <TabsList className="grid w-full grid-cols-8">
         <TabsTrigger value="all">
           Todos ({stats.total || 0})
         </TabsTrigger>
@@ -26,6 +26,9 @@ export const ContactTabs: React.FC<ContactTabsProps> = ({
         </TabsTrigger>
         <TabsTrigger value="valuation">
           Valoraciones ({stats.valuation || 0})
+        </TabsTrigger>
+        <TabsTrigger value="advisor">
+          Asesores ({stats.advisor || 0})
         </TabsTrigger>
         <TabsTrigger value="collaborator">
           Colaboradores ({stats.collaborator || 0})

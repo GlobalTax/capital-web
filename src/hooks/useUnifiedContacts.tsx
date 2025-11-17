@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition';
+export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
 
 export interface UnifiedContact {
   id: string;
@@ -114,6 +114,7 @@ export const useUnifiedContacts = () => {
       general: 0,
       acquisition: 0,
       company_acquisition: 0,
+      advisor: 0,
     },
     growth: 0,
     potentialValue: 0,
@@ -180,6 +181,14 @@ export const useUnifiedContacts = () => {
         .order('created_at', { ascending: false });
 
       if (companyAcquisitionError) throw companyAcquisitionError;
+
+      // Fetch advisor_valuations
+      const { data: advisorLeads, error: advisorError } = await supabase
+        .from('advisor_valuations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
 
       // Transform and unify data
       const unifiedData: UnifiedContact[] = [
@@ -360,6 +369,31 @@ export const useUnifiedContacts = () => {
           referrer: lead.referrer,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+        })),
+        
+        // Advisor leads (calculadora de asesores)
+        ...(advisorLeads || []).map(lead => ({
+          id: lead.id,
+          origin: 'advisor' as const,
+          name: lead.contact_name,
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.company_name,
+          created_at: lead.created_at,
+          status: lead.email_sent ? 'contacted' : 'new',
+          source_project: 'lp-calculadora-asesores',
+          industry: lead.firm_type,
+          employee_range: lead.employee_range,
+          revenue: lead.revenue ? Number(lead.revenue) : undefined,
+          ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
+          final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+          valuation_amount: lead.ebitda_valuation ? Number(lead.ebitda_valuation) : undefined,
+          email_sent: lead.email_sent,
+          email_sent_at: lead.email_sent_at,
+          ip_address: lead.ip_address?.toString(),
+          user_agent: lead.user_agent,
+          priority: (lead.ebitda && Number(lead.ebitda) > 50000 ? 'hot' : 'warm') as 'hot' | 'warm' | 'cold',
+          is_hot_lead: lead.ebitda && Number(lead.ebitda) > 50000,
         })),
       ];
 

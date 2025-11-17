@@ -33,6 +33,7 @@ export const useContactActions = (onRefetch: () => void) => {
         acquisition: 'acquisition_leads',
         company_acquisition: 'company_acquisition_inquiries',
         general: 'general_contact_leads',
+        advisor: 'advisor_valuations',
       };
 
       const table = tableMap[contact.origin];
@@ -75,6 +76,7 @@ export const useContactActions = (onRefetch: () => void) => {
         acquisition: 'acquisition_leads',
         company_acquisition: 'company_acquisition_inquiries',
         general: 'general_contact_leads',
+        advisor: 'advisor_valuations',
       };
 
       const table = tableMap[contact.origin];
