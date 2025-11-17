@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getIPAddress } from '@/utils/getIPAddress';
+import { formatNumberWithDots, parseNumberWithDots } from '@/utils/numberFormatting';
 
 interface AdvisorStepperFormProps {
   onCalculate: (data: AdvisorFormData, result: AdvisorValuationSimpleResult, valuationId?: string) => void;
@@ -39,10 +40,22 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     ebitda: 0,
   });
 
+  const [displayValues, setDisplayValues] = useState({
+    revenue: '',
+    ebitda: ''
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: keyof AdvisorFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'revenue' || field === 'ebitda') {
+      const numValue = typeof value === 'string' ? parseNumberWithDots(value) : value;
+      setFormData(prev => ({ ...prev, [field]: numValue }));
+      setDisplayValues(prev => ({ ...prev, [field]: value }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+    
     // Limpiar error del campo
     if (errors[field]) {
       setErrors(prev => {
@@ -428,10 +441,16 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
               <Label htmlFor="revenue">{t('form.revenue')} *</Label>
               <Input
                 id="revenue"
-                type="number"
-                value={formData.revenue || ''}
-                onChange={(e) => handleInputChange('revenue', parseFloat(e.target.value) || 0)}
-                placeholder="0"
+                type="text"
+                value={displayValues.revenue}
+                onChange={(e) => handleInputChange('revenue', e.target.value)}
+                onBlur={() => {
+                  setDisplayValues(prev => ({ 
+                    ...prev, 
+                    revenue: formatNumberWithDots(formData.revenue) 
+                  }));
+                }}
+                placeholder="1.000.000"
                 className={errors.revenue ? 'border-destructive' : ''}
               />
               {errors.revenue && (
@@ -443,9 +462,22 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
               <Label htmlFor="ebitda">{t('form.ebitda')} *</Label>
               <Input
                 id="ebitda"
-                type="number"
-                value={formData.ebitda || ''}
-                onChange={(e) => handleInputChange('ebitda', parseFloat(e.target.value) || 0)}
+                type="text"
+                value={displayValues.ebitda}
+                onChange={(e) => handleInputChange('ebitda', e.target.value)}
+                onBlur={() => {
+                  setDisplayValues(prev => ({ 
+                    ...prev, 
+                    ebitda: formatNumberWithDots(formData.ebitda) 
+                  }));
+                }}
+                placeholder="200.000"
+                className={errors.ebitda ? 'border-destructive' : ''}
+              />
+              {errors.ebitda && (
+                <p className="text-sm text-destructive mt-1">{errors.ebitda}</p>
+              )}
+            </div>
                 placeholder="0"
                 className={errors.ebitda ? 'border-destructive' : ''}
               />
