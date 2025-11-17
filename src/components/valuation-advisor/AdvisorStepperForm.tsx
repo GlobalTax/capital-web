@@ -117,9 +117,12 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
     setIsCalculating(true);
 
     try {
+      // Mapear todos los firmTypes al sector genérico en la BD
+      const ADVISOR_SECTOR = 'Asesorías Profesionales';
+      
       // Obtener múltiplos por rangos de EBITDA y Revenue
-      let revenueMultiple = getRevenueMultiple(formData.firmType, formData.revenue);
-      let ebitdaMultiple = getEbitdaMultiple(formData.firmType, formData.ebitda);
+      let revenueMultiple = getRevenueMultiple(ADVISOR_SECTOR, formData.revenue);
+      let ebitdaMultiple = getEbitdaMultiple(ADVISOR_SECTOR, formData.ebitda);
 
       // Valores por defecto si no hay múltiplos en la base de datos
       const DEFAULT_REVENUE_MULTIPLE = 0.8;
