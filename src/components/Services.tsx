@@ -102,12 +102,12 @@ const Services = () => {
                   {/* Button */}
                   <div className="space-y-3">
                     <Link to={
-                      service.title === 'Valoraciones' ? '/lp/calculadora' : 
-                      service.title === 'Vender Empresa' ? '/venta-empresas' : 
+                      service.title === t('services.valuations.title') ? '/lp/calculadora' : 
+                      service.title === t('services.sell.title') ? '/venta-empresas' : 
                       '/compra-empresas'
                     }>
                       <Button variant="outline" className="w-full hover:bg-gray-50 hover:text-black transition-all duration-300 ease-out text-base py-3">
-                        {service.title === 'Valoraciones' ? 'Calcular Ahora' : 'Más información'}
+                        {service.title === t('services.valuations.title') ? t('services.cta.calculate') : t('services.cta.moreInfo')}
                       </Button>
                     </Link>
                   </div>

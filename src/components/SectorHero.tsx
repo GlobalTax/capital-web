@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface SectorHeroProps {
   sector: string;
   title: string;
   description: string;
-  primaryButtonText: string;
+  primaryButtonText?: string;
   secondaryButtonText?: string;
   gradientFrom?: string;
   gradientTo?: string;
@@ -20,6 +20,8 @@ const SectorHero = ({
   primaryButtonText,
   secondaryButtonText,
 }: SectorHeroProps) => {
+  const { t } = useI18n();
+  
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,10 +40,10 @@ const SectorHero = ({
           
           <div className="flex flex-col sm:flex-row gap-4">
             <Button className="text-sm px-6 py-3 transition-all font-medium">
-              Solicitar consulta
+              {primaryButtonText || t('sector.cta.consult')}
             </Button>
             <Button variant="outline" className="text-sm px-6 py-3 transition-all font-medium">
-              Ver casos de éxito
+              {secondaryButtonText || t('sector.cta.cases')}
             </Button>
           </div>
         </div>

@@ -45,11 +45,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         {currentStep === 3 ? (
           <>
             <Calculator className="h-4 w-4 mr-2" />
-            Calcular
+            {t('nav.calculate_short')}
           </>
         ) : (
           <>
-            Siguiente
+            {t('nav.next_short')}
             <ChevronRight className="h-4 w-4 ml-2" />
           </>
         )}

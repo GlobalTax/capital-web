@@ -16,8 +16,8 @@ export const collaboratorsTranslations = {
     'collab.hero.stat3': 'Satisfacción',
     'collab.hero.cta_apply': 'Aplicar Ahora',
     'collab.hero.cta_requirements': 'Requisitos',
-    'collab.hero.dashboard_title': 'Capital Collaborators - Network Dashboard',
-    'collab.hero.dashboard_new': 'Nuevos',
+    'collab.hero.dashboard_title': 'Red de Colaboradores - Panel de Control',
+    'collab.hero.dashboard_new': '+12 Nuevos',
     
     // Benefits Section
     'collab.benefits.title': '¿Por qué elegir Capittal?',
