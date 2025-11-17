@@ -210,6 +210,66 @@ export const AdvisorStepperForm: React.FC<AdvisorStepperFormProps> = ({ onCalcul
         // Continuar mostrando resultados aunque falle el guardado
       } else {
         console.log('✅ Valuation saved with ID:', savedValuation.id);
+        
+        // 📧 ENVIAR EMAIL AUTOMÁTICAMENTE
+        if (savedValuation?.id) {
+          console.log('📧 Enviando email automático para valoración:', savedValuation.id);
+          
+          supabase.functions.invoke('send-valuation-email', {
+            body: {
+              recipientEmail: formData.email,
+              companyData: {
+                contactName: formData.contactName,
+                companyName: formData.companyName,
+                cif: formData.cif,
+                email: formData.email,
+                phone: formData.phone,
+                industry: formData.firmType,
+                employeeRange: formData.employeeRange,
+                revenue: formData.revenue,
+                ebitda: formData.ebitda,
+              },
+              result: {
+                ebitdaMultiple: result.ebitdaMultiple,
+                finalValuation: result.ebitdaValuation,
+                valuationRange: result.ebitdaRange,
+                multiples: {
+                  ebitdaMultipleUsed: result.ebitdaMultiple,
+                  revenueMultipleUsed: result.revenueMultiple,
+                },
+                revenueValuation: result.revenueValuation,
+                revenueRange: result.revenueRange,
+              },
+              enlaces: {
+                escenariosUrl: `${window.location.origin}/lp/calculadora`,
+                calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora-fiscal`,
+              },
+              lang: 'es',
+              source: 'advisor',
+            },
+          }).then(({ data, error }) => {
+            if (error) {
+              console.error('❌ Error enviando email automático:', error);
+            } else {
+              console.log('✅ Email automático enviado:', data);
+              
+              // Actualizar registro en BD
+              supabase.from('advisor_valuations')
+                .update({
+                  email_sent: true,
+                  email_sent_at: new Date().toISOString(),
+                })
+                .eq('id', savedValuation.id)
+                .then(({ error: updateError }) => {
+                  if (updateError) {
+                    console.error('❌ Error actualizando email_sent:', updateError);
+                  } else {
+                    console.log('✅ Estado email_sent actualizado en BD');
+                  }
+                });
+            }
+          });
+        }
       }
 
       // Simular delay para mostrar loading

@@ -224,15 +224,52 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         description: "El informe se ha descargado correctamente",
       });
 
-      // 5. ENVIAR EMAIL (no bloquear la descarga si falla)
-      console.log('📧 [ADVISOR] Iniciando proceso de envío de email...');
-      try {
-        await handleSendEmail(blob);
-        console.log('✅ [ADVISOR] Email enviado exitosamente');
-      } catch (emailErr) {
-        console.error('❌ [ADVISOR] Email sending failed, but PDF was downloaded:', emailErr);
-        console.error('❌ [ADVISOR] Email error stack:', emailErr instanceof Error ? emailErr.stack : 'No stack trace');
-        // El error ya se muestra en handleSendEmail
+      // 5. VERIFICAR SI YA SE ENVIÓ EMAIL Y ENVIAR SOLO SI NO SE ENVIÓ
+      console.log('📧 [ADVISOR] Verificando estado de envío de email...');
+      
+      // Verificar si el email ya fue enviado automáticamente
+      let emailAlreadySent = false;
+      if (valuationId) {
+        try {
+          const { data: valuation, error: fetchError } = await supabase
+            .from('advisor_valuations')
+            .select('email_sent, email_sent_at')
+            .eq('id', valuationId)
+            .single();
+          
+          if (!fetchError && valuation) {
+            emailAlreadySent = valuation.email_sent === true;
+            console.log(`📧 [ADVISOR] Email ya enviado: ${emailAlreadySent}`, valuation);
+          }
+        } catch (err) {
+          console.warn('⚠️ [ADVISOR] No se pudo verificar estado email_sent:', err);
+        }
+      }
+      
+      // Solo enviar email si no se envió automáticamente
+      if (!emailAlreadySent) {
+        console.log('📧 [ADVISOR] Email no enviado aún, iniciando envío...');
+        try {
+          await handleSendEmail(blob);
+          console.log('✅ [ADVISOR] Email enviado exitosamente en descarga PDF');
+          
+          // Actualizar BD si hay valuationId
+          if (valuationId) {
+            await supabase
+              .from('advisor_valuations')
+              .update({
+                email_sent: true,
+                email_sent_at: new Date().toISOString(),
+              })
+              .eq('id', valuationId);
+          }
+        } catch (emailErr) {
+          console.error('❌ [ADVISOR] Email sending failed, but PDF was downloaded:', emailErr);
+          console.error('❌ [ADVISOR] Email error stack:', emailErr instanceof Error ? emailErr.stack : 'No stack trace');
+          // El error ya se muestra en handleSendEmail
+        }
+      } else {
+        console.log('✅ [ADVISOR] Email ya fue enviado automáticamente, omitiendo reenvío');
       }
     } catch (err) {
       // Manejo específico por tipo de error
