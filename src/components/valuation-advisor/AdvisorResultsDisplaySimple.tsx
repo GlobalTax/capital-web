@@ -148,15 +148,15 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       }
 
       toast({
-        title: "Email enviado",
-        description: "El informe ha sido enviado a tu email y al equipo Capittal",
+        title: t('advisor.toast.email_sent_title'),
+        description: t('advisor.toast.email_sent_description'),
       });
     } catch (err) {
       console.error('❌ [ADVISOR EMAIL] Error in handleSendEmail:', err);
       console.error('❌ [ADVISOR EMAIL] Error stack:', err instanceof Error ? err.stack : 'No stack trace');
       toast({
-        title: "Error al enviar email",
-        description: "El PDF se descargó correctamente, pero no se pudo enviar el email",
+        title: t('advisor.toast.email_error_title'),
+        description: t('advisor.toast.email_error_description'),
         variant: "destructive",
       });
       throw err;
@@ -173,8 +173,8 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     const now = Date.now();
     if (now - lastDownloadTime < DOWNLOAD_COOLDOWN) {
       toast({
-        title: "Espera un momento",
-        description: "Por favor, espera unos segundos antes de descargar de nuevo",
+        title: t('advisor.toast.wait_title'),
+        description: t('advisor.toast.wait_description'),
       });
       return;
     }
@@ -190,7 +190,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       if (!validation.isValid) {
         const errorMessages = validation.errors.map(e => e.message).join(', ');
         toast({
-          title: "Datos inválidos",
+          title: t('advisor.toast.invalid_data_title'),
           description: errorMessages,
           variant: "destructive",
         });
@@ -220,8 +220,8 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       setLastDownloadTime(now);
 
       toast({
-        title: "PDF descargado",
-        description: "El informe se ha descargado correctamente",
+        title: t('advisor.toast.pdf_downloaded_title'),
+        description: t('advisor.toast.pdf_downloaded_description'),
       });
 
       // 5. VERIFICAR SI YA SE ENVIÓ EMAIL Y ENVIAR SOLO SI NO SE ENVIÓ
@@ -286,11 +286,11 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       }
 
       console.error('Error downloading PDF:', err);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+        toast({
+          title: t('advisor.toast.error_title'),
+          description: errorMessage,
+          variant: "destructive",
+        });
     } finally {
       // CLEANUP GARANTIZADO: liberar memoria
       if (blobUrl) {
@@ -337,10 +337,10 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           <p className="font-semibold text-sm mb-2">{data.name}</p>
           <div className="space-y-1 text-xs">
             <p className="font-bold" style={{ color: data.color }}>
-              Valoración: {formatCurrency(data.valoracion)}
+              {t('advisor.results.valuation')}: {formatCurrency(data.valoracion)}
             </p>
             <p className="text-muted-foreground">
-              Rango: {formatCurrency(data.min)} - {formatCurrency(data.max)}
+              {t('advisor.results.range')}: {formatCurrency(data.min)} - {formatCurrency(data.max)}
             </p>
           </div>
         </Card>
@@ -366,7 +366,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
             {formData.companyName}
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            Dos métodos de valoración independientes
+            {t('advisor.results.two_methods')}
           </p>
         </CardHeader>
       </Card>
@@ -376,14 +376,14 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            Comparación de Métodos de Valoración
+            {t('advisor.results.comparison_title')}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Visualización de las dos metodologías aplicadas
+            {t('advisor.results.comparison_subtitle')}
           </p>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<div className="h-80 flex items-center justify-center text-muted-foreground">Cargando gráfico...</div>}>
+          <Suspense fallback={<div className="h-80 flex items-center justify-center text-muted-foreground">{t('advisor.results.loading_chart')}</div>}>
             <LazyResponsiveContainer height={320}>
               <LazyBarChart 
                 data={chartData} 
@@ -424,11 +424,11 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           <div className="flex items-center justify-center gap-6 mt-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-blue-600" />
-              <span className="text-muted-foreground">Valoración por EBITDA</span>
+              <span className="text-muted-foreground">{t('advisor.results.legend_ebitda')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-600" />
-              <span className="text-muted-foreground">Valoración por Facturación</span>
+              <span className="text-muted-foreground">{t('advisor.results.legend_revenue')}</span>
             </div>
           </div>
         </CardContent>
@@ -442,7 +442,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-blue-600" />
-              Valoración por EBITDA
+              {t('advisor.results.ebitda_valuation_title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -455,23 +455,23 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">EBITDA:</span>
+                <span className="text-muted-foreground">{t('advisor.metrics.ebitda')}:</span>
                 <span className="font-medium">{formatCurrency(formData.ebitda)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Múltiplo:</span>
+                <span className="text-muted-foreground">{t('advisor.metrics.multiple')}:</span>
                 <span className="font-medium">{result.ebitdaMultiple.toFixed(2)}x</span>
               </div>
             </div>
 
             <div className="pt-2 border-t">
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Rango de valoración:</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">{t('advisor.results.valuation_range')}:</p>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Mínimo:</span>
+                <span className="text-muted-foreground">{t('advisor.results.minimum')}:</span>
                 <span className="font-medium">{formatCurrency(result.ebitdaRange.min)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Máximo:</span>
+                <span className="text-muted-foreground">{t('advisor.results.maximum')}:</span>
                 <span className="font-medium">{formatCurrency(result.ebitdaRange.max)}</span>
               </div>
             </div>
@@ -483,7 +483,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-green-600" />
-              Valoración por Facturación
+              {t('advisor.results.revenue_valuation_title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -496,23 +496,23 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Facturación:</span>
+                <span className="text-muted-foreground">{t('advisor.metrics.revenue')}:</span>
                 <span className="font-medium">{formatCurrency(formData.revenue)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Múltiplo:</span>
+                <span className="text-muted-foreground">{t('advisor.metrics.multiple')}:</span>
                 <span className="font-medium">{result.revenueMultiple.toFixed(2)}x</span>
               </div>
             </div>
 
             <div className="pt-2 border-t">
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Rango de valoración:</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">{t('advisor.results.valuation_range')}:</p>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Mínimo:</span>
+                <span className="text-muted-foreground">{t('advisor.results.minimum')}:</span>
                 <span className="font-medium">{formatCurrency(result.revenueRange.min)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Máximo:</span>
+                <span className="text-muted-foreground">{t('advisor.results.maximum')}:</span>
                 <span className="font-medium">{formatCurrency(result.revenueRange.max)}</span>
               </div>
             </div>
@@ -539,10 +539,10 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           <div className="flex flex-col items-center gap-4">
             <div className="text-center">
               <h3 className="font-semibold text-lg mb-2">
-                Descargar Informe Completo
+                {t('advisor.results.download_report')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Obtén un PDF profesional con el análisis detallado de ambos métodos de valoración
+                {t('advisor.results.pdf_subtitle')}
               </p>
             </div>
             <Button
@@ -554,18 +554,18 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
               {isGenerating ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Generando PDF...
+                  {t('calc.loading.title')}...
                 </>
               ) : (
                 <>
                   <Download className="h-5 w-5" />
-                  Descargar PDF
+                  {t('advisor.results.download_pdf')}
                 </>
               )}
             </Button>
             {pdfError && (
               <p className="text-sm text-destructive">
-                Error al generar el PDF. Por favor, inténtalo de nuevo.
+                {t('advisor.results.pdf_error')}
               </p>
             )}
           </div>

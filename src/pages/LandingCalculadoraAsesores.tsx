@@ -41,10 +41,10 @@ const LandingCalculadoraAsesoresInner = () => {
   return (
     <>
       <SEOHead 
-        title="Calculadora de Valoración para Asesores - Capittal"
-        description="Herramienta profesional de valoración con múltiples métricas: Facturación, EBITDA y Resultado Neto. Análisis completo para asesores financieros."
+        title={t('advisor.seo.title')}
+        description={t('advisor.seo.description')}
         canonical="https://capittal.es/lp/calculadora-asesores"
-        keywords="calculadora asesores, valoración múltiples métricas, herramienta profesional valoración"
+        keywords={t('advisor.seo.keywords')}
         structuredData={[
           getServiceSchema(
             "Calculadora de Valoración para Asesores",
