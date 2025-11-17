@@ -4,12 +4,11 @@ import OperationsList from '@/components/operations/OperationsList';
 import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import BuyerTestimonials from '@/components/operations/BuyerTestimonials';
 import { Button } from '@/components/ui/button';
-import { Download, TrendingUp, Building2, DollarSign, Bell } from 'lucide-react';
+import { Download, Bell } from 'lucide-react';
 import BuyerPreferencesModal from '@/components/operations/BuyerPreferencesModal';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema, getProductSchema } from '@/utils/seo';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import { useOperationsStats } from '@/hooks/useOperationsStats';
 import { useSectors } from '@/hooks/useSectors';
 import { useOperationLocations } from '@/hooks/useOperationLocations';
 
@@ -17,7 +16,6 @@ const Oportunidades = () => {
   const [rodFormOpen, setRodFormOpen] = useState(false);
   const [preferencesModalOpen, setPreferencesModalOpen] = useState(false);
   const { t } = useI18n();
-  const { data: stats, isLoading: statsLoading } = useOperationsStats();
   const { activeSectors } = useSectors();
   const { data: locations = [] } = useOperationLocations();
 
@@ -54,45 +52,6 @@ const Oportunidades = () => {
                 {t('opportunities.hero.subtitle')}
               </p>
             </div>
-
-            {/* Stats Grid */}
-            {!statsLoading && stats && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-border text-center">
-                  <div className="flex items-center justify-center mb-3">
-                    <Building2 className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {stats.activeOperations}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Operaciones Activas
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-border text-center">
-                  <div className="flex items-center justify-center mb-3">
-                    <TrendingUp className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {stats.uniqueSectors}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Sectores Disponibles
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-border text-center">
-                  <div className="flex items-center justify-center mb-3">
-                    <DollarSign className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {(stats.averageValuation / 1000000).toFixed(1)}M€
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Valoración Media
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* CTA Buttons */}
             <div className="flex justify-center gap-4">
