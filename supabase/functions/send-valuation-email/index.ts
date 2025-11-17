@@ -207,7 +207,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Emails actualizados para Exchange/Microsoft 365 - todos los destinatarios internos
     const baseRecipients = [
-      "info@capittal.es", 
       "samuel@capittal.es",
       "pau@capittal.es",
       "marcc@capittal.es", 
@@ -339,14 +338,14 @@ if (pdfToAttach) {
     try {
       console.log("Trying primary sender: Capittal <no-reply@capittal.es>");
       emailResponse = await resend.emails.send({
-        from: "Capittal <info@capittal.es>",
+        from: "Capittal <s.navarro@capittal.es>",
         to: recipients,
         subject,
         html: htmlInternal,
         text: internalText,
-        reply_to: "info@capittal.es",
+        reply_to: "s.navarro@capittal.es",
          headers: { 
-           "List-Unsubscribe": "<mailto:info@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+           "List-Unsubscribe": "<mailto:s.navarro@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
          },
       });
@@ -361,9 +360,9 @@ if (pdfToAttach) {
         subject: `${subject} (pruebas)`,
         html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
-        reply_to: "info@capittal.es",
+        reply_to: "s.navarro@capittal.es",
          headers: { 
-           "List-Unsubscribe": "<mailto:info@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+           "List-Unsubscribe": "<mailto:s.navarro@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
          },
       });
@@ -435,14 +434,14 @@ if (pdfToAttach) {
 
       try {
         await resend.emails.send({
-          from: "Capittal <info@capittal.es>",
+          from: "Capittal <s.navarro@capittal.es>",
           to: [companyData.email],
           subject: userSubject,
           html: userHtml,
           text: userText,
-          reply_to: "info@capittal.es",
+          reply_to: "s.navarro@capittal.es",
            headers: { 
-             "List-Unsubscribe": "<mailto:info@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+             "List-Unsubscribe": "<mailto:s.navarro@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
              "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
            },
         });
@@ -454,9 +453,9 @@ if (pdfToAttach) {
           subject: `${userSubject} (pruebas)` ,
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
           text: userText,
-          reply_to: "info@capittal.es",
+          reply_to: "s.navarro@capittal.es",
            headers: { 
-             "List-Unsubscribe": "<mailto:info@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
+             "List-Unsubscribe": "<mailto:s.navarro@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
              "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
            },
         });
