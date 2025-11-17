@@ -1,26 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
-import { MarketplaceGuideDialog } from '@/components/operations/MarketplaceGuideDialog';
 import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
-import { useFirstVisit } from '@/hooks/useFirstVisit';
 import { Button } from '@/components/ui/button';
-import { HelpCircle, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema, getProductSchema } from '@/utils/seo';
 
 const Oportunidades = () => {
-  const [guideOpen, setGuideOpen] = useState(false);
   const [rodFormOpen, setRodFormOpen] = useState(false);
-  const { isFirstVisit, markAsVisited, isDisabled } = useFirstVisit('marketplace-guide');
-
-  // Auto-open guide on first visit
-  useEffect(() => {
-    if (isFirstVisit && !isDisabled) {
-      setGuideOpen(true);
-      markAsVisited();
-    }
-  }, [isFirstVisit, isDisabled, markAsVisited]);
 
 
   return (
@@ -56,7 +44,7 @@ const Oportunidades = () => {
                 Explora empresas disponibles para adquisición con información detallada sobre 
                 valoración, sector y rendimiento financiero.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <Button
                   size="lg"
                   onClick={() => setRodFormOpen(true)}
@@ -64,15 +52,6 @@ const Oportunidades = () => {
                 >
                   <Download className="h-5 w-5" />
                   Descargar Relación de Open Deals
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setGuideOpen(true)}
-                  className="gap-2"
-                >
-                  <HelpCircle className="h-5 w-5" />
-                  ¿Cómo funciona?
                 </Button>
               </div>
             </div>
@@ -116,9 +95,6 @@ const Oportunidades = () => {
           </div>
         </section>
 
-        {/* Guide Dialog */}
-        <MarketplaceGuideDialog open={guideOpen} onOpenChange={setGuideOpen} />
-        
         {/* ROD Download Form */}
         <RODDownloadForm open={rodFormOpen} onOpenChange={setRodFormOpen} />
       </div>
