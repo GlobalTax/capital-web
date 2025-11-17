@@ -1190,6 +1190,63 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_testimonials: {
+        Row: {
+          avatar_initials: string
+          buyer_company: string
+          buyer_name: string
+          buyer_position: string
+          buyer_sector: string
+          created_at: string | null
+          display_order: number | null
+          id: string
+          investment_range: string | null
+          is_active: boolean | null
+          operation_type: string | null
+          rating: number
+          satisfaction_score: string | null
+          testimonial_text: string
+          time_to_close: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_initials: string
+          buyer_company: string
+          buyer_name: string
+          buyer_position: string
+          buyer_sector: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          investment_range?: string | null
+          is_active?: boolean | null
+          operation_type?: string | null
+          rating: number
+          satisfaction_score?: string | null
+          testimonial_text: string
+          time_to_close?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_initials?: string
+          buyer_company?: string
+          buyer_name?: string
+          buyer_position?: string
+          buyer_sector?: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          investment_range?: string | null
+          is_active?: boolean | null
+          operation_type?: string | null
+          rating?: number
+          satisfaction_score?: string | null
+          testimonial_text?: string
+          time_to_close?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       calendar_bookings: {
         Row: {
           booking_date: string

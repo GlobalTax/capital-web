@@ -357,6 +357,21 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'preferences.save': 'Guardar Preferencias',
     'operations.badges.exclusive': 'Exclusiva',
     
+    // Buyer Testimonials
+    'buyerTestimonials.title': 'Lo Que Dicen Nuestros Compradores',
+    'buyerTestimonials.subtitle': 'Inversores y empresarios que han encontrado su empresa ideal',
+    'buyerTestimonials.badge': 'Compradores Satisfechos',
+    'buyerTestimonials.satisfaction': 'Satisfacción promedio',
+    'buyerTestimonials.basedOn': 'basada en operaciones completadas',
+    'buyerTestimonials.operationType': 'Tipo',
+    'buyerTestimonials.investment': 'Inversión',
+    'buyerTestimonials.timeToClose': 'Cierre',
+    'buyerTestimonials.satisfactionScore': 'Satisfacción',
+    
+    // Trust Indicators
+    'trustIndicators.verified': 'Verificado',
+    'trustIndicators.dueDiligence': 'DD Completo',
+    
     
     // Landing
     'landing.title': 'Calculadora de Valoración de Empresas | Capittal',
@@ -1119,6 +1134,22 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'operations.badges.advancedProcess': 'Procés Avançat',
     'operations.badges.exclusive': 'Exclusiva',
     
+    // Buyer Testimonials (CA)
+    'buyerTestimonials.title': 'El Que Diuen Els Nostres Compradors',
+    'buyerTestimonials.subtitle': 'Inversors i empresaris que han trobat la seva empresa ideal',
+    'buyerTestimonials.badge': 'Compradors Satisfets',
+    'buyerTestimonials.satisfaction': 'Satisfacció mitjana',
+    'buyerTestimonials.basedOn': 'basada en operacions completades',
+    'buyerTestimonials.operationType': 'Tipus',
+    'buyerTestimonials.investment': 'Inversió',
+    'buyerTestimonials.timeToClose': 'Tancament',
+    'buyerTestimonials.satisfactionScore': 'Satisfacció',
+    
+    // Trust Indicators (CA)
+    'trustIndicators.verified': 'Verificat',
+    'trustIndicators.dueDiligence': 'DD Complet',
+    
+    
     // ========== VENTA EMPRESAS (CA) ==========
     'ventaEmpresas.hero.badge': '+200 empreses venudes amb èxit',
     'ventaEmpresas.hero.title': 'Ven la teva empresa al',
@@ -1632,6 +1663,22 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'operations.badges.highDemand': 'High Demand',
     'operations.badges.advancedProcess': 'Advanced Process',
     'operations.badges.exclusive': 'Exclusive',
+    
+    // Buyer Testimonials (EN)
+    'buyerTestimonials.title': 'What Our Buyers Say',
+    'buyerTestimonials.subtitle': 'Investors and entrepreneurs who found their ideal company',
+    'buyerTestimonials.badge': 'Satisfied Buyers',
+    'buyerTestimonials.satisfaction': 'Average satisfaction',
+    'buyerTestimonials.basedOn': 'based on completed operations',
+    'buyerTestimonials.operationType': 'Type',
+    'buyerTestimonials.investment': 'Investment',
+    'buyerTestimonials.timeToClose': 'Closing',
+    'buyerTestimonials.satisfactionScore': 'Satisfaction',
+    
+    // Trust Indicators (EN)
+    'trustIndicators.verified': 'Verified',
+    'trustIndicators.dueDiligence': 'DD Complete',
+    
     
     // === NAVIGATION ===
     'nav.servicios': 'Services',

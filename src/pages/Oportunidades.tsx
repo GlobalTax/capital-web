@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
+import BuyerTestimonials from '@/components/operations/BuyerTestimonials';
 import { Button } from '@/components/ui/button';
 import { Download, TrendingUp, Building2, DollarSign, Bell } from 'lucide-react';
 import BuyerPreferencesModal from '@/components/operations/BuyerPreferencesModal';
@@ -121,6 +122,9 @@ const Oportunidades = () => {
             />
           </div>
         </section>
+
+        {/* Buyer Testimonials Section */}
+        <BuyerTestimonials />
 
         {/* Contact Section */}
         <section className="py-16 bg-white">
