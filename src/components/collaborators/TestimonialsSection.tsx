@@ -5,44 +5,44 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Quote } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Profesional de M&A",
-    role: "M&A Analyst",
-    company: "Big Four",
-    avatar: "",
-    rating: 5,
-    content: "El programa de colaboradores de Capittal me ha permitido trabajar en transacciones de alto nivel mientras mantengo la flexibilidad que buscaba. El equipo es excepcional.",
-    sector: "Financial Services",
-    joinedYear: "2023"
-  },
-  {
-    id: 2,
-    name: "Director de Valoraciones",
-    role: "Valuations Expert",
-    company: "Consultora Internacional",
-    avatar: "",
-    rating: 5,
-    content: "La calidad de los proyectos y el nivel de los clientes es impresionante. He podido desarrollar mi expertise en valoraciones complejas con el respaldo de un equipo profesional.",
-    sector: "Industrial",
-    joinedYear: "2023"
-  },
-  {
-    id: 3,
-    name: "Profesional Senior M&A",
-    role: "Financial Advisor",
-    company: "Firma Internacional",
-    avatar: "",
-    rating: 5,
-    content: "Excelente oportunidad para crecer profesionalmente en un entorno de transacciones complejas. La experiencia y el networking han superado mis expectativas.",
-    sector: "Technology",
-    joinedYear: "2023"
-  }
-];
-
 export const TestimonialsSection = () => {
   const { t } = useI18n();
+  
+  const testimonials = [
+    {
+      id: 1,
+      name: t('collab.testimonials.1.name'),
+      role: t('collab.testimonials.1.role'),
+      company: t('collab.testimonials.1.company'),
+      avatar: "",
+      rating: 5,
+      content: t('collab.testimonials.1.content'),
+      sector: t('collab.testimonials.1.sector'),
+      joinedYear: t('collab.testimonials.1.joinedYear')
+    },
+    {
+      id: 2,
+      name: t('collab.testimonials.2.name'),
+      role: t('collab.testimonials.2.role'),
+      company: t('collab.testimonials.2.company'),
+      avatar: "",
+      rating: 5,
+      content: t('collab.testimonials.2.content'),
+      sector: t('collab.testimonials.2.sector'),
+      joinedYear: t('collab.testimonials.2.joinedYear')
+    },
+    {
+      id: 3,
+      name: t('collab.testimonials.3.name'),
+      role: t('collab.testimonials.3.role'),
+      company: t('collab.testimonials.3.company'),
+      avatar: "",
+      rating: 5,
+      content: t('collab.testimonials.3.content'),
+      sector: t('collab.testimonials.3.sector'),
+      joinedYear: t('collab.testimonials.3.joinedYear')
+    }
+  ];
   
   return (
     <section className="py-20 bg-gray-50">
@@ -105,7 +105,7 @@ export const TestimonialsSection = () => {
                   {testimonial.sector}
                 </div>
                 <span className="text-xs text-gray-500">
-                  Desde {testimonial.joinedYear}
+                  {t('collab.testimonials.stats.since')} {testimonial.joinedYear}
                 </span>
               </div>
             </div>
@@ -116,19 +116,19 @@ export const TestimonialsSection = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-gray-300">
           <div className="text-center">
             <div className="text-3xl font-bold text-black mb-2">50+</div>
-            <div className="text-gray-600 font-medium text-base">Colaboradores Activos</div>
+            <div className="text-gray-600 font-medium text-base">{t('collab.testimonials.stats.active')}</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-black mb-2">98,7%</div>
-            <div className="text-gray-600 font-medium text-base">Satisfacción</div>
+            <div className="text-gray-600 font-medium text-base">{t('collab.testimonials.stats.satisfaction')}</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-black mb-2">€500M+</div>
-            <div className="text-gray-600 font-medium text-base">Valor Gestionado</div>
+            <div className="text-gray-600 font-medium text-base">{t('collab.testimonials.stats.value')}</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-black mb-2">15</div>
-            <div className="text-gray-600 font-medium text-base">Años Experiencia</div>
+            <div className="text-gray-600 font-medium text-base">{t('collab.testimonials.stats.experience')}</div>
           </div>
         </div>
       </div>
