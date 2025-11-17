@@ -16,7 +16,7 @@ const CapittalBrief: React.FC = () => {
           </p>
         </header>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="rounded-lg border p-4">
             <p className="text-sm text-gray-500">{t('capittalBrief.experience.label')}</p>
             <p className="mt-1 font-medium text-gray-900">{t('capittalBrief.experience.value')}</p>
@@ -24,10 +24,6 @@ const CapittalBrief: React.FC = () => {
           <div className="rounded-lg border p-4">
             <p className="text-sm text-gray-500">{t('capittalBrief.coverage.label')}</p>
             <p className="mt-1 font-medium text-gray-900">{t('capittalBrief.coverage.value')}</p>
-          </div>
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-gray-500">{t('capittalBrief.specialization.label')}</p>
-            <p className="mt-1 font-medium text-gray-900">{t('capittalBrief.specialization.value')}</p>
           </div>
         </div>
       </div>

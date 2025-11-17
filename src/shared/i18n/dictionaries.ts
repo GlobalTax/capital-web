@@ -557,6 +557,14 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'advisor.error.calculation': 'Error al calcular la valoración',
     'advisor.error.calculation_failed': 'Hubo un problema al calcular la valoración',
     
+    // ========== CAPITTAL BRIEF (ES) ==========
+    'capittalBrief.title': '¿Qué es Capittal?',
+    'capittalBrief.description': 'Capittal es una firma boutique de M&A que acompaña procesos de compra y venta de empresas en España.',
+    'capittalBrief.experience.label': 'Experiencia',
+    'capittalBrief.experience.value': '+250 valoraciones realizadas',
+    'capittalBrief.coverage.label': 'Cobertura',
+    'capittalBrief.coverage.value': 'Operaciones en toda España',
+    
     // Colaboradores - Traducciones completas
     ...collaboratorsTranslations.es,
   },
@@ -1029,8 +1037,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'capittalBrief.experience.value': '+250 valoracions realitzades',
     'capittalBrief.coverage.label': 'Cobertura',
     'capittalBrief.coverage.value': 'Operacions a tota Espanya',
-    'capittalBrief.specialization.label': 'Especialització',
-    'capittalBrief.specialization.value': 'B2B, industrial, tecnologia, salut, alimentació i begudes, energia i renovables, logística i transport, e-commerce i retail, construcció i immobiliari, educació i formació',
     
     // === NAVIGATION ===
     'nav.servicios': 'Serveis',
@@ -1485,6 +1491,14 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'footer.link.terminos': 'Terms of Use',
     'footer.link.cookies': 'Cookies',
     'footer.copyright': '© {year} Capittal. All rights reserved.',
+    
+    // ========== CAPITTAL BRIEF (EN) ==========
+    'capittalBrief.title': 'What is Capittal?',
+    'capittalBrief.description': 'Capittal is a boutique M&A firm that accompanies business acquisition and sale processes in Spain.',
+    'capittalBrief.experience.label': 'Experience',
+    'capittalBrief.experience.value': '+250 valuations completed',
+    'capittalBrief.coverage.label': 'Coverage',
+    'capittalBrief.coverage.value': 'Operations throughout Spain',
     
     // Collaborators - Full translations
     ...collaboratorsTranslations.en,
