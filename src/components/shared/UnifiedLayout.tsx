@@ -53,8 +53,8 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
       {showAccessibilityTools && <AccessibilityTools />}
       {showNotificationCenter && <NotificationCenter className="mr-16" />}
       {shouldShowAdminButton && <AdminAccessButton />}
-      {variant === 'home' && <BrevoWhatsAppWidget />}
-      <div 
+      {(variant === 'home' || variant === 'landing') && <BrevoWhatsAppWidget />}
+      <div
         aria-live="polite" 
         aria-atomic="true" 
         className="sr-only"
