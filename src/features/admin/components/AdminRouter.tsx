@@ -110,6 +110,7 @@ const AdminRouter = () => {
           
           {/* Company Data */}
           <Route path="/operations/dashboard" element={<LazyOperationsDashboard />} />
+          <Route path="/operations/kanban" element={<LazyOperationsKanban />} />
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
