@@ -18,6 +18,7 @@ import SectorSelect from '@/components/admin/shared/SectorSelect';
 import { AssignmentPanel } from '@/features/operations-management/components/assignment';
 import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
 import { OperationNotesPanel } from '@/features/operations-management/components/notes';
+import { OperationDocumentsPanel } from '@/features/operations-management/components/documents';
 
 interface Operation {
   id: string;
