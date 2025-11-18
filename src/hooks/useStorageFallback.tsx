@@ -93,11 +93,8 @@ export const useStorageFallback = () => {
       // Silenciar - ya logueado en localStorage test
     }
 
-    // Detect tracking prevention (Safari/Edge specific)
-    const isTrackingPrevented = 
-      (!result.localStorage && !result.sessionStorage) ||
-      /Safari/.test(navigator.userAgent) && /Version\/1[4-9]/.test(navigator.userAgent) ||
-      /Edg\//.test(navigator.userAgent);
+    // Detect tracking prevention based on actual storage availability
+    const isTrackingPrevented = !result.localStorage && !result.sessionStorage;
 
     result.isTrackingPrevented = isTrackingPrevented;
 
@@ -116,12 +113,12 @@ export const useStorageFallback = () => {
         
         setStorageStatus(status);
         
-        // Configure fallback based on results
+        // Configure fallback based on actual storage availability
         const config: FallbackConfig = {
-          bypassStorage: status.isTrackingPrevented,
+          bypassStorage: !status.localStorage,
           useDirectSubmission: !status.localStorage && !status.sessionStorage,
           enableMemoryOnly: !status.localStorage,
-          preferEdgeFunction: status.isTrackingPrevented
+          preferEdgeFunction: !status.localStorage && !status.sessionStorage
         };
         
         setFallbackConfig(config);
