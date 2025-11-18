@@ -8,6 +8,7 @@ import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format'
 import { isRecentOperation } from '@/shared/utils/date';
 import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, MapPin, Edit, History, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
 
 interface Operation {
   id: string;
@@ -324,41 +325,7 @@ const OperationDetailsModalEnhanced: React.FC<OperationDetailsModalEnhancedProps
 
           {/* History Tab */}
           <TabsContent value="history" className="space-y-4 mt-4">
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">Historial de Cambios</h3>
-                <div className="space-y-3">
-                  {operation.created_at && (
-                    <div className="flex items-start gap-3 pb-3 border-b">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Operación creada</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(operation.created_at).toLocaleString('es-ES', {
-                            dateStyle: 'long',
-                            timeStyle: 'short'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {operation.updated_at && operation.updated_at !== operation.created_at && (
-                    <div className="flex items-start gap-3 pb-3">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Última actualización</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(operation.updated_at).toLocaleString('es-ES', {
-                            dateStyle: 'long',
-                            timeStyle: 'short'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <OperationHistoryTimeline operationId={operation.id} />
           </TabsContent>
         </Tabs>
 

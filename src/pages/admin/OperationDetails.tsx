@@ -15,6 +15,8 @@ import { ArrowLeft, Building2, DollarSign, FileText, Calendar, MapPin, Settings,
 import { formatCurrency } from '@/shared/utils/format';
 import { useToast } from '@/hooks/use-toast';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
+import { AssignmentPanel } from '@/features/operations-management/components/assignment';
+import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
 
 interface Operation {
   id: string;
@@ -41,6 +43,9 @@ interface Operation {
   is_featured: boolean;
   created_at: string;
   updated_at: string;
+  assigned_to?: string | null;
+  assigned_at?: string | null;
+  assigned_by?: string | null;
 }
 
 const OperationDetails = () => {
@@ -556,6 +561,13 @@ const OperationDetails = () => {
             </CardContent>
           </Card>
 
+          {/* Assignment Panel */}
+          <AssignmentPanel
+            operationId={id!}
+            currentAssignedTo={operation.assigned_to}
+            assignedAt={operation.assigned_at}
+          />
+
           {/* Configuration */}
           <Card>
             <CardHeader className="border-b">
@@ -587,6 +599,9 @@ const OperationDetails = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Operation History Timeline */}
+          <OperationHistoryTimeline operationId={id!} />
         </div>
       </div>
     </div>

@@ -45,6 +45,7 @@ export const LazyLeadDetailPage = lazy(() => import('@/pages/admin/LeadDetailPag
 export const LazyAdminOperations = lazy(() => import('@/pages/admin/AdminOperations'));
 export const LazyOperationDetails = lazy(() => import('@/pages/admin/OperationDetails'));
 export const LazyOperationsDashboard = lazy(() => import('@/features/operations-management/components/dashboard').then(m => ({ default: m.OperationsDashboard })));
+export const LazyOperationsKanban = lazy(() => import('@/pages/admin/OperationsKanban'));
 
 // === JOBS ===
 export const LazyJobPostsManager = lazy(() => import('@/pages/admin/JobPostsManager').then(m => ({ default: m.JobPostsManager })));
