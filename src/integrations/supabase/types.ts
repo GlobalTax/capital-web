@@ -1692,6 +1692,8 @@ export type Database = {
           revenue_amount: number | null
           sector: string
           short_description: string | null
+          source_lead_id: string | null
+          source_lead_type: string | null
           status: string | null
           subsector: string | null
           updated_at: string
@@ -1723,6 +1725,8 @@ export type Database = {
           revenue_amount?: number | null
           sector: string
           short_description?: string | null
+          source_lead_id?: string | null
+          source_lead_type?: string | null
           status?: string | null
           subsector?: string | null
           updated_at?: string
@@ -1754,6 +1758,8 @@ export type Database = {
           revenue_amount?: number | null
           sector?: string
           short_description?: string | null
+          source_lead_id?: string | null
+          source_lead_type?: string | null
           status?: string | null
           subsector?: string | null
           updated_at?: string
@@ -4175,6 +4181,47 @@ export type Database = {
           },
         ]
       }
+      lead_to_operation_conversions: {
+        Row: {
+          conversion_notes: string | null
+          converted_at: string | null
+          converted_by: string | null
+          id: string
+          lead_id: string
+          lead_type: string
+          metadata: Json | null
+          operation_id: string | null
+        }
+        Insert: {
+          conversion_notes?: string | null
+          converted_at?: string | null
+          converted_by?: string | null
+          id?: string
+          lead_id: string
+          lead_type: string
+          metadata?: Json | null
+          operation_id?: string | null
+        }
+        Update: {
+          conversion_notes?: string | null
+          converted_at?: string | null
+          converted_by?: string | null
+          id?: string
+          lead_id?: string
+          lead_type?: string
+          metadata?: Json | null
+          operation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_to_operation_conversions_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "company_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_valuation_initial: {
         Row: {
           assumptions: Json
@@ -5234,6 +5281,41 @@ export type Database = {
         }
         Relationships: []
       }
+      note_mentions: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          mentioned_user_id: string | null
+          note_id: string | null
+          read_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          mentioned_user_id?: string | null
+          note_id?: string | null
+          read_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          mentioned_user_id?: string | null
+          note_id?: string | null
+          read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_mentions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "operation_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_history: {
         Row: {
           change_type: string
@@ -5344,6 +5426,78 @@ export type Database = {
           utm_source?: string | null
         }
         Relationships: []
+      }
+      operation_notes: {
+        Row: {
+          attachments: Json | null
+          created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          edited_at: string | null
+          id: string
+          is_deleted: boolean | null
+          is_edited: boolean | null
+          is_internal: boolean | null
+          mentions: Json | null
+          note_html: string | null
+          note_text: string
+          operation_id: string | null
+          parent_note_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          is_internal?: boolean | null
+          mentions?: Json | null
+          note_html?: string | null
+          note_text: string
+          operation_id?: string | null
+          parent_note_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          is_internal?: boolean | null
+          mentions?: Json | null
+          note_html?: string | null
+          note_text?: string
+          operation_id?: string | null
+          parent_note_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_notes_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "company_operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_notes_parent_note_id_fkey"
+            columns: ["parent_note_id"]
+            isOneToOne: false
+            referencedRelation: "operation_notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pdf_download_logs: {
         Row: {

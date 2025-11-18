@@ -30,6 +30,7 @@ import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
+import { LeadToOperationConverter } from '@/features/operations-management/components/integrations';
 
 interface LeadData {
   id: string;
@@ -212,6 +213,9 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Botón "Convertir en Operación" */}
+          <LeadToOperationConverter lead={lead} />
+
           {/* Botón "Enviar a Brevo" */}
           <Button 
             variant="outline"

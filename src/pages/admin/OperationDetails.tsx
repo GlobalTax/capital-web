@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
 import { AssignmentPanel } from '@/features/operations-management/components/assignment';
 import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
+import { OperationNotesPanel } from '@/features/operations-management/components/notes';
 
 interface Operation {
   id: string;
@@ -499,6 +500,9 @@ const OperationDetails = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Notas y Comentarios */}
+          <OperationNotesPanel operationId={id!} />
         </div>
 
         {/* Right Column - Sidebar */}
