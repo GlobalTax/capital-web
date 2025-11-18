@@ -57,13 +57,13 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ operation, onClick }) =>
           {operation.revenue_amount && (
             <div className="flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              <span>{formatCurrency(operation.revenue_amount, 'EUR', true)}</span>
+              <span>€{(operation.revenue_amount / 1000000).toFixed(1)}M</span>
             </div>
           )}
           {operation.ebitda_amount && (
             <div className="flex items-center gap-1">
               <span className="font-medium">EBITDA:</span>
-              <span>{formatCurrency(operation.ebitda_amount, 'EUR', true)}</span>
+              <span>€{(operation.ebitda_amount / 1000000).toFixed(1)}M</span>
             </div>
           )}
         </div>
