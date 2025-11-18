@@ -1669,6 +1669,9 @@ export type Database = {
       }
       company_operations: {
         Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_to: string | null
           company_name: string
           company_size_employees: string | null
           created_at: string
@@ -1697,6 +1700,9 @@ export type Database = {
           year: number
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           company_name: string
           company_size_employees?: string | null
           created_at?: string
@@ -1725,6 +1731,9 @@ export type Database = {
           year: number
         }
         Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           company_name?: string
           company_size_employees?: string | null
           created_at?: string
@@ -1752,7 +1761,22 @@ export type Database = {
           valuation_currency?: string | null
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "company_operations_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_operations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       company_valuations: {
         Row: {
@@ -5210,6 +5234,63 @@ export type Database = {
         }
         Relationships: []
       }
+      operation_history: {
+        Row: {
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          created_at: string
+          field_changed: string
+          id: string
+          ip_address: unknown
+          new_value: Json | null
+          old_value: Json | null
+          operation_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          change_type: string
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          field_changed: string
+          id?: string
+          ip_address?: unknown
+          new_value?: Json | null
+          old_value?: Json | null
+          operation_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          field_changed?: string
+          id?: string
+          ip_address?: unknown
+          new_value?: Json | null
+          old_value?: Json | null
+          operation_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "operation_history_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "company_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_inquiries: {
         Row: {
           company_name: string
@@ -5777,6 +5858,44 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "company_operations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_searches: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          is_shared: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters: Json
+          id?: string
+          is_shared?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          is_shared?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_searches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
           },
         ]
       }
