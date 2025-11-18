@@ -16,6 +16,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 interface LeadData {
   id: string;
@@ -42,26 +43,107 @@ export const LeadToOperationConverter: React.FC<LeadToOperationConverterProps> =
     description: '',
     conversion_notes: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Validar un campo individual
+  const validateField = (fieldName: string, value: any): string => {
+    switch (fieldName) {
+      case 'company_name':
+        if (!value || value.trim().length < 2) {
+          return 'El nombre de la empresa debe tener al menos 2 caracteres';
+        }
+        break;
+      case 'sector':
+        if (!value || value.trim() === '') {
+          return 'El sector es requerido';
+        }
+        break;
+      case 'valuation_amount':
+        const amount = parseFloat(value);
+        if (!value || isNaN(amount) || amount <= 0) {
+          return 'El monto de valoración debe ser mayor a 0';
+        }
+        break;
+      case 'description':
+        if (!value || value.trim().length < 10) {
+          return 'La descripción debe tener al menos 10 caracteres';
+        }
+        break;
+    }
+    return '';
+  };
+
+  // Validar todo el formulario
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    newErrors.company_name = validateField('company_name', formData.company_name);
+    newErrors.sector = validateField('sector', formData.sector);
+    newErrors.valuation_amount = validateField('valuation_amount', formData.valuation_amount);
+    newErrors.description = validateField('description', formData.description);
+
+    // Filtrar errores vacíos
+    const filteredErrors = Object.fromEntries(
+      Object.entries(newErrors).filter(([_, v]) => v !== '')
+    );
+
+    setErrors(filteredErrors);
+    return Object.keys(filteredErrors).length === 0;
+  };
+
+  // Manejar cambios en los campos
+  const handleFieldChange = (fieldName: string, value: any) => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+    
+    // Limpiar error del campo cuando el usuario empieza a escribir
+    if (errors[fieldName]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  };
+
+  const isFormValid = !formData.company_name || 
+                      !formData.sector || 
+                      !formData.valuation_amount || 
+                      !formData.description ||
+                      formData.company_name.trim().length < 2 ||
+                      formData.description.trim().length < 10 ||
+                      parseFloat(formData.valuation_amount) <= 0 ||
+                      isNaN(parseFloat(formData.valuation_amount));
+
   const convertMutation = useMutation({
     mutationFn: async () => {
+      // Validar antes de enviar
+      if (!validateForm()) {
+        throw new Error('Por favor, completa todos los campos requeridos correctamente');
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
+
+      // Parsing seguro de números
+      const valuationAmount = parseFloat(formData.valuation_amount);
+      if (isNaN(valuationAmount) || valuationAmount <= 0) {
+        throw new Error('El monto de valoración debe ser un número válido mayor a 0');
+      }
 
       // 1. Crear operación
       const { data: operation, error: opError } = await supabase
         .from('company_operations')
         .insert({
-          company_name: formData.company_name,
-          sector: formData.sector || 'Sin especificar',
-          valuation_amount: parseFloat(formData.valuation_amount) || 0,
+          company_name: formData.company_name.trim(),
+          sector: formData.sector.trim(),
+          valuation_amount: valuationAmount,
           valuation_currency: 'EUR',
           year: new Date().getFullYear(),
-          description: formData.description,
+          description: formData.description.trim(),
           status: 'prospecting',
           source_lead_id: lead.id,
           source_lead_type: lead.origin,
@@ -108,9 +190,24 @@ export const LeadToOperationConverter: React.FC<LeadToOperationConverterProps> =
       navigate(`/admin/operations/${operation.id}`);
     },
     onError: (error: any) => {
+      console.error('Error al crear operación:', error);
+      
+      // Parsear mensajes de error específicos de Supabase
+      let errorMessage = error.message;
+      
+      if (error.message?.includes('valuation_amount')) {
+        errorMessage = 'El monto de valoración es requerido y debe ser mayor a 0';
+      } else if (error.message?.includes('sector')) {
+        errorMessage = 'El sector es requerido';
+      } else if (error.message?.includes('description')) {
+        errorMessage = 'La descripción es requerida';
+      } else if (error.message?.includes('company_name')) {
+        errorMessage = 'El nombre de la empresa es requerido';
+      }
+      
       toast({
         title: 'Error al crear operación',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     },
@@ -164,81 +261,107 @@ export const LeadToOperationConverter: React.FC<LeadToOperationConverterProps> =
             {/* Formulario de operación */}
             <div className="space-y-4">
               <div>
-                <Label htmlFor="company_name">Nombre de la Empresa *</Label>
+                <Label htmlFor="company_name">
+                  Nombre de la Empresa <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="company_name"
                   value={formData.company_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, company_name: e.target.value })
-                  }
-                  placeholder="Acme Corp"
+                  onChange={(e) => handleFieldChange('company_name', e.target.value)}
+                  placeholder="Ej: Tech Solutions S.L."
+                  className={errors.company_name ? 'border-destructive' : ''}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="sector">Sector</Label>
-                  <Input
-                    id="sector"
-                    value={formData.sector}
-                    onChange={(e) =>
-                      setFormData({ ...formData, sector: e.target.value })
-                    }
-                    placeholder="Tecnología"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="valuation">Valoración Estimada (€)</Label>
-                  <Input
-                    id="valuation"
-                    type="number"
-                    value={formData.valuation_amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, valuation_amount: e.target.value })
-                    }
-                    placeholder="1000000"
-                  />
-                </div>
+                {errors.company_name && (
+                  <p className="text-sm text-destructive">{errors.company_name}</p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="description">Descripción de la Operación</Label>
+                <Label htmlFor="sector">
+                  Sector <span className="text-destructive">*</span>
+                </Label>
+                <SectorSelect
+                  value={formData.sector}
+                  onChange={(value) => handleFieldChange('sector', value)}
+                  placeholder="Selecciona un sector"
+                  required
+                  className={errors.sector ? 'border-destructive' : ''}
+                />
+                {errors.sector && (
+                  <p className="text-sm text-destructive">{errors.sector}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="valuation_amount">
+                  Valoración Estimada (EUR) <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="valuation_amount"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={formData.valuation_amount}
+                  onChange={(e) => handleFieldChange('valuation_amount', e.target.value)}
+                  placeholder="Ej: 500000"
+                  className={errors.valuation_amount ? 'border-destructive' : ''}
+                />
+                {errors.valuation_amount && (
+                  <p className="text-sm text-destructive">{errors.valuation_amount}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="description">
+                  Descripción de la Operación <span className="text-destructive">*</span>
+                </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Describe los detalles de la operación..."
-                  rows={3}
+                  onChange={(e) => handleFieldChange('description', e.target.value)}
+                  placeholder="Describe brevemente la operación, el tipo de negocio, situación actual... (mínimo 10 caracteres)"
+                  rows={4}
+                  className={errors.description ? 'border-destructive' : ''}
                 />
+                {errors.description && (
+                  <p className="text-sm text-destructive">{errors.description}</p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="notes">Notas de Conversión (Opcional)</Label>
+                <Label htmlFor="conversion_notes">Notas de Conversión (Opcional)</Label>
                 <Textarea
-                  id="notes"
+                  id="conversion_notes"
                   value={formData.conversion_notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, conversion_notes: e.target.value })
-                  }
+                  onChange={(e) => handleFieldChange('conversion_notes', e.target.value)}
                   placeholder="Información adicional sobre la conversión..."
-                  rows={2}
+                  rows={3}
                 />
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancelar
             </Button>
             <Button
+              type="button"
               onClick={() => convertMutation.mutate()}
-              disabled={!formData.company_name || convertMutation.isPending}
+              disabled={convertMutation.isPending || isFormValid}
             >
-              <ArrowRight className="h-4 w-4 mr-2" />
-              {convertMutation.isPending ? 'Creando...' : 'Crear Operación'}
+              {convertMutation.isPending ? (
+                'Creando...'
+              ) : (
+                <>
+                  Crear Operación
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
