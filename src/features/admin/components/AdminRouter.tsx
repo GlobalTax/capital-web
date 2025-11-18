@@ -33,6 +33,7 @@ import {
   LazyLeadDetailPage,
   LazyAdminOperations,
   LazyOperationDetails,
+  LazyOperationsDashboard,
   LazyJobPostsManager,
   LazyJobPostEditor,
   LazyJobApplicationsManager,
@@ -107,6 +108,7 @@ const AdminRouter = () => {
           <Route path="/collaborator-applications" element={<LazyCollaboratorApplicationsManagerPage />} />
           
           {/* Company Data */}
+          <Route path="/operations/dashboard" element={<LazyOperationsDashboard />} />
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
