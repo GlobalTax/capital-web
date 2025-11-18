@@ -78,8 +78,10 @@ const OperationsKanban = () => {
         <OperationDetailsModalEnhanced
           operation={viewingOperation}
           isOpen={!!viewingOperation}
-          onClose={() => setViewingOperation(null)}
-          onUpdate={fetchOperations}
+          onClose={() => {
+            setViewingOperation(null);
+            fetchOperations();
+          }}
         />
       )}
     </div>
