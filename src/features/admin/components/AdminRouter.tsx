@@ -34,6 +34,7 @@ import {
   LazyAdminOperations,
   LazyOperationDetails,
   LazyOperationsDashboard,
+  LazyOperationsKanban,
   LazyJobPostsManager,
   LazyJobPostEditor,
   LazyJobApplicationsManager,
