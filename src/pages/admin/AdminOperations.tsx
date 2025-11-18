@@ -14,7 +14,7 @@ import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatCurrency } from '@/shared/utils/format';
 import { formatDate } from '@/shared/utils/date';
-import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3, Kanban, User } from 'lucide-react';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
@@ -29,9 +29,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
 import { SellerGuideDialog } from '@/components/operations/SellerGuideDialog';
+import { AdvancedSearchPanel } from '@/features/operations-management/components/search';
+import { useAdminUsers } from '@/hooks/useAdminUsers';
 
 interface Operation {
   id: string;
@@ -55,6 +64,8 @@ interface Operation {
   highlights?: string[];
   created_at?: string;
   updated_at?: string;
+  assigned_to?: string | null;
+  assigned_at?: string | null;
 }
 
 const AdminOperations = () => {
@@ -73,7 +84,9 @@ const AdminOperations = () => {
   const [selectedOperations, setSelectedOperations] = useState<Set<string>>(new Set());
   const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
   const [showSellerGuide, setShowSellerGuide] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const { toast } = useToast();
+  const { users: adminUsers } = useAdminUsers();
 
   useEffect(() => {
     fetchOperations();
@@ -786,6 +799,31 @@ const AdminOperations = () => {
       ),
     },
     {
+      key: 'assigned_to',
+      title: 'ASIGNADO A',
+      width: 150,
+      render: (operation: Operation) => {
+        const assignedUser = adminUsers.find(u => u.user_id === operation.assigned_to);
+        
+        if (!assignedUser) {
+          return <Badge variant="outline" className="text-xs">Sin asignar</Badge>;
+        }
+        
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                {assignedUser.full_name?.[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm truncate max-w-[100px]">
+              {assignedUser.full_name || assignedUser.email}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
       key: 'actions',
       title: 'ACCIONES',
       width: 120,  
@@ -872,6 +910,22 @@ const AdminOperations = () => {
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Dashboard
+          </Button>
+          <Button
+            onClick={() => navigate('/admin/operations/kanban')}
+            variant="outline"
+            className="border-purple-200 hover:bg-purple-50 text-purple-600"
+          >
+            <Kanban className="h-4 w-4 mr-2" />
+            Vista Kanban
+          </Button>
+          <Button
+            onClick={() => setShowAdvancedSearch(true)}
+            variant="outline"
+            className="border-blue-200 hover:bg-blue-50 text-blue-600"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Búsqueda Avanzada
           </Button>
           <Button
             onClick={() => setShowSellerGuide(true)}
@@ -1436,6 +1490,21 @@ const AdminOperations = () => {
         open={showSellerGuide}
         onOpenChange={setShowSellerGuide}
       />
+
+      {/* Advanced Search Dialog */}
+      <Dialog open={showAdvancedSearch} onOpenChange={setShowAdvancedSearch}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Búsqueda Avanzada de Operaciones
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            <AdvancedSearchPanel />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

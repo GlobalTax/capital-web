@@ -3,6 +3,7 @@ import { useOperationsAnalytics } from '../../hooks/useOperationsAnalytics';
 import { KPICards } from './KPICards';
 import { PipelineChart } from './PipelineChart';
 import { ActivityFeed } from './ActivityFeed';
+import { TeamWorkloadView } from '../assignment/TeamWorkloadView';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -69,6 +70,11 @@ export const OperationsDashboard: React.FC = () => {
         <div className="md:col-span-1">
           <ActivityFeed activities={analytics.recentActivity} />
         </div>
+      </div>
+
+      {/* Team Workload */}
+      <div className="grid gap-6">
+        <TeamWorkloadView />
       </div>
     </div>
   );
