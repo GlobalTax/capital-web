@@ -504,6 +504,9 @@ const OperationDetails = () => {
 
           {/* Notas y Comentarios */}
           <OperationNotesPanel operationId={id!} />
+
+          {/* Documentos */}
+          <OperationDocumentsPanel operationId={id!} />
         </div>
 
         {/* Right Column - Sidebar */}
