@@ -26,6 +26,11 @@ export interface Operation {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  assigned_to?: string | null;
+  assigned_at?: string | null;
+  assigned_by?: string | null;
+  source_lead_id?: string | null;
+  source_lead_type?: string | null;
 }
 
 export interface OperationsKPIs {
