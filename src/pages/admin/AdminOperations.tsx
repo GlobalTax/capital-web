@@ -14,7 +14,7 @@ import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatCurrency } from '@/shared/utils/format';
 import { formatDate } from '@/shared/utils/date';
-import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3 } from 'lucide-react';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
@@ -865,6 +865,14 @@ const AdminOperations = () => {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button
+            onClick={() => navigate('/admin/operations/dashboard')}
+            variant="outline"
+            className="border-accent/20 hover:bg-accent/10 text-accent"
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Dashboard
+          </Button>
           <Button
             onClick={() => setShowSellerGuide(true)}
             variant="outline"
