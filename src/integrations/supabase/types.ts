@@ -5316,6 +5316,137 @@ export type Database = {
           },
         ]
       }
+      operation_document_downloads: {
+        Row: {
+          document_id: string
+          downloaded_at: string
+          downloaded_by: string | null
+          id: string
+          ip_address: unknown
+          user_agent: string | null
+        }
+        Insert: {
+          document_id: string
+          downloaded_at?: string
+          downloaded_by?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+        }
+        Update: {
+          document_id?: string
+          downloaded_at?: string
+          downloaded_by?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_document_downloads_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "operation_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operation_documents: {
+        Row: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          category: Database["public"]["Enums"]["document_category"]
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          download_count: number
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          is_deleted: boolean
+          is_latest_version: boolean
+          operation_id: string
+          parent_document_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["document_status"]
+          tags: string[] | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          version: number
+        }
+        Insert: {
+          access_level?: Database["public"]["Enums"]["access_level"]
+          category?: Database["public"]["Enums"]["document_category"]
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          download_count?: number
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          is_deleted?: boolean
+          is_latest_version?: boolean
+          operation_id: string
+          parent_document_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Update: {
+          access_level?: Database["public"]["Enums"]["access_level"]
+          category?: Database["public"]["Enums"]["document_category"]
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          download_count?: number
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          is_deleted?: boolean
+          is_latest_version?: boolean
+          operation_id?: string
+          parent_document_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_documents_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "company_operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_documents_parent_document_id_fkey"
+            columns: ["parent_document_id"]
+            isOneToOne: false
+            referencedRelation: "operation_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_history: {
         Row: {
           change_type: string
@@ -7599,7 +7730,24 @@ export type Database = {
       verify_valuation_token: { Args: { token: string }; Returns: boolean }
     }
     Enums: {
+      access_level: "internal" | "client" | "public"
       admin_role: "super_admin" | "admin" | "editor" | "viewer"
+      document_category:
+        | "nda"
+        | "financial_statements"
+        | "due_diligence"
+        | "legal"
+        | "contracts"
+        | "presentations"
+        | "reports"
+        | "correspondence"
+        | "other"
+      document_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "archived"
       documento_tipo:
         | "Contrato"
         | "NDA"
@@ -7769,7 +7917,26 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_level: ["internal", "client", "public"],
       admin_role: ["super_admin", "admin", "editor", "viewer"],
+      document_category: [
+        "nda",
+        "financial_statements",
+        "due_diligence",
+        "legal",
+        "contracts",
+        "presentations",
+        "reports",
+        "correspondence",
+        "other",
+      ],
+      document_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "archived",
+      ],
       documento_tipo: [
         "Contrato",
         "NDA",
