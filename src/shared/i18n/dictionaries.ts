@@ -21,6 +21,9 @@ export function getLocalizedUrl(page: string, lang: 'es' | 'ca' | 'en'): string 
 // Diccionarios para la calculadora y landing
 export const dictionaries: Record<LangCode, Record<string, string>> = {
   es: {
+    // Colaboradores - Mergear traducciones del programa de colaboradores
+    ...collaboratorsTranslations.es,
+    
     // Navigation
     'nav.servicios': 'Servicios',
     'nav.sectores': 'Sectores',
@@ -756,6 +759,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     ...collaboratorsTranslations.es,
   },
   ca: {
+    // Colaboradores - Mergear traducciones del programa de colaboradores
+    ...collaboratorsTranslations.ca,
+    
     'landing.title': "Calculadora de Valoració d'Empreses | Capittal",
     'landing.description': 'Calculadora de valoració amb múltiples de mercat: estimació ràpida i orientativa. Rep resultats gratuïts a l’instant.',
     'landing.h1': "Calculadora de Valoració d'Empreses",
