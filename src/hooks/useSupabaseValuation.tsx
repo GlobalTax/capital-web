@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateValuationPDFWithReactPDF } from '@/utils/reactPdfGenerator';
 import { getPreferredLang } from '@/shared/i18n/locale';
 import { CompanyData, ValuationResult } from '@/types/valuation';
+import { blobToBase64 } from '@/utils/blobToBase64';
 
 export const useSupabaseValuation = () => {
 
@@ -284,15 +285,7 @@ export const useSupabaseValuation = () => {
         
         // Generar PDF (React-PDF) y convertir a Base64
         const blob = await generateValuationPDFWithReactPDF(pdfCompanyData, result, lang);
-        const pdfBase64: string = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            resolve((dataUrl.split(',')[1]) || '');
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
+        const pdfBase64 = await blobToBase64(blob);
         const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
 
         const { data: emailResp, error: emailError } = await supabase.functions.invoke('send-valuation-email', {
