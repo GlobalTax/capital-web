@@ -44,7 +44,7 @@ const DeLooperACapittalContent = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <SimpleButton
                   text="Solicitar Valoración"
-                  onClick={() => navigate('/calculadora')}
+                  onClick={() => navigate('/lp/calculadora')}
                   variant="primary"
                 />
                 <SimpleButton
@@ -173,7 +173,7 @@ const DeLooperACapittalContent = () => {
           <div className="inline-block">
             <SimpleButton
               text="Comenzar Valoración Gratuita"
-              onClick={() => navigate('/calculadora')}
+              onClick={() => navigate('/lp/calculadora')}
               variant="primary"
               className="text-lg px-10 py-4 shadow-lg hover:shadow-xl"
             />
