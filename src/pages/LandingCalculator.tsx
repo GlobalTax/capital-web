@@ -12,6 +12,7 @@ import CapittalBrief from '@/components/landing/CapittalBrief';
 import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { blobToBase64 } from '@/utils/blobToBase64';
 
 const LandingCalculatorInner = () => {
   const location = useLocation();
@@ -76,15 +77,7 @@ const LandingCalculatorInner = () => {
           } as any;
           const lang = getPreferredLang();
           const blob = await generateValuationPDFWithReactPDF(companyData, result, lang);
-          const pdfBase64: string = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const dataUrl = reader.result as string;
-              resolve((dataUrl.split(',')[1]) || '');
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
+          const pdfBase64 = await blobToBase64(blob);
           const pdfFilename = 'Capittal-Valoracion-Prueba.pdf';
 
           const { data, error } = await supabase.functions.invoke('send-valuation-email', {

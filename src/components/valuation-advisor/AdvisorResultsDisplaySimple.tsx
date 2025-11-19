@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { validateDataForPDF } from '@/utils/pdfValidation';
 import { sanitizeFileName } from '@/utils/pdfSanitization';
 import { supabase } from '@/integrations/supabase/client';
+import { blobToBase64 } from '@/utils/blobToBase64';
 import { 
   LazyResponsiveContainer, 
   LazyBarChart, 
@@ -64,16 +65,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     try {
       
       // 1. Convertir PDF a Base64
-      const pdfBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const dataUrl = reader.result as string;
-          const base64 = (dataUrl.split(',')[1]) || '';
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(pdfBlob);
-      });
+      const pdfBase64 = await blobToBase64(pdfBlob);
 
       const pdfFilename = `Capittal-Valoracion-Asesores-${sanitizeFileName(formData.companyName)}.pdf`;
       console.log('📄 [ADVISOR EMAIL] PDF generado, tamaño:', pdfBlob.size, 'bytes');
@@ -154,9 +146,19 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     } catch (err) {
       console.error('❌ [ADVISOR EMAIL] Error in handleSendEmail:', err);
       console.error('❌ [ADVISOR EMAIL] Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+      
+      // Mensaje específico para Safari/Edge
+      const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+      const isEdge = /Edg\//.test(navigator.userAgent);
+      
+      let errorMessage = t('advisor.toast.email_error_description');
+      if (isSafari || isEdge) {
+        errorMessage += ' Por favor, intenta con Chrome o Firefox para mejor compatibilidad.';
+      }
+      
       toast({
         title: t('advisor.toast.email_error_title'),
-        description: t('advisor.toast.email_error_description'),
+        description: errorMessage,
         variant: "destructive",
       });
       throw err;
