@@ -11,13 +11,26 @@ export const collaboratorsTranslations = {
     'collab.hero.badge': '⭐ Programa Exclusivo',
     'collab.hero.title': 'Únete al equipo de expertos en M&A',
     'collab.hero.subtitle': 'Forma parte de nuestra red de profesionales y accede a oportunidades exclusivas de valoración y transacciones',
-    'collab.hero.stat1': 'Colabor adores Activos',
+    'collab.hero.stat1': 'Col·laboradors Actius',
     'collab.hero.stat2': 'Valor Gestionado',
     'collab.hero.stat3': 'Satisfacción',
     'collab.hero.cta_apply': 'Aplicar Ahora',
     'collab.hero.cta_requirements': 'Requisitos',
     'collab.hero.dashboard_title': 'Red de Colaboradores - Panel de Control',
     'collab.hero.dashboard_new': '+12 Nuevos',
+    
+    // Hero Stats - Valores numéricos
+    'collab.hero.stat1_value': '50+',
+    'collab.hero.stat2_value': '€1.2B',
+    'collab.hero.stat3_value': '98.7%',
+    
+    // Hero Dashboard Activities
+    'collab.hero.dashboard_activity1': 'Valoración Tech Startup',
+    'collab.hero.dashboard_activity2': 'M&A Industrial',
+    'collab.hero.dashboard_activity3': 'Due Diligence Retail',
+    'collab.hero.dashboard_status1': 'En Progreso',
+    'collab.hero.dashboard_status2': 'Negociación',
+    'collab.hero.dashboard_status3': 'Revisión',
     
     // Benefits Section
     'collab.benefits.title': '¿Por qué elegir Capittal?',
@@ -76,6 +89,20 @@ export const collaboratorsTranslations = {
     'collab.process.4.desc': 'Proceso de incorporación donde conocerás nuestros procesos, herramientas y recibirás acceso a nuestra plataforma de colaboradores.',
     'collab.process.4.duration': '1 semana',
     
+    // Process Timeline - Formato alternativo para componentes (step1, step2, etc)
+    'collab.process.step1.title': 'Solicitud y Revisión',
+    'collab.process.step1.desc': 'Completa el formulario online con tu información profesional. Nuestro equipo revisará tu perfil y experiencia para evaluar el fit inicial.',
+    'collab.process.step1.duration': '3-5 días',
+    'collab.process.step2.title': 'Entrevista Inicial',
+    'collab.process.step2.desc': 'Entrevista virtual con nuestro equipo para conocerte mejor, evaluar tu fit cultural y discutir tus expectativas y disponibilidad.',
+    'collab.process.step2.duration': '60 minutos',
+    'collab.process.step3.title': 'Valoración Técnica',
+    'collab.process.step3.desc': 'Caso práctico de valoración o análisis financiero para evaluar tus competencias técnicas en M&A y finanzas corporativas.',
+    'collab.process.step3.duration': '2-3 horas',
+    'collab.process.step4.title': 'Onboarding',
+    'collab.process.step4.desc': 'Proceso de incorporación donde conocerás nuestros procesos, herramientas y recibirás acceso a nuestra plataforma de colaboradores.',
+    'collab.process.step4.duration': '1 semana',
+    
     // FAQ Section
     'collab.faq.badge': 'Preguntas Frecuentes',
     'collab.faq.title': 'Resolvemos tus dudas',
@@ -92,6 +119,20 @@ export const collaboratorsTranslations = {
     'collab.faq.5.a': 'Ofrecemos mentoría continua con nuestros socios senior, acceso a formación especializada en valoraciones y M&A, networking con otros profesionales del sector, y la posibilidad de participar en transacciones de alto perfil que fortalecen significativamente tu CV y experiencia profesional.',
     'collab.faq.6.q': '¿Hay posibilidad de convertirse en empleado a tiempo completo?',
     'collab.faq.6.a': 'Sí, consideramos regularmente a nuestros mejores colaboradores para posiciones permanentes cuando surgen oportunidades. De hecho, varios de nuestros empleados actuales comenzaron como colaboradores. Es una excelente manera de conocer nuestra cultura y demostrar tu valor añadido al equipo.',
+    
+    // FAQ - Formato alternativo (q1, q2, etc sin el .q/.a)
+    'collab.faq.q1': '¿Qué tipo de proyectos puedo esperar como colaborador?',
+    'collab.faq.a1': 'Como colaborador de Capittal trabajarás en una amplia variedad de proyectos de M&A, incluyendo valoraciones de empresas, due diligence financiera, análisis de múltiplos comparables, modelado financiero para transacciones, y apoyo en procesos de venta o compra de empresas. Los proyectos varían desde startups tecnológicas hasta grandes corporaciones industriales.',
+    'collab.faq.q2': '¿Cuál es la remuneración y estructura de pagos?',
+    'collab.faq.a2': 'La remuneración se basa en la experiencia y tipo de proyecto. Ofrecemos tarifas competitivas por hora o por proyecto, con pagos mensuales. Además, hay bonificaciones por performance en proyectos exitosos. Durante la entrevista discutimos en detalle la estructura de compensación específica para tu perfil.',
+    'collab.faq.q3': '¿Qué flexibilidad tengo en términos de horarios y ubicación?',
+    'collab.faq.a3': 'El programa está diseñado para ser flexible. Puedes trabajar de forma remota en la mayoría de proyectos, aunque algunos pueden requerir presencia ocasional en Madrid o Barcelona. Los horarios son adaptables, pero esperamos disponibilidad para reuniones de coordinación y cumplimiento de deadlines acordados.',
+    'collab.faq.q4': '¿Necesito experiencia previa específicamente en M&A?',
+    'collab.faq.a4': 'Valoramos la experiencia en M&A, pero no es exclusivamente necesaria. Aceptamos profesionales con experiencia sólida en finanzas corporativas, banca de inversión, consultoría estratégica, auditoría o roles similares que demuestren competencias analíticas y conocimiento del mundo empresarial.',
+    'collab.faq.q5': '¿Qué oportunidades de desarrollo profesional ofrece el programa?',
+    'collab.faq.a5': 'Ofrecemos mentoría continua con nuestros socios senior, acceso a formación especializada en valoraciones y M&A, networking con otros profesionales del sector, y la posibilidad de participar en transacciones de alto perfil que fortalecen significativamente tu CV y experiencia profesional.',
+    'collab.faq.q6': '¿Hay posibilidad de convertirse en empleado a tiempo completo?',
+    'collab.faq.a6': 'Sí, consideramos regularmente a nuestros mejores colaboradores para posiciones permanentes cuando surgen oportunidades. De hecho, varios de nuestros empleados actuales comenzaron como colaboradores. Es una excelente manera de conocer nuestra cultura y demostrar tu valor añadido al equipo.',
     
     // Final CTA
     'collab.cta.badge': 'Oportunidad Limitada',
@@ -112,6 +153,45 @@ export const collaboratorsTranslations = {
     // Testimonials
     'collab.testimonials.title': 'Lo que dicen nuestros colaboradores',
     'collab.testimonials.subtitle': 'Experiencias reales de profesionales que forman parte de nuestra red',
+    
+    // Testimonials - Individuales
+    'collab.testimonials.1.name': 'Dr. Carlos Mendoza',
+    'collab.testimonials.1.role': 'Senior M&A Advisor',
+    'collab.testimonials.1.company': 'Mendoza & Asociados',
+    'collab.testimonials.1.content': 'Trabajar con Capittal ha sido transformador para mi carrera. Acceso a deals complejos, mentoría de clase mundial y una red profesional incomparable. La flexibilidad me permite balancear mi práctica privada mientras participo en transacciones de alto nivel.',
+    'collab.testimonials.1.sector': 'Consultoría',
+    'collab.testimonials.1.joinedYear': '2021',
+    
+    'collab.testimonials.2.name': 'María Fernández',
+    'collab.testimonials.2.role': 'Valuation Expert',
+    'collab.testimonials.2.company': 'Independent Consultant',
+    'collab.testimonials.2.content': 'Como colaboradora desde 2020, he trabajado en más de 30 valoraciones complejas. El equipo de Capittal es excepcionalmente profesional, los proyectos son fascinantes y la compensación es muy competitiva. Recomiendo el programa a cualquier profesional senior que busque crecimiento.',
+    'collab.testimonials.2.sector': 'Finanzas',
+    'collab.testimonials.2.joinedYear': '2020',
+    
+    'collab.testimonials.3.name': 'Javier Ruiz',
+    'collab.testimonials.3.role': 'Corporate Finance Director',
+    'collab.testimonials.3.company': 'Ex-Big Four',
+    'collab.testimonials.3.content': 'Después de 15 años en Big Four, buscaba proyectos más estratégicos y flexibilidad. Capittal cumplió todas mis expectativas. Participo en M&A de €10M-€50M con total autonomía y soporte excepcional. La calidad de los proyectos es incomparable.',
+    'collab.testimonials.3.sector': 'Auditoría',
+    'collab.testimonials.3.joinedYear': '2019',
+    
+    // Testimonials - Stats
+    'collab.testimonials.stats.active': 'Colaboradores Activos',
+    'collab.testimonials.stats.satisfaction': 'Satisfacción',
+    'collab.testimonials.stats.value': 'Valor Gestionado',
+    'collab.testimonials.stats.experience': 'Años de Experiencia',
+    'collab.testimonials.stats.since': 'Desde',
+    
+    // Form Steps
+    'collab.form.step1.title': 'Información Personal',
+    'collab.form.step1.description': 'Datos básicos de contacto',
+    'collab.form.step2.title': 'Información Profesional',
+    'collab.form.step2.description': 'Experiencia y rol actual',
+    'collab.form.step3.title': 'Información Adicional',
+    'collab.form.step3.description': 'Motivación y habilidades',
+    'collab.form.step4.title': 'Revisión y Envío',
+    'collab.form.step4.description': 'Confirma y envía tu solicitud',
   },
   
   ca: {
@@ -131,6 +211,19 @@ export const collaboratorsTranslations = {
     'collab.hero.cta_requirements': 'Requisits',
     'collab.hero.dashboard_title': 'Capital Collaborators - Network Dashboard',
     'collab.hero.dashboard_new': 'Nous',
+    
+    // Hero Stats - Valores numéricos
+    'collab.hero.stat1_value': '50+',
+    'collab.hero.stat2_value': '€1.2B',
+    'collab.hero.stat3_value': '98.7%',
+    
+    // Hero Dashboard Activities
+    'collab.hero.dashboard_activity1': 'Valoració Tech Startup',
+    'collab.hero.dashboard_activity2': 'M&A Industrial',
+    'collab.hero.dashboard_activity3': 'Due Diligence Retail',
+    'collab.hero.dashboard_status1': 'En Progrés',
+    'collab.hero.dashboard_status2': 'Negociació',
+    'collab.hero.dashboard_status3': 'Revisió',
     
     // Benefits Section
     'collab.benefits.title': 'Per què triar Capittal?',
@@ -189,6 +282,20 @@ export const collaboratorsTranslations = {
     'collab.process.4.desc': 'Procés d\'incorporació on coneixeràs els nostres processos, eines i rebràs accés a la nostra plataforma de col·laboradors.',
     'collab.process.4.duration': '1 setmana',
     
+    // Process Timeline - Formato alternativo para componentes (step1, step2, etc)
+    'collab.process.step1.title': 'Sol·licitud i Revisió',
+    'collab.process.step1.desc': 'Completa el formulari online amb la teva informació professional. El nostre equip revisarà el teu perfil i experiència per avaluar el fit inicial.',
+    'collab.process.step1.duration': '3-5 dies',
+    'collab.process.step2.title': 'Entrevista Inicial',
+    'collab.process.step2.desc': 'Entrevista virtual amb el nostre equip per conèixer-te millor, avaluar el teu fit cultural i discutir les teves expectatives i disponibilitat.',
+    'collab.process.step2.duration': '60 minuts',
+    'collab.process.step3.title': 'Valoració Tècnica',
+    'collab.process.step3.desc': 'Cas pràctic de valoració o anàlisi financer per avaluar les teves competències tècniques en M&A i finances corporatives.',
+    'collab.process.step3.duration': '2-3 hores',
+    'collab.process.step4.title': 'Onboarding',
+    'collab.process.step4.desc': 'Procés d\'incorporació on coneixeràs els nostres processos, eines i rebràs accés a la nostra plataforma de col·laboradors.',
+    'collab.process.step4.duration': '1 setmana',
+    
     // FAQ Section
     'collab.faq.badge': 'Preguntes Freqüents',
     'collab.faq.title': 'Resolem els teus dubtes',
@@ -205,6 +312,20 @@ export const collaboratorsTranslations = {
     'collab.faq.5.a': 'Oferim mentoria contínua amb els nostres socis seniors, accés a formació especialitzada en valoracions i M&A, networking amb altres professionals del sector, i la possibilitat de participar en transaccions d\'alt perfil que enforteixen significativament el teu CV i experiència professional.',
     'collab.faq.6.q': 'Hi ha possibilitat de convertir-se en empleat a temps complet?',
     'collab.faq.6.a': 'Sí, considerem regularment els nostres millors col·laboradors per a posicions permanents quan sorgeixen oportunitats. De fet, diversos dels nostres empleats actuals van començar com a col·laboradors. És una excel·lent manera de conèixer la nostra cultura i demostrar el teu valor afegit a l\'equip.',
+    
+    // FAQ - Formato alternativo (q1, q2, etc sin el .q/.a)
+    'collab.faq.q1': 'Quin tipus de projectes puc esperar com a col·laborador?',
+    'collab.faq.a1': 'Com a col·laborador de Capittal treballaràs en una àmplia varietat de projectes de M&A, incloent valoracions d\'empreses, due diligence financera, anàlisi de múltiples comparables, modelatge financer per a transaccions, i suport en processos de venda o compra d\'empreses. Els projectes varien des de startups tecnològiques fins a grans corporacions industrials.',
+    'collab.faq.q2': 'Quina és la remuneració i estructura de pagaments?',
+    'collab.faq.a2': 'La remuneració es basa en l\'experiència i tipus de projecte. Oferim tarifes competitives per hora o per projecte, amb pagaments mensuals. A més, hi ha bonificacions per rendiment en projectes exitosos. Durant l\'entrevista discutim en detall l\'estructura de compensació específica per al teu perfil.',
+    'collab.faq.q3': 'Quina flexibilitat tinc en termes d\'horaris i ubicació?',
+    'collab.faq.a3': 'El programa està dissenyat per ser flexible. Pots treballar de forma remota en la majoria de projectes, tot i que alguns poden requerir presència ocasional a Madrid o Barcelona. Els horaris són adaptables, però esperem disponibilitat per a reunions de coordinació i compliment de deadlines acordats.',
+    'collab.faq.q4': 'Necessito experiència prèvia específicament en M&A?',
+    'collab.faq.a4': 'Valorem l\'experiència en M&A, però no és exclusivament necessària. Acceptem professionals amb experiència sòlida en finances corporatives, banca d\'inversió, consultoria estratègica, auditoria o rols similars que demostrin competències analítiques i coneixement del món empresarial.',
+    'collab.faq.q5': 'Quines oportunitats de desenvolupament professional ofereix el programa?',
+    'collab.faq.a5': 'Oferim mentoria contínua amb els nostres socis seniors, accés a formació especialitzada en valoracions i M&A, networking amb altres professionals del sector, i la possibilitat de participar en transaccions d\'alt perfil que enforteixen significativament el teu CV i experiència professional.',
+    'collab.faq.q6': 'Hi ha possibilitat de convertir-se en empleat a temps complet?',
+    'collab.faq.a6': 'Sí, considerem regularment els nostres millors col·laboradors per a posicions permanents quan sorgeixen oportunitats. De fet, diversos dels nostres empleats actuals van començar com a col·laboradors. És una excel·lent manera de conèixer la nostra cultura i demostrar el teu valor afegit a l\'equip.',
     
     // Final CTA
     'collab.cta.badge': 'Oportunitat Limitada',
@@ -225,6 +346,45 @@ export const collaboratorsTranslations = {
     // Testimonials
     'collab.testimonials.title': 'Què diuen els nostres col·laboradors',
     'collab.testimonials.subtitle': 'Experiències reals de professionals que formen part de la nostra xarxa',
+    
+    // Testimonials - Individuales
+    'collab.testimonials.1.name': 'Dr. Carlos Mendoza',
+    'collab.testimonials.1.role': 'Senior M&A Advisor',
+    'collab.testimonials.1.company': 'Mendoza & Asociados',
+    'collab.testimonials.1.content': 'Treballar amb Capittal ha estat transformador per a la meva carrera. Accés a deals complexos, mentoria de classe mundial i una xarxa professional incomparable. La flexibilitat em permet balancejar la meva pràctica privada mentre participo en transaccions d\'alt nivell.',
+    'collab.testimonials.1.sector': 'Consultoria',
+    'collab.testimonials.1.joinedYear': '2021',
+    
+    'collab.testimonials.2.name': 'María Fernández',
+    'collab.testimonials.2.role': 'Valuation Expert',
+    'collab.testimonials.2.company': 'Independent Consultant',
+    'collab.testimonials.2.content': 'Com a col·laboradora des del 2020, he treballat en més de 30 valoracions complexes. L\'equip de Capittal és excepcionalment professional, els projectes són fascinants i la compensació és molt competitiva. Recomano el programa a qualsevol professional senior que busqui creixement.',
+    'collab.testimonials.2.sector': 'Finances',
+    'collab.testimonials.2.joinedYear': '2020',
+    
+    'collab.testimonials.3.name': 'Javier Ruiz',
+    'collab.testimonials.3.role': 'Corporate Finance Director',
+    'collab.testimonials.3.company': 'Ex-Big Four',
+    'collab.testimonials.3.content': 'Després de 15 anys en Big Four, buscava projectes més estratègics i flexibilitat. Capittal va complir totes les meves expectatives. Participo en M&A de €10M-€50M amb total autonomia i suport excepcional. La qualitat dels projectes és incomparable.',
+    'collab.testimonials.3.sector': 'Auditoria',
+    'collab.testimonials.3.joinedYear': '2019',
+    
+    // Testimonials - Stats
+    'collab.testimonials.stats.active': 'Col·laboradors Actius',
+    'collab.testimonials.stats.satisfaction': 'Satisfacció',
+    'collab.testimonials.stats.value': 'Valor Gestionat',
+    'collab.testimonials.stats.experience': 'Anys d\'Experiència',
+    'collab.testimonials.stats.since': 'Des de',
+    
+    // Form Steps
+    'collab.form.step1.title': 'Informació Personal',
+    'collab.form.step1.description': 'Dades bàsiques de contacte',
+    'collab.form.step2.title': 'Informació Professional',
+    'collab.form.step2.description': 'Experiència i rol actual',
+    'collab.form.step3.title': 'Informació Addicional',
+    'collab.form.step3.description': 'Motivació i habilitats',
+    'collab.form.step4.title': 'Revisió i Enviament',
+    'collab.form.step4.description': 'Confirma i envia la teva sol·licitud',
   },
   
   en: {
