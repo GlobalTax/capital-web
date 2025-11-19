@@ -6,12 +6,11 @@ export const useCountAnimation = (end: number, duration: number = 2000, suffix: 
   const [count, setCount] = useState(0);
   const { ref, isVisible } = useLazyLoad<HTMLDivElement>({ 
     threshold: 0.2,
-    triggerOnce: false 
+    triggerOnce: true 
   });
 
   useEffect(() => {
     if (!isVisible) {
-      setCount(0);
       return;
     }
 
