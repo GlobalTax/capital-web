@@ -901,6 +901,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     
     'advisor.form.title': 'Dades Financeres',
     'advisor.form.subtitle': 'Introdueix les dades financeres anuals',
+    'advisor.form.contact_section': 'Dades de contacte',
+    'advisor.form.company_section': 'Dades de l\'empresa',
+    'advisor.form.financial_section': 'Dades financeres',
     'advisor.form.revenue': 'Facturació anual (€)',
     'advisor.form.ebitda': 'EBITDA anual (€)',
     'advisor.form.netProfit': 'Resultat net (€)',
