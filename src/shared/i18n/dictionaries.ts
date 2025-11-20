@@ -319,6 +319,11 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'footer.link.cookies': 'Cookies',
     'footer.copyright': '© {year} Capittal. Todos los derechos reservados.',
     
+    // ========== ECOSYSTEM & CASE STUDIES (ES) ==========
+    'ecosystem.badge': 'Ecosistema Integral M&A',
+    'ecosystem.title': 'Ecosistema Integral de M&A',
+    'ecosystem.subtitle': 'Un equipo completo de especialistas trabajando para el éxito de tu operación',
+    
     // Ecosystem (Extended translations)
     'ecosystem.titleHighlight': 'Integral',
     'ecosystem.titleEnd': 'de Servicios',
