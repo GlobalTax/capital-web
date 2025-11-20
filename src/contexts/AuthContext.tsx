@@ -1,10 +1,11 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
-import { DatabaseError, AuthenticationError } from '@/types/errorTypes';
+import { AuthenticationError } from '@/types/errorTypes';
+import { useAdminAuth as useRobustAdminAuth } from '@/hooks/useAdminAuth';
 
 interface AuthContextType {
   user: User | null;
@@ -23,250 +24,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [authTimeout, setAuthTimeout] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  
+  // Usar el hook robusto como fuente de verdad única
+  const robustAuth = useRobustAdminAuth();
 
-  const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
-
+  // Delegar checkAdminStatus al hook robusto
   const checkAdminStatus = useCallback(async (userId?: string): Promise<boolean> => {
-    const targetUserId = userId || user?.id;
-    
-    if (!targetUserId) {
-      setIsAdmin(false);
-      return false;
-    }
-    
-    // Prevent concurrent admin checks
-    if (isCheckingAdmin) {
-      return isAdmin;
-    }
-    
-    return checkAdminStatusFromDB(targetUserId);
-  }, [user?.id, isCheckingAdmin, isAdmin]);
+    await robustAuth.refreshAuth();
+    return robustAuth.isAdmin;
+  }, [robustAuth]);
 
-  // Función interna para consultar DB (reutilizable)
-  const checkAdminStatusFromDB = async (userId: string): Promise<boolean> => {
-    setIsCheckingAdmin(true);
-    
-    try {
-      // ⚡ Timeout reducido 5s → 3s (optimización)
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Admin check timeout')), 3000);
-      });
-
-      const checkPromise = supabase
-        .from('admin_users')
-        .select('is_active, role')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
-
-      if (error) {
-        // If it's a network error, try one more time after a short delay
-        if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('timeout')) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          const retryPromise = supabase
-            .from('admin_users')
-            .select('is_active, role')
-            .eq('user_id', userId)
-            .maybeSingle();
-            
-          // ⚡ Retry timeout reducido 3s → 2s
-          const { data: retryData, error: retryError } = await Promise.race([
-            retryPromise, 
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Retry timeout')), 2000))
-          ]);
-            
-          if (!retryError && retryData) {
-            const adminStatus = !!(retryData && retryData.is_active === true);
-            setIsAdmin(adminStatus);
-            return adminStatus;
-          }
-        }
-        
-        setIsAdmin(false);
-        return false;
-      }
-
-      const adminStatus = !!(data && data.is_active === true);
-      setIsAdmin(adminStatus);
-      
-      if (adminStatus) {
-        logger.info('Admin access granted', {
-          userId,
-          role: data?.role
-        }, { context: 'auth', component: 'AuthContext' });
-      }
-      
-      return adminStatus;
-    } catch (error) {
-      logger.error('Failed to check admin status', error as Error, { 
-        context: 'auth', 
-        component: 'AuthContext',
-        userId 
-      });
-      
-      // Toast genérico para timeouts (no alarmante)
-      if (error instanceof Error && error.message.includes('timeout')) {
-        toast({
-          title: "Verificación lenta",
-          description: "La verificación de permisos está tardando. Intenta recargar si el problema persiste.",
-          variant: "default",
-        });
-      }
-      
-      setIsAdmin(false);
-      return false;
-    } finally {
-      setIsCheckingAdmin(false);
-    }
-  };
-
-
-  useEffect(() => {
-    let mounted = true;
-    
-    // ⚡ Timeout global reducido 6s → 5s
-    const globalTimeout = setTimeout(() => {
-      if (mounted && isLoading) {
-        setIsLoading(false);
-      }
-    }, 5000);
-    
-    setAuthTimeout(globalTimeout);
-    
-    // Function to handle auth state changes
-    const handleAuthStateChange = async (event: string, session: any) => {
-      if (!mounted) return;
-      
-      // Clear timeout on any auth state change
-      if (authTimeout) {
-        clearTimeout(authTimeout);
-        setAuthTimeout(null);
-      }
-      
-      try {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user && !isCheckingAdmin) {
-          // Check admin status (con caché optimista)
-          try {
-            await checkAdminStatus(session.user.id);
-          } catch (error) {
-            setIsAdmin(false);
-          }
-        } else {
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        logger.error('Error in auth state change handler', error as Error, { 
-          context: 'auth', 
-          component: 'AuthContext' 
-        });
-      } finally {
-        if (mounted && event !== 'INITIAL_SESSION') {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
-
-    // Initial session check with retry mechanism and timeout
-    const initializeSession = async () => {
-      if (!mounted) return;
-      
-      try {
-        // ⚡ Session init timeout reducido 8s → 6s
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Session initialization timeout')), 6000);
-        });
-
-        const sessionPromise = supabase.auth.getSession();
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
-        
-        if (error) {
-          logger.error('Error getting initial session', error, { context: 'auth', component: 'AuthContext' });
-          // ⚡ Refresh timeout reducido 5s → 3s
-          const refreshPromise = supabase.auth.refreshSession();
-          const { data: refreshData, error: refreshError } = await Promise.race([
-            refreshPromise,
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Refresh timeout')), 3000))
-          ]);
-          
-          if (!refreshError && refreshData.session) {
-            await handleAuthStateChange('INITIAL_SESSION_REFRESH', refreshData.session);
-            return;
-          }
-        }
-        
-        await handleAuthStateChange('INITIAL_SESSION', session);
-      } catch (error) {
-        logger.error('Failed to initialize session', error as Error, { context: 'auth', component: 'AuthContext' });
-        
-        // Toast solo si es timeout crítico (>8s)
-        if (error instanceof Error && error.message.includes('timeout')) {
-          toast({
-            title: "Carga lenta",
-            description: "La carga está tardando más de lo normal. Intenta recargar la página.",
-            variant: "default",
-          });
-        }
-        
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    initializeSession();
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-      if (authTimeout) {
-        clearTimeout(authTimeout);
-      }
-    };
-  }, []); // Remove dependencies to prevent infinite re-renders
-
-  const signIn = async (email: string, password: string) => {
-    setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      const authError = new AuthenticationError('Sign in failed', { email, error: error.message });
-      logger.error('Sign in failed', authError, { context: 'auth', component: 'AuthContext' });
-      toast({
-        title: "Error de inicio de sesión",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      logger.info('User signed in successfully', undefined, { context: 'auth', component: 'AuthContext' });
-      toast({
-        title: "¡Bienvenido!",
-        description: "Has iniciado sesión correctamente.",
-      });
-    }
-
-    setIsLoading(false);
-    return { error };
-  };
-
+  // signUp se mantiene porque useAdminAuth no lo implementa (es específico de registro)
   const signUp = async (email: string, password: string, fullName: string): Promise<{ error: Error | null }> => {
-    setIsLoading(true);
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -296,44 +66,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     }
 
-    setIsLoading(false);
     return { error };
   };
-
-  const signOut = async () => {
-    setIsLoading(true);
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setIsAdmin(false);
-    setIsLoading(false);
-    
-    toast({
-      title: "Sesión cerrada",
-      description: "Has cerrado sesión correctamente.",
-    });
-  };
-
-  // Force admin reload for debugging
-  const forceAdminReload = useCallback(async () => {
-    setIsAdmin(false);
-    setIsCheckingAdmin(false);
-    
-    if (user?.id) {
-      await checkAdminStatus(user.id);
-    }
-  }, [user?.id, checkAdminStatus]);
 
   // Clear auth session and local storage
   const clearAuthSession = async (): Promise<void> => {
     try {
       logger.info('Clearing auth session', undefined, { context: 'auth', component: 'AuthContext' });
-      
-      // Clear timeout if exists
-      if (authTimeout) {
-        clearTimeout(authTimeout);
-        setAuthTimeout(null);
-      }
       
       // Clear auth-related localStorage and sessionStorage
       const authKeys = Object.keys(localStorage).filter(key => 
@@ -356,15 +95,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       
-      // Sign out from Supabase
-      await supabase.auth.signOut();
-      
-      // Reset all state
-      setUser(null);
-      setSession(null);
-      setIsAdmin(false);
-      setIsLoading(false);
-      setIsCheckingAdmin(false);
+      // Sign out using robust auth
+      await robustAuth.signOut();
       
       toast({
         title: "Sesión limpiada",
@@ -385,22 +117,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Get debug information
   const getDebugInfo = useCallback(() => {
     return {
-      user: user ? {
-        id: user.id,
-        email: user.email,
-        authenticated: !!user
+      user: robustAuth.user ? {
+        id: robustAuth.user.id,
+        email: robustAuth.user.email,
+        authenticated: !!robustAuth.user
       } : null,
-      session: session ? {
-        hasSession: !!session,
-        accessToken: !!session.access_token,
-        refreshToken: !!session.refresh_token,
-        expiresAt: session.expires_at
+      session: robustAuth.session ? {
+        hasSession: !!robustAuth.session,
+        accessToken: !!robustAuth.session.access_token,
+        refreshToken: !!robustAuth.session.refresh_token,
+        expiresAt: robustAuth.session.expires_at
       } : null,
       auth: {
-        isLoading,
-        isAdmin,
-        isCheckingAdmin,
-        hasTimeout: !!authTimeout
+        isLoading: robustAuth.isLoading,
+        isAdmin: robustAuth.isAdmin,
+        role: robustAuth.role
       },
       localStorage: Object.keys(localStorage).filter(key => 
         key.includes('auth') || key.includes('supabase')
@@ -409,18 +140,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       userAgent: navigator.userAgent,
       url: window.location.href
     };
-  }, [user, session, isLoading, isAdmin, isCheckingAdmin, authTimeout]);
+  }, [robustAuth]);
 
   const value = {
-    user,
-    session,
-    isLoading,
-    isAdmin,
-    signIn,
+    user: robustAuth.user,
+    session: robustAuth.session,
+    isLoading: robustAuth.isLoading,
+    isAdmin: robustAuth.isAdmin,
+    signIn: robustAuth.signIn,
     signUp,
-    signOut,
+    signOut: robustAuth.signOut,
     checkAdminStatus,
-    forceAdminReload,
+    forceAdminReload: robustAuth.refreshAuth,
     getDebugInfo,
     clearAuthSession,
   };
