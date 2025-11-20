@@ -23,10 +23,15 @@ interface LeadAIReport {
 
 interface LeadAIReportViewerProps {
   leadId: string;
+  leadType?: 'valuation' | 'contact' | 'collaborator';
   companyName?: string;
 }
 
-export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({ leadId, companyName }) => {
+export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({ 
+  leadId, 
+  leadType = 'valuation',
+  companyName 
+}) => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -51,7 +56,10 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({ leadId, 
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-lead-ai-report', {
-        body: { lead_id: leadId }
+        body: { 
+          lead_id: leadId,
+          lead_type: leadType
+        }
       });
 
       if (error) throw error;
