@@ -4,6 +4,10 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { validateSupabaseConfig } from '@/config/supabase'
+import { devValidateTranslations } from '@/utils/i18n-validator'
+
+// Validar traducciones en desarrollo
+devValidateTranslations();
 
 // Inicialización simplificada y directa
 const initializeApp = () => {
