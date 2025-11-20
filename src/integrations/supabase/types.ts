@@ -3996,6 +3996,44 @@ export type Database = {
           },
         ]
       }
+      lead_ai_report_feedback: {
+        Row: {
+          created_at: string | null
+          feedback_text: string | null
+          id: string
+          is_useful: boolean | null
+          rating: number | null
+          report_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          is_useful?: boolean | null
+          rating?: number | null
+          report_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          is_useful?: boolean | null
+          rating?: number | null
+          report_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_ai_report_feedback_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "lead_ai_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_ai_reports: {
         Row: {
           completed_at: string | null
@@ -7597,6 +7635,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_lead_ai_stats: { Args: never; Returns: Json }
       get_news_filter_options: {
         Args: never
         Returns: {

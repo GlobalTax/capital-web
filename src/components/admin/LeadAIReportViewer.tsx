@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, RefreshCw, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, FileText, RefreshCw, AlertCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReactMarkdown from 'react-markdown';
 
@@ -34,6 +35,9 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
 }) => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [hasFeedback, setHasFeedback] = useState(false);
 
   const { data: report, isLoading, refetch } = useQuery({
     queryKey: ['lead-ai-report', leadId],
@@ -46,6 +50,17 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
 
       if (error && error.code !== 'PGRST116') {
         throw error;
+      }
+
+      // Check if feedback exists
+      if (data) {
+        const { data: feedbackData } = await supabase
+          .from('lead_ai_report_feedback')
+          .select('id')
+          .eq('report_id', data.id)
+          .maybeSingle();
+        
+        setHasFeedback(!!feedbackData);
       }
 
       return data as LeadAIReport | null;
@@ -83,6 +98,72 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
       });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleFeedback = async (isUseful: boolean) => {
+    if (!report) return;
+    
+    try {
+      const { error } = await supabase
+        .from('lead_ai_report_feedback')
+        .insert({
+          report_id: report.id,
+          is_useful: isUseful,
+          feedback_text: null
+        });
+      
+      if (error) throw error;
+      
+      setHasFeedback(true);
+      
+      toast({
+        title: '✅ Gracias por tu feedback',
+        description: isUseful 
+          ? 'Nos alegra que te haya sido útil' 
+          : 'Trabajaremos para mejorar el análisis',
+      });
+      
+      if (!isUseful) {
+        setShowFeedbackForm(true);
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo guardar el feedback',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const submitFeedback = async () => {
+    if (!report) return;
+    
+    try {
+      const { error } = await supabase
+        .from('lead_ai_report_feedback')
+        .update({ feedback_text: feedbackText })
+        .eq('report_id', report.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (error) throw error;
+      
+      toast({
+        title: '✅ Feedback guardado',
+        description: 'Gracias por ayudarnos a mejorar',
+      });
+      
+      setShowFeedbackForm(false);
+      setFeedbackText('');
+    } catch (error) {
+      console.error('Error updating feedback:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el feedback',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -225,6 +306,72 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
             <div className="prose prose-sm max-w-none dark:prose-invert">
               <ReactMarkdown>{report.report_commercial_prep}</ReactMarkdown>
             </div>
+
+            {/* Feedback Section */}
+            {!hasFeedback && (
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold">¿Te resultó útil este análisis?</h4>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleFeedback(true)}
+                      className="hover:bg-green-50 dark:hover:bg-green-950"
+                    >
+                      <ThumbsUp className="h-4 w-4 mr-1" />
+                      Útil
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleFeedback(false)}
+                      className="hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <ThumbsDown className="h-4 w-4 mr-1" />
+                      Mejorar
+                    </Button>
+                  </div>
+                </div>
+                
+                {showFeedbackForm && (
+                  <Card className="bg-muted/50">
+                    <CardContent className="pt-4">
+                      <Textarea
+                        placeholder="¿Qué podríamos mejorar? (opcional)"
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        className="mb-3"
+                        rows={3}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            setShowFeedbackForm(false);
+                            setFeedbackText('');
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button size="sm" onClick={submitFeedback}>
+                          Enviar Feedback
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {hasFeedback && (
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  ✓ Feedback enviado. ¡Gracias por tu opinión!
+                </p>
+              </div>
+            )}
 
             {/* Botón de regenerar */}
             <div className="pt-4 border-t">
