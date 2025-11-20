@@ -3,21 +3,30 @@ import { AIModel } from '@/types/aiContent';
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'gpt-4o-mini',
-    name: 'GPT-4o Mini',
-    description: 'Rápido y económico, excelente para contenido general',
-    strengths: ['Velocidad', 'Costo-efectivo', 'Versatilidad'],
+    id: 'gpt-5-2025-08-07',
+    name: 'GPT-5',
+    description: 'Modelo flagship de OpenAI, máximo rendimiento',
+    strengths: ['Máxima calidad', 'Razonamiento avanzado', 'Multimodal'],
     maxTokens: 128000,
-    costPerToken: 0.00015,
+    costPerToken: 0.04,
     provider: 'openai'
   },
   {
-    id: 'gpt-4o',
-    name: 'GPT-4o',
-    description: 'Modelo premium para contenido complejo y técnico',
-    strengths: ['Calidad superior', 'Razonamiento complejo', 'Análisis profundo'],
+    id: 'gpt-5-mini-2025-08-07',
+    name: 'GPT-5 Mini',
+    description: 'Rápido y eficiente, excelente relación calidad-precio',
+    strengths: ['Velocidad', 'Costo-efectivo', 'Alta calidad'],
     maxTokens: 128000,
-    costPerToken: 0.03,
+    costPerToken: 0.0002,
+    provider: 'openai'
+  },
+  {
+    id: 'gpt-5-nano-2025-08-07',
+    name: 'GPT-5 Nano',
+    description: 'Ultra rápido para tareas simples',
+    strengths: ['Máxima velocidad', 'Muy económico', 'Clasificación y resumen'],
+    maxTokens: 128000,
+    costPerToken: 0.0001,
     provider: 'openai'
   },
   {
@@ -45,13 +54,13 @@ export const getOptimalModel = (type: string, complexity: 'low' | 'medium' | 'hi
     case 'research':
       return 'llama-3.1-sonar-large-128k-online';
     case 'content':
-      return complexity === 'high' ? 'gpt-4o' : 'gpt-4o-mini';
+      return complexity === 'high' ? 'gpt-5-2025-08-07' : 'gpt-5-mini-2025-08-07';
     case 'seo':
     case 'tags':
-      return 'gpt-4o-mini';
+      return 'gpt-5-nano-2025-08-07';
     case 'title':
       return 'claude-3-5-sonnet-20241022';
     default:
-      return 'gpt-4o-mini';
+      return 'gpt-5-mini-2025-08-07';
   }
 };
