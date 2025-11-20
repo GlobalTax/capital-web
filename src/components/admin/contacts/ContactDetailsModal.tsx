@@ -342,6 +342,7 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
           <TabsContent value="ai">
             <LeadAIReportViewer 
               leadId={contact.id} 
+              leadType={contact.origin as 'valuation' | 'contact' | 'collaborator'}
               companyName={contact.company || contact.name}
             />
           </TabsContent>

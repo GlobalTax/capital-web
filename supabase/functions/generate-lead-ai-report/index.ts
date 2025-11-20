@@ -24,64 +24,71 @@ interface LeadData {
   phone: string;
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+interface ContactLeadData {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message?: string;
+  utm_source?: string;
+  utm_campaign?: string;
+  created_at: string;
+}
+
+interface CollaboratorData {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  profession: string;
+  experience?: string;
+  motivation?: string;
+  created_at: string;
+}
+
+// Función universal para obtener datos del lead
+async function fetchLeadData(leadId: string, leadType: string, supabase: any) {
+  let data, error;
+  
+  switch (leadType) {
+    case 'valuation':
+      ({ data, error } = await supabase
+        .from('company_valuations')
+        .select('*')
+        .eq('id', leadId)
+        .single());
+      break;
+      
+    case 'contact':
+      ({ data, error } = await supabase
+        .from('contact_leads')
+        .select('*')
+        .eq('id', leadId)
+        .single());
+      break;
+      
+    case 'collaborator':
+      ({ data, error } = await supabase
+        .from('collaborator_applications')
+        .select('*')
+        .eq('id', leadId)
+        .single());
+      break;
+      
+    default:
+      throw new Error(`Tipo de lead no soportado: ${leadType}`);
   }
+  
+  if (error) throw error;
+  if (!data) throw new Error('Lead no encontrado');
+  
+  return data;
+}
 
-  const startTime = Date.now();
-  let reportId: string | null = null;
-
-  try {
-    const { lead_id } = await req.json();
-    console.log('📊 Generando reporte IA para lead:', lead_id);
-
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY no configurada');
-    }
-
-    // Crear cliente de Supabase con service_role
-    const supabase = createClient(
-      SUPABASE_URL!,
-      SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    );
-
-    // 1. Obtener datos del lead
-    const { data: lead, error: leadError } = await supabase
-      .from('company_valuations')
-      .select('*')
-      .eq('id', lead_id)
-      .single();
-
-    if (leadError || !lead) {
-      throw new Error(`Error obteniendo lead: ${leadError?.message}`);
-    }
-
-    // 2. Crear registro inicial en lead_ai_reports
-    const { data: report, error: reportError } = await supabase
-      .from('lead_ai_reports')
-      .insert({
-        lead_id: lead_id,
-        generation_status: 'processing'
-      })
-      .select()
-      .single();
-
-    if (reportError) {
-      throw new Error(`Error creando reporte: ${reportError.message}`);
-    }
-
-    reportId = report.id;
-    console.log('✅ Registro de reporte creado:', reportId);
-
-    // 3. Preparar datos para el prompt
-    const leadContext = `
+// Prompts especializados por tipo de lead
+function buildValuationPrompt(lead: any): string {
+  const leadContext = `
 DATOS DEL LEAD:
 - Empresa: ${lead.company_name || 'No especificado'}
 - Sector: ${lead.industry || 'No especificado'}
@@ -93,15 +100,9 @@ DATOS DEL LEAD:
 - Contacto: ${lead.contact_name || 'No especificado'}
 - Email: ${lead.email || 'No especificado'}
 - Teléfono: ${lead.phone || 'No especificado'}
-    `.trim();
+  `.trim();
 
-    // 4. PROMPT 1: Preparación de Llamada Comercial
-    const systemPrompt = `Actúas como analista de M&A y consultor de negocio especializado en PYMES.
-Eres asesor en compraventa de empresas en Capittal. Ayudas a dueños de empresas a vender total o parcialmente su compañía, buscar socios o planificar sucesión.
-
-Responde en español (España), de forma concreta y estructurada con viñetas.`;
-
-    const userPrompt = `${leadContext}
+  return `${leadContext}
 
 Quiero que me prepares una LLAMADA COMERCIAL con este lead. Dame:
 
@@ -130,6 +131,178 @@ Quiero que me prepares una LLAMADA COMERCIAL con este lead. Dame:
 
 7) LENGUAJE / JERGA DEL SECTOR
    - 5–10 términos o conceptos que se usan en este sector y que me conviene conocer para sonar alineado`;
+}
+
+function buildContactPrompt(lead: ContactLeadData): string {
+  const leadContext = `
+DATOS DEL CONTACTO:
+- Nombre: ${lead.full_name}
+- Email: ${lead.email}
+- Teléfono: ${lead.phone || 'N/A'}
+- Empresa: ${lead.company || 'N/A'}
+- Mensaje: ${lead.message || 'Sin mensaje'}
+- Origen: ${lead.utm_source || 'Directo'}
+- Campaña: ${lead.utm_campaign || 'N/A'}
+- Fecha contacto: ${new Date(lead.created_at).toLocaleDateString('es-ES')}
+  `.trim();
+  
+  return `${leadContext}
+
+Genera un BRIEF ESTRATÉGICO para la primera llamada de cualificación:
+
+1) 🎯 PERFIL RÁPIDO
+   - Tipo de contacto estimado (empresario, inversor, consultor, etc.)
+   - Nivel de interés probable (alto/medio/bajo) según los datos
+   - Señales de urgencia o timing
+
+2) 🔍 CONTEXTO DE LA LLAMADA
+   - Qué SABEMOS con certeza
+   - Qué NO SABEMOS y necesitamos averiguar
+   - Hipótesis de por qué nos contactó
+
+3) 💬 PREGUNTAS CLAVE DE CUALIFICACIÓN
+   - Las 5 preguntas esenciales para entender si es un lead válido
+   - Orden sugerido de las preguntas (de general a específico)
+
+4) 🎁 PROPUESTA DE VALOR INICIAL
+   - Qué destacar de Capittal según su perfil
+   - 3-4 puntos de valor concretos para mencionar
+
+5) 🚩 RED FLAGS A DETECTAR
+   - Señales para descalificar rápido y no perder tiempo
+   - Preguntas trampa para identificar tire-kickers
+
+6) 📋 SIGUIENTE PASO CONCRETO
+   - Acción específica post-llamada si califica
+   - Criterios para pasar a siguiente fase`;
+}
+
+function buildCollaboratorPrompt(lead: CollaboratorData): string {
+  const leadContext = `
+DATOS DEL CANDIDATO:
+- Nombre: ${lead.full_name}
+- Email: ${lead.email}
+- Teléfono: ${lead.phone || 'N/A'}
+- Profesión: ${lead.profession || 'N/A'}
+- Experiencia: ${lead.experience || 'N/A'}
+- Motivación: ${lead.motivation || 'Sin especificar'}
+- Fecha aplicación: ${new Date(lead.created_at).toLocaleDateString('es-ES')}
+  `.trim();
+  
+  return `${leadContext}
+
+Genera un ANÁLISIS DE CANDIDATO para la entrevista de colaborador:
+
+1) 👤 PERFIL Y FIT INICIAL
+   - Tipo de colaborador (advisor, partner, network, etc.)
+   - Fit aparente con el modelo de negocio de Capittal
+   - Fortalezas evidentes del perfil
+
+2) 💼 ANÁLISIS DE EXPERIENCIA
+   - Experiencia relevante para M&A/valoración de empresas
+   - Sectores de expertise probable
+   - Red de contactos estimada
+
+3) 🎯 ANÁLISIS DE MOTIVACIÓN
+   - Drivers principales (económicos, desarrollo, red, etc.)
+   - Alineación con valores de Capittal
+   - Señales de compromiso real vs curiosidad
+
+4) ❓ PREGUNTAS CLAVE PARA LA ENTREVISTA
+   - Top 7 preguntas para profundizar en su perfil
+   - Preguntas sobre expectativas y disponibilidad
+   - Casos prácticos sugeridos
+
+5) 🤝 ENCAJE EN LA RED DE COLABORADORES
+   - Rol potencial específico en el ecosistema
+   - Tipo de deals donde podría aportar valor
+   - Complementariedad con el equipo actual
+
+6) 📋 RECOMENDACIÓN Y SIGUIENTE PASO
+   - Viabilidad del perfil (alto/medio/bajo)
+   - Onboarding sugerido si procede
+   - Criterios de descarte si no encaja`;
+}
+
+function buildPromptForLeadType(leadData: any, leadType: string): string {
+  switch (leadType) {
+    case 'valuation':
+      return buildValuationPrompt(leadData);
+    case 'contact':
+      return buildContactPrompt(leadData);
+    case 'collaborator':
+      return buildCollaboratorPrompt(leadData);
+    default:
+      throw new Error(`Tipo no soportado: ${leadType}`);
+  }
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const startTime = Date.now();
+  let reportId: string | null = null;
+
+  try {
+    const { lead_id, lead_type = 'valuation' } = await req.json();
+    console.log('📊 Generando reporte IA para lead:', lead_id, 'tipo:', lead_type);
+
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY no configurada');
+    }
+
+    // Crear cliente de Supabase con service_role
+    const supabase = createClient(
+      SUPABASE_URL!,
+      SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
+    // 1. Obtener datos del lead según el tipo
+    const leadData = await fetchLeadData(lead_id, lead_type, supabase);
+    console.log('✅ Datos del lead obtenidos');
+
+    // 2. Crear registro inicial en lead_ai_reports
+    const { data: report, error: reportError } = await supabase
+      .from('lead_ai_reports')
+      .insert({
+        lead_id: lead_id,
+        generation_status: 'processing'
+      })
+      .select()
+      .single();
+
+    if (reportError) {
+      throw new Error(`Error creando reporte: ${reportError.message}`);
+    }
+
+    reportId = report.id;
+    console.log('✅ Registro de reporte creado:', reportId);
+
+    // 3. Construir prompt según tipo de lead
+    const systemPrompt = lead_type === 'valuation' 
+      ? `Actúas como analista de M&A y consultor de negocio especializado en PYMES.
+Eres asesor en compraventa de empresas en Capittal. Ayudas a dueños de empresas a vender total o parcialmente su compañía, buscar socios o planificar sucesión.
+
+Responde en español (España), de forma concreta y estructurada con viñetas.`
+      : lead_type === 'contact'
+      ? `Eres un analista comercial senior de Capittal especializado en cualificación de leads.
+Tu objetivo es ayudar al equipo a identificar rápidamente si un contacto es viable y preparar una llamada efectiva.
+
+Responde en español (España), de forma concreta y estructurada con viñetas.`
+      : `Eres el director de desarrollo de red de colaboradores de Capittal.
+Tu objetivo es evaluar candidatos para la red de asesores, partners y colaboradores del ecosistema M&A.
+
+Responde en español (España), de forma concreta y estructurada con viñetas.`;
+
+    const userPrompt = buildPromptForLeadType(leadData, lead_type);
 
     console.log('🤖 Llamando a OpenAI...');
     
