@@ -141,13 +141,12 @@ Quiero que me prepares una LLAMADA COMERCIAL con este lead. Dame:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-mini-2025-08-07',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
-        max_tokens: 3000,
+        max_completion_tokens: 3000,
       }),
     });
 
