@@ -58,7 +58,8 @@ serve(async (req) => {
     let query = supabase
       .from('company_operations')
       .select('*', { count: 'exact' })
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .eq('is_deleted', false);
 
     // Apply filters with validation
     if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
@@ -139,6 +140,7 @@ serve(async (req) => {
         .from('company_operations')
         .select('sector')
         .eq('is_active', true)
+        .eq('is_deleted', false)
         .not('sector', 'is', null);
 
       if (sectorsError) {
@@ -153,6 +155,7 @@ serve(async (req) => {
       .from('company_operations')
       .select('display_locations')
       .eq('is_active', true)
+      .eq('is_deleted', false)
       .not('display_locations', 'is', null);
 
     if (locationsError) {
@@ -169,6 +172,7 @@ serve(async (req) => {
       .from('company_operations')
       .select('company_size_employees')
       .eq('is_active', true)
+      .eq('is_deleted', false)
       .not('company_size_employees', 'is', null);
 
     if (sizesError) {
@@ -182,6 +186,7 @@ serve(async (req) => {
       .from('company_operations')
       .select('deal_type')
       .eq('is_active', true)
+      .eq('is_deleted', false)
       .not('deal_type', 'is', null);
 
     if (typesError) {

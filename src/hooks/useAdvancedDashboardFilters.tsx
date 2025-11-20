@@ -27,7 +27,7 @@ export const useAdvancedDashboardFilters = () => {
     queryFn: async (): Promise<FilterOptions> => {
       const [caseStudiesResult, operationsResult] = await Promise.all([
         supabase.from('case_studies').select('sector').eq('is_active', true),
-        supabase.from('company_operations').select('sector').eq('is_active', true)
+        supabase.from('company_operations').select('sector').eq('is_active', true).eq('is_deleted', false)
       ]);
 
       const allSectors = [

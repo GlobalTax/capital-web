@@ -39,7 +39,7 @@ export const useDashboardStats = () => {
         statisticsResult
       ] = await Promise.all([
         supabase.from('case_studies').select('id', { count: 'exact' }).then(res => res.count || 0),
-        supabase.from('company_operations').select('id', { count: 'exact' }).then(res => res.count || 0),
+        supabase.from('company_operations').select('id', { count: 'exact' }).eq('is_deleted', false).then(res => res.count || 0),
         supabase.from('blog_posts').select('id', { count: 'exact' }).then(res => res.count || 0),
         supabase.from('testimonials').select('id', { count: 'exact' }).then(res => res.count || 0),
         supabase.from('team_members').select('id', { count: 'exact' }).then(res => res.count || 0),
