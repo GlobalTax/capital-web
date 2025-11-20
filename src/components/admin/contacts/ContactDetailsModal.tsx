@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { UnifiedContact } from '@/hooks/useUnifiedContacts';
+import { LeadAIReportViewer } from '@/components/admin/LeadAIReportViewer';
 import {
   Mail,
   Phone,
@@ -75,12 +76,13 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="info">Información</TabsTrigger>
             <TabsTrigger value="emails">Emails</TabsTrigger>
             <TabsTrigger value="calls">Llamadas</TabsTrigger>
             <TabsTrigger value="notes">Notas</TabsTrigger>
             <TabsTrigger value="files">Archivos</TabsTrigger>
+            <TabsTrigger value="ai">🤖 IA</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
 
@@ -335,6 +337,13 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
                 <p>Archivos adjuntos (próximamente)</p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="ai">
+            <LeadAIReportViewer 
+              leadId={contact.id} 
+              companyName={contact.company || contact.name}
+            />
           </TabsContent>
 
           <TabsContent value="timeline">

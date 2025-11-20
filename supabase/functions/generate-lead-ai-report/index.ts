@@ -158,7 +158,7 @@ Quiero que me prepares una LLAMADA COMERCIAL con este lead. Dame:
     const openaiData = await openaiResponse.json();
     const reportContent = openaiData.choices[0].message.content;
     const tokensUsed = openaiData.usage.total_tokens;
-    const costUsd = (tokensUsed / 1000000) * 0.15; // gpt-4o-mini pricing
+    const costUsd = (tokensUsed / 1000000) * 0.0002; // gpt-5-mini-2025-08-07 pricing
 
     console.log('✅ Reporte generado:', tokensUsed, 'tokens, $', costUsd.toFixed(4));
 
