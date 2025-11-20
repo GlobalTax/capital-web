@@ -3996,6 +3996,65 @@ export type Database = {
           },
         ]
       }
+      lead_ai_reports: {
+        Row: {
+          completed_at: string | null
+          cost_usd: number | null
+          created_at: string | null
+          error_message: string | null
+          generation_status: string | null
+          id: string
+          lead_id: string
+          lead_type: string | null
+          pdf_url: string | null
+          processing_time_seconds: number | null
+          report_chief_of_staff: string | null
+          report_commercial_prep: string | null
+          report_sector_dossier: string | null
+          tokens_used: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          cost_usd?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          generation_status?: string | null
+          id?: string
+          lead_id: string
+          lead_type?: string | null
+          pdf_url?: string | null
+          processing_time_seconds?: number | null
+          report_chief_of_staff?: string | null
+          report_commercial_prep?: string | null
+          report_sector_dossier?: string | null
+          tokens_used?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          cost_usd?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          generation_status?: string | null
+          id?: string
+          lead_id?: string
+          lead_type?: string | null
+          pdf_url?: string | null
+          processing_time_seconds?: number | null
+          report_chief_of_staff?: string | null
+          report_commercial_prep?: string | null
+          report_sector_dossier?: string | null
+          tokens_used?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_ai_reports_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: true
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_enrichment_snapshots: {
         Row: {
           confidence_score: number | null

@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.generate-job-offer-ai]
 verify_jwt = false
+
+[functions.generate-lead-ai-report]
+verify_jwt = false
