@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useStorageFallback } from '@/hooks/useStorageFallback';
 import { 
   contactFormSchema, 
   operationContactFormSchema, 
@@ -26,33 +27,33 @@ interface RateLimitData {
   lastReset: number;
 }
 
-// Rate limiting utilities
-const getRateLimitData = (): RateLimitData => {
+// Rate limiting utilities (updated to accept storage parameter)
+const getRateLimitData = (storage: Storage): RateLimitData => {
   try {
-    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    const stored = storage.getItem(RATE_LIMIT_KEY);
     return stored ? JSON.parse(stored) : { submissions: [], lastReset: Date.now() };
   } catch {
     return { submissions: [], lastReset: Date.now() };
   }
 };
 
-const setRateLimitData = (data: RateLimitData): void => {
+const setRateLimitData = (data: RateLimitData, storage: Storage): void => {
   try {
-    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
+    storage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
   } catch (error) {
     console.warn('⚠️ Could not store rate limit data:', error);
   }
 };
 
-const checkRateLimit = (): { allowed: boolean; remaining: number; resetMinutes: number } => {
+const checkRateLimit = (storage: Storage): { allowed: boolean; remaining: number; resetMinutes: number } => {
   const now = Date.now();
   const windowMs = WINDOW_MINUTES * 60 * 1000;
-  const data = getRateLimitData();
+  const data = getRateLimitData(storage);
   
   // Reset if window expired
   if (now - data.lastReset > windowMs) {
     const newData = { submissions: [], lastReset: now };
-    setRateLimitData(newData);
+    setRateLimitData(newData, storage);
     console.log('🔄 Rate limit window reset');
     return { allowed: true, remaining: MAX_SUBMISSIONS - 1, resetMinutes: WINDOW_MINUTES };
   }
@@ -70,10 +71,10 @@ const checkRateLimit = (): { allowed: boolean; remaining: number; resetMinutes: 
   return { allowed, remaining, resetMinutes };
 };
 
-const recordSubmission = (): void => {
-  const data = getRateLimitData();
+const recordSubmission = (storage: Storage): void => {
+  const data = getRateLimitData(storage);
   data.submissions.push(Date.now());
-  setRateLimitData(data);
+  setRateLimitData(data, storage);
   console.log(`📈 Rate limit: Recorded submission (${data.submissions.length}/${MAX_SUBMISSIONS})`);
 };
 
@@ -96,6 +97,7 @@ const getTrackingData = (pageOrigin?: string) => {
 export const useContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { getSafeStorage, storageStatus } = useStorageFallback();
 
   const submitContactForm = async (formData: ContactFormData, pageOrigin?: string): Promise<ContactFormResult> => {
     if (isSubmitting) {
@@ -105,6 +107,17 @@ export const useContactForm = () => {
     
     setIsSubmitting(true);
     const startTime = Date.now();
+    
+    // Get safe storage (with fallback for Safari/Edge iOS)
+    const safeStorage = getSafeStorage('local');
+    
+    console.log('🔍 Storage Status:', {
+      localStorage: storageStatus.localStorage,
+      sessionStorage: storageStatus.sessionStorage,
+      indexedDB: storageStatus.indexedDB,
+      isTrackingPrevented: storageStatus.isTrackingPrevented,
+      browser: navigator.userAgent.substring(0, 50)
+    });
     
     console.log('🚀 ContactForm: Starting submission', { 
       email: formData.email?.substring(0, 10) + '...', 
@@ -129,8 +142,8 @@ export const useContactForm = () => {
         return { success: false, error: 'Honeypot triggered' };
       }
 
-      // 3. Rate limit check
-      const rateLimitCheck = checkRateLimit();
+      // 3. Rate limit check (using safe storage)
+      const rateLimitCheck = checkRateLimit(safeStorage);
       if (!rateLimitCheck.allowed) {
         console.warn('🚫 Rate limit exceeded');
         toast({
@@ -141,8 +154,8 @@ export const useContactForm = () => {
         return { success: false, error: 'Rate limit exceeded' };
       }
 
-      // 4. Record submission for rate limiting
-      recordSubmission();
+      // 4. Record submission for rate limiting (using safe storage)
+      recordSubmission(safeStorage);
 
       // 5. Get tracking data
       const trackingData = getTrackingData(pageOrigin);
@@ -351,6 +364,15 @@ export const useContactForm = () => {
     setIsSubmitting(true);
     const startTime = Date.now();
     
+    // Get safe storage (with fallback for Safari/Edge iOS)
+    const safeStorage = getSafeStorage('local');
+    
+    console.log('🔍 Storage Status (Operation):', {
+      localStorage: storageStatus.localStorage,
+      sessionStorage: storageStatus.sessionStorage,
+      browser: navigator.userAgent.substring(0, 50)
+    });
+    
     console.log('🚀 OperationContactForm: Starting submission', { 
       email: formData.email?.substring(0, 10) + '...',
       operationId: formData.operationId
@@ -372,8 +394,8 @@ export const useContactForm = () => {
         return { success: false, error: 'Honeypot triggered' };
       }
 
-      // 3. Rate limit check
-      const rateLimitCheck = checkRateLimit();
+      // 3. Rate limit check (using safe storage)
+      const rateLimitCheck = checkRateLimit(safeStorage);
       if (!rateLimitCheck.allowed) {
         console.warn('🚫 Operation form: Rate limit exceeded');
         toast({
@@ -384,7 +406,7 @@ export const useContactForm = () => {
         return { success: false, error: 'Rate limit exceeded' };
       }
 
-      recordSubmission();
+      recordSubmission(safeStorage);
 
       // 4. Get tracking data
       const trackingData = getTrackingData('operation_inquiry');
