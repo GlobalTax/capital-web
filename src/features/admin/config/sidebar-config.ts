@@ -23,7 +23,8 @@ import {
   Image,
   Calculator,
   Megaphone,
-  Briefcase
+  Briefcase,
+  FolderOpen
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -119,6 +120,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Tags,
         badge: "NEW",
         description: "Gestión de sectores empresariales"
+      },
+      { 
+        title: "Sector Dossiers", 
+        url: "/admin/sector-dossiers", 
+        icon: FolderOpen,
+        badge: "AI",
+        description: "Análisis competitivo por sector con IA"
       },
       { 
         title: "Market Reports", 

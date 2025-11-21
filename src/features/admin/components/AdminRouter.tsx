@@ -42,7 +42,8 @@ import {
   LazyJobTemplatesManager,
   LazyCollaboratorApplicationsManagerPage,
   LazyInvestorLeadsManager,
-  LazyRODDocumentsManager
+  LazyRODDocumentsManager,
+  LazySectorDossierStudio
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -93,6 +94,7 @@ const AdminRouter = () => {
           <Route path="/blog/new" element={<LazyBlogEditorPage />} />
           <Route path="/blog/edit/:id" element={<LazyBlogEditorPage />} />
           <Route path="/sector-reports" element={<LazySectorReportsGenerator />} />
+          <Route path="/sector-dossiers" element={<LazySectorDossierStudio />} />
           <Route path="/sectors" element={<LazySectorsPage />} />
           <Route path="/case-studies" element={<LazyCaseStudiesManager />} />
           <Route path="/landing-pages" element={<LazyLandingPagesPage />} />
