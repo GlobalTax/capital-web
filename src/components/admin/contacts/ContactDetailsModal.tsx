@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { LeadAIReportViewer } from '@/components/admin/LeadAIReportViewer';
+import { SectorDossierViewer } from '@/components/admin/SectorDossierViewer';
 import {
   Mail,
   Phone,
@@ -76,13 +77,14 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="info">Información</TabsTrigger>
             <TabsTrigger value="emails">Emails</TabsTrigger>
             <TabsTrigger value="calls">Llamadas</TabsTrigger>
             <TabsTrigger value="notes">Notas</TabsTrigger>
             <TabsTrigger value="files">Archivos</TabsTrigger>
             <TabsTrigger value="ai">🤖 IA</TabsTrigger>
+            <TabsTrigger value="sector">📊 Sector</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
 
@@ -344,6 +346,13 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
               leadId={contact.id} 
               leadType={contact.origin as 'valuation' | 'contact' | 'collaborator'}
               companyName={contact.company || contact.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="sector">
+            <SectorDossierViewer 
+              sector={contact.industry || 'General'}
+              leadId={contact.id}
             />
           </TabsContent>
 

@@ -5843,6 +5843,90 @@ export type Database = {
         }
         Relationships: []
       }
+      product_evaluations: {
+        Row: {
+          business_model: string
+          churn_rate: string | null
+          created_at: string | null
+          data_ai_usage: string | null
+          evaluation_result: Json | null
+          goals_12_24_months: string
+          id: string
+          integrations: string | null
+          ip_address: unknown
+          main_problem: string
+          mrr_amount: string | null
+          overall_score: number | null
+          pricing_model: string | null
+          product_description: string
+          product_name: string
+          stage: string
+          target_customer: string
+          team_composition: string | null
+          team_size: string | null
+          tech_stack: string | null
+          traction_notes: string | null
+          updated_at: string | null
+          user_agent: string | null
+          user_email: string | null
+          users_count: string | null
+        }
+        Insert: {
+          business_model: string
+          churn_rate?: string | null
+          created_at?: string | null
+          data_ai_usage?: string | null
+          evaluation_result?: Json | null
+          goals_12_24_months: string
+          id?: string
+          integrations?: string | null
+          ip_address?: unknown
+          main_problem: string
+          mrr_amount?: string | null
+          overall_score?: number | null
+          pricing_model?: string | null
+          product_description: string
+          product_name: string
+          stage: string
+          target_customer: string
+          team_composition?: string | null
+          team_size?: string | null
+          tech_stack?: string | null
+          traction_notes?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+          users_count?: string | null
+        }
+        Update: {
+          business_model?: string
+          churn_rate?: string | null
+          created_at?: string | null
+          data_ai_usage?: string | null
+          evaluation_result?: Json | null
+          goals_12_24_months?: string
+          id?: string
+          integrations?: string | null
+          ip_address?: unknown
+          main_problem?: string
+          mrr_amount?: string | null
+          overall_score?: number | null
+          pricing_model?: string | null
+          product_description?: string
+          product_name?: string
+          stage?: string
+          target_customer?: string
+          team_composition?: string | null
+          team_size?: string | null
+          tech_stack?: string | null
+          traction_notes?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+          users_count?: string | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           action: string
