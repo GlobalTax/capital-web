@@ -54,3 +54,6 @@ export const LazyJobApplicationsManager = lazy(() => import('@/pages/admin/JobAp
 export const LazyJobCategoriesManager = lazy(() => import('@/pages/admin/JobCategoriesManager').then(m => ({ default: m.JobCategoriesManager })));
 export const LazyJobTemplatesManager = lazy(() => import('@/pages/admin/JobTemplatesManager').then(m => ({ default: m.JobTemplatesManager })));
 export const LazyCollaboratorApplicationsManagerPage = lazy(() => import('@/pages/admin/CollaboratorApplicationsManagerPage'));
+
+// === SECTOR DOSSIER ===
+export const LazySectorDossierStudio = lazy(() => import('@/pages/admin/SectorDossierStudio'));
