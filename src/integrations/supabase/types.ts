@@ -7735,6 +7735,7 @@ export type Database = {
           stages: string[]
         }[]
       }
+      get_sector_dossier_stats: { Args: never; Returns: Json }
       get_user_role: { Args: { check_user_id: string }; Returns: string }
       grant_rh_role: {
         Args: {
