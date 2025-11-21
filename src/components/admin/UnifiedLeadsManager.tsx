@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
   Calculator, 
@@ -28,6 +29,7 @@ import { useUnifiedLeads } from '@/hooks/useUnifiedLeads';
 import { useLeadTasks } from '@/hooks/useLeadTasks';
 import { LeadTasksManager } from '@/features/admin/components/leads/LeadTasksManager';
 import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
+import { LeadAIAnalytics } from '@/components/admin/LeadAIAnalytics';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -142,6 +144,14 @@ const UnifiedLeadsManager = () => {
           Actualizar
         </Button>
       </div>
+
+      <Tabs defaultValue="leads" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="leads">Gestión de Leads</TabsTrigger>
+          <TabsTrigger value="analytics">📊 Analíticas IA</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="leads" className="space-y-6 mt-6">
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -442,6 +452,12 @@ const UnifiedLeadsManager = () => {
           onOpenChange={setTasksModalOpen}
         />
       )}
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <LeadAIAnalytics />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

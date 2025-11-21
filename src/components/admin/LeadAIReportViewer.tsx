@@ -38,6 +38,8 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [hasFeedback, setHasFeedback] = useState(false);
+  const [isCached, setIsCached] = useState(false);
+  const [cacheAgeHours, setCacheAgeHours] = useState<number | null>(null);
 
   const { data: report, isLoading, refetch } = useQuery({
     queryKey: ['lead-ai-report', leadId],
@@ -67,22 +69,36 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
     },
   });
 
-  const handleGenerateReport = async () => {
+  const handleGenerateReport = async (forceRegenerate = false) => {
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-lead-ai-report', {
         body: { 
           lead_id: leadId,
-          lead_type: leadType
+          lead_type: leadType,
+          force_regenerate: forceRegenerate
         }
       });
 
       if (error) throw error;
 
-      toast({
-        title: '✅ Reporte generado',
-        description: 'El análisis de IA se ha completado correctamente.',
-      });
+      if (data?.cached) {
+        setIsCached(true);
+        setCacheAgeHours(parseFloat(data.cache_age_hours));
+        toast({
+          title: '🔥 Reporte cacheado',
+          description: `Se usó un reporte existente de hace ${data.cache_age_hours}h`,
+        });
+      } else {
+        setIsCached(false);
+        setCacheAgeHours(null);
+        toast({
+          title: '✅ Reporte generado',
+          description: forceRegenerate 
+            ? 'Se ha regenerado el reporte con nuevos datos'
+            : 'El análisis de IA se ha completado correctamente.',
+        });
+      }
 
       // Refrescar datos
       setTimeout(() => {
@@ -206,9 +222,14 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {report && getStatusBadge(report.generation_status)}
+            {isCached && cacheAgeHours !== null && (
+              <Badge variant="secondary" className="text-xs">
+                Cache: {cacheAgeHours}h
+              </Badge>
+            )}
             {!report || report.generation_status === 'failed' ? (
               <Button
-                onClick={handleGenerateReport}
+                onClick={() => handleGenerateReport(false)}
                 disabled={isGenerating}
                 size="sm"
               >
@@ -224,6 +245,25 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
                   </>
                 )}
               </Button>
+            ) : report.generation_status === 'completed' ? (
+              <Button
+                onClick={() => handleGenerateReport(true)}
+                disabled={isGenerating}
+                size="sm"
+                variant="outline"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Regenerando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Regenerar
+                  </>
+                )}
+              </Button>
             ) : null}
           </div>
         </div>
@@ -236,7 +276,7 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
             <p className="text-sm text-muted-foreground">
               No hay análisis de IA generado para este lead.
             </p>
-            <Button onClick={handleGenerateReport} disabled={isGenerating}>
+            <Button onClick={() => handleGenerateReport(false)} disabled={isGenerating}>
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -269,7 +309,7 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
                   <p className="text-xs text-muted-foreground">{report.error_message}</p>
                 )}
                 <Button
-                  onClick={handleGenerateReport}
+                  onClick={() => handleGenerateReport(false)}
                   disabled={isGenerating}
                   size="sm"
                   variant="outline"
@@ -376,7 +416,7 @@ export const LeadAIReportViewer: React.FC<LeadAIReportViewerProps> = ({
             {/* Botón de regenerar */}
             <div className="pt-4 border-t">
               <Button
-                onClick={handleGenerateReport}
+                onClick={() => handleGenerateReport(true)}
                 disabled={isGenerating}
                 size="sm"
                 variant="outline"

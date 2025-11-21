@@ -246,8 +246,8 @@ serve(async (req) => {
   let reportId: string | null = null;
 
   try {
-    const { lead_id, lead_type = 'valuation' } = await req.json();
-    console.log('📊 Generando reporte IA para lead:', lead_id, 'tipo:', lead_type);
+    const { lead_id, lead_type = 'valuation', force_regenerate = false } = await req.json();
+    console.log('📊 Generando reporte IA para lead:', lead_id, 'tipo:', lead_type, 'force:', force_regenerate);
 
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY no configurada');
@@ -264,6 +264,37 @@ serve(async (req) => {
         }
       }
     );
+
+    // 🔥 CACHÉ: Verificar si ya existe un reporte reciente (menos de 24 horas)
+    if (!force_regenerate) {
+      const { data: existingReport, error: existingError } = await supabase
+        .from('lead_ai_reports')
+        .select('*')
+        .eq('lead_id', lead_id)
+        .eq('generation_status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingReport && !existingError) {
+        const reportAge = Date.now() - new Date(existingReport.created_at).getTime();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        if (reportAge < twentyFourHours) {
+          console.log(`🔥 Usando reporte cacheado (${(reportAge / (60 * 60 * 1000)).toFixed(1)}h antiguo)`);
+          return new Response(
+            JSON.stringify({ 
+              ...existingReport, 
+              cached: true,
+              cache_age_hours: (reportAge / (60 * 60 * 1000)).toFixed(1)
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+    }
+
+    console.log('🚀 Generando nuevo reporte...');
 
     // 1. Obtener datos del lead según el tipo
     const leadData = await fetchLeadData(lead_id, lead_type, supabase);
