@@ -32,7 +32,7 @@ interface SidebarItem {
   icon: React.ComponentType<any>;
   id: string;
   description: string;
-  badge?: 'URGENTE' | 'AI' | 'NEW';
+  badge?: 'URGENTE' | 'AI' | 'NEW' | 'INSIGHTS';
 }
 
 const sidebarGroups = [
@@ -85,6 +85,13 @@ const sidebarGroups = [
         icon: TrendingUp,
         id: "company-valuations",
         description: "Solicitudes de valoración"
+      },
+      {
+        title: "Formularios Incompletos",
+        icon: AlertCircle,
+        id: "incomplete-valuations",
+        description: "Análisis de abandono",
+        badge: "INSIGHTS" as const
       },
       {
         title: "Leads de Contacto",
@@ -222,6 +229,8 @@ const AppSidebar: React.FC = () => {
         return 'bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full';
       case 'NEW':
         return 'bg-green-500 text-white text-xs px-2 py-0.5 rounded-full';
+      case 'INSIGHTS':
+        return 'bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full';
       default:
         return '';
     }
