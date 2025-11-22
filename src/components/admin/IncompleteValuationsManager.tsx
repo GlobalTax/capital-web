@@ -439,7 +439,9 @@ const IncompleteValuationsManager: React.FC = () => {
                   <TableHead>Empresa</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Sector</TableHead>
-                  <TableHead>Paso Abandonado</TableHead>
+                  <TableHead className="text-right">Facturación</TableHead>
+                  <TableHead className="text-right">EBITDA</TableHead>
+                  <TableHead>Paso</TableHead>
                   <TableHead>Completitud</TableHead>
                   <TableHead>Tiempo</TableHead>
                   <TableHead>Fecha</TableHead>
@@ -449,7 +451,7 @@ const IncompleteValuationsManager: React.FC = () => {
               <TableBody>
                 {filteredValuations.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                       No se encontraron valoraciones incompletas
                     </TableCell>
                   </TableRow>
@@ -471,9 +473,29 @@ const IncompleteValuationsManager: React.FC = () => {
                           {valuation.industry || 'Sin especificar'}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-right font-mono text-sm">
+                        {valuation.revenue 
+                          ? new Intl.NumberFormat('es-ES', { 
+                              style: 'currency', 
+                              currency: 'EUR',
+                              maximumFractionDigits: 0
+                            }).format(valuation.revenue)
+                          : '-'
+                        }
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-sm">
+                        {valuation.ebitda 
+                          ? new Intl.NumberFormat('es-ES', { 
+                              style: 'currency', 
+                              currency: 'EUR',
+                              maximumFractionDigits: 0
+                            }).format(valuation.ebitda)
+                          : '-'
+                        }
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
-                          {getStepLabel(valuation.current_step)}
+                          Paso {valuation.current_step || 1}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -580,40 +602,40 @@ const IncompleteValuationsManager: React.FC = () => {
               </div>
 
               {/* Financiero */}
-              {(selectedValuation.revenue || selectedValuation.ebitda) && (
-                <div>
-                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Datos Financieros
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    {selectedValuation.revenue && (
-                      <div>
-                        <span className="text-muted-foreground">Ingresos:</span>
-                        <p className="font-medium">
-                          {new Intl.NumberFormat('es-ES', {
+              <div>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Datos Financieros
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Facturación:</span>
+                    <p className="font-medium">
+                      {selectedValuation.revenue 
+                        ? new Intl.NumberFormat('es-ES', {
                             style: 'currency',
                             currency: 'EUR',
                             minimumFractionDigits: 0
-                          }).format(selectedValuation.revenue)}
-                        </p>
-                      </div>
-                    )}
-                    {selectedValuation.ebitda && (
-                      <div>
-                        <span className="text-muted-foreground">EBITDA:</span>
-                        <p className="font-medium">
-                          {new Intl.NumberFormat('es-ES', {
+                          }).format(selectedValuation.revenue)
+                        : '-'
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">EBITDA:</span>
+                    <p className="font-medium">
+                      {selectedValuation.ebitda 
+                        ? new Intl.NumberFormat('es-ES', {
                             style: 'currency',
                             currency: 'EUR',
                             minimumFractionDigits: 0
-                          }).format(selectedValuation.ebitda)}
-                        </p>
-                      </div>
-                    )}
+                          }).format(selectedValuation.ebitda)
+                        : '-'
+                      }
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Progreso */}
               <div>
