@@ -57,3 +57,6 @@ export const LazyCollaboratorApplicationsManagerPage = lazy(() => import('@/page
 
 // === SECTOR DOSSIER ===
 export const LazySectorDossierStudio = lazy(() => import('@/pages/admin/SectorDossierStudio'));
+
+// === INCOMPLETE VALUATIONS ===
+export const LazyIncompleteValuationsManager = lazy(() => import('@/components/admin/IncompleteValuationsManager'));
