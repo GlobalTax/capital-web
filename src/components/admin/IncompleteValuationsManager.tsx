@@ -79,7 +79,7 @@ const IncompleteValuationsManager: React.FC = () => {
   const [stepFilter, setStepFilter] = useState<string>('all');
   const [selectedValuation, setSelectedValuation] = useState<IncompleteValuation | null>(null);
 
-  // Fetch incomplete valuations
+  // Fetch incomplete valuations (sin valoración final = abandonado)
   const { data: valuations, isLoading } = useQuery({
     queryKey: ['incomplete-valuations', stepFilter],
     queryFn: async () => {
@@ -100,9 +100,23 @@ const IncompleteValuationsManager: React.FC = () => {
     },
   });
 
+  // Obtener total de valoraciones para calcular tasa de abandono
+  const { data: totalValuations } = useQuery({
+    queryKey: ['total-valuations'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('company_valuations')
+        .select('*', { count: 'exact', head: true })
+        .or('is_deleted.is.null,is_deleted.eq.false');
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
   // Fetch abandonment statistics
   const { data: stats } = useQuery({
-    queryKey: ['abandonment-stats'],
+    queryKey: ['abandonment-stats', totalValuations],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_abandonment_stats' as any);
       
@@ -117,8 +131,8 @@ const IncompleteValuationsManager: React.FC = () => {
         if (!allIncomplete) return null;
 
         const total = allIncomplete.length;
-        const avgCompletion = allIncomplete.reduce((sum, v) => sum + (v.completion_percentage || 0), 0) / total;
-        const avgTime = allIncomplete.reduce((sum, v) => sum + (v.time_spent_seconds || 0), 0) / total;
+        const avgCompletion = allIncomplete.reduce((sum, v) => sum + (v.completion_percentage || 0), 0) / (total || 1);
+        const avgTime = allIncomplete.reduce((sum, v) => sum + (v.time_spent_seconds || 0), 0) / (total || 1);
         
         const stepCounts = allIncomplete.reduce((acc, v) => {
           const step = v.current_step || 1;
@@ -128,17 +142,20 @@ const IncompleteValuationsManager: React.FC = () => {
 
         return {
           total_incomplete: total,
+          total_valuations: totalValuations || 0,
+          abandonment_rate: totalValuations ? (total / totalValuations) * 100 : 0,
           avg_completion: Math.round(avgCompletion),
           avg_time_spent: Math.round(avgTime),
           abandonment_by_step: Object.entries(stepCounts).map(([step, count]) => ({
             step: parseInt(step),
             count
           }))
-        } as AbandonmentStats;
+        } as AbandonmentStats & { total_valuations: number; abandonment_rate: number };
       }
 
       return data as AbandonmentStats;
     },
+    enabled: !!totalValuations,
   });
 
   // Filter valuations by search term
@@ -240,10 +257,25 @@ const IncompleteValuationsManager: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Valoraciones Incompletas</h1>
-        <p className="text-muted-foreground">
-          Análisis de usuarios que no completaron el formulario de valoración
+        <h1 className="text-3xl font-bold mb-2">Formularios Incompletos</h1>
+        <p className="text-muted-foreground mb-4">
+          Análisis de usuarios que abandonaron el proceso de valoración
         </p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900 mb-1">
+                Nota sobre la captura de abandonos
+              </p>
+              <p className="text-sm text-blue-800">
+                Solo se registran abandonos de usuarios que iniciaron el formulario y llenaron al menos un campo. 
+                Los abandonos muy tempranos (apertura sin interacción) no generan registro en la base de datos, 
+                por lo que la tasa real de abandono podría ser mayor.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -253,13 +285,14 @@ const IncompleteValuationsManager: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-orange-500" />
-                Total Incompletas
+                Total Incompletos
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats.total_incomplete}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Formularios abandonados
+                de {(stats as any).total_valuations || totalValuations} totales 
+                ({((stats as any).abandonment_rate || 0).toFixed(2)}% tasa)
               </p>
             </CardContent>
           </Card>
