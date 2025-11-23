@@ -44,7 +44,8 @@ import {
   LazyInvestorLeadsManager,
   LazyRODDocumentsManager,
   LazySectorDossierStudio,
-  LazyIncompleteValuationsManager
+  LazyIncompleteValuationsManager,
+  LazyValuationAnalyticsDashboard
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -78,6 +79,7 @@ const AdminRouter = () => {
           {/* Dashboard */}
           <Route index element={<LazyAdminDashboard />} />
           <Route path="/dashboard" element={<LazyAdminDashboard />} />
+          <Route path="/valuation-analytics" element={<LazyValuationAnalyticsDashboard />} />
           
           {/* Lead Management */}
           <Route path="/proposals" element={<LazyProposalsManager />} />
