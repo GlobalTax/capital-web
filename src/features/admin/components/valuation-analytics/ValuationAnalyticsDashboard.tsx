@@ -8,6 +8,7 @@ import { ActiveSessionsTable } from './ActiveSessionsTable';
 import { RecoveryAnalytics } from './RecoveryAnalytics';
 import { FieldHeatmap } from './FieldHeatmap';
 import { QuickActions } from './QuickActions';
+import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ErrorFallback } from '@/shared/components/ErrorFallback';
@@ -109,6 +110,9 @@ export const ValuationAnalyticsDashboard: React.FC = () => {
 
       {/* KPIs */}
       <ValuationKPICards kpis={analytics.kpis} />
+
+      {/* Analytics Configuration Panel */}
+      <AnalyticsConfigPanel />
 
       {/* Main Grid */}
       <div className="grid gap-6 lg:grid-cols-3">

@@ -8,3 +8,4 @@ export { ActiveSessionsTable } from './ActiveSessionsTable';
 export { RecoveryAnalytics } from './RecoveryAnalytics';
 export { FieldHeatmap } from './FieldHeatmap';
 export { QuickActions } from './QuickActions';
+export { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
