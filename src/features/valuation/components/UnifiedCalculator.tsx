@@ -5,6 +5,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedCalculator } from '../hooks/useUnifiedCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
+import { useFormSessionTracking } from '@/hooks/useFormSessionTracking';
 import { CalculatorConfig, ExtendedCompanyData } from '../types/unified.types';
 import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
@@ -40,6 +41,18 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   
   // Initialize tracking
   const tracking = useValuationCalculatorTracking();
+  
+  // Initialize form session tracking (Phase 2)
+  const { sessionId, trackFieldTouch, linkValuation } = useFormSessionTracking({
+    formType: config.sourceProject || 'unified_calculator'
+  });
+  
+  // Link valuation token to session when available
+  useEffect(() => {
+    if (calculator.uniqueToken && sessionId) {
+      linkValuation(calculator.uniqueToken);
+    }
+  }, [calculator.uniqueToken, sessionId, linkValuation]);
 
   // Track step changes
   useEffect(() => {
@@ -54,6 +67,7 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
 
   const trackedHandleFieldBlur = (field: keyof ExtendedCompanyData) => {
     calculator.handleFieldBlur(field);
+    trackFieldTouch(field as string); // Track field touch in session
     
     const fieldState = calculator.getFieldState(field.toString());
     if (fieldState.hasError && fieldState.error) {
