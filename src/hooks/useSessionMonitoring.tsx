@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAnalyticsConfig } from './useAnalyticsConfig';
 
 export interface ActiveSession {
   id: string;
@@ -11,13 +12,15 @@ export interface ActiveSession {
   completionPercentage: number;
   lastActivityAt: string;
   timeSpentSeconds: number;
-  status: 'active' | 'abandoned' | 'completed';
+  status: 'active' | 'warm' | 'cold' | 'completed';
   createdAt: string;
 }
 
 export const useSessionMonitoring = () => {
+  const { thresholds } = useAnalyticsConfig();
+
   return useQuery({
-    queryKey: ['session-monitoring'],
+    queryKey: ['session-monitoring', thresholds],
     queryFn: async (): Promise<ActiveSession[]> => {
       const { data, error } = await supabase
         .from('company_valuations')
@@ -32,20 +35,21 @@ export const useSessionMonitoring = () => {
         const lastActivity = v.last_activity_at ? new Date(v.last_activity_at) : new Date(v.created_at);
         const minutesSinceActivity = (now.getTime() - lastActivity.getTime()) / 1000 / 60;
 
-        // MEJORA: Distinguir claramente entre sesiones completadas e incompletas
-        let status: 'active' | 'abandoned' | 'completed' = 'active';
+        // Nueva lógica con 4 estados (active/warm/cold/completed)
+        let status: 'active' | 'warm' | 'cold' | 'completed' = 'active';
         
         if (v.final_valuation !== null) {
           // Tiene valoración final = completada
           status = 'completed';
         } else {
           // Sin valoración final = incompleta
-          if (minutesSinceActivity > 30) {
-            // Incompleta y fría (>30 min) = abandonada
-            status = 'abandoned';
+          // Clasificar por temperatura según umbrales configurables
+          if (minutesSinceActivity >= thresholds.cold_minutes) {
+            status = 'cold'; // Fría - alta prioridad para recuperación
+          } else if (minutesSinceActivity >= thresholds.warm_minutes) {
+            status = 'warm'; // Tibia - media prioridad
           } else {
-            // Incompleta pero reciente (<30 min) = activa
-            status = 'active';
+            status = 'active'; // Caliente - baja prioridad (aún está activa)
           }
         }
 
@@ -68,5 +72,6 @@ export const useSessionMonitoring = () => {
     },
     staleTime: 15 * 1000, // 15 seconds
     refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
+    enabled: !!thresholds, // Solo ejecutar cuando tengamos los umbrales
   });
 };
