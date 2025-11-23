@@ -20,12 +20,6 @@ serve(async (req) => {
   try {
     const { type, data }: LeadData = await req.json();
 
-    // Crear cliente para la segunda base de datos
-    const secondarySupabase = createClient(
-      Deno.env.get('SECONDARY_SUPABASE_URL') ?? '',
-      Deno.env.get('SECONDARY_SUPABASE_ANON_KEY') ?? ''
-    );
-
     let leadData: any = {};
 
     // Transformar datos según el tipo
@@ -195,6 +189,29 @@ serve(async (req) => {
         }
       );
     }
+
+    // Check if secondary database is configured
+    const secondaryUrl = Deno.env.get('SECONDARY_SUPABASE_URL');
+    const secondaryKey = Deno.env.get('SECONDARY_SUPABASE_ANON_KEY');
+
+    if (!secondaryUrl || !secondaryKey) {
+      // No sync configured, but main valuation was already saved
+      console.log('No secondary DB or CRM configured, skipping sync');
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          skipped: true,
+          message: 'No external sync configured'
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Create secondary Supabase client only when needed
+    const secondarySupabase = createClient(secondaryUrl, secondaryKey);
 
     // Insertar en la segunda base de datos (legacy / fallback)
     const { data: insertedData, error } = await secondarySupabase
