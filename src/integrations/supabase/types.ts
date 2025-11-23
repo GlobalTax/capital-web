@@ -7829,6 +7829,10 @@ export type Database = {
       }
       get_sector_dossier_stats: { Args: never; Returns: Json }
       get_user_role: { Args: { check_user_id: string }; Returns: string }
+      get_valuation_analytics: {
+        Args: { p_end_date: string; p_start_date: string }
+        Returns: Json
+      }
       grant_rh_role: {
         Args: {
           notes_text?: string
