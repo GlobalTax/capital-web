@@ -54,6 +54,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: LayoutDashboard,
         description: "Dashboard principal"
       },
+      { 
+        title: "Valoraciones & Recovery", 
+        url: "/admin/valuation-analytics", 
+        icon: Activity,
+        badge: "NEW",
+        description: "Analytics de valoraciones"
+      },
     ]
   },
   {
