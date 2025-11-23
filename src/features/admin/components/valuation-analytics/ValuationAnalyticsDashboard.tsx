@@ -10,6 +10,7 @@ import { FieldHeatmap } from './FieldHeatmap';
 import { QuickActions } from './QuickActions';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ErrorFallback } from '@/shared/components/ErrorFallback';
 
 export const ValuationAnalyticsDashboard: React.FC = () => {
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('7d');
@@ -54,29 +55,16 @@ export const ValuationAnalyticsDashboard: React.FC = () => {
     const isUnauthorized = errorMessage.includes('Unauthorized') || errorMessage.includes('permission');
     
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4 max-w-md text-center">
-          <div className="rounded-full bg-destructive/10 p-3">
-            <svg className="h-6 w-6 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              {isUnauthorized ? 'Sin permisos de acceso' : 'Error al cargar analytics'}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {isUnauthorized 
-                ? 'No tienes permisos para ver estas analytics. Asegúrate de que tu usuario está marcado como admin en Supabase.'
-                : `Ocurrió un error al cargar los datos: ${errorMessage}`
-              }
-            </p>
-            <Button variant="outline" onClick={() => refetchAnalytics()}>
-              Reintentar
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ErrorFallback
+        title={isUnauthorized ? 'Sin permisos de acceso' : 'Error al cargar analytics'}
+        message={isUnauthorized 
+          ? 'No tienes permisos para ver estas analytics. Asegúrate de estar autenticado correctamente.'
+          : `Ocurrió un error al cargar los datos: ${errorMessage}`
+        }
+        onRetry={refetchAnalytics}
+        showRetry={true}
+        className="min-h-[400px]"
+      />
     );
   }
 
