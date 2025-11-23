@@ -32,11 +32,21 @@ export const useSessionMonitoring = () => {
         const lastActivity = v.last_activity_at ? new Date(v.last_activity_at) : new Date(v.created_at);
         const minutesSinceActivity = (now.getTime() - lastActivity.getTime()) / 1000 / 60;
 
+        // MEJORA: Distinguir claramente entre sesiones completadas e incompletas
         let status: 'active' | 'abandoned' | 'completed' = 'active';
+        
         if (v.final_valuation !== null) {
+          // Tiene valoración final = completada
           status = 'completed';
-        } else if (minutesSinceActivity > 30) {
-          status = 'abandoned';
+        } else {
+          // Sin valoración final = incompleta
+          if (minutesSinceActivity > 30) {
+            // Incompleta y fría (>30 min) = abandonada
+            status = 'abandoned';
+          } else {
+            // Incompleta pero reciente (<30 min) = activa
+            status = 'active';
+          }
         }
 
         return {
