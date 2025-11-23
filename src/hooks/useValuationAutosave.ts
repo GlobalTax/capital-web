@@ -119,18 +119,29 @@ export const useValuationAutosave = () => {
     }
   }, [saveTokenToStorage]);
 
-  // Crear valuación SOLO en campos críticos para reducir Edge Functions
+  // FASE 1: Crear valuación en CUALQUIER campo (no solo críticos)
   const createInitialValuationOnFirstField = useCallback(async (
     field: keyof CompanyData, 
     value: any, 
     allData: CompanyData,
     utmData?: { utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; referrer?: string | null }
   ): Promise<string | null> => {
-    // Solo crear en campos críticos para reducir consumo
-    const criticalFields: (keyof CompanyData)[] = ['email', 'companyName', 'contactName'];
+    // CAMBIO FASE 1: Guardar en CUALQUIER campo, no solo los 3 críticos
+    // Esto captura muchos más abandonos tempranos
+    const allFields: (keyof CompanyData)[] = [
+      'contactName', 'companyName', 'email', 'phone', 'cif',
+      'industry', 'employeeRange', 'activityDescription',
+      'revenue', 'ebitda', 'location', 'ownershipParticipation', 'competitiveAdvantage'
+    ];
     
-    if (state.uniqueToken || !criticalFields.includes(field)) {
+    // Si ya tenemos token, no crear uno nuevo
+    if (state.uniqueToken) {
       return state.uniqueToken;
+    }
+    
+    // Verificar que sea un campo válido
+    if (!allFields.includes(field)) {
+      return null;
     }
 
     // Verificar que el valor tenga contenido significativo
@@ -211,7 +222,7 @@ export const useValuationAutosave = () => {
       setState(prev => ({ ...prev, isSaving: false }));
       return null;
     }
-  }, [state.uniqueToken, saveTokenToStorage]);
+  }, [state.uniqueToken, saveTokenToStorage, user, session]);
 
   // Update existing valuation record (debounced)
   const updateValuation = useCallback((partialData: Partial<CompanyData>, field?: string) => {
@@ -274,7 +285,7 @@ export const useValuationAutosave = () => {
       } finally {
         setState(prev => ({ ...prev, isSaving: false }));
       }
-    }, 3000); // 3 segundos debounce - optimizado para reducir consumo
+    }, 500); // FASE 1: 500ms debounce (antes 3000ms) - más rápido y responsivo
   }, [state.uniqueToken, state.startTime, state.timeSpent]);
 
   // Guardado inmediato para campos críticos (email, company name)
@@ -400,7 +411,7 @@ export const useValuationAutosave = () => {
         }
       });
     }
-  }, [state.uniqueToken, state.startTime, state.timeSpent]);
+  }, [state.uniqueToken, state.startTime, state.timeSpent, user]);
 
   // Clear autosave data and cleanup
   const clearAutosave = useCallback(() => {

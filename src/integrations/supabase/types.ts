@@ -2888,6 +2888,98 @@ export type Database = {
         }
         Relationships: []
       }
+      form_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string | null
+          device_type: string | null
+          entered_at: string
+          exit_intent_triggered: boolean | null
+          exit_type: string | null
+          exited_at: string | null
+          fields_touched: string[] | null
+          form_type: string
+          id: string
+          interacted: boolean | null
+          ip_address: unknown
+          page_url: string | null
+          referrer: string | null
+          scroll_depth_percentage: number | null
+          session_id: string
+          time_on_page_seconds: number | null
+          updated_at: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          valuation_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          entered_at?: string
+          exit_intent_triggered?: boolean | null
+          exit_type?: string | null
+          exited_at?: string | null
+          fields_touched?: string[] | null
+          form_type?: string
+          id?: string
+          interacted?: boolean | null
+          ip_address?: unknown
+          page_url?: string | null
+          referrer?: string | null
+          scroll_depth_percentage?: number | null
+          session_id: string
+          time_on_page_seconds?: number | null
+          updated_at?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          valuation_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          entered_at?: string
+          exit_intent_triggered?: boolean | null
+          exit_type?: string | null
+          exited_at?: string | null
+          fields_touched?: string[] | null
+          form_type?: string
+          id?: string
+          interacted?: boolean | null
+          ip_address?: unknown
+          page_url?: string | null
+          referrer?: string | null
+          scroll_depth_percentage?: number | null
+          session_id?: string
+          time_on_page_seconds?: number | null
+          updated_at?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_sessions_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       general_contact_leads: {
         Row: {
           annual_revenue: string | null

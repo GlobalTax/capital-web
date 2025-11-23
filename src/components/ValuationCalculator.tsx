@@ -1,20 +1,21 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import StepContent from './valuation/StepContent';
 import NavigationButtons from './valuation/NavigationButtons';
 import { useValuationCalculator } from '@/hooks/useValuationCalculator';
-import { useOptimizedSupabaseValuation } from '@/hooks/useOptimizedSupabaseValuation';
+import { useValuationAutosave } from '@/hooks/useValuationAutosave';
+import { useFormSessionTracking } from '@/hooks/useFormSessionTracking';
 import { useBrevoTracking } from '@/hooks/useBrevoTracking';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { AutosaveIndicator } from './valuation/AutosaveIndicator';
+import { SessionRecoveryModal } from './valuation/SessionRecoveryModal';
+import { CompanyData } from '@/types/valuation';
 
 const ValuationCalculator: React.FC = () => {
   const { t } = useI18n();
-  const { createInitialValuation, updateValuation } = useOptimizedSupabaseValuation();
   const { trackValuationCompleted, identifyContact } = useBrevoTracking();
-  const uniqueTokenRef = useRef<string | null>(null);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const saveExecutedRef = useRef(false);
+  const [sessionRecovered, setSessionRecovered] = useState(false);
   
   const {
     currentStep,
@@ -23,118 +24,93 @@ const ValuationCalculator: React.FC = () => {
     isCalculating,
     showValidation,
     isCurrentStepValid,
-    updateField,
+    updateField: originalUpdateField,
     handleFieldBlur,
     getFieldState,
     nextStep,
     prevStep,
     calculateValuation,
-    resetCalculator,
+    resetCalculator: originalResetCalculator,
     errors
   } = useValuationCalculator();
 
-  // Solo limpiar el token cuando se resetea explícitamente la calculadora
-  const handleReset = useCallback(() => {
-    console.log('🔄 Resetting calculator and clearing uniqueToken');
-    uniqueTokenRef.current = null;
-    resetCalculator();
-  }, [resetCalculator]);
+  // FASE 1: Usar useValuationAutosave en lugar de código manual
+  const {
+    uniqueToken,
+    lastSaved,
+    isSaving,
+    createInitialValuationOnFirstField,
+    updateValuation,
+    updateStep,
+    clearAutosave,
+    flushPendingUpdates
+  } = useValuationAutosave();
 
-  // Effect para auto-guardado con debounce - SOLO usando campos específicos como dependencias
-  useEffect(() => {
-    // Verificar si tenemos datos mínimos directamente en el effect
-    const hasMinimalDataNow = companyData.contactName?.trim() && 
-                             companyData.email?.trim() && 
-                             companyData.companyName?.trim() &&
-                             companyData.email.includes('@');
-
-    if (!hasMinimalDataNow) return;
-
-    // Limpiar timeout anterior
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
+  // FASE 2: Tracking de sesiones (soft abandonments)
+  const { trackFieldTouch, linkValuation } = useFormSessionTracking({
+    formType: 'valuation',
+    onExitIntent: () => {
+      console.log('⚠️ Usuario intenta salir - considerar mostrar modal de ayuda');
     }
+  });
 
-    // Configurar nuevo timeout (debounce de 2 segundos)
-    autoSaveTimeoutRef.current = setTimeout(async () => {
-      // Evitar ejecuciones múltiples con la misma data
-      if (saveExecutedRef.current) return;
-      
-      try {
-        saveExecutedRef.current = true;
-        
-        // Si no tenemos token, crear registro inicial
-        if (!uniqueTokenRef.current) {
-          console.log('🟡 Creando registro inicial para auto-guardado...');
-          const result = await createInitialValuation({
-            contactName: companyData.contactName,
-            companyName: companyData.companyName,
-            cif: companyData.cif,
-            email: companyData.email,
-            phone: companyData.phone,
-            industry: companyData.industry,
-            employeeRange: companyData.employeeRange
-          });
-          
-          if (result.success && result.uniqueToken) {
-            uniqueTokenRef.current = result.uniqueToken;
-            console.log('✅ Registro inicial creado con token:', result.uniqueToken);
-          }
-        } else {
-          // Actualizar registro existente
-          console.log('🟡 Actualizando registro existente...');
-          const success = await updateValuation(uniqueTokenRef.current, {
-            contactName: companyData.contactName,
-            companyName: companyData.companyName,
-            cif: companyData.cif,
-            email: companyData.email,
-            phone: companyData.phone,
-            industry: companyData.industry,
-            employeeRange: companyData.employeeRange,
-            revenue: companyData.revenue,
-            ebitda: companyData.ebitda,
-            location: companyData.location,
-            ownershipParticipation: companyData.ownershipParticipation,
-            competitiveAdvantage: companyData.competitiveAdvantage
-          });
-          
-          if (success) {
-            console.log('✅ Registro actualizado correctamente');
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error en auto-guardado:', error);
-      } finally {
-        // Reset flag después de un tiempo para permitir nuevos guardados
-        setTimeout(() => {
-          saveExecutedRef.current = false;
-        }, 1000);
+  // FASE 1: Wrapper para updateField que activa autosave en CUALQUIER campo
+  const updateField = useCallback(async (field: keyof CompanyData, value: string | number | boolean) => {
+    // Trackear toque de campo (FASE 2)
+    trackFieldTouch(field);
+    
+    // Actualizar campo en el estado
+    originalUpdateField(field, value);
+    
+    // FASE 1: Crear valoración en primer campo o actualizar existente
+    if (!uniqueToken) {
+      const token = await createInitialValuationOnFirstField(field, value, companyData);
+      if (token) {
+        linkValuation(token); // FASE 2: Linkear session tracking con valuation
       }
-    }, 2000);
+    } else {
+      // Actualizar valoración existente con debounce de 500ms
+      updateValuation({ [field]: value } as Partial<CompanyData>, field);
+    }
+  }, [originalUpdateField, trackFieldTouch, uniqueToken, createInitialValuationOnFirstField, companyData, updateValuation, linkValuation]);
 
-    // Cleanup
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
+  // Reset con limpieza de autosave
+  const handleReset = useCallback(() => {
+    console.log('🔄 Resetting calculator and clearing autosave');
+    clearAutosave();
+    originalResetCalculator();
+  }, [clearAutosave, originalResetCalculator]);
+
+  // FASE 3: Manejar recuperación de sesión
+  const handleSessionRecovery = useCallback((sessionData: any) => {
+    console.log('♻️ Recuperando sesión previa:', sessionData.token);
+    
+    // Restaurar todos los campos
+    Object.entries(sessionData.data).forEach(([field, value]) => {
+      if (value && field !== 'uniqueToken') {
+        originalUpdateField(field as keyof CompanyData, value as any);
       }
+    });
+    
+    setSessionRecovered(true);
+  }, [originalUpdateField]);
+
+  // Flush updates antes de salir
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      flushPendingUpdates();
     };
-  }, [
-    // Solo usar campos específicos como dependencias para evitar loops
-    companyData.contactName,
-    companyData.email, 
-    companyData.companyName,
-    companyData.cif,
-    companyData.phone,
-    companyData.industry,
-    companyData.employeeRange,
-    companyData.revenue,
-    companyData.ebitda,
-    companyData.location,
-    companyData.ownershipParticipation,
-    companyData.competitiveAdvantage,
-    createInitialValuation,
-    updateValuation
-  ]);
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [flushPendingUpdates]);
+
+  // Actualizar step en autosave
+  useEffect(() => {
+    if (uniqueToken) {
+      updateStep(currentStep);
+    }
+  }, [currentStep, uniqueToken, updateStep]);
 
   const getStepTitle = (step: number) => {
     switch (step) {
@@ -182,9 +158,24 @@ const ValuationCalculator: React.FC = () => {
   const progressValue = currentStep === 4 ? 100 : ((currentStep - 1) / 3) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Card className="shadow-lg">
-        <CardContent className="p-8">
+    <>
+      {/* FASE 3: Modal de recuperación de sesión */}
+      {!sessionRecovered && (
+        <SessionRecoveryModal
+          onContinue={handleSessionRecovery}
+          onStartFresh={handleReset}
+        />
+      )}
+
+      {/* FASE 1: Indicador de autoguardado */}
+      <AutosaveIndicator
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+      />
+
+      <div className="max-w-4xl mx-auto p-6">
+        <Card className="shadow-lg">
+          <CardContent className="p-8">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
@@ -218,7 +209,7 @@ const ValuationCalculator: React.FC = () => {
             getFieldState={getFieldState}
             handleFieldBlur={handleFieldBlur}
             errors={errors}
-            uniqueToken={uniqueTokenRef.current}
+            uniqueToken={uniqueToken}
           />
 
           {/* Navigation - Only show for steps 1-3 */}
@@ -230,9 +221,10 @@ const ValuationCalculator: React.FC = () => {
               onNext={handleNext}
             />
           )}
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 };
 
