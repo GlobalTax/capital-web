@@ -57,6 +57,7 @@ export const AdminSidebar: React.FC = () => {
         landingPages: false,
         trackingDashboard: false,
         trackingConfig: false,
+        valuationAnalytics: false,
       };
     }
   }, [getMenuVisibility]);
@@ -139,7 +140,9 @@ export const AdminSidebar: React.FC = () => {
       'content-performance': 'contentPerformance',
       'content-studio': 'contentStudio',
       'tracking-dashboard': 'trackingDashboard',
-      'tracking-config': 'trackingConfig'
+      'tracking-config': 'trackingConfig',
+      // Valuation Analytics
+      'valuation-analytics': 'valuationAnalytics'
     };
 
     const permissionKey = routePermissionMap[route];

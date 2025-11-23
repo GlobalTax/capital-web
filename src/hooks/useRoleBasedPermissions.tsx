@@ -382,6 +382,9 @@ export const useRoleBasedPermissions = () => {
       trackingDashboard: userRole !== 'none',
       trackingConfig: userRole !== 'none',
       
+      // Valuation Analytics - Visible para todos excepto 'none'
+      valuationAnalytics: userRole !== 'none',
+      
       // Configuration - Para super admins y admins
       adminUsers: userRole === 'super_admin' || userRole === 'admin',
       settings: isAdminLevel,
