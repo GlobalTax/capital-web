@@ -6,9 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { useUnifiedCalculator } from '../hooks/useUnifiedCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
 import { useFormSessionTracking } from '@/hooks/useFormSessionTracking';
+import { useSessionRecovery } from '@/hooks/useSessionRecovery';
 import { CalculatorConfig, ExtendedCompanyData } from '../types/unified.types';
 import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { GenericSessionRecoveryModal } from '@/components/valuation/GenericSessionRecoveryModal';
 
 // Import existing UI components (we'll reuse them)
 import StepIndicator from '@/components/valuation/StepIndicator';
@@ -45,6 +47,29 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   // Initialize form session tracking (Phase 2)
   const { sessionId, trackFieldTouch, linkValuation } = useFormSessionTracking({
     formType: config.sourceProject || 'unified_calculator'
+  });
+  
+  // Initialize session recovery (Phase 3)
+  const sessionRecovery = useSessionRecovery({
+    onRecover: (recoveredData) => {
+      console.log('🔄 Session recovery accepted:', recoveredData.token);
+      
+      // Restore data in calculator
+      calculator.restoreSession(recoveredData);
+      
+      // Link valuation to current session
+      if (sessionId) {
+        linkValuation(recoveredData.token);
+      }
+      
+      // Track recovery event
+      tracking.trackStepChange(recoveredData.metadata.current_step);
+    },
+    onDismiss: () => {
+      console.log('❌ Session recovery dismissed by user');
+    },
+    autoShow: true,
+    storageKey: 'valuation_v4_token'
   });
   
   // Link valuation token to session when available
@@ -281,6 +306,17 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   // ============= MAIN RENDER =============
   return (
     <div className={className}>
+      {/* Phase 3: Session Recovery Modal */}
+      {sessionRecovery.hasRecoverableSession && sessionRecovery.sessionData && (
+        <GenericSessionRecoveryModal
+          open={sessionRecovery.showModal}
+          onOpenChange={sessionRecovery.setShowModal}
+          sessionData={sessionRecovery.sessionData}
+          onContinue={sessionRecovery.recoverSession}
+          onStartFresh={sessionRecovery.dismissSession}
+        />
+      )}
+      
       {renderByVersion()}
     </div>
   );

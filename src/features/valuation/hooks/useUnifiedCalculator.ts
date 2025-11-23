@@ -294,6 +294,33 @@ export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Par
     setUniqueToken(null);
   }, [config]);
 
+  // ============= SESSION RECOVERY =============
+  const restoreSession = useCallback((recoveredData: {
+    token: string;
+    companyData: ExtendedCompanyData;
+    metadata: {
+      current_step: number;
+      completion_percentage?: number;
+    };
+  }) => {
+    console.log('🔄 Restoring session:', {
+      token: recoveredData.token,
+      step: recoveredData.metadata.current_step,
+      company: recoveredData.companyData.companyName
+    });
+
+    setState(prev => ({
+      ...prev,
+      companyData: recoveredData.companyData,
+      currentStep: recoveredData.metadata.current_step,
+      errors: {},
+      touched: {},
+      showValidation: false
+    }));
+
+    setUniqueToken(recoveredData.token);
+  }, []);
+
   // ============= INITIALIZATION =============
   useEffect(() => {
     if (config.features.autosave) {
@@ -319,6 +346,7 @@ export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Par
     goToStep,
     calculateValuation,
     resetCalculator,
+    restoreSession,
     
     // Autosave
     initializeAutosave,
