@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CompanyData } from '@/types/valuation';
 import { useLeadTracking } from './useLeadTracking';
 import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/utils/storageWithFallback';
 
 interface AutosaveState {
   uniqueToken: string | null;
@@ -30,39 +31,43 @@ export const useValuationAutosave = () => {
   const { trackValuationCompleted } = useLeadTracking();
   const { user, session } = useAuth();
 
-  // Initialize token from localStorage on first load with session recovery
+  // Initialize token from storage on first load with session recovery
   const initializeToken = useCallback(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      console.log('🔍 [AUTOSAVE] Inicializando token desde storage...');
+      const stored = storage.getItem(STORAGE_KEY);
       if (stored) {
         const data = JSON.parse(stored);
         const now = Date.now();
         if (data.token && data.timestamp && (now - data.timestamp) < TOKEN_TTL) {
           setState(prev => ({ ...prev, uniqueToken: data.token }));
-          console.log('Session recovered with token:', data.token);
+          console.log('✅ [AUTOSAVE] Sesión recuperada con token:', data.token.substring(0, 12) + '...');
           return data.token;
         } else {
-          localStorage.removeItem(STORAGE_KEY);
-          console.log('Token expired, removed from storage');
+          storage.removeItem(STORAGE_KEY);
+          console.log('⏰ [AUTOSAVE] Token expirado, removido del storage');
         }
+      } else {
+        console.log('ℹ️ [AUTOSAVE] No hay token guardado');
       }
     } catch (error) {
-      console.warn('Error initializing autosave token:', error);
-      localStorage.removeItem(STORAGE_KEY);
+      console.warn('❌ [AUTOSAVE] Error inicializando token:', error);
+      storage.removeItem(STORAGE_KEY);
     }
     return null;
   }, []);
 
-  // Save token to localStorage with TTL
+  // Save token to storage with TTL
   const saveTokenToStorage = useCallback((token: string) => {
     try {
       const data = {
         token,
         timestamp: Date.now()
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      storage.setItem(STORAGE_KEY, JSON.stringify(data));
+      console.log('💾 [AUTOSAVE] Token guardado en storage:', token.substring(0, 12) + '...');
     } catch (error) {
-      console.warn('Error saving token to localStorage:', error);
+      console.warn('❌ [AUTOSAVE] Error guardando token en storage:', error);
     }
   }, []);
 
@@ -126,6 +131,10 @@ export const useValuationAutosave = () => {
     allData: CompanyData,
     utmData?: { utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; referrer?: string | null }
   ): Promise<string | null> => {
+    console.log('🔍 [AUTOSAVE] Intentando crear valoración inicial');
+    console.log('🔍 [AUTOSAVE] Campo:', field, 'Valor:', value);
+    console.log('🔍 [AUTOSAVE] Token actual:', state.uniqueToken);
+    
     // CAMBIO FASE 1: Guardar en CUALQUIER campo, no solo los 3 críticos
     // Esto captura muchos más abandonos tempranos
     const allFields: (keyof CompanyData)[] = [
@@ -136,22 +145,26 @@ export const useValuationAutosave = () => {
     
     // Si ya tenemos token, no crear uno nuevo
     if (state.uniqueToken) {
+      console.log('ℹ️ [AUTOSAVE] Ya existe token, saltando creación inicial');
       return state.uniqueToken;
     }
     
     // Verificar que sea un campo válido
     if (!allFields.includes(field)) {
+      console.warn('⚠️ [AUTOSAVE] Campo no válido:', field);
       return null;
     }
 
-    // Verificar que el valor tenga contenido significativo
+    // MEJORA: Reducir validación a 1 carácter mínimo para capturar más abandonos
     if (!value || 
-        (typeof value === 'string' && value.trim().length < 3) ||
+        (typeof value === 'string' && value.trim().length < 1) ||
         (typeof value === 'number' && value <= 0)) {
+      console.warn('⚠️ [AUTOSAVE] Valor vacío o inválido:', value);
       return null;
     }
 
-    console.log(`🚀 Primer campo completado: ${field} = "${value}". Iniciando guardado automático...`);
+    console.log(`✅ [AUTOSAVE] Validaciones pasadas, iniciando creación...`);
+    console.log(`🚀 [AUTOSAVE] Primer campo completado: ${field} = "${value}"`);
     
     try {
       setState(prev => ({ ...prev, isSaving: true }));
@@ -184,6 +197,7 @@ export const useValuationAutosave = () => {
 
       // Crear registro usando update-valuation con uniqueToken generado
       const tempToken = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('🎫 [AUTOSAVE] Token temporal generado:', tempToken.substring(0, 12) + '...');
       
       // Use authenticated session if user is logged in
       const invokeOptions = {
@@ -194,16 +208,18 @@ export const useValuationAutosave = () => {
         }
       };
 
+      console.log('📡 [AUTOSAVE] Llamando a edge function update-valuation...');
       const { data, error } = user && session 
         ? await supabase.functions.invoke('update-valuation', invokeOptions)
         : await supabase.functions.invoke('update-valuation', invokeOptions);
 
       if (error) {
-        console.error('Error creating initial valuation:', error);
+        console.error('❌ [AUTOSAVE] Error llamando a edge function:', error);
         setState(prev => ({ ...prev, isSaving: false }));
         return null;
       }
 
+      console.log('✅ [AUTOSAVE] Respuesta de edge function recibida:', data);
       const finalToken = data?.uniqueToken || tempToken;
       setState(prev => ({ 
         ...prev, 
@@ -214,11 +230,11 @@ export const useValuationAutosave = () => {
       }));
       
       saveTokenToStorage(finalToken);
-      console.log('✅ Valoración inicial creada exitosamente con token:', finalToken);
+      console.log('✅ [AUTOSAVE] Valoración inicial creada exitosamente con token:', finalToken.substring(0, 12) + '...');
       return finalToken;
       
     } catch (error) {
-      console.error('Exception creating initial valuation:', error);
+      console.error('❌ [AUTOSAVE] Excepción creando valoración inicial:', error);
       setState(prev => ({ ...prev, isSaving: false }));
       return null;
     }
@@ -416,7 +432,7 @@ export const useValuationAutosave = () => {
   // Clear autosave data and cleanup
   const clearAutosave = useCallback(() => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      storage.removeItem(STORAGE_KEY);
       setState({
         uniqueToken: null,
         lastSaved: null,
@@ -429,9 +445,9 @@ export const useValuationAutosave = () => {
         clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
-      console.log('Autosave data cleared');
+      console.log('🧹 [AUTOSAVE] Datos de autosave limpiados');
     } catch (error) {
-      console.warn('Error clearing autosave:', error);
+      console.warn('❌ [AUTOSAVE] Error limpiando autosave:', error);
     }
   }, []);
 
