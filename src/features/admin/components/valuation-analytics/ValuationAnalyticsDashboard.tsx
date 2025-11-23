@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useValuationAnalytics } from '@/hooks/useValuationAnalytics';
 import { useSessionMonitoring } from '@/hooks/useSessionMonitoring';
@@ -15,7 +15,8 @@ import { ErrorFallback } from '@/shared/components/ErrorFallback';
 export const ValuationAnalyticsDashboard: React.FC = () => {
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('7d');
   
-  const getDateRange = () => {
+  // Memoized date range - only recalculates when dateRange state changes
+  const computedDateRange = useMemo(() => {
     const end = new Date();
     const start = new Date();
     
@@ -32,9 +33,9 @@ export const ValuationAnalyticsDashboard: React.FC = () => {
     }
     
     return { start, end };
-  };
+  }, [dateRange]);
 
-  const { data: analytics, isLoading: isLoadingAnalytics, isError: isErrorAnalytics, error: errorAnalytics, refetch: refetchAnalytics } = useValuationAnalytics(getDateRange());
+  const { data: analytics, isLoading: isLoadingAnalytics, isError: isErrorAnalytics, error: errorAnalytics, refetch: refetchAnalytics } = useValuationAnalytics(computedDateRange);
   const { data: sessions, isLoading: isLoadingSessions, refetch: refetchSessions } = useSessionMonitoring();
 
   const isLoading = isLoadingAnalytics || isLoadingSessions;

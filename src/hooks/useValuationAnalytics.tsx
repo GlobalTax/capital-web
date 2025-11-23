@@ -34,8 +34,12 @@ export const useValuationAnalytics = (dateRange: { start: Date; end: Date } = {
   start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
   end: new Date()
 }) => {
+  // Stable query key using primitive values (strings) instead of Date objects
+  const startKey = dateRange.start.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const endKey = dateRange.end.toISOString().slice(0, 10);
+
   return useQuery({
-    queryKey: [QUERY_KEYS.ADVANCED_DASHBOARD_STATS, 'valuation-analytics', dateRange],
+    queryKey: [QUERY_KEYS.ADVANCED_DASHBOARD_STATS, 'valuation-analytics', startKey, endKey],
     queryFn: async (): Promise<ValuationAnalyticsData> => {
       console.log('[ValuationAnalytics] Fetching analytics data...', {
         start: dateRange.start.toISOString(),
