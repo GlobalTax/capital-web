@@ -37,20 +37,41 @@ export const useValuationAnalytics = (dateRange: { start: Date; end: Date } = {
   return useQuery({
     queryKey: [QUERY_KEYS.ADVANCED_DASHBOARD_STATS, 'valuation-analytics', dateRange],
     queryFn: async (): Promise<ValuationAnalyticsData> => {
+      console.log('[ValuationAnalytics] Fetching analytics data...', {
+        start: dateRange.start.toISOString(),
+        end: dateRange.end.toISOString()
+      });
+
       // Call RPC function with SECURITY DEFINER
       const { data, error } = await supabase.rpc('get_valuation_analytics', {
         p_start_date: dateRange.start.toISOString(),
         p_end_date: dateRange.end.toISOString()
       });
 
-      if (error) throw error;
-      if (!data) throw new Error('No data returned from analytics');
+      if (error) {
+        console.error('[ValuationAnalytics] RPC error:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('[ValuationAnalytics] No data returned from analytics');
+        throw new Error('No data returned from analytics');
+      }
 
       // Parse the JSON response - data is already parsed by Supabase
       const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+      console.log('[ValuationAnalytics] Data fetched successfully');
       return parsedData as unknown as ValuationAnalyticsData;
     },
     staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Auto-refresh every minute
+    refetchInterval: false, // Disabled while debugging
+    retry: (failureCount, error) => {
+      // Don't retry on 400/Unauthorized errors
+      if (error?.message?.includes('Unauthorized') || error?.message?.includes('permission')) {
+        console.warn('[ValuationAnalytics] Permission error detected, not retrying');
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 };
