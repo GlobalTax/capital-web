@@ -55,9 +55,18 @@ export const useValuationAnalytics = (dateRange: { start: Date; end: Date } = {
         ? valuations.reduce((acc, v) => acc + (v.time_spent_seconds || 0), 0) / valuations.length / 60 // Convert to minutes
         : 0;
 
-      // Fetch recovery metrics from form_sessions (if exists)
-      // Note: This would require tracking data from form_sessions table
-      const recoveredSessions = 0;
+      // Fetch recovery metrics from tracking_events
+      const { data: recoveryEvents } = await supabase
+        .from('tracking_events')
+        .select('event_type, session_id')
+        .in('event_type', ['recovery_modal_shown', 'recovery_accepted', 'recovery_rejected'])
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+
+      const recoveryModalShown = recoveryEvents?.filter(e => e.event_type === 'recovery_modal_shown').length || 0;
+      const recoveryAccepted = recoveryEvents?.filter(e => e.event_type === 'recovery_accepted').length || 0;
+      const recoveryRejected = recoveryEvents?.filter(e => e.event_type === 'recovery_rejected').length || 0;
+      const recoveredSessions = recoveryAccepted;
 
       // Calculate funnel by steps
       const stepCounts: number[] = [0, 0, 0, 0]; // Steps 1, 2, 3, completed
@@ -92,21 +101,66 @@ export const useValuationAnalytics = (dateRange: { start: Date; end: Date } = {
         }
       });
 
-      // Mock field interactions (would need tracking data)
-      const fieldInteractions = [
-        { fieldName: 'email', touches: Math.floor(totalSessions * 0.95), avgTimeSpent: 8, abandonRate: 5 },
-        { fieldName: 'companyName', touches: Math.floor(totalSessions * 0.92), avgTimeSpent: 12, abandonRate: 8 },
-        { fieldName: 'revenue', touches: Math.floor(totalSessions * 0.75), avgTimeSpent: 15, abandonRate: 25 },
-        { fieldName: 'ebitda', touches: Math.floor(totalSessions * 0.68), avgTimeSpent: 18, abandonRate: 32 },
-        { fieldName: 'industry', touches: Math.floor(totalSessions * 0.88), avgTimeSpent: 10, abandonRate: 12 },
-      ];
+      // Fetch field interactions from tracking_events
+      const { data: fieldEvents } = await supabase
+        .from('tracking_events')
+        .select('event_type, event_data, session_id, created_at')
+        .in('event_type', ['field_focus', 'field_blur', 'field_change'])
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
 
-      // Recovery analytics (mock for now - would need tracking events)
+      // Group field events by field name
+      const fieldStatsMap = new Map<string, { touches: number; totalTime: number; abandons: number; focusEvents: Map<string, Date> }>();
+      
+      fieldEvents?.forEach(event => {
+        const eventData = event.event_data as Record<string, any> | null;
+        const fieldName = eventData?.field_name;
+        if (!fieldName) return;
+
+        if (!fieldStatsMap.has(fieldName)) {
+          fieldStatsMap.set(fieldName, { touches: 0, totalTime: 0, abandons: 0, focusEvents: new Map() });
+        }
+
+        const stats = fieldStatsMap.get(fieldName)!;
+
+        if (event.event_type === 'field_focus') {
+          stats.touches++;
+          stats.focusEvents.set(event.session_id, new Date(event.created_at));
+        } else if (event.event_type === 'field_blur') {
+          const focusTime = stats.focusEvents.get(event.session_id);
+          if (focusTime) {
+            const blurTime = new Date(event.created_at);
+            const timeSpent = (blurTime.getTime() - focusTime.getTime()) / 1000;
+            stats.totalTime += timeSpent;
+            stats.focusEvents.delete(event.session_id);
+          }
+        } else if (event.event_type === 'field_change') {
+          // Field was changed (not abandoned)
+          const focusTime = stats.focusEvents.get(event.session_id);
+          if (focusTime) {
+            stats.focusEvents.delete(event.session_id);
+          }
+        }
+      });
+
+      // Calculate abandons (fields that were focused but never changed)
+      fieldStatsMap.forEach(stats => {
+        stats.abandons = stats.focusEvents.size;
+      });
+
+      const fieldInteractions = Array.from(fieldStatsMap.entries()).map(([fieldName, stats]) => ({
+        fieldName,
+        touches: stats.touches,
+        avgTimeSpent: stats.touches > 0 ? Math.round(stats.totalTime / stats.touches) : 0,
+        abandonRate: stats.touches > 0 ? Math.round((stats.abandons / stats.touches) * 100) : 0,
+      })).sort((a, b) => b.abandonRate - a.abandonRate);
+
+      // Recovery analytics from tracking events
       const recovery = {
-        modalsShown: Math.floor(recoveredSessions * 2.5), // Estimate
-        accepted: recoveredSessions,
-        rejected: Math.floor(recoveredSessions * 0.6),
-        acceptanceRate: recoveredSessions > 0 ? 62.5 : 0,
+        modalsShown: recoveryModalShown,
+        accepted: recoveryAccepted,
+        rejected: recoveryRejected,
+        acceptanceRate: recoveryModalShown > 0 ? Math.round((recoveryAccepted / recoveryModalShown) * 100) : 0,
       };
 
       return {
