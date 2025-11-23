@@ -208,9 +208,7 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
 
     const timeOnPage = Math.floor((Date.now() - sessionDataRef.current.enteredAt.getTime()) / 1000);
 
-    // Usar sendBeacon para garantizar que se envía incluso si la página se cierra
-    const data = {
-      session_id: sessionDataRef.current.sessionId,
+    const updateData = {
       exited_at: new Date().toISOString(),
       time_on_page_seconds: timeOnPage,
       scroll_depth_percentage: sessionDataRef.current.scrollDepth,
@@ -218,24 +216,37 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
       exit_type: 'close_tab'
     };
 
-    // Intentar con sendBeacon primero (más confiable para beforeunload)
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    const sent = navigator.sendBeacon('/api/track-session-exit', blob);
-
-    // Fallback a update normal si sendBeacon no está disponible
-    if (!sent) {
-      supabase
-        .from('form_sessions')
-        .update({
-          exited_at: new Date().toISOString(),
-          time_on_page_seconds: timeOnPage,
-          scroll_depth_percentage: sessionDataRef.current.scrollDepth,
-          exit_type: 'close_tab'
-        })
-        .eq('session_id', sessionDataRef.current.sessionId)
-        .then(({ error }) => {
-          if (error) console.error('Error finalizing session:', error);
-        });
+    // Usar sendBeacon con la API REST de Supabase directamente
+    const supabaseUrl = 'https://fwhqtzkkvnjkazhaficj.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I';
+    
+    const url = `${supabaseUrl}/rest/v1/form_sessions?session_id=eq.${sessionDataRef.current.sessionId}`;
+    
+    // Crear headers como string para sendBeacon
+    const headers = {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    };
+    
+    // sendBeacon requiere FormData o Blob
+    const blob = new Blob([JSON.stringify(updateData)], { type: 'application/json' });
+    
+    // Intentar sendBeacon (más confiable en beforeunload)
+    try {
+      // sendBeacon no soporta headers personalizados, usar fetch con keepalive
+      fetch(url, {
+        method: 'PATCH',
+        headers: headers,
+        body: JSON.stringify(updateData),
+        keepalive: true // Crucial para que funcione en beforeunload
+      }).catch(() => {
+        // Silent fail - es normal que esto falle a veces en beforeunload
+      });
+    } catch (error) {
+      // Fallback silencioso
+      console.error('Error finalizing session:', error);
     }
   }, []);
 
