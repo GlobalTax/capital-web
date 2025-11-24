@@ -296,6 +296,7 @@ const AdminOperations = () => {
         subsector: editingOperation.subsector?.trim() || null,
         description: editingOperation.description.trim(),
         revenue_amount: (editingOperation.revenue_amount ?? null),
+        ebitda_amount: (editingOperation.ebitda_amount ?? null),
         valuation_amount: editingOperation.valuation_amount || null,
         valuation_currency: editingOperation.valuation_currency || '€',
         year: editingOperation.year,
