@@ -4,10 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Star, Sparkles } from 'lucide-react';
+import { Eye, Star } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
-import { isRecentOperation, formatDate } from '@/shared/utils/date';
-import { differenceInDays, parseISO } from 'date-fns';
+import { formatDate } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -147,23 +146,6 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                         <Star className="h-3 w-3" />
                         Destacado
                       </Badge>
-                    )}
-                    {isRecentOperation(operation.created_at) && operation.created_at && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div 
-                              className="w-2 h-2 rounded-full bg-green-500 animate-pulse cursor-help" 
-                              aria-label="Oportunidad nueva"
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">
-                              Publicado hace {differenceInDays(new Date(), parseISO(operation.created_at))} días
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     )}
                   </div>
                 </div>
