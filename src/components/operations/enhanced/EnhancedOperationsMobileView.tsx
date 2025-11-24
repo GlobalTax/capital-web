@@ -2,9 +2,11 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Star, Sparkles, TrendingUp } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Eye, Star } from 'lucide-react';
 import { formatCompactCurrency } from '@/shared/utils/format';
 import { isRecentOperation } from '@/shared/utils/date';
+import { differenceInDays, parseISO } from 'date-fns';
 
 interface Operation {
   id: string;
@@ -92,11 +94,22 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
                         Destacada
                       </Badge>
                     )}
-                    {isRecentOperation(operation.created_at) && (
-                      <Badge className="bg-green-500 text-xs gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        Nueva
-                      </Badge>
+                    {isRecentOperation(operation.created_at) && operation.created_at && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div 
+                              className="w-2 h-2 rounded-full bg-green-500 animate-pulse cursor-help" 
+                              aria-label="Oportunidad nueva"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">
+                              Publicada hace {differenceInDays(new Date(), parseISO(operation.created_at))} días
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
                 </div>
