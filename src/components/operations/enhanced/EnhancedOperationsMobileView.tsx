@@ -118,12 +118,6 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
                 {/* Financial Info */}
                 <div className="grid grid-cols-2 gap-3 my-3 pb-3 border-b">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Valoración</p>
-                    <p className="font-bold text-sm text-primary">
-                      {formatCompactCurrency(operation.valuation_amount, operation.valuation_currency)}
-                    </p>
-                  </div>
-                  <div>
                     <p className="text-xs text-muted-foreground mb-1">Facturación</p>
                     <p className="font-semibold text-sm text-green-600">
                       {operation.revenue_amount 
