@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+import { formatCurrency } from '@/shared/utils/format';
 
 export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
 
@@ -693,12 +697,116 @@ export const useUnifiedContacts = () => {
     }
   };
 
-  const exportContacts = (format: 'excel' | 'csv' | 'crm' | 'email') => {
-    // TODO: Implement export functionality
-    toast({
-      title: "Exportar contactos",
-      description: `Exportando ${filteredContacts.length} contactos en formato ${format}`,
-    });
+  const exportContacts = (exportFormat: 'excel' | 'csv' | 'crm' | 'email') => {
+    console.log('✔ Botón Exportar (useUnifiedContacts) pulsado');
+    console.log('📊 Formato solicitado:', exportFormat);
+    console.log('📋 Contactos filtrados:', filteredContacts.length);
+    
+    if (!filteredContacts.length) {
+      console.warn('⚠ No hay contactos para exportar con los filtros actuales');
+      toast({
+        title: "Sin contactos",
+        description: "No hay contactos para exportar con los filtros actuales",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (exportFormat !== 'excel') {
+      console.log('ℹ Formato no implementado todavía:', exportFormat);
+      toast({
+        title: "Exportar contactos",
+        description: `Exportando ${filteredContacts.length} contactos en formato ${exportFormat}`,
+      });
+      return;
+    }
+
+    try {
+      console.log('🔄 Exportando', filteredContacts.length, 'contactos a Excel...');
+      console.log('📋 Ejemplo de contacto:', filteredContacts[0]);
+      
+      // Preparar datos con validación
+      const excelData = filteredContacts.map(contact => ({
+        'Origen': contact.origin === 'valuation' ? 'Valoración' :
+                 contact.origin === 'contact' ? 'Contacto' :
+                 contact.origin === 'collaborator' ? 'Colaborador' :
+                 contact.origin === 'general' ? 'General' :
+                 contact.origin === 'acquisition' ? 'Adquisición' :
+                 contact.origin === 'company_acquisition' ? 'Adq. Empresa' :
+                 contact.origin === 'advisor' ? 'Asesor' : contact.origin,
+        'Nombre': contact.name || '',
+        'Email': contact.email || '',
+        'Teléfono': contact.phone || '',
+        'Empresa': contact.company || '',
+        'Sector': contact.industry || contact.sectors_of_interest || '',
+        'Estado CRM': contact.lead_status_crm || contact.status || '',
+        'Fecha': contact.created_at 
+          ? format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })
+          : '',
+        'Asignado a': contact.assigned_to_name || '',
+        'Valoración': contact.final_valuation 
+          ? formatCurrency(contact.final_valuation, 'EUR')
+          : '',
+        'Email Enviado': contact.email_sent ? 'Sí' : 'No',
+        'Email Abierto': contact.email_opened ? 'Sí' : 'No',
+        'Prioridad': contact.priority || '',
+        'Ubicación': contact.location || contact.country || '',
+        'Presupuesto': contact.investment_budget || '',
+        'Origen Proyecto': contact.source_project || '',
+      }));
+
+      console.log('📊 Datos preparados:', excelData.length, 'filas');
+
+      // Crear libro de Excel
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Contactos');
+
+      // Nombre del archivo con fecha
+      const fileName = `contactos_${format(new Date(), 'yyyy-MM-dd_HHmm', { locale: es })}.xlsx`;
+      
+      console.log('💾 Generando archivo:', fileName);
+      
+      // Intentar primero writeFile (método simple)
+      try {
+        XLSX.writeFile(workbook, fileName);
+        console.log('✅ Excel descargado con writeFile');
+        toast({
+          title: "Excel exportado",
+          description: `${filteredContacts.length} contactos exportados correctamente`,
+        });
+        return;
+      } catch (writeFileError) {
+        console.warn('⚠ writeFile falló, probando método Blob', writeFileError);
+      }
+
+      // Fallback: Método Blob para mayor compatibilidad en sandbox
+      console.log('🔄 Intentando descarga con Blob...');
+      const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      console.log('⬇ Lanzando descarga de', fileName);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Excel exportado correctamente con Blob');
+      toast({
+        title: "Excel exportado",
+        description: `${filteredContacts.length} contactos exportados correctamente`,
+      });
+    } catch (error) {
+      console.error('❌ Error al exportar Excel:', error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo exportar el archivo Excel",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
