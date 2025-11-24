@@ -329,6 +329,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             <TableHead className="w-40">Contacto</TableHead>
             <TableHead className="w-52">Email</TableHead>
             <TableHead className="w-40">Empresa</TableHead>
+            <TableHead className="w-32">CIF</TableHead>
             <TableHead className="w-32">Sector</TableHead>
             <TableHead className="text-right w-32">Facturación</TableHead>
             <TableHead className="text-right w-36 whitespace-nowrap">Valoración</TableHead>
@@ -373,6 +374,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 </div>
               </TableCell>
               <TableCell className="truncate max-w-[160px]">{contact.company || '-'}</TableCell>
+              <TableCell className="text-sm font-mono">{contact.cif || '-'}</TableCell>
               <TableCell className="truncate max-w-[128px]">{contact.industry || '-'}</TableCell>
               <TableCell className="text-right text-sm">
                 {contact.revenue ? formatCurrency(contact.revenue) : '-'}
