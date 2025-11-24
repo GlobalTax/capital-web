@@ -10,9 +10,11 @@ import { isRecentOperation } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
 import OperationDetailsModal from '../OperationDetailsModal';
+import { EnhancedOperationsMobileView } from './EnhancedOperationsMobileView';
 
 interface Operation {
   id: string;
@@ -61,6 +63,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
 }) => {
   const [selectedOperation, setSelectedOperation] = React.useState<Operation | null>(null);
   const [focusedIndex, setFocusedIndex] = React.useState<number>(-1);
+  const isMobile = useIsMobile();
 
   const { columns, visibleColumns, handleResize, toggleColumnVisibility } = useColumnResizing(initialColumns);
   
@@ -264,6 +267,27 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
     );
   };
 
+  // Renderizar vista móvil si es pantalla pequeña
+  if (isMobile) {
+    return (
+      <>
+        <EnhancedOperationsMobileView
+          operations={operations}
+          onViewDetails={(operation) => setSelectedOperation(operation)}
+          isLoading={isLoading}
+        />
+        {selectedOperation && (
+          <OperationDetailsModal
+            operation={selectedOperation}
+            isOpen={!!selectedOperation}
+            onClose={() => setSelectedOperation(null)}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Vista desktop (tabla completa)
   return (
     <>
       <Card>
