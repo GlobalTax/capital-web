@@ -25,11 +25,13 @@ import {
   ListTodo,
   UserCircle,
   Download,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useUnifiedLeads } from '@/hooks/useUnifiedLeads';
 import { useLeadTasks } from '@/hooks/useLeadTasks';
 import { LeadTasksManager } from '@/features/admin/components/leads/LeadTasksManager';
+import DateRangeQuickSelector from './contacts/DateRangeQuickSelector';
 import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
 import { LeadAIAnalytics } from '@/components/admin/LeadAIAnalytics';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +50,9 @@ const UnifiedLeadsManager = () => {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [tasksModalOpen, setTasksModalOpen] = useState(false);
   const [selectedTaskLead, setSelectedTaskLead] = useState<{ id: string; type: 'valuation' | 'contact' | 'collaborator' } | null>(null);
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const [dateRangeLabel, setDateRangeLabel] = useState<string>('');
 
   const handleOpenTasks = (leadId: string, leadType: 'valuation' | 'contact' | 'collaborator') => {
     setSelectedTaskLead({ id: leadId, type: leadType });
@@ -117,7 +122,25 @@ const UnifiedLeadsManager = () => {
       (assignedFilter === 'my-leads' && lead.assigned_to === user?.id) ||
       (assignedFilter === 'unassigned' && !lead.assigned_to);
 
-    return matchesSearch && matchesOrigin && matchesAssigned;
+    // Filtro de fecha
+    let matchesDate = true;
+    if (dateFrom || dateTo) {
+      const leadDate = new Date(lead.created_at);
+      if (dateFrom && dateTo) {
+        const from = new Date(dateFrom);
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        matchesDate = leadDate >= from && leadDate <= to;
+      } else if (dateFrom) {
+        matchesDate = leadDate >= new Date(dateFrom);
+      } else if (dateTo) {
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        matchesDate = leadDate <= to;
+      }
+    }
+
+    return matchesSearch && matchesOrigin && matchesAssigned && matchesDate;
   });
 
   const formatCurrency = (amount: number | undefined) => {
@@ -134,7 +157,7 @@ const UnifiedLeadsManager = () => {
       'Empresa': lead.company || '-',
       'Sector': lead.industry || '-',
       'Estado CRM': lead.lead_status_crm || lead.status,
-      'Fecha Contacto': format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es }),
+      'Fecha Contacto': format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es }),
       'Asignado a': lead.assigned_admin?.full_name || 'Sin asignar',
       'Valoración': lead.final_valuation ? formatCurrency(lead.final_valuation) : '-',
       'Profesión': lead.profession || '-',
@@ -248,39 +271,85 @@ const UnifiedLeadsManager = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar por nombre, email o empresa..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="space-y-4">
+            {/* Primera fila: Búsqueda y Asignación */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar por nombre, email o empresa..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={assignedFilter} onValueChange={setAssignedFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por asignación" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="my-leads">Mis Leads</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="unassigned">Sin asignar</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            
-            <Select value={assignedFilter} onValueChange={setAssignedFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por asignación" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="my-leads">Mis Leads</SelectItem>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="unassigned">Sin asignar</SelectItem>
-              </SelectContent>
-            </Select>
 
-            <Select value={originFilter} onValueChange={setOriginFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por origen" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los orígenes</SelectItem>
-                <SelectItem value="contact">Contactos</SelectItem>
-                <SelectItem value="valuation">Valoraciones</SelectItem>
-                <SelectItem value="collaborator">Colaboradores</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Segunda fila: Origen y Fecha */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select value={originFilter} onValueChange={setOriginFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por origen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los orígenes</SelectItem>
+                  <SelectItem value="contact">Contactos</SelectItem>
+                  <SelectItem value="valuation">Valoraciones</SelectItem>
+                  <SelectItem value="collaborator">Colaboradores</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div>
+                <DateRangeQuickSelector
+                  onRangeSelect={(from, to, label) => {
+                    setDateFrom(from);
+                    setDateTo(to);
+                    setDateRangeLabel(label);
+                  }}
+                  selectedLabel={dateRangeLabel}
+                />
+              </div>
+            </div>
+
+            {/* Mostrar rango seleccionado */}
+            {(dateFrom || dateTo) && (
+              <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                  <span className="text-blue-900 font-medium">
+                    {dateRangeLabel || 'Rango personalizado'}: 
+                  </span>
+                  <span className="text-blue-700">
+                    {dateFrom && format(new Date(dateFrom), 'dd/MM/yyyy', { locale: es })}
+                    {dateFrom && dateTo && ' - '}
+                    {dateTo && format(new Date(dateTo), 'dd/MM/yyyy', { locale: es })}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setDateFrom('');
+                    setDateTo('');
+                    setDateRangeLabel('');
+                  }}
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -408,7 +477,7 @@ const UnifiedLeadsManager = () => {
                     <TableCell className="whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm text-gray-500">
                         <Calendar className="h-4 w-4" />
-                        {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                        {format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es })}
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
@@ -468,7 +537,7 @@ const UnifiedLeadsManager = () => {
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                      {format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es })}
                     </div>
                     {lead.assigned_admin && (
                       <div className="flex items-center gap-1 truncate">
