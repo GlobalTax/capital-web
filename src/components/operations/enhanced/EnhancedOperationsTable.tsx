@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Eye, Star, Sparkles } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
-import { isRecentOperation } from '@/shared/utils/date';
+import { isRecentOperation, formatDate } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -51,7 +51,7 @@ const initialColumns: ColumnDef[] = [
   { key: 'sector', title: 'Sector', width: 180, minWidth: 120, sortable: true, filterable: true, visible: true },
   { key: 'revenue', title: 'Facturación', width: 140, minWidth: 100, sortable: true, visible: true },
   { key: 'ebitda', title: 'EBITDA', width: 140, minWidth: 100, sortable: true, visible: true },
-  { key: 'year', title: 'Año', width: 100, minWidth: 80, sortable: true, visible: true },
+  { key: 'published', title: 'Publicado', width: 120, minWidth: 100, sortable: true, visible: true },
   { key: 'deal_type', title: 'Tipo', width: 120, minWidth: 100, sortable: true, visible: true },
   { key: 'actions', title: 'Acciones', width: 120, minWidth: 100, visible: true },
 ];
@@ -214,10 +214,26 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                 </div>
               );
 
-            case 'year':
+            case 'published':
               return (
                 <div key={column.key} style={{ width }} className="px-4 text-center">
-                  <span className="text-muted-foreground text-sm">{operation.year}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-sm font-medium text-muted-foreground cursor-help">
+                          {operation.created_at 
+                            ? formatDate(operation.created_at, 'MMM yyyy')
+                            : <span className="text-xs">-</span>
+                          }
+                        </span>
+                      </TooltipTrigger>
+                      {operation.created_at && (
+                        <TooltipContent>
+                          <p>Publicado el {formatDate(operation.created_at, 'PPP')}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               );
 
