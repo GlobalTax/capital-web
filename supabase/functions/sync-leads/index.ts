@@ -108,11 +108,22 @@ serve(async (req) => {
       };
     }
 
+    // Validar URL del CRM
+    const isValidUrl = (url: string): boolean => {
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    };
+
     // Si existe secreto (y opcionalmente URL), reenviamos al CRM con firma HMAC
-    const crmUrl = Deno.env.get('CRM_INGEST_URL') || 'https://nbvvdaprcecaqvvkqcto.functions.supabase.co/ingest-lead';
+    const crmUrlRaw = Deno.env.get('CRM_INGEST_URL') || 'https://nbvvdaprcecaqvvkqcto.functions.supabase.co/ingest-lead';
+    const crmUrl = isValidUrl(crmUrlRaw) ? crmUrlRaw : null;
     const crmSecret = Deno.env.get('CRM_INGEST_SECRET');
 
-    if (crmSecret) {
+    if (crmSecret && crmUrl) {
       try {
         const payload = JSON.stringify({ type, data });
         const enc = new TextEncoder();
@@ -191,17 +202,20 @@ serve(async (req) => {
     }
 
     // Check if secondary database is configured
-    const secondaryUrl = Deno.env.get('SECONDARY_SUPABASE_URL');
+    const secondaryUrlRaw = Deno.env.get('SECONDARY_SUPABASE_URL');
     const secondaryKey = Deno.env.get('SECONDARY_SUPABASE_ANON_KEY');
+    
+    // Validar que la URL sea válida
+    const secondaryUrl = (secondaryUrlRaw && isValidUrl(secondaryUrlRaw)) ? secondaryUrlRaw : null;
 
     if (!secondaryUrl || !secondaryKey) {
       // No sync configured, but main valuation was already saved
-      console.log('No secondary DB or CRM configured, skipping sync');
+      console.log('No secondary DB or CRM configured (or invalid URLs), skipping sync');
       return new Response(
         JSON.stringify({ 
           success: true,
           skipped: true,
-          message: 'No external sync configured'
+          message: 'No external sync configured or invalid URLs'
         }),
         { 
           status: 200, 
