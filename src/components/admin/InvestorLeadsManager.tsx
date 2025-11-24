@@ -387,7 +387,7 @@ export const InvestorLeadsManager: React.FC = () => {
                     </Select>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    {format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es })}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">

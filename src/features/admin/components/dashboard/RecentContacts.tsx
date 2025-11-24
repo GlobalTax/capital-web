@@ -73,7 +73,7 @@ export const RecentContacts = () => {
                     <p className="text-xs text-muted-foreground">Sin valorar</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(contact.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    {format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })}
                   </p>
                 </div>
               </div>
