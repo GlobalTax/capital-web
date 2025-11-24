@@ -129,7 +129,7 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
                     <div>
                       <div className="text-sm text-muted-foreground">Creado</div>
                       <div className="font-medium">
-                        {format(new Date(contact.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                        {format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })}
                       </div>
                     </div>
                   </div>

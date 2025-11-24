@@ -384,7 +384,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 {contact.ebitda ? formatCurrency(contact.ebitda) : '-'}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {format(new Date(contact.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                {format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })}
               </TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-end gap-1">

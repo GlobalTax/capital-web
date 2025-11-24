@@ -39,6 +39,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatCurrency as formatCurrencyShared } from '@/shared/utils/format';
 import * as XLSX from 'xlsx';
+import { toast } from 'sonner';
 
 const UnifiedLeadsManager = () => {
   const navigate = useNavigate();
@@ -149,27 +150,53 @@ const UnifiedLeadsManager = () => {
   };
 
   const exportToExcel = () => {
-    const excelData = filteredLeads.map(lead => ({
-      'Origen': lead.origin === 'contact' ? 'Contacto' : lead.origin === 'valuation' ? 'Valoración' : 'Colaborador',
-      'Nombre': lead.name,
-      'Email': lead.email,
-      'Teléfono': lead.phone || '-',
-      'Empresa': lead.company || '-',
-      'Sector': lead.industry || '-',
-      'Estado CRM': lead.lead_status_crm || lead.status,
-      'Fecha Contacto': format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es }),
-      'Asignado a': lead.assigned_admin?.full_name || 'Sin asignar',
-      'Valoración': lead.final_valuation ? formatCurrency(lead.final_valuation) : '-',
-      'Profesión': lead.profession || '-',
-      'Tamaño Empresa': lead.company_size || '-'
-    }));
+    try {
+      console.log('🔄 Exportando', filteredLeads.length, 'leads a Excel...');
+      
+      // Preparar datos con validación
+      const excelData = filteredLeads.map(lead => ({
+        'Origen': lead.origin === 'contact' ? 'Contacto' : lead.origin === 'valuation' ? 'Valoración' : 'Colaborador',
+        'Nombre': lead.name || '',
+        'Email': lead.email || '',
+        'Teléfono': lead.phone || '-',
+        'Empresa': lead.company || '-',
+        'Sector': lead.industry || '-',
+        'Estado CRM': lead.lead_status_crm || lead.status || '-',
+        'Fecha Contacto': lead.created_at ? format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es }) : '',
+        'Asignado a': lead.assigned_admin?.full_name || 'Sin asignar',
+        'Valoración': lead.final_valuation ? formatCurrency(lead.final_valuation) : '-',
+        'Profesión': lead.profession || '-',
+        'Tamaño Empresa': lead.company_size || '-'
+      }));
 
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads');
-    
-    const fileName = `capittal-leads-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+      console.log('📊 Datos preparados:', excelData.length, 'filas');
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads');
+      
+      const fileName = `capittal-leads-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`;
+      
+      console.log('💾 Generando archivo:', fileName);
+      
+      // Método Blob para mayor compatibilidad en sandbox
+      const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Excel exportado correctamente');
+      toast.success('Excel exportado correctamente');
+    } catch (error) {
+      console.error('❌ Error al exportar Excel:', error);
+      toast.error('Error al exportar el archivo Excel');
+    }
   };
 
   if (isLoading) {
