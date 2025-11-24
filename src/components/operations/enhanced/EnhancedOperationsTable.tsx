@@ -126,16 +126,12 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
             case 'logo':
               return (
                 <div key={column.key} style={{ width }} className="flex items-center justify-center px-2">
-                  {operation.logo_url ? (
+                  {operation.logo_url && (
                     <img
                       src={operation.logo_url}
                       alt={operation.company_name}
                       className="w-10 h-10 rounded-lg object-contain bg-muted p-1"
                     />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-xs font-medium">
-                      {operation.company_name.substring(0, 2).toUpperCase()}
-                    </div>
                   )}
                 </div>
               );

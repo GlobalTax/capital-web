@@ -39,14 +39,6 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
   onViewDetails,
   isLoading,
 }) => {
-  const getCompanyInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
-  };
 
   if (isLoading) {
     return (
@@ -75,18 +67,12 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
             <div className="flex items-start gap-3">
               {/* Logo/Avatar */}
               <div className="flex-shrink-0">
-                {operation.logo_url ? (
+                {operation.logo_url && (
                   <img 
                     src={operation.logo_url} 
                     alt={operation.company_name}
                     className="w-14 h-14 rounded-lg object-contain bg-muted p-2"
                   />
-                ) : (
-                  <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <span className="text-primary font-semibold text-sm">
-                      {getCompanyInitials(operation.company_name)}
-                    </span>
-                  </div>
                 )}
               </div>
 
