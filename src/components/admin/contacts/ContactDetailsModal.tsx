@@ -25,7 +25,7 @@ import {
   MapPin,
   DollarSign,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface ContactDetailsModalProps {
@@ -129,10 +129,7 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
                     <div>
                       <div className="text-sm text-muted-foreground">Creado</div>
                       <div className="font-medium">
-                        {formatDistanceToNow(new Date(contact.created_at), {
-                          addSuffix: true,
-                          locale: es,
-                        })}
+                        {format(new Date(contact.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                       </div>
                     </div>
                   </div>
@@ -279,31 +276,24 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
               <CardContent>
                 {contact.email_sent ? (
                   <div className="space-y-4">
-                    <div className="border-l-4 border-l-green-500 pl-4 py-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">Email de bienvenida enviado</div>
-                          <div className="text-sm text-muted-foreground">
-                            {contact.email_sent_at &&
-                              formatDistanceToNow(new Date(contact.email_sent_at), {
-                                addSuffix: true,
-                                locale: es,
-                              })}
+                      <div className="border-l-4 border-l-green-500 pl-4 py-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Email de bienvenida enviado</div>
+                            <div className="text-sm text-muted-foreground">
+                              {contact.email_sent_at &&
+                                format(new Date(contact.email_sent_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                            </div>
                           </div>
+                          {contact.email_opened && (
+                            <Badge className="bg-green-500">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Abierto {contact.email_opened_at &&
+                                format(new Date(contact.email_opened_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                            </Badge>
+                          )}
                         </div>
-                        {contact.email_opened && (
-                          <Badge className="bg-green-500">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Abierto{' '}
-                            {contact.email_opened_at &&
-                              formatDistanceToNow(new Date(contact.email_opened_at), {
-                                addSuffix: true,
-                                locale: es,
-                              })}
-                          </Badge>
-                        )}
                       </div>
-                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">

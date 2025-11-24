@@ -23,7 +23,9 @@ import {
   Briefcase,
   CheckCircle2,
   ListTodo,
-  UserCircle
+  UserCircle,
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import { useUnifiedLeads } from '@/hooks/useUnifiedLeads';
 import { useLeadTasks } from '@/hooks/useLeadTasks';
@@ -34,6 +36,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatCurrency as formatCurrencyShared } from '@/shared/utils/format';
+import * as XLSX from 'xlsx';
 
 const UnifiedLeadsManager = () => {
   const navigate = useNavigate();
@@ -121,6 +124,31 @@ const UnifiedLeadsManager = () => {
     if (amount == null) return '-';
     return formatCurrencyShared(amount);
   };
+
+  const exportToExcel = () => {
+    const excelData = filteredLeads.map(lead => ({
+      'Origen': lead.origin === 'contact' ? 'Contacto' : lead.origin === 'valuation' ? 'Valoración' : 'Colaborador',
+      'Nombre': lead.name,
+      'Email': lead.email,
+      'Teléfono': lead.phone || '-',
+      'Empresa': lead.company || '-',
+      'Sector': lead.industry || '-',
+      'Estado CRM': lead.lead_status_crm || lead.status,
+      'Fecha Contacto': format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es }),
+      'Asignado a': lead.assigned_admin?.full_name || 'Sin asignar',
+      'Valoración': lead.final_valuation ? formatCurrency(lead.final_valuation) : '-',
+      'Profesión': lead.profession || '-',
+      'Tamaño Empresa': lead.company_size || '-'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads');
+    
+    const fileName = `capittal-leads-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -135,14 +163,21 @@ const UnifiedLeadsManager = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Todos los Leads</h1>
-          <p className="text-gray-600 mt-1">Gestión unificada de contactos, valoraciones y colaboradores</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Todos los Leads</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Gestión unificada de contactos, valoraciones y colaboradores</p>
         </div>
-        <Button onClick={refetch} variant="outline">
-          Actualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={exportToExcel} variant="default" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
+          <Button onClick={refetch} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualizar
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="leads" className="w-full">
@@ -256,28 +291,19 @@ const UnifiedLeadsManager = () => {
           <CardTitle>Leads ({filteredLeads.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-visible">
-            <Table className="table-fixed">
-              <colgroup>
-                <col className="w-[110px]" />
-                <col className="w-[200px]" />
-                <col className="w-[260px]" />
-                <col className="w-[180px]" />
-                <col className="w-[200px]" />
-                <col className="w-[100px]" />
-                <col className="w-[150px]" />
-                <col className="w-[120px]" />
-              </colgroup>
+          {/* Desktop View - Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap">Origen</TableHead>
-                  <TableHead className="whitespace-nowrap">Nombre</TableHead>
-                  <TableHead className="whitespace-nowrap">Email</TableHead>
-                  <TableHead className="whitespace-nowrap">Empresa</TableHead>
-                  <TableHead className="whitespace-nowrap">Asignado a</TableHead>
-                  <TableHead className="whitespace-nowrap">Tareas</TableHead>
-                  <TableHead className="whitespace-nowrap">Estado CRM</TableHead>
-                  <TableHead className="whitespace-nowrap">Fecha</TableHead>
+                  <TableHead className="min-w-[110px]">Origen</TableHead>
+                  <TableHead className="min-w-[180px]">Nombre</TableHead>
+                  <TableHead className="min-w-[220px]">Email</TableHead>
+                  <TableHead className="min-w-[150px]">Empresa</TableHead>
+                  <TableHead className="min-w-[180px]">Asignado a</TableHead>
+                  <TableHead className="min-w-[100px]">Tareas</TableHead>
+                  <TableHead className="min-w-[140px]">Estado CRM</TableHead>
+                  <TableHead className="min-w-[160px]">Fecha</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -402,6 +428,59 @@ const UnifiedLeadsManager = () => {
               </TableBody>
             </Table>
             
+          </div>
+
+          {/* Mobile View - Cards */}
+          <div className="md:hidden space-y-3">
+            {filteredLeads.map((lead) => (
+              <Card 
+                key={`${lead.origin}-${lead.id}`} 
+                onClick={() => handleRowClick(lead)}
+                className="cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base truncate">{lead.name}</h3>
+                      <p className="text-sm text-muted-foreground truncate">{lead.email}</p>
+                    </div>
+                    {getOriginBadge(lead.origin)}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground text-xs">Empresa:</span>
+                      <div className="font-medium truncate">{lead.company || '-'}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs">Estado:</span>
+                      <div className="mt-1">{getStatusBadge(lead.status, lead.origin, lead.lead_status_crm)}</div>
+                    </div>
+                  </div>
+
+                  {lead.origin === 'valuation' && lead.final_valuation && (
+                    <div className="flex items-center gap-1 text-sm font-medium text-green-600">
+                      <Euro className="h-4 w-4" />
+                      {formatCurrency(lead.final_valuation)}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    </div>
+                    {lead.assigned_admin && (
+                      <div className="flex items-center gap-1 truncate">
+                        <UserCircle className="h-3 w-3" />
+                        <span className="truncate">{lead.assigned_admin.full_name}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
             {filteredLeads.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />

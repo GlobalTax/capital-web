@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, CheckCircle2, Mail, Eye, Search, Download, Filter, X } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   DropdownMenu,
@@ -384,10 +384,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 {contact.ebitda ? formatCurrency(contact.ebitda) : '-'}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(contact.created_at), {
-                  addSuffix: true,
-                  locale: es,
-                })}
+                {format(new Date(contact.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
               </TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-end gap-1">

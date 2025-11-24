@@ -31,7 +31,7 @@ import {
   Calendar,
   RefreshCw,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface InvestorLead {
@@ -387,10 +387,7 @@ export const InvestorLeadsManager: React.FC = () => {
                     </Select>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(lead.created_at), {
-                      addSuffix: true,
-                      locale: es,
-                    })}
+                    {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">

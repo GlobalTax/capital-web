@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Bell, BellRing, Target, Building2, TrendingUp, X } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface Notification {
@@ -122,10 +122,7 @@ const DashboardNotifications = ({ notifications, onMarkAsRead }: DashboardNotifi
                           {notification.message}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(notification.timestamp, { 
-                            addSuffix: true, 
-                            locale: es 
-                          })}
+                          {format(notification.timestamp, 'dd/MM/yyyy HH:mm', { locale: es })}
                         </p>
                       </div>
                     </div>

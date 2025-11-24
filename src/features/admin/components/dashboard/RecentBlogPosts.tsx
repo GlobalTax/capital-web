@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ExternalLink, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -59,10 +59,7 @@ export const RecentBlogPosts = () => {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(post.updated_at), { 
-                      addSuffix: true, 
-                      locale: es 
-                    })}
+                    {format(new Date(post.updated_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                   </p>
                 </div>
                 <Link to={`/admin/blog-v2/${post.id}`}>
