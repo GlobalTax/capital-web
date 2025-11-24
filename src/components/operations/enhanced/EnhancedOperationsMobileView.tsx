@@ -68,9 +68,9 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
   }
 
   return (
-    <div className="space-y-3 animate-fade-in">
+    <div className="w-full space-y-3">
       {operations.map((operation) => (
-        <Card key={operation.id} className="overflow-hidden hover:shadow-md transition-shadow">
+        <Card key={operation.id} className="overflow-hidden hover:shadow-md transition-shadow w-full">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               {/* Logo/Avatar */}

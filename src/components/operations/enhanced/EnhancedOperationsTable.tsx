@@ -270,7 +270,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
   // Renderizar vista móvil si es pantalla pequeña
   if (isMobile) {
     return (
-      <>
+      <div className="w-full">
         <EnhancedOperationsMobileView
           operations={operations}
           onViewDetails={(operation) => setSelectedOperation(operation)}
@@ -283,7 +283,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
             onClose={() => setSelectedOperation(null)}
           />
         )}
-      </>
+      </div>
     );
   }
 
