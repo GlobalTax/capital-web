@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { FileText, Users, Briefcase, HandshakeIcon } from 'lucide-react';
 
@@ -140,10 +140,7 @@ export const ActivityTimeline = () => {
                   <p className="text-sm font-medium">{activity.title}</p>
                   <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(activity.created_at), { 
-                      addSuffix: true, 
-                      locale: es 
-                    })}
+                    {format(new Date(activity.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                   </p>
                 </div>
               </div>

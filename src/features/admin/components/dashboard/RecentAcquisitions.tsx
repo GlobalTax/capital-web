@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -81,10 +81,7 @@ export const RecentAcquisitions = () => {
                       <p className="text-xs font-medium">{acquisition.investment_range}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(acquisition.created_at), { 
-                        addSuffix: true, 
-                        locale: es 
-                      })}
+                      {format(new Date(acquisition.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                     </p>
                   </div>
                 </div>
