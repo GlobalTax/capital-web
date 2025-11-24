@@ -123,13 +123,18 @@ const getFieldsForStep = (step: number, config: CalculatorConfig): (keyof Extend
 const validateField = (
   field: keyof ExtendedCompanyData,
   value: any,
-  data: ExtendedCompanyData
+  data: ExtendedCompanyData,
+  config?: CalculatorConfig // 🔥 NUEVO parámetro
 ): ValidationResult => {
   const rule = validationRules[field as keyof typeof validationRules];
   if (!rule) return { isValid: true };
 
-  // Required check
-  if (rule.required && (!value || value === '' || value === 0)) {
+  // 🔥 NUEVO: Override required si está en optionalFields
+  const isOptional = config?.validation?.optionalFields?.includes(field);
+  const effectiveRequired = isOptional ? false : rule.required;
+
+  // Required check con override
+  if (effectiveRequired && (!value || value === '' || value === 0)) {
     return { isValid: false, message: rule.message || `${field} es requerido` };
   }
 
@@ -187,7 +192,7 @@ export const validateCalculatorData = (
   let isValid = true;
 
   for (const field of fieldsToValidate) {
-    const validation = validateField(field, data[field], data);
+    const validation = validateField(field, data[field], data, config); // 🔥 NUEVO: pasar config
     if (!validation.isValid) {
       errors[field] = validation.message || `${field} is invalid`;
       isValid = false;

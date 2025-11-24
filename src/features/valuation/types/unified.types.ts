@@ -148,12 +148,16 @@ export interface CalculatorConfig {
     metricsTypes?: string[]; // 🔥 NUEVO: Tipos de métricas ['revenue', 'ebitda', 'netProfit']
   };
   ui: {
-    theme: 'default' | 'minimal' | 'advanced' | 'advisor';
+    theme: 'default' | 'minimal' | 'advanced' | 'advisor' | 'typeform'; // 🔥 NUEVO: typeform
     showProgress: boolean;
     showSaveStatus: boolean;
     customTitle?: string; // Clave de traducción personalizada para título
     customSubtitle?: string; // Clave de traducción personalizada para subtítulo
     showMetaBadge?: boolean; // Mostrar badge "Meta Ads" para identificación
+  };
+  validation?: {
+    optionalFields?: (keyof ExtendedCompanyData)[]; // 🔥 NUEVO
+    requiredFields?: (keyof ExtendedCompanyData)[]; // 🔥 NUEVO
   };
 }
 

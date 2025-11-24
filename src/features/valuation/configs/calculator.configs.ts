@@ -42,6 +42,29 @@ export const V2_CONFIG: CalculatorConfig = {
   }
 };
 
+// ============= V2 B CONFIG (A/B Test - Typeform Style) =============
+export const V2_B_CONFIG: CalculatorConfig = {
+  version: 'v2',
+  steps: 4, // 4 pasos optimizados estilo Typeform
+  sourceProject: 'lp-calculadora-b-typeform', // 🔥 Identificador único
+  features: {
+    autosave: false,
+    tracking: true,
+    taxCalculation: false,
+    scenarios: false,
+    realTime: false,
+    standalone: false
+  },
+  ui: {
+    theme: 'typeform', // 🔥 NUEVO tema
+    showProgress: true,
+    showSaveStatus: false
+  },
+  validation: {
+    optionalFields: ['phone', 'ebitda'] // Solo estos opcionales
+  }
+};
+
 // ============= V2 META CONFIG (para Meta Ads) =============
 export const V2_META_CONFIG: CalculatorConfig = {
   version: 'v2',
@@ -153,10 +176,11 @@ export const getConfigByVersion = (version: string): CalculatorConfig => {
   switch (version) {
     case 'v1': return V1_CONFIG;
     case 'v2': return V2_CONFIG;
+    case 'v2-b': return V2_B_CONFIG; // 🔥 NUEVO
     case 'v3': return V3_CONFIG;
     case 'master': return MASTER_CONFIG;
     case 'standalone': return STANDALONE_CONFIG;
-    case 'advisor': return ADVISOR_CONFIG; // 🔥 NUEVO
+    case 'advisor': return ADVISOR_CONFIG;
     default: return V1_CONFIG;
   }
 };
