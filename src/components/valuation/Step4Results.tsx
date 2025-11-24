@@ -190,21 +190,21 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
 
   if (isCalculating) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-600 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('calc.loading.title')}</h2>
-        <p className="text-gray-600">{t('calc.loading.subtitle')}</p>
+      <div className="text-center py-8 sm:py-12">
+        <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-gray-600 mx-auto mb-4" />
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{t('calc.loading.title')}</h2>
+        <p className="text-sm sm:text-base text-gray-600">{t('calc.loading.subtitle')}</p>
       </div>
     );
   }
 
   if (!result) {
     return (
-      <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-gray-600 mb-2">
+      <div className="text-center py-8 sm:py-12">
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
           {t('calc.no_results.title')}
         </h3>
-        <p className="text-gray-500">
+        <p className="text-sm sm:text-base text-gray-500">
           {t('calc.no_results.subtitle')}
         </p>
       </div>
@@ -212,21 +212,22 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {t('calc.results.title', { company: companyData.companyName })}
-        </h2>
-        <p className="text-gray-600">{t('calc.results.subtitle')}</p>
-      </div>
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="space-y-4 md:space-y-6 lg:space-y-8">
+        <div className="text-center">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+            {t('calc.results.title', { company: companyData.companyName })}
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600">{t('calc.results.subtitle')}</p>
+        </div>
 
-      {/* Resumen de datos de la empresa */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('summary.title')}
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Resumen de datos de la empresa */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-5 lg:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+            {t('summary.title')}
+          </h3>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
           {/* Información básica */}
           <div>
             <h4 className="text-sm font-semibold text-gray-700 mb-3">{t('summary.basic')}</h4>
@@ -302,116 +303,117 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
         </div>
       </div>
 
-      {/* Valoración principal - sin colores ni íconos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-300 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('valuation.estimated')}</h3>
-          <p className="text-3xl font-bold text-gray-900 mb-2">
-            {formatCurrency(result.finalValuation)}
-          </p>
-          <p className="text-sm text-gray-600">
-            {t('valuation.range')}: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
-          </p>
-        </div>
-
-        <div className="bg-white border border-gray-300 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('valuation.multiple')}</h3>
-          <p className="text-3xl font-bold text-gray-900 mb-2">
-            {result.multiples.ebitdaMultipleUsed}x
-          </p>
-          <p className="text-sm text-gray-600">
-            {t('valuation.applied_over', { amount: formatCurrency(companyData.ebitda) })}
-          </p>
-        </div>
-      </div>
-
-      {/* Información de múltiplos aplicados */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('sector.multiple.title')}</h3>
-        <div className="text-center">
-          <p className="text-sm text-gray-600">{t('sector.multiple.label')}</p>
-          <p className="text-2xl font-bold text-gray-900">{result.multiples.ebitdaMultipleUsed}x</p>
-          <p className="text-sm text-gray-500 mt-2">
-            {t('sector.valuation_formula', { ebitda: formatCurrency(companyData.ebitda), multiple: result.multiples.ebitdaMultipleUsed, valuation: formatCurrency(result.finalValuation) })}
-          </p>
-        </div>
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">
-            {t('sector.sector')}: <span className="font-semibold capitalize">{companyData.industry}</span> • 
-            <span className="ml-2">{t('sector.employees')}: {getEmployeeRangeLabel(companyData.employeeRange)}</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Acciones */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button
-          onClick={resetCalculator}
-          variant="outline"
-          className="flex items-center"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {t('actions.new')}
-        </Button>
-        <Button 
-          onClick={handleDownloadPDF}
-          disabled={isGeneratingPDF}
-          className="flex items-center"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          {isGeneratingPDF ? t('actions.generating') : t('actions.download')}
-        </Button>
-        <Button 
-          onClick={() => window.open('https://capittal.es', '_blank')}
-          variant="secondary"
-          className="flex items-center"
-        >
-          <ExternalLink className="h-4 w-4 mr-2" />
-          {t('actions.goto_website')}
-        </Button>
-      </div>
-
-      {/* Escenario Fiscal España (solo en calculadora fiscal) */}
-      {isFiscalES && (
-        <div className="bg-white border border-gray-300 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('fiscal.title')}</h3>
-          <p className="text-sm text-gray-600 mb-3">
-            {t('fiscal.description')}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded border border-gray-200">
-              <p className="text-xs text-gray-500">{t('fiscal.gain')}</p>
-              <p className="text-sm text-gray-800">{t('fiscal.need_cost')}</p>
-            </div>
-            <div className="p-4 rounded border border-gray-200">
-              <p className="text-xs text-gray-500">{t('fiscal.rate')}</p>
-              <p className="text-sm text-gray-800">{t('fiscal.rate_detail')}</p>
-            </div>
-            <div className="p-4 rounded border border-gray-200">
-              <p className="text-xs text-gray-500">{t('fiscal.withholding')}</p>
-              <p className="text-sm text-gray-800">{t('fiscal.withholding_detail')}</p>
-            </div>
+        {/* Valoración principal - sin colores ni íconos */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
+          <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-5 lg:p-6 text-center">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">{t('valuation.estimated')}</h3>
+            <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 break-words">
+              {formatCurrency(result.finalValuation)}
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600">
+              {t('valuation.range')}: {formatCurrency(result.valuationRange.min)} - {formatCurrency(result.valuationRange.max)}
+            </p>
           </div>
-          <p className="text-xs text-gray-500 mt-3">
-            {t('fiscal.note')}
-          </p>
-          <div className="mt-4">
-            <a href="/contacto" className="underline text-gray-900">{t('fiscal.contact_link')}</a>
+
+          <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-5 lg:p-6 text-center">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">{t('valuation.multiple')}</h3>
+            <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              {result.multiples.ebitdaMultipleUsed}x
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600">
+              {t('valuation.applied_over', { amount: formatCurrency(companyData.ebitda) })}
+            </p>
           </div>
         </div>
-      )}
 
-      {/* Recomendar a un tercero */}
-      <ReferralPrompt companyData={companyData} />
+        {/* Información de múltiplos aplicados */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 lg:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">{t('sector.multiple.title')}</h3>
+          <div className="text-center">
+            <p className="text-xs sm:text-sm text-gray-600">{t('sector.multiple.label')}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{result.multiples.ebitdaMultipleUsed}x</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
+              {t('sector.valuation_formula', { ebitda: formatCurrency(companyData.ebitda), multiple: result.multiples.ebitdaMultipleUsed, valuation: formatCurrency(result.finalValuation) })}
+            </p>
+          </div>
+          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+            <p className="text-xs sm:text-sm text-gray-600 text-center">
+              {t('sector.sector')}: <span className="font-semibold capitalize">{companyData.industry}</span> • 
+              <span className="ml-2">{t('sector.employees')}: {getEmployeeRangeLabel(companyData.employeeRange)}</span>
+            </p>
+          </div>
+        </div>
 
-      {/* Aviso legal */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-          {t('legal.notice.title')}
-        </h3>
-        <p className="text-sm text-yellow-700">
-          {t('legal.notice.text')}
-        </p>
+        {/* Acciones */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch flex-wrap">
+          <Button
+            onClick={resetCalculator}
+            variant="outline"
+            className="flex items-center justify-center w-full sm:w-auto"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t('actions.new')}
+          </Button>
+          <Button 
+            onClick={handleDownloadPDF}
+            disabled={isGeneratingPDF}
+            className="flex items-center justify-center w-full sm:w-auto"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {isGeneratingPDF ? t('actions.generating') : t('actions.download')}
+          </Button>
+          <Button 
+            onClick={() => window.open('https://capittal.es', '_blank')}
+            variant="secondary"
+            className="flex items-center justify-center w-full sm:w-auto"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            {t('actions.goto_website')}
+          </Button>
+        </div>
+
+        {/* Escenario Fiscal España (solo en calculadora fiscal) */}
+        {isFiscalES && (
+          <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-5 lg:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{t('fiscal.title')}</h3>
+            <p className="text-xs sm:text-sm text-gray-600 mb-3">
+              {t('fiscal.description')}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 rounded border border-gray-200">
+                <p className="text-xs text-gray-500">{t('fiscal.gain')}</p>
+                <p className="text-xs sm:text-sm text-gray-800">{t('fiscal.need_cost')}</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded border border-gray-200">
+                <p className="text-xs text-gray-500">{t('fiscal.rate')}</p>
+                <p className="text-xs sm:text-sm text-gray-800">{t('fiscal.rate_detail')}</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded border border-gray-200">
+                <p className="text-xs text-gray-500">{t('fiscal.withholding')}</p>
+                <p className="text-xs sm:text-sm text-gray-800">{t('fiscal.withholding_detail')}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              {t('fiscal.note')}
+            </p>
+            <div className="mt-4">
+              <a href="/contacto" className="underline text-gray-900 text-xs sm:text-sm">{t('fiscal.contact_link')}</a>
+            </div>
+          </div>
+        )}
+
+        {/* Recomendar a un tercero */}
+        <ReferralPrompt companyData={companyData} />
+
+        {/* Aviso legal */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-5 lg:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-yellow-800 mb-2">
+            {t('legal.notice.title')}
+          </h3>
+          <p className="text-xs sm:text-sm text-yellow-700 leading-relaxed">
+            {t('legal.notice.text')}
+          </p>
+        </div>
       </div>
     </div>
   );
