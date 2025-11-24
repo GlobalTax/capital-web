@@ -150,8 +150,17 @@ const UnifiedLeadsManager = () => {
   };
 
   const exportToExcel = () => {
+    console.log('✔ Botón Exportar (UnifiedLeadsManager) pulsado');
+    
+    if (!filteredLeads.length) {
+      console.warn('⚠ No hay leads para exportar con los filtros actuales');
+      toast.error('No hay leads para exportar con los filtros actuales');
+      return;
+    }
+
     try {
       console.log('🔄 Exportando', filteredLeads.length, 'leads a Excel...');
+      console.log('📋 Ejemplo de lead:', filteredLeads[0]);
       
       // Preparar datos con validación
       const excelData = filteredLeads.map(lead => ({
@@ -179,7 +188,18 @@ const UnifiedLeadsManager = () => {
       
       console.log('💾 Generando archivo:', fileName);
       
-      // Método Blob para mayor compatibilidad en sandbox
+      // Intentar primero writeFile (método simple)
+      try {
+        XLSX.writeFile(workbook, fileName);
+        console.log('✅ Excel descargado con writeFile');
+        toast.success('Excel exportado correctamente');
+        return;
+      } catch (writeFileError) {
+        console.warn('⚠ writeFile falló, probando método Blob', writeFileError);
+      }
+
+      // Fallback: Método Blob para mayor compatibilidad en sandbox
+      console.log('🔄 Intentando descarga con Blob...');
       const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
@@ -187,11 +207,12 @@ const UnifiedLeadsManager = () => {
       a.href = url;
       a.download = fileName;
       document.body.appendChild(a);
+      console.log('⬇ Lanzando descarga de', fileName);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      console.log('✅ Excel exportado correctamente');
+      console.log('✅ Excel exportado correctamente con Blob');
       toast.success('Excel exportado correctamente');
     } catch (error) {
       console.error('❌ Error al exportar Excel:', error);
@@ -219,7 +240,12 @@ const UnifiedLeadsManager = () => {
           <p className="text-sm sm:text-base text-gray-600 mt-1">Gestión unificada de contactos, valoraciones y colaboradores</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={exportToExcel} variant="default" size="sm">
+          <Button 
+            onClick={exportToExcel} 
+            variant="default" 
+            size="sm"
+            disabled={filteredLeads.length === 0}
+          >
             <Download className="h-4 w-4 mr-2" />
             Exportar
           </Button>

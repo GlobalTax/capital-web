@@ -120,7 +120,7 @@ const SellLeadsTable = () => {
                   )}
                 </TableCell>
                 <TableCell className="text-sm">
-                  {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                  {format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es })}
                 </TableCell>
               </TableRow>
             ))}
