@@ -22,6 +22,7 @@ export interface UnifiedContact {
   source_project?: string; // 🔥 NEW: Origen específico del lead (lp-calculadora-principal, lp-calculadora-fiscal, etc.)
   
   // Campos específicos por origen
+  cif?: string;
   valuation_amount?: number;
   final_valuation?: number;
   ebitda?: number;
@@ -238,6 +239,7 @@ export const useUnifiedContacts = () => {
           created_at: lead.created_at,
           status: lead.valuation_status || 'pending',
           source_project: lead.source_project, // 🔥 NEW: Identificador del origen
+          cif: lead.cif,
           industry: lead.industry,
           employee_range: lead.employee_range,
           final_valuation: lead.final_valuation,
@@ -386,6 +388,7 @@ export const useUnifiedContacts = () => {
           created_at: lead.created_at,
           status: lead.email_sent ? 'contacted' : 'new',
           source_project: 'lp-calculadora-asesores',
+          cif: lead.cif,
           industry: lead.firm_type,
           employee_range: lead.employee_range,
           revenue: lead.revenue ? Number(lead.revenue) : undefined,
@@ -738,6 +741,7 @@ export const useUnifiedContacts = () => {
         'Email': contact.email || '',
         'Teléfono': contact.phone || '',
         'Empresa': contact.company || '',
+        'CIF': contact.cif || '-',
         'Sector': contact.industry || contact.sectors_of_interest || '',
         'Estado CRM': contact.lead_status_crm || contact.status || '',
         'Fecha': contact.created_at 
