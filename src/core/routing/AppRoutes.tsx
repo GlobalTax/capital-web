@@ -31,6 +31,7 @@ const LandingCalculadoraFiscal = lazy(() => import('@/pages/LandingCalculadoraFi
 const LandingCalculadoraAsesores = lazy(() => import('@/pages/LandingCalculadoraAsesores'));
 const LandingCalculatorMeta = lazy(() => import('@/pages/LandingCalculatorMeta'));
 const LandingCalculatorMetaThanks = lazy(() => import('@/pages/LandingCalculatorMetaThanks'));
+const LandingCalculatorB = lazy(() => import('@/pages/LandingCalculatorB')); // 🔥 NUEVO - Variante B Typeform
 const LandingVentaEmpresas = lazy(() => import('@/pages/LandingVentaEmpresas'));
 const LandingSuiteLoop = lazy(() => import('@/pages/LandingSuiteLoop'));
 const LandingAccountex = lazy(() => import('@/pages/LandingAccountex'));
@@ -139,6 +140,8 @@ export const AppRoutes = () => {
         <Route path="/lp/*" element={<Navigate to="/lp/calculadora" replace />} />
         <Route path="/lp/calculadora" element={<LandingCalculator />} />
         <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
+        <Route path="/lp/calculadora-b" element={<LandingCalculatorB />} /> {/* 🔥 NUEVO - Variante B */}
+        <Route path="/lp/calculadora-b/*" element={<LandingCalculatorB />} />
         <Route path="/lp/calculadora-fiscal" element={<LandingCalculadoraFiscal />} />
         <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
         <Route path="/lp/calculadora-asesores" element={<LandingCalculadoraAsesores />} />
