@@ -185,11 +185,35 @@ export const useContactForm = () => {
             referrer: trackingData.referrer,
           };
 
+          // Log detallado para debugging
+          console.log('📤 Inserting sell_lead:', {
+            full_name_length: sellLeadData.full_name.length,
+            company_length: sellLeadData.company.length,
+            email_valid: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(sellLeadData.email),
+            has_phone: !!sellLeadData.phone,
+            has_message: !!sellLeadData.message,
+            page_origin: sellLeadData.page_origin,
+          });
+
           const { error } = await supabase
             .from('sell_leads')
             .insert([sellLeadData]);
 
           if (error) {
+            // Detectar errores específicos de RLS policy
+            if (error.message?.includes('policy') || 
+                error.message?.includes('check_rate_limit') ||
+                error.message?.includes('violates row-level security')) {
+              console.warn('⚠️ Rate limit o RLS policy violation en sell_leads');
+              toast({
+                title: "Límite temporal alcanzado",
+                description: "Has alcanzado el límite de consultas. Contáctanos directamente al +34 695 717 490 o info@capittal.es",
+                variant: "destructive",
+                duration: 8000,
+              });
+              return { success: false, error: 'Rate limit - RLS policy' };
+            }
+            
             console.warn('⚠️ sell_leads insert failed, falling back to contact_leads:', error.message);
             throw error;
           } else {
