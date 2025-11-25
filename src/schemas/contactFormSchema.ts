@@ -12,20 +12,19 @@ export const contactFormSchema = z.object({
   fullName: z.string()
     .min(2, 'Nombre debe tener al menos 2 caracteres')
     .max(100, 'Nombre muy largo')
-    .regex(/^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s'-]+$/, 'Solo letras, espacios y guiones')
-    .transform(val => sanitizeInput(val.trim(), { maxLength: 100 })),
+    .regex(/^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s'.-]+$/, 'Solo letras, espacios, guiones y apóstrofes')
+    .transform(val => val.trim()),
   
   company: z.string()
     .min(2, 'Empresa debe tener al menos 2 caracteres')
     .max(100, 'Nombre de empresa muy largo')
-    .transform(val => sanitizeInput(val.trim(), { maxLength: 100 })),
+    .transform(val => val.trim()),
   
   email: z.string()
     .email('Formato de email inválido')
     .min(5, 'Email muy corto')
     .max(254, 'Email muy largo')
-    .regex(emailRegex, 'Email inválido')
-    .transform(val => sanitizeInput(val.toLowerCase().trim(), { maxLength: 254 })),
+    .transform(val => val.toLowerCase().trim()),
   
   serviceType: z.enum(['vender', 'comprar', 'otros'], {
     required_error: 'Selecciona una opción',

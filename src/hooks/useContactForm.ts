@@ -169,20 +169,20 @@ export const useContactForm = () => {
       try {
         if (validatedData.serviceType === 'vender') {
           const sellLeadData = {
-            full_name: validatedData.fullName,
-            company: validatedData.company,
-            email: validatedData.email,
-            phone: validatedData.phone || null,
-            message: validatedData.message || null,
+            full_name: validatedData.fullName.trim(),
+            company: validatedData.company.trim(),
+            email: validatedData.email.toLowerCase().trim(),
+            phone: validatedData.phone?.trim() || null,
+            message: validatedData.message?.trim() || null,
             status: 'new' as const,
             page_origin: pageOrigin || 'unknown',
             user_agent: navigator.userAgent.slice(0, 255),
-            utm_source: trackingData.utm_source,
-            utm_medium: trackingData.utm_medium,
-            utm_campaign: trackingData.utm_campaign,
-            utm_term: trackingData.utm_term,
-            utm_content: trackingData.utm_content,
-            referrer: trackingData.referrer,
+            utm_source: trackingData.utm_source?.trim() || null,
+            utm_medium: trackingData.utm_medium?.trim() || null,
+            utm_campaign: trackingData.utm_campaign?.trim() || null,
+            utm_term: trackingData.utm_term?.trim() || null,
+            utm_content: trackingData.utm_content?.trim() || null,
+            referrer: trackingData.referrer?.slice(0, 500) || null,
           };
 
           // Log detallado para debugging
@@ -200,6 +200,20 @@ export const useContactForm = () => {
             .insert([sellLeadData]);
 
           if (error) {
+            // Log completo del error para debugging
+            console.error('❌ sell_leads insert error:', {
+              message: error.message,
+              code: error.code,
+              details: error.details,
+              hint: error.hint,
+              data_sent: {
+                full_name_length: sellLeadData.full_name.length,
+                company_length: sellLeadData.company.length,
+                email_length: sellLeadData.email.length,
+                email: sellLeadData.email,
+              },
+            });
+            
             // Detectar errores específicos de RLS policy
             if (error.message?.includes('policy') || 
                 error.message?.includes('check_rate_limit') ||
@@ -213,6 +227,14 @@ export const useContactForm = () => {
               });
               return { success: false, error: 'Rate limit - RLS policy' };
             }
+            
+            // Error genérico más informativo
+            toast({
+              title: "Error al enviar formulario",
+              description: "Por favor verifica los campos e intenta nuevamente. Si persiste, contáctanos directamente.",
+              variant: "destructive",
+              duration: 6000,
+            });
             
             console.warn('⚠️ sell_leads insert failed, falling back to contact_leads:', error.message);
             throw error;
