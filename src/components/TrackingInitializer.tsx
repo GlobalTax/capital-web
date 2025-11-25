@@ -314,11 +314,11 @@ export const TrackingInitializer = () => {
               "init",
               {
                 client_key: config.brevoClientKey,
-                // Respetar Consent Mode v2: solo auto-tracking si hay consentimiento
-                auto_tracking: hasMarketingConsent,
+                // Solo tracking manual con hooks - evita errores 400
+                auto_tracking: false,
               }
             ]);
-            console.log('[Tracking] Brevo SDK initialized with auto_tracking:', hasMarketingConsent);
+            console.log('[Tracking] Brevo SDK initialized with auto_tracking: false');
           };
           document.head.appendChild(brevoSdkScript);
         }
