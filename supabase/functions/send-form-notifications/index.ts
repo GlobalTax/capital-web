@@ -21,7 +21,8 @@ interface FormNotificationRequest {
   formData: any;
 }
 
-const ADMIN_EMAILS = ['lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es', 'marcc@capittal.es', 'l.linares@nrro.es', 'oriol@capittal.es'];
+// Reducido a 3 admins principales para respetar rate limit de Resend (2 emails/segundo)
+const ADMIN_EMAILS = ['lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es'];
 
 const getUserConfirmationTemplate = (formType: string, data: any) => {
   const baseStyle = `
@@ -446,6 +447,9 @@ const getEmailTemplate = (formType: string, data: any) => {
   }
 };
 
+// Helper para respetar rate limit de Resend (2 emails/segundo)
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { 
@@ -472,29 +476,47 @@ const handler = async (req: Request): Promise<Response> => {
       ...formData
     });
 
-    // Enviar emails a administradores
-    const adminEmailPromises = ADMIN_EMAILS.map(async (adminEmail) => {
-      return resend.emails.send({
-        from: "Capittal Forms <s.navarro@capittal.es>",
-        to: [adminEmail],
-        subject: adminTemplate.subject,
-        html: adminTemplate.html,
-      });
-    });
+    // Enviar emails a administradores con delay para respetar rate limit
+    console.log(`Enviando ${ADMIN_EMAILS.length} emails a administradores con delays...`);
+    const adminEmailResults = [];
+    
+    for (const adminEmail of ADMIN_EMAILS) {
+      try {
+        const result = await resend.emails.send({
+          from: "Capittal Forms <s.navarro@capittal.es>",
+          to: [adminEmail],
+          subject: adminTemplate.subject,
+          html: adminTemplate.html,
+        });
+        adminEmailResults.push({ status: 'fulfilled', value: result });
+        console.log(`✅ Email enviado a ${adminEmail}`);
+      } catch (error) {
+        adminEmailResults.push({ status: 'rejected', reason: error });
+        console.error(`❌ Error enviando a ${adminEmail}:`, error);
+      }
+      
+      // Delay de 500ms entre emails (respeta límite de 2 req/segundo)
+      await delay(500);
+    }
 
     // Enviar email de confirmación al usuario
-    const userEmailPromise = resend.emails.send({
-      from: "Capittal <s.navarro@capittal.es>",
-      to: [email],
-      subject: userTemplate.subject,
-      html: userTemplate.html,
-    });
+    console.log(`Enviando email de confirmación a ${email}...`);
+    let userResult;
+    try {
+      const result = await resend.emails.send({
+        from: "Capittal <s.navarro@capittal.es>",
+        to: [email],
+        subject: userTemplate.subject,
+        html: userTemplate.html,
+      });
+      userResult = { status: 'fulfilled', value: result };
+      console.log(`✅ Email de confirmación enviado a ${email}`);
+    } catch (error) {
+      userResult = { status: 'rejected', reason: error };
+      console.error(`❌ Error enviando confirmación a ${email}:`, error);
+    }
 
-    // Ejecutar ambos envíos en paralelo
-    const [adminResults, userResult] = await Promise.allSettled([
-      Promise.allSettled(adminEmailPromises),
-      userEmailPromise
-    ]);
+    const adminResults = { status: 'fulfilled', value: adminEmailResults };
 
     const adminEmailResults = adminResults.status === 'fulfilled' ? adminResults.value : [];
     const allAdminSuccessful = adminEmailResults.every(result => result.status === 'fulfilled');
