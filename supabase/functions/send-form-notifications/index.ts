@@ -516,9 +516,6 @@ const handler = async (req: Request): Promise<Response> => {
       console.error(`❌ Error enviando confirmación a ${email}:`, error);
     }
 
-    const adminResults = { status: 'fulfilled', value: adminEmailResults };
-
-    const adminEmailResults = adminResults.status === 'fulfilled' ? adminResults.value : [];
     const allAdminSuccessful = adminEmailResults.every(result => result.status === 'fulfilled');
     const userEmailSuccessful = userResult.status === 'fulfilled';
     
