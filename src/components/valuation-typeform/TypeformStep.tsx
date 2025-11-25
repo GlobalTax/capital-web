@@ -147,7 +147,7 @@ export const TypeformStep: React.FC<TypeformStepProps> = ({
     >
       {/* Header */}
       <div className="mb-8">
-        <div className="text-6xl mb-4">{step.emoji}</div>
+        {step.emoji && <div className="text-6xl mb-4">{step.emoji}</div>}
         <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
           {interpolateText(step.title, companyData)}
         </h2>

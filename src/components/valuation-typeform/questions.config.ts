@@ -15,7 +15,7 @@ export interface TypeformField {
 
 export interface TypeformStep {
   id: number;
-  emoji: string;
+  emoji?: string;
   title: string;
   subtitle?: string;
   fields: TypeformField[];
@@ -25,7 +25,6 @@ export const TYPEFORM_STEPS: TypeformStep[] = [
   // ============= PASO 1: CONTACTO =============
   {
     id: 1,
-    emoji: '👋',
     title: '¡Hola! Cuéntanos sobre ti',
     subtitle: 'Solo necesitamos unos datos para empezar',
     fields: [
@@ -58,9 +57,8 @@ export const TYPEFORM_STEPS: TypeformStep[] = [
   // ============= PASO 2: EMPRESA =============
   {
     id: 2,
-    emoji: '🏢',
     title: 'Sobre tu empresa',
-    subtitle: 'Información básica de {companyName}',
+    subtitle: 'Información básica',
     fields: [
       {
         field: 'companyName',
@@ -99,36 +97,9 @@ export const TYPEFORM_STEPS: TypeformStep[] = [
     ]
   },
 
-  // ============= PASO 3: TAMAÑO =============
+  // ============= PASO 3: FINANZAS Y TAMAÑO =============
   {
     id: 3,
-    emoji: '👥',
-    title: '¿Cuál es el tamaño de {companyName}?',
-    fields: [
-      {
-        field: 'employeeRange',
-        type: 'select',
-        label: 'Número de empleados',
-        placeholder: 'Selecciona el rango',
-        required: true,
-        options: [
-          { value: '1', label: '👤 Solo yo (autónomo)' },
-          { value: '2-5', label: '👥 2-5 empleados' },
-          { value: '6-10', label: '👥 6-10 empleados' },
-          { value: '11-25', label: '👥 11-25 empleados' },
-          { value: '26-50', label: '👥 26-50 empleados' },
-          { value: '51-100', label: '👥 51-100 empleados' },
-          { value: '101-250', label: '👥 101-250 empleados' },
-          { value: '250+', label: '👥 Más de 250 empleados' }
-        ]
-      }
-    ]
-  },
-
-  // ============= PASO 4: FINANZAS =============
-  {
-    id: 4,
-    emoji: '💰',
     title: 'Datos financieros',
     subtitle: 'Última información para calcular la valoración',
     fields: [
@@ -147,6 +118,23 @@ export const TYPEFORM_STEPS: TypeformStep[] = [
         placeholder: '100000',
         required: false,
         hint: 'Si no lo conoces, lo estimaremos automáticamente'
+      },
+      {
+        field: 'employeeRange',
+        type: 'select',
+        label: 'Número de empleados',
+        placeholder: 'Selecciona el rango',
+        required: true,
+        options: [
+          { value: '1', label: 'Solo yo (autónomo)' },
+          { value: '2-5', label: '2-5 empleados' },
+          { value: '6-10', label: '6-10 empleados' },
+          { value: '11-25', label: '11-25 empleados' },
+          { value: '26-50', label: '26-50 empleados' },
+          { value: '51-100', label: '51-100 empleados' },
+          { value: '101-250', label: '101-250 empleados' },
+          { value: '250+', label: 'Más de 250 empleados' }
+        ]
       }
     ]
   }
