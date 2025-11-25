@@ -12,8 +12,10 @@ export const contactFormSchema = z.object({
   fullName: z.string()
     .min(2, 'Nombre debe tener al menos 2 caracteres')
     .max(100, 'Nombre muy largo')
-    .regex(/^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s'.-]+$/, 'Solo letras, espacios, guiones y apóstrofes')
-    .transform(val => val.trim()),
+    .transform(val => val.trim())
+    .refine(val => val.trim().length >= 2, {
+      message: 'El nombre debe tener al menos 2 caracteres'
+    }),
   
   company: z.string()
     .min(2, 'Empresa debe tener al menos 2 caracteres')
