@@ -265,6 +265,16 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'compraEmpresas.seo.description': 'Accede a oportunidades exclusivas de compra de empresas. Asesoramiento profesional en adquisiciones estratégicas y crecimiento empresarial por M&A en España.',
     'compraEmpresas.seo.keywords': 'compra empresas España, adquisiciones empresariales, oportunidades M&A, inversión empresarial',
     
+    // Compra Empresas Hero
+    'compraEmpresas.hero.title': 'Adquisiciones para Empresas Industriales y Private Equity',
+    'compraEmpresas.hero.subtitle': 'Conectamos grupos industriales en procesos de consolidación y fondos de Private Equity con oportunidades exclusivas. Red especializada de empresas familiares industriales en transición generacional y procesos de expansión.',
+    'compraEmpresas.hero.benefit1': 'Deal sourcing especializado en sectores industriales',
+    'compraEmpresas.hero.benefit2': 'Red exclusiva de empresas familiares en transición',
+    'compraEmpresas.hero.benefit3': 'Análisis sectorial para fondos de Private Equity',
+    'compraEmpresas.hero.benefit4': 'Expertise en consolidación y sinergias industriales',
+    'compraEmpresas.hero.ctaPrimary': 'Ver Oportunidades Actuales',
+    'compraEmpresas.hero.ctaSecondary': 'Solicitar Consulta',
+    
     // Contacto Page
     'contacto.seo.title': 'Contacto - Consulta Gratuita M&A | Capittal',
     'contacto.seo.description': 'Contacta con los expertos de Capittal. Consulta gratuita sobre valoración, venta o compra de empresas. Primera reunión sin compromiso.',
@@ -1077,6 +1087,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Services
     'services.title': 'Els Nostres Serveis',
     'services.subtitle': 'Serveis especialitzats en M&A i finances corporatives per impulsar el creixement de la teva empresa.',
+    'services.cta.calculate': 'Calcular Ara',
+    'services.cta.moreInfo': 'Més informació',
     'services.sell.title': 'Vendre Empresa',
     'services.sell.description': 'Maximitzem el valor de la teva empresa amb el nostre procés provat de venda.',
     'services.sell.feature1': 'Valoració precisa',
@@ -1256,6 +1268,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ventaEmpresas.faq.subtitle': "Resolem els dubtes més comuns sobre el procés de venda d'empreses",
     
     // ========== COMPRA EMPRESAS (CA) ==========
+    'compraEmpresas.seo.title': 'Compra d\'Empreses - Oportunitats d\'Adquisició | Capittal',
+    'compraEmpresas.seo.description': 'Accedeix a oportunitats exclusives de compra d\'empreses. Assessorament professional en adquisicions estratègiques i creixement empresarial per M&A a Espanya.',
+    'compraEmpresas.seo.keywords': 'compra empreses Espanya, adquisicions empresarials, oportunitats M&A, inversió empresarial',
     'compraEmpresas.hero.title': 'Adquisicions per a Empreses Industrials i Private Equity',
     'compraEmpresas.hero.subtitle': "Connectem grups industrials en processos de consolidació i fons de Private Equity amb oportunitats exclusives. Xarxa especialitzada d'empreses familiars industrials en transició generacional i processos d'expansió.",
     'compraEmpresas.hero.benefit1': 'Deal sourcing especialitzat en sectors industrials',
@@ -1264,6 +1279,122 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'compraEmpresas.hero.benefit4': 'Expertise en consolidació i sinergies industrials',
     'compraEmpresas.hero.ctaPrimary': 'Veure Oportunitats Actuals',
     'compraEmpresas.hero.ctaSecondary': 'Sol·licitar Consulta',
+    
+    // Contacto Page SEO - CA
+    'contacto.seo.title': 'Contacte - Consulta Gratuïta M&A | Capittal',
+    'contacto.seo.description': 'Contacta amb els experts de Capittal. Consulta gratuïta sobre valoració, venda o compra d\'empreses. Primera reunió sense compromís.',
+    'contacto.seo.keywords': 'contacte M&A, consulta valoració empreses, assessoria M&A Espanya',
+    
+    // Equipo Page SEO - CA
+    'equipo.seo.title': 'El Nostre Equip - Experts en M&A | Capittal',
+    'equipo.seo.description': 'Coneix l\'equip d\'experts en M&A de Capittal. Professionals amb experiència global i resultats provats.',
+    'equipo.seo.keywords': 'equip M&A, experts fusions adquisicions, professionals M&A Espanya',
+    'equipo.title': 'El Nostre Equip',
+    'equipo.subtitle': 'Professionals amb experiència global i resultats provats',
+    
+    // Casos de Éxito Page SEO - CA
+    'casosExito.seo.title': 'Casos d\'Èxit M&A - Més de 200 Transaccions | Capittal',
+    'casosExito.seo.description': 'Descobreix els nostres casos d\'èxit en M&A. Més de 200 transaccions exitoses amb resultats excepcionals.',
+    'casosExito.seo.keywords': 'casos èxit M&A, transaccions exitoses, resultats M&A Espanya',
+    'casosExito.title': 'Casos d\'Èxit',
+    'casosExito.subtitle': 'Més de 200 transaccions exitoses que demostren la nostra capacitat per maximitzar el valor.',
+    
+    // Por Qué Elegirnos Page SEO - CA
+    'porQueElegirnos.seo.title': 'Per Què Triar Capittal? - El Teu Soci Estratègic en M&A',
+    'porQueElegirnos.seo.description': 'Descobreix per què més de 200 empreses confien en Capittal per a les seves operacions de M&A.',
+    'porQueElegirnos.seo.keywords': 'M&A Espanya, assessor M&A, venda empreses Espanya',
+    'porQueElegirnos.hero.badge': 'Líders en M&A des de 2008',
+    'porQueElegirnos.hero.title': 'Per Què Triar',
+    'porQueElegirnos.hero.titleHighlight': 'Capittal',
+    'porQueElegirnos.hero.titleEnd': '?',
+    'porQueElegirnos.hero.subtitle': 'Som el teu soci estratègic en fusions i adquisicions. Amb més de 15 anys d\'experiència i 200+ transaccions exitoses, t\'ajudem a maximitzar el valor de la teva empresa.',
+    
+    // Contact Variants - CA
+    'contact.compra.title': 'Troba la teva propera adquisició',
+    'contact.compra.subtitle': 'Deixa\'ns les teves dades i et contactarem per entendre els teus objectius d\'inversió.',
+    'contact.venta.title': 'Inicia el teu procés de venda',
+    'contact.venta.subtitle': 'Completa el formulari i un dels nostres experts es posarà en contacte amb tu.',
+    'contact.title.venta': 'Inicia el teu procés de venda',
+    'contact.description.venta': 'Completa el formulari i un dels nostres experts es posarà en contacte amb tu per valorar la teva empresa.',
+    'contact.title.compra': 'Troba la teva propera adquisició',
+    'contact.description.compra': 'Deixa\'ns les teves dades i et contactarem per entendre els teus objectius d\'inversió.',
+    
+    // Why Choose Us (Compra Empresas) - CA
+    'whyChooseUs.title': 'Per què triar Capittal',
+    'whyChooseUs.subtitle': 'Combinem experiència, metodologia provada i enfocament personalitzat per maximitzar el valor en cada transacció.',
+    'whyChooseUs.results.title': 'Els Nostres Resultats Parlen',
+    'whyChooseUs.results.subtitle': 'Més d\'una dècada creant valor i tancant operacions exitoses',
+    'whyChooseUs.advantage1.title': '80% Off-Market',
+    'whyChooseUs.advantage1.subtitle': 'Accés Exclusiu',
+    'whyChooseUs.advantage1.description': 'La majoria de les nostres oportunitats no estan al mercat públic. Accés directe a venedors privats i deals confidencials abans que la competència.',
+    'whyChooseUs.advantage1.metrics': 'Pipeline exclusiu de +200 empreses',
+    'whyChooseUs.advantage2.title': 'Experiència Multisector',
+    'whyChooseUs.advantage2.subtitle': 'Coneixement Especialitzat',
+    'whyChooseUs.advantage2.description': 'Expertise profund en tecnologia, serveis, distribució, consum i indústria. Entenem les particularitats i múltiples de cada sector.',
+    'whyChooseUs.advantage2.metrics': '15+ sectors, 150+ transaccions',
+    'whyChooseUs.advantage3.title': 'Negociació Experta',
+    'whyChooseUs.advantage3.subtitle': 'Estalvi Garantit',
+    'whyChooseUs.advantage3.description': 'El nostre equip de M&A aconsegueix millors termes i preus. Experiència en estructures complexes, earn-outs i mitigació de riscos.',
+    'whyChooseUs.advantage3.metrics': '15% estalvi promig vs. asking price',
+    'whyChooseUs.advantage4.title': 'Post-Deal Support',
+    'whyChooseUs.advantage4.subtitle': 'Integració Garantida',
+    'whyChooseUs.advantage4.description': 'Acompanyament complet després del tancament. Suport en integració operativa, optimització de sinergies i maximització del ROI.',
+    'whyChooseUs.advantage4.metrics': '6 mesos de suport inclòs',
+    'whyChooseUs.stat1.value': '47',
+    'whyChooseUs.stat1.label': 'Adquisicions tancades',
+    'whyChooseUs.stat2.value': '€325M',
+    'whyChooseUs.stat2.label': 'Valor gestionat',
+    'whyChooseUs.stat3.value': '92%',
+    'whyChooseUs.stat3.label': 'Taxa d\'èxit',
+    'whyChooseUs.stat4.value': '285%',
+    'whyChooseUs.stat4.label': 'ROI promig',
+    'whyChooseUs.stat5.value': '6.2x',
+    'whyChooseUs.stat5.label': 'EBITDA múltiple mitjà',
+    
+    // Acquisition Hero - CA
+    'acquisition.hero.title': 'Connectem empreses amb',
+    'acquisition.hero.titleHighlight': 'oportunitats',
+    'acquisition.hero.titleEnd': 'de creixement',
+    'acquisition.hero.subtitle': 'Facilitem adquisicions estratègiques que impulsen el creixement empresarial i creen valor sostenible.',
+    'acquisition.hero.cta': 'Sol·licitar Consulta',
+    'acquisition.metrics.deals': 'Adquisicions tancades',
+    'acquisition.metrics.value': 'Valor gestionat',
+    'acquisition.metrics.roi': 'ROI promig',
+    'acquisition.metrics.success': 'Taxa d\'èxit',
+    'acquisition.pipeline.title': 'Pipeline Actual',
+    'acquisition.pipeline.subtitle': 'Actualitzat en temps real',
+    'acquisition.pipeline.opportunities': 'Oportunitats',
+    'acquisition.pipeline.totalValue': 'Valor total',
+    'acquisition.pipeline.tech.title': 'Tecnologia SaaS',
+    'acquisition.pipeline.tech.details': '€12M • 8.5x EBITDA',
+    'acquisition.pipeline.tech.status': 'Activa',
+    'acquisition.pipeline.services.title': 'Serveis B2B',
+    'acquisition.pipeline.services.details': '€8M • 6.2x EBITDA',
+    'acquisition.pipeline.services.status': 'Due Diligence',
+    'acquisition.pipeline.distribution.title': 'Distribució',
+    'acquisition.pipeline.distribution.details': '€25M • 7.1x EBITDA',
+    'acquisition.pipeline.distribution.status': 'Negociació',
+    
+    // Venta Empresas Page - CA
+    'ventaEmpresas.seo.title': 'Venda d\'Empreses - Assessorament Professional | Capittal',
+    'ventaEmpresas.seo.description': 'Serveis professionals de venda d\'empreses. Assessorament integral, valoració experta i acompanyament complet en el procés de compravenda empresarial.',
+    'ventaEmpresas.seo.keywords': 'venda empreses, assessorament empresarial, valoració empreses, compravenda empresarial, M&A Espanya',
+    
+    // Opportunities Page - CA
+    'opportunities.seo.title': 'Oportunitats d\'Adquisició | Marketplace d\'Empreses - Capittal',
+    'opportunities.seo.description': 'Descobreix oportunitats exclusives d\'adquisició empresarial. Accedeix a empreses disponibles amb informació detallada sobre valoració, sector i rendiment financer.',
+    'opportunities.seo.keywords': 'oportunitats adquisició, compra empreses, marketplace empresarial, inversió empreses Espanya, M&A oportunitats',
+    'opportunities.hero.title': 'Marketplace d\'Oportunitats',
+    'opportunities.hero.subtitle': 'Explora empreses disponibles per a adquisició amb informació detallada sobre valoració, sector i rendiment financer.',
+    'opportunities.hero.cta': 'Descarregar Relació d\'Open Deals',
+    'opportunities.contact.title': 'Interessat en alguna oportunitat?',
+    'opportunities.contact.description': 'Contacta amb el nostre equip de M&A per obtenir informació detallada i accés a les oportunitats que s\'ajustin als teus objectius d\'inversió.',
+    'opportunities.contact.cta_advisor': 'Parlar amb un Assessor',
+    'opportunities.contact.cta_info': 'Més Informació',
+    
+    // Sector Hero - CA
+    'sector.cta.consult': 'Sol·licitar consulta',
+    'sector.cta.cases': 'Veure casos d\'èxit',
     
     // ========== CAPITTAL BRIEF (CA) ==========
     'capittalBrief.title': 'Què és Capittal?',
@@ -1607,6 +1738,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Services
     'services.title': 'Our Services',
     'services.subtitle': "Specialized services in M&A and corporate finance to boost your company's growth.",
+    'services.cta.calculate': 'Calculate Now',
+    'services.cta.moreInfo': 'More information',
     'services.sell.title': 'Sell Company',
     'services.sell.description': "We maximize your company's value with our proven sales process.",
     'services.sell.feature1': 'Accurate valuation',
@@ -1659,6 +1792,135 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.title': 'Contact Us',
     'contact.subtitle': 'Get in touch with us for more information about our valuation and company sale services.',
     'contact.direct.title': 'Prefer to contact directly?',
+    
+    // Contact Variants - EN
+    'contact.compra.title': 'Find your next acquisition',
+    'contact.compra.subtitle': 'Leave us your details and we will contact you to understand your investment objectives.',
+    'contact.venta.title': 'Start your selling process',
+    'contact.venta.subtitle': 'Complete the form and one of our experts will contact you.',
+    'contact.title.venta': 'Start your selling process',
+    'contact.description.venta': 'Complete the form and one of our experts will contact you to value your company.',
+    'contact.title.compra': 'Find your next acquisition',
+    'contact.description.compra': 'Leave us your details and we will contact you to understand your investment objectives.',
+    
+    // Contacto Page SEO - EN
+    'contacto.seo.title': 'Contact - Free M&A Consultation | Capittal',
+    'contacto.seo.description': 'Contact Capittal experts. Free consultation on valuation, sale or acquisition of companies. First meeting with no commitment.',
+    'contacto.seo.keywords': 'M&A contact, business valuation consultation, M&A advisory Spain',
+    
+    // Equipo Page SEO - EN
+    'equipo.seo.title': 'Our Team - M&A Experts | Capittal',
+    'equipo.seo.description': 'Meet Capittal\'s M&A expert team. Professionals with global experience and proven results.',
+    'equipo.seo.keywords': 'M&A team, mergers acquisitions experts, M&A professionals Spain',
+    'equipo.title': 'Our Team',
+    'equipo.subtitle': 'Professionals with global experience and proven results',
+    
+    // Success Stories Page SEO - EN
+    'casosExito.seo.title': 'M&A Success Stories - Over 200 Transactions | Capittal',
+    'casosExito.seo.description': 'Discover our M&A success stories. Over 200 successful transactions with exceptional results.',
+    'casosExito.seo.keywords': 'M&A success stories, successful transactions, M&A results Spain',
+    'casosExito.title': 'Success Stories',
+    'casosExito.subtitle': 'Over 200 successful transactions demonstrating our ability to maximize value.',
+    
+    // Why Choose Us Page SEO - EN
+    'porQueElegirnos.seo.title': 'Why Choose Capittal? - Your Strategic M&A Partner',
+    'porQueElegirnos.seo.description': 'Discover why over 200 companies trust Capittal for their M&A operations.',
+    'porQueElegirnos.seo.keywords': 'M&A Spain, M&A advisor, sell companies Spain',
+    'porQueElegirnos.hero.badge': 'M&A Leaders since 2008',
+    'porQueElegirnos.hero.title': 'Why Choose',
+    'porQueElegirnos.hero.titleHighlight': 'Capittal',
+    'porQueElegirnos.hero.titleEnd': '?',
+    'porQueElegirnos.hero.subtitle': 'We are your strategic partner in mergers and acquisitions. With over 15 years of experience and 200+ successful transactions, we help you maximize your company\'s value.',
+    
+    // Why Choose Us (Compra Empresas) - EN
+    'whyChooseUs.title': 'Why choose Capittal',
+    'whyChooseUs.subtitle': 'We combine experience, proven methodology and personalized approach to maximize value in every transaction.',
+    'whyChooseUs.results.title': 'Our Results Speak',
+    'whyChooseUs.results.subtitle': 'Over a decade creating value and closing successful operations',
+    'whyChooseUs.advantage1.title': '80% Off-Market',
+    'whyChooseUs.advantage1.subtitle': 'Exclusive Access',
+    'whyChooseUs.advantage1.description': 'Most of our opportunities are not in the public market. Direct access to private sellers and confidential deals before the competition.',
+    'whyChooseUs.advantage1.metrics': 'Exclusive pipeline of +200 companies',
+    'whyChooseUs.advantage2.title': 'Multisector Experience',
+    'whyChooseUs.advantage2.subtitle': 'Specialized Knowledge',
+    'whyChooseUs.advantage2.description': 'Deep expertise in technology, services, distribution, consumption and industry. We understand the particularities and multiples of each sector.',
+    'whyChooseUs.advantage2.metrics': '15+ sectors, 150+ transactions',
+    'whyChooseUs.advantage3.title': 'Expert Negotiation',
+    'whyChooseUs.advantage3.subtitle': 'Guaranteed Savings',
+    'whyChooseUs.advantage3.description': 'Our M&A team gets better terms and prices. Experience in complex structures, earn-outs and risk mitigation.',
+    'whyChooseUs.advantage3.metrics': '15% average savings vs. asking price',
+    'whyChooseUs.advantage4.title': 'Post-Deal Support',
+    'whyChooseUs.advantage4.subtitle': 'Integration Guaranteed',
+    'whyChooseUs.advantage4.description': 'Complete support after closing. Support in operational integration, synergy optimization and ROI maximization.',
+    'whyChooseUs.advantage4.metrics': '6 months of support included',
+    'whyChooseUs.stat1.value': '47',
+    'whyChooseUs.stat1.label': 'Acquisitions closed',
+    'whyChooseUs.stat2.value': '€325M',
+    'whyChooseUs.stat2.label': 'Value managed',
+    'whyChooseUs.stat3.value': '92%',
+    'whyChooseUs.stat3.label': 'Success rate',
+    'whyChooseUs.stat4.value': '285%',
+    'whyChooseUs.stat4.label': 'Average ROI',
+    'whyChooseUs.stat5.value': '6.2x',
+    'whyChooseUs.stat5.label': 'Average EBITDA multiple',
+    
+    // Acquisition Hero - EN
+    'acquisition.hero.title': 'We connect companies with',
+    'acquisition.hero.titleHighlight': 'growth',
+    'acquisition.hero.titleEnd': 'opportunities',
+    'acquisition.hero.subtitle': 'We facilitate strategic acquisitions that drive business growth and create sustainable value.',
+    'acquisition.hero.cta': 'Request Consultation',
+    'acquisition.metrics.deals': 'Acquisitions closed',
+    'acquisition.metrics.value': 'Value managed',
+    'acquisition.metrics.roi': 'Average ROI',
+    'acquisition.metrics.success': 'Success rate',
+    'acquisition.pipeline.title': 'Current Pipeline',
+    'acquisition.pipeline.subtitle': 'Updated in real time',
+    'acquisition.pipeline.opportunities': 'Opportunities',
+    'acquisition.pipeline.totalValue': 'Total value',
+    'acquisition.pipeline.tech.title': 'SaaS Technology',
+    'acquisition.pipeline.tech.details': '€12M • 8.5x EBITDA',
+    'acquisition.pipeline.tech.status': 'Active',
+    'acquisition.pipeline.services.title': 'B2B Services',
+    'acquisition.pipeline.services.details': '€8M • 6.2x EBITDA',
+    'acquisition.pipeline.services.status': 'Due Diligence',
+    'acquisition.pipeline.distribution.title': 'Distribution',
+    'acquisition.pipeline.distribution.details': '€25M • 7.1x EBITDA',
+    'acquisition.pipeline.distribution.status': 'Negotiation',
+    
+    // Venta Empresas Page - EN
+    'ventaEmpresas.seo.title': 'Sell Companies - Professional Advisory | Capittal',
+    'ventaEmpresas.seo.description': 'Professional company sale services. Comprehensive advisory, expert valuation and complete support in the business buying and selling process.',
+    'ventaEmpresas.seo.keywords': 'sell companies, business advisory, company valuation, business M&A, M&A Spain',
+    
+    // Compra Empresas Page - EN
+    'compraEmpresas.seo.title': 'Buy Companies - Acquisition Opportunities | Capittal',
+    'compraEmpresas.seo.description': 'Access exclusive company acquisition opportunities. Professional advisory in strategic acquisitions and business growth through M&A in Spain.',
+    'compraEmpresas.seo.keywords': 'buy companies Spain, business acquisitions, M&A opportunities, business investment',
+    'compraEmpresas.hero.title': 'Acquisitions for Industrial Companies and Private Equity',
+    'compraEmpresas.hero.subtitle': 'We connect industrial groups in consolidation processes and Private Equity funds with exclusive opportunities. Specialized network of family industrial companies in generational transition and expansion processes.',
+    'compraEmpresas.hero.benefit1': 'Specialized deal sourcing in industrial sectors',
+    'compraEmpresas.hero.benefit2': 'Exclusive network of family businesses in transition',
+    'compraEmpresas.hero.benefit3': 'Sectoral analysis for Private Equity funds',
+    'compraEmpresas.hero.benefit4': 'Expertise in consolidation and industrial synergies',
+    'compraEmpresas.hero.ctaPrimary': 'View Current Opportunities',
+    'compraEmpresas.hero.ctaSecondary': 'Request Consultation',
+    
+    // Opportunities Page - EN
+    'opportunities.seo.title': 'Acquisition Opportunities | Business Marketplace - Capittal',
+    'opportunities.seo.description': 'Discover exclusive business acquisition opportunities. Access available companies with detailed information on valuation, sector and financial performance.',
+    'opportunities.seo.keywords': 'acquisition opportunities, buy companies, business marketplace, Spain business investment, M&A opportunities',
+    'opportunities.hero.title': 'Opportunities Marketplace',
+    'opportunities.hero.subtitle': 'Explore companies available for acquisition with detailed information on valuation, sector and financial performance.',
+    'opportunities.hero.cta': 'Download Open Deals List',
+    'opportunities.contact.title': 'Interested in any opportunity?',
+    'opportunities.contact.description': 'Contact our M&A team to get detailed information and access to opportunities that fit your investment objectives.',
+    'opportunities.contact.cta_advisor': 'Talk to an Advisor',
+    'opportunities.contact.cta_info': 'More Information',
+    
+    // Sector Hero - EN
+    'sector.cta.consult': 'Request consultation',
+    'sector.cta.cases': 'View success stories',
     
     // ========== ECOSYSTEM (EN) ==========
     'ecosystem.badge': 'Comprehensive M&A Ecosystem',
