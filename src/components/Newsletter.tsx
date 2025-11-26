@@ -4,20 +4,62 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Mail, Check } from 'lucide-react';
+import { useFormSecurity } from '@/hooks/useFormSecurity';
+import { newsletterSchema } from '@/schemas/formSchemas';
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const { toast } = useToast();
+  
+  const {
+    honeypotProps,
+    honeypotValue,
+    setHoneypotValue,
+    isBot,
+    isSubmissionTooFast,
+    checkRateLimit,
+    recordSubmissionAttempt,
+    getTrackingData,
+  } = useFormSecurity();
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email) {
+    // Seguridad: Detectar bots
+    if (isBot()) {
+      console.warn('Bot detectado en Newsletter');
+      return; // Silent fail para bots
+    }
+
+    // Seguridad: Detectar envíos demasiado rápidos
+    if (isSubmissionTooFast()) {
       toast({
         title: "Error",
-        description: "Por favor, introduce tu email.",
+        description: "Por favor, tómate tu tiempo para completar el formulario.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validación con Zod
+    try {
+      newsletterSchema.parse({ email: email.trim() });
+    } catch (error: any) {
+      toast({
+        title: "Error de validación",
+        description: error.errors?.[0]?.message || "Email inválido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Seguridad: Rate limiting
+    if (!checkRateLimit(email)) {
+      toast({
+        title: "Demasiados intentos",
+        description: "Has alcanzado el límite de suscripciones. Por favor, espera un momento.",
         variant: "destructive",
       });
       return;
@@ -26,24 +68,25 @@ const Newsletter = () => {
     setIsLoading(true);
 
     try {
-      // Get UTM and referrer data
-      const urlParams = new URLSearchParams(window.location.search);
-      const utm_source = urlParams.get('utm_source') || undefined;
-      const utm_medium = urlParams.get('utm_medium') || undefined;
-      const utm_campaign = urlParams.get('utm_campaign') || undefined;
-      const referrer = document.referrer || undefined;
-
-      // Get IP address
-      const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
-      const ipData = ipResponse ? await ipResponse.json() : null;
+      // Obtener datos de tracking
+      const trackingData = await getTrackingData();
 
       // Guardar suscripción en newsletter_subscribers
       const { error } = await supabase.from('newsletter_subscribers').insert({
-        email: email,
-        source: 'website'
+        email: email.trim(),
+        source: 'website',
+        utm_source: trackingData.utm_source,
+        utm_medium: trackingData.utm_medium,
+        utm_campaign: trackingData.utm_campaign,
+        referrer: trackingData.referrer,
+        user_agent: trackingData.user_agent,
+        ip_address: trackingData.ip_address,
       });
 
       if (error) throw error;
+
+      // Registrar intento exitoso
+      recordSubmissionAttempt(email);
 
       setIsSubscribed(true);
       setEmail('');
@@ -99,6 +142,13 @@ const Newsletter = () => {
       </p>
       
       <form onSubmit={handleSubscribe} className="space-y-4">
+        {/* Honeypot field - invisible para usuarios reales */}
+        <input
+          {...honeypotProps}
+          value={honeypotValue}
+          onChange={(e) => setHoneypotValue(e.target.value)}
+        />
+        
         <div className="flex gap-3">
           <Input
             type="email"

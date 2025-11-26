@@ -8,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Send } from 'lucide-react';
+import { useFormSecurity } from '@/hooks/useFormSecurity';
+import { maResourcesSchema } from '@/schemas/formSchemas';
 
 interface FormData {
   fullName: string;
@@ -50,6 +52,17 @@ export const MAResourcesForm: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const {
+    honeypotProps,
+    honeypotValue,
+    setHoneypotValue,
+    isBot,
+    isSubmissionTooFast,
+    checkRateLimit,
+    recordSubmissionAttempt,
+    getTrackingData,
+  } = useFormSecurity();
 
   const handleSectorToggle = (sector: string) => {
     setFormData(prev => ({
@@ -63,11 +76,40 @@ export const MAResourcesForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.fullName || !formData.company || !formData.email) {
+    // Seguridad: Detectar bots
+    if (isBot()) {
+      console.warn('Bot detectado en MAResourcesForm');
+      return; // Silent fail
+    }
+
+    // Seguridad: Detectar envíos demasiado rápidos
+    if (isSubmissionTooFast()) {
       toast({
         title: "Error",
-        description: "Por favor, completa todos los campos obligatorios.",
-        variant: "destructive"
+        description: "Por favor, tómate tu tiempo para completar el formulario.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validación con Zod
+    try {
+      maResourcesSchema.parse(formData);
+    } catch (error: any) {
+      toast({
+        title: "Error de validación",
+        description: error.errors?.[0]?.message || "Verifica los datos del formulario",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Seguridad: Rate limiting
+    if (!checkRateLimit(formData.email)) {
+      toast({
+        title: "Demasiados intentos",
+        description: "Has alcanzado el límite de envíos. Por favor, espera un momento.",
+        variant: "destructive",
       });
       return;
     }
@@ -75,23 +117,32 @@ export const MAResourcesForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      // Obtener datos de tracking
+      const trackingData = await getTrackingData();
+
       const { error } = await supabase
         .from('ma_resources_requests')
         .insert({
-          full_name: formData.fullName,
-          company: formData.company,
-          email: formData.email,
-          phone: formData.phone || null,
+          full_name: formData.fullName.trim(),
+          company: formData.company.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone?.trim() || null,
           sectors_of_interest: formData.sectorsOfInterest.length > 0 ? formData.sectorsOfInterest : null,
           operation_type: formData.operationType || null,
-          ip_address: null, // Will be set by RLS policy
-          user_agent: navigator.userAgent,
-          referrer: document.referrer || null
+          ip_address: trackingData.ip_address,
+          user_agent: trackingData.user_agent,
+          referrer: trackingData.referrer,
+          utm_source: trackingData.utm_source,
+          utm_medium: trackingData.utm_medium,
+          utm_campaign: trackingData.utm_campaign,
         });
 
       if (error) {
         throw error;
       }
+
+      // Registrar intento exitoso
+      recordSubmissionAttempt(formData.email);
 
       toast({
         title: "¡Solicitud enviada!",
@@ -134,6 +185,13 @@ export const MAResourcesForm: React.FC = () => {
       
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Honeypot field - invisible para usuarios reales */}
+          <input
+            {...honeypotProps}
+            value={honeypotValue}
+            onChange={(e) => setHoneypotValue(e.target.value)}
+          />
+          
           {/* Personal Info */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
