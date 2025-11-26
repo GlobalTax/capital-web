@@ -1,19 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { z } from 'zod';
+import { useFormSecurity } from '@/hooks/useFormSecurity';
+import { ventaEmpresasSchema, VentaEmpresasFormData } from '@/schemas/formSchemas';
 
-// Validation schema
-const ventaEmpresasSchema = z.object({
-  name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
-  email: z.string().trim().email("Email inválido").max(254),
-  phone: z.string().trim().min(1, "El teléfono es obligatorio").max(20),
-  company: z.string().trim().min(2, "El nombre de empresa debe tener al menos 2 caracteres").max(100),
-  revenue: z.string().optional(),
-  urgency: z.string().optional(),
-});
-
-export type VentaEmpresasFormData = z.infer<typeof ventaEmpresasSchema>;
+// Schema is now imported from centralized file
 
 export interface SubmissionResult {
   success: boolean;
@@ -22,6 +13,7 @@ export interface SubmissionResult {
 
 export const useVentaEmpresasForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { getTrackingData, recordSubmissionAttempt } = useFormSecurity();
 
   const submitForm = async (formData: VentaEmpresasFormData): Promise<SubmissionResult> => {
     setIsSubmitting(true);
@@ -30,30 +22,37 @@ export const useVentaEmpresasForm = () => {
       // Validate form data
       const validatedData = ventaEmpresasSchema.parse(formData);
 
-      // Collect tracking data
-      const urlParams = new URLSearchParams(window.location.search);
-      const trackingData = {
-        utm_source: urlParams.get('utm_source') || undefined,
-        utm_medium: urlParams.get('utm_medium') || undefined,
-        utm_campaign: urlParams.get('utm_campaign') || undefined,
-        utm_content: urlParams.get('utm_content') || undefined,
-        utm_term: urlParams.get('utm_term') || undefined,
-        referrer: document.referrer || undefined,
+      // Obtener datos de tracking
+      const trackingData = await getTrackingData();
+
+      // Map urgency to priority
+      const urgencyToPriority: Record<string, string> = {
+        urgent: 'high',
+        high: 'high',
+        medium: 'medium',
+        low: 'low',
       };
 
       // Prepare data for insertion
       const insertData = {
-        full_name: validatedData.name,
-        email: validatedData.email,
-        phone: validatedData.phone,
-        company: validatedData.company,
+        full_name: validatedData.name.trim(),
+        email: validatedData.email.trim(),
+        phone: validatedData.phone.trim(),
+        company: validatedData.company.trim(),
         message: `Facturación: ${formData.revenue || 'No especificado'}\nUrgencia: ${formData.urgency || 'No especificado'}`,
         page_origin: 'lp-venta-empresas',
         source_project: 'lp-venta-empresas',
         source: 'landing',
         status: 'new',
-        priority: formData.urgency === 'urgent' ? 'high' : (formData.urgency === 'high' ? 'high' : 'medium'),
-        ...trackingData,
+        priority: urgencyToPriority[formData.urgency || 'medium'] || 'medium',
+        utm_source: trackingData.utm_source,
+        utm_medium: trackingData.utm_medium,
+        utm_campaign: trackingData.utm_campaign,
+        utm_content: trackingData.utm_content,
+        utm_term: trackingData.utm_term,
+        referrer: trackingData.referrer,
+        user_agent: trackingData.user_agent,
+        ip_address: trackingData.ip_address,
       };
 
       // Insert into general_contact_leads
@@ -66,6 +65,9 @@ export const useVentaEmpresasForm = () => {
         throw new Error('Error al enviar el formulario');
       }
 
+      // Registrar intento exitoso
+      recordSubmissionAttempt(validatedData.email);
+
       // Success notification will be handled by the calling component
       setIsSubmitting(false);
       return { success: true };
@@ -73,8 +75,8 @@ export const useVentaEmpresasForm = () => {
       console.error('Form submission error:', error);
       setIsSubmitting(false);
       
-      if (error instanceof z.ZodError) {
-        const errorMessage = error.errors[0]?.message || 'Datos de formulario inválidos';
+      if (error instanceof Error && error.message.includes('parse')) {
+        const errorMessage = 'Datos de formulario inválidos';
         return { success: false, error: errorMessage };
       }
       

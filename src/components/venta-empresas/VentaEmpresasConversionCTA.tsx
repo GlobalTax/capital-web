@@ -4,6 +4,8 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 import { useVentaEmpresasForm } from '@/hooks/useVentaEmpresasForm';
 import { toast } from 'sonner';
 import VentaEmpresasSuccessModal from './VentaEmpresasSuccessModal';
+import { useFormSecurity } from '@/hooks/useFormSecurity';
+import { ventaEmpresasSchema } from '@/schemas/formSchemas';
 
 const VentaEmpresasConversionCTA = () => {
   const { submitForm, isSubmitting } = useVentaEmpresasForm();
@@ -16,9 +18,44 @@ const VentaEmpresasConversionCTA = () => {
     revenue: '',
     urgency: 'medium'
   });
+  
+  const {
+    honeypotProps,
+    honeypotValue,
+    setHoneypotValue,
+    isBot,
+    isSubmissionTooFast,
+    checkRateLimit,
+  } = useFormSecurity();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Seguridad: Detectar bots
+    if (isBot()) {
+      console.warn('Bot detectado en VentaEmpresasForm');
+      return; // Silent fail
+    }
+
+    // Seguridad: Detectar envíos demasiado rápidos
+    if (isSubmissionTooFast()) {
+      toast.error("Por favor, tómate tu tiempo para completar el formulario.");
+      return;
+    }
+
+    // Validación con Zod
+    try {
+      ventaEmpresasSchema.parse(formData);
+    } catch (error: any) {
+      toast.error(error.errors?.[0]?.message || "Verifica los datos del formulario");
+      return;
+    }
+
+    // Seguridad: Rate limiting
+    if (!checkRateLimit(formData.email)) {
+      toast.error("Has alcanzado el límite de envíos. Por favor, espera un momento.");
+      return;
+    }
     
     const result = await submitForm(formData);
     
@@ -133,6 +170,13 @@ const VentaEmpresasConversionCTA = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Honeypot field - invisible para usuarios reales */}
+                <input
+                  {...honeypotProps}
+                  value={honeypotValue}
+                  onChange={(e) => setHoneypotValue(e.target.value)}
+                />
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nombre completo *

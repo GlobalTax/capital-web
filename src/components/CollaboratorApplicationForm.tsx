@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useCollaboratorApplications } from '@/hooks/useCollaboratorApplications';
 import { Button } from '@/components/ui/button';
@@ -6,10 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFormSecurity } from '@/hooks/useFormSecurity';
+import { useToast } from '@/hooks/use-toast';
+import { collaboratorSchema } from '@/schemas/formSchemas';
 
 const CollaboratorApplicationForm = () => {
   const { submitApplication, isSubmitting } = useCollaboratorApplications();
-
+  const { toast } = useToast();
+  
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -19,6 +22,15 @@ const CollaboratorApplicationForm = () => {
     experience: '',
     motivation: '',
   });
+  
+  const {
+    honeypotProps,
+    honeypotValue,
+    setHoneypotValue,
+    isBot,
+    isSubmissionTooFast,
+    checkRateLimit,
+  } = useFormSecurity();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -32,10 +44,48 @@ const CollaboratorApplicationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Seguridad: Detectar bots
+    if (isBot()) {
+      console.warn('Bot detectado en CollaboratorApplicationForm');
+      return; // Silent fail
+    }
+
+    // Seguridad: Detectar envíos demasiado rápidos
+    if (isSubmissionTooFast()) {
+      toast({
+        title: "Error",
+        description: "Por favor, tómate tu tiempo para completar el formulario.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validación con Zod
+    try {
+      collaboratorSchema.parse(formData);
+    } catch (error: any) {
+      toast({
+        title: "Error de validación",
+        description: error.errors?.[0]?.message || "Verifica los datos del formulario",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Seguridad: Rate limiting
+    if (!checkRateLimit(formData.email)) {
+      toast({
+        title: "Demasiados intentos",
+        description: "Has alcanzado el límite de envíos. Por favor, espera un momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       await submitApplication(formData);
       
-      // Resetear formulario
+      // Resetear formulario en caso de éxito
       setFormData({
         fullName: '',
         email: '',
@@ -60,6 +110,13 @@ const CollaboratorApplicationForm = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Honeypot field - invisible para usuarios reales */}
+          <input
+            {...honeypotProps}
+            value={honeypotValue}
+            onChange={(e) => setHoneypotValue(e.target.value)}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Nombre Completo *</Label>

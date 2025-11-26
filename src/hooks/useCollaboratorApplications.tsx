@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useFormSecurity } from '@/hooks/useFormSecurity';
 
 interface CollaboratorApplication {
   fullName: string;
@@ -16,35 +17,32 @@ interface CollaboratorApplication {
 export const useCollaboratorApplications = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { getTrackingData, recordSubmissionAttempt } = useFormSecurity();
 
   const submitApplication = async (applicationData: CollaboratorApplication) => {
     setIsSubmitting(true);
     
     try {
-      // Obtener información adicional del navegador
-      const ipResponse = await fetch('https://api.ipify.org?format=json').catch(() => null);
-      const ipData = ipResponse ? await ipResponse.json() : null;
-      
-      // Get UTM and referrer data
-      const urlParams = new URLSearchParams(window.location.search);
-      const utm_source = urlParams.get('utm_source') || undefined;
-      const utm_medium = urlParams.get('utm_medium') || undefined;
-      const utm_campaign = urlParams.get('utm_campaign') || undefined;
-      const referrer = document.referrer || undefined;
+      // Obtener datos de tracking
+      const trackingData = await getTrackingData();
 
       // Insertar en Supabase principal
       const { data, error } = await supabase
         .from('collaborator_applications')
         .insert({
-          full_name: applicationData.fullName,
-          email: applicationData.email,
-          phone: applicationData.phone,
-          company: applicationData.company,
-          profession: applicationData.profession,
-          experience: applicationData.experience,
-          motivation: applicationData.motivation,
-          ip_address: ipData?.ip,
-          user_agent: navigator.userAgent,
+          full_name: applicationData.fullName.trim(),
+          email: applicationData.email.trim(),
+          phone: applicationData.phone.trim(),
+          company: applicationData.company?.trim() || null,
+          profession: applicationData.profession.trim(),
+          experience: applicationData.experience?.trim() || null,
+          motivation: applicationData.motivation?.trim() || null,
+          ip_address: trackingData.ip_address,
+          user_agent: trackingData.user_agent,
+          utm_source: trackingData.utm_source,
+          utm_medium: trackingData.utm_medium,
+          utm_campaign: trackingData.utm_campaign,
+          referrer: trackingData.referrer,
         })
         .select()
         .single();
@@ -53,26 +51,17 @@ export const useCollaboratorApplications = () => {
         throw error;
       }
 
+      // Registrar intento exitoso
+      recordSubmissionAttempt(applicationData.email);
+
       // Enviar a segunda base de datos
       try {
-        // Enriquecer con UTM y referrer
-        const urlParams = new URLSearchParams(window.location.search);
-        const utm_source = urlParams.get('utm_source') || undefined;
-        const utm_medium = urlParams.get('utm_medium') || undefined;
-        const utm_campaign = urlParams.get('utm_campaign') || undefined;
-        const referrer = document.referrer || undefined;
-
         const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
           body: {
             type: 'collaborator',
             data: {
               ...data,
-              ip_address: ipData?.ip,
-              user_agent: navigator.userAgent,
-              utm_source,
-              utm_medium,
-              utm_campaign,
-              referrer,
+              ...trackingData,
               source: 'web-collaborators'
             }
           }
