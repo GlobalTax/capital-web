@@ -88,6 +88,24 @@ const Newsletter = () => {
       // Registrar intento exitoso
       recordSubmissionAttempt(email);
 
+      // Enviar email de bienvenida
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: 'newsletter',
+            formType: 'newsletter',
+            email: email.trim(),
+            fullName: '',
+            formData: { 
+              email: email.trim(), 
+              ...trackingData 
+            },
+          }
+        });
+      } catch (notificationError) {
+        console.warn('Newsletter notification error (non-blocking):', notificationError);
+      }
+
       setIsSubscribed(true);
       setEmail('');
       

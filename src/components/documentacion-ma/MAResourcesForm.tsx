@@ -144,6 +144,26 @@ export const MAResourcesForm: React.FC = () => {
       // Registrar intento exitoso
       recordSubmissionAttempt(formData.email);
 
+      // Enviar notificaciones por email
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: 'ma_resources',
+            formType: 'general_contact',
+            email: formData.email.trim(),
+            fullName: formData.fullName.trim(),
+            formData: {
+              ...formData,
+              ...trackingData,
+              sectors: formData.sectorsOfInterest,
+              operationType: formData.operationType,
+            },
+          }
+        });
+      } catch (notificationError) {
+        console.warn('MA Resources notification error (non-blocking):', notificationError);
+      }
+
       toast({
         title: "¡Solicitud enviada!",
         description: "Te contactaremos pronto con los recursos solicitados.",

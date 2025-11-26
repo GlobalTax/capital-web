@@ -108,6 +108,26 @@ export const ProfessionalValuationForm = () => {
       // Registrar intento para rate limiting
       recordSubmissionAttempt(validation.data.email);
 
+      // Enviar notificaciones por email
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: 'professional_valuation',
+            formType: 'general_contact',
+            email: validation.data.email,
+            fullName: validation.data.name,
+            formData: {
+              ...validation.data,
+              ...trackingData,
+              company: validation.data.company,
+              revenue_range: validation.data.revenue_range,
+            },
+          }
+        });
+      } catch (notificationError) {
+        console.warn('Notification error (non-blocking):', notificationError);
+      }
+
       // Feedback de éxito
       toast.success('¡Solicitud enviada! Te contactaremos en 24 horas', {
         duration: 5000,
