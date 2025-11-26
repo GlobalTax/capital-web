@@ -1,9 +1,14 @@
 import { validateTranslations } from '../utils/i18n-validator';
 
-// Ejecutar validación
-const { valid, report } = validateTranslations();
+// Ejecutar validación completa
+const result = validateTranslations();
 
-console.log(report);
+console.log(result.report);
 
-// Exit con código de error si faltan traducciones
-process.exit(valid ? 0 : 1);
+// Salir con código de error si hay problemas críticos
+const hasCriticalErrors = 
+  !result.valid || 
+  result.criticalKeysMissing.length > 0 ||
+  result.duplicateKeys.length > 0;
+
+process.exit(hasCriticalErrors ? 1 : 0);
