@@ -454,8 +454,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Navegación
     'nav.prev': 'Anterior',
     'nav.next': 'Siguiente',
+    'nav.next_short': 'Siguiente',
     'nav.step_of': 'Paso {current} de {total}',
     'nav.calculate': 'Calcular Valoración',
+    'nav.calculate_short': 'Calcular',
     'aria.prev': 'Ir al paso anterior',
     'aria.next': 'Ir al siguiente paso',
     'aria.calculate': 'Calcular valoración con los datos introducidos',
@@ -793,8 +795,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'nav.prev': 'Anterior',
     'nav.next': 'Següent',
+    'nav.next_short': 'Següent',
     'nav.step_of': 'Pas {current} de {total}',
     'nav.calculate': 'Calcular Valoració',
+    'nav.calculate_short': 'Calcular',
     'aria.prev': 'Anar al pas anterior',
     'aria.next': 'Anar al pas següent',
     'aria.calculate': 'Calcular valoració amb les dades introduïdes',
@@ -1474,8 +1478,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Navigation
     'nav.prev': 'Previous',
     'nav.next': 'Next',
+    'nav.next_short': 'Next',
     'nav.step_of': 'Step {current} of {total}',
     'nav.calculate': 'Calculate Valuation',
+    'nav.calculate_short': 'Calculate',
     'aria.prev': 'Go to previous step',
     'aria.next': 'Go to next step',
     'aria.calculate': 'Calculate valuation with entered data',
