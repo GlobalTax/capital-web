@@ -8,8 +8,10 @@ import SectorHero from '@/components/SectorHero';
 import SectorThreePanels from '@/components/sector/SectorThreePanels';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { useHreflang } from '@/hooks/useHreflang';
 
 const Energia = () => {
+  useHreflang();
   const panels = [
     {
       type: 'image' as const,

@@ -3,11 +3,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { useHreflang } from '@/hooks/useHreflang';
 import SectorHero from '@/components/SectorHero';
 import SectorStats from '@/components/sector/SectorStats';
 import { Computer, TrendingUp, Users, Award } from 'lucide-react';
 
 const Tecnologia = () => {
+  useHreflang();
+  
   const stats = [
     { number: "85%", label: "Crecimiento anual promedio" },
     { number: "5.5x", label: "Múltiplo EBITDA promedio" },

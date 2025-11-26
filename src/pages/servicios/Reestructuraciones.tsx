@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 import ReestructuracionesHero from '@/components/reestructuraciones/ReestructuracionesHero';
 import ReestructuracionesProcess from '@/components/reestructuraciones/ReestructuracionesProcess';
 import ReestructuracionesBenefits from '@/components/reestructuraciones/ReestructuracionesBenefits';
@@ -10,6 +11,8 @@ import ReestructuracionesFAQ from '@/components/reestructuraciones/Reestructurac
 import ReestructuracionesCTA from '@/components/reestructuraciones/ReestructuracionesCTA';
 
 const Reestructuraciones = () => {
+  useHreflang();
+  
   return (
     <div className="min-h-screen bg-white">
       <SEOHead 

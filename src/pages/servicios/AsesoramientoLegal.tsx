@@ -2,6 +2,7 @@ import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 import AsesoramientoLegalHero from '@/components/asesoramiento-legal/AsesoramientoLegalHero';
 import AsesoramientoLegalWhyChoose from '@/components/asesoramiento-legal/AsesoramientoLegalWhyChoose';
 import AsesoramientoLegalServices from '@/components/asesoramiento-legal/AsesoramientoLegalServices';
@@ -11,6 +12,8 @@ import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/Asesoramient
 import AsesoramientoLegalCTA from '@/components/asesoramiento-legal/AsesoramientoLegalCTA';
 
 const AsesoramientoLegal = () => {
+  useHreflang();
+  
   return (
     <UnifiedLayout variant="home">
       <SEOHead 

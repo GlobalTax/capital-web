@@ -2,6 +2,7 @@ import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 import PlanificacionFiscalHero from '@/components/planificacion-fiscal/PlanificacionFiscalHero';
 import PlanificacionFiscalWhyOptimize from '@/components/planificacion-fiscal/PlanificacionFiscalWhyOptimize';
 import PlanificacionFiscalServices from '@/components/planificacion-fiscal/PlanificacionFiscalServices';
@@ -9,6 +10,8 @@ import PlanificacionFiscalFAQ from '@/components/planificacion-fiscal/Planificac
 import PlanificacionFiscalCTA from '@/components/planificacion-fiscal/PlanificacionFiscalCTA';
 
 const PlanificacionFiscal = () => {
+  useHreflang();
+  
   return (
     <UnifiedLayout variant="home">
       <SEOHead 
