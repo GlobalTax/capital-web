@@ -498,5 +498,85 @@ export const collaboratorsTranslations = {
     // Testimonials
     'collab.testimonials.title': 'What our collaborators say',
     'collab.testimonials.subtitle': 'Real experiences from professionals who are part of our network',
+    
+    // Hero Stats - Numeric values
+    'collab.hero.stat1_value': '50+',
+    'collab.hero.stat2_value': '€1.2B',
+    'collab.hero.stat3_value': '98.7%',
+    
+    // Hero Dashboard Activities
+    'collab.hero.dashboard_activity1': 'Tech Startup Valuation',
+    'collab.hero.dashboard_activity2': 'Industrial M&A',
+    'collab.hero.dashboard_activity3': 'Retail Due Diligence',
+    'collab.hero.dashboard_status1': 'In Progress',
+    'collab.hero.dashboard_status2': 'Negotiation',
+    'collab.hero.dashboard_status3': 'Review',
+    
+    // Process Timeline - Alternative format (step1, step2, etc)
+    'collab.process.step1.title': 'Application and Review',
+    'collab.process.step1.desc': 'Complete the online form with your professional information. Our team will review your profile and experience to assess initial fit.',
+    'collab.process.step1.duration': '3-5 days',
+    'collab.process.step2.title': 'Initial Interview',
+    'collab.process.step2.desc': 'Virtual interview with our team to get to know you better, assess your cultural fit, and discuss your expectations and availability.',
+    'collab.process.step2.duration': '60 minutes',
+    'collab.process.step3.title': 'Technical Assessment',
+    'collab.process.step3.desc': 'Practical case study in valuation or financial analysis to assess your technical skills in M&A and corporate finance.',
+    'collab.process.step3.duration': '2-3 hours',
+    'collab.process.step4.title': 'Onboarding',
+    'collab.process.step4.desc': 'Onboarding process where you\'ll learn about our processes, tools, and receive access to our collaborators platform.',
+    'collab.process.step4.duration': '1 week',
+    
+    // FAQ - Alternative format (q1, q2, etc without .q/.a)
+    'collab.faq.q1': 'What type of projects can I expect as a collaborator?',
+    'collab.faq.a1': 'As a Capittal collaborator, you\'ll work on a wide variety of M&A projects, including company valuations, financial due diligence, comparable multiples analysis, financial modeling for transactions, and support in company sale or purchase processes. Projects range from tech startups to large industrial corporations.',
+    'collab.faq.q2': 'What is the compensation and payment structure?',
+    'collab.faq.a2': 'Compensation is based on experience and project type. We offer competitive hourly or project-based rates, with monthly payments. Additionally, there are performance bonuses on successful projects. During the interview, we discuss the specific compensation structure for your profile in detail.',
+    'collab.faq.q3': 'What flexibility do I have in terms of schedule and location?',
+    'collab.faq.a3': 'The program is designed to be flexible. You can work remotely on most projects, although some may require occasional presence in Madrid or Barcelona. Schedules are adaptable, but we expect availability for coordination meetings and compliance with agreed deadlines.',
+    'collab.faq.q4': 'Do I need prior experience specifically in M&A?',
+    'collab.faq.a4': 'We value M&A experience, but it\'s not exclusively necessary. We accept professionals with solid experience in corporate finance, investment banking, strategic consulting, auditing, or similar roles that demonstrate analytical skills and knowledge of the business world.',
+    'collab.faq.q5': 'What professional development opportunities does the program offer?',
+    'collab.faq.a5': 'We offer continuous mentorship with our senior partners, access to specialized training in valuations and M&A, networking with other sector professionals, and the opportunity to participate in high-profile transactions that significantly strengthen your CV and professional experience.',
+    'collab.faq.q6': 'Is there a possibility of becoming a full-time employee?',
+    'collab.faq.a6': 'Yes, we regularly consider our best collaborators for permanent positions when opportunities arise. In fact, several of our current employees started as collaborators. It\'s an excellent way to get to know our culture and demonstrate your added value to the team.',
+    
+    // Testimonials - Individual items
+    'collab.testimonials.1.name': 'Dr. Carlos Mendoza',
+    'collab.testimonials.1.role': 'Senior M&A Advisor',
+    'collab.testimonials.1.company': 'Mendoza & Associates',
+    'collab.testimonials.1.content': 'Working with Capittal has been transformative for my career. Access to complex deals, world-class mentorship, and an unparalleled professional network. The flexibility allows me to balance my private practice while participating in high-level transactions.',
+    'collab.testimonials.1.sector': 'Consulting',
+    'collab.testimonials.1.joinedYear': '2021',
+    
+    'collab.testimonials.2.name': 'María Fernández',
+    'collab.testimonials.2.role': 'Valuation Expert',
+    'collab.testimonials.2.company': 'Independent Consultant',
+    'collab.testimonials.2.content': 'As a collaborator since 2020, I\'ve worked on over 30 complex valuations. The Capittal team is exceptionally professional, the projects are fascinating, and the compensation is very competitive. I recommend the program to any senior professional seeking growth.',
+    'collab.testimonials.2.sector': 'Finance',
+    'collab.testimonials.2.joinedYear': '2020',
+    
+    'collab.testimonials.3.name': 'Javier Ruiz',
+    'collab.testimonials.3.role': 'Corporate Finance Director',
+    'collab.testimonials.3.company': 'Ex-Big Four',
+    'collab.testimonials.3.content': 'After 15 years in Big Four, I was looking for more strategic projects and flexibility. Capittal exceeded all my expectations. I participate in €10M-€50M M&A deals with total autonomy and exceptional support. The quality of projects is unmatched.',
+    'collab.testimonials.3.sector': 'Audit',
+    'collab.testimonials.3.joinedYear': '2019',
+    
+    // Testimonials - Stats
+    'collab.testimonials.stats.active': 'Active Collaborators',
+    'collab.testimonials.stats.satisfaction': 'Satisfaction',
+    'collab.testimonials.stats.value': 'Assets Under Management',
+    'collab.testimonials.stats.experience': 'Years of Experience',
+    'collab.testimonials.stats.since': 'Since',
+    
+    // Form Steps
+    'collab.form.step1.title': 'Personal Information',
+    'collab.form.step1.description': 'Basic contact details',
+    'collab.form.step2.title': 'Professional Information',
+    'collab.form.step2.description': 'Experience and current role',
+    'collab.form.step3.title': 'Additional Information',
+    'collab.form.step3.description': 'Motivation and skills',
+    'collab.form.step4.title': 'Review and Submit',
+    'collab.form.step4.description': 'Confirm and send your application',
   }
 };
