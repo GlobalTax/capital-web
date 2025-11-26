@@ -466,7 +466,7 @@ export const useContactForm = () => {
           company: validatedData.companyName,
           phone: validatedData.phone || null,
           email: validatedData.email,
-          service_type: validatedData.serviceType || 'vender',
+          service_type: null, // Operations don't have a service_type
           referral: `operation_${validatedData.operationId}`,
           status: 'new',
           user_agent: navigator.userAgent.slice(0, 255),

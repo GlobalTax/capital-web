@@ -29,7 +29,7 @@ const OperationContactForm: React.FC<OperationContactFormProps> = ({
     companyName: companyName,
     email: '',
     phone: '',
-    serviceType: 'vender' as const,
+    serviceType: 'otros' as const,
     message: `Estoy interesado en obtener más información sobre la oportunidad de ${companyName}.`,
     operationId: operationId,
     website: '', // Honeypot field
@@ -49,7 +49,7 @@ const OperationContactForm: React.FC<OperationContactFormProps> = ({
         companyName: companyName,
         email: '',
         phone: '',
-        serviceType: 'vender' as const,
+        serviceType: 'otros' as const,
         message: `Estoy interesado en obtener más información sobre la oportunidad de ${companyName}.`,
         operationId: operationId,
         website: '',

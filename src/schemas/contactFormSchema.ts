@@ -89,7 +89,7 @@ export const operationContactFormSchema = contactFormSchema.extend({
     .min(2, 'Nombre de empresa debe tener al menos 2 caracteres')
     .max(100, 'Nombre de empresa muy largo')
     .transform(val => sanitizeInput(val.trim(), { maxLength: 100 })),
-});
+}).partial({ serviceType: true }); // serviceType is optional for operations
 
 export type OperationContactFormData = z.infer<typeof operationContactFormSchema>;
 
