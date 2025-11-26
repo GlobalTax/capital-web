@@ -325,6 +325,11 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'footer.link.terminos': 'Términos de Uso',
     'footer.link.cookies': 'Cookies',
     'footer.copyright': '© {year} Capittal. Todos los derechos reservados.',
+    'footer.contact.tel': 'Tel',
+    'footer.contact.email': 'Email',
+    'footer.contact.headquarters': 'Sede Central',
+    'footer.contact.offices': 'Otras oficinas',
+    'footer.confidentiality': 'Toda la información compartida con Capittal es tratada de forma estrictamente confidencial según nuestra política de privacidad.',
     
     // ========== ECOSYSTEM & CASE STUDIES (ES) ==========
     'ecosystem.badge': 'Ecosistema Integral M&A',
@@ -464,6 +469,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'form.fullName': 'Nombre completo',
     'form.fullName.placeholder': 'Tu nombre y apellidos',
     'form.fullName.hint': 'Mínimo 2 caracteres',
+    'form.company': 'Empresa',
     'form.company.placeholder': 'Nombre de la empresa',
     'form.company.hint': 'Tu empresa o proyecto',
     'form.email.placeholder': 'tu@email.com',
@@ -860,6 +866,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'form.fullName': 'Nom complet',
     'form.fullName.placeholder': 'El teu nom i cognoms',
     'form.fullName.hint': 'Mínim 2 caràcters',
+    'form.company': 'Empresa',
     'form.company.placeholder': 'Nom de l\'empresa',
     'form.company.hint': 'La teva empresa o projecte',
     'form.email.placeholder': 'tu@email.com',
@@ -1557,6 +1564,11 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'footer.link.terminos': 'Termes d\'Ús',
     'footer.link.cookies': 'Cookies',
     'footer.copyright': '© {year} Capittal. Tots els drets reservats.',
+    'footer.contact.tel': 'Tel',
+    'footer.contact.email': 'Email',
+    'footer.contact.headquarters': 'Seu Central',
+    'footer.contact.offices': 'Altres oficines',
+    'footer.confidentiality': 'Tota la informació compartida amb Capittal és tractada de forma estrictament confidencial segons la nostra política de privacitat.',
     
     // Colaboradors - Traduccions completes
     ...collaboratorsTranslations.ca,
@@ -2274,6 +2286,11 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'footer.link.terminos': 'Terms of Use',
     'footer.link.cookies': 'Cookies',
     'footer.copyright': '© {year} Capittal. All rights reserved.',
+    'footer.contact.tel': 'Tel',
+    'footer.contact.email': 'Email',
+    'footer.contact.headquarters': 'Head Office',
+    'footer.contact.offices': 'Other offices',
+    'footer.confidentiality': 'All information shared with Capittal is treated in strict confidence according to our privacy policy.',
     
     // ========== CAPITTAL BRIEF (EN) ==========
     'capittalBrief.title': 'What is Capittal?',

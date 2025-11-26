@@ -25,6 +25,19 @@ function getLocalizedPath(currentPath: string, newLang: LangCode): string {
     { es: '/por-que-elegirnos', ca: '/per-que-triar-nos', en: '/why-choose-us' },
     { es: '/equipo', ca: '/equip', en: '/team' },
     { es: '/programa-colaboradores', ca: '/programa-col·laboradors', en: '/partners-program' },
+    // Services routes
+    { es: '/servicios/valoraciones', ca: '/serveis/valoracions', en: '/services/valuations' },
+    { es: '/servicios/fusiones-adquisiciones', ca: '/serveis/fusions-adquisicions', en: '/services/mergers-acquisitions' },
+    { es: '/servicios/due-diligence', ca: '/serveis/due-diligence', en: '/services/due-diligence' },
+    { es: '/servicios/reestructuraciones', ca: '/serveis/reestructuracions', en: '/services/restructuring' },
+    // Sector routes
+    { es: '/sectores/tecnologia', ca: '/sectors/tecnologia', en: '/sectors/technology' },
+    { es: '/sectores/industrial', ca: '/sectors/industrial', en: '/sectors/industrial' },
+    { es: '/sectores/retail', ca: '/sectors/retail', en: '/sectors/retail' },
+    { es: '/sectores/servicios', ca: '/sectors/serveis', en: '/sectors/services' },
+    // Landing pages keep same path across languages
+    { es: '/lp/calculadora', ca: '/lp/calculadora', en: '/lp/calculadora' },
+    { es: '/lp/calculadora-fiscal', ca: '/lp/calculadora-fiscal', en: '/lp/calculadora-fiscal' },
   ];
 
   // Find matching pattern

@@ -1,10 +1,12 @@
 import React from 'react';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 /**
  * Footer minimalista para landing pages sin enlaces clickables.
  * Optimizado para maximizar conversión evitando fugas de tráfico.
  */
 const LandingFooterNoLinks: React.FC = () => {
+  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -13,32 +15,32 @@ const LandingFooterNoLinks: React.FC = () => {
         <div className="space-y-4 text-center md:text-left">
           {/* Copyright */}
           <p className="text-sm text-foreground font-medium">
-            © {currentYear} Capittal. Todos los derechos reservados.
+            {t('footer.copyright', { year: currentYear })}
           </p>
 
           {/* Contacto - Solo texto, sin enlaces */}
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              <span className="font-medium text-foreground">Tel:</span> +34 695 717 490
+              <span className="font-medium text-foreground">{t('footer.contact.tel')}:</span> {t('footer.company.phone')}
             </p>
             <p>
-              <span className="font-medium text-foreground">Email:</span> info@capittal.es
+              <span className="font-medium text-foreground">{t('footer.contact.email')}:</span> info@capittal.es
             </p>
           </div>
 
           {/* Ubicaciones */}
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              <span className="font-medium text-foreground">Sede Central:</span> Carrer Ausias March número 36, 08010 Barcelona
+              <span className="font-medium text-foreground">{t('footer.contact.headquarters')}:</span> {t('footer.company.address')}
             </p>
             <p>
-              <span className="font-medium text-foreground">Otras oficinas:</span> Madrid · Girona · Lleida · Tarragona · Palma de Mallorca · Zaragoza · Valencia
+              <span className="font-medium text-foreground">{t('footer.contact.offices')}:</span> {t('footer.company.otherOffices')}
             </p>
           </div>
 
           {/* Nota de confidencialidad */}
           <p className="text-xs text-muted-foreground pt-2 max-w-2xl mx-auto md:mx-0">
-            Toda la información compartida con Capittal es tratada de forma estrictamente confidencial según nuestra política de privacidad.
+            {t('footer.confidentiality')}
           </p>
         </div>
       </div>
