@@ -6,7 +6,7 @@ import './index.css'
 import { validateSupabaseConfig } from '@/config/supabase'
 import { devValidateTranslations } from '@/utils/i18n-validator'
 
-// Validar traducciones en desarrollo
+// Activar validación de traducciones en desarrollo
 devValidateTranslations();
 
 // Inicialización simplificada y directa
