@@ -92,7 +92,7 @@ const Hero = () => {
               <div className="absolute -top-3 -left-3 z-10">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium shadow-lg">
                   <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-                  🎯 Líderes en M&A
+                  {t('hero.badge.maleaders')}
                 </div>
               </div>
 
@@ -100,7 +100,7 @@ const Hero = () => {
               <div className="absolute -bottom-3 -right-3 z-10">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium shadow-lg">
                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
-                  ✅ Enfoque Profesional
+                  {t('hero.badge.professional')}
                 </div>
               </div>
 
@@ -111,10 +111,10 @@ const Hero = () => {
                 aria-label="Panel de estadísticas de Capittal Market"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-slate-900">Capittal Market</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{t('hero.dashboard.title')}</h3>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-slate-600 font-medium">Live</span>
+                    <span className="text-xs text-slate-600 font-medium">{t('hero.dashboard.live')}</span>
                   </div>
                 </div>
                 
@@ -122,15 +122,15 @@ const Hero = () => {
                   <div className="grid grid-cols-3 gap-4 text-center mb-6">
                     <div>
                       <div className="text-2xl font-bold text-slate-900">200+</div>
-                      <div className="text-xs text-slate-600">Operaciones</div>
+                      <div className="text-xs text-slate-600">{t('hero.dashboard.operations')}</div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">€902M</div>
-                      <div className="text-xs text-slate-600">Valor Total</div>
+                      <div className="text-xs text-slate-600">{t('hero.dashboard.totalValue')}</div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">60+</div>
-                      <div className="text-xs text-slate-600">Especialistas</div>
+                      <div className="text-xs text-slate-600">{t('hero.dashboard.specialists')}</div>
                     </div>
                   </div>
 
@@ -170,7 +170,7 @@ const Hero = () => {
                   </div>
 
                   <div className="border-t border-border pt-4">
-                    <div className="text-sm font-medium text-slate-900 mb-2">Sectores Activos</div>
+                    <div className="text-sm font-medium text-slate-900 mb-2">{t('hero.dashboard.activeSectors')}</div>
                     <div className="flex flex-wrap gap-2">
                       {['Industrial', 'Tech', 'Retail', 'SaaS'].map((sector) => (
                         <span key={sector} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
