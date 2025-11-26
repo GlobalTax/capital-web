@@ -11,13 +11,13 @@ const LandingFooterMinimal: React.FC = () => {
         <div className="space-y-3 text-center md:text-left">
           <p className="text-gray-700 font-medium">{t('footer.copyright', { year: currentYear })}</p>
           <p className="text-gray-600">
-            <span className="font-medium">Sede Central:</span> {t('footer.headquarters').split(': ')[1]}
+            <span className="font-medium">Sede Central:</span> {t('footer.company.address')}
           </p>
           <p className="text-gray-600">
-            <span className="font-medium">Otras oficinas:</span> {t('footer.offices').split(': ')[1]}
+            <span className="font-medium">Otras oficinas:</span> {t('footer.company.otherOffices')}
           </p>
           <p className="text-gray-600">
-            <span className="font-medium">Tel:</span> <a href={`tel:${t('footer.phone')}`} className="underline hover:text-gray-900 transition-colors" aria-label={`Llamar al ${t('footer.phone')}`}>{t('footer.phone')}</a>
+            <span className="font-medium">Tel:</span> <a href={`tel:${t('footer.company.phone')}`} className="underline hover:text-gray-900 transition-colors" aria-label={`Llamar al ${t('footer.company.phone')}`}>{t('footer.company.phone')}</a>
           </p>
         </div>
       </div>
