@@ -375,8 +375,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.commitmentTitle': 'Nuestro Compromiso',
     'ecosystem.commitmentDescription': 'Creamos valor a través de un enfoque integral y multidisciplinar, donde nuestro equipo de analistas financieros, abogados, economistas y fiscalistas trabajan de forma coordinada para garantizar el éxito de cada operación y maximizar el valor para nuestros clientes.',
     
-    'ecosystem.cta': 'Conoce Nuestros Servicios',
-    
     // Operations/Oportunidades Page
     'operations.title': 'Operaciones de compraventa',
     'operations.filters.all': 'Todas',
@@ -822,17 +820,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'confidentiality.gdpr.desc': 'Tratamos la información conforme al RGPD. Al hacer clic en "Calcular valoración" consientes el procesamiento de tus datos para generar tu valoración y su uso con fines comerciales relacionados con nuestros servicios. Si proporcionas tu teléfono, aceptas que Capittal procese tus datos para la valoración y envío por WhatsApp. Puedes solicitar la eliminación cuando lo desees.',
     'confidentiality.access.title': 'Acceso restringido',
     'confidentiality.access.desc': 'Solo el equipo de Capittal accede a la información para preparar tu valoración. No compartimos datos con terceros.',
-    
-    // Validation messages (ES)
-    'validation.complete_required': 'Completa todos los campos requeridos',
-    'validation.error_title': 'Error de validación',
-    'validation.fix_errors': 'Corrige los errores para continuar',
-    
-    // Booking system (ES)
-    'booking.title': 'Reservar consulta',
-    'booking.description': 'Agenda una reunión con nuestro equipo de expertos',
-    'booking.success': 'Reserva confirmada exitosamente',
-    'booking.error': 'Error al procesar la reserva',
     
     // Colaboradores - Traducciones completas
     ...collaboratorsTranslations.es,
@@ -1532,26 +1519,6 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'confidentiality.gdpr.desc': 'Tractem la informació conforme al RGPD. En fer clic a "Calcular valoració" consenteixes el processament de les teves dades per generar la teva valoració i el seu ús amb fins comercials relacionats amb els nostres serveis. Si proporciones el teu telèfon, acceptes que Capittal processi les teves dades per a la valoració i enviament per WhatsApp. Pots sol·licitar l\'eliminació quan vulguis.',
     'confidentiality.access.title': 'Accés restringit',
     'confidentiality.access.desc': 'Només l\'equip de Capittal accedeix a la informació per preparar la teva valoració. No compartim dades amb tercers.',
-    
-    // ========== ECOSYSTEM (CA) ==========
-    'ecosystem.badge': 'Ecosistema Integral M&A',
-    'ecosystem.title': 'Ecosistema Integral M&A',
-    'ecosystem.subtitle': 'Un equip complet d\'especialistes treballant per l\'èxit de la teva operació',
-    'ecosystem.cta': 'Parlar amb un Assessor',
-    'ecosystem.titleHighlight': 'Ecosistema',
-    'ecosystem.titleEnd': 'd\'Excel·lència',
-    'ecosystem.subtitle2': 'Més de 60 professionals especialitzats en cada aspecte de la teva operació',
-    
-    // Validation messages (CA)
-    'validation.complete_required': 'Completa tots els camps requerits',
-    'validation.error_title': 'Error de validació',
-    'validation.fix_errors': 'Corregeix els errors per continuar',
-    
-    // Booking system (CA)
-    'booking.title': 'Reservar consulta',
-    'booking.description': 'Agenda una reunió amb el nostre equip d\'experts',
-    'booking.success': 'Reserva confirmada amb èxit',
-    'booking.error': 'Error en processar la reserva',
     
     // === NAVIGATION ===
     'nav.servicios': 'Serveis',
