@@ -150,3 +150,33 @@ export const compraEmpresasSchema = z.object({
 });
 
 export type CompraEmpresasFormData = z.infer<typeof compraEmpresasSchema>;
+
+// Professional Valuation Schema
+export const professionalValuationSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(100, 'El nombre es demasiado largo'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'El email es requerido')
+    .email('Email inválido')
+    .max(254, 'Email demasiado largo'),
+  company: z
+    .string()
+    .trim()
+    .min(2, 'El nombre de la empresa debe tener al menos 2 caracteres')
+    .max(100, 'El nombre de la empresa es demasiado largo'),
+  revenue_range: z
+    .string()
+    .min(1, 'Selecciona un rango de facturación'),
+  message: z
+    .string()
+    .trim()
+    .max(1000, 'El mensaje es demasiado largo')
+    .optional(),
+});
+
+export type ProfessionalValuationFormData = z.infer<typeof professionalValuationSchema>;
