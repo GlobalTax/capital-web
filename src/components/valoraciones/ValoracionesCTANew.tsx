@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Calculator, Phone, Mail, Calendar, Download, CheckCircle, Shield, Clock, Award } from 'lucide-react';
+import { ProfessionalValuationForm } from './ProfessionalValuationForm';
 
 const ValoracionesCTANew = () => {
   return (
@@ -108,49 +109,7 @@ const ValoracionesCTANew = () => {
               </div>
             </div>
 
-            <form className="space-y-4 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  className="capittal-input w-full"
-                  placeholder="Nombre"
-                />
-                <input
-                  type="email"
-                  className="capittal-input w-full"
-                  placeholder="Email"
-                />
-              </div>
-              
-              <input
-                type="text"
-                className="capittal-input w-full"
-                placeholder="Empresa"
-              />
-              
-              <select className="capittal-input w-full">
-                <option>Selecciona facturación anual</option>
-                <option>Menos de 1M€</option>
-                <option>1M€ - 5M€</option>
-                <option>5M€ - 10M€</option>
-                <option>10M€ - 25M€</option>
-                <option>25M€ - 50M€</option>
-                <option>Más de 50M€</option>
-              </select>
-              
-              <textarea
-                className="capittal-input w-full h-20 resize-none"
-                placeholder="Cuéntanos el propósito de la valoración..."
-              ></textarea>
-              
-              <InteractiveHoverButton 
-                text="Solicitar Presupuesto"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                type="submit"
-              />
-            </form>
+            <ProfessionalValuationForm />
             
             <p className="text-xs text-gray-500 text-center">
               Presupuesto personalizado • Primera consulta gratuita • Respuesta en 24h
