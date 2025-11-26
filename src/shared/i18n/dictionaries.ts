@@ -33,10 +33,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'nav.contacto': 'Contacto',
     'nav.llamarAhora': 'Llamar Ahora',
     
-    // Footer
-    'footer.headquarters': 'Sede Central: Carrer Ausias March número 36, 08010 Barcelona',
-    'footer.offices': 'Otras oficinas: Madrid · Girona · Lleida · Tarragona · Palma de Mallorca · Zaragoza · Valencia',
-    'footer.phone': '+34 695 717 490',
+    // Footer (obsolete keys removed - use footer.company.* instead)
     
     // Home SEO
     'home.seo.title': 'Capittal - Especialistas en M&A, Valoraciones y Due Diligence en España',
@@ -79,7 +76,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'services.buy.feature2': 'Due diligence completo',
     'services.buy.feature3': 'Negociación exitosa',
     'services.valuations.title': 'Valoraciones',
-    'services.valuations.description': 'Valoraciones precis con metodologías probadas y análisis exhaustivo.',
+    'services.valuations.description': 'Valoraciones precisas con metodologías probadas y análisis exhaustivo.',
     'services.valuations.feature1': 'Múltiples metodologías',
     'services.valuations.feature2': 'Análisis comparables',
     'services.valuations.feature3': 'Informe detallado',
@@ -338,6 +335,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.titleHighlight': 'Integral',
     'ecosystem.titleEnd': 'de Servicios',
     'ecosystem.subtitle2': 'Un equipo multidisciplinar de más de 60 profesionales con experiencia combinada en M&A, finanzas, derecho mercantil, y planificación fiscal. Ofrecemos soluciones end-to-end para cada operación.',
+    'ecosystem.cta': 'Hablar con un Asesor',
     
     // Statistics
     'ecosystem.stat1.label': 'Profesionales Especializados',
@@ -824,6 +822,17 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'confidentiality.gdpr.desc': 'Tratamos la información conforme al RGPD. Al hacer clic en "Calcular valoración" consientes el procesamiento de tus datos para generar tu valoración y su uso con fines comerciales relacionados con nuestros servicios. Si proporcionas tu teléfono, aceptas que Capittal procese tus datos para la valoración y envío por WhatsApp. Puedes solicitar la eliminación cuando lo desees.',
     'confidentiality.access.title': 'Acceso restringido',
     'confidentiality.access.desc': 'Solo el equipo de Capittal accede a la información para preparar tu valoración. No compartimos datos con terceros.',
+    
+    // Validation messages (ES)
+    'validation.complete_required': 'Completa todos los campos requeridos',
+    'validation.error_title': 'Error de validación',
+    'validation.fix_errors': 'Corrige los errores para continuar',
+    
+    // Booking system (ES)
+    'booking.title': 'Reservar consulta',
+    'booking.description': 'Agenda una reunión con nuestro equipo de expertos',
+    'booking.success': 'Reserva confirmada exitosamente',
+    'booking.error': 'Error al procesar la reserva',
     
     // Colaboradores - Traducciones completas
     ...collaboratorsTranslations.es,
@@ -1524,6 +1533,26 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'confidentiality.access.title': 'Accés restringit',
     'confidentiality.access.desc': 'Només l\'equip de Capittal accedeix a la informació per preparar la teva valoració. No compartim dades amb tercers.',
     
+    // ========== ECOSYSTEM (CA) ==========
+    'ecosystem.badge': 'Ecosistema Integral M&A',
+    'ecosystem.title': 'Ecosistema Integral M&A',
+    'ecosystem.subtitle': 'Un equip complet d\'especialistes treballant per l\'èxit de la teva operació',
+    'ecosystem.cta': 'Parlar amb un Assessor',
+    'ecosystem.titleHighlight': 'Ecosistema',
+    'ecosystem.titleEnd': 'd\'Excel·lència',
+    'ecosystem.subtitle2': 'Més de 60 professionals especialitzats en cada aspecte de la teva operació',
+    
+    // Validation messages (CA)
+    'validation.complete_required': 'Completa tots els camps requerits',
+    'validation.error_title': 'Error de validació',
+    'validation.fix_errors': 'Corregeix els errors per continuar',
+    
+    // Booking system (CA)
+    'booking.title': 'Reservar consulta',
+    'booking.description': 'Agenda una reunió amb el nostre equip d\'experts',
+    'booking.success': 'Reserva confirmada amb èxit',
+    'booking.error': 'Error en processar la reserva',
+    
     // === NAVIGATION ===
     'nav.servicios': 'Serveis',
     'nav.sectores': 'Sectors',
@@ -1745,8 +1774,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'employees.1_10': '1-10 employees',
     'employees.11_50': '11-50 employees',
-    'employees.51_200': '51-200 employees',
-    'employees.201_500': '201-500 employees',
+    'employees.51_100': '51-100 employees',
+    'employees.101_250': '101-250 employees',
+    'employees.251_500': '251-500 employees',
     'employees.501_plus': 'More than 500 employees',
 
     'ownership.high': 'High (>75%)',
@@ -2060,6 +2090,58 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ventaEmpresas.seo.title': 'Sell Companies - Professional Advisory | Capittal',
     'ventaEmpresas.seo.description': 'Professional company sale services. Comprehensive advisory, expert valuation and complete support in the business buying and selling process.',
     'ventaEmpresas.seo.keywords': 'sell companies, business advisory, company valuation, business M&A, M&A Spain',
+    'ventaEmpresas.hero.badge': '+200 companies successfully sold',
+    'ventaEmpresas.hero.title': 'Sell your company at the',
+    'ventaEmpresas.hero.titleHighlight': 'best price',
+    'ventaEmpresas.hero.subtitle': 'Specialized M&A advisory. We maximize your company value with a professional, confidential and results-oriented process.',
+    'ventaEmpresas.hero.benefit1': 'Maximum sale price',
+    'ventaEmpresas.hero.benefit2': '100% confidential process',
+    'ventaEmpresas.hero.benefit3': 'Experience in +200 operations',
+    'ventaEmpresas.hero.ctaValuate': 'Value Company',
+    'ventaEmpresas.hero.ctaContact': 'Contact Now',
+    
+    // Venta Empresas - Benefits (EN)
+    'ventaEmpresas.benefits.experience.title': 'Proven Experience',
+    'ventaEmpresas.benefits.experience.description': 'More than 200 operations successfully completed in the last 15 years.',
+    'ventaEmpresas.benefits.experience.stats': '+200 companies sold',
+    'ventaEmpresas.benefits.valuation.title': 'Optimized Valuation',
+    'ventaEmpresas.benefits.valuation.description': 'We maximize the sale price through deep analysis and personalized strategy.',
+    'ventaEmpresas.benefits.valuation.stats': 'Average increase of 23%',
+    'ventaEmpresas.benefits.confidentiality.title': 'Total Confidentiality',
+    'ventaEmpresas.benefits.confidentiality.description': 'Completely confidential process that protects your company and employees.',
+    'ventaEmpresas.benefits.confidentiality.stats': '100% confidential',
+    'ventaEmpresas.benefits.network.title': 'Buyer Network',
+    'ventaEmpresas.benefits.network.description': 'Exclusive access to our extensive network of strategic buyers and investors.',
+    'ventaEmpresas.benefits.network.stats': '+500 active buyers',
+    'ventaEmpresas.benefits.advisory.title': 'Comprehensive Advisory',
+    'ventaEmpresas.benefits.advisory.description': 'We accompany you throughout the process, from preparation to closing.',
+    'ventaEmpresas.benefits.advisory.stats': '360° support',
+    'ventaEmpresas.benefits.alignment.title': 'Interest Alignment',
+    'ventaEmpresas.benefits.alignment.description': 'We structure our fees to align interests and maximize success.',
+    'ventaEmpresas.benefits.alignment.stats': 'Variable fees',
+    
+    // Venta Empresas - Process (EN)
+    'ventaEmpresas.process.title': 'Our Sales Process',
+    'ventaEmpresas.process.subtitle': 'A proven method that guarantees the best results. Each step is designed to maximize your company value and ensure an efficient process.',
+    'ventaEmpresas.process.step1.title': 'Initial Valuation',
+    'ventaEmpresas.process.step1.description': 'Complete analysis of your company to determine its real market value and optimization potential.',
+    'ventaEmpresas.process.step1.duration': '48-72 hours',
+    'ventaEmpresas.process.step2.title': 'Preparation and Optimization',
+    'ventaEmpresas.process.step2.description': 'We prepare your company to maximize its attractiveness and value to potential buyers.',
+    'ventaEmpresas.process.step2.duration': '1 month',
+    'ventaEmpresas.process.step3.title': 'Buyer Identification',
+    'ventaEmpresas.process.step3.description': 'Search and qualification of strategic buyers who will value your company to the maximum.',
+    'ventaEmpresas.process.step3.duration': '2-3 months',
+    'ventaEmpresas.process.step4.title': 'Negotiation and Structuring',
+    'ventaEmpresas.process.step4.description': 'Professional management of offers and negotiation of optimal terms for the transaction.',
+    'ventaEmpresas.process.step4.duration': '1-2 months',
+    'ventaEmpresas.process.step5.title': 'Transaction Closing',
+    'ventaEmpresas.process.step5.description': 'Completion of due diligence and signing of definitive agreements for successful closing.',
+    'ventaEmpresas.process.step5.duration': '2-3 months',
+    
+    // Venta Empresas - FAQ (EN)
+    'ventaEmpresas.faq.title': 'Frequently Asked Questions',
+    'ventaEmpresas.faq.subtitle': 'We answer the most common questions about the company sale process',
     
     // Compra Empresas Page - EN
     'compraEmpresas.seo.title': 'Buy Companies - Acquisition Opportunities | Capittal',
@@ -2094,6 +2176,21 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ecosystem.badge': 'Comprehensive M&A Ecosystem',
     'ecosystem.title': 'Comprehensive M&A Ecosystem',
     'ecosystem.subtitle': 'A complete team of specialists working for the success of your operation',
+    'ecosystem.cta': 'Talk to an Advisor',
+    'ecosystem.titleHighlight': 'Ecosystem',
+    'ecosystem.titleEnd': 'of Excellence',
+    'ecosystem.subtitle2': 'More than 60 professionals specialized in every aspect of your operation',
+    
+    // Validation messages
+    'validation.complete_required': 'Complete all required fields',
+    'validation.error_title': 'Validation error',
+    'validation.fix_errors': 'Fix the errors to continue',
+    
+    // Booking system
+    'booking.title': 'Book consultation',
+    'booking.description': 'Schedule a meeting with our team of experts',
+    'booking.success': 'Booking successfully confirmed',
+    'booking.error': 'Error processing booking',
     
     // Statistics
     'ecosystem.stat1.label': 'Specialized Professionals',
