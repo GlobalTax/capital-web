@@ -2,9 +2,12 @@ import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 import LegalServiceTechnical from '@/components/asesoramiento-legal/LegalServiceTechnical';
 
 const AsesoramientoLegalTecnico = () => {
+  useHreflang();
+  
   return (
     <UnifiedLayout variant="home">
       <SEOHead 

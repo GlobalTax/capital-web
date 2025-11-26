@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 import DueDiligenceHero from '@/components/due-diligence/DueDiligenceHero';
 import DueDiligenceTypes from '@/components/due-diligence/DueDiligenceTypes';
 import DueDiligenceProcess from '@/components/due-diligence/DueDiligenceProcess';
@@ -11,6 +12,8 @@ import DueDiligenceFAQ from '@/components/due-diligence/DueDiligenceFAQ';
 import DueDiligenceCTA from '@/components/due-diligence/DueDiligenceCTA';
 
 const DueDiligence = () => {
+  useHreflang();
+  
   return (
     <div className="min-h-screen bg-white">
       <SEOHead 

@@ -10,8 +10,11 @@ import VentaEmpresasFAQ from '@/components/venta-empresas/VentaEmpresasFAQ';
 import VentaEmpresasCTA from '@/components/venta-empresas/VentaEmpresasCTA';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 
 const VentaEmpresas = () => {
+  useHreflang();
+  
   return (
     <>
       <SEOHead 

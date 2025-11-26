@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
+import { useHreflang } from '@/hooks/useHreflang';
 import ValoracionesHero from '@/components/valoraciones/ValoracionesHero';
 import ValoracionesMethodology from '@/components/valoraciones/ValoracionesMethodology';
 import ValoracionesMultiples from '@/components/valoraciones/ValoracionesMultiples';
@@ -13,6 +14,7 @@ import ValoracionesCTANew from '@/components/valoraciones/ValoracionesCTANew';
 
 const Valoraciones = () => {
   console.log('🟢 VALORACIONES PAGE IS RENDERING - This should appear in console');
+  useHreflang();
   
   return (
     <div className="min-h-screen bg-white">

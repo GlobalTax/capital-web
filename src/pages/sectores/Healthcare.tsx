@@ -8,8 +8,10 @@ import LegalTestimonials from '@/components/sector/LegalTestimonials';
 import { Hospital, Heart, Pill, Stethoscope } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { useHreflang } from '@/hooks/useHreflang';
 
 const Healthcare = () => {
+  useHreflang();
   const contentSections = [
     {
       title: 'Asesoramiento Especializado en Healthcare',
