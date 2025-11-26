@@ -34,7 +34,7 @@ import { LeadToOperationConverter } from '@/features/operations-management/compo
 
 interface LeadData {
   id: string;
-  origin: 'contact' | 'valuation' | 'collaborator';
+  origin: 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
   name: string;
   email: string;
   phone?: string;
@@ -69,21 +69,43 @@ export default function LeadDetailPage() {
       const parts = id.split('_');
       if (parts.length < 2) throw new Error('Invalid lead ID format');
       
-      const origin = parts[0] as 'contact' | 'valuation' | 'collaborator';
+      const origin = parts[0] as LeadData['origin'];
       const leadId = parts.slice(1).join('_');
 
       let tableName: any = '';
       let nameField = '';
       
-      if (origin === 'contact') {
-        tableName = 'contact_leads';
-        nameField = 'full_name';
-      } else if (origin === 'valuation') {
-        tableName = 'company_valuations';
-        nameField = 'contact_name';
-      } else if (origin === 'collaborator') {
-        tableName = 'collaborator_applications';
-        nameField = 'full_name';
+      switch (origin) {
+        case 'contact':
+          tableName = 'contact_leads';
+          nameField = 'full_name';
+          break;
+        case 'valuation':
+          tableName = 'company_valuations';
+          nameField = 'contact_name';
+          break;
+        case 'collaborator':
+          tableName = 'collaborator_applications';
+          nameField = 'full_name';
+          break;
+        case 'general':
+          tableName = 'general_contact_leads';
+          nameField = 'full_name';
+          break;
+        case 'acquisition':
+          tableName = 'acquisition_leads';
+          nameField = 'full_name';
+          break;
+        case 'company_acquisition':
+          tableName = 'company_acquisition_inquiries';
+          nameField = 'full_name';
+          break;
+        case 'advisor':
+          tableName = 'advisor_valuations';
+          nameField = 'contact_name';
+          break;
+        default:
+          throw new Error(`Unknown lead origin: ${origin}`);
       }
 
       // Fetch lead data - simplified to avoid TypeScript errors
@@ -179,12 +201,16 @@ export default function LeadDetailPage() {
   }
 
   const getOriginBadge = () => {
-    const configs = {
-      contact: { label: 'Contacto', variant: 'default' as const },
-      valuation: { label: 'Valoración', variant: 'secondary' as const },
-      collaborator: { label: 'Colaborador', variant: 'outline' as const },
+    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+      contact: { label: 'Contacto', variant: 'default' },
+      valuation: { label: 'Valoración', variant: 'secondary' },
+      collaborator: { label: 'Colaborador', variant: 'outline' },
+      general: { label: 'General', variant: 'default' },
+      acquisition: { label: 'Adquisición', variant: 'destructive' },
+      company_acquisition: { label: 'Consulta Compra', variant: 'destructive' },
+      advisor: { label: 'Asesor', variant: 'secondary' },
     };
-    const config = configs[lead.origin];
+    const config = configs[lead.origin] || { label: 'Otro', variant: 'outline' as const };
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
@@ -371,6 +397,111 @@ export default function LeadDetailPage() {
                     <p className="text-sm text-muted-foreground">{lead.motivation}</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {(lead.origin === 'acquisition' || lead.origin === 'company_acquisition') && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Datos de Adquisición</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {lead.sectors_of_interest && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Sectores de Interés</p>
+                    <p className="text-sm text-muted-foreground">{lead.sectors_of_interest}</p>
+                  </div>
+                )}
+                {lead.investment_range && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Rango de Inversión</p>
+                    <p className="text-sm text-muted-foreground">{lead.investment_range}</p>
+                  </div>
+                )}
+                {lead.investment_budget && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Presupuesto</p>
+                    <p className="text-sm text-muted-foreground">{lead.investment_budget}</p>
+                  </div>
+                )}
+                {lead.target_timeline && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Timeline</p>
+                    <p className="text-sm text-muted-foreground">{lead.target_timeline}</p>
+                  </div>
+                )}
+                {lead.acquisition_type && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Tipo de Adquisición</p>
+                    <p className="text-sm text-muted-foreground">{lead.acquisition_type}</p>
+                  </div>
+                )}
+                {lead.message && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Mensaje</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{lead.message}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {lead.origin === 'advisor' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Datos de Valoración Asesor</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  {lead.firm_type && (
+                    <div>
+                      <p className="text-sm font-medium mb-1">Tipo de Empresa</p>
+                      <p className="text-sm text-muted-foreground">{lead.firm_type}</p>
+                    </div>
+                  )}
+                  {lead.employee_range && (
+                    <div>
+                      <p className="text-sm font-medium mb-1">Empleados</p>
+                      <p className="text-sm text-muted-foreground">{lead.employee_range}</p>
+                    </div>
+                  )}
+                  {lead.revenue && (
+                    <div>
+                      <p className="text-sm font-medium mb-1">Facturación</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.revenue)}
+                      </p>
+                    </div>
+                  )}
+                  {lead.ebitda && (
+                    <div>
+                      <p className="text-sm font-medium mb-1">EBITDA</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.ebitda)}
+                      </p>
+                    </div>
+                  )}
+                  {lead.final_valuation && (
+                    <div className="col-span-2">
+                      <p className="text-sm font-medium mb-1">Valoración Final</p>
+                      <p className="text-sm font-semibold text-primary">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.final_valuation)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {lead.origin === 'general' && lead.message && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Mensaje</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{lead.message}</p>
               </CardContent>
             </Card>
           )}
