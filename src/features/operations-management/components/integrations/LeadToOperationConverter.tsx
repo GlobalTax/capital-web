@@ -20,7 +20,7 @@ import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 interface LeadData {
   id: string;
-  origin: 'contact' | 'valuation' | 'collaborator' | 'acquisition' | 'accountex';
+  origin: 'contact' | 'valuation' | 'collaborator' | 'acquisition' | 'accountex' | 'general' | 'company_acquisition' | 'advisor';
   name: string;
   email: string;
   phone?: string;

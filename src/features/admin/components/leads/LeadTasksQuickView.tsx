@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 
 interface LeadTasksQuickViewProps {
   leadId: string;
-  leadType: 'valuation' | 'contact' | 'collaborator';
+  leadType: 'valuation' | 'contact' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
 }
 
 export const LeadTasksQuickView: React.FC<LeadTasksQuickViewProps> = ({ leadId, leadType }) => {

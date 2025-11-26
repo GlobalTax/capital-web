@@ -13,7 +13,7 @@ import { LeadStatusBadge } from './LeadStatusBadge';
 
 interface LeadStatusSelectProps {
   leadId: string;
-  leadType: 'contact' | 'valuation' | 'collaborator';
+  leadType: 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
   currentStatus: string;
   onStatusChange?: () => void;
 }
