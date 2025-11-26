@@ -68,6 +68,26 @@ export const useVentaEmpresasForm = () => {
       // Registrar intento exitoso
       recordSubmissionAttempt(validatedData.email);
 
+      // Enviar notificaciones por email
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: 'sell_lead',
+            formType: 'sell_lead',
+            email: validatedData.email,
+            fullName: validatedData.name,
+            formData: {
+              ...validatedData,
+              ...trackingData,
+              revenue_range: formData.revenue,
+              urgency: formData.urgency,
+            },
+          }
+        });
+      } catch (notificationError) {
+        console.warn('Notification error (non-blocking):', notificationError);
+      }
+
       // Success notification will be handled by the calling component
       setIsSubmitting(false);
       return { success: true };

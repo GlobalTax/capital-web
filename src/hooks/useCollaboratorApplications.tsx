@@ -54,6 +54,25 @@ export const useCollaboratorApplications = () => {
       // Registrar intento exitoso
       recordSubmissionAttempt(applicationData.email);
 
+      // Enviar notificación a RRHH y confirmación al usuario
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: data.id,
+            formType: 'collaborator',
+            email: applicationData.email,
+            fullName: applicationData.fullName,
+            formData: {
+              ...applicationData,
+              ...trackingData,
+              profession: applicationData.profession,
+            },
+          }
+        });
+      } catch (notificationError) {
+        console.warn('Collaborator notification error (non-blocking):', notificationError);
+      }
+
       // Enviar a segunda base de datos
       try {
         const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-leads', {
