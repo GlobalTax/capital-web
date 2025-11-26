@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Send, Shield } from 'lucide-react';
 import { useContactForm } from '@/hooks/useContactForm';
 import { type ContactFormData } from '@/schemas/contactFormSchema';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 interface ContactFormProps {
   pageOrigin?: string;
@@ -22,6 +23,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
   className = '',
   variant = 'default'
 }) => {
+  const { t } = useI18n();
   const { submitContactForm, isSubmitting } = useContactForm();
   const [formData, setFormData] = useState<ContactFormData>({
     fullName: '',
@@ -72,10 +74,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
       {showTitle && (
         <CardHeader className="text-center pb-6">
           <CardTitle className="text-xl font-semibold text-foreground">
-            Consulta Gratuita
+            {t('form.title')}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Te contactaremos para una valoración preliminar
+            {t('form.subtitle')}
           </p>
         </CardHeader>
       )}
@@ -98,7 +100,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <div className="space-y-4">
             <div>
               <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
-                Nombre completo *
+                {t('form.fullName')} *
               </Label>
               <Input
                 id="fullName"
@@ -106,19 +108,19 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 required
                 value={formData.fullName}
                 onChange={(e) => updateField('fullName', e.target.value)}
-                placeholder="Tu nombre y apellidos"
+                placeholder={t('form.fullName.placeholder')}
                 disabled={isSubmitting}
                 aria-describedby="fullName-hint"
                 className="mt-1"
               />
               <p id="fullName-hint" className="text-xs text-muted-foreground mt-1">
-                Mínimo 2 caracteres
+                {t('form.fullName.hint')}
               </p>
             </div>
 
             <div>
               <Label htmlFor="company" className="text-sm font-medium text-foreground">
-                Empresa *
+                {t('form.company')} *
               </Label>
               <Input
                 id="company"
@@ -126,19 +128,19 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 required
                 value={formData.company}
                 onChange={(e) => updateField('company', e.target.value)}
-                placeholder="Nombre de la empresa"
+                placeholder={t('form.company.placeholder')}
                 disabled={isSubmitting}
                 aria-describedby="company-hint"
                 className="mt-1"
               />
               <p id="company-hint" className="text-xs text-muted-foreground mt-1">
-                Tu empresa o proyecto
+                {t('form.company.hint')}
               </p>
             </div>
 
             <div>
               <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                Email *
+                {t('form.email')} *
               </Label>
               <Input
                 id="email"
@@ -146,19 +148,19 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 required
                 value={formData.email}
                 onChange={(e) => updateField('email', e.target.value)}
-                placeholder="tu@email.com"
+                placeholder={t('form.email.placeholder')}
                 disabled={isSubmitting}
                 aria-describedby="email-hint"
                 className="mt-1"
               />
               <p id="email-hint" className="text-xs text-muted-foreground mt-1">
-                Email de contacto
+                {t('form.email.hint')}
               </p>
             </div>
 
             <div>
               <Label htmlFor="serviceType" className="text-sm font-medium text-foreground">
-                Tipo de servicio *
+                {t('form.serviceType')} *
               </Label>
               <Select 
                 value={formData.serviceType} 
@@ -166,16 +168,16 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 disabled={isSubmitting}
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selecciona una opción" />
+                  <SelectValue placeholder={t('form.serviceType.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="vender">Vender mi empresa</SelectItem>
-              <SelectItem value="comprar">Comprar una empresa</SelectItem>
-              <SelectItem value="otros">Otros</SelectItem>
+                  <SelectItem value="vender">{t('form.serviceType.sell')}</SelectItem>
+              <SelectItem value="comprar">{t('form.serviceType.buy')}</SelectItem>
+              <SelectItem value="otros">{t('form.serviceType.other')}</SelectItem>
             </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                ¿Qué servicio necesitas?
+                {t('form.serviceType.hint')}
               </p>
             </div>
           </div>
@@ -184,14 +186,14 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <div className="space-y-4 pt-2">
             <div>
               <Label htmlFor="phone" className="text-sm font-medium text-foreground">
-                Teléfono
+                {t('form.phone')}
               </Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone || ''}
                 onChange={(e) => updateField('phone', e.target.value)}
-                placeholder="+34 600 000 000"
+                placeholder={t('form.phone.placeholder')}
                 disabled={isSubmitting}
                 className="mt-1"
               />
@@ -202,7 +204,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               <>
                 <div>
                   <Label htmlFor="investmentBudget" className="text-sm font-medium text-foreground">
-                    Presupuesto de inversión
+                    {t('form.investmentBudget')}
                   </Label>
                   <Select 
                     value={formData.investmentBudget || ''} 
@@ -210,36 +212,36 @@ const ContactForm: React.FC<ContactFormProps> = ({
                     disabled={isSubmitting}
                   >
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona tu rango de inversión" />
+                      <SelectValue placeholder={t('form.investmentBudget.placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="menos-500k">Menos de 500.000€</SelectItem>
-                      <SelectItem value="500k-1m">500.000€ - 1M€</SelectItem>
-                      <SelectItem value="1m-5m">1M€ - 5M€</SelectItem>
-                      <SelectItem value="5m-10m">5M€ - 10M€</SelectItem>
-                      <SelectItem value="mas-10m">Más de 10M€</SelectItem>
+                      <SelectItem value="menos-500k">{t('form.investmentBudget.less500k')}</SelectItem>
+                      <SelectItem value="500k-1m">{t('form.investmentBudget.500k1m')}</SelectItem>
+                      <SelectItem value="1m-5m">{t('form.investmentBudget.1m5m')}</SelectItem>
+                      <SelectItem value="5m-10m">{t('form.investmentBudget.5m10m')}</SelectItem>
+                      <SelectItem value="mas-10m">{t('form.investmentBudget.more10m')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Rango aproximado para tu inversión
+                    {t('form.investmentBudget.hint')}
                   </p>
                 </div>
 
                 <div>
                   <Label htmlFor="sectorsOfInterest" className="text-sm font-medium text-foreground">
-                    Sectores de interés
+                    {t('form.sectorsOfInterest')}
                   </Label>
                   <Textarea
                     id="sectorsOfInterest"
                     value={formData.sectorsOfInterest || ''}
                     onChange={(e) => updateField('sectorsOfInterest', e.target.value)}
-                    placeholder="Ej: Tecnología, Hostelería, Manufacturero, Servicios..."
+                    placeholder={t('form.sectorsOfInterest.placeholder')}
                     rows={2}
                     disabled={isSubmitting}
                     className="mt-1"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Sectores o industrias que te interesan
+                    {t('form.sectorsOfInterest.hint')}
                   </p>
                 </div>
               </>
@@ -247,15 +249,15 @@ const ContactForm: React.FC<ContactFormProps> = ({
 
             <div>
               <Label htmlFor="message" className="text-sm font-medium text-foreground">
-                Mensaje (opcional)
+                {t('form.message.optional')}
               </Label>
               <Textarea
                 id="message"
                 value={formData.message || ''}
                 onChange={(e) => updateField('message', e.target.value)}
                 placeholder={variant === 'compra' 
-                  ? "Describe el tipo de empresa que buscas, ubicación preferida, características específicas..."
-                  : "Información adicional sobre tu empresa..."
+                  ? t('form.message.placeholder.buy')
+                  : t('form.message.placeholder.default')
                 }
                 rows={3}
                 disabled={isSubmitting}
@@ -275,12 +277,12 @@ const ContactForm: React.FC<ContactFormProps> = ({
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
+                  {t('form.submitting')}
                 </>
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  Enviar Consulta
+                  {t('form.submit')}
                 </>
               )}
             </Button>
@@ -290,11 +292,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <div className="text-center pt-3 border-t border-border">
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mb-2">
               <Shield className="h-3 w-3" />
-              <span>Datos protegidos y confidenciales</span>
+              <span>{t('form.privacy')}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Máximo 5 consultas cada 10 minutos • 
-              Al enviar aceptas recibir información de nuestros servicios
+              {t('form.rateLimit')}
             </p>
           </div>
         </form>
