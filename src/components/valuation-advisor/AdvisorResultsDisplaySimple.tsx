@@ -41,6 +41,11 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
   // Rate limiting state
   const [lastDownloadTime, setLastDownloadTime] = useState<number>(0);
   const DOWNLOAD_COOLDOWN = 3000; // 3 segundos
+  
+  // Estado para reenvío de email
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [emailSendFailed, setEmailSendFailed] = useState(false);
+  const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
 
   // Hook para generación de PDF
   const { generatePDF, isGenerating, error: pdfError } = useAdvisorValuationPDF(
@@ -49,9 +54,36 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     'es' // TODO: Usar idioma del contexto i18n cuando esté disponible
   );
 
+  // Función de retry con exponential backoff
+  const retryWithBackoff = async <T,>(
+    fn: () => Promise<T>,
+    maxRetries: number = 3,
+    baseDelay: number = 1000
+  ): Promise<T> => {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (attempt === maxRetries - 1) {
+          throw err; // Último intento falló
+        }
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log(`⏳ [RETRY] Intento ${attempt + 1} falló, reintentando en ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    throw new Error('Retry logic failed unexpectedly');
+  };
+
   // Función para enviar email con PDF
-  const handleSendEmail = async (pdfBlob: Blob): Promise<void> => {
+  const handleSendEmail = async (pdfBlob?: Blob): Promise<void> => {
+    // Detectar WebKit (Safari/Edge iOS) para fallback sin Base64
+    const isWebKit = /AppleWebKit/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    const isEdge = /Edg\//.test(navigator.userAgent);
+    
     console.log('🚀 [ADVISOR EMAIL] Iniciando envío de email para asesor:', formData.email);
+    console.log('🌐 [ADVISOR EMAIL] Navegador:', { isWebKit, isSafari, isEdge });
     console.log('📊 [ADVISOR EMAIL] Datos del formulario:', { 
       companyName: formData.companyName, 
       email: formData.email,
@@ -63,16 +95,29 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
     });
     
     try {
+      // 1. Convertir PDF a Base64 SOLO si NO es WebKit
+      // Para Safari/Edge, omitir conversión y dejar que el servidor genere el PDF
+      let pdfBase64: string | null = null;
       
-      // 1. Convertir PDF a Base64
-      const pdfBase64 = await blobToBase64(pdfBlob);
+      if (isWebKit || !pdfBlob) {
+        console.log('⚠️ [ADVISOR EMAIL] WebKit detectado o sin blob - usando generación de PDF en servidor');
+        pdfBase64 = null; // Servidor generará el PDF
+      } else {
+        console.log('📦 [ADVISOR EMAIL] Blob recibido, tamaño:', pdfBlob.size, 'bytes');
+        pdfBase64 = await blobToBase64(pdfBlob);
+      }
 
       const pdfFilename = `Capittal-Valoracion-Asesores-${sanitizeFileName(formData.companyName)}.pdf`;
-      console.log('📄 [ADVISOR EMAIL] PDF generado, tamaño:', pdfBlob.size, 'bytes');
+      if (pdfBase64) {
+        console.log('📄 [ADVISOR EMAIL] Base64 generado, longitud:', pdfBase64.length, 'caracteres');
+      } else {
+        console.log('📄 [ADVISOR EMAIL] Sin Base64, servidor generará PDF');
+      }
       console.log('📧 [ADVISOR EMAIL] Invocando edge function send-valuation-email...');
 
-      // 2. Llamar a edge function send-valuation-email
-      const { data, error } = await supabase.functions.invoke('send-valuation-email', {
+      // 2. Llamar a edge function send-valuation-email con retry logic
+      const { data, error } = await retryWithBackoff(() => 
+        supabase.functions.invoke('send-valuation-email', {
         body: {
           recipientEmail: formData.email,
           companyData: {
@@ -107,7 +152,8 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           lang: 'es',
           source: 'advisor', // Indicador para edge function
         },
-      });
+        })
+      );
 
       if (error) {
         console.error('❌ [ADVISOR EMAIL] Error sending email:', error);
@@ -139,6 +185,7 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
         console.warn('⚠️ [ADVISOR EMAIL] No valuationId provided, cannot update record');
       }
 
+      setEmailSendFailed(false); // Reset error state en éxito
       toast({
         title: t('advisor.toast.email_sent_title'),
         description: t('advisor.toast.email_sent_description'),
@@ -147,17 +194,20 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       console.error('❌ [ADVISOR EMAIL] Error in handleSendEmail:', err);
       console.error('❌ [ADVISOR EMAIL] Error stack:', err instanceof Error ? err.stack : 'No stack trace');
       
-      // Mensaje específico para Safari/Edge
-      const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-      const isEdge = /Edg\//.test(navigator.userAgent);
+      // Marcar que el envío falló
+      setEmailSendFailed(true);
       
+      // Mensaje específico según el navegador
       let errorMessage = t('advisor.toast.email_error_description');
-      if (isSafari || isEdge) {
-        errorMessage += ' Por favor, intenta con Chrome o Firefox para mejor compatibilidad.';
+      let errorTitle = t('advisor.toast.email_error_title');
+      
+      if (isWebKit || isSafari || isEdge) {
+        errorTitle = 'Error de envío de email';
+        errorMessage = 'No se pudo enviar el email. El PDF se descargó correctamente. Usa el botón "Reenviar email" para intentar de nuevo.';
       }
       
       toast({
-        title: t('advisor.toast.email_error_title'),
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });
@@ -206,6 +256,9 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       if (!blob || blob.size === 0) {
         throw new Error('PDF generado está vacío');
       }
+      
+      // Guardar blob para posible reenvío de email
+      setLastPdfBlob(blob);
 
       // 4. CREAR DESCARGA con nombre sanitizado
       const fileName = `valoracion-${sanitizeFileName(formData.companyName)}-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -298,6 +351,31 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
       if (blobUrl) {
         URL.revokeObjectURL(blobUrl);
       }
+    }
+  };
+
+  // Función para reenviar email manualmente
+  const handleResendEmail = async () => {
+    if (!lastPdfBlob) {
+      toast({
+        title: 'Error',
+        description: 'No hay PDF disponible. Descarga el PDF primero.',
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsResendingEmail(true);
+    try {
+      await handleSendEmail(lastPdfBlob);
+      toast({
+        title: 'Email reenviado',
+        description: 'El email se ha reenviado correctamente.',
+      });
+    } catch (err) {
+      console.error('Error reenviando email:', err);
+    } finally {
+      setIsResendingEmail(false);
     }
   };
 
@@ -573,6 +651,40 @@ export const AdvisorResultsDisplaySimple: React.FC<AdvisorResultsDisplaySimplePr
           </div>
         </CardContent>
       </Card>
+      
+      {/* Botón de reenvío de email si falló */}
+      {emailSendFailed && (
+        <Card className="border-yellow-200 bg-yellow-50/50">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex flex-col sm:flex-row items-start gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-yellow-800 mb-1">
+                  El email no se pudo enviar automáticamente
+                </p>
+                <p className="text-xs text-yellow-700">
+                  El PDF se descargó correctamente. Puedes intentar reenviar el email manualmente.
+                </p>
+              </div>
+              <Button
+                onClick={handleResendEmail}
+                disabled={isResendingEmail}
+                size="sm"
+                variant="outline"
+                className="border-yellow-400 text-yellow-700 hover:bg-yellow-100 whitespace-nowrap"
+              >
+                {isResendingEmail ? (
+                  <>
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  'Reenviar email'
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Botón volver */}
       <div className="flex justify-center pt-4">

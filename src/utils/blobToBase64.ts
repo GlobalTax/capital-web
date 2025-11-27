@@ -3,20 +3,28 @@
  * Optimizado para Safari/Edge móvil con fallback automático
  * 
  * @param blob - Blob a convertir
- * @param timeout - Timeout en milisegundos (default: 8000ms)
+ * @param timeout - Timeout en milisegundos (default: dinámico según navegador)
  * @returns Promise<string> - String Base64 sin prefijo data:
  */
 export const blobToBase64 = async (
   blob: Blob, 
-  timeout: number = 8000
+  timeout?: number
 ): Promise<string> => {
+  // Detectar navegadores WebKit (Safari/Edge iOS) para timeout más largo
+  const isWebKit = /AppleWebKit/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+  const defaultTimeout = isWebKit ? 15000 : 8000; // 15s para WebKit, 8s para otros
+  const effectiveTimeout = timeout ?? defaultTimeout;
+  
+  console.log(`🔄 [BLOB] Navegador detectado: ${isWebKit ? 'WebKit (Safari/Edge)' : 'Otro'}, timeout: ${effectiveTimeout}ms`);
+  console.log(`📦 [BLOB] Tamaño del blob: ${blob.size} bytes (${(blob.size / 1024).toFixed(2)} KB)`);
+  const startTime = performance.now();
   // MÉTODO 1: arrayBuffer() - Más rápido y compatible con Safari/Edge
   try {
     console.log('🔄 [BLOB] Convirtiendo con arrayBuffer()...');
     const arrayBuffer = await Promise.race([
       blob.arrayBuffer(),
       new Promise<ArrayBuffer>((_, reject) => 
-        setTimeout(() => reject(new Error('arrayBuffer timeout')), timeout)
+        setTimeout(() => reject(new Error('arrayBuffer timeout')), effectiveTimeout)
       )
     ]);
     
@@ -30,10 +38,13 @@ export const blobToBase64 = async (
     }
     
     const base64 = btoa(binary);
-    console.log('✅ [BLOB] Conversión exitosa con arrayBuffer()');
+    const elapsedTime = performance.now() - startTime;
+    console.log(`✅ [BLOB] Conversión exitosa con arrayBuffer() en ${elapsedTime.toFixed(0)}ms`);
+    console.log(`📊 [BLOB] Base64 generado: ${base64.length} caracteres`);
     return base64;
   } catch (arrayBufferError) {
-    console.warn('⚠️ [BLOB] arrayBuffer falló, intentando FileReader...', arrayBufferError);
+    const elapsedTime = performance.now() - startTime;
+    console.warn(`⚠️ [BLOB] arrayBuffer falló después de ${elapsedTime.toFixed(0)}ms, intentando FileReader...`, arrayBufferError);
   }
   
   // MÉTODO 2: FileReader con timeout - Fallback
@@ -51,14 +62,17 @@ export const blobToBase64 = async (
         reader.readAsDataURL(blob);
       }),
       new Promise<string>((_, reject) => 
-        setTimeout(() => reject(new Error('FileReader timeout')), timeout)
+        setTimeout(() => reject(new Error('FileReader timeout')), effectiveTimeout)
       )
     ]);
     
-    console.log('✅ [BLOB] Conversión exitosa con FileReader');
+    const elapsedTime = performance.now() - startTime;
+    console.log(`✅ [BLOB] Conversión exitosa con FileReader en ${elapsedTime.toFixed(0)}ms`);
+    console.log(`📊 [BLOB] Base64 generado: ${base64.length} caracteres`);
     return base64;
   } catch (fileReaderError) {
-    console.error('❌ [BLOB] Ambos métodos fallaron:', fileReaderError);
+    const elapsedTime = performance.now() - startTime;
+    console.error(`❌ [BLOB] Ambos métodos fallaron después de ${elapsedTime.toFixed(0)}ms:`, fileReaderError);
     throw new Error(`No se pudo convertir blob a base64: ${fileReaderError instanceof Error ? fileReaderError.message : 'Unknown error'}`);
   }
 };
