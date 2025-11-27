@@ -326,6 +326,21 @@ const Step4Results: React.FC<Step4Props> = ({ result, companyData, isCalculating
           </div>
         </div>
 
+        {/* ⚠️ DISCLAIMER INMUEBLES - Muy visible */}
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 sm:p-5 lg:p-6">
+          <div className="flex items-start gap-3">
+            <span className="text-red-600 text-3xl font-bold leading-none">*</span>
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-red-800 mb-2">
+                {t('disclaimer.realEstate.title')}
+              </h3>
+              <p className="text-sm sm:text-base text-red-700 leading-relaxed">
+                {t('disclaimer.realEstate.text')}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Información de múltiplos aplicados */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 lg:p-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">{t('sector.multiple.title')}</h3>

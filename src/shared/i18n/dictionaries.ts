@@ -590,6 +590,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'legal.notice.title': 'Aviso Importante',
     'legal.notice.text': 'Esta valoración es una estimación basada en múltiplos EBITDA por sector y no debe considerarse como asesoramiento financiero profesional. Para valoraciones empresariales precisas, consulte con un asesor financiero cualificado o un experto en valoración empresarial.',
 
+    // Disclaimer inmuebles
+    'disclaimer.realEstate.title': 'Importante',
+    'disclaimer.realEstate.text': 'Esta valoración NO incluye el valor de los inmuebles que la empresa pueda tener en su balance. Si la empresa es propietaria de bienes inmuebles, su valor debería añadirse a esta valoración de forma independiente.',
+
     // Formularios - Básica
     'form.basic.title': 'Información Básica',
     'form.basic.subtitle': 'Datos generales de su empresa',
@@ -1724,6 +1728,10 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
 
     'legal.notice.title': 'Important Notice',
     'legal.notice.text': 'This valuation is an estimate based on EBITDA multiples by sector and should not be considered professional financial advice. For accurate business valuations, consult a qualified financial advisor or business valuation expert.',
+
+    // Disclaimer real estate
+    'disclaimer.realEstate.title': 'Important',
+    'disclaimer.realEstate.text': 'This valuation does NOT include the value of real estate that the company may have on its balance sheet. If the company owns real estate, its value should be added to this valuation independently.',
 
     'form.basic.title': 'Basic Information',
     'form.basic.subtitle': 'General data about your company',

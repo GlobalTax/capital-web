@@ -427,6 +427,13 @@ if (pdfToAttach) {
               <p style="margin:0 0 20px; font-size:14px; color:#6b7280;">${firma}</p>
             </div>
 
+            <div style="background:#fef2f2; border:2px solid #ef4444; border-radius:6px; padding:16px; margin:16px 0;">
+              <p style="margin:0; font-size:14px; color:#991b1b; line-height:1.5;">
+                <span style="font-size:20px; font-weight:bold;">*</span>
+                <strong>Importante:</strong> Esta valoración <strong>NO incluye el valor de los inmuebles</strong> que la empresa pueda tener en su balance. Si la empresa es propietaria de bienes inmuebles, su valor debería añadirse a esta valoración de forma independiente.
+              </p>
+            </div>
+
             <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:6px; padding:16px; margin:20px 0;">
               <p style="margin:0; font-size:12px; color:#92400e; line-height:1.4;"><strong>⚖️ Nota legal:</strong> Este contenido es orientativo y no constituye una valoración u oferta vinculante. La valoración final puede variar tras el análisis completo de la documentación (estados financieros, deuda y ajustes de EBITDA).</p>
             </div>
