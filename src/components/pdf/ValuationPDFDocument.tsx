@@ -319,6 +319,7 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
       profitability: 'Rentabilidad:',
       ebitdaMargin: 'Margen EBITDA:',
       legalDisclaimerAndLimitations: 'AVISO LEGAL Y LIMITACIONES',
+      realEstateDisclaimer: '*Esta valoración NO incluye el valor de los inmuebles en balance. Si la empresa posee bienes inmuebles, su valor debería añadirse de forma independiente.',
       disclaimerPurposeTitle: 'Propósito del informe:',
       disclaimerPurposeText: 'Esta valoración es una estimación basada en múltiplos EBITDA por sector y no constituye asesoramiento financiero, fiscal o legal profesional.',
       disclaimerLimitationsTitle: 'Limitaciones:',
@@ -371,6 +372,7 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
       profitability: 'Rendibilitat:',
       ebitdaMargin: "Marge d'EBITDA:",
       legalDisclaimerAndLimitations: 'AVÍS LEGAL I LIMITACIONS',
+      realEstateDisclaimer: "*Aquesta valoració NO inclou el valor dels immobles en balanç. Si l'empresa posseeix béns immobles, el seu valor s'hauria d'afegir de forma independent.",
       disclaimerPurposeTitle: "Propòsit de l'informe:",
       disclaimerPurposeText: "Aquesta valoració és una estimació basada en múltiples d'EBITDA per sector i no constitueix assessorament professional.",
       disclaimerLimitationsTitle: 'Limitacions:',
@@ -475,6 +477,7 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
       profitability: 'Rentabilidade:',
       ebitdaMargin: 'Marxe EBITDA:',
       legalDisclaimerAndLimitations: 'AVISO LEGAL E LIMITACIÓNS',
+      realEstateDisclaimer: '*Esta valoración NON inclúe o valor dos inmobles en balance. Se a empresa posúe bens inmobles, o seu valor debería engadirse de forma independente.',
       disclaimerPurposeTitle: 'Propósito do informe:',
       disclaimerPurposeText: 'Esta valoración é unha estimación baseada en múltiplos EBITDA por sector e non constitúe asesoramento profesional.',
       disclaimerLimitationsTitle: 'Limitacións:',
@@ -712,6 +715,20 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
               </Text>
             </View>
           </View>
+        </View>
+
+        {/* Disclaimer Inmuebles - Destacado */}
+        <View style={{
+          backgroundColor: '#fef2f2',
+          borderWidth: 2,
+          borderColor: '#ef4444',
+          padding: 12,
+          marginBottom: 15,
+        }}>
+          <Text style={{ fontSize: 18, fontWeight: 700, color: '#dc2626', marginBottom: 8 }}>*</Text>
+          <Text style={{ fontSize: 10, color: '#991b1b', fontWeight: 700, lineHeight: 1.4 }}>
+            {T.realEstateDisclaimer}
+          </Text>
         </View>
 
         {/* Disclaimer */}
