@@ -11,7 +11,14 @@ import {
   ValuationScenario,
   TaxCalculationResult
 } from '../types/unified.types';
-import { getSectorMultiplesByEbitda } from '@/utils/ebitdaMatrix';
+
+// ============= MÚLTIPLO EBITDA FIJO =============
+// Múltiplo fijo para todas las valoraciones: 5.5x - 6x EBITDA
+const FIXED_EBITDA_MULTIPLE = {
+  low: 5.5,
+  high: 6.0,
+  average: 5.75
+};
 
 // ============= CALCULATION OPTIONS =============
 interface CalculationOptions {
@@ -105,58 +112,21 @@ const calculateBaseValuation = async (
   sectorMultiples: SectorMultiple[]
 ): Promise<ValuationResult> => {
   
-  const industryToUse = companyData.industry || 'servicios';
-  const employeeRangeToUse = companyData.employeeRange || '2-5';
   const ebitdaToUse = companyData.ebitda || 100000;
-
-  // Try EBITDA matrix first
-  const byEbitda = getSectorMultiplesByEbitda(industryToUse, ebitdaToUse);
-  if (byEbitda && byEbitda.metric === 'EV/EBITDA') {
-    const avgMultiple = (byEbitda.low + byEbitda.high) / 2;
-    const ebitdaValuation = ebitdaToUse * avgMultiple;
-    const finalValuation = Math.round(ebitdaValuation);
-
-    return {
-      finalValuation,
-      ebitdaMultiple: Math.round(ebitdaValuation),
-      valuationRange: {
-        min: Math.round(ebitdaToUse * byEbitda.low),
-        max: Math.round(ebitdaToUse * byEbitda.high)
-      },
-      multiples: {
-        ebitdaMultipleUsed: avgMultiple
-      }
-    };
-  }
-
-  // Fallback to sector multiples
-  let sectorData = sectorMultiples.find(s => 
-    s.sector_name === industryToUse && 
-    s.employee_range === employeeRangeToUse
-  );
-
-  if (!sectorData) {
-    sectorData = {
-      sector_name: industryToUse,
-      employee_range: employeeRangeToUse,
-      ebitda_multiple: ebitdaToUse >= 1000000 ? 6.0 : 4.5,
-      revenue_multiple: 1.0,
-      description: 'Valores estimados'
-    };
-  }
-
-  const ebitdaValuation = ebitdaToUse * sectorData.ebitda_multiple;
-  const finalValuation = Math.round(ebitdaValuation);
-
+  
+  // Usar múltiplo fijo 5.5x - 6x para todas las valoraciones
+  const avgMultiple = FIXED_EBITDA_MULTIPLE.average; // 5.75x
+  const finalValuation = Math.round(ebitdaToUse * avgMultiple);
+  
   return {
     finalValuation,
-    ebitdaMultiple: Math.round(ebitdaValuation),
+    ebitdaMultiple: finalValuation,
     valuationRange: {
-      min: Math.round(finalValuation * 0.8),
-      max: Math.round(finalValuation * 1.2)
+      min: Math.round(ebitdaToUse * FIXED_EBITDA_MULTIPLE.low),  // 5.5x
+      max: Math.round(ebitdaToUse * FIXED_EBITDA_MULTIPLE.high)  // 6.0x
     },
     multiples: {
-      ebitdaMultipleUsed: sectorData.ebitda_multiple
+      ebitdaMultipleUsed: avgMultiple
     }
   };
 };
