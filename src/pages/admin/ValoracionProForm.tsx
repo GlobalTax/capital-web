@@ -118,11 +118,36 @@ export default function ValoracionProForm() {
     toast.info('Funcionalidad de envío por email próximamente disponible');
   };
 
+  // Loading state
   if (!isNew && isLoading) {
     return (
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-[600px] w-full" />
+      </div>
+    );
+  }
+
+  // Edit mode but valuation not found
+  if (!isNew && !isLoading && !existingValuation) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/valoraciones-pro')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-destructive">
+              Valoración no encontrada
+            </h1>
+            <p className="text-muted-foreground">
+              La valoración solicitada no existe o no tienes permisos para verla.
+            </p>
+          </div>
+        </div>
+        <Button onClick={() => navigate('/admin/valoraciones-pro')}>
+          Volver al listado
+        </Button>
       </div>
     );
   }
