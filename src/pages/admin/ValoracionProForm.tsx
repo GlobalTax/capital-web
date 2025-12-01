@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, FileText, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
-import AdminLayout from '@/features/admin/components/AdminLayout';
 import { useProfessionalValuation, useProfessionalValuations } from '@/hooks/useProfessionalValuations';
 import { ProfessionalValuationForm } from '@/components/admin/professional-valuations/ProfessionalValuationForm';
 import ProfessionalValuationPDF from '@/components/pdf/ProfessionalValuationPDF';
@@ -15,7 +14,6 @@ import { supabase } from '@/integrations/supabase/client';
 export default function ValoracionProForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const handleLogout = () => navigate('/admin/login');
   const isNew = id === 'nueva';
   
   const { data: existingValuation, isLoading } = useProfessionalValuation(isNew ? undefined : id);
@@ -122,48 +120,44 @@ export default function ValoracionProForm() {
 
   if (!isNew && isLoading) {
     return (
-      <AdminLayout onLogout={handleLogout}>
-        <div className="p-6 space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-[600px] w-full" />
-        </div>
-      </AdminLayout>
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-[600px] w-full" />
+      </div>
     );
   }
 
   return (
-    <AdminLayout onLogout={handleLogout}>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/valoraciones-pro')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {isNew ? 'Nueva Valoración' : 'Editar Valoración'}
-              </h1>
-              <p className="text-muted-foreground">
-                {isNew 
-                  ? 'Crea una nueva valoración profesional' 
-                  : `Editando: ${currentData?.clientCompany || 'Cargando...'}`
-                }
-              </p>
-            </div>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/valoraciones-pro')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {isNew ? 'Nueva Valoración' : 'Editar Valoración'}
+            </h1>
+            <p className="text-muted-foreground">
+              {isNew 
+                ? 'Crea una nueva valoración profesional' 
+                : `Editando: ${currentData?.clientCompany || 'Cargando...'}`
+              }
+            </p>
           </div>
         </div>
-
-        {/* Form */}
-        {currentData && (
-          <ProfessionalValuationForm
-            initialData={currentData}
-            onSave={handleSave}
-            onGeneratePdf={handleGeneratePdf}
-            onSendEmail={handleSendEmail}
-          />
-        )}
       </div>
-    </AdminLayout>
+
+      {/* Form */}
+      {currentData && (
+        <ProfessionalValuationForm
+          initialData={currentData}
+          onSave={handleSave}
+          onGeneratePdf={handleGeneratePdf}
+          onSendEmail={handleSendEmail}
+        />
+      )}
+    </div>
   );
 }
