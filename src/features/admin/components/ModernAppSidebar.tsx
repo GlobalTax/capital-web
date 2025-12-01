@@ -40,7 +40,8 @@ import {
   AlertCircle,
   Flag,
   Briefcase,
-  Tags
+  Tags,
+  Calculator
 } from 'lucide-react';
 
 const menuSections = [
@@ -72,6 +73,7 @@ const menuSections = [
   {
     title: "🏢 Datos de Empresa",
     items: [
+      { title: "Valoraciones Pro", url: "/admin/valoraciones-pro", icon: Calculator, badge: "PRO" },
       { title: "Operaciones", url: "/admin/operations", icon: Building2 },
       { title: "Múltiplos", url: "/admin/multiples", icon: TrendingUp },
       { title: "Estadísticas", url: "/admin/statistics", icon: BarChart3 },
