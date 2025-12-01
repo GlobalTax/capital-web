@@ -207,147 +207,125 @@ export default function ValoracionesPro() {
           </Select>
         </div>
 
-        {/* Table - Premium Experience */}
-        <Card className="overflow-hidden border-border/50">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <div className="max-h-[calc(100vh-420px)] overflow-y-auto">
-                <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-muted/30 backdrop-blur-sm">
-                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
-                      <TableHead className="min-w-[200px] whitespace-nowrap font-semibold text-foreground">Empresa</TableHead>
-                      <TableHead className="min-w-[150px] whitespace-nowrap font-semibold text-foreground">Contacto</TableHead>
-                      <TableHead className="min-w-[120px] whitespace-nowrap font-semibold text-foreground">Sector</TableHead>
-                      <TableHead className="min-w-[140px] whitespace-nowrap font-semibold text-foreground text-right">Valoración</TableHead>
-                      <TableHead className="min-w-[110px] whitespace-nowrap font-semibold text-foreground">Estado</TableHead>
-                      <TableHead className="min-w-[110px] whitespace-nowrap font-semibold text-foreground">Fecha</TableHead>
-                      <TableHead className="w-[60px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-12">
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                            <span className="text-muted-foreground">Cargando valoraciones...</span>
+        {/* Table - Following ContactsTable pattern */}
+        <div className="rounded-md border">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow>
+                  <TableHead className="w-48">Empresa</TableHead>
+                  <TableHead className="w-36">Contacto</TableHead>
+                  <TableHead className="w-28">Sector</TableHead>
+                  <TableHead className="w-32 text-right">Valoración</TableHead>
+                  <TableHead className="w-24">Estado</TableHead>
+                  <TableHead className="w-28">Fecha</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <span className="text-muted-foreground">Cargando...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredValuations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-32 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <FileText className="h-10 w-10 text-muted-foreground/40" />
+                        <p className="text-muted-foreground">No hay valoraciones</p>
+                        <Button variant="outline" size="sm" onClick={handleCreateNew}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Crear primera valoración
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredValuations.map((valuation) => {
+                    const isNew = valuation.createdAt && 
+                      new Date(valuation.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                    
+                    return (
+                      <TableRow 
+                        key={valuation.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleEdit(valuation.id!)}
+                      >
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate max-w-[160px]">{valuation.clientCompany}</span>
+                            {isNew && (
+                              <Badge className="bg-green-500/10 text-green-600 text-[10px] px-1.5">Nuevo</Badge>
+                            )}
                           </div>
                         </TableCell>
-                      </TableRow>
-                    ) : filteredValuations.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-12">
-                          <div className="flex flex-col items-center gap-2">
-                            <FileText className="h-12 w-12 text-muted-foreground/50" />
-                            <span className="text-muted-foreground">No se encontraron valoraciones</span>
-                            <Button variant="outline" size="sm" onClick={handleCreateNew} className="mt-2">
-                              <Plus className="mr-2 h-4 w-4" />
-                              Crear primera valoración
-                            </Button>
-                          </div>
+                        <TableCell>
+                          <span className="truncate block max-w-[120px]">{valuation.clientName}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-xs">{valuation.sector}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium tabular-nums">
+                          {valuation.valuationCentral ? formatCurrency(valuation.valuationCentral) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusConfig[valuation.status]?.variant || 'secondary'}>
+                            {statusConfig[valuation.status]?.label || valuation.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground tabular-nums">
+                          {valuation.createdAt ? formatDate(valuation.createdAt) : '-'}
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEdit(valuation.id!)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Ver / Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleViewPdf(valuation)}
+                                disabled={!valuation.pdfUrl}
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                Ver PDF
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDuplicate(valuation.id!)}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Duplicar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={() => {
+                                  setValuationToDelete(valuation.id!);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      filteredValuations.map((valuation, index) => {
-                        const isNew = valuation.createdAt && 
-                          new Date(valuation.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                        
-                        return (
-                          <TableRow 
-                            key={valuation.id} 
-                            className="cursor-pointer transition-colors hover:bg-muted/40 group"
-                            onClick={() => handleEdit(valuation.id!)}
-                            style={{ animationDelay: `${index * 50}ms` }}
-                          >
-                            <TableCell className="font-medium whitespace-nowrap">
-                              <div className="flex items-center gap-2">
-                                <span className="truncate max-w-[180px]" title={valuation.clientCompany}>
-                                  {valuation.clientCompany}
-                                </span>
-                                {isNew && (
-                                  <Badge variant="default" className="bg-success text-success-foreground text-[10px] px-1.5 py-0">
-                                    Nuevo
-                                  </Badge>
-                                )}
-                                {valuation.version && valuation.version > 1 && (
-                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                    v{valuation.version}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              <span className="truncate max-w-[140px] block" title={valuation.clientName}>
-                                {valuation.clientName}
-                              </span>
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              <Badge variant="secondary" className="font-normal text-xs">
-                                {valuation.sector}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-semibold whitespace-nowrap tabular-nums">
-                              {valuation.valuationCentral ? formatCurrency(valuation.valuationCentral) : '-'}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              <Badge variant={statusConfig[valuation.status]?.variant || 'secondary'}>
-                                {statusConfig[valuation.status]?.label || valuation.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
-                              {valuation.createdAt ? formatDate(valuation.createdAt) : '-'}
-                            </TableCell>
-                            <TableCell onClick={(e) => e.stopPropagation()} className="whitespace-nowrap">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
-                                  <DropdownMenuItem onClick={() => handleEdit(valuation.id!)}>
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    Ver / Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleViewPdf(valuation)}
-                                    disabled={!valuation.pdfUrl}
-                                  >
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Ver PDF
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleDuplicate(valuation.id!)}>
-                                    <Copy className="mr-2 h-4 w-4" />
-                                    Duplicar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={() => {
-                                      setValuationToDelete(valuation.id!);
-                                      setDeleteDialogOpen(true);
-                                    }}
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
 
         {/* Delete Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
