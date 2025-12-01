@@ -385,6 +385,9 @@ export const useRoleBasedPermissions = () => {
       // Valuation Analytics - Visible para todos excepto 'none'
       valuationAnalytics: userRole !== 'none',
       
+      // Valoraciones Pro - Para admins y super admins
+      valoracionesPro: isAdminLevel,
+      
       // Configuration - Para super admins y admins
       adminUsers: userRole === 'super_admin' || userRole === 'admin',
       settings: isAdminLevel,
