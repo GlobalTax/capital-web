@@ -58,6 +58,7 @@ export const AdminSidebar: React.FC = () => {
         trackingDashboard: false,
         trackingConfig: false,
         valuationAnalytics: false,
+        valoracionesPro: false,
       };
     }
   }, [getMenuVisibility]);
@@ -142,7 +143,9 @@ export const AdminSidebar: React.FC = () => {
       'tracking-dashboard': 'trackingDashboard',
       'tracking-config': 'trackingConfig',
       // Valuation Analytics
-      'valuation-analytics': 'valuationAnalytics'
+      'valuation-analytics': 'valuationAnalytics',
+      // Valoraciones Pro
+      'valoraciones-pro': 'valoracionesPro'
     };
 
     const permissionKey = routePermissionMap[route];

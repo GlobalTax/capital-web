@@ -122,6 +122,13 @@ export const sidebarSections: SidebarSection[] = [
     description: "Información corporativa",
     items: [
       { 
+        title: "Valoraciones Pro", 
+        url: "/admin/valoraciones-pro", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Sistema de valoración profesional"
+      },
+      { 
         title: "Sectores", 
         url: "/admin/sectors", 
         icon: Tags,
