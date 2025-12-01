@@ -4,6 +4,7 @@ import { Users, DollarSign } from 'lucide-react';
 
 interface ContactStats {
   total: number;
+  uniqueContacts: number;
   byOrigin: Record<string, number>;
   totalValuation: number;
 }
@@ -22,18 +23,47 @@ export const ContactStatsCards: React.FC<ContactStatsCardsProps> = ({ stats }) =
     }).format(value);
   };
 
+  const recurringContacts = stats.total - stats.uniqueContacts;
+  const recurringPercentage = stats.total > 0 
+    ? ((recurringContacts / stats.total) * 100).toFixed(0) 
+    : 0;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Total Contactos
+            Contactos Únicos
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div>
+              <div className="text-2xl font-bold">{stats.uniqueContacts}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {stats.total} valoraciones totales
+              </div>
+            </div>
             <Users className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Contactos Recurrentes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-2xl font-bold">{recurringContacts}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {recurringPercentage}% del total
+              </div>
+            </div>
+            <div className="text-2xl">🔄</div>
           </div>
         </CardContent>
       </Card>

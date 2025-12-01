@@ -772,43 +772,81 @@ export const useUnifiedContacts = () => {
       console.log('🔄 Exportando', filteredContacts.length, 'contactos a Excel...');
       console.log('📋 Ejemplo de contacto:', filteredContacts[0]);
       
-      // Preparar datos con validación
-      const excelData = filteredContacts.map(contact => ({
-        'Origen': contact.origin === 'valuation' ? 'Valoración' :
-                 contact.origin === 'contact' ? 'Contacto' :
-                 contact.origin === 'collaborator' ? 'Colaborador' :
-                 contact.origin === 'general' ? 'General' :
-                 contact.origin === 'acquisition' ? 'Adquisición' :
-                 contact.origin === 'company_acquisition' ? 'Adq. Empresa' :
-                 contact.origin === 'advisor' ? 'Asesor' : contact.origin,
-        'Nombre': contact.name || '',
-        'Email': contact.email || '',
-        'Teléfono': contact.phone || '',
-        'Empresa': contact.company || '',
-        'CIF': contact.cif || '-',
-        'Sector': contact.industry || contact.sectors_of_interest || '',
-        'Empleados': contact.employee_range || '',
-        'Facturación': contact.revenue 
-          ? formatCurrency(contact.revenue, 'EUR')
-          : '',
-        'EBITDA': contact.ebitda 
-          ? formatCurrency(contact.ebitda, 'EUR')
-          : '',
-        'Valoración': contact.final_valuation 
-          ? formatCurrency(contact.final_valuation, 'EUR')
-          : '',
-        'Ubicación': contact.location || contact.country || '',
-        'Estado CRM': contact.lead_status_crm || contact.status || '',
-        'Fecha': contact.created_at 
-          ? format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })
-          : '',
-        'Asignado a': contact.assigned_to_name || '',
-        'Email Enviado': contact.email_sent ? 'Sí' : 'No',
-        'Email Abierto': contact.email_opened ? 'Sí' : 'No',
-        'Prioridad': contact.priority || '',
-        'Presupuesto': contact.investment_budget || '',
-        'Origen Proyecto': contact.source_project || '',
-      }));
+      // Calculate email-based statistics for each contact
+      const emailStats = filteredContacts.reduce((acc, c) => {
+        const key = c.email.toLowerCase();
+        if (!acc[key]) {
+          acc[key] = {
+            count: 0,
+            valuations: [] as number[],
+            dates: [] as Date[],
+          };
+        }
+        acc[key].count++;
+        if (c.final_valuation) acc[key].valuations.push(c.final_valuation);
+        acc[key].dates.push(new Date(c.created_at));
+        return acc;
+      }, {} as Record<string, { count: number; valuations: number[]; dates: Date[] }>);
+      
+      // Preparar datos con validación y nuevas columnas
+      const excelData = filteredContacts.map(contact => {
+        const stats = emailStats[contact.email.toLowerCase()];
+        const sortedDates = stats.dates.sort((a, b) => a.getTime() - b.getTime());
+        const maxValuation = stats.valuations.length > 0 ? Math.max(...stats.valuations) : 0;
+        const avgValuation = stats.valuations.length > 0 
+          ? stats.valuations.reduce((sum, v) => sum + v, 0) / stats.valuations.length 
+          : 0;
+
+        return {
+          'Origen': contact.origin === 'valuation' ? 'Valoración' :
+                   contact.origin === 'contact' ? 'Contacto' :
+                   contact.origin === 'collaborator' ? 'Colaborador' :
+                   contact.origin === 'general' ? 'General' :
+                   contact.origin === 'acquisition' ? 'Adquisición' :
+                   contact.origin === 'company_acquisition' ? 'Adq. Empresa' :
+                   contact.origin === 'advisor' ? 'Asesor' : contact.origin,
+          'Nombre': contact.name || '',
+          'Email': contact.email || '',
+          'Teléfono': contact.phone || '',
+          'Empresa': contact.company || '',
+          'CIF': contact.cif || '-',
+          'Sector': contact.industry || contact.sectors_of_interest || '',
+          'Empleados': contact.employee_range || '',
+          'Facturación': contact.revenue 
+            ? formatCurrency(contact.revenue, 'EUR')
+            : '',
+          'EBITDA': contact.ebitda 
+            ? formatCurrency(contact.ebitda, 'EUR')
+            : '',
+          'Valoración': contact.final_valuation 
+            ? formatCurrency(contact.final_valuation, 'EUR')
+            : '',
+          'Nº Valoraciones': stats.count,
+          'Primera Valoración': sortedDates.length > 0 
+            ? format(sortedDates[0], 'dd/MM/yyyy', { locale: es })
+            : '',
+          'Última Valoración': sortedDates.length > 0 
+            ? format(sortedDates[sortedDates.length - 1], 'dd/MM/yyyy', { locale: es })
+            : '',
+          'Valoración Máxima': maxValuation > 0 
+            ? formatCurrency(maxValuation, 'EUR')
+            : '',
+          'Valoración Promedio': avgValuation > 0 
+            ? formatCurrency(avgValuation, 'EUR')
+            : '',
+          'Ubicación': contact.location || contact.country || '',
+          'Estado CRM': contact.lead_status_crm || contact.status || '',
+          'Fecha': contact.created_at 
+            ? format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })
+            : '',
+          'Asignado a': contact.assigned_to_name || '',
+          'Email Enviado': contact.email_sent ? 'Sí' : 'No',
+          'Email Abierto': contact.email_opened ? 'Sí' : 'No',
+          'Prioridad': contact.priority || '',
+          'Presupuesto': contact.investment_budget || '',
+          'Origen Proyecto': contact.source_project || '',
+        };
+      });
 
       console.log('📊 Datos preparados:', excelData.length, 'filas');
 
@@ -879,5 +917,6 @@ export const useUnifiedContacts = () => {
     bulkUpdateStatus,
     exportContacts,
     refetch: fetchUnifiedContacts,
+    groupContactsByEmail,
   };
 };
