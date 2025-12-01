@@ -22,13 +22,56 @@ interface MultiplesStepProps {
 }
 
 export function MultiplesStep({ data, calculatedValues, updateField }: MultiplesStepProps) {
+  // Fallback cuando no hay valores calculados - permitir entrada manual
   if (!calculatedValues) {
+    const manualMultiple = data.ebitdaMultipleUsed || 6;
+    
     return (
-      <Card>
-        <CardContent className="pt-6 text-center text-muted-foreground">
-          <p>Introduce datos financieros válidos para ver los múltiplos</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-amber-800 font-medium">
+                  Introduce un EBITDA positivo en el paso anterior para calcular la valoración automáticamente.
+                </p>
+                <p className="text-amber-700 text-sm">
+                  Mientras tanto, puedes establecer un múltiplo EBITDA manualmente.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Múltiplo EBITDA (manual)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Label htmlFor="manualMultiple">Múltiplo EBITDA</Label>
+              <Input
+                id="manualMultiple"
+                type="number"
+                value={manualMultiple}
+                onChange={(e) => updateField('ebitdaMultipleUsed', parseFloat(e.target.value) || 6)}
+                step={0.1}
+                min={1}
+                max={15}
+                className="w-24"
+              />
+              <span className="text-muted-foreground">x EBITDA</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              El múltiplo típico en España oscila entre 4x y 8x dependiendo del sector y tamaño de la empresa.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
