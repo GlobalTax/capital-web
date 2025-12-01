@@ -123,10 +123,9 @@
 
   table {
     width: 100%;
-    table-layout: fixed;
   }
 
-  th, td, pre, code, a {
+  pre, code, a {
     word-break: break-word;
   }
 
