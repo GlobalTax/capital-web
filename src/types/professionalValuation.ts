@@ -263,7 +263,7 @@ export function mapDbToProfessionalValuation(dbRow: any): ProfessionalValuationD
  * Convertir datos TypeScript a formato de base de datos
  */
 export function mapProfessionalValuationToDb(data: Partial<ProfessionalValuationData>): Record<string, any> {
-  return {
+  const mapped: Record<string, any> = {
     advisor_name: data.advisorName,
     advisor_email: data.advisorEmail,
     client_name: data.clientName,
@@ -303,4 +303,9 @@ export function mapProfessionalValuationToDb(data: Partial<ProfessionalValuation
     linked_lead_type: data.linkedLeadType,
     linked_operation_id: data.linkedOperationId,
   };
+
+  // Filtrar campos undefined para evitar errores de inserción en la BD
+  return Object.fromEntries(
+    Object.entries(mapped).filter(([_, value]) => value !== undefined)
+  );
 }

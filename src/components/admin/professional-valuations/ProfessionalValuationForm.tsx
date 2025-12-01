@@ -3,7 +3,7 @@
 // Formulario multi-paso para crear valoraciones
 // =============================================
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -117,12 +117,30 @@ export function ProfessionalValuationForm({
     );
   }, [data.financialYears, data.normalizationAdjustments, data.sector, data.ebitdaMultipleUsed]);
 
-  // Actualizar datos cuando cambian los cálculos
+  // Auto-inicializar ebitdaMultipleUsed cuando hay valores calculados
+  useEffect(() => {
+    if (calculatedValues && (!data.ebitdaMultipleUsed || data.ebitdaMultipleUsed <= 0)) {
+      const defaultMultiple = (calculatedValues.multipleLow + calculatedValues.multipleHigh) / 2;
+      setData(prev => ({ 
+        ...prev, 
+        ebitdaMultipleUsed: Math.round(defaultMultiple * 10) / 10 
+      }));
+    }
+  }, [calculatedValues, data.ebitdaMultipleUsed]);
+
+  // Actualizar datos cuando cambian los cálculos - garantizar valores por defecto
   const dataWithCalculations = useMemo((): ProfessionalValuationData => {
-    if (!calculatedValues) return data;
+    const baseData = { ...data };
+    
+    // Asegurar valores por defecto para campos críticos
+    if (!baseData.ebitdaMultipleUsed || baseData.ebitdaMultipleUsed <= 0) {
+      baseData.ebitdaMultipleUsed = 6; // Valor por defecto
+    }
+    
+    if (!calculatedValues) return baseData;
     
     return {
-      ...data,
+      ...baseData,
       reportedEbitda: getLatestEbitda(data.financialYears),
       normalizedEbitda: calculatedValues.normalizedEbitda,
       ebitdaMultipleLow: calculatedValues.multipleLow,
@@ -178,7 +196,7 @@ export function ProfessionalValuationForm({
     }));
   }, []);
 
-  // Validar paso actual
+  // Validar paso actual - con fallback a calculatedValues
   const isStepValid = useCallback((step: number): boolean => {
     switch (step) {
       case 1:
@@ -188,13 +206,16 @@ export function ProfessionalValuationForm({
       case 3:
         return true; // Ajustes son opcionales
       case 4:
-        return !!(data.sector && data.ebitdaMultipleUsed && data.ebitdaMultipleUsed > 0);
+        // Validar con múltiple del usuario o del cálculo automático
+        const hasMultiple = data.ebitdaMultipleUsed && data.ebitdaMultipleUsed > 0;
+        const hasCalculatedMultiple = calculatedValues?.multipleUsed && calculatedValues.multipleUsed > 0;
+        return !!(data.sector && (hasMultiple || hasCalculatedMultiple));
       case 5:
         return true;
       default:
         return true;
     }
-  }, [data]);
+  }, [data, calculatedValues]);
 
   // Navegación
   const goNext = () => {

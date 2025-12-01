@@ -38,18 +38,26 @@ export default function ValoracionProForm() {
   }, [existingValuation, isNew, currentData]);
 
   const handleSave = async (data: ProfessionalValuationData, isDraft: boolean = true) => {
+    console.log('[ValoracionProForm] Guardando:', { isNew, isDraft, dataKeys: Object.keys(data) });
     try {
       if (isNew) {
         const newValuation = await createValuation(data);
+        console.log('[ValoracionProForm] Creada:', newValuation);
         if (newValuation?.id) {
+          toast.success('Valoración creada correctamente');
           navigate(`/admin/valoraciones-pro/${newValuation.id}`, { replace: true });
+        } else {
+          toast.error('Error: No se recibió ID de la nueva valoración');
         }
       } else if (id) {
         await updateValuation({ id, data });
+        toast.success('Valoración actualizada correctamente');
+        console.log('[ValoracionProForm] Actualizada:', id);
       }
     } catch (error) {
-      console.error('Error saving valuation:', error);
-      toast.error('Error al guardar la valoración');
+      console.error('[ValoracionProForm] Error al guardar:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error(`Error al guardar: ${errorMessage}`);
     }
   };
 
