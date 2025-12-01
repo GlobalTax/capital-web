@@ -213,12 +213,12 @@ export default function ValoracionesPro() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>Contacto</TableHead>
-                  <TableHead>Sector</TableHead>
-                  <TableHead className="text-right">Valoración</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
+                  <TableHead className="whitespace-nowrap">Empresa</TableHead>
+                  <TableHead className="whitespace-nowrap">Contacto</TableHead>
+                  <TableHead className="whitespace-nowrap">Sector</TableHead>
+                  <TableHead className="whitespace-nowrap text-right">Valoración</TableHead>
+                  <TableHead className="whitespace-nowrap">Estado</TableHead>
+                  <TableHead className="whitespace-nowrap">Fecha</TableHead>
                   <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
               </TableHeader>
