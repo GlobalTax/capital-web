@@ -189,6 +189,7 @@ export default function ValoracionProForm() {
           onSave={handleSave}
           onGeneratePdf={handleGeneratePdf}
           onSendEmail={handleSendEmail}
+          isLoading={isCreating || isUpdating || isGeneratingPdf}
         />
       )}
     </div>

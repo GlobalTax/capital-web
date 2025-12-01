@@ -101,6 +101,8 @@ export function ProfessionalValuationForm({
       : DEFAULT_DATA.financialYears,
   }));
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Calcular valores derivados
   const calculatedValues = useMemo(() => {
@@ -128,7 +130,7 @@ export function ProfessionalValuationForm({
     }
   }, [calculatedValues, data.ebitdaMultipleUsed]);
 
-  // Actualizar datos cuando cambian los cálculos - garantizar valores por defecto
+  // Actualizar datos cuando cambian los cálculos - garantizar valores por defecto y preservar datos de DB
   const dataWithCalculations = useMemo((): ProfessionalValuationData => {
     const baseData = { ...data };
     
@@ -137,7 +139,11 @@ export function ProfessionalValuationForm({
       baseData.ebitdaMultipleUsed = 6; // Valor por defecto
     }
     
-    if (!calculatedValues) return baseData;
+    // Si no hay cálculos, retornar los datos existentes (pueden venir de la DB)
+    if (!calculatedValues) {
+      console.log('[ProfessionalValuationForm] No calculatedValues, usando baseData existente');
+      return baseData;
+    }
     
     return {
       ...baseData,
@@ -145,10 +151,11 @@ export function ProfessionalValuationForm({
       normalizedEbitda: calculatedValues.normalizedEbitda,
       ebitdaMultipleLow: calculatedValues.multipleLow,
       ebitdaMultipleHigh: calculatedValues.multipleHigh,
-      valuationLow: calculatedValues.valuationLow,
-      valuationHigh: calculatedValues.valuationHigh,
-      valuationCentral: calculatedValues.valuationCentral,
-      sensitivityMatrix: calculatedValues.sensitivityMatrix,
+      // Usar valores calculados, pero mantener los existentes de DB si los calculados son 0
+      valuationLow: calculatedValues.valuationLow || baseData.valuationLow,
+      valuationHigh: calculatedValues.valuationHigh || baseData.valuationHigh,
+      valuationCentral: calculatedValues.valuationCentral || baseData.valuationCentral,
+      sensitivityMatrix: calculatedValues.sensitivityMatrix || baseData.sensitivityMatrix,
     };
   }, [data, calculatedValues]);
 
@@ -236,27 +243,65 @@ export function ProfessionalValuationForm({
     }
   };
 
-  // Guardar
+  // Guardar con try-catch y logging
   const handleSave = async (isDraft: boolean = true) => {
+    console.log('[ProfessionalValuationForm] handleSave called, isDraft:', isDraft);
+    console.log('[ProfessionalValuationForm] dataWithCalculations:', {
+      clientCompany: dataWithCalculations.clientCompany,
+      valuationCentral: dataWithCalculations.valuationCentral,
+      ebitdaMultipleUsed: dataWithCalculations.ebitdaMultipleUsed,
+    });
     setIsSaving(true);
     try {
       await onSave(dataWithCalculations, isDraft);
+      console.log('[ProfessionalValuationForm] Save completed successfully');
+    } catch (error) {
+      console.error('[ProfessionalValuationForm] Save error:', error);
+      throw error;
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Generar PDF
+  // Generar PDF con try-catch y logging
   const handleGeneratePdf = async () => {
-    if (onGeneratePdf) {
+    console.log('[ProfessionalValuationForm] handleGeneratePdf called');
+    console.log('[ProfessionalValuationForm] valuationCentral:', dataWithCalculations.valuationCentral);
+    if (!onGeneratePdf) {
+      console.warn('[ProfessionalValuationForm] onGeneratePdf is not defined');
+      return;
+    }
+    setIsGenerating(true);
+    try {
       await onGeneratePdf(dataWithCalculations);
+      console.log('[ProfessionalValuationForm] PDF generated successfully');
+    } catch (error) {
+      console.error('[ProfessionalValuationForm] PDF error:', error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  // Enviar email
+  // Enviar email con try-catch y logging
   const handleSendEmail = async () => {
-    if (onSendEmail && data.clientEmail) {
+    console.log('[ProfessionalValuationForm] handleSendEmail called');
+    console.log('[ProfessionalValuationForm] clientEmail:', data.clientEmail);
+    if (!onSendEmail) {
+      console.warn('[ProfessionalValuationForm] onSendEmail is not defined');
+      return;
+    }
+    if (!data.clientEmail) {
+      console.warn('[ProfessionalValuationForm] No clientEmail provided');
+      return;
+    }
+    setIsSending(true);
+    try {
       await onSendEmail(dataWithCalculations, data.clientEmail);
+      console.log('[ProfessionalValuationForm] Email sent successfully');
+    } catch (error) {
+      console.error('[ProfessionalValuationForm] Email error:', error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -383,7 +428,7 @@ export function ProfessionalValuationForm({
           <Button
             variant="outline"
             onClick={() => handleSave(true)}
-            disabled={isSaving || isLoading}
+            disabled={isSaving || isLoading || isGenerating || isSending}
           >
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Guardando...' : 'Guardar borrador'}
@@ -395,26 +440,26 @@ export function ProfessionalValuationForm({
                 <Button
                   variant="secondary"
                   onClick={handleGeneratePdf}
-                  disabled={isLoading}
+                  disabled={isLoading || isGenerating || isSaving || isSending}
                 >
                   <FileText className="w-4 h-4 mr-2" />
-                  Generar PDF
+                  {isGenerating ? 'Generando...' : 'Generar PDF'}
                 </Button>
               )}
               {onSendEmail && data.clientEmail && (
                 <Button
                   onClick={handleSendEmail}
-                  disabled={isLoading}
+                  disabled={isLoading || isSending || isSaving || isGenerating}
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Enviar por email
+                  {isSending ? 'Enviando...' : 'Enviar por email'}
                 </Button>
               )}
             </>
           ) : (
             <Button
               onClick={goNext}
-              disabled={!isStepValid(currentStep) || isLoading}
+              disabled={!isStepValid(currentStep) || isLoading || isSaving}
             >
               Siguiente
               <ChevronRight className="w-4 h-4 ml-2" />
