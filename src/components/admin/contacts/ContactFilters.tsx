@@ -3,7 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Search, Filter, ChevronDown, ChevronUp, X, Users } from 'lucide-react';
 import { ContactFilters as ContactFiltersType } from '@/hooks/useUnifiedContacts';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import DateRangeQuickSelector from './DateRangeQuickSelector';
@@ -45,6 +46,7 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
     const emptyFilters: ContactFiltersType = {
       origin: 'all',
       emailStatus: 'all',
+      showUniqueContacts: false,
     };
     setLocalFilters(emptyFilters);
     onFiltersChange(emptyFilters);
@@ -68,6 +70,26 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
     <Card>
       <CardContent className="pt-6">
         <div className="space-y-4">
+          {/* 🔥 NEW: Toggle para contactos únicos */}
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-primary" />
+              <div>
+                <label htmlFor="unique-contacts" className="text-sm font-medium leading-none cursor-pointer">
+                  Mostrar contactos únicos
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Agrupa múltiples valoraciones del mismo email y muestra solo la más reciente
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="unique-contacts"
+              checked={localFilters.showUniqueContacts || false}
+              onCheckedChange={(checked) => handleFilterChange('showUniqueContacts', checked)}
+            />
+          </div>
+
           {/* Main Filters Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}

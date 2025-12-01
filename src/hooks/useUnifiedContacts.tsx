@@ -76,6 +76,9 @@ export interface UnifiedContact {
   assigned_to?: string;
   assigned_to_name?: string | null;
   
+  // 🔥 NEW: Recurrence tracking
+  valuation_count?: number; // Número de valoraciones del mismo email
+  
   // Legacy compatibility
   source?: string;
 }
@@ -92,10 +95,12 @@ export interface ContactFilters {
   budget?: string;
   sector?: string;
   companySize?: string;
+  showUniqueContacts?: boolean; // 🔥 NEW: Toggle para contactos únicos
 }
 
 export interface ContactStats {
   total: number;
+  uniqueContacts: number; // 🔥 NEW: Contactos únicos por email
   hot: number;
   qualified: number;
   byOrigin: Record<ContactOrigin, number>;
@@ -110,6 +115,7 @@ export const useUnifiedContacts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<ContactStats>({
     total: 0,
+    uniqueContacts: 0,
     hot: 0,
     qualified: 0,
     byOrigin: {
@@ -128,6 +134,7 @@ export const useUnifiedContacts = () => {
   const [filters, setFilters] = useState<ContactFilters>({
     origin: 'all',
     emailStatus: 'all',
+    showUniqueContacts: false,
   });
   const { toast } = useToast();
 
@@ -425,12 +432,20 @@ export const useUnifiedContacts = () => {
         }, {} as Record<string, string>);
       }
 
-      // Add admin names to each contact
+      // 🔥 NEW: Calculate valuation count per email
+      const emailCounts = unifiedData.reduce((acc, contact) => {
+        const email = contact.email.toLowerCase();
+        acc[email] = (acc[email] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Add admin names and valuation count to each contact
       const unifiedDataWithNames = unifiedData.map(contact => ({
         ...contact,
         assigned_to_name: contact.assigned_to 
           ? adminNames[contact.assigned_to] || null
           : null,
+        valuation_count: emailCounts[contact.email.toLowerCase()] || 1,
       }));
 
       // Sort by creation date
@@ -487,8 +502,12 @@ export const useUnifiedContacts = () => {
       .filter(c => c.final_valuation && c.final_valuation > 0)
       .reduce((sum, c) => sum + (c.final_valuation || 0), 0);
 
+    // 🔥 NEW: Calculate unique contacts by email
+    const uniqueEmails = new Set(contactsList.map(c => c.email.toLowerCase()));
+
     setStats({
       total: contactsList.length,
+      uniqueContacts: uniqueEmails.size,
       hot: hotLeads,
       qualified: qualifiedLeads,
       byOrigin,
@@ -498,10 +517,35 @@ export const useUnifiedContacts = () => {
     });
   };
 
+  // 🔥 NEW: Group contacts by email (for unique contacts view)
+  const groupContactsByEmail = (contactsList: UnifiedContact[]): UnifiedContact[] => {
+    const grouped = new Map<string, UnifiedContact[]>();
+    
+    contactsList.forEach(contact => {
+      const key = contact.email.toLowerCase();
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+      grouped.get(key)!.push(contact);
+    });
+    
+    // Return only the most recent contact per email
+    return Array.from(grouped.values()).map(group => {
+      // Sort by created_at descending
+      group.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      return group[0]; // Return most recent
+    });
+  };
+
   const applyFilters = (newFilters: ContactFilters) => {
     setFilters(newFilters);
     
     let filtered = [...contacts];
+
+    // 🔥 NEW: Apply unique contacts filter first if enabled
+    if (newFilters.showUniqueContacts) {
+      filtered = groupContactsByEmail(filtered);
+    }
 
     // Search filter
     if (newFilters.search) {
