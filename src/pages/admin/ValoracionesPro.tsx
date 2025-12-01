@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, Send, Copy, Trash2, Eye, Search, Filter, MoreHorizontal } from 'lucide-react';
+import { Plus, FileText, Copy, Trash2, Eye, Search, Filter, MoreHorizontal, X } from 'lucide-react';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import { useProfessionalValuations, useProfessionalValuationStats } from '@/hooks/useProfessionalValuations';
 import { Button } from '@/components/ui/button';
@@ -20,17 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -72,28 +66,39 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   viewed: { label: 'Visto', variant: 'default' },
 };
 
+type StatusFilter = 'all' | 'draft' | 'generated' | 'sent' | 'viewed';
+
 export default function ValoracionesPro() {
   const navigate = useNavigate();
   const handleLogout = () => navigate('/admin/login');
-  const { valuations, isLoading, deleteValuation, duplicateValuation, isDeleting, isDuplicating } = useProfessionalValuations();
+  const { valuations, isLoading, deleteValuation, duplicateValuation, isDeleting } = useProfessionalValuations();
   const { data: stats } = useProfessionalValuationStats();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilters, setStatusFilters] = useState<StatusFilter[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [valuationToDelete, setValuationToDelete] = useState<string | null>(null);
 
-  // Filter valuations
+  const toggleStatusFilter = (status: StatusFilter) => {
+    setStatusFilters(prev => 
+      prev.includes(status) 
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
   const filteredValuations = valuations.filter((v) => {
-    const matchesSearch = 
+    const matchesSearch = !searchTerm ||
       v.clientCompany?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.sector?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
+    const matchesStatus = statusFilters.length === 0 || statusFilters.includes(v.status as StatusFilter);
     
     return matchesSearch && matchesStatus;
   });
+
+  const hasActiveFilters = statusFilters.length > 0 || searchTerm !== '';
 
   const handleCreateNew = () => {
     navigate('/admin/valoraciones-pro/nueva');
@@ -132,6 +137,11 @@ export default function ValoracionesPro() {
     } else {
       toast.error('PDF no disponible. Genera el PDF primero.');
     }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilters([]);
   };
 
   return (
@@ -181,37 +191,107 @@ export default function ValoracionesPro() {
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por empresa, contacto o sector..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="draft">Borrador</SelectItem>
-              <SelectItem value="generated">Generado</SelectItem>
-              <SelectItem value="sent">Enviado</SelectItem>
-              <SelectItem value="viewed">Visto</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Table Container - Following ContactsTable pattern */}
+        <div className="relative rounded-md border overflow-hidden">
+          {/* Toolbar */}
+          <div className="bg-muted/30 border-b">
+            <div className="flex items-center gap-3 px-4 py-3">
+              {/* Search */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por empresa, contacto o sector..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-9 bg-background"
+                />
+                {searchTerm && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setSearchTerm('')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
 
-        {/* Table - Following ContactsTable pattern */}
-        <div className="rounded-md border">
-          <div className="overflow-x-auto">
+              {/* Status Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Estado
+                    {statusFilters.length > 0 && (
+                      <Badge variant="secondary" className="ml-2 px-1 min-w-5 h-5">
+                        {statusFilters.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel>Filtrar por estado</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilters.includes('draft')}
+                    onCheckedChange={() => toggleStatusFilter('draft')}
+                  >
+                    Borrador
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilters.includes('generated')}
+                    onCheckedChange={() => toggleStatusFilter('generated')}
+                  >
+                    Generado
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilters.includes('sent')}
+                    onCheckedChange={() => toggleStatusFilter('sent')}
+                  >
+                    Enviado
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilters.includes('viewed')}
+                    onCheckedChange={() => toggleStatusFilter('viewed')}
+                  >
+                    Visto
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* New Valuation Button */}
+              <Button size="sm" className="h-9" onClick={handleCreateNew}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva
+              </Button>
+            </div>
+
+            {/* Results count and clear filters */}
+            <div className="flex items-center justify-between px-4 pb-3">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {filteredValuations.length} de {valuations.length} valoración{valuations.length !== 1 ? 'es' : ''}
+                </p>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={clearFilters}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Limpiar filtros
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Table with scroll */}
+          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-450px)]">
             <Table>
-              <TableHeader className="bg-muted/50">
+              <TableHeader className="sticky top-0 z-10 bg-background border-b shadow-sm">
                 <TableRow>
                   <TableHead className="w-48">Empresa</TableHead>
                   <TableHead className="w-36">Contacto</TableHead>
@@ -219,7 +299,7 @@ export default function ValoracionesPro() {
                   <TableHead className="w-32 text-right">Valoración</TableHead>
                   <TableHead className="w-24">Estado</TableHead>
                   <TableHead className="w-28">Fecha</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="text-right w-20">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -228,7 +308,7 @@ export default function ValoracionesPro() {
                     <TableCell colSpan={7} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                        <span className="text-muted-foreground">Cargando...</span>
+                        <span className="text-muted-foreground">Cargando valoraciones...</span>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -237,7 +317,9 @@ export default function ValoracionesPro() {
                     <TableCell colSpan={7} className="h-32 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <FileText className="h-10 w-10 text-muted-foreground/40" />
-                        <p className="text-muted-foreground">No hay valoraciones</p>
+                        <p className="text-muted-foreground">
+                          {hasActiveFilters ? 'No hay valoraciones con estos filtros' : 'No hay valoraciones todavía'}
+                        </p>
                         <Button variant="outline" size="sm" onClick={handleCreateNew}>
                           <Plus className="mr-2 h-4 w-4" />
                           Crear primera valoración
@@ -253,14 +335,16 @@ export default function ValoracionesPro() {
                     return (
                       <TableRow 
                         key={valuation.id} 
-                        className="cursor-pointer hover:bg-muted/50"
+                        className="cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => handleEdit(valuation.id!)}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <span className="truncate max-w-[160px]">{valuation.clientCompany}</span>
                             {isNew && (
-                              <Badge className="bg-green-500/10 text-green-600 text-[10px] px-1.5">Nuevo</Badge>
+                              <Badge className="bg-green-500/10 text-green-600 border-green-200 text-[10px] px-1.5">
+                                Nuevo
+                              </Badge>
                             )}
                           </div>
                         </TableCell>
@@ -281,7 +365,7 @@ export default function ValoracionesPro() {
                         <TableCell className="text-muted-foreground tabular-nums">
                           {valuation.createdAt ? formatDate(valuation.createdAt) : '-'}
                         </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8">
