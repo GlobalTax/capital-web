@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FileText, Copy, Trash2, Eye, Search, Filter, MoreHorizontal, X } from 'lucide-react';
-import AdminLayout from '@/features/admin/components/AdminLayout';
 import { useProfessionalValuations, useProfessionalValuationStats } from '@/hooks/useProfessionalValuations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +69,6 @@ type StatusFilter = 'all' | 'draft' | 'generated' | 'sent' | 'viewed';
 
 export default function ValoracionesPro() {
   const navigate = useNavigate();
-  const handleLogout = () => navigate('/admin/login');
   const { valuations, isLoading, deleteValuation, duplicateValuation, isDeleting } = useProfessionalValuations();
   const { data: stats } = useProfessionalValuationStats();
   
@@ -145,8 +143,7 @@ export default function ValoracionesPro() {
   };
 
   return (
-    <AdminLayout onLogout={handleLogout}>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -432,6 +429,5 @@ export default function ValoracionesPro() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AdminLayout>
   );
 }
