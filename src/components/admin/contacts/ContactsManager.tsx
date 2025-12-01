@@ -17,7 +17,7 @@ import {
 
 const ContactsManager = () => {
   const navigate = useNavigate();
-  const { contacts, stats, isLoading, filters, applyFilters, updateContactStatus, bulkUpdateStatus, exportContacts, refetch } = useUnifiedContacts();
+  const { contacts, allContacts, stats, isLoading, filters, applyFilters, updateContactStatus, bulkUpdateStatus, exportContacts, refetch } = useUnifiedContacts();
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ContactOrigin | 'all'>('all');
 
@@ -149,6 +149,7 @@ const ContactsManager = () => {
         <ContactDetailsModal
           contactId={selectedContact}
           contact={contacts.find(c => c.id === selectedContact)}
+          allContacts={allContacts}
           onClose={() => setSelectedContact(null)}
           onUpdate={refetch}
         />

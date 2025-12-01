@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { LeadAIReportViewer } from '@/components/admin/LeadAIReportViewer';
 import { SectorDossierViewer } from '@/components/admin/SectorDossierViewer';
@@ -31,15 +32,31 @@ import { es } from 'date-fns/locale';
 interface ContactDetailsModalProps {
   contactId: string;
   contact?: UnifiedContact;
+  allContacts?: UnifiedContact[];
   onClose: () => void;
   onUpdate: () => void;
 }
 
 const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
   contact,
+  allContacts = [],
   onClose,
 }) => {
   if (!contact) return null;
+
+  // Filter contacts with same email for history
+  const contactsWithSameEmail = allContacts
+    .filter(c => c.email.toLowerCase() === contact.email.toLowerCase())
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  // Calculate history statistics
+  const historyStats = contactsWithSameEmail.length > 0 ? {
+    maxValuation: Math.max(...contactsWithSameEmail.map(c => c.final_valuation || 0)),
+    minValuation: Math.min(...contactsWithSameEmail.filter(c => c.final_valuation).map(c => c.final_valuation!)),
+    avgValuation: contactsWithSameEmail.reduce((sum, c) => sum + (c.final_valuation || 0), 0) / contactsWithSameEmail.filter(c => c.final_valuation).length,
+    firstDate: contactsWithSameEmail[contactsWithSameEmail.length - 1]?.created_at,
+    lastDate: contactsWithSameEmail[0]?.created_at,
+  } : null;
 
   const formatCurrency = (value?: number) => {
     if (!value) return '-';
@@ -77,12 +94,13 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="info">Información</TabsTrigger>
             <TabsTrigger value="emails">Emails</TabsTrigger>
             <TabsTrigger value="calls">Llamadas</TabsTrigger>
             <TabsTrigger value="notes">Notas</TabsTrigger>
             <TabsTrigger value="files">Archivos</TabsTrigger>
+            <TabsTrigger value="history">📜 Historial</TabsTrigger>
             <TabsTrigger value="ai">🤖 IA</TabsTrigger>
             <TabsTrigger value="sector">📊 Sector</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -327,6 +345,101 @@ const ContactDetailsModal: React.FC<ContactDetailsModalProps> = ({
             <Card>
               <CardContent className="pt-6 text-center text-muted-foreground">
                 <p>Archivos adjuntos (próximamente)</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* History Tab */}
+          <TabsContent value="history" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Historial de Valoraciones ({contactsWithSameEmail.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {contactsWithSameEmail.length > 1 ? (
+                  <>
+                    {/* Statistics Summary */}
+                    {historyStats && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Val. Máxima</div>
+                          <div className="text-lg font-bold text-green-600">
+                            {formatCurrency(historyStats.maxValuation)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Val. Mínima</div>
+                          <div className="text-lg font-bold">
+                            {formatCurrency(historyStats.minValuation)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Promedio</div>
+                          <div className="text-lg font-bold text-blue-600">
+                            {formatCurrency(historyStats.avgValuation)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Primera</div>
+                          <div className="text-sm font-medium">
+                            {format(new Date(historyStats.firstDate), 'dd/MM/yyyy', { locale: es })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* History Table */}
+                    <div className="rounded-lg border overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Fecha</TableHead>
+                              <TableHead>Empresa</TableHead>
+                              <TableHead className="text-right">EBITDA</TableHead>
+                              <TableHead className="text-right">Valoración</TableHead>
+                              <TableHead>Estado</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {contactsWithSameEmail.map((c, idx) => (
+                              <TableRow key={c.id} className={idx === 0 ? 'bg-primary/5' : ''}>
+                                <TableCell className="whitespace-nowrap">
+                                  {format(new Date(c.created_at), 'dd/MM/yyyy', { locale: es })}
+                                  {idx === 0 && (
+                                    <Badge className="ml-2 bg-primary text-xs">Actual</Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{c.company || '-'}</div>
+                                  {c.industry && (
+                                    <div className="text-xs text-muted-foreground">{c.industry}</div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {c.ebitda ? formatCurrency(c.ebitda) : '-'}
+                                </TableCell>
+                                <TableCell className="text-right font-medium">
+                                  {c.final_valuation ? formatCurrency(c.final_valuation) : '-'}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="secondary">
+                                    {c.status || 'nuevo'}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Clock className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Este contacto solo tiene una valoración</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

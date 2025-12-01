@@ -70,7 +70,7 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
     <Card>
       <CardContent className="pt-6">
         <div className="space-y-4">
-          {/* 🔥 NEW: Toggle para contactos únicos */}
+          {/* 🔥 Toggle para contactos únicos */}
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-primary" />
@@ -79,7 +79,8 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
                   Mostrar contactos únicos
                 </label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Agrupa múltiples valoraciones del mismo email y muestra solo la más reciente
+                  Agrupa múltiples valoraciones del mismo email, mostrando solo la más reciente.
+                  {localFilters.showUniqueContacts && ' La exportación también aplicará esta agrupación.'}
                 </p>
               </div>
             </div>
