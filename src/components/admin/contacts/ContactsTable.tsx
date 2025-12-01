@@ -363,8 +363,20 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 )}
               </TableCell>
               <TableCell>
-                <div className="font-medium hover:text-primary transition-colors">
-                  {contact.name}
+                <div className="flex items-center gap-2">
+                  <div className="font-medium hover:text-primary transition-colors">
+                    {contact.name}
+                  </div>
+                  {/* 🔥 NEW: Badge de recurrencia */}
+                  {contact.valuation_count && contact.valuation_count > 1 && (
+                    <Badge 
+                      variant="secondary" 
+                      className="bg-orange-100 text-orange-700 border-orange-300 text-[10px] px-1.5 py-0 h-4 gap-0.5"
+                      title={`Este contacto ha realizado ${contact.valuation_count} valoraciones`}
+                    >
+                      🔄 {contact.valuation_count}
+                    </Badge>
+                  )}
                 </div>
               </TableCell>
               <TableCell>
