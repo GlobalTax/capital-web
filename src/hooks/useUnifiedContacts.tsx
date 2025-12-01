@@ -743,18 +743,25 @@ export const useUnifiedContacts = () => {
         'Empresa': contact.company || '',
         'CIF': contact.cif || '-',
         'Sector': contact.industry || contact.sectors_of_interest || '',
+        'Empleados': contact.employee_range || '',
+        'Facturación': contact.revenue 
+          ? formatCurrency(contact.revenue, 'EUR')
+          : '',
+        'EBITDA': contact.ebitda 
+          ? formatCurrency(contact.ebitda, 'EUR')
+          : '',
+        'Valoración': contact.final_valuation 
+          ? formatCurrency(contact.final_valuation, 'EUR')
+          : '',
+        'Ubicación': contact.location || contact.country || '',
         'Estado CRM': contact.lead_status_crm || contact.status || '',
         'Fecha': contact.created_at 
           ? format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })
           : '',
         'Asignado a': contact.assigned_to_name || '',
-        'Valoración': contact.final_valuation 
-          ? formatCurrency(contact.final_valuation, 'EUR')
-          : '',
         'Email Enviado': contact.email_sent ? 'Sí' : 'No',
         'Email Abierto': contact.email_opened ? 'Sí' : 'No',
         'Prioridad': contact.priority || '',
-        'Ubicación': contact.location || contact.country || '',
         'Presupuesto': contact.investment_budget || '',
         'Origen Proyecto': contact.source_project || '',
       }));
