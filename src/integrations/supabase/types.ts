@@ -6049,6 +6049,149 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_valuations: {
+        Row: {
+          advisor_email: string | null
+          advisor_name: string | null
+          client_cif: string | null
+          client_company: string
+          client_email: string | null
+          client_logo_url: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          created_by: string | null
+          ebitda_multiple_high: number | null
+          ebitda_multiple_low: number | null
+          ebitda_multiple_used: number | null
+          email_opened: boolean | null
+          email_opened_at: string | null
+          email_subject: string | null
+          financial_years: Json
+          id: string
+          internal_notes: string | null
+          linked_lead_id: string | null
+          linked_lead_type: string | null
+          linked_operation_id: string | null
+          multiple_justification: string | null
+          normalization_adjustments: Json | null
+          normalized_ebitda: number | null
+          parent_id: string | null
+          pdf_url: string | null
+          reported_ebitda: number | null
+          sector: string
+          sector_description: string | null
+          sensitivity_matrix: Json | null
+          sent_at: string | null
+          sent_to: string | null
+          status: string
+          strengths: string | null
+          updated_at: string
+          valuation_central: number | null
+          valuation_context: string | null
+          valuation_high: number | null
+          valuation_low: number | null
+          version: number | null
+          weaknesses: string | null
+        }
+        Insert: {
+          advisor_email?: string | null
+          advisor_name?: string | null
+          client_cif?: string | null
+          client_company: string
+          client_email?: string | null
+          client_logo_url?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          ebitda_multiple_high?: number | null
+          ebitda_multiple_low?: number | null
+          ebitda_multiple_used?: number | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_subject?: string | null
+          financial_years?: Json
+          id?: string
+          internal_notes?: string | null
+          linked_lead_id?: string | null
+          linked_lead_type?: string | null
+          linked_operation_id?: string | null
+          multiple_justification?: string | null
+          normalization_adjustments?: Json | null
+          normalized_ebitda?: number | null
+          parent_id?: string | null
+          pdf_url?: string | null
+          reported_ebitda?: number | null
+          sector: string
+          sector_description?: string | null
+          sensitivity_matrix?: Json | null
+          sent_at?: string | null
+          sent_to?: string | null
+          status?: string
+          strengths?: string | null
+          updated_at?: string
+          valuation_central?: number | null
+          valuation_context?: string | null
+          valuation_high?: number | null
+          valuation_low?: number | null
+          version?: number | null
+          weaknesses?: string | null
+        }
+        Update: {
+          advisor_email?: string | null
+          advisor_name?: string | null
+          client_cif?: string | null
+          client_company?: string
+          client_email?: string | null
+          client_logo_url?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          ebitda_multiple_high?: number | null
+          ebitda_multiple_low?: number | null
+          ebitda_multiple_used?: number | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
+          email_subject?: string | null
+          financial_years?: Json
+          id?: string
+          internal_notes?: string | null
+          linked_lead_id?: string | null
+          linked_lead_type?: string | null
+          linked_operation_id?: string | null
+          multiple_justification?: string | null
+          normalization_adjustments?: Json | null
+          normalized_ebitda?: number | null
+          parent_id?: string | null
+          pdf_url?: string | null
+          reported_ebitda?: number | null
+          sector?: string
+          sector_description?: string | null
+          sensitivity_matrix?: Json | null
+          sent_at?: string | null
+          sent_to?: string | null
+          status?: string
+          strengths?: string | null
+          updated_at?: string
+          valuation_central?: number | null
+          valuation_context?: string | null
+          valuation_high?: number | null
+          valuation_low?: number | null
+          version?: number | null
+          weaknesses?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_valuations_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "professional_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limits: {
         Row: {
           action: string

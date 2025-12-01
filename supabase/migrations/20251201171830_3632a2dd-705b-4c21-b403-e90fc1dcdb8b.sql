@@ -1,0 +1,50 @@
+CREATE TABLE public.professional_valuations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_by UUID REFERENCES auth.users(id),
+  advisor_name TEXT,
+  advisor_email TEXT,
+  client_name TEXT NOT NULL,
+  client_company TEXT NOT NULL,
+  client_cif TEXT,
+  client_email TEXT,
+  client_phone TEXT,
+  client_logo_url TEXT,
+  sector TEXT NOT NULL,
+  sector_description TEXT,
+  financial_years JSONB NOT NULL DEFAULT '[]'::jsonb,
+  normalization_adjustments JSONB DEFAULT '[]'::jsonb,
+  reported_ebitda NUMERIC,
+  normalized_ebitda NUMERIC,
+  ebitda_multiple_low NUMERIC,
+  ebitda_multiple_high NUMERIC,
+  ebitda_multiple_used NUMERIC,
+  multiple_justification TEXT,
+  valuation_low NUMERIC,
+  valuation_high NUMERIC,
+  valuation_central NUMERIC,
+  sensitivity_matrix JSONB,
+  valuation_context TEXT,
+  strengths TEXT,
+  weaknesses TEXT,
+  internal_notes TEXT,
+  pdf_url TEXT,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'generated', 'sent', 'viewed')),
+  sent_at TIMESTAMPTZ,
+  sent_to TEXT,
+  email_subject TEXT,
+  email_opened BOOLEAN DEFAULT false,
+  email_opened_at TIMESTAMPTZ,
+  version INTEGER DEFAULT 1,
+  parent_id UUID REFERENCES public.professional_valuations(id),
+  linked_lead_id UUID,
+  linked_lead_type TEXT,
+  linked_operation_id UUID
+);
+
+CREATE INDEX idx_prof_val_created_by ON public.professional_valuations(created_by);
+CREATE INDEX idx_prof_val_status ON public.professional_valuations(status);
+CREATE INDEX idx_prof_val_created_at ON public.professional_valuations(created_at DESC);
+
+ALTER TABLE public.professional_valuations ENABLE ROW LEVEL SECURITY;
