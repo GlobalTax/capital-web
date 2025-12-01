@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 export default function ValoracionProForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isNew = id === 'nueva';
+  const isNew = !id || id === 'nueva';
   
   const { data: existingValuation, isLoading } = useProfessionalValuation(isNew ? undefined : id);
   const { createValuation, updateValuation, savePdfUrl, isCreating, isUpdating, setIsGeneratingPdf, isGeneratingPdf } = useProfessionalValuations();
@@ -24,7 +24,7 @@ export default function ValoracionProForm() {
   useEffect(() => {
     if (existingValuation) {
       setCurrentData(existingValuation);
-    } else if (isNew) {
+    } else if (isNew && !currentData) {
       setCurrentData({
         status: 'draft',
         financialYears: [
@@ -35,9 +35,9 @@ export default function ValoracionProForm() {
         normalizationAdjustments: [],
       });
     }
-  }, [existingValuation, isNew]);
+  }, [existingValuation, isNew, currentData]);
 
-  const handleSave = async (data: ProfessionalValuationData) => {
+  const handleSave = async (data: ProfessionalValuationData, isDraft: boolean = true) => {
     try {
       if (isNew) {
         const newValuation = await createValuation(data);
