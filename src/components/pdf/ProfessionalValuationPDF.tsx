@@ -498,7 +498,17 @@ const CoverPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
     <View style={styles.coverLogos}>
       <Text style={{ fontSize: 28, fontWeight: 700, color: '#ffffff' }}>CAPITTAL</Text>
       {data.clientLogoUrl && (
-        <Text style={{ fontSize: 12, color: '#94a3b8' }}>+</Text>
+        <>
+          <Text style={{ fontSize: 20, color: '#64748b', marginHorizontal: 15 }}>×</Text>
+          <Image 
+            src={data.clientLogoUrl} 
+            style={{ 
+              maxWidth: 120, 
+              maxHeight: 50, 
+              objectFit: 'contain' 
+            }} 
+          />
+        </>
       )}
     </View>
     
