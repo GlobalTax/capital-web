@@ -62,17 +62,27 @@ export default function ValoracionProForm() {
   };
 
   const handleGeneratePdf = async (data: ProfessionalValuationData) => {
+    console.log('[ValoracionProForm] handleGeneratePdf iniciado');
+    console.log('[ValoracionProForm] Datos:', {
+      clientCompany: data.clientCompany,
+      valuationCentral: data.valuationCentral,
+      sector: data.sector,
+    });
+
     if (!data.clientCompany || !data.valuationCentral) {
       toast.error('Completa los datos básicos y calcula la valoración antes de generar el PDF');
       return;
     }
 
     setIsGeneratingPdf(true);
+    let uploadSuccessful = false;
     
     try {
       // Generate PDF blob
+      console.log('[ValoracionProForm] Generando PDF blob...');
       const pdfDocument = <ProfessionalValuationPDF data={data} />;
       const blob = await pdf(pdfDocument).toBlob();
+      console.log('[ValoracionProForm] PDF blob generado, tamaño:', blob.size);
       
       // Generate filename
       const timestamp = new Date().toISOString().split('T')[0];
@@ -80,6 +90,7 @@ export default function ValoracionProForm() {
       const filename = `valoracion_${sanitizedCompany}_${timestamp}.pdf`;
       
       // Upload to Supabase Storage
+      console.log('[ValoracionProForm] Subiendo a Storage...');
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('valuations')
         .upload(`professional/${filename}`, blob, {
@@ -88,22 +99,30 @@ export default function ValoracionProForm() {
         });
 
       if (uploadError) {
-        throw uploadError;
+        console.error('[ValoracionProForm] Error de upload:', uploadError);
+        toast.warning('El PDF se descargará localmente pero no se pudo guardar en el servidor');
+      } else {
+        console.log('[ValoracionProForm] Upload exitoso:', uploadData);
+        uploadSuccessful = true;
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('valuations')
+          .getPublicUrl(`professional/${filename}`);
+
+        const pdfUrl = urlData.publicUrl;
+        console.log('[ValoracionProForm] URL pública:', pdfUrl);
+
+        // Save PDF URL to database
+        if (id && !isNew) {
+          console.log('[ValoracionProForm] Guardando URL en base de datos...');
+          await savePdfUrl(id, pdfUrl);
+          console.log('[ValoracionProForm] URL guardada correctamente');
+        }
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('valuations')
-        .getPublicUrl(`professional/${filename}`);
-
-      const pdfUrl = urlData.publicUrl;
-
-      // Save PDF URL to database
-      if (id && !isNew) {
-        await savePdfUrl(id, pdfUrl);
-      }
-
-      // Download for user
+      // Download for user (siempre funciona)
+      console.log('[ValoracionProForm] Iniciando descarga local...');
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -113,10 +132,15 @@ export default function ValoracionProForm() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
 
-      toast.success('PDF generado correctamente');
+      if (uploadSuccessful) {
+        toast.success('PDF generado y guardado correctamente');
+      } else {
+        toast.info('PDF descargado localmente');
+      }
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast.error('Error al generar el PDF');
+      console.error('[ValoracionProForm] Error generando PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error(`Error al generar el PDF: ${errorMessage}`);
     } finally {
       setIsGeneratingPdf(false);
     }
