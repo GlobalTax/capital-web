@@ -23,8 +23,30 @@ export default function ValoracionProForm() {
   
   const [currentData, setCurrentData] = useState<Partial<ProfessionalValuationData> | null>(null);
 
-  // Preparar advisorInfo desde la configuración de firma
-  const advisorInfo = signatureConfig ? {
+  // Función para obtener advisorInfo según datos de la valoración
+  const getAdvisorInfo = (data: ProfessionalValuationData) => {
+    // Si usa asesor personalizado y tiene nombre, usar datos personalizados
+    if (data.useCustomAdvisor && data.advisorName) {
+      return {
+        name: data.advisorName,
+        role: data.advisorRole || 'Consultor de M&A',
+        email: data.advisorEmail || 'info@capittal.es',
+        phone: signatureConfig?.phone || '',
+        website: signatureConfig?.website || 'www.capittal.es',
+      };
+    }
+    // Si no, usar configuración global
+    return signatureConfig ? {
+      name: signatureConfig.name,
+      role: signatureConfig.role,
+      email: signatureConfig.email,
+      phone: signatureConfig.phone,
+      website: signatureConfig.website,
+    } : undefined;
+  };
+
+  // advisorInfo por defecto para preview (usando configuración global)
+  const defaultAdvisorInfo = signatureConfig ? {
     name: signatureConfig.name,
     role: signatureConfig.role,
     email: signatureConfig.email,
@@ -89,8 +111,9 @@ export default function ValoracionProForm() {
     let uploadSuccessful = false;
     
     try {
-      // Generate PDF blob
+      // Generate PDF blob con advisorInfo dinámico
       console.log('[ValoracionProForm] Generando PDF blob...');
+      const advisorInfo = getAdvisorInfo(data);
       const pdfDocument = <ProfessionalValuationPDF data={data} advisorInfo={advisorInfo} />;
       const blob = await pdf(pdfDocument).toBlob();
       console.log('[ValoracionProForm] PDF blob generado, tamaño:', blob.size);
@@ -181,6 +204,7 @@ export default function ValoracionProForm() {
       
       try {
         console.log('[ValoracionProForm] Generando PDF para adjuntar...');
+        const advisorInfo = getAdvisorInfo(data);
         const pdfDocument = <ProfessionalValuationPDF data={data} advisorInfo={advisorInfo} />;
         const blob = await pdf(pdfDocument).toBlob();
         
