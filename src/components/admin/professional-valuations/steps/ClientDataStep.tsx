@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfessionalValuationData, VALUATION_SECTORS } from '@/types/professionalValuation';
-import { User, Building2, Mail, Phone, FileText, Briefcase } from 'lucide-react';
+import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon } from 'lucide-react';
+import { LogoUploader } from '../LogoUploader';
 
 interface ClientDataStepProps {
   data: ProfessionalValuationData;
@@ -133,15 +134,16 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
 
       {/* Logo del cliente (opcional) */}
       <div className="space-y-2">
-        <Label htmlFor="clientLogoUrl">URL del logo (opcional)</Label>
-        <Input
-          id="clientLogoUrl"
-          value={data.clientLogoUrl || ''}
-          onChange={(e) => updateField('clientLogoUrl', e.target.value)}
-          placeholder="https://..."
+        <Label className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4" />
+          Logo del cliente (opcional)
+        </Label>
+        <LogoUploader
+          currentLogoUrl={data.clientLogoUrl || undefined}
+          onLogoChange={(url) => updateField('clientLogoUrl', url || '')}
         />
         <p className="text-xs text-muted-foreground">
-          El logo aparecerá en el PDF de la valoración
+          El logo aparecerá en la portada del PDF
         </p>
       </div>
 
