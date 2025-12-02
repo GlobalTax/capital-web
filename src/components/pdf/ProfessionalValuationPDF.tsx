@@ -915,124 +915,6 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
   </Page>
 );
 
-// Sensitivity Analysis Page
-const SensitivityPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
-  const normalizedEbitda = data.normalizedEbitda || 0;
-  const usedMultiple = data.ebitdaMultipleUsed || 0;
-  const lowMultiple = data.ebitdaMultipleLow || 0;
-  const highMultiple = data.ebitdaMultipleHigh || 0;
-  
-  // Generate sensitivity matrix
-  const ebitdaVariations = [-0.1, 0, 0.1];
-  const multipleStep = (highMultiple - lowMultiple) / 4;
-  const multiples = [
-    lowMultiple,
-    lowMultiple + multipleStep,
-    usedMultiple,
-    highMultiple - multipleStep,
-    highMultiple,
-  ];
-  
-  return (
-    <Page size="A4" style={styles.contentPage}>
-      <View style={styles.header}>
-        <Text style={styles.headerLogo}>CAPITTAL</Text>
-        <Text style={styles.headerCompany}>{data.clientCompany}</Text>
-      </View>
-      
-      <Text style={styles.pageTitle}>Análisis de Sensibilidad</Text>
-      
-      <Text style={styles.paragraph}>
-        La siguiente matriz muestra cómo varía la valoración de la empresa en función de 
-        diferentes escenarios de EBITDA y múltiplos aplicados. Esto permite evaluar el 
-        rango de valores posibles bajo distintas condiciones.
-      </Text>
-      
-      <View style={styles.matrixContainer}>
-        {/* Header row */}
-        <View style={styles.matrixRow}>
-          <View style={[styles.matrixCell, styles.matrixHeaderCell, { flex: 0.2 }]}>
-            <Text style={styles.matrixHeaderText}>EBITDA / Múltiplo</Text>
-          </View>
-          {multiples.map((m, i) => (
-            <View key={i} style={[styles.matrixCell, styles.matrixHeaderCell]}>
-              <Text style={styles.matrixHeaderText}>{m.toFixed(1)}x</Text>
-            </View>
-          ))}
-        </View>
-        
-        {/* Data rows */}
-        {ebitdaVariations.map((variation, rowIndex) => {
-          const ebitdaValue = normalizedEbitda * (1 + variation);
-          const label = variation === 0 ? 'Base' : 
-                       variation > 0 ? `+${(variation * 100).toFixed(0)}%` : 
-                       `${(variation * 100).toFixed(0)}%`;
-          
-          return (
-            <View key={rowIndex} style={styles.matrixRow}>
-              <View style={[styles.matrixCell, styles.matrixLabelCell, { flex: 0.2 }]}>
-                <Text style={styles.matrixLabelText}>{label}</Text>
-                <Text style={[styles.matrixLabelText, { fontSize: 7 }]}>
-                  ({formatCurrency(ebitdaValue)})
-                </Text>
-              </View>
-              {multiples.map((multiple, colIndex) => {
-                const value = ebitdaValue * multiple;
-                const isHighlight = variation === 0 && Math.abs(multiple - usedMultiple) < 0.1;
-                
-                return (
-                  <View 
-                    key={colIndex} 
-                    style={[styles.matrixCell, isHighlight && styles.matrixHighlight]}
-                  >
-                    <Text style={isHighlight ? styles.matrixHighlightText : styles.matrixValueText}>
-                      {formatCurrency(value)}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          );
-        })}
-      </View>
-      
-      {/* Strengths & Weaknesses */}
-      {(data.strengths || data.weaknesses) && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Factores que Influyen en la Valoración</Text>
-          <View style={styles.twoColumnGrid}>
-            {data.strengths && (
-              <View style={[styles.columnBox, styles.strengthsBox]}>
-                <Text style={[styles.columnTitle, styles.strengthsTitle]}>
-                  Factores Positivos
-                </Text>
-                <Text style={[styles.columnText, styles.strengthsText]}>
-                  {data.strengths}
-                </Text>
-              </View>
-            )}
-            {data.weaknesses && (
-              <View style={[styles.columnBox, styles.weaknessesBox]}>
-                <Text style={[styles.columnTitle, styles.weaknessesTitle]}>
-                  Factores de Riesgo
-                </Text>
-                <Text style={[styles.columnText, styles.weaknessesText]}>
-                  {data.weaknesses}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      )}
-      
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Capittal - Informe de Valoración Profesional</Text>
-        <Text style={styles.pageNumber}>Página 6</Text>
-      </View>
-    </Page>
-  );
-};
-
 // Disclaimer & Signature Page
 const DisclaimerPage: React.FC<{ 
   data: ProfessionalValuationData;
@@ -1045,6 +927,35 @@ const DisclaimerPage: React.FC<{
     </View>
     
     <Text style={styles.pageTitle}>Aviso Legal y Limitaciones</Text>
+    
+    {/* Strengths & Weaknesses moved from SensitivityPage */}
+    {(data.strengths || data.weaknesses) && (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Factores que Influyen en la Valoración</Text>
+        <View style={styles.twoColumnGrid}>
+          {data.strengths && (
+            <View style={[styles.columnBox, styles.strengthsBox]}>
+              <Text style={[styles.columnTitle, styles.strengthsTitle]}>
+                Factores Positivos
+              </Text>
+              <Text style={[styles.columnText, styles.strengthsText]}>
+                {data.strengths}
+              </Text>
+            </View>
+          )}
+          {data.weaknesses && (
+            <View style={[styles.columnBox, styles.weaknessesBox]}>
+              <Text style={[styles.columnTitle, styles.weaknessesTitle]}>
+                Factores de Riesgo
+              </Text>
+              <Text style={[styles.columnText, styles.weaknessesText]}>
+                {data.weaknesses}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+    )}
     
     <View style={styles.disclaimer}>
       <Text style={styles.disclaimerTitle}>Propósito del Informe</Text>
@@ -1104,7 +1015,7 @@ const DisclaimerPage: React.FC<{
     
     <View style={styles.footer}>
       <Text style={styles.footerText}>Capittal - Informe de Valoración Profesional</Text>
-      <Text style={styles.pageNumber}>Página 7</Text>
+      <Text style={styles.pageNumber}>Página 6</Text>
     </View>
   </Page>
 );
@@ -1123,7 +1034,6 @@ const ProfessionalValuationPDF: React.FC<ProfessionalValuationPDFProps> = ({ dat
       <FinancialAnalysisPage data={data} />
       {(data.normalizationAdjustments?.length ?? 0) > 0 && <NormalizationPage data={data} />}
       <MethodologyPage data={data} />
-      <SensitivityPage data={data} />
       <DisclaimerPage data={data} advisorInfo={advisorInfo} />
     </Document>
   );
