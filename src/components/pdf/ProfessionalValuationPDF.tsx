@@ -34,12 +34,13 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
   },
   // Cover page
-  coverPage: {
+coverPage: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#0f172a',
     padding: 50,
+    fontFamily: 'Plus Jakarta Sans',
   },
   coverLogos: {
     flexDirection: 'row',
@@ -92,8 +93,9 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   // Content pages
-  contentPage: {
+contentPage: {
     padding: 40,
+    fontFamily: 'Plus Jakarta Sans',
   },
   header: {
     flexDirection: 'row',
@@ -498,6 +500,7 @@ const CapittalLogo: React.FC<{ color?: string; fontSize?: number }> = ({
   fontSize = 16 
 }) => (
   <Text style={{ 
+    fontFamily: 'Plus Jakarta Sans',
     fontSize, 
     fontWeight: 700, 
     color,
