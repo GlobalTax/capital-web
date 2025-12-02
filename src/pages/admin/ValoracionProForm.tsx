@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { usePdfSignatureConfig } from '@/hooks/usePdfSignatureConfig';
 
 export default function ValoracionProForm() {
   const { id } = useParams<{ id: string }>();
@@ -18,8 +19,18 @@ export default function ValoracionProForm() {
   
   const { data: existingValuation, isLoading } = useProfessionalValuation(isNew ? undefined : id);
   const { createValuation, updateValuation, savePdfUrl, markAsSent, isCreating, isUpdating, setIsGeneratingPdf, isGeneratingPdf } = useProfessionalValuations();
+  const { data: signatureConfig } = usePdfSignatureConfig();
   
   const [currentData, setCurrentData] = useState<Partial<ProfessionalValuationData> | null>(null);
+
+  // Preparar advisorInfo desde la configuración de firma
+  const advisorInfo = signatureConfig ? {
+    name: signatureConfig.name,
+    role: signatureConfig.role,
+    email: signatureConfig.email,
+    phone: signatureConfig.phone,
+    website: signatureConfig.website,
+  } : undefined;
 
   useEffect(() => {
     if (existingValuation) {
@@ -80,7 +91,7 @@ export default function ValoracionProForm() {
     try {
       // Generate PDF blob
       console.log('[ValoracionProForm] Generando PDF blob...');
-      const pdfDocument = <ProfessionalValuationPDF data={data} />;
+      const pdfDocument = <ProfessionalValuationPDF data={data} advisorInfo={advisorInfo} />;
       const blob = await pdf(pdfDocument).toBlob();
       console.log('[ValoracionProForm] PDF blob generado, tamaño:', blob.size);
       
@@ -170,7 +181,7 @@ export default function ValoracionProForm() {
       
       try {
         console.log('[ValoracionProForm] Generando PDF para adjuntar...');
-        const pdfDocument = <ProfessionalValuationPDF data={data} />;
+        const pdfDocument = <ProfessionalValuationPDF data={data} advisorInfo={advisorInfo} />;
         const blob = await pdf(pdfDocument).toBlob();
         
         // Convertir blob a base64

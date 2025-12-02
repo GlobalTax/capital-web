@@ -38,7 +38,7 @@ coverPage: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     padding: 50,
     fontFamily: 'Plus Jakarta Sans',
   },
@@ -470,6 +470,8 @@ interface ProfessionalValuationPDFProps {
     name: string;
     role: string;
     email: string;
+    phone?: string;
+    website?: string;
   };
 }
 
@@ -514,7 +516,7 @@ const CapittalLogo: React.FC<{ color?: string; fontSize?: number }> = ({
 const CoverPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
   <Page size="A4" style={styles.coverPage}>
     <View style={styles.coverLogos}>
-      <CapittalLogo color="#ffffff" fontSize={28} />
+      <CapittalLogo color="#0f172a" fontSize={28} />
       {data.clientLogoUrl && (
         <>
           <Text style={{ fontSize: 20, color: '#64748b', marginHorizontal: 15 }}>×</Text>
@@ -530,10 +532,9 @@ const CoverPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
       )}
     </View>
     
-    <Text style={styles.coverTitle}>INFORME DE VALORACIÓN</Text>
-    <Text style={styles.coverSubtitle}>VALORACIÓN EMPRESARIAL PROFESIONAL</Text>
+    <Text style={[styles.coverTitle, { color: '#0f172a' }]}>INFORME DE VALORACIÓN</Text>
     
-    <Text style={styles.coverCompany}>{data.clientCompany}</Text>
+    <Text style={[styles.coverCompany, { color: '#0f172a' }]}>{data.clientCompany}</Text>
     
     <Text style={styles.coverDate}>{formatDate(data.createdAt)}</Text>
     
@@ -555,9 +556,6 @@ const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ d
     <View style={styles.valuationHighlight}>
       <Text style={styles.valuationLabel}>Valoración Estimada</Text>
       <Text style={styles.valuationValue}>{formatCurrency(data.valuationCentral || 0)}</Text>
-      <Text style={styles.valuationRange}>
-        Rango: {formatCurrency(data.valuationLow || 0)} - {formatCurrency(data.valuationHigh || 0)}
-      </Text>
     </View>
     
     {/* Key Metrics */}
@@ -936,7 +934,7 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
 // Disclaimer & Signature Page
 const DisclaimerPage: React.FC<{ 
   data: ProfessionalValuationData;
-  advisorInfo?: { name: string; role: string; email: string };
+  advisorInfo?: { name: string; role: string; email: string; phone?: string; website?: string };
 }> = ({ data, advisorInfo }) => (
   <Page size="A4" style={styles.contentPage}>
     <View style={styles.header}>
@@ -1027,28 +1025,7 @@ const DisclaimerPage: React.FC<{
         {advisorInfo?.email || data.advisorEmail || 'info@capittal.es'}
       </Text>
       <Text style={styles.signatureContact}>
-        www.capittal.es | +34 XXX XXX XXX
-      </Text>
-    </View>
-
-    {/* CTA Calculadora */}
-    <View style={{
-      backgroundColor: '#f8fafc',
-      padding: 15,
-      marginTop: 15,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: '#e2e8f0',
-      alignItems: 'center',
-    }}>
-      <Text style={{ fontSize: 10, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
-        ¿Conoces nuestra calculadora de valoración instantánea?
-      </Text>
-      <Text style={{ fontSize: 9, color: '#64748b', textAlign: 'center', marginBottom: 8 }}>
-        Obtén una estimación gratuita del valor de tu empresa en menos de 3 minutos
-      </Text>
-      <Text style={{ fontSize: 10, fontWeight: 500, color: '#3b82f6' }}>
-        capittal.es/lp/calculadora
+        {advisorInfo?.website || 'www.capittal.es'} | {advisorInfo?.phone || '+34 XXX XXX XXX'}
       </Text>
     </View>
     

@@ -391,6 +391,28 @@ const generateClientEmailHtml = (data: ValuationEmailRequest): string => {
             </td>
           </tr>
           
+          <!-- CTA Calculadora -->
+          <tr>
+            <td style="padding: 0 40px 40px;">
+              <table role="presentation" style="width: 100%; border-collapse: collapse; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <tr>
+                  <td style="padding: 25px; text-align: center;">
+                    <p style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #1a1a1a;">
+                      ¿Conoces nuestra calculadora de valoración instantánea?
+                    </p>
+                    <p style="margin: 0 0 15px; font-size: 13px; color: #64748b;">
+                      Obtén una estimación gratuita del valor de tu empresa en menos de 3 minutos
+                    </p>
+                    <a href="https://capittal.es/lp/calculadora" 
+                       style="display: inline-block; padding: 12px 28px; background-color: #3b82f6; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;">
+                      Probar Calculadora Gratis
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
           <!-- Footer -->
           <tr>
             <td style="padding: 30px 40px; background-color: #f9f9f9; border-top: 1px solid #eee; border-radius: 0 0 8px 8px;">

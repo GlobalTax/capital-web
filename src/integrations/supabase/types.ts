@@ -5929,6 +5929,45 @@ export type Database = {
           },
         ]
       }
+      pdf_signature_config: {
+        Row: {
+          config_key: string
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string
+          role: string
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          config_key?: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string
+          role?: string
+          updated_at?: string
+          website?: string
+        }
+        Update: {
+          config_key?: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string
+          role?: string
+          updated_at?: string
+          website?: string
+        }
+        Relationships: []
+      }
       portfolio_companies: {
         Row: {
           country: string
