@@ -16,6 +16,53 @@ import {
 const QUERY_KEY = 'professional-valuations';
 
 /**
+ * Sincroniza los datos del cliente a contact_leads con deduplicación por email
+ */
+async function syncToContactLeads(data: Partial<ProfessionalValuationData>): Promise<string | null> {
+  if (!data.clientEmail) return null;
+
+  // Buscar contacto existente por email (deduplicación)
+  const { data: existingContact } = await supabase
+    .from('contact_leads')
+    .select('id')
+    .eq('email', data.clientEmail)
+    .or('is_deleted.is.null,is_deleted.eq.false')
+    .maybeSingle();
+
+  if (existingContact) {
+    // Contacto ya existe, retornar su ID para vincular
+    console.log('Contact already exists, linking to:', existingContact.id);
+    return existingContact.id;
+  }
+
+  // Crear nuevo contacto
+  const contactData = {
+    full_name: data.clientName || 'Sin nombre',
+    company: data.clientCompany || 'Sin empresa',
+    email: data.clientEmail,
+    phone: data.clientPhone || null,
+    service_type: data.serviceType || 'vender',
+    referral: data.leadSource || 'Meta Ads',
+    status: 'new',
+    notes: `Creado desde Valoración Pro - Sector: ${data.sector || 'No especificado'}`,
+  };
+
+  const { data: newContact, error } = await supabase
+    .from('contact_leads')
+    .insert([contactData])
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Error creating contact lead:', error);
+    throw error;
+  }
+
+  console.log('New contact created:', newContact.id);
+  return newContact.id;
+}
+
+/**
  * Hook principal para gestionar valoraciones profesionales
  */
 export function useProfessionalValuations() {
@@ -66,6 +113,20 @@ export function useProfessionalValuations() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         dbData.created_by = user.id;
+      }
+
+      // Si syncToContacts está activo, crear/vincular contacto primero
+      if (data.syncToContacts !== false && data.clientEmail) {
+        try {
+          const linkedLeadId = await syncToContactLeads(data);
+          if (linkedLeadId) {
+            dbData.linked_lead_id = linkedLeadId;
+            dbData.linked_lead_type = 'contact';
+          }
+        } catch (syncError) {
+          console.error('Error syncing to contacts:', syncError);
+          // Continuar con la creación aunque falle el sync
+        }
       }
 
       const { data: result, error } = await supabase

@@ -162,6 +162,11 @@ export interface ProfessionalValuationData {
   linkedLeadId?: string;
   linkedLeadType?: string;
   linkedOperationId?: string;
+  
+  // Sincronización CRM
+  syncToContacts?: boolean;
+  serviceType?: 'vender' | 'comprar' | 'otros';
+  leadSource?: string;
 }
 
 /**
@@ -256,6 +261,9 @@ export function mapDbToProfessionalValuation(dbRow: any): ProfessionalValuationD
     linkedLeadId: dbRow.linked_lead_id,
     linkedLeadType: dbRow.linked_lead_type,
     linkedOperationId: dbRow.linked_operation_id,
+    syncToContacts: dbRow.sync_to_contacts ?? true,
+    serviceType: dbRow.service_type || 'vender',
+    leadSource: dbRow.lead_source || 'Meta Ads',
   };
 }
 
@@ -302,6 +310,9 @@ export function mapProfessionalValuationToDb(data: Partial<ProfessionalValuation
     linked_lead_id: data.linkedLeadId,
     linked_lead_type: data.linkedLeadType,
     linked_operation_id: data.linkedOperationId,
+    sync_to_contacts: data.syncToContacts,
+    service_type: data.serviceType,
+    lead_source: data.leadSource,
   };
 
   // Filtrar campos undefined para evitar errores de inserción en la BD

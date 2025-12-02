@@ -5,6 +5,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -13,8 +14,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfessionalValuationData, VALUATION_SECTORS } from '@/types/professionalValuation';
-import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon } from 'lucide-react';
+import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users } from 'lucide-react';
 import { LogoUploader } from '../LogoUploader';
+
+const LEAD_SOURCES = [
+  'Meta Ads',
+  'Google Ads',
+  'LinkedIn',
+  'Referido',
+  'Web orgánico',
+  'Email',
+  'Evento',
+  'Otro',
+] as const;
+
+const SERVICE_TYPES = [
+  { value: 'vender', label: 'Vender empresa' },
+  { value: 'comprar', label: 'Comprar empresa' },
+  { value: 'otros', label: 'Otros servicios' },
+] as const;
 
 interface ClientDataStepProps {
   data: ProfessionalValuationData;
@@ -157,6 +175,72 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
           placeholder="Describe el motivo de la valoración (venta, financiación, planificación sucesoria...)"
           rows={3}
         />
+      </div>
+
+      {/* Sincronización con CRM */}
+      <div className="border-t pt-6 mt-6 space-y-4">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <Users className="w-4 h-4" />
+          <span className="text-sm font-medium">Sincronización con CRM</span>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="space-y-0.5">
+            <Label htmlFor="syncToContacts" className="text-base">
+              Añadir a Contactos
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Crea automáticamente un contacto en el CRM con estos datos
+            </p>
+          </div>
+          <Switch
+            id="syncToContacts"
+            checked={data.syncToContacts ?? true}
+            onCheckedChange={(checked) => updateField('syncToContacts', checked)}
+          />
+        </div>
+
+        {(data.syncToContacts ?? true) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/20">
+            <div className="space-y-2">
+              <Label htmlFor="serviceType">Tipo de servicio</Label>
+              <Select
+                value={data.serviceType || 'vender'}
+                onValueChange={(value) => updateField('serviceType', value as 'vender' | 'comprar' | 'otros')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICE_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="leadSource">Origen del lead</Label>
+              <Select
+                value={data.leadSource || 'Meta Ads'}
+                onValueChange={(value) => updateField('leadSource', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar origen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEAD_SOURCES.map((source) => (
+                    <SelectItem key={source} value={source}>
+                      {source}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
