@@ -492,11 +492,26 @@ const formatDate = (date?: string): string => {
   return new Date(date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
+// Logo de Capittal - Componente de texto estilizado
+const CapittalLogo: React.FC<{ color?: string; fontSize?: number }> = ({ 
+  color = '#0f172a', 
+  fontSize = 16 
+}) => (
+  <Text style={{ 
+    fontSize, 
+    fontWeight: 700, 
+    color,
+    letterSpacing: 1 
+  }}>
+    Capittal
+  </Text>
+);
+
 // Cover Page Component
 const CoverPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
   <Page size="A4" style={styles.coverPage}>
     <View style={styles.coverLogos}>
-      <Text style={{ fontSize: 28, fontWeight: 700, color: '#ffffff' }}>CAPITTAL</Text>
+      <CapittalLogo color="#ffffff" fontSize={28} />
       {data.clientLogoUrl && (
         <>
           <Text style={{ fontSize: 20, color: '#64748b', marginHorizontal: 15 }}>×</Text>
@@ -527,7 +542,7 @@ const CoverPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
 const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
   <Page size="A4" style={styles.contentPage}>
     <View style={styles.header}>
-      <Text style={styles.headerLogo}>CAPITTAL</Text>
+      <CapittalLogo />
       <Text style={styles.headerCompany}>{data.clientCompany}</Text>
     </View>
     
@@ -613,7 +628,7 @@ const FinancialAnalysisPage: React.FC<{ data: ProfessionalValuationData }> = ({ 
   return (
     <Page size="A4" style={styles.contentPage}>
       <View style={styles.header}>
-        <Text style={styles.headerLogo}>CAPITTAL</Text>
+        <CapittalLogo />
         <Text style={styles.headerCompany}>{data.clientCompany}</Text>
       </View>
       
@@ -725,7 +740,7 @@ const NormalizationPage: React.FC<{ data: ProfessionalValuationData }> = ({ data
   return (
     <Page size="A4" style={styles.contentPage}>
       <View style={styles.header}>
-        <Text style={styles.headerLogo}>CAPITTAL</Text>
+        <CapittalLogo />
         <Text style={styles.headerCompany}>{data.clientCompany}</Text>
       </View>
       
@@ -815,7 +830,7 @@ const NormalizationPage: React.FC<{ data: ProfessionalValuationData }> = ({ data
 const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
   <Page size="A4" style={styles.contentPage}>
     <View style={styles.header}>
-      <Text style={styles.headerLogo}>CAPITTAL</Text>
+      <CapittalLogo />
       <Text style={styles.headerCompany}>{data.clientCompany}</Text>
     </View>
     
@@ -922,7 +937,7 @@ const DisclaimerPage: React.FC<{
 }> = ({ data, advisorInfo }) => (
   <Page size="A4" style={styles.contentPage}>
     <View style={styles.header}>
-      <Text style={styles.headerLogo}>CAPITTAL</Text>
+      <CapittalLogo />
       <Text style={styles.headerCompany}>{data.clientCompany}</Text>
     </View>
     
@@ -1010,6 +1025,27 @@ const DisclaimerPage: React.FC<{
       </Text>
       <Text style={styles.signatureContact}>
         www.capittal.es | +34 XXX XXX XXX
+      </Text>
+    </View>
+
+    {/* CTA Calculadora */}
+    <View style={{
+      backgroundColor: '#f8fafc',
+      padding: 15,
+      marginTop: 15,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: '#e2e8f0',
+      alignItems: 'center',
+    }}>
+      <Text style={{ fontSize: 10, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
+        ¿Conoces nuestra calculadora de valoración instantánea?
+      </Text>
+      <Text style={{ fontSize: 9, color: '#64748b', textAlign: 'center', marginBottom: 8 }}>
+        Obtén una estimación gratuita del valor de tu empresa en menos de 3 minutos
+      </Text>
+      <Text style={{ fontSize: 10, fontWeight: 500, color: '#3b82f6' }}>
+        capittal.es/lp/calculadora
       </Text>
     </View>
     
