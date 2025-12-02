@@ -13,7 +13,8 @@ import {
   Target,
   Eye,
   Megaphone,
-  Calculator
+  Calculator,
+  FileSignature
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -154,6 +155,13 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         url: "/admin/admin-users", 
         icon: Users,
         description: "Gestión de administradores"
+      },
+      { 
+        title: "Firma PDF", 
+        url: "/admin/configuracion/firma-pdf", 
+        icon: FileSignature,
+        badge: "NEW",
+        description: "Firma de informes de valoración"
       },
       { 
         title: "Ajustes", 
