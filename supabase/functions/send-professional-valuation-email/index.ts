@@ -89,6 +89,7 @@ interface ValuationEmailRequest {
   advisorEmail?: string;
   customSubject?: string;
   customMessage?: string;
+  selectedRecipients?: string[]; // Lista de destinatarios seleccionados por el usuario
 }
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -615,26 +616,37 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('[send-professional-valuation-email] Client email sent:', clientEmailResponse);
 
-    // Obtener destinatarios internos desde la BD
-    const internalTeam = await getInternalRecipients();
+    // Determinar destinatarios: usar los seleccionados por el usuario si existen, sino obtener de BD
+    let internalTeam: string[];
+    if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
+      internalTeam = requestData.selectedRecipients;
+      console.log('[send-professional-valuation-email] Using user-selected recipients:', internalTeam.length);
+    } else {
+      internalTeam = await getInternalRecipients();
+      console.log('[send-professional-valuation-email] Using default recipients from DB:', internalTeam.length);
+    }
     
     // Enviar copia al equipo interno
     let teamNotified = 0;
-    try {
-      const internalEmailHtml = generateInternalEmailHtml(requestData, pdfPublicUrl);
-      
-      await resend.emails.send({
-        from: "Capittal <valoraciones@capittal.es>",
-        to: internalTeam,
-        subject: `[Valoración Pro] ${requestData.valuationData.clientCompany} → ${requestData.recipientEmail}`,
-        html: internalEmailHtml,
-        attachments: attachments,
-      });
-      
-      teamNotified = internalTeam.length;
-      console.log('[send-professional-valuation-email] Internal team email sent to:', internalTeam);
-    } catch (copyError: any) {
-      console.warn('[send-professional-valuation-email] Failed to send internal copy:', copyError?.message || copyError);
+    if (internalTeam.length > 0) {
+      try {
+        const internalEmailHtml = generateInternalEmailHtml(requestData, pdfPublicUrl);
+        
+        await resend.emails.send({
+          from: "Capittal <valoraciones@capittal.es>",
+          to: internalTeam,
+          subject: `[Valoración Pro] ${requestData.valuationData.clientCompany} → ${requestData.recipientEmail}`,
+          html: internalEmailHtml,
+          attachments: attachments,
+        });
+        
+        teamNotified = internalTeam.length;
+        console.log('[send-professional-valuation-email] Internal team email sent to:', internalTeam);
+      } catch (copyError: any) {
+        console.warn('[send-professional-valuation-email] Failed to send internal copy:', copyError?.message || copyError);
+      }
+    } else {
+      console.log('[send-professional-valuation-email] No internal recipients selected, skipping team notification');
     }
 
     return new Response(
