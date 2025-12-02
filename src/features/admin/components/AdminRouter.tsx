@@ -47,7 +47,8 @@ import {
   LazyIncompleteValuationsManager,
   LazyValuationAnalyticsDashboard,
   LazyValoracionesPro,
-  LazyValoracionProForm
+  LazyValoracionProForm,
+  LazyEmailRecipientsConfig
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -143,6 +144,7 @@ const AdminRouter = () => {
           {/* Settings */}
           <Route path="/admin-users" element={<LazyAdminUsersManager />} />
           <Route path="/settings" element={<LazyAdminSettings />} />
+          <Route path="/configuracion/destinatarios-email" element={<LazyEmailRecipientsConfig />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

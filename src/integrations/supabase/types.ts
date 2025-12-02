@@ -2668,6 +2668,39 @@ export type Database = {
           },
         ]
       }
+      email_recipients_config: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          is_default_copy: boolean | null
+          name: string
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          is_default_copy?: boolean | null
+          name: string
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          is_default_copy?: boolean | null
+          name?: string
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       email_sequence_steps: {
         Row: {
           attachment_type: string | null
