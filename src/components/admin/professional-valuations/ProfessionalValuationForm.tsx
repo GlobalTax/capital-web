@@ -36,12 +36,16 @@ import { NormalizationStep } from './steps/NormalizationStep';
 import { MultiplesStep } from './steps/MultiplesStep';
 import { PreviewStep } from './steps/PreviewStep';
 
+import { EmailRecipientSelector } from './EmailRecipientSelector';
+
 interface ProfessionalValuationFormProps {
   initialData?: Partial<ProfessionalValuationData>;
   onSave: (data: ProfessionalValuationData, isDraft: boolean) => Promise<void>;
   onGeneratePdf?: (data: ProfessionalValuationData) => Promise<void>;
   onSendEmail?: (data: ProfessionalValuationData, email: string) => Promise<void>;
   isLoading?: boolean;
+  selectedRecipients?: string[];
+  onRecipientsChange?: (recipients: string[]) => void;
 }
 
 const STEPS = [
@@ -91,6 +95,8 @@ export function ProfessionalValuationForm({
   onGeneratePdf,
   onSendEmail,
   isLoading = false,
+  selectedRecipients = [],
+  onRecipientsChange,
 }: ProfessionalValuationFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<ProfessionalValuationData>(() => ({
@@ -409,6 +415,16 @@ export function ProfessionalValuationForm({
               calculatedValues={calculatedValues}
               updateField={updateField}
             />
+          )}
+
+          {/* Selector de destinatarios - Solo visible en el último paso */}
+          {currentStep === 5 && onSendEmail && data.clientEmail && onRecipientsChange && (
+            <div className="mt-6 pt-6 border-t">
+              <EmailRecipientSelector
+                selectedRecipients={selectedRecipients}
+                onSelectionChange={onRecipientsChange}
+              />
+            </div>
           )}
         </CardContent>
       </Card>

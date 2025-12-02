@@ -147,6 +147,7 @@ export default function ValoracionProForm() {
   };
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   
   const handleSendEmail = async (data: ProfessionalValuationData, email: string) => {
     console.log('[ValoracionProForm] handleSendEmail iniciado');
@@ -210,6 +211,8 @@ export default function ValoracionProForm() {
         pdfUrl: data.pdfUrl,
         advisorName: data.advisorName,
         advisorEmail: data.advisorEmail,
+        // Enviar destinatarios seleccionados (o vacío para usar los de la BD)
+        selectedRecipients: selectedRecipients.length > 0 ? selectedRecipients : undefined,
       };
 
       console.log('[ValoracionProForm] Llamando a edge function con:', {
@@ -313,6 +316,8 @@ export default function ValoracionProForm() {
           onGeneratePdf={handleGeneratePdf}
           onSendEmail={handleSendEmail}
           isLoading={isCreating || isUpdating || isGeneratingPdf || isSendingEmail}
+          selectedRecipients={selectedRecipients}
+          onRecipientsChange={setSelectedRecipients}
         />
       )}
     </div>
