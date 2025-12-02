@@ -164,19 +164,49 @@ export default function ValoracionProForm() {
     setIsSendingEmail(true);
     
     try {
+      // Generar PDF en base64 para adjuntar al email
+      let pdfBase64: string | undefined;
+      
+      try {
+        console.log('[ValoracionProForm] Generando PDF para adjuntar...');
+        const pdfDocument = <ProfessionalValuationPDF data={data} />;
+        const blob = await pdf(pdfDocument).toBlob();
+        
+        // Convertir blob a base64
+        const reader = new FileReader();
+        pdfBase64 = await new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            // Extraer solo la parte base64 (sin el prefijo data:...)
+            const base64Data = base64.split(',')[1];
+            resolve(base64Data);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        console.log('[ValoracionProForm] PDF generado, tamaño base64:', pdfBase64?.length);
+      } catch (pdfError) {
+        console.warn('[ValoracionProForm] No se pudo generar PDF para adjuntar:', pdfError);
+      }
+
       // Preparar datos para la edge function
       const requestBody = {
         recipientEmail: email,
         recipientName: data.clientName,
         valuationData: {
           clientCompany: data.clientCompany,
+          clientName: data.clientName,
+          clientCif: data.clientCif,
           valuationCentral: data.valuationCentral,
           valuationLow: data.valuationLow,
           valuationHigh: data.valuationHigh,
           sector: data.sector,
           normalizedEbitda: data.normalizedEbitda,
           ebitdaMultipleUsed: data.ebitdaMultipleUsed,
+          financialYears: data.financialYears,
+          normalizationAdjustments: data.normalizationAdjustments,
         },
+        pdfBase64,
         pdfUrl: data.pdfUrl,
         advisorName: data.advisorName,
         advisorEmail: data.advisorEmail,
@@ -185,7 +215,10 @@ export default function ValoracionProForm() {
       console.log('[ValoracionProForm] Llamando a edge function con:', {
         recipientEmail: email,
         clientCompany: data.clientCompany,
+        hasPdfBase64: !!pdfBase64,
         hasPdfUrl: !!data.pdfUrl,
+        hasFinancialYears: !!data.financialYears?.length,
+        hasAdjustments: !!data.normalizationAdjustments?.length,
       });
 
       const { data: result, error } = await supabase.functions.invoke(
@@ -205,7 +238,8 @@ export default function ValoracionProForm() {
         await markAsSent(id, email);
       }
 
-      toast.success(`Email enviado correctamente a ${email}`);
+      const teamCount = result?.teamNotified || 0;
+      toast.success(`Email enviado a ${email} y ${teamCount} personas del equipo`);
     } catch (error) {
       console.error('[ValoracionProForm] Error enviando email:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
