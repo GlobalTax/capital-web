@@ -6142,6 +6142,7 @@ export type Database = {
           financial_years: Json
           id: string
           internal_notes: string | null
+          lead_source: string | null
           linked_lead_id: string | null
           linked_lead_type: string | null
           linked_operation_id: string | null
@@ -6156,8 +6157,10 @@ export type Database = {
           sensitivity_matrix: Json | null
           sent_at: string | null
           sent_to: string | null
+          service_type: string | null
           status: string
           strengths: string | null
+          sync_to_contacts: boolean | null
           updated_at: string
           valuation_central: number | null
           valuation_context: string | null
@@ -6186,6 +6189,7 @@ export type Database = {
           financial_years?: Json
           id?: string
           internal_notes?: string | null
+          lead_source?: string | null
           linked_lead_id?: string | null
           linked_lead_type?: string | null
           linked_operation_id?: string | null
@@ -6200,8 +6204,10 @@ export type Database = {
           sensitivity_matrix?: Json | null
           sent_at?: string | null
           sent_to?: string | null
+          service_type?: string | null
           status?: string
           strengths?: string | null
+          sync_to_contacts?: boolean | null
           updated_at?: string
           valuation_central?: number | null
           valuation_context?: string | null
@@ -6230,6 +6236,7 @@ export type Database = {
           financial_years?: Json
           id?: string
           internal_notes?: string | null
+          lead_source?: string | null
           linked_lead_id?: string | null
           linked_lead_type?: string | null
           linked_operation_id?: string | null
@@ -6244,8 +6251,10 @@ export type Database = {
           sensitivity_matrix?: Json | null
           sent_at?: string | null
           sent_to?: string | null
+          service_type?: string | null
           status?: string
           strengths?: string | null
+          sync_to_contacts?: boolean | null
           updated_at?: string
           valuation_central?: number | null
           valuation_context?: string | null
