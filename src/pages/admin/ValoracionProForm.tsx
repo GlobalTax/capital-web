@@ -17,7 +17,7 @@ export default function ValoracionProForm() {
   const isNew = !id || id === 'nueva';
   
   const { data: existingValuation, isLoading } = useProfessionalValuation(isNew ? undefined : id);
-  const { createValuation, updateValuation, savePdfUrl, isCreating, isUpdating, setIsGeneratingPdf, isGeneratingPdf } = useProfessionalValuations();
+  const { createValuation, updateValuation, savePdfUrl, markAsSent, isCreating, isUpdating, setIsGeneratingPdf, isGeneratingPdf } = useProfessionalValuations();
   
   const [currentData, setCurrentData] = useState<Partial<ProfessionalValuationData> | null>(null);
 
@@ -146,8 +146,73 @@ export default function ValoracionProForm() {
     }
   };
 
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  
   const handleSendEmail = async (data: ProfessionalValuationData, email: string) => {
-    toast.info('Funcionalidad de envío por email próximamente disponible');
+    console.log('[ValoracionProForm] handleSendEmail iniciado');
+    
+    if (!email || !email.includes('@')) {
+      toast.error('Por favor, introduce un email válido');
+      return;
+    }
+
+    if (!data.valuationCentral || !data.clientCompany) {
+      toast.error('Calcula la valoración antes de enviar el email');
+      return;
+    }
+
+    setIsSendingEmail(true);
+    
+    try {
+      // Preparar datos para la edge function
+      const requestBody = {
+        recipientEmail: email,
+        recipientName: data.clientName,
+        valuationData: {
+          clientCompany: data.clientCompany,
+          valuationCentral: data.valuationCentral,
+          valuationLow: data.valuationLow,
+          valuationHigh: data.valuationHigh,
+          sector: data.sector,
+          normalizedEbitda: data.normalizedEbitda,
+          ebitdaMultipleUsed: data.ebitdaMultipleUsed,
+        },
+        pdfUrl: data.pdfUrl,
+        advisorName: data.advisorName,
+        advisorEmail: data.advisorEmail,
+      };
+
+      console.log('[ValoracionProForm] Llamando a edge function con:', {
+        recipientEmail: email,
+        clientCompany: data.clientCompany,
+        hasPdfUrl: !!data.pdfUrl,
+      });
+
+      const { data: result, error } = await supabase.functions.invoke(
+        'send-professional-valuation-email',
+        { body: requestBody }
+      );
+
+      if (error) {
+        console.error('[ValoracionProForm] Error de edge function:', error);
+        throw new Error(error.message || 'Error al enviar el email');
+      }
+
+      console.log('[ValoracionProForm] Email enviado:', result);
+
+      // Actualizar estado en base de datos
+      if (id && !isNew) {
+        await markAsSent(id, email);
+      }
+
+      toast.success(`Email enviado correctamente a ${email}`);
+    } catch (error) {
+      console.error('[ValoracionProForm] Error enviando email:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error(`Error al enviar el email: ${errorMessage}`);
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   // Loading state
@@ -213,7 +278,7 @@ export default function ValoracionProForm() {
           onSave={handleSave}
           onGeneratePdf={handleGeneratePdf}
           onSendEmail={handleSendEmail}
-          isLoading={isCreating || isUpdating || isGeneratingPdf}
+          isLoading={isCreating || isUpdating || isGeneratingPdf || isSendingEmail}
         />
       )}
     </div>
