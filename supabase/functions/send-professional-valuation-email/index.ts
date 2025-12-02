@@ -12,16 +12,44 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Equipo interno que recibe copia de todas las valoraciones
-const INTERNAL_TEAM = [
+// Fallback: Equipo interno por defecto si la BD no está disponible
+const DEFAULT_INTERNAL_TEAM = [
   "samuel@capittal.es",
-  "pau@capittal.es",
+  "pau@capittal.es", 
   "marcc@capittal.es",
   "marc@capittal.es",
   "lluis@capittal.es",
   "oriol@capittal.es",
-  "l.linares@nrro.es"
+  "valoraciones@capittal.es"
 ];
+
+// Función para obtener destinatarios activos desde la BD
+async function getInternalRecipients(): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('email_recipients_config')
+      .select('email')
+      .eq('is_active', true)
+      .eq('is_default_copy', true);
+    
+    if (error) {
+      console.warn('[getInternalRecipients] Error fetching from DB, using defaults:', error.message);
+      return DEFAULT_INTERNAL_TEAM;
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('[getInternalRecipients] No recipients found in DB, using defaults');
+      return DEFAULT_INTERNAL_TEAM;
+    }
+    
+    const emails = data.map(r => r.email);
+    console.log('[getInternalRecipients] Loaded', emails.length, 'recipients from DB');
+    return emails;
+  } catch (e) {
+    console.error('[getInternalRecipients] Exception:', e);
+    return DEFAULT_INTERNAL_TEAM;
+  }
+}
 
 interface FinancialYear {
   year: number;
@@ -587,19 +615,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('[send-professional-valuation-email] Client email sent:', clientEmailResponse);
 
+    // Obtener destinatarios internos desde la BD
+    const internalTeam = await getInternalRecipients();
+    
     // Enviar copia al equipo interno
+    let teamNotified = 0;
     try {
       const internalEmailHtml = generateInternalEmailHtml(requestData, pdfPublicUrl);
       
       await resend.emails.send({
         from: "Capittal <valoraciones@capittal.es>",
-        to: INTERNAL_TEAM,
+        to: internalTeam,
         subject: `[Valoración Pro] ${requestData.valuationData.clientCompany} → ${requestData.recipientEmail}`,
         html: internalEmailHtml,
         attachments: attachments,
       });
       
-      console.log('[send-professional-valuation-email] Internal team email sent to:', INTERNAL_TEAM.length, 'recipients');
+      teamNotified = internalTeam.length;
+      console.log('[send-professional-valuation-email] Internal team email sent to:', internalTeam);
     } catch (copyError: any) {
       console.warn('[send-professional-valuation-email] Failed to send internal copy:', copyError?.message || copyError);
     }
@@ -610,7 +643,8 @@ const handler = async (req: Request): Promise<Response> => {
         messageId: clientEmailResponse.data?.id,
         sentTo: requestData.recipientEmail,
         pdfUrl: pdfPublicUrl,
-        teamNotified: INTERNAL_TEAM.length,
+        teamNotified: teamNotified,
+        recipients: internalTeam,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );

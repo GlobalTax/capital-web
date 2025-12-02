@@ -259,6 +259,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de administradores"
       },
       { 
+        title: "Destinatarios Email", 
+        url: "/admin/configuracion/destinatarios-email", 
+        icon: Target,
+        badge: "NEW",
+        description: "Gestión de destinatarios de emails"
+      },
+      { 
         title: "Ajustes", 
         url: "/admin/settings", 
         icon: Settings,

@@ -67,3 +67,6 @@ export const LazyValuationAnalyticsDashboard = lazy(() => import('./valuation-an
 // === PROFESSIONAL VALUATIONS ===
 export const LazyValoracionesPro = lazy(() => import('@/pages/admin/ValoracionesPro'));
 export const LazyValoracionProForm = lazy(() => import('@/pages/admin/ValoracionProForm'));
+
+// === CONFIGURATION ===
+export const LazyEmailRecipientsConfig = lazy(() => import('@/pages/admin/EmailRecipientsConfig'));
