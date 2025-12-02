@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfessionalValuationData, VALUATION_SECTORS } from '@/types/professionalValuation';
-import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users } from 'lucide-react';
+import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users, PenTool } from 'lucide-react';
 import { LogoUploader } from '../LogoUploader';
+import { useTeamAdvisors } from '@/hooks/useTeamAdvisors';
 
 const LEAD_SOURCES = [
   'Meta Ads',
@@ -43,6 +44,26 @@ interface ClientDataStepProps {
 }
 
 export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
+  const { data: teamAdvisors = [] } = useTeamAdvisors();
+
+  const handleAdvisorSelect = (value: string) => {
+    if (value === 'custom') {
+      updateField('advisorName', '');
+      updateField('advisorEmail', '');
+    } else {
+      const advisor = teamAdvisors.find((a) => a.id === value);
+      if (advisor) {
+        updateField('advisorName', advisor.name);
+        updateField('advisorEmail', advisor.email);
+      }
+    }
+  };
+
+  // Encontrar el asesor seleccionado actual
+  const selectedAdvisorId = teamAdvisors.find(
+    (a) => a.name === data.advisorName && a.email === data.advisorEmail
+  )?.id;
+
   return (
     <div className="space-y-6">
       {/* Datos de contacto */}
@@ -238,6 +259,97 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Firma del Informe */}
+      <div className="border-t pt-6 mt-6 space-y-4">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <PenTool className="w-4 h-4" />
+          <span className="text-sm font-medium">Firma del Informe</span>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="space-y-0.5">
+            <Label htmlFor="useCustomAdvisor" className="text-base">
+              Usar firma personalizada
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Por defecto: Equipo Capittal
+            </p>
+          </div>
+          <Switch
+            id="useCustomAdvisor"
+            checked={data.useCustomAdvisor ?? false}
+            onCheckedChange={(checked) => {
+              updateField('useCustomAdvisor', checked);
+              if (!checked) {
+                updateField('advisorName', undefined);
+                updateField('advisorEmail', undefined);
+                updateField('advisorRole', undefined);
+              }
+            }}
+          />
+        </div>
+
+        {data.useCustomAdvisor && (
+          <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+            <div className="space-y-2">
+              <Label htmlFor="advisorSelect">Seleccionar asesor</Label>
+              <Select
+                value={selectedAdvisorId || (data.advisorName ? 'custom' : '')}
+                onValueChange={handleAdvisorSelect}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar asesor del equipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamAdvisors.map((advisor) => (
+                    <SelectItem key={advisor.id} value={advisor.id}>
+                      {advisor.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Personalizado...</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="advisorName">Nombre del asesor *</Label>
+                <Input
+                  id="advisorName"
+                  value={data.advisorName || ''}
+                  onChange={(e) => updateField('advisorName', e.target.value)}
+                  placeholder="Nombre completo"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advisorEmail">Email del asesor</Label>
+                <Input
+                  id="advisorEmail"
+                  type="email"
+                  value={data.advisorEmail || ''}
+                  onChange={(e) => updateField('advisorEmail', e.target.value)}
+                  placeholder="email@capittal.es"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="advisorRole">Cargo</Label>
+              <Input
+                id="advisorRole"
+                value={data.advisorRole || ''}
+                onChange={(e) => updateField('advisorRole', e.target.value)}
+                placeholder="Consultor de M&A"
+              />
+              <p className="text-xs text-muted-foreground">
+                Si se deja vacío, se usará "Consultor de M&A"
+              </p>
             </div>
           </div>
         )}

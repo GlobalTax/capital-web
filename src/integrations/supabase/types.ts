@@ -6125,6 +6125,7 @@ export type Database = {
         Row: {
           advisor_email: string | null
           advisor_name: string | null
+          advisor_role: string | null
           client_cif: string | null
           client_company: string
           client_email: string | null
@@ -6162,6 +6163,7 @@ export type Database = {
           strengths: string | null
           sync_to_contacts: boolean | null
           updated_at: string
+          use_custom_advisor: boolean | null
           valuation_central: number | null
           valuation_context: string | null
           valuation_high: number | null
@@ -6172,6 +6174,7 @@ export type Database = {
         Insert: {
           advisor_email?: string | null
           advisor_name?: string | null
+          advisor_role?: string | null
           client_cif?: string | null
           client_company: string
           client_email?: string | null
@@ -6209,6 +6212,7 @@ export type Database = {
           strengths?: string | null
           sync_to_contacts?: boolean | null
           updated_at?: string
+          use_custom_advisor?: boolean | null
           valuation_central?: number | null
           valuation_context?: string | null
           valuation_high?: number | null
@@ -6219,6 +6223,7 @@ export type Database = {
         Update: {
           advisor_email?: string | null
           advisor_name?: string | null
+          advisor_role?: string | null
           client_cif?: string | null
           client_company?: string
           client_email?: string | null
@@ -6256,6 +6261,7 @@ export type Database = {
           strengths?: string | null
           sync_to_contacts?: boolean | null
           updated_at?: string
+          use_custom_advisor?: boolean | null
           valuation_central?: number | null
           valuation_context?: string | null
           valuation_high?: number | null
