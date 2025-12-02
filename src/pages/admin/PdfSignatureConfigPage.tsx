@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePdfSignatureConfig, useUpdatePdfSignatureConfig } from '@/hooks/usePdfSignatureConfig';
-import { FileSignature, Save, Loader2 } from 'lucide-react';
+import { FileSignature, Save, Loader2, User, Briefcase, Mail, Phone, Globe } from 'lucide-react';
 
 const PdfSignatureConfigPage: React.FC = () => {
   const { data: config, isLoading } = usePdfSignatureConfig();
@@ -75,10 +75,13 @@ const PdfSignatureConfigPage: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre / Equipo</Label>
+                <Label htmlFor="name" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Nombre / Equipo
+                </Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -88,7 +91,10 @@ const PdfSignatureConfigPage: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="role">Cargo / Rol</Label>
+                <Label htmlFor="role" className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  Cargo / Rol
+                </Label>
                 <Input
                   id="role"
                   value={formData.role}
@@ -98,7 +104,10 @@ const PdfSignatureConfigPage: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -109,7 +118,10 @@ const PdfSignatureConfigPage: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="phone">Teléfono</Label>
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Teléfono
+                </Label>
                 <Input
                   id="phone"
                   value={formData.phone}
@@ -119,7 +131,10 @@ const PdfSignatureConfigPage: React.FC = () => {
               </div>
               
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="website">Web</Label>
+                <Label htmlFor="website" className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  Web
+                </Label>
                 <Input
                   id="website"
                   value={formData.website}
