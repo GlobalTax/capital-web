@@ -50,11 +50,13 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
     if (value === 'custom') {
       updateField('advisorName', '');
       updateField('advisorEmail', '');
+      updateField('advisorPhone', '');
     } else {
       const advisor = teamAdvisors.find((a) => a.id === value);
       if (advisor) {
         updateField('advisorName', advisor.name);
         updateField('advisorEmail', advisor.email);
+        updateField('advisorPhone', advisor.phone || '');
       }
     }
   };
@@ -335,6 +337,17 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
                   value={data.advisorEmail || ''}
                   onChange={(e) => updateField('advisorEmail', e.target.value)}
                   placeholder="email@capittal.es"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advisorPhone">Teléfono del asesor</Label>
+                <Input
+                  id="advisorPhone"
+                  type="tel"
+                  value={data.advisorPhone || ''}
+                  onChange={(e) => updateField('advisorPhone', e.target.value)}
+                  placeholder="+34 600 000 000"
                 />
               </div>
             </div>

@@ -2676,6 +2676,7 @@ export type Database = {
           is_active: boolean | null
           is_default_copy: boolean | null
           name: string
+          phone: string | null
           role: string | null
           updated_at: string | null
         }
@@ -2686,6 +2687,7 @@ export type Database = {
           is_active?: boolean | null
           is_default_copy?: boolean | null
           name: string
+          phone?: string | null
           role?: string | null
           updated_at?: string | null
         }
@@ -2696,6 +2698,7 @@ export type Database = {
           is_active?: boolean | null
           is_default_copy?: boolean | null
           name?: string
+          phone?: string | null
           role?: string | null
           updated_at?: string | null
         }
@@ -6125,6 +6128,7 @@ export type Database = {
         Row: {
           advisor_email: string | null
           advisor_name: string | null
+          advisor_phone: string | null
           advisor_role: string | null
           client_cif: string | null
           client_company: string
@@ -6174,6 +6178,7 @@ export type Database = {
         Insert: {
           advisor_email?: string | null
           advisor_name?: string | null
+          advisor_phone?: string | null
           advisor_role?: string | null
           client_cif?: string | null
           client_company: string
@@ -6223,6 +6228,7 @@ export type Database = {
         Update: {
           advisor_email?: string | null
           advisor_name?: string | null
+          advisor_phone?: string | null
           advisor_role?: string | null
           client_cif?: string | null
           client_company?: string

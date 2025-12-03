@@ -7,6 +7,7 @@ export interface EmailRecipient {
   email: string;
   name: string;
   role: string;
+  phone?: string;
   is_default_copy: boolean;
   is_active: boolean;
   created_at: string;
