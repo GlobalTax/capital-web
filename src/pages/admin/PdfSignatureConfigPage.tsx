@@ -33,7 +33,13 @@ const PdfSignatureConfigPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('💾 [PdfSignature] Submitting form data:', formData);
     updateConfig(formData);
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    console.log(`📝 [PdfSignature] Field "${field}" changed to:`, value);
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   if (isLoading) {
@@ -85,7 +91,7 @@ const PdfSignatureConfigPage: React.FC = () => {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => handleFieldChange('name', e.target.value)}
                   placeholder="Equipo Capittal"
                 />
               </div>
@@ -98,7 +104,7 @@ const PdfSignatureConfigPage: React.FC = () => {
                 <Input
                   id="role"
                   value={formData.role}
-                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  onChange={(e) => handleFieldChange('role', e.target.value)}
                   placeholder="Consultor de M&A"
                 />
               </div>
@@ -112,7 +118,7 @@ const PdfSignatureConfigPage: React.FC = () => {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) => handleFieldChange('email', e.target.value)}
                   placeholder="info@capittal.es"
                 />
               </div>
@@ -124,8 +130,9 @@ const PdfSignatureConfigPage: React.FC = () => {
                 </Label>
                 <Input
                   id="phone"
+                  type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) => handleFieldChange('phone', e.target.value)}
                   placeholder="+34 XXX XXX XXX"
                 />
               </div>
@@ -138,7 +145,7 @@ const PdfSignatureConfigPage: React.FC = () => {
                 <Input
                   id="website"
                   value={formData.website}
-                  onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                  onChange={(e) => handleFieldChange('website', e.target.value)}
                   placeholder="www.capittal.es"
                 />
               </div>
