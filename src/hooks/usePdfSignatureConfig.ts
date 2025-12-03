@@ -41,6 +41,7 @@ export const useUpdatePdfSignatureConfig = () => {
   
   return useMutation({
     mutationFn: async (updates: Partial<PdfSignatureConfig>) => {
+      console.log('🔄 [PdfSignature] Updating config with:', updates);
       const { data, error } = await supabase
         .from('pdf_signature_config')
         .update(updates)
@@ -48,14 +49,17 @@ export const useUpdatePdfSignatureConfig = () => {
         .select()
         .single();
       
+      console.log('📊 [PdfSignature] Update result:', { data, error });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ [PdfSignature] Update successful:', data);
       queryClient.invalidateQueries({ queryKey: ['pdf-signature-config'] });
       toast.success('Configuración de firma actualizada');
     },
     onError: (error: Error) => {
+      console.error('❌ [PdfSignature] Update error:', error);
       toast.error(`Error al actualizar: ${error.message}`);
     },
   });
