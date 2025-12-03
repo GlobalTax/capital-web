@@ -976,10 +976,14 @@ const DisclaimerPage: React.FC<{
     <View style={styles.disclaimer}>
       <Text style={styles.disclaimerTitle}>Propósito del Informe</Text>
       <Text style={styles.disclaimerText}>
-        Este informe de valoración ha sido preparado exclusivamente para uso interno de 
-        {data.clientCompany} y tiene carácter estrictamente confidencial. La valoración 
-        contenida es una estimación basada en el método de múltiplos EBITDA y no constituye 
-        una oferta de compra, venta o asesoramiento financiero, fiscal o legal.
+        Este informe de valoración ha sido preparado exclusivamente para fines informativos 
+        y tiene carácter estrictamente confidencial. No debe tomarse como un informe de 
+        valoración formal ni como asesoramiento profesional.
+      </Text>
+      <Text style={styles.disclaimerText}>
+        La valoración contenida es una estimación basada en el método de múltiplos de EBITDA 
+        y no constituye una oferta de compra o venta, ni tampoco asesoramiento financiero, 
+        fiscal o legal.
       </Text>
       
       <Text style={styles.disclaimerTitle}>Limitaciones</Text>
