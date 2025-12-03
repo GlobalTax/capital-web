@@ -82,9 +82,17 @@ const DEFAULT_DATA: ProfessionalValuationData = {
   valuationLow: 0,
   valuationHigh: 0,
   valuationCentral: 0,
-  valuationContext: '',
-  strengths: '',
-  weaknesses: '',
+  valuationContext: 'La valoración que presentamos se ha elaborado a partir de la información que usted ha proporcionado a través del formulario, así como de los datos públicos disponibles en el Registro Mercantil. Esta combinación nos permite ofrecerle una primera estimación orientativa del valor de su compañía. No debe interpretarse este informe como un informe de valoración formal ni como asesoramiento profesional.',
+  strengths: `Crecimiento sólido y márgenes estables, que demuestran capacidad de generación de beneficios.
+Flujo de caja recurrente, indicando una operación sana y predecible.
+Cartera de clientes diversificada, reduciendo riesgos de dependencia.
+Equipo directivo experimentado y estable, que aporta credibilidad al plan de negocio.
+Ventajas competitivas claras (tecnología, procesos, marca o barreras de entrada).`,
+  weaknesses: `Concentración elevada en pocos clientes o proveedores, lo que incrementa el riesgo.
+Márgenes reducidos o muy volátiles, que generan incertidumbre sobre la rentabilidad futura.
+Dependencia de personas clave, especialmente si no hay sucesión clara.
+Endeudamiento elevado, que limita la capacidad de inversión y resta flexibilidad.
+Procesos poco eficientes o falta de digitalización, que reducen competitividad y escalabilidad.`,
   internalNotes: '',
   status: 'draft',
 };
