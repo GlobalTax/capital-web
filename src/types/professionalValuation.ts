@@ -104,6 +104,7 @@ export interface ProfessionalValuationData {
   createdBy?: string;
   advisorName?: string;
   advisorEmail?: string;
+  advisorPhone?: string;
   advisorRole?: string;
   useCustomAdvisor?: boolean;
   
@@ -227,6 +228,7 @@ export function mapDbToProfessionalValuation(dbRow: any): ProfessionalValuationD
     createdBy: dbRow.created_by,
     advisorName: dbRow.advisor_name,
     advisorEmail: dbRow.advisor_email,
+    advisorPhone: dbRow.advisor_phone,
     advisorRole: dbRow.advisor_role,
     useCustomAdvisor: dbRow.use_custom_advisor ?? false,
     clientName: dbRow.client_name,
@@ -278,6 +280,7 @@ export function mapProfessionalValuationToDb(data: Partial<ProfessionalValuation
   const mapped: Record<string, any> = {
     advisor_name: data.advisorName,
     advisor_email: data.advisorEmail,
+    advisor_phone: data.advisorPhone,
     advisor_role: data.advisorRole,
     use_custom_advisor: data.useCustomAdvisor,
     client_name: data.clientName,

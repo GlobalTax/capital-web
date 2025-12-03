@@ -6,6 +6,7 @@ export interface TeamAdvisor {
   name: string;
   email: string;
   role: string;
+  phone?: string;
 }
 
 export const useTeamAdvisors = () => {
@@ -14,7 +15,7 @@ export const useTeamAdvisors = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('email_recipients_config')
-        .select('id, name, email, role')
+        .select('id, name, email, role, phone')
         .eq('is_active', true)
         .in('role', ['asesor', 'direccion'])
         .order('name');

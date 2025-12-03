@@ -31,7 +31,7 @@ export default function ValoracionProForm() {
         name: data.advisorName,
         role: data.advisorRole || 'Consultor de M&A',
         email: data.advisorEmail || 'info@capittal.es',
-        phone: signatureConfig?.phone || '',
+        phone: data.advisorPhone || signatureConfig?.phone || '',
         website: signatureConfig?.website || 'www.capittal.es',
       };
     }

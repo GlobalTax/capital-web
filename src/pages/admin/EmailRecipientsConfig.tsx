@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Plus, Trash2, Edit, Users, CheckCircle2, XCircle } from 'lucide-react';
+import { Mail, Plus, Trash2, Edit, Users, CheckCircle2, XCircle, Phone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ROLES = [
@@ -33,10 +33,10 @@ const EmailRecipientsConfig: React.FC = () => {
   const { recipients, isLoading, createRecipient, updateRecipient, deleteRecipient, toggleDefaultCopy, toggleActive } = useEmailRecipientsConfig();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingRecipient, setEditingRecipient] = useState<EmailRecipient | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'asesor', is_default_copy: true, is_active: true });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', role: 'asesor', is_default_copy: true, is_active: true });
+    setFormData({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
     setEditingRecipient(null);
   };
 
@@ -56,6 +56,7 @@ const EmailRecipientsConfig: React.FC = () => {
     setFormData({
       name: recipient.name,
       email: recipient.email,
+      phone: recipient.phone || '',
       role: recipient.role,
       is_default_copy: recipient.is_default_copy,
       is_active: recipient.is_active
@@ -113,6 +114,16 @@ const EmailRecipientsConfig: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="email@capittal.es"
                   required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+34 600 000 000"
                 />
               </div>
               <div className="space-y-2">
@@ -215,6 +226,7 @@ const EmailRecipientsConfig: React.FC = () => {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Teléfono</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead className="text-center">Copia por Defecto</TableHead>
                   <TableHead className="text-center">Activo</TableHead>
@@ -226,6 +238,16 @@ const EmailRecipientsConfig: React.FC = () => {
                   <TableRow key={recipient.id} className={!recipient.is_active ? 'opacity-50' : ''}>
                     <TableCell className="font-medium">{recipient.name}</TableCell>
                     <TableCell>{recipient.email}</TableCell>
+                    <TableCell>
+                      {recipient.phone ? (
+                        <span className="flex items-center gap-1 text-sm">
+                          <Phone className="h-3 w-3 text-muted-foreground" />
+                          {recipient.phone}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(recipient.role)}>
                         {ROLES.find(r => r.value === recipient.role)?.label || recipient.role}
@@ -279,7 +301,7 @@ const EmailRecipientsConfig: React.FC = () => {
                 ))}
                 {recipients?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No hay destinatarios configurados
                     </TableCell>
                   </TableRow>
