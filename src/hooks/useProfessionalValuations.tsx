@@ -42,9 +42,8 @@ async function syncToContactLeads(data: Partial<ProfessionalValuationData>): Pro
     email: data.clientEmail,
     phone: data.clientPhone || null,
     service_type: data.serviceType || 'vender',
-    referral: data.leadSource || 'Meta Ads',
+    referral: 'Valoración Pro',
     status: 'new',
-    notes: `Creado desde Valoración Pro - Sector: ${data.sector || 'No especificado'}`,
   };
 
   const { data: newContact, error } = await supabase
