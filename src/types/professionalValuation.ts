@@ -10,7 +10,7 @@ export interface FinancialYear {
   year: number;
   revenue: number;       // Facturación
   ebitda: number;        // EBITDA reportado
-  netProfit: number;     // Resultado neto
+  netProfit?: number;    // Resultado neto (opcional, legacy)
   employees?: number;    // Empleados (opcional)
 }
 

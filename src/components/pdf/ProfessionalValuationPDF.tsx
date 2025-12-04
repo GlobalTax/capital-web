@@ -651,10 +651,6 @@ const FinancialAnalysisPage: React.FC<{ data: ProfessionalValuationData }> = ({ 
                 <Text style={styles.metricValue}>{formatCurrency(year.ebitda)}</Text>
               </View>
               <View style={styles.metricRow}>
-                <Text style={styles.metricLabel}>Resultado Neto</Text>
-                <Text style={styles.metricValue}>{formatCurrency(year.netProfit)}</Text>
-              </View>
-              <View style={styles.metricRow}>
                 <Text style={styles.metricLabel}>Margen EBITDA</Text>
                 <Text style={styles.metricValue}>
                   {year.revenue > 0 ? ((year.ebitda / year.revenue) * 100).toFixed(1) : 0}%
@@ -696,14 +692,6 @@ const FinancialAnalysisPage: React.FC<{ data: ProfessionalValuationData }> = ({ 
             ))}
           </View>
           
-          <View style={styles.tableRow}>
-            <Text style={[styles.tableCell, { flex: 0.3 }]}>Resultado Neto</Text>
-            {sortedYears.map((year, i) => (
-              <Text key={i} style={[styles.tableCell, { flex: 0.7 / sortedYears.length, textAlign: 'right' }]}>
-                {formatCurrency(year.netProfit)}
-              </Text>
-            ))}
-          </View>
           
           <View style={[styles.tableRow, styles.tableRowAlt]}>
             <Text style={[styles.tableCellBold, { flex: 0.3 }]}>Margen EBITDA</Text>

@@ -181,36 +181,6 @@ export function FinancialDataStep({ financialYears, updateFinancialYear }: Finan
                     ))}
                 </tr>
 
-                {/* Resultado Neto */}
-                <tr>
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
-                      <Euro className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">Resultado Neto</span>
-                    </div>
-                  </td>
-                  {financialYears
-                    .sort((a, b) => a.year - b.year)
-                    .map((fy, index) => (
-                      <td key={`netProfit-${fy.year}`} className="py-3 px-2">
-                        <Input
-                          type="number"
-                          value={fy.netProfit || ''}
-                          onChange={(e) => updateFinancialYear(
-                            financialYears.findIndex(f => f.year === fy.year),
-                            { netProfit: parseFloat(e.target.value) || 0 }
-                          )}
-                          placeholder="0"
-                          className="text-right"
-                        />
-                        {fy.netProfit !== 0 && (
-                          <p className="text-xs text-muted-foreground text-right mt-1">
-                            {formatCurrencyEUR(fy.netProfit)}
-                          </p>
-                        )}
-                      </td>
-                    ))}
-                </tr>
 
                 {/* Margen EBITDA calculado */}
                 <tr className="bg-muted/30">
