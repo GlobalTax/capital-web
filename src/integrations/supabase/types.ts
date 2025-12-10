@@ -7940,18 +7940,18 @@ export type Database = {
       check_rate_limit:
         | {
             Args: {
-              identifier: string
-              max_requests?: number
-              window_minutes?: number
+              _action: string
+              _identifier: string
+              _max_requests?: number
+              _window_minutes?: number
             }
             Returns: boolean
           }
         | {
             Args: {
-              _action: string
-              _identifier: string
-              _max_requests?: number
-              _window_minutes?: number
+              identifier: string
+              max_requests?: number
+              window_minutes?: number
             }
             Returns: boolean
           }
