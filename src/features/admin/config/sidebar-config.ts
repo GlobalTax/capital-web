@@ -24,7 +24,8 @@ import {
   Calculator,
   Megaphone,
   Briefcase,
-  FolderOpen
+  FolderOpen,
+  Store
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -187,6 +188,13 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/testimonials", 
         icon: MessageSquare,
         description: "Reseñas de clientes"
+      },
+      { 
+        title: "LP Venta Empresas", 
+        url: "/admin/venta-empresas-content", 
+        icon: Store,
+        badge: "NEW",
+        description: "Contenido landing venta empresas"
       },
       { 
         title: "Logos Carousel", 

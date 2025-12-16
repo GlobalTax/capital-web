@@ -14,6 +14,7 @@ import {
   LazyTestimonialsManager,
   LazyCarouselTestimonialsManager,
   LazyCarouselLogosManager,
+  LazyVentaEmpresasContentManager,
   LazyTeamMembersManagerAdvanced,
   LazySectorReportsGenerator,
   LazyMultiplesManager,
@@ -136,6 +137,7 @@ const AdminRouter = () => {
           <Route path="/testimonials" element={<LazyTestimonialsManager />} />
           <Route path="/carousel-testimonials" element={<LazyCarouselTestimonialsManager />} />
           <Route path="/carousel-logos" element={<LazyCarouselLogosManager />} />
+          <Route path="/venta-empresas-content" element={<LazyVentaEmpresasContentManager />} />
           
           {/* Valuations */}
           <Route path="/company-valuations" element={<Navigate to="/admin/contacts" replace />} />
