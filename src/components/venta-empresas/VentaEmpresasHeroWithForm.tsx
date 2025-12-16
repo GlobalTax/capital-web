@@ -148,10 +148,9 @@ const VentaEmpresasHeroWithForm = () => {
                 ))}
               </div>
               <p className="italic text-muted-foreground">
-                "Capittal vendió mi empresa por €1.8M cuando yo esperaba €1.3M máximo. 
-                ¡Resultados espectaculares!"
+                "Capittal vendió nuestra empresa por €11M. ¡Resultados espectaculares!"
               </p>
-              <p className="text-sm text-slate-900 mt-3 font-medium">— Carlos Mendez, Ex-CEO TechFlow</p>
+              <p className="text-sm text-slate-900 mt-3 font-medium">— Pedro y Joaquin, Grupo Viseguirity</p>
             </div>
 
             {/* Phone CTA - Desktop only */}
