@@ -3049,6 +3049,7 @@ export type Database = {
       general_contact_leads: {
         Row: {
           annual_revenue: string | null
+          cif: string | null
           company: string
           country: string | null
           created_at: string
@@ -3081,6 +3082,7 @@ export type Database = {
         }
         Insert: {
           annual_revenue?: string | null
+          cif?: string | null
           company: string
           country?: string | null
           created_at?: string
@@ -3113,6 +3115,7 @@ export type Database = {
         }
         Update: {
           annual_revenue?: string | null
+          cif?: string | null
           company?: string
           country?: string | null
           created_at?: string
