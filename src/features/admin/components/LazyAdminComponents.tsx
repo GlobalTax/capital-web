@@ -17,6 +17,7 @@ export const LazyBlogEditorPage = lazy(() => import('@/pages/admin/BlogEditorPag
 export const LazyCaseStudiesManager = lazy(() => import('@/components/admin/CaseStudiesManager'));
 export const LazyTestimonialsManager = lazy(() => import('@/components/admin/TestimonialsManager'));
 export const LazyCarouselTestimonialsManager = lazy(() => import('@/components/admin/CarouselTestimonialsManager'));
+export const LazyVentaEmpresasContentManager = lazy(() => import('@/components/admin/venta-empresas/VentaEmpresasContentManager'));
 export const LazyCarouselLogosManager = lazy(() => import('@/components/admin/CarouselLogosManager'));
 export const LazyTeamMembersManagerAdvanced = lazy(() => import('@/components/admin/TeamMembersManagerAdvanced'));
 export const LazySectorReportsGenerator = lazy(() => import('@/components/admin/SectorReportsGenerator'));
