@@ -21,8 +21,15 @@ interface FormNotificationRequest {
   formData: any;
 }
 
-// Reducido a 3 admins principales para respetar rate limit de Resend (2 emails/segundo)
-const ADMIN_EMAILS = ['lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es'];
+// Equipo completo que recibe notificaciones de formularios
+const ADMIN_EMAILS = [
+  's.navarro@capittal.es',
+  'marcc@capittal.es',
+  'marc@capittal.es',
+  'marcel.pardos@capittal.es',
+  'lluis@capittal.es',
+  'samuel@capittal.es'
+];
 
 // Helper functions for formatting
 const getPageOriginLabel = (pageOrigin: string | undefined): string => {
