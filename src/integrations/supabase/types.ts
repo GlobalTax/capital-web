@@ -6288,26 +6288,35 @@ export type Database = {
       rate_limits: {
         Row: {
           action: string
+          category: string | null
           count: number
           created_at: string
           id: string
           identifier: string
+          request_count: number | null
+          updated_at: string | null
           window_start: string
         }
         Insert: {
           action: string
+          category?: string | null
           count?: number
           created_at?: string
           id?: string
           identifier: string
+          request_count?: number | null
+          updated_at?: string | null
           window_start?: string
         }
         Update: {
           action?: string
+          category?: string | null
           count?: number
           created_at?: string
           id?: string
           identifier?: string
+          request_count?: number | null
+          updated_at?: string | null
           window_start?: string
         }
         Relationships: []
