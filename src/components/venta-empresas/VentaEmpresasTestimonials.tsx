@@ -12,7 +12,7 @@ const VentaEmpresasTestimonials = () => {
       <section className="py-20 bg-gradient-to-b from-background to-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex justify-center items-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
           </div>
         </div>
       </section>
@@ -26,7 +26,7 @@ const VentaEmpresasTestimonials = () => {
     <section className="py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 bg-slate-200 text-slate-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <Star className="h-4 w-4 fill-current" />
             +200 Operaciones Exitosas
           </div>
@@ -44,7 +44,7 @@ const VentaEmpresasTestimonials = () => {
               <CardContent className="p-6">
                   <div className="flex items-start gap-4 mb-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-emerald-600 text-white">
+                    <AvatarFallback className="bg-slate-900 text-white">
                       {testimonial.avatar_initials}
                     </AvatarFallback>
                   </Avatar>
@@ -53,7 +53,7 @@ const VentaEmpresasTestimonials = () => {
                     <p className="text-sm text-muted-foreground">{testimonial.position}</p>
                     <p className="text-xs text-muted-foreground">{testimonial.sector}</p>
                   </div>
-                  <Quote className="h-6 w-6 text-emerald-200" />
+                  <Quote className="h-6 w-6 text-slate-300" />
                 </div>
 
                 <div className="flex gap-1 mb-3">
@@ -68,15 +68,15 @@ const VentaEmpresasTestimonials = () => {
 
                 <div className="border-t border-border pt-4 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <div className="text-lg font-bold text-emerald-600">{testimonial.price_increase}</div>
+                    <div className="text-lg font-bold text-slate-900">{testimonial.price_increase}</div>
                     <div className="text-xs text-muted-foreground">Sobre precio esperado</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-emerald-600">{testimonial.time_to_sale}</div>
+                    <div className="text-lg font-bold text-slate-900">{testimonial.time_to_sale}</div>
                     <div className="text-xs text-muted-foreground">Tiempo de venta</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-emerald-600">{testimonial.valuation}</div>
+                    <div className="text-lg font-bold text-slate-900">{testimonial.valuation}</div>
                     <div className="text-xs text-muted-foreground">Valoración final</div>
                   </div>
                 </div>

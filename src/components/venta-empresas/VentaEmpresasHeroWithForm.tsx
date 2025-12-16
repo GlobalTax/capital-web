@@ -110,14 +110,14 @@ const VentaEmpresasHeroWithForm = () => {
           {/* Left Content - Copy */}
           <div className="space-y-6 lg:space-y-8 pt-4 lg:pt-8">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-4 py-2">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-              <span className="text-emerald-600 text-sm font-medium">+200 operaciones exitosas</span>
+            <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-300 rounded-full px-4 py-2">
+              <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse"></span>
+              <span className="text-slate-900 text-sm font-medium">+200 operaciones exitosas</span>
             </div>
 
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-foreground">
               Vende tu empresa al
-              <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent"> máximo precio</span>
+              <span className="text-foreground font-black"> máximo precio</span>
             </h1>
 
             <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl">
@@ -133,8 +133,8 @@ const VentaEmpresasHeroWithForm = () => {
                 { icon: Users, text: "+500 compradores" },
                 { icon: Clock, text: "Respuesta en 48h" }
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg px-4 py-3 border border-border">
-                  <item.icon className="h-5 w-5 text-emerald-600" />
+              <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg px-4 py-3 border border-border">
+                  <item.icon className="h-5 w-5 text-slate-900" />
                   <span className="text-muted-foreground">{item.text}</span>
                 </div>
               ))}
@@ -151,14 +151,14 @@ const VentaEmpresasHeroWithForm = () => {
                 "Capittal vendió mi empresa por €1.8M cuando yo esperaba €1.3M máximo. 
                 ¡Resultados espectaculares!"
               </p>
-              <p className="text-sm text-emerald-600 mt-3 font-medium">— Carlos Mendez, Ex-CEO TechFlow</p>
+              <p className="text-sm text-slate-900 mt-3 font-medium">— Carlos Mendez, Ex-CEO TechFlow</p>
             </div>
 
             {/* Phone CTA - Desktop only */}
             <div className="hidden lg:flex items-center gap-4">
               <a 
                 href="tel:+34695717490"
-                className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
+                className="flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-colors"
               >
                 <Phone className="h-5 w-5" />
                 695 717 490
@@ -200,7 +200,7 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                       placeholder="Tu nombre"
                     />
                   </div>
@@ -214,7 +214,7 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                       placeholder="+34 600 000 000"
                     />
                   </div>
@@ -230,7 +230,7 @@ const VentaEmpresasHeroWithForm = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                     placeholder="tu@email.com"
                   />
                 </div>
@@ -246,7 +246,7 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.company}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                       placeholder="Nombre empresa"
                     />
                   </div>
@@ -259,7 +259,7 @@ const VentaEmpresasHeroWithForm = () => {
                       name="cif"
                       value={formData.cif}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground uppercase"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground uppercase"
                       placeholder="B12345678"
                     />
                   </div>
@@ -277,7 +277,7 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.revenue}
                       onChange={handleNumericChange}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                       placeholder="2.500.000"
                     />
                   </div>
@@ -291,7 +291,7 @@ const VentaEmpresasHeroWithForm = () => {
                       name="ebitda"
                       value={formData.ebitda}
                       onChange={handleNumericChange}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                       placeholder="500.000"
                     />
                   </div>
@@ -305,7 +305,7 @@ const VentaEmpresasHeroWithForm = () => {
                     name="urgency"
                     value={formData.urgency}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent bg-background text-foreground"
                   >
                     <option value="low">Solo explorando opciones</option>
                     <option value="medium">Vendería en 6-12 meses</option>
@@ -319,7 +319,7 @@ const VentaEmpresasHeroWithForm = () => {
                   variant="primary"
                   size="lg"
                   text={isSubmitting ? 'Enviando...' : 'Solicitar consulta gratuita'}
-                  className="w-full text-lg py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-xl"
+                  className="w-full text-lg py-4 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 shadow-xl"
                   disabled={isSubmitting}
                 />
 
@@ -332,15 +332,15 @@ const VentaEmpresasHeroWithForm = () => {
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle className="h-4 w-4 text-slate-700" />
                     <span>Datos seguros</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle className="h-4 w-4 text-slate-700" />
                     <span>Sin spam</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle className="h-4 w-4 text-slate-700" />
                     <span>Respuesta 48h</span>
                   </div>
                 </div>
@@ -351,7 +351,7 @@ const VentaEmpresasHeroWithForm = () => {
             <div className="absolute -top-3 -right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse shadow-lg">
               SIN COSTE
             </div>
-            <div className="absolute -bottom-3 -left-3 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+            <div className="absolute -bottom-3 -left-3 bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
               RESPUESTA 48H
             </div>
           </div>
@@ -361,7 +361,7 @@ const VentaEmpresasHeroWithForm = () => {
         <div className="lg:hidden mt-8 flex justify-center">
           <a 
             href="tel:+34695717490"
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-colors"
           >
             <Phone className="h-5 w-5" />
             Llamar: 695 717 490
