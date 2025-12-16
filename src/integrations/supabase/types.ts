@@ -1711,6 +1711,7 @@ export type Database = {
           display_locations: string[] | null
           ebitda_amount: number | null
           ebitda_multiple: number | null
+          expected_market_text: string | null
           featured_image_url: string | null
           growth_percentage: number | null
           highlights: string[] | null
@@ -1719,6 +1720,7 @@ export type Database = {
           is_deleted: boolean | null
           is_featured: boolean | null
           logo_url: string | null
+          project_status: string | null
           revenue_amount: number | null
           sector: string
           short_description: string | null
@@ -1744,6 +1746,7 @@ export type Database = {
           display_locations?: string[] | null
           ebitda_amount?: number | null
           ebitda_multiple?: number | null
+          expected_market_text?: string | null
           featured_image_url?: string | null
           growth_percentage?: number | null
           highlights?: string[] | null
@@ -1752,6 +1755,7 @@ export type Database = {
           is_deleted?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
+          project_status?: string | null
           revenue_amount?: number | null
           sector: string
           short_description?: string | null
@@ -1777,6 +1781,7 @@ export type Database = {
           display_locations?: string[] | null
           ebitda_amount?: number | null
           ebitda_multiple?: number | null
+          expected_market_text?: string | null
           featured_image_url?: string | null
           growth_percentage?: number | null
           highlights?: string[] | null
@@ -1785,6 +1790,7 @@ export type Database = {
           is_deleted?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
+          project_status?: string | null
           revenue_amount?: number | null
           sector?: string
           short_description?: string | null

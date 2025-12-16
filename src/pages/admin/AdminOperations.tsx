@@ -66,6 +66,8 @@ interface Operation {
   updated_at?: string;
   assigned_to?: string | null;
   assigned_at?: string | null;
+  project_status?: string;
+  expected_market_text?: string;
 }
 
 const AdminOperations = () => {
@@ -307,6 +309,10 @@ const AdminOperations = () => {
         short_description: editingOperation.short_description?.trim() || null,
         deal_type: editingOperation.deal_type || 'sale',
         status: editingOperation.status || 'available',
+        project_status: editingOperation.project_status || 'in_market',
+        expected_market_text: editingOperation.project_status === 'in_progress' 
+          ? editingOperation.expected_market_text?.trim() || null 
+          : null,
       };
 
       let result;
@@ -779,6 +785,40 @@ const AdminOperations = () => {
           </div>
         </div>
       ),
+    },
+    {
+      key: 'project_status',
+      title: 'ESTADO PROYECTO',
+      width: 180,
+      render: (operation: Operation) => {
+        const getProjectStatusBadge = (status?: string) => {
+          switch (status) {
+            case 'negotiating':
+              return { className: 'bg-purple-100 text-purple-700 hover:bg-purple-100', text: 'En negociaciones' };
+            case 'in_market':
+              return { className: 'bg-green-100 text-green-700 hover:bg-green-100', text: 'En el mercado' };
+            case 'in_progress':
+              return { className: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100', text: 'In progress' };
+            default:
+              return { className: 'bg-gray-100 text-gray-600 hover:bg-gray-100', text: 'Sin estado' };
+          }
+        };
+        
+        const badgeInfo = getProjectStatusBadge(operation.project_status);
+        
+        return (
+          <div className="space-y-1">
+            <Badge className={badgeInfo.className}>
+              {badgeInfo.text}
+            </Badge>
+            {operation.project_status === 'in_progress' && operation.expected_market_text && (
+              <div className="text-xs text-gray-500 mt-1">
+                📅 Entrada: {operation.expected_market_text}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'date_info',
@@ -1297,6 +1337,47 @@ const AdminOperations = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                {/* Estado del Proyecto */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="project_status" className="text-xs text-gray-600">Estado del Proyecto</Label>
+                    <Select
+                      value={editingOperation.project_status || 'in_market'}
+                      onValueChange={(value) => setEditingOperation({
+                        ...editingOperation,
+                        project_status: value,
+                        expected_market_text: value === 'in_progress' 
+                          ? editingOperation.expected_market_text 
+                          : undefined
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="in_market">En el mercado</SelectItem>
+                        <SelectItem value="negotiating">En negociaciones</SelectItem>
+                        <SelectItem value="in_progress">In progress</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {editingOperation.project_status === 'in_progress' && (
+                    <div>
+                      <Label htmlFor="expected_market_text" className="text-xs text-gray-600">Entrada estimada a mercado</Label>
+                      <Input
+                        id="expected_market_text"
+                        value={editingOperation.expected_market_text || ''}
+                        onChange={(e) => setEditingOperation({
+                          ...editingOperation,
+                          expected_market_text: e.target.value
+                        })}
+                        placeholder="Ej: Q1 2026, H2 2025, Enero 2026"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
