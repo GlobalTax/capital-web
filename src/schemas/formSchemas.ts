@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validateCIF } from '@/utils/valuationValidation';
 
 // Newsletter Schema
 export const newsletterSchema = z.object({
@@ -103,6 +104,13 @@ export const ventaEmpresasSchema = z.object({
     .trim()
     .min(2, 'El nombre de la empresa debe tener al menos 2 caracteres')
     .max(100, 'El nombre de la empresa es demasiado largo'),
+  cif: z
+    .string()
+    .trim()
+    .min(1, 'El CIF es requerido')
+    .refine((val) => validateCIF(val), {
+      message: 'El CIF no es válido (ej: B12345678)'
+    }),
   revenue: z
     .string()
     .min(1, 'La facturación es requerida'),

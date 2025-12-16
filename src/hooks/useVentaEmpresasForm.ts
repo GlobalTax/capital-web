@@ -31,6 +31,7 @@ export const useVentaEmpresasForm = () => {
         email: validatedData.email.trim(),
         phone: validatedData.phone.trim(),
         company: validatedData.company.trim(),
+        cif: validatedData.cif.trim().toUpperCase(),
         message: `Facturación: ${formData.revenue || 'No especificado'}\nUrgencia: ${formData.urgency || 'No especificado'}`,
         page_origin: 'lp-venta-empresas',
         how_did_you_hear: 'Landing Venta Empresas',
