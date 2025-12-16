@@ -244,7 +244,6 @@ const VentaEmpresasConversionCTA = () => {
                   <input
                     type="text"
                     name="cif"
-                    required
                     value={formData.cif}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 uppercase"
