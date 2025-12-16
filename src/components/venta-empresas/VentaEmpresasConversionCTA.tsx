@@ -278,12 +278,10 @@ const VentaEmpresasConversionCTA = () => {
                   type="submit"
                   variant="primary"
                   size="lg"
+                  text={isSubmitting ? 'Enviando...' : 'Enviar'}
                   className="w-full text-lg py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-xl"
                   disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Enviando...' : '🚀 ¡QUIERO VENDER MI EMPRESA AHORA!'}
-                  {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
-                </InteractiveHoverButton>
+                />
 
                 <div className="text-center">
                   <p className="text-xs text-gray-500 leading-relaxed">
