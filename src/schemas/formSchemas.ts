@@ -109,7 +109,7 @@ export const ventaEmpresasSchema = z.object({
     .trim()
     .min(1, 'El CIF es requerido')
     .refine((val) => validateCIF(val), {
-      message: 'El CIF no es válido (ej: B12345678)'
+      message: 'El CIF no es válido. Formato: letra + 7 dígitos + control (ej: B12345674)'
     }),
   revenue: z
     .string()

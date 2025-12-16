@@ -2,8 +2,24 @@
 import { validateEmail, validateCompanyName, validateContactName, validateSpanishPhone } from '@/utils/validationUtils';
 import { CompanyData, ValidationState } from '@/types/valuation';
 
-// Función para validar CIF español
+// Función para validar CIF español (validación de formato, no checksum)
+// Para formularios de contacto, validamos solo el formato básico
+// para no bloquear leads por errores de tipeo en el dígito de control
 export const validateCIF = (cif: string): boolean => {
+  if (!cif) return false;
+  
+  const normalizedCif = cif.trim().toUpperCase();
+  
+  // Validar longitud
+  if (normalizedCif.length !== 9) return false;
+  
+  // Validar formato: letra inicial válida + 7 dígitos + dígito/letra de control
+  const cifFormatRegex = /^[ABCDEFGHJKLMNPQRSUVW]\d{7}[0-9A-J]$/;
+  return cifFormatRegex.test(normalizedCif);
+};
+
+// Función para validación estricta de CIF con checksum (uso interno/profesional)
+export const validateCIFStrict = (cif: string): boolean => {
   if (!cif || cif.length !== 9) return false;
   
   const cifRegex = /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/;
