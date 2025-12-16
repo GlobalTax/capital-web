@@ -253,22 +253,20 @@ const VentaEmpresasConversionCTA = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Facturación anual aproximada *
+                    Facturación anual (€) *
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="revenue"
                     required
                     value={formData.revenue}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  >
-                    <option value="">Selecciona un rango</option>
-                    <option value="500k-1m">€500K - €1M</option>
-                    <option value="1m-3m">€1M - €3M</option>
-                    <option value="3m-10m">€3M - €10M</option>
-                    <option value="10m-25m">€10M - €25M</option>
-                    <option value="25m+">€25M+</option>
-                  </select>
+                    placeholder="Ej: 2.500.000"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Ventas anuales de tu empresa
+                  </p>
                 </div>
 
                 <div>
@@ -282,7 +280,7 @@ const VentaEmpresasConversionCTA = () => {
                     value={formData.ebitda}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                    placeholder="Ej: 500000"
+                    placeholder="Ej: 500.000"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Beneficio antes de intereses, impuestos, depreciación y amortización

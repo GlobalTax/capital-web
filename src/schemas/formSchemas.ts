@@ -118,7 +118,15 @@ export const ventaEmpresasSchema = z.object({
     .transform(val => val || ''), // Visualmente obligatorio, funcionalmente opcional
   revenue: z
     .string()
-    .min(1, 'La facturación es requerida'),
+    .trim()
+    .min(1, 'La facturación es requerida')
+    .refine((val) => {
+      const normalized = normalizeEbitda(val);
+      const num = parseFloat(normalized);
+      return !isNaN(num) && num > 0;
+    }, {
+      message: 'La facturación debe ser un número válido (ej: 2.500.000)'
+    }),
   ebitda: z
     .string()
     .trim()
@@ -129,7 +137,7 @@ export const ventaEmpresasSchema = z.object({
       const num = parseFloat(normalized);
       return !isNaN(num) && num >= 0;
     }, {
-      message: 'El EBITDA debe ser un número válido (ej: 500000)'
+      message: 'El EBITDA debe ser un número válido (ej: 500.000)'
     }),
   urgency: z
     .string()
