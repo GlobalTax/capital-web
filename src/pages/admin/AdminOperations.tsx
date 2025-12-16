@@ -19,6 +19,8 @@ import { OperationsStatsCards } from '@/components/operations/OperationsStatsCar
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
 import { BulkActionsToolbar } from '@/components/operations/BulkActionsToolbar';
+import { BulkProjectStatusModal } from '@/components/operations/BulkProjectStatusModal';
+import { BulkAssignModal } from '@/components/operations/BulkAssignModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { OperationsTableMobile } from '@/components/operations/OperationsTableMobile';
 import OperationDetailsModalEnhanced from '@/components/operations/OperationDetailsModalEnhanced';
@@ -41,6 +43,7 @@ import SectorSelect from '@/components/admin/shared/SectorSelect';
 import { SellerGuideDialog } from '@/components/operations/SellerGuideDialog';
 import { AdvancedSearchPanel } from '@/features/operations-management/components/search';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
+import * as XLSX from 'xlsx';
 
 interface Operation {
   id: string;
@@ -87,6 +90,9 @@ const AdminOperations = () => {
   const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
   const [showSellerGuide, setShowSellerGuide] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showProjectStatusModal, setShowProjectStatusModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const { toast } = useToast();
   const { users: adminUsers } = useAdminUsers();
 
@@ -174,8 +180,19 @@ const AdminOperations = () => {
       // Display location filter
       const matchesLocation = !filters.displayLocation || operation.display_locations?.includes(filters.displayLocation);
       
+      // Project status filter
+      const matchesProjectStatus = !filters.projectStatus || filters.projectStatus === 'all' || operation.project_status === filters.projectStatus;
+      
+      // Assigned to filter
+      const matchesAssignedTo = !filters.assignedTo || filters.assignedTo === 'all' || 
+        (filters.assignedTo === 'unassigned' ? !operation.assigned_to : operation.assigned_to === filters.assignedTo);
+      
+      // Featured filter
+      const matchesFeatured = filters.isFeatured === undefined || operation.is_featured === filters.isFeatured;
+      
       return matchesSearch && matchesStatus && matchesDealType && matchesYearFrom && 
-             matchesYearTo && matchesSector && matchesValuationMin && matchesValuationMax && matchesLocation;
+             matchesYearTo && matchesSector && matchesValuationMin && matchesValuationMax && 
+             matchesLocation && matchesProjectStatus && matchesAssignedTo && matchesFeatured;
     });
   }, [operations, filters]);
 
@@ -696,6 +713,122 @@ const AdminOperations = () => {
     });
   };
 
+  // Bulk change project status
+  const handleBulkChangeProjectStatus = async (status: string, expectedMarketText?: string) => {
+    setIsBulkUpdating(true);
+    try {
+      const ids = Array.from(selectedOperations);
+      const { error } = await supabase
+        .from('company_operations')
+        .update({
+          project_status: status,
+          expected_market_text: status === 'in_progress' ? expectedMarketText || null : null,
+        })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Estado del proyecto actualizado',
+        description: `Se actualizaron ${ids.length} operaciones`,
+      });
+
+      setShowProjectStatusModal(false);
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error updating project status:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el estado del proyecto',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  // Bulk assign operations
+  const handleBulkAssign = async (userId: string | null) => {
+    setIsBulkUpdating(true);
+    try {
+      const ids = Array.from(selectedOperations);
+      const { data: authUser } = await supabase.auth.getUser();
+
+      const { error } = await supabase
+        .from('company_operations')
+        .update({
+          assigned_to: userId,
+          assigned_at: userId ? new Date().toISOString() : null,
+          assigned_by: userId ? authUser.user?.id : null,
+        })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      toast({
+        title: userId ? 'Operaciones asignadas' : 'Asignaciones eliminadas',
+        description: `Se actualizaron ${ids.length} operaciones`,
+      });
+
+      setShowAssignModal(false);
+      setSelectedOperations(new Set());
+      await fetchOperations();
+    } catch (error) {
+      console.error('Error assigning operations:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron asignar las operaciones',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  // Export to Excel
+  const handleBulkExportExcel = () => {
+    const ids = Array.from(selectedOperations);
+    const selected = operations.filter(op => ids.includes(op.id));
+    
+    const getProjectStatusText = (status?: string) => {
+      switch (status) {
+        case 'negotiating': return 'En negociaciones';
+        case 'in_market': return 'En el mercado';
+        case 'in_progress': return 'In progress';
+        default: return 'Sin estado';
+      }
+    };
+
+    const data = selected.map(op => ({
+      'ID': op.id,
+      'Empresa': op.company_name,
+      'Sector': op.sector,
+      'Subsector': op.subsector || '',
+      'Año': op.year,
+      'Valoración': op.valuation_amount || '',
+      'Facturación': op.revenue_amount || '',
+      'EBITDA': op.ebitda_amount || '',
+      'Estado': getStatusText(op.status),
+      'Estado Proyecto': getProjectStatusText(op.project_status),
+      'Entrada Mercado': op.expected_market_text || '',
+      'Tipo': getDealTypeText(op.deal_type),
+      'Destacada': op.is_featured ? 'Sí' : 'No',
+      'Activa': op.is_active ? 'Sí' : 'No',
+      'Creada': op.created_at ? formatDate(op.created_at) : '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Operaciones');
+    XLSX.writeFile(wb, `operaciones_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: 'Exportación Excel completada',
+      description: `Se exportaron ${ids.length} operaciones a Excel`,
+    });
+  };
+
   // Table columns configuration
   const tableColumns = [
     {
@@ -1054,6 +1187,7 @@ const AdminOperations = () => {
         onFiltersChange={setFilters}
         totalOperations={tabFilteredOperations.length}
         availableSectors={availableSectors}
+        adminUsers={adminUsers}
       />
 
       {/* Bulk Actions Toolbar */}
@@ -1066,8 +1200,11 @@ const AdminOperations = () => {
           onFeature={handleBulkFeature}
           onUnfeature={handleBulkUnfeature}
           onExport={handleBulkExport}
+          onExportExcel={handleBulkExportExcel}
           onChangeDisplayLocations={handleBulkChangeDisplayLocations}
           onDelete={handleBulkDelete}
+          onChangeProjectStatus={() => setShowProjectStatusModal(true)}
+          onBulkAssign={() => setShowAssignModal(true)}
         />
       )}
 
@@ -1587,6 +1724,25 @@ const AdminOperations = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Project Status Modal */}
+      <BulkProjectStatusModal
+        isOpen={showProjectStatusModal}
+        onClose={() => setShowProjectStatusModal(false)}
+        selectedCount={selectedOperations.size}
+        onConfirm={handleBulkChangeProjectStatus}
+        isLoading={isBulkUpdating}
+      />
+
+      {/* Bulk Assign Modal */}
+      <BulkAssignModal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        selectedCount={selectedOperations.size}
+        users={adminUsers}
+        onConfirm={handleBulkAssign}
+        isLoading={isBulkUpdating}
+      />
     </div>
   );
 };

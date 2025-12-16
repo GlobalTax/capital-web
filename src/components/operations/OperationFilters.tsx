@@ -17,6 +17,18 @@ export interface OperationFiltersType {
   valuationMin?: number;
   valuationMax?: number;
   displayLocation?: string;
+  projectStatus?: string;
+  assignedTo?: string;
+  isFeatured?: boolean;
+}
+
+interface AdminUser {
+  id: string;
+  user_id: string;
+  full_name?: string | null;
+  email?: string | null;
+  role: string;
+  is_active?: boolean | null;
 }
 
 interface OperationFiltersProps {
@@ -24,6 +36,7 @@ interface OperationFiltersProps {
   onFiltersChange: (filters: OperationFiltersType) => void;
   totalOperations: number;
   availableSectors: string[];
+  adminUsers?: AdminUser[];
 }
 
 export const OperationFilters: React.FC<OperationFiltersProps> = ({
@@ -31,6 +44,7 @@ export const OperationFilters: React.FC<OperationFiltersProps> = ({
   onFiltersChange,
   totalOperations,
   availableSectors,
+  adminUsers = [],
 }) => {
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
@@ -56,17 +70,35 @@ export const OperationFilters: React.FC<OperationFiltersProps> = ({
       filters.sector ||
       filters.valuationMin ||
       filters.valuationMax ||
-      filters.displayLocation;
+      filters.displayLocation ||
+      (filters.projectStatus && filters.projectStatus !== 'all') ||
+      (filters.assignedTo && filters.assignedTo !== 'all') ||
+      filters.isFeatured !== undefined;
   };
 
   const getActiveFilterChips = () => {
-    const chips = [];
+    const chips: { label: string; key: string }[] = [];
     if (filters.sector) chips.push({ label: `Sector: ${filters.sector}`, key: 'sector' });
     if (filters.yearFrom) chips.push({ label: `Desde: ${filters.yearFrom}`, key: 'yearFrom' });
     if (filters.yearTo) chips.push({ label: `Hasta: ${filters.yearTo}`, key: 'yearTo' });
     if (filters.valuationMin) chips.push({ label: `Min: €${filters.valuationMin}k`, key: 'valuationMin' });
     if (filters.valuationMax) chips.push({ label: `Max: €${filters.valuationMax}k`, key: 'valuationMax' });
     if (filters.displayLocation) chips.push({ label: `Ubicación: ${filters.displayLocation}`, key: 'displayLocation' });
+    if (filters.projectStatus && filters.projectStatus !== 'all') {
+      const statusLabels: Record<string, string> = {
+        'negotiating': 'En negociaciones',
+        'in_market': 'En el mercado',
+        'in_progress': 'In progress'
+      };
+      chips.push({ label: `Estado Proy: ${statusLabels[filters.projectStatus] || filters.projectStatus}`, key: 'projectStatus' });
+    }
+    if (filters.assignedTo && filters.assignedTo !== 'all') {
+      const user = adminUsers.find(u => u.user_id === filters.assignedTo);
+      chips.push({ label: `Asignado: ${user?.full_name || 'Sin asignar'}`, key: 'assignedTo' });
+    }
+    if (filters.isFeatured !== undefined) {
+      chips.push({ label: filters.isFeatured ? 'Destacados' : 'No destacados', key: 'isFeatured' });
+    }
     return chips;
   };
 
@@ -147,6 +179,65 @@ export const OperationFilters: React.FC<OperationFiltersProps> = ({
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Project Status Filter */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Estado Proyecto</label>
+                  <Select
+                    value={filters.projectStatus || 'all'}
+                    onValueChange={(value) => handleFilterChange('projectStatus', value === 'all' ? undefined : value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="in_market">En el mercado</SelectItem>
+                      <SelectItem value="negotiating">En negociaciones</SelectItem>
+                      <SelectItem value="in_progress">In progress</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Assigned To Filter */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Asignado a</label>
+                  <Select
+                    value={filters.assignedTo || 'all'}
+                    onValueChange={(value) => handleFilterChange('assignedTo', value === 'all' ? undefined : value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="unassigned">Sin asignar</SelectItem>
+                      {adminUsers.filter(u => u.is_active).map(user => (
+                        <SelectItem key={user.user_id} value={user.user_id}>
+                          {user.full_name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Featured Filter */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Destacados</label>
+                  <Select
+                    value={filters.isFeatured === undefined ? 'all' : filters.isFeatured ? 'yes' : 'no'}
+                    onValueChange={(value) => handleFilterChange('isFeatured', value === 'all' ? undefined : value === 'yes')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="yes">Solo destacados</SelectItem>
+                      <SelectItem value="no">No destacados</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Year Range */}
                 <div>
                   <label className="text-sm font-medium mb-2 block">Año Desde</label>
