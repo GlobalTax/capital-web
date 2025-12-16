@@ -30,13 +30,8 @@ const VentaEmpresasFAQLanding = () => {
     },
     {
       question: "¿Qué tamaño de empresa necesito para trabajar con vosotros?",
-      answer: "Trabajamos con empresas desde €500K hasta €50M+ de facturación. Si tu empresa es rentable y tiene potencial de crecimiento, ¡podemos conseguirte un precio excelente!",
-      highlight: "€500K a €50M+"
-    },
-    {
-      question: "¿Qué garantías me dais de que vais a vender mi empresa?",
-      answer: "Tenemos un 98,7% de tasa de éxito en nuestras operaciones. Si aceptamos tu empresa es porque estamos seguros de poder venderla al mejor precio del mercado. Nuestro equipo trabaja con máxima dedicación en cada operación.",
-      highlight: "98,7% éxito"
+      answer: "Trabajamos con empresas a partir de 1M€ de facturación. El tamaño mínimo varía según el sector, oscilando entre 1M€ y 3M€. Si tu empresa es rentable y tiene potencial de crecimiento, ¡podemos conseguirte un precio excelente!",
+      highlight: "1M€ - 3M€ según sector"
     },
     {
       question: "¿Puedo seguir dirigiendo mi empresa durante el proceso?",

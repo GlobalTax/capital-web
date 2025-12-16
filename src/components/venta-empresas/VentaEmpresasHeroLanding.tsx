@@ -188,7 +188,13 @@ const VentaEmpresasHeroLanding = () => {
                 </div>
 
                 {/* CTA Button Premium */}
-                <button className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-[2px] transition-all hover:scale-[1.02] hover:shadow-lg">
+                <button 
+                  onClick={() => {
+                    const contactSection = document.getElementById('contacto');
+                    contactSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-[2px] transition-all hover:scale-[1.02] hover:shadow-lg"
+                >
                   <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white transition-all">
                     <Calculator className="h-5 w-5" />
                     <span className="font-semibold">Conseguir Mejor Precio</span>
