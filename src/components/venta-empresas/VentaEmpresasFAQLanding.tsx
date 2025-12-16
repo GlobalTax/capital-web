@@ -14,29 +14,24 @@ const VentaEmpresasFAQLanding = () => {
 
   const faqs = [
     {
-      question: "¿Realmente la consulta inicial es GRATUITA y sin compromiso?",
-      answer: "¡SÍ, completamente GRATUITA! La consulta inicial es 100% gratuita. Analizamos tu caso, te explicamos nuestro proceso y cómo conseguirte el mejor precio. Sin letra pequeña, sin compromisos. Solo cobramos cuando vendemos tu empresa exitosamente.",
+      question: "¿Realmente la consulta inicial es GRATUITA?",
+      answer: "Sí, completamente gratuita. Analizamos tu caso y te explicamos el proceso. Solo cobramos cuando vendemos tu empresa exitosamente.",
       highlight: "100% Gratuita"
     },
     {
-      question: "¿Cuánto tiempo tarda todo el proceso de venta?",
-      answer: "El proceso completo dura entre 6 y 12 meses. La valoración la tienes en 48h, y desde ahí trabajamos sin descanso para conseguir el mejor comprador al mejor precio en el menor tiempo posible.",
+      question: "¿Cuánto tiempo tarda el proceso?",
+      answer: "El proceso completo dura entre 6 y 12 meses. La valoración inicial la tienes en 48h.",
       highlight: "6-12 meses"
     },
     {
-      question: "¿Mi información será completamente confidencial?",
-      answer: "¡ABSOLUTAMENTE SÍ! Tu privacidad es sagrada para nosotros. Firmamos acuerdos de confidencialidad estrictos y solo compartimos información con compradores previamente cualificados y tras tu autorización expresa.",
+      question: "¿Es confidencial?",
+      answer: "Absolutamente. Firmamos acuerdos de confidencialidad y solo compartimos información con compradores cualificados tras tu autorización.",
       highlight: "100% Confidencial"
     },
     {
-      question: "¿Qué tamaño de empresa necesito para trabajar con vosotros?",
-      answer: "Trabajamos con empresas a partir de 1M€ de facturación. El tamaño mínimo varía según el sector, oscilando entre 1M€ y 3M€. Si tu empresa es rentable y tiene potencial de crecimiento, ¡podemos conseguirte un precio excelente!",
-      highlight: "1M€ - 3M€ según sector"
-    },
-    {
-      question: "¿Puedo seguir dirigiendo mi empresa durante el proceso?",
-      answer: "¡Por supuesto! Tú sigues siendo el CEO y tomando todas las decisiones. Nosotros trabajamos en segundo plano buscando compradores y preparando la operación sin interrumpir tu día a día.",
-      highlight: "Tú sigues al mando"
+      question: "¿Qué tamaño de empresa necesito?",
+      answer: "Trabajamos con empresas a partir de 1M€ de facturación. El mínimo varía entre 1M€ y 3M€ según el sector.",
+      highlight: "Desde 1M€"
     }
   ];
 
