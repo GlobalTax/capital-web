@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Sparkles } from 'lucide-react';
+import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from '@/hooks/useDebounce';
 import { EnhancedOperationsTable } from './enhanced/EnhancedOperationsTable';
+
+// Constantes para límites
+const MAX_ITEMS_ALL = 500;
 
 interface Operation {
   id: string;
@@ -55,11 +59,19 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [offset, setOffset] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   
+  // Nuevo: Estados para modo "Ver todas"
+  const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
+  const [isLoadingAll, setIsLoadingAll] = useState(false);
+  
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchOperations = async () => {
     try {
       setIsLoading(true);
+      
+      // Determinar límite según modo de visualización
+      const fetchLimit = viewMode === 'all' ? MAX_ITEMS_ALL : limit;
+      const fetchOffset = viewMode === 'all' ? 0 : offset;
       
       // Use the new list-operations Edge Function
       const { data, error } = await supabase.functions.invoke('list-operations', {
@@ -70,8 +82,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
           companySize: selectedCompanySize || undefined,
           dealType: selectedDealType || undefined,
           sortBy,
-          limit,
-          offset,
+          limit: fetchLimit,
+          offset: fetchOffset,
           displayLocation
         }
       });
@@ -132,7 +144,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
   useEffect(() => {
     fetchOperations();
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, sortBy, offset, displayLocation]);
+    setIsLoadingAll(false);
+  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, sortBy, offset, displayLocation, viewMode]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -170,6 +183,18 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setSelectedLocation('');
     setSelectedCompanySize('');
     setSelectedDealType('');
+    setOffset(0);
+  };
+
+  // Handlers para "Ver todas"
+  const handleViewAll = () => {
+    setIsLoadingAll(true);
+    setViewMode('all');
+    setOffset(0);
+  };
+
+  const handleReturnToPaginated = () => {
+    setViewMode('paginated');
     setOffset(0);
   };
 
@@ -357,30 +382,95 @@ const OperationsList: React.FC<OperationsListProps> = ({
         }}
       />
 
-      {/* Pagination */}
-      {totalCount > limit && (
-        <div className="flex items-center justify-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOffset(Math.max(0, offset - limit))}
-            disabled={offset === 0 || isLoading}
-          >
-            Anterior
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Página {Math.floor(offset / limit) + 1} de {Math.ceil(totalCount / limit)}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOffset(offset + limit)}
-            disabled={offset + limit >= totalCount || isLoading}
-          >
-            Siguiente
-          </Button>
-        </div>
+      {/* Aviso si hay más de MAX_ITEMS_ALL */}
+      {viewMode === 'all' && totalCount > MAX_ITEMS_ALL && (
+        <Alert className="border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-700">
+            Se muestran las primeras {MAX_ITEMS_ALL} operaciones de {totalCount} totales.
+            Usa los filtros para refinar tu búsqueda.
+          </AlertDescription>
+        </Alert>
       )}
+
+      {/* Pagination */}
+      <div className="flex items-center justify-center gap-2 flex-wrap">
+        {viewMode === 'paginated' ? (
+          <>
+            {/* Modo paginado normal */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+              disabled={offset === 0 || isLoading}
+            >
+              Anterior
+            </Button>
+            
+            <span className="text-sm text-muted-foreground px-2">
+              Página {Math.floor(offset / limit) + 1} de {Math.max(1, Math.ceil(totalCount / limit))}
+            </span>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOffset(offset + limit)}
+              disabled={offset + limit >= totalCount || isLoading}
+            >
+              Siguiente
+            </Button>
+            
+            {/* Separador y botón Ver todas */}
+            {totalCount > limit && (
+              <>
+                <span className="text-muted-foreground mx-2">|</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleViewAll}
+                  disabled={isLoading || isLoadingAll}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  {isLoadingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Cargando...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver todas ({totalCount > MAX_ITEMS_ALL ? `${MAX_ITEMS_ALL}+` : totalCount})
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Modo "Ver todas" */}
+            <Badge variant="secondary" className="px-3 py-1">
+              Mostrando {operations.length} de {totalCount} operaciones
+            </Badge>
+            
+            {totalCount > MAX_ITEMS_ALL && (
+              <Badge variant="outline" className="text-amber-600 border-amber-300">
+                ⚠️ Limitado a {MAX_ITEMS_ALL}
+              </Badge>
+            )}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReturnToPaginated}
+              className="ml-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Volver a paginación
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 };
