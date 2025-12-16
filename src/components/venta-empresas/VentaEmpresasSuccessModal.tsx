@@ -58,7 +58,7 @@ const VentaEmpresasSuccessModal: React.FC<VentaEmpresasSuccessModalProps> = ({ i
               <Button 
                 variant="outline" 
                 className="flex-1"
-                onClick={() => window.open('https://www.linkedin.com/company/capittal', '_blank')}
+                onClick={() => window.open('https://www.linkedin.com/company/104311808', '_blank')}
               >
                 <Linkedin className="h-4 w-4 mr-2" />
                 Síguenos
@@ -66,7 +66,7 @@ const VentaEmpresasSuccessModal: React.FC<VentaEmpresasSuccessModalProps> = ({ i
               <Button 
                 variant="outline" 
                 className="flex-1"
-                onClick={() => window.open('/recursos', '_blank')}
+                onClick={() => window.open('https://capittal.es/recursos/blog', '_blank')}
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Recursos

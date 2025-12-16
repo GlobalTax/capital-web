@@ -20,7 +20,7 @@ export const getOrganizationSchema = () => ({
     "availableLanguage": ["Spanish", "Catalan", "English"]
   },
   "sameAs": [
-    "https://www.linkedin.com/company/capittal"
+    "https://www.linkedin.com/company/104311808"
   ]
 });
 
