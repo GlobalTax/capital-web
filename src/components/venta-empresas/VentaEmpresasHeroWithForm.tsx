@@ -100,10 +100,9 @@ const VentaEmpresasHeroWithForm = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#0f0f0f] text-white relative overflow-hidden">
+    <section className="min-h-screen bg-white text-gray-900 relative overflow-hidden">
       {/* Background subtle pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0f0f0f] via-[#151515] to-[#0f0f0f]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50"></div>
       
       <div className="container mx-auto px-4 py-8 lg:py-16 relative">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
@@ -111,18 +110,18 @@ const VentaEmpresasHeroWithForm = () => {
           {/* Left Content - Copy */}
           <div className="space-y-6 lg:space-y-8 pt-4 lg:pt-8">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-2">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-              <span className="text-emerald-400 text-sm font-medium">+200 operaciones exitosas</span>
+            <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-4 py-2">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+              <span className="text-emerald-600 text-sm font-medium">+200 operaciones exitosas</span>
             </div>
 
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-gray-900">
               Vende tu empresa al
-              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent"> máximo precio</span>
+              <span className="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent"> máximo precio</span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-gray-300 leading-relaxed max-w-xl">
-              Accede a nuestra <strong className="text-white">red exclusiva de compradores cualificados</strong> y 
+            <p className="text-lg lg:text-xl text-gray-600 leading-relaxed max-w-xl">
+              Accede a nuestra <strong className="text-gray-900">red exclusiva de compradores cualificados</strong> y 
               maximiza el valor de tu empresa con asesoramiento profesional.
             </p>
 
@@ -134,37 +133,37 @@ const VentaEmpresasHeroWithForm = () => {
                 { icon: Users, text: "+500 compradores" },
                 { icon: Clock, text: "Respuesta en 48h" }
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white/5 rounded-lg px-4 py-3">
-                  <item.icon className="h-5 w-5 text-emerald-400" />
-                  <span className="text-gray-200">{item.text}</span>
+                <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                  <item.icon className="h-5 w-5 text-emerald-600" />
+                  <span className="text-gray-700">{item.text}</span>
                 </div>
               ))}
             </div>
 
             {/* Social Proof - Desktop only */}
-            <div className="hidden lg:block bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+            <div className="hidden lg:block bg-gray-50 rounded-xl p-6 border border-gray-200">
               <div className="flex items-center gap-1 mb-3">
                 {[1,2,3,4,5].map(i => (
-                  <span key={i} className="text-yellow-400">★</span>
+                  <span key={i} className="text-yellow-500">★</span>
                 ))}
               </div>
-              <p className="italic text-gray-300">
+              <p className="italic text-gray-600">
                 "Capittal vendió mi empresa por €1.8M cuando yo esperaba €1.3M máximo. 
                 ¡Resultados espectaculares!"
               </p>
-              <p className="text-sm text-emerald-400 mt-3">— Carlos Mendez, Ex-CEO TechFlow</p>
+              <p className="text-sm text-emerald-600 mt-3 font-medium">— Carlos Mendez, Ex-CEO TechFlow</p>
             </div>
 
             {/* Phone CTA - Desktop only */}
             <div className="hidden lg:flex items-center gap-4">
               <a 
                 href="tel:+34695717490"
-                className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors"
+                className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
               >
                 <Phone className="h-5 w-5" />
                 695 717 490
               </a>
-              <span className="text-gray-400 text-sm flex items-center gap-2">
+              <span className="text-gray-500 text-sm flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 L-V: 9:00-19:00
               </span>
@@ -362,7 +361,7 @@ const VentaEmpresasHeroWithForm = () => {
         <div className="lg:hidden mt-8 flex justify-center">
           <a 
             href="tel:+34695717490"
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
           >
             <Phone className="h-5 w-5" />
             Llamar: 695 717 490
