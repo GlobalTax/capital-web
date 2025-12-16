@@ -6287,7 +6287,7 @@ export type Database = {
       }
       rate_limits: {
         Row: {
-          action: string
+          action: string | null
           category: string | null
           count: number
           created_at: string
@@ -6298,7 +6298,7 @@ export type Database = {
           window_start: string
         }
         Insert: {
-          action: string
+          action?: string | null
           category?: string | null
           count?: number
           created_at?: string
@@ -6309,7 +6309,7 @@ export type Database = {
           window_start?: string
         }
         Update: {
-          action?: string
+          action?: string | null
           category?: string | null
           count?: number
           created_at?: string
