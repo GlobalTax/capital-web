@@ -24,6 +24,55 @@ interface FormNotificationRequest {
 // Reducido a 3 admins principales para respetar rate limit de Resend (2 emails/segundo)
 const ADMIN_EMAILS = ['lluis@capittal.es', 'samuel@capittal.es', 'pau@capittal.es'];
 
+// Helper functions for formatting
+const getPageOriginLabel = (pageOrigin: string | undefined): string => {
+  const labels: Record<string, string> = {
+    'venta-empresas': 'Venta Empresas',
+    'lp/venta-empresas': 'LP Venta Empresas',
+    'compra-empresas': 'Compra Empresas',
+    'lp/compra-empresas': 'LP Compra Empresas',
+    'contact_page': 'Página de Contacto',
+    'contacto': 'Página de Contacto',
+    'calculadora': 'Calculadora',
+    'lp/calculadora': 'LP Calculadora',
+    'operation_inquiry': 'Consulta de Operación',
+  };
+  return labels[pageOrigin || ''] || pageOrigin || '';
+};
+
+const formatRevenueRange = (range: string | undefined): string => {
+  const labels: Record<string, string> = {
+    'menos-500k': 'Menos de 500.000€',
+    '500k-1m': '500.000€ - 1M€',
+    '1m-5m': '1M€ - 5M€',
+    '5m-10m': '5M€ - 10M€',
+    'mas-10m': 'Más de 10M€',
+  };
+  return labels[range || ''] || range || 'No especificado';
+};
+
+const formatEbitdaRange = (range: string | undefined): string => {
+  const labels: Record<string, string> = {
+    'menos-100k': 'Menos de 100.000€',
+    '100k-500k': '100.000€ - 500.000€',
+    '500k-1m': '500.000€ - 1M€',
+    '1m-2m': '1M€ - 2M€',
+    'mas-2m': 'Más de 2M€',
+  };
+  return labels[range || ''] || range || 'No especificado';
+};
+
+const formatEmployeeRange = (range: string | undefined): string => {
+  const labels: Record<string, string> = {
+    '1-5': '1-5 empleados',
+    '6-15': '6-15 empleados',
+    '16-50': '16-50 empleados',
+    '51-100': '51-100 empleados',
+    'mas-100': 'Más de 100 empleados',
+  };
+  return labels[range || ''] || range || 'No especificado';
+};
+
 const getUserConfirmationTemplate = (formType: string, data: any) => {
   const baseStyle = `
     <style>
@@ -226,22 +275,26 @@ const getEmailTemplate = (formType: string, data: any) => {
 
   switch (formType) {
     case 'contact':
+      const pageOriginLabel = getPageOriginLabel(data.page_origin);
       return {
-        subject: `🔥 Nuevo Lead de Contacto - ${data.fullName}`,
+        subject: `🔥 Nuevo Lead ${pageOriginLabel ? `(${pageOriginLabel})` : ''} - ${data.fullName}`,
         html: `
           ${baseStyle}
           <div class="header">
-            <h1>🎯 Nuevo Lead de Contacto</h1>
+            <h1>🎯 Nuevo Lead de Contacto${pageOriginLabel ? ` - ${pageOriginLabel}` : ''}</h1>
           </div>
           <div class="content">
             <div class="info-box">
+              <p><span class="label">Página de origen:</span> ${pageOriginLabel || data.page_origin || 'No especificada'}</p>
               <p><span class="label">Nombre:</span> ${data.fullName}</p>
               <p><span class="label">Email:</span> ${data.email}</p>
               <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
               <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">País:</span> ${data.country || 'No especificado'}</p>
-              <p><span class="label">Tamaño de empresa:</span> ${data.companySize || 'No especificado'}</p>
-              <p><span class="label">Referencia:</span> ${data.referral || 'No especificada'}</p>
+              <p><span class="label">Tipo de servicio:</span> ${data.serviceType || 'No especificado'}</p>
+              ${data.annualRevenue ? `<p><span class="label">Facturación anual:</span> ${formatRevenueRange(data.annualRevenue)}</p>` : ''}
+              ${data.ebitda ? `<p><span class="label">EBITDA:</span> ${formatEbitdaRange(data.ebitda)}</p>` : ''}
+              ${data.employeeCount ? `<p><span class="label">Nº Empleados:</span> ${formatEmployeeRange(data.employeeCount)}</p>` : ''}
+              ${data.message ? `<p><span class="label">Mensaje:</span> ${data.message}</p>` : ''}
             </div>
           </div>
           <div class="footer">

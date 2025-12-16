@@ -69,6 +69,22 @@ export const contactFormSchema = z.object({
     .refine(val => !val || val.length <= 500, {
       message: 'Sectores muy largo (máximo 500 caracteres)'
     }),
+
+  // Seller-specific fields (venta de empresas)
+  annualRevenue: z.enum(['menos-500k', '500k-1m', '1m-5m', '5m-10m', 'mas-10m'], {
+    required_error: 'Selecciona un rango de facturación',
+    invalid_type_error: 'Rango inválido'
+  }).optional(),
+
+  ebitda: z.enum(['menos-100k', '100k-500k', '500k-1m', '1m-2m', 'mas-2m'], {
+    required_error: 'Selecciona un rango de EBITDA',
+    invalid_type_error: 'Rango inválido'
+  }).optional(),
+
+  employeeCount: z.enum(['1-5', '6-15', '16-50', '51-100', 'mas-100'], {
+    required_error: 'Selecciona un rango de empleados',
+    invalid_type_error: 'Rango inválido'
+  }).optional(),
   
   // Honeypot field - must be empty
   website: z.string()
