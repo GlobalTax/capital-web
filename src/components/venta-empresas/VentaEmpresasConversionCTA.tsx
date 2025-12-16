@@ -96,10 +96,6 @@ const VentaEmpresasConversionCTA = () => {
           
           {/* Left Content */}
           <div className="space-y-8">
-            {/* Urgency Badge */}
-            <div className="inline-flex items-center px-6 py-3 bg-red-500 bg-opacity-20 text-red-300 rounded-full text-lg font-bold border border-red-500 animate-pulse">
-              🔥 ¡ÚLTIMAS 3 PLAZAS DISPONIBLES! 🔥
-            </div>
 
             <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
               ¡Vende Tu Empresa al
