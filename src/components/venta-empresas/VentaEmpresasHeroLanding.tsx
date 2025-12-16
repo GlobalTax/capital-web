@@ -190,7 +190,7 @@ const VentaEmpresasHeroLanding = () => {
                 {/* CTA Button Premium */}
                 <button 
                   onClick={() => {
-                    const contactSection = document.getElementById('contacto');
+                    const contactSection = document.getElementById('contact');
                     contactSection?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-[2px] transition-all hover:scale-[1.02] hover:shadow-lg"
