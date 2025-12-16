@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckSquare, X, Eye, EyeOff, Star, Download, MapPin, Trash2 } from 'lucide-react';
+import { CheckSquare, X, Eye, EyeOff, Star, Download, MapPin, Trash2, Briefcase, User, FileSpreadsheet, FileText } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +19,11 @@ interface BulkActionsToolbarProps {
   onFeature: () => void;
   onUnfeature: () => void;
   onExport: () => void;
+  onExportExcel?: () => void;
   onChangeDisplayLocations: () => void;
   onDelete: () => void;
+  onChangeProjectStatus?: () => void;
+  onBulkAssign?: () => void;
 }
 
 export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
@@ -31,8 +34,11 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   onFeature,
   onUnfeature,
   onExport,
+  onExportExcel,
   onChangeDisplayLocations,
   onDelete,
+  onChangeProjectStatus,
+  onBulkAssign,
 }) => {
   return (
     <Card className="p-3 mb-4 bg-primary/5 border-primary/20 animate-fade-in">
@@ -75,6 +81,32 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Project Status */}
+          {onChangeProjectStatus && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onChangeProjectStatus}
+              className="h-8"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Estado Proyecto
+            </Button>
+          )}
+
+          {/* Bulk Assign */}
+          {onBulkAssign && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onBulkAssign}
+              className="h-8"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Asignar a
+            </Button>
+          )}
+
           {/* Feature/Unfeature */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -106,18 +138,27 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
             Ubicaciones
           </Button>
 
-          <DropdownMenuSeparator />
-
           {/* Export */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onExport}
-            className="h-8"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8">
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={onExport}>
+                <FileText className="h-4 w-4 mr-2" />
+                Exportar CSV
+              </DropdownMenuItem>
+              {onExportExcel && (
+                <DropdownMenuItem onClick={onExportExcel}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Exportar Excel (.xlsx)
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant="destructive"
