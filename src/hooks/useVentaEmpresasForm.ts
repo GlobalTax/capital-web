@@ -33,7 +33,7 @@ export const useVentaEmpresasForm = () => {
         company: validatedData.company.trim(),
         cif: validatedData.cif.trim().toUpperCase(),
         ebitda: validatedData.ebitda?.trim() || null,
-        message: `Facturación: ${formData.revenue || 'No especificado'}\nUrgencia: ${formData.urgency || 'No especificado'}`,
+        message: `Facturación: ${formData.revenue ? formData.revenue + ' €' : 'No especificado'}\nUrgencia: ${formData.urgency || 'No especificado'}`,
         page_origin: 'lp-venta-empresas',
         how_did_you_hear: 'Landing Venta Empresas',
         status: 'new',
@@ -71,7 +71,7 @@ export const useVentaEmpresasForm = () => {
             formData: {
               ...validatedData,
               ...trackingData,
-              revenue_range: formData.revenue,
+              revenue: formData.revenue,
               ebitda: formData.ebitda,
               urgency: formData.urgency,
             },
