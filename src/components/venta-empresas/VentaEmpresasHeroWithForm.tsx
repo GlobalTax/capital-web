@@ -100,7 +100,7 @@ const VentaEmpresasHeroWithForm = () => {
   };
 
   return (
-    <section className="min-h-screen bg-white text-gray-900 relative overflow-hidden">
+    <section className="bg-white text-gray-900 relative overflow-hidden">
       {/* Background subtle pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50"></div>
       
