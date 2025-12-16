@@ -31,6 +31,8 @@ export interface Operation {
   assigned_by?: string | null;
   source_lead_id?: string | null;
   source_lead_type?: string | null;
+  project_status?: string;
+  expected_market_text?: string;
 }
 
 export interface OperationsKPIs {
