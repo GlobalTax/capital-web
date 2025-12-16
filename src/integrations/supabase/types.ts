@@ -3056,6 +3056,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           deletion_reason: string | null
+          ebitda: string | null
           email: string
           email_message_id: string | null
           email_opened: boolean | null
@@ -3089,6 +3090,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
+          ebitda?: string | null
           email: string
           email_message_id?: string | null
           email_opened?: boolean | null
@@ -3122,6 +3124,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
+          ebitda?: string | null
           email?: string
           email_message_id?: string | null
           email_opened?: boolean | null

@@ -81,6 +81,13 @@ export const collaboratorSchema = z.object({
 
 export type CollaboratorFormData = z.infer<typeof collaboratorSchema>;
 
+// Helper para normalizar EBITDA (formato español → número)
+const normalizeEbitda = (value: string): string => {
+  if (!value) return '';
+  // Elimina puntos de miles y convierte coma decimal a punto
+  return value.replace(/\./g, '').replace(',', '.');
+};
+
 // Venta Empresas Schema
 export const ventaEmpresasSchema = z.object({
   name: z
@@ -114,6 +121,18 @@ export const ventaEmpresasSchema = z.object({
   revenue: z
     .string()
     .min(1, 'La facturación es requerida'),
+  ebitda: z
+    .string()
+    .trim()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const normalized = normalizeEbitda(val);
+      const num = parseFloat(normalized);
+      return !isNaN(num) && num >= 0;
+    }, {
+      message: 'El EBITDA debe ser un número válido (ej: 500000)'
+    }),
   urgency: z
     .string()
     .min(1, 'El nivel de urgencia es requerido'),

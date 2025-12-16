@@ -17,6 +17,7 @@ const VentaEmpresasConversionCTA = () => {
     company: '',
     cif: '',
     revenue: '',
+    ebitda: '',
     urgency: 'medium'
   });
   
@@ -72,6 +73,7 @@ const VentaEmpresasConversionCTA = () => {
         company: '',
         cif: '',
         revenue: '',
+        ebitda: '',
         urgency: 'medium'
       });
     } else {
@@ -268,6 +270,24 @@ const VentaEmpresasConversionCTA = () => {
                     <option value="10m-25m">€10M - €25M</option>
                     <option value="25m+">€25M+</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    EBITDA anual (€)
+                    <span className="text-gray-400 text-xs ml-1">(opcional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="ebitda"
+                    value={formData.ebitda}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    placeholder="Ej: 500000"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Beneficio antes de intereses, impuestos, depreciación y amortización
+                  </p>
                 </div>
 
                 <div>

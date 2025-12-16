@@ -32,6 +32,7 @@ export const useVentaEmpresasForm = () => {
         phone: validatedData.phone.trim(),
         company: validatedData.company.trim(),
         cif: validatedData.cif.trim().toUpperCase(),
+        ebitda: validatedData.ebitda?.trim() || null,
         message: `Facturación: ${formData.revenue || 'No especificado'}\nUrgencia: ${formData.urgency || 'No especificado'}`,
         page_origin: 'lp-venta-empresas',
         how_did_you_hear: 'Landing Venta Empresas',
@@ -71,6 +72,7 @@ export const useVentaEmpresasForm = () => {
               ...validatedData,
               ...trackingData,
               revenue_range: formData.revenue,
+              ebitda: formData.ebitda,
               urgency: formData.urgency,
             },
           }
