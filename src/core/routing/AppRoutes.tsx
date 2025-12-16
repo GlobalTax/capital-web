@@ -33,6 +33,7 @@ const LandingCalculatorMeta = lazy(() => import('@/pages/LandingCalculatorMeta')
 const LandingCalculatorMetaThanks = lazy(() => import('@/pages/LandingCalculatorMetaThanks'));
 const LandingCalculatorB = lazy(() => import('@/pages/LandingCalculatorB')); // 🔥 NUEVO - Variante B Typeform
 const LandingVentaEmpresas = lazy(() => import('@/pages/LandingVentaEmpresas'));
+const LandingVentaEmpresasV2 = lazy(() => import('@/pages/LandingVentaEmpresasV2'));
 const LandingSuiteLoop = lazy(() => import('@/pages/LandingSuiteLoop'));
 const LandingAccountex = lazy(() => import('@/pages/LandingAccountex'));
 import SecurityCalculator from '@/pages/SecurityCalculator';
@@ -150,6 +151,7 @@ export const AppRoutes = () => {
         <Route path="/lp/calculadora-meta/*" element={<LandingCalculatorMeta />} />
         <Route path="/lp/calculadora-meta/gracias" element={<LandingCalculatorMetaThanks />} />
         <Route path="/lp/venta-empresas" element={<LandingVentaEmpresas />} />
+        <Route path="/lp/venta-empresas-v2" element={<LandingVentaEmpresasV2 />} />
         <Route path="/lp/suiteloop" element={<LandingSuiteLoop />} />
         <Route path="/lp/accountex" element={<LandingAccountex />} />
         <Route path="/lp/accountex/*" element={<LandingAccountex />} />
