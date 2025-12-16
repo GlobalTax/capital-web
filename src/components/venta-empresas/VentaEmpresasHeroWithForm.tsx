@@ -100,9 +100,9 @@ const VentaEmpresasHeroWithForm = () => {
   };
 
   return (
-    <section className="bg-white text-gray-900 relative overflow-hidden">
+    <section className="bg-background text-foreground relative overflow-hidden">
       {/* Background subtle pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-muted/30 via-background to-muted/30"></div>
       
       <div className="container mx-auto px-4 py-8 lg:py-16 relative">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
@@ -115,13 +115,13 @@ const VentaEmpresasHeroWithForm = () => {
               <span className="text-emerald-600 text-sm font-medium">+200 operaciones exitosas</span>
             </div>
 
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-gray-900">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-foreground">
               Vende tu empresa al
-              <span className="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent"> máximo precio</span>
+              <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent"> máximo precio</span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-gray-600 leading-relaxed max-w-xl">
-              Accede a nuestra <strong className="text-gray-900">red exclusiva de compradores cualificados</strong> y 
+            <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl">
+              Accede a nuestra <strong className="text-foreground">red exclusiva de compradores cualificados</strong> y 
               maximiza el valor de tu empresa con asesoramiento profesional.
             </p>
 
@@ -133,21 +133,21 @@ const VentaEmpresasHeroWithForm = () => {
                 { icon: Users, text: "+500 compradores" },
                 { icon: Clock, text: "Respuesta en 48h" }
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg px-4 py-3 border border-border">
                   <item.icon className="h-5 w-5 text-emerald-600" />
-                  <span className="text-gray-700">{item.text}</span>
+                  <span className="text-muted-foreground">{item.text}</span>
                 </div>
               ))}
             </div>
 
             {/* Social Proof - Desktop only */}
-            <div className="hidden lg:block bg-gray-50 rounded-xl p-6 border border-gray-200">
+            <div className="hidden lg:block bg-muted/50 rounded-xl p-6 border border-border">
               <div className="flex items-center gap-1 mb-3">
                 {[1,2,3,4,5].map(i => (
                   <span key={i} className="text-yellow-500">★</span>
                 ))}
               </div>
-              <p className="italic text-gray-600">
+              <p className="italic text-muted-foreground">
                 "Capittal vendió mi empresa por €1.8M cuando yo esperaba €1.3M máximo. 
                 ¡Resultados espectaculares!"
               </p>
@@ -163,7 +163,7 @@ const VentaEmpresasHeroWithForm = () => {
                 <Phone className="h-5 w-5" />
                 695 717 490
               </a>
-              <span className="text-gray-500 text-sm flex items-center gap-2">
+              <span className="text-muted-foreground text-sm flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 L-V: 9:00-19:00
               </span>
@@ -172,12 +172,12 @@ const VentaEmpresasHeroWithForm = () => {
 
           {/* Right Form */}
           <div className="relative">
-            <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-2xl">
+            <div className="bg-card rounded-2xl p-6 lg:p-8 shadow-2xl border border-border">
               <div className="text-center mb-6">
-                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
                   Solicita tu consulta gratuita
                 </h2>
-                <p className="text-gray-600 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Te contactamos en 48h con los primeros pasos
                 </p>
               </div>
@@ -191,7 +191,7 @@ const VentaEmpresasHeroWithForm = () => {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Nombre *
                     </label>
                     <input
@@ -200,12 +200,12 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                       placeholder="Tu nombre"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Teléfono *
                     </label>
                     <input
@@ -214,14 +214,14 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                       placeholder="+34 600 000 000"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Email *
                   </label>
                   <input
@@ -230,14 +230,14 @@ const VentaEmpresasHeroWithForm = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                     placeholder="tu@email.com"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Empresa *
                     </label>
                     <input
@@ -246,12 +246,12 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.company}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                       placeholder="Nombre empresa"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       CIF *
                     </label>
                     <input
@@ -259,7 +259,7 @@ const VentaEmpresasHeroWithForm = () => {
                       name="cif"
                       value={formData.cif}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 uppercase"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground uppercase"
                       placeholder="B12345678"
                     />
                   </div>
@@ -267,7 +267,7 @@ const VentaEmpresasHeroWithForm = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Facturación anual (€) *
                     </label>
                     <input
@@ -277,13 +277,13 @@ const VentaEmpresasHeroWithForm = () => {
                       required
                       value={formData.revenue}
                       onChange={handleNumericChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                       placeholder="2.500.000"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      EBITDA (€) <span className="text-gray-400 text-xs">(opcional)</span>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      EBITDA (€) <span className="text-muted-foreground text-xs">(opcional)</span>
                     </label>
                     <input
                       type="text"
@@ -291,21 +291,21 @@ const VentaEmpresasHeroWithForm = () => {
                       name="ebitda"
                       value={formData.ebitda}
                       onChange={handleNumericChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                       placeholder="500.000"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Urgencia
                   </label>
                   <select
                     name="urgency"
                     value={formData.urgency}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-background text-foreground"
                   >
                     <option value="low">Solo explorando opciones</option>
                     <option value="medium">Vendería en 6-12 meses</option>
@@ -323,14 +323,14 @@ const VentaEmpresasHeroWithForm = () => {
                   disabled={isSubmitting}
                 />
 
-                <p className="text-xs text-gray-500 text-center leading-relaxed">
+                <p className="text-xs text-muted-foreground text-center leading-relaxed">
                   Al enviar, aceptas que te contactemos. Tus datos están protegidos.
                 </p>
               </form>
 
               {/* Trust Indicators */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <CheckCircle className="h-4 w-4 text-emerald-500" />
                     <span>Datos seguros</span>
