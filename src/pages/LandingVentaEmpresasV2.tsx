@@ -2,11 +2,8 @@ import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import VentaEmpresasHeroWithForm from '@/components/venta-empresas/VentaEmpresasHeroWithForm';
 import VentaEmpresasBenefitsLanding from '@/components/venta-empresas/VentaEmpresasBenefitsLanding';
-import VentaEmpresasProcessLanding from '@/components/venta-empresas/VentaEmpresasProcessLanding';
-import VentaEmpresasCaseStudies from '@/components/venta-empresas/VentaEmpresasCaseStudies';
 import VentaEmpresasFAQLanding from '@/components/venta-empresas/VentaEmpresasFAQLanding';
 import VentaEmpresasTestimonials from '@/components/venta-empresas/VentaEmpresasTestimonials';
-import VentaEmpresasComparison from '@/components/venta-empresas/VentaEmpresasComparison';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo/schemas';
 
@@ -25,17 +22,10 @@ const LandingVentaEmpresasV2 = () => {
         )}
       />
       <UnifiedLayout variant="landing">
-        {/* Hero con formulario above the fold (fondo negro) */}
         <VentaEmpresasHeroWithForm />
-        
-        {/* Resto de secciones */}
         <VentaEmpresasBenefitsLanding />
-        <VentaEmpresasProcessLanding />
-        <VentaEmpresasComparison />
-        <VentaEmpresasCaseStudies />
         <VentaEmpresasTestimonials />
         <VentaEmpresasFAQLanding />
-        {/* NO incluimos VentaEmpresasConversionCTA - el form ya está arriba */}
       </UnifiedLayout>
     </>
   );
