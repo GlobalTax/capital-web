@@ -101,8 +101,10 @@ serve(async (req) => {
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
     const sortOrder = ['created_at', 'year', 'valuation_amount'].includes(sortField) ? 'desc' : 'asc';
     
+    // Featured operations first (primary sort), then user's sort criteria (secondary)
+    query = query.order('is_featured', { ascending: false, nullsFirst: false });
     query = query.order(sortField, { ascending: sortOrder === 'asc' });
-    console.log('📊 Sorting:', { sortField, sortOrder });
+    console.log('📊 Sorting:', { featuredFirst: true, sortField, sortOrder });
 
     // Apply pagination with bounds check
     const safeLimit = Math.min(Math.max(1, limit), 100);
