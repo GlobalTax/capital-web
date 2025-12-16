@@ -25,7 +25,7 @@ const LandingVentaEmpresas = () => {
           "Business Sale Service"
         )}
       />
-      <UnifiedLayout variant="home">
+      <UnifiedLayout variant="landing">
         <VentaEmpresasHeroLanding />
         <VentaEmpresasBenefitsLanding />
         <VentaEmpresasProcessLanding />

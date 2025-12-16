@@ -96,7 +96,7 @@ const VentaEmpresasProcessLanding = () => {
           
           <div className="grid md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-primary">6-12</div>
+              <div className="text-2xl font-bold text-primary">9-12</div>
               <div className="text-lg font-semibold text-foreground">Meses</div>
               <div className="text-sm text-muted-foreground">Proceso promedio</div>
             </div>
