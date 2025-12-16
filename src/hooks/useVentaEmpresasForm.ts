@@ -25,14 +25,6 @@ export const useVentaEmpresasForm = () => {
       // Obtener datos de tracking
       const trackingData = await getTrackingData();
 
-      // Map urgency to priority
-      const urgencyToPriority: Record<string, string> = {
-        urgent: 'high',
-        high: 'high',
-        medium: 'medium',
-        low: 'low',
-      };
-
       // Prepare data for insertion
       const insertData = {
         full_name: validatedData.name.trim(),
@@ -44,7 +36,6 @@ export const useVentaEmpresasForm = () => {
         source_project: 'lp-venta-empresas',
         source: 'landing',
         status: 'new',
-        priority: urgencyToPriority[formData.urgency || 'medium'] || 'medium',
         utm_source: trackingData.utm_source,
         utm_medium: trackingData.utm_medium,
         utm_campaign: trackingData.utm_campaign,
