@@ -35,6 +35,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
     website: '', // Honeypot field
     investmentBudget: undefined,
     sectorsOfInterest: '',
+    // Seller-specific fields
+    annualRevenue: undefined,
+    ebitda: undefined,
+    employeeCount: undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +63,9 @@ const ContactForm: React.FC<ContactFormProps> = ({
         website: '',
         investmentBudget: undefined,
         sectorsOfInterest: '',
+        annualRevenue: undefined,
+        ebitda: undefined,
+        employeeCount: undefined,
       });
     } else {
       console.error('❌ ContactForm: Submission failed:', result.error);
@@ -242,6 +249,86 @@ const ContactForm: React.FC<ContactFormProps> = ({
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     {t('form.sectorsOfInterest.hint')}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Seller-specific fields */}
+            {variant === 'venta' && (
+              <>
+                <div>
+                  <Label htmlFor="annualRevenue" className="text-sm font-medium text-foreground">
+                    {t('form.annualRevenue')}
+                  </Label>
+                  <Select 
+                    value={formData.annualRevenue || ''} 
+                    onValueChange={(value: NonNullable<ContactFormData['annualRevenue']>) => updateField('annualRevenue', value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={t('form.annualRevenue.placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="menos-500k">{t('form.annualRevenue.less500k')}</SelectItem>
+                      <SelectItem value="500k-1m">{t('form.annualRevenue.500k1m')}</SelectItem>
+                      <SelectItem value="1m-5m">{t('form.annualRevenue.1m5m')}</SelectItem>
+                      <SelectItem value="5m-10m">{t('form.annualRevenue.5m10m')}</SelectItem>
+                      <SelectItem value="mas-10m">{t('form.annualRevenue.more10m')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('form.annualRevenue.hint')}
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="ebitda" className="text-sm font-medium text-foreground">
+                    {t('form.ebitdaRange')}
+                  </Label>
+                  <Select 
+                    value={formData.ebitda || ''} 
+                    onValueChange={(value: NonNullable<ContactFormData['ebitda']>) => updateField('ebitda', value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={t('form.ebitdaRange.placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="menos-100k">{t('form.ebitdaRange.less100k')}</SelectItem>
+                      <SelectItem value="100k-500k">{t('form.ebitdaRange.100k500k')}</SelectItem>
+                      <SelectItem value="500k-1m">{t('form.ebitdaRange.500k1m')}</SelectItem>
+                      <SelectItem value="1m-2m">{t('form.ebitdaRange.1m2m')}</SelectItem>
+                      <SelectItem value="mas-2m">{t('form.ebitdaRange.more2m')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('form.ebitdaRange.hint')}
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="employeeCount" className="text-sm font-medium text-foreground">
+                    {t('form.employeeCount')}
+                  </Label>
+                  <Select 
+                    value={formData.employeeCount || ''} 
+                    onValueChange={(value: NonNullable<ContactFormData['employeeCount']>) => updateField('employeeCount', value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={t('form.employeeCount.placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-5">{t('form.employeeCount.1to5')}</SelectItem>
+                      <SelectItem value="6-15">{t('form.employeeCount.6to15')}</SelectItem>
+                      <SelectItem value="16-50">{t('form.employeeCount.16to50')}</SelectItem>
+                      <SelectItem value="51-100">{t('form.employeeCount.51to100')}</SelectItem>
+                      <SelectItem value="mas-100">{t('form.employeeCount.more100')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('form.employeeCount.hint')}
                   </p>
                 </div>
               </>
