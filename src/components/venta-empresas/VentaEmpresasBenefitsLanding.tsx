@@ -30,7 +30,7 @@ const VentaEmpresasBenefitsLanding = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            ¿Por Qué Elegir <span className="text-emerald-600">Capittal</span>?
+            ¿Por Qué Elegir <span className="text-foreground font-black">Capittal</span>?
           </h2>
         </div>
 
@@ -40,7 +40,7 @@ const VentaEmpresasBenefitsLanding = () => {
               key={index}
               className="group p-6 rounded-xl border border-border bg-card hover:shadow-lg transition-all duration-300 text-center"
             >
-              <div className="text-emerald-600 mb-4 flex justify-center group-hover:scale-110 transition-transform duration-300">
+              <div className="text-slate-900 mb-4 flex justify-center group-hover:scale-110 transition-transform duration-300">
                 {benefit.icon}
               </div>
               

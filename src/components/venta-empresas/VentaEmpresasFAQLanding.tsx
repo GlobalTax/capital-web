@@ -40,13 +40,13 @@ const VentaEmpresasFAQLanding = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-slate-200 text-slate-800 rounded-full text-sm font-medium mb-6">
             <HelpCircle className="mr-2 h-4 w-4" />
             Resolvemos Todas Tus Dudas
           </div>
           
           <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Preguntas <span className="text-emerald-600">Frecuentes</span>
+            Preguntas <span className="text-foreground font-black">Frecuentes</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             <strong className="text-foreground">¡Estas son las preguntas que nos hacen el 98,7% de nuestros clientes!</strong> 
@@ -69,13 +69,13 @@ const VentaEmpresasFAQLanding = () => {
                   <h3 className="text-lg font-bold text-foreground mb-1">
                     {faq.question}
                   </h3>
-                  <span className="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
+                  <span className="inline-flex items-center px-3 py-1 bg-slate-200 text-slate-800 rounded-full text-xs font-bold">
                     ⭐ {faq.highlight}
                   </span>
                 </div>
                 <div className="ml-4 flex-shrink-0">
                   {openItems.includes(index) ? (
-                    <ChevronUp className="h-6 w-6 text-emerald-600" />
+                    <ChevronUp className="h-6 w-6 text-slate-900" />
                   ) : (
                     <ChevronDown className="h-6 w-6 text-muted-foreground" />
                   )}
@@ -97,9 +97,9 @@ const VentaEmpresasFAQLanding = () => {
 
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white max-w-2xl mx-auto">
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 text-white max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold mb-4">¿Tienes Más Preguntas?</h3>
-            <p className="text-emerald-100 mb-6">
+            <p className="text-slate-200 mb-6">
               ¡Llámanos AHORA y te las resolvemos todas en una conversación de 15 minutos! 
               Sin compromisos, solo información clara y directa.
             </p>
@@ -107,12 +107,12 @@ const VentaEmpresasFAQLanding = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a 
                 href="tel:+34695717490"
-                className="inline-flex items-center px-6 py-3 bg-white text-emerald-700 rounded-lg font-bold hover:bg-emerald-50 transition-colors duration-200"
+                className="inline-flex items-center px-6 py-3 bg-white text-slate-900 rounded-lg font-bold hover:bg-slate-100 transition-colors duration-200"
               >
                 📞 Llamar Ahora: 695 717 490
               </a>
               
-              <div className="text-emerald-200 text-sm font-medium">
+              <div className="text-slate-300 text-sm font-medium">
                 ⏰ Horario: L-V 9:00-19:00 | Sáb 10:00-14:00
               </div>
             </div>
