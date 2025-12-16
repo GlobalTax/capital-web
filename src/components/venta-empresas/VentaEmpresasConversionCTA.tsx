@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import VentaEmpresasSuccessModal from './VentaEmpresasSuccessModal';
 import { useFormSecurity } from '@/hooks/useFormSecurity';
 import { ventaEmpresasSchema } from '@/schemas/formSchemas';
+import { formatNumberWithDots, parseNumberWithDots } from '@/utils/numberFormatting';
 
 const VentaEmpresasConversionCTA = () => {
   const { submitForm, isSubmitting } = useVentaEmpresasForm();
@@ -59,7 +60,14 @@ const VentaEmpresasConversionCTA = () => {
       return;
     }
     
-    const result = await submitForm(formData);
+    // Normalizar valores numéricos antes de enviar (quitar puntos de miles)
+    const normalizedFormData = {
+      ...formData,
+      revenue: parseNumberWithDots(formData.revenue).toString(),
+      ebitda: formData.ebitda ? parseNumberWithDots(formData.ebitda).toString() : ''
+    };
+
+    const result = await submitForm(normalizedFormData);
     
     if (result.success) {
       setIsSuccess(true);
@@ -85,6 +93,22 @@ const VentaEmpresasConversionCTA = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  // Handler especializado para campos numéricos con formato de miles
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Solo permitir dígitos
+    const cleanValue = value.replace(/[^\d]/g, '');
+    
+    // Formatear con puntos de miles
+    const formattedValue = cleanValue ? formatNumberWithDots(cleanValue) : '';
+    
+    setFormData({
+      ...formData,
+      [name]: formattedValue
     });
   };
 
@@ -257,10 +281,11 @@ const VentaEmpresasConversionCTA = () => {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     name="revenue"
                     required
                     value={formData.revenue}
-                    onChange={handleChange}
+                    onChange={handleNumericChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     placeholder="Ej: 2.500.000"
                   />
@@ -276,9 +301,10 @@ const VentaEmpresasConversionCTA = () => {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     name="ebitda"
                     value={formData.ebitda}
-                    onChange={handleChange}
+                    onChange={handleNumericChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     placeholder="Ej: 500.000"
                   />
