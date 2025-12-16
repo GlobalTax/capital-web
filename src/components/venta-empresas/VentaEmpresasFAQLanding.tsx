@@ -36,20 +36,20 @@ const VentaEmpresasFAQLanding = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section className="py-20 bg-gradient-to-br from-background to-muted/30">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-6">
             <HelpCircle className="mr-2 h-4 w-4" />
             Resolvemos Todas Tus Dudas
           </div>
           
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Preguntas <span className="text-blue-600">Frecuentes</span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            Preguntas <span className="text-emerald-600">Frecuentes</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            <strong>¡Estas son las preguntas que nos hacen el 98,7% de nuestros clientes!</strong> 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <strong className="text-foreground">¡Estas son las preguntas que nos hacen el 98,7% de nuestros clientes!</strong> 
             Si tienes alguna duda más, llámanos y te la resolvemos en 2 minutos.
           </p>
         </div>
@@ -59,33 +59,33 @@ const VentaEmpresasFAQLanding = () => {
           {faqs.map((faq, index) => (
             <div 
               key={index}
-              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
+              className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden hover:shadow-xl transition-all duration-300"
             >
               <button
-                className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+                className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-muted/50 transition-colors duration-200"
                 onClick={() => toggleItem(index)}
               >
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  <h3 className="text-lg font-bold text-foreground mb-1">
                     {faq.question}
                   </h3>
-                  <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
+                  <span className="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
                     ⭐ {faq.highlight}
                   </span>
                 </div>
                 <div className="ml-4 flex-shrink-0">
                   {openItems.includes(index) ? (
-                    <ChevronUp className="h-6 w-6 text-blue-600" />
+                    <ChevronUp className="h-6 w-6 text-emerald-600" />
                   ) : (
-                    <ChevronDown className="h-6 w-6 text-gray-400" />
+                    <ChevronDown className="h-6 w-6 text-muted-foreground" />
                   )}
                 </div>
               </button>
               
               {openItems.includes(index) && (
-                <div className="px-8 pb-6 border-t border-gray-100 bg-gray-50">
+                <div className="px-8 pb-6 border-t border-border bg-muted/30">
                   <div className="pt-4">
-                    <p className="text-gray-700 leading-relaxed text-base">
+                    <p className="text-muted-foreground leading-relaxed text-base">
                       {faq.answer}
                     </p>
                   </div>
@@ -97,9 +97,9 @@ const VentaEmpresasFAQLanding = () => {
 
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white max-w-2xl mx-auto">
+          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold mb-4">¿Tienes Más Preguntas?</h3>
-            <p className="text-blue-100 mb-6">
+            <p className="text-emerald-100 mb-6">
               ¡Llámanos AHORA y te las resolvemos todas en una conversación de 15 minutos! 
               Sin compromisos, solo información clara y directa.
             </p>
@@ -107,12 +107,12 @@ const VentaEmpresasFAQLanding = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a 
                 href="tel:+34695717490"
-                className="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg font-bold hover:bg-gray-100 transition-colors duration-200"
+                className="inline-flex items-center px-6 py-3 bg-white text-emerald-700 rounded-lg font-bold hover:bg-emerald-50 transition-colors duration-200"
               >
                 📞 Llamar Ahora: 695 717 490
               </a>
               
-              <div className="text-yellow-300 text-sm font-medium">
+              <div className="text-emerald-200 text-sm font-medium">
                 ⏰ Horario: L-V 9:00-19:00 | Sáb 10:00-14:00
               </div>
             </div>
