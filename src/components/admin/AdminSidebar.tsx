@@ -16,7 +16,8 @@ import {
   Building2,
   TrendingUp,
   BookOpen,
-  Target
+  Target,
+  PieChart
 } from 'lucide-react';
 
 const adminNavItems = [
@@ -60,6 +61,11 @@ const adminNavItems = [
     title: 'Operaciones',
     icon: <Building2 className="h-5 w-5" />,
     href: '/admin/company-operations'
+  },
+  {
+    title: 'Analytics Marketplace',
+    icon: <PieChart className="h-5 w-5" />,
+    href: '/admin/marketplace-analytics'
   },
   {
     title: 'Testimonios',
