@@ -59,6 +59,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [offset, setOffset] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   
+  // Filtros de valoración
+  const [valuationMin, setValuationMin] = useState<number | undefined>();
+  const [valuationMax, setValuationMax] = useState<number | undefined>();
+  
+  // Filtro de fecha de publicación
+  const [dateFilter, setDateFilter] = useState<string>('');
+  
   // Nuevo: Estados para modo "Ver todas"
   const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
   const [isLoadingAll, setIsLoadingAll] = useState(false);
@@ -73,6 +80,23 @@ const OperationsList: React.FC<OperationsListProps> = ({
       const fetchLimit = viewMode === 'all' ? MAX_ITEMS_ALL : limit;
       const fetchOffset = viewMode === 'all' ? 0 : offset;
       
+      // Calculate createdAfter date based on dateFilter
+      let createdAfter: string | undefined;
+      if (dateFilter) {
+        const now = new Date();
+        switch (dateFilter) {
+          case 'week':
+            createdAfter = new Date(now.setDate(now.getDate() - 7)).toISOString();
+            break;
+          case 'month':
+            createdAfter = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+            break;
+          case '3months':
+            createdAfter = new Date(now.setMonth(now.getMonth() - 3)).toISOString();
+            break;
+        }
+      }
+
       // Use the new list-operations Edge Function
       const { data, error } = await supabase.functions.invoke('list-operations', {
         body: {
@@ -84,7 +108,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
           sortBy,
           limit: fetchLimit,
           offset: fetchOffset,
-          displayLocation
+          displayLocation,
+          valuationMin: valuationMin ? valuationMin * 1000 : undefined, // Convert from k to actual
+          valuationMax: valuationMax ? valuationMax * 1000 : undefined, // Convert from k to actual
+          createdAfter
         }
       });
 
@@ -145,7 +172,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, sortBy, offset, displayLocation, viewMode]);
+  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, sortBy, offset, displayLocation, viewMode, valuationMin, valuationMax, dateFilter]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -183,6 +210,9 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setSelectedLocation('');
     setSelectedCompanySize('');
     setSelectedDealType('');
+    setValuationMin(undefined);
+    setValuationMax(undefined);
+    setDateFilter('');
     setOffset(0);
   };
 
@@ -198,7 +228,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const hasActiveFilters = searchTerm || selectedSector || selectedLocation || selectedCompanySize || selectedDealType;
+  const hasActiveFilters = searchTerm || selectedSector || selectedLocation || selectedCompanySize || selectedDealType || valuationMin || valuationMax || dateFilter;
 
 
   return (
@@ -341,6 +371,69 @@ const OperationsList: React.FC<OperationsListProps> = ({
               </Select>
             </div>
 
+            {/* Tercera fila: Valoración y Fecha de Publicación */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Valuation Min */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Valoración mín (€k)</label>
+                <Input
+                  type="number"
+                  placeholder="Ej: 500"
+                  value={valuationMin || ''}
+                  onChange={(e) => {
+                    setValuationMin(e.target.value ? parseInt(e.target.value) : undefined);
+                    setOffset(0);
+                  }}
+                />
+              </div>
+              
+              {/* Valuation Max */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Valoración máx (€k)</label>
+                <Input
+                  type="number"
+                  placeholder="Ej: 5000"
+                  value={valuationMax || ''}
+                  onChange={(e) => {
+                    setValuationMax(e.target.value ? parseInt(e.target.value) : undefined);
+                    setOffset(0);
+                  }}
+                />
+              </div>
+
+              {/* Date Filter */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Fecha de publicación</label>
+                <Select value={dateFilter || 'all'} onValueChange={(value) => {
+                  setDateFilter(value === 'all' ? '' : value);
+                  setOffset(0);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Cualquier fecha" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Cualquier fecha</SelectItem>
+                    <SelectItem value="week">Última semana</SelectItem>
+                    <SelectItem value="month">Último mes</SelectItem>
+                    <SelectItem value="3months">Últimos 3 meses</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Empty space or additional filter */}
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={clearAllFilters}
+                  disabled={!hasActiveFilters}
+                  className="w-full"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Limpiar filtros
+                </Button>
+              </div>
+            </div>
+
             {/* Active Filters Indicator */}
             {hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
@@ -350,6 +443,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
                 {selectedCompanySize && <Badge variant="secondary">{selectedCompanySize}</Badge>}
                 {selectedDealType && <Badge variant="secondary">{selectedDealType}</Badge>}
+                {valuationMin && <Badge variant="secondary">Min: €{valuationMin}k</Badge>}
+                {valuationMax && <Badge variant="secondary">Max: €{valuationMax}k</Badge>}
+                {dateFilter && (
+                  <Badge variant="secondary">
+                    {dateFilter === 'week' ? 'Última semana' : dateFilter === 'month' ? 'Último mes' : 'Últimos 3 meses'}
+                  </Badge>
+                )}
                 <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-7 text-xs">
                   Limpiar todos
                 </Button>
