@@ -7,12 +7,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Equipo completo que recibe notificaciones
 const ADMIN_EMAILS = [
-  "s.navarro@capittal.es",
-  "marcc@capittal.es",
-  "marc@capittal.es",
-  "lluis@capittal.es",
-  "samuel@capittal.es",
+  'samuel@capittal.es',
+  'marcc@capittal.es',
+  'oriol@capittal.es',
+  'marc@capittal.es',
+  'marcel@capittal.es',
+  'lluis@capittal.es',
+  'albert@capittal.es',
 ];
 
 interface Operation {
@@ -39,6 +42,17 @@ const formatCurrency = (amount: number, currency: string = 'EUR') => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+};
+
+const formatDateTime = (): string => {
+  return new Date().toLocaleString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Madrid'
+  });
 };
 
 serve(async (req: Request) => {
@@ -90,114 +104,137 @@ serve(async (req: Request) => {
 
     console.log("Bulk inquiry saved to database:", insertedData?.id);
 
+    const dateTime = formatDateTime();
+
     // Build operations list HTML
     const operationsListHtml = operations.map((op, index) => `
       <tr style="border-bottom: 1px solid #e5e7eb;">
-        <td style="padding: 12px 8px; font-weight: 500;">${index + 1}</td>
+        <td style="padding: 12px 8px; font-weight: 500; color: #64748b;">${index + 1}</td>
         <td style="padding: 12px 8px;">
-          <strong>${op.company_name}</strong>
+          <strong style="color: #0f172a;">${op.company_name}</strong>
           <br>
-          <span style="color: #6b7280; font-size: 13px;">${op.sector}</span>
+          <span style="color: #64748b; font-size: 13px;">${op.sector}</span>
         </td>
-        <td style="padding: 12px 8px; text-align: right; color: #059669; font-weight: 500;">
+        <td style="padding: 12px 8px; text-align: right; color: #059669; font-weight: 600;">
           ${op.ebitda_amount ? formatCurrency(op.ebitda_amount, op.valuation_currency || 'EUR') : 'Consultar'}
         </td>
         <td style="padding: 12px 8px; text-align: center;">
-          <a href="https://capittal.es/oportunidades?op=${op.id}" style="color: #3b82f6; text-decoration: none;">Ver</a>
+          <a href="https://capittal.es/oportunidades?op=${op.id}" style="color: #2563eb; text-decoration: none; font-weight: 500;">Ver →</a>
         </td>
       </tr>
     `).join('');
 
-    // Build email HTML
+    // Build professional email HTML
     const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Nueva Solicitud Conjunta de Información</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
-        <div style="max-width: 640px; margin: 0 auto; padding: 40px 20px;">
-          <!-- Header -->
-          <div style="text-align: center; margin-bottom: 32px;">
-            <h1 style="color: #0f172a; font-size: 24px; margin: 0;">CAPITTAL</h1>
-            <p style="color: #64748b; margin: 8px 0 0;">Nueva Solicitud de Información</p>
-          </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Solicitud Conjunta de Información</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; line-height: 1.5;">
+  <div style="max-width: 640px; margin: 0 auto; padding: 32px 16px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="color: #0f172a; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">CAPITTAL</h1>
+      <p style="color: #64748b; font-size: 14px; margin: 8px 0 0;">Marketplace de Operaciones</p>
+    </div>
 
-          <!-- Main Card -->
-          <div style="background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-            <!-- Alert Badge -->
-            <div style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 12px 20px; border-radius: 8px; text-align: center; margin-bottom: 24px;">
-              <strong>🔔 Solicitud Conjunta - ${operations.length} Operaciones</strong>
-            </div>
+    <!-- Main Card -->
+    <div style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); overflow: hidden;">
+      
+      <!-- Title Bar -->
+      <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; padding: 20px 24px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600;">🔔 Solicitud Conjunta – ${operations.length} Operaciones</h2>
+        <div style="margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.85);">
+          <span>📅 ${dateTime}</span>
+          <span style="margin-left: 16px;">🔗 Marketplace</span>
+        </div>
+      </div>
 
-            <!-- User Info -->
-            <h2 style="color: #0f172a; font-size: 18px; margin: 0 0 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
-              Datos del Solicitante
-            </h2>
-            <table style="width: 100%; margin-bottom: 24px;">
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280; width: 140px;">Nombre:</td>
-                <td style="padding: 8px 0; font-weight: 500;">${full_name}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Email:</td>
-                <td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #3b82f6;">${email}</a></td>
-              </tr>
-              ${phone ? `
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Teléfono:</td>
-                <td style="padding: 8px 0;"><a href="tel:${phone}" style="color: #3b82f6;">${phone}</a></td>
-              </tr>
-              ` : ''}
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Empresa:</td>
-                <td style="padding: 8px 0; font-weight: 500;">${company_name}</td>
-              </tr>
-            </table>
-
-            ${message ? `
-            <!-- Message -->
-            <div style="background: #f1f5f9; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-              <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">Mensaje:</p>
-              <p style="margin: 0; color: #0f172a;">${message}</p>
-            </div>
+      <!-- Content -->
+      <div style="padding: 24px;">
+        
+        <!-- Contact Data -->
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            👤 Datos del Solicitante
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 120px;">Nombre</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${full_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px;">Email</td>
+              <td style="padding: 10px 0;"><a href="mailto:${email}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${email}</a></td>
+            </tr>
+            ${phone ? `
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px;">Teléfono</td>
+              <td style="padding: 10px 0;"><a href="tel:${phone}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${phone}</a></td>
+            </tr>
             ` : ''}
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px;">Empresa</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${company_name}</td>
+            </tr>
+          </table>
+        </div>
 
-            <!-- Operations Table -->
-            <h2 style="color: #0f172a; font-size: 18px; margin: 0 0 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
-              Operaciones Solicitadas (${operations.length})
-            </h2>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-              <thead>
-                <tr style="background: #f8fafc;">
-                  <th style="padding: 12px 8px; text-align: left; font-size: 13px; color: #6b7280;">#</th>
-                  <th style="padding: 12px 8px; text-align: left; font-size: 13px; color: #6b7280;">Operación</th>
-                  <th style="padding: 12px 8px; text-align: right; font-size: 13px; color: #6b7280;">EBITDA</th>
-                  <th style="padding: 12px 8px; text-align: center; font-size: 13px; color: #6b7280;">Enlace</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${operationsListHtml}
-              </tbody>
-            </table>
-
-            <!-- CTA -->
-            <div style="text-align: center; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-              <a href="https://capittal.es/admin/crm" style="display: inline-block; background: #0f172a; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                Gestionar en CRM →
-              </a>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 13px;">
-            <p style="margin: 0;">Este email fue generado automáticamente por el marketplace de Capittal.</p>
+        ${message ? `
+        <!-- Message -->
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            💬 Mensaje
+          </h3>
+          <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${message}</p>
           </div>
         </div>
-      </body>
-      </html>
+        ` : ''}
+
+        <!-- Operations Table -->
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            🏢 Operaciones Solicitadas (${operations.length})
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f8fafc;">
+                <th style="padding: 12px 8px; text-align: left; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">#</th>
+                <th style="padding: 12px 8px; text-align: left; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Operación</th>
+                <th style="padding: 12px 8px; text-align: right; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">EBITDA</th>
+                <th style="padding: 12px 8px; text-align: center; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Enlace</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${operationsListHtml}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="padding: 0 24px 24px; text-align: center;">
+        <a href="https://capittal.es/admin/crm" style="display: inline-block; background: #0f172a; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+          Gestionar en CRM →
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 24px;">
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+        Este email fue generado automáticamente por el marketplace de Capittal.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
     `;
 
     // Send email notifications
@@ -206,13 +243,14 @@ serve(async (req: Request) => {
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
       
-      // Send to all admin emails
+      // Send to all admin emails with reply_to
       for (const adminEmail of ADMIN_EMAILS) {
         try {
           await resend.emails.send({
-            from: "Capittal Marketplace <info@capittal.es>",
+            from: "Capittal Marketplace <notificaciones@capittal.es>",
             to: [adminEmail],
-            subject: `🔔 Nueva solicitud conjunta: ${operations.length} operaciones - ${full_name}`,
+            reply_to: email, // Reply-To al email del lead
+            subject: `Solicitud conjunta (${operations.length} ops) – ${full_name} – Capittal`,
             html: emailHtml,
           });
           console.log(`Email sent to ${adminEmail}`);
@@ -226,48 +264,65 @@ serve(async (req: Request) => {
 
       // Send confirmation to user
       const userConfirmationHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
-          <div style="max-width: 640px; margin: 0 auto; padding: 40px 20px;">
-            <div style="text-align: center; margin-bottom: 32px;">
-              <h1 style="color: #0f172a; font-size: 24px; margin: 0;">CAPITTAL</h1>
-            </div>
-            <div style="background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-              <h2 style="color: #0f172a; margin: 0 0 16px;">¡Hemos recibido tu solicitud!</h2>
-              <p style="color: #64748b; line-height: 1.6;">
-                Hola ${full_name},<br><br>
-                Hemos recibido tu solicitud de información para <strong>${operations.length} operaciones</strong>.
-                Nuestro equipo revisará tu petición y te contactará en las próximas 24-48 horas.
-              </p>
-              <div style="background: #f1f5f9; padding: 16px; border-radius: 8px; margin: 24px 0;">
-                <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">Operaciones solicitadas:</p>
-                <ul style="margin: 0; padding-left: 20px; color: #0f172a;">
-                  ${operations.map(op => `<li>${op.company_name} (${op.sector})</li>`).join('')}
-                </ul>
-              </div>
-              <p style="color: #64748b; line-height: 1.6;">
-                Si tienes alguna pregunta, no dudes en contactarnos en <a href="mailto:info@capittal.es" style="color: #3b82f6;">info@capittal.es</a>.
-              </p>
-              <p style="color: #64748b; margin-top: 24px;">
-                Un saludo,<br>
-                <strong>El equipo de Capittal</strong>
-              </p>
-            </div>
-          </div>
-        </body>
-        </html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; line-height: 1.5;">
+  <div style="max-width: 640px; margin: 0 auto; padding: 32px 16px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="color: #0f172a; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">CAPITTAL</h1>
+    </div>
+
+    <!-- Main Card -->
+    <div style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 32px;">
+      
+      <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 20px;">¡Hemos recibido tu solicitud!</h2>
+      
+      <p style="color: #64748b; line-height: 1.6; margin: 0 0 24px;">
+        Hola ${full_name},<br><br>
+        Hemos recibido tu solicitud de información para <strong>${operations.length} operaciones</strong>.
+        Nuestro equipo revisará tu petición y te contactará en las próximas 24-48 horas.
+      </p>
+      
+      <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+        <p style="margin: 0 0 8px; color: #64748b; font-size: 14px; font-weight: 600;">Operaciones solicitadas:</p>
+        <ul style="margin: 0; padding-left: 20px; color: #0f172a;">
+          ${operations.map(op => `<li style="margin-bottom: 4px;">${op.company_name} <span style="color: #64748b;">(${op.sector})</span></li>`).join('')}
+        </ul>
+      </div>
+      
+      <p style="color: #64748b; line-height: 1.6; margin: 0 0 24px;">
+        Si tienes alguna pregunta, no dudes en contactarnos en <a href="mailto:info@capittal.es" style="color: #2563eb; text-decoration: none;">info@capittal.es</a>.
+      </p>
+      
+      <p style="color: #64748b; margin: 0;">
+        Un saludo,<br>
+        <strong style="color: #0f172a;">El equipo de Capittal</strong>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 24px;">
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+        📧 info@capittal.es | 🌐 capittal.es
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
       `;
 
       try {
         await resend.emails.send({
           from: "Capittal <info@capittal.es>",
           to: [email],
-          subject: `Tu solicitud de información - ${operations.length} operaciones`,
+          subject: `Tu solicitud de información – ${operations.length} operaciones – Capittal`,
           html: userConfirmationHtml,
         });
         console.log(`Confirmation email sent to user: ${email}`);
