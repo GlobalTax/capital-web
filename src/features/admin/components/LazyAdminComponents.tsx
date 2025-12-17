@@ -72,3 +72,6 @@ export const LazyValoracionProForm = lazy(() => import('@/pages/admin/Valoracion
 // === CONFIGURATION ===
 export const LazyEmailRecipientsConfig = lazy(() => import('@/pages/admin/EmailRecipientsConfig'));
 export const LazyPdfSignatureConfig = lazy(() => import('@/pages/admin/PdfSignatureConfigPage'));
+
+// === MARKETPLACE ANALYTICS ===
+export const LazyMarketplaceAnalytics = lazy(() => import('@/pages/admin/MarketplaceAnalytics'));
