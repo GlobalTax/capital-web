@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Star, Scale } from 'lucide-react';
+import { Eye, Star, Scale, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
 import { formatDate, isRecentOperation } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
@@ -289,7 +290,30 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
 
             case 'actions':
               return (
-                <div key={column.key} style={{ width }} className="px-4 text-center">
+                <div key={column.key} style={{ width }} className="px-4 flex items-center justify-center gap-1">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const url = `${window.location.origin}/oportunidades?op=${operation.id}`;
+                            try {
+                              await navigator.clipboard.writeText(url);
+                              toast.success('Enlace copiado al portapapeles');
+                            } catch {
+                              toast.error('No se pudo copiar el enlace');
+                            }
+                          }}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Copiar enlace</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <Button
                     variant="ghost"
                     size="sm"
