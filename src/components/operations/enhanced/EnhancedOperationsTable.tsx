@@ -4,8 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Star, Scale, Share2 } from 'lucide-react';
+import { Eye, Star, Scale } from 'lucide-react';
 import { toast } from 'sonner';
+import ShareDropdown from '../ShareDropdown';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
 import { formatDate, isRecentOperation } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
@@ -96,71 +97,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
     enabled: true,
   });
 
-  // Share handler with Web Share API + fallbacks + iframe detection
-  const handleShare = async (operationId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    const url = `${window.location.origin}/oportunidades?op=${operationId}`;
-    console.log('[Share] Attempting to share:', url);
-    
-    // Detect if we're in an iframe (Lovable preview)
-    const isInIframe = window.self !== window.top;
-    console.log('[Share] Is in iframe:', isInIframe);
-    
-    // Try Web Share API first (better on mobile, skip in iframe)
-    if (navigator.share && !isInIframe) {
-      try {
-        await navigator.share({
-          title: 'Oportunidad de inversión - Capittal',
-          url: url
-        });
-        console.log('[Share] Web Share API success');
-        return;
-      } catch (err) {
-        console.log('[Share] Web Share API failed or cancelled:', err);
-      }
-    }
-    
-    // Fallback: Clipboard API
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(url);
-        toast.success('Enlace copiado al portapapeles');
-        console.log('[Share] Clipboard API success');
-        return;
-      }
-    } catch (err) {
-      console.log('[Share] Clipboard API failed:', err);
-    }
-    
-    // Final fallback: execCommand
-    try {
-      const textArea = document.createElement('textarea');
-      textArea.value = url;
-      textArea.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;boxShadow:none;background:transparent;opacity:0;';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      const success = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      
-      if (success) {
-        toast.success('Enlace copiado al portapapeles');
-        console.log('[Share] execCommand success');
-        return;
-      }
-    } catch (err) {
-      console.log('[Share] execCommand failed:', err);
-    }
-    
-    // Ultimate fallback: Show URL in toast for manual copy
-    toast.info('Copia este enlace manualmente:', { 
-      description: url,
-      duration: 10000 
-    });
-    console.log('[Share] Showing URL in toast for manual copy');
-  };
+  // Share functionality now handled by ShareDropdown component
 
   const renderRow = (operation: Operation, index: number) => {
     const selected = isSelected(operation.id);
@@ -357,19 +294,12 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
             case 'actions':
               return (
                 <div key={column.key} style={{ width }} className="px-4 flex items-center justify-center gap-1">
-                  {/* Botón share simplificado sin TooltipTrigger para máxima compatibilidad */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      console.log('[Share] Button clicked directly!');
-                      handleShare(operation.id, e);
-                    }}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    aria-label="Compartir operación"
-                    title="Compartir"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
+                  <ShareDropdown 
+                    operationId={operation.id}
+                    operationName={operation.company_name}
+                    triggerClassName="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    iconClassName="h-4 w-4"
+                  />
                   <Button
                     variant="ghost"
                     size="sm"

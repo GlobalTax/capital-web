@@ -5966,6 +5966,50 @@ export type Database = {
           },
         ]
       }
+      operation_shares: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown
+          operation_id: string
+          referrer: string | null
+          session_id: string | null
+          share_method: string
+          source_page: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          operation_id: string
+          referrer?: string | null
+          session_id?: string | null
+          share_method: string
+          source_page?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          operation_id?: string
+          referrer?: string | null
+          session_id?: string | null
+          share_method?: string
+          source_page?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_shares_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "company_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_views: {
         Row: {
           created_at: string
