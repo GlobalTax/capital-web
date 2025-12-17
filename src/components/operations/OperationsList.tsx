@@ -71,12 +71,12 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   
-  // Estado para toggle Grid/Lista con persistencia en localStorage
+  // Estado para toggle Grid/Lista con persistencia en localStorage (default: grid/tarjetas)
   const [displayType, setDisplayType] = useState<'grid' | 'list'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('operations-display-type') as 'grid' | 'list') || 'list';
+      return (localStorage.getItem('operations-display-type') as 'grid' | 'list') || 'grid';
     }
-    return 'list';
+    return 'grid';
   });
 
   useEffect(() => {
