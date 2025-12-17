@@ -157,3 +157,24 @@ export const useUpdateVentaTestimonial = () => {
     },
   });
 };
+
+export const useCreateVentaTestimonial = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: Omit<VentaTestimonial, 'id'>) => {
+      const { error } = await supabase
+        .from('venta_empresas_testimonials')
+        .insert(data);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['venta-empresas-testimonials'] });
+      toast.success('Testimonio creado correctamente');
+    },
+    onError: () => {
+      toast.error('Error al crear el testimonio');
+    },
+  });
+};
