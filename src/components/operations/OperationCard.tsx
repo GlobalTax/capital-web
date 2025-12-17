@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Shield,
   Lock,
-  Scale
+  Scale,
+  Share2
 } from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
 import { useI18n } from '@/shared/i18n/I18nProvider';
@@ -96,6 +97,17 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/oportunidades?op=${operation.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Enlace copiado al portapapeles');
+    } catch {
+      toast.error('No se pudo copiar el enlace');
+    }
+  };
+
   return (
     <>
     <Card className={`relative hover:shadow-lg transition-shadow ${className} ${operation.is_featured ? 'ring-2 ring-primary' : ''}`}>
@@ -140,6 +152,22 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
               }`}
             />
           </button>
+
+          {/* Share Button */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleShare}
+                  className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110"
+                  aria-label="Compartir operación"
+                >
+                  <Share2 className="h-4 w-4 text-gray-400 hover:text-blue-500" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Copiar enlace</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <div className="space-y-4">

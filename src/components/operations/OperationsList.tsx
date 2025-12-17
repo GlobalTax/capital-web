@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
+import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from '@/hooks/useDebounce';
 import { EnhancedOperationsTable } from './enhanced/EnhancedOperationsTable';
+import OperationCard from './OperationCard';
 
 // Constantes para límites
 const MAX_ITEMS_ALL = 500;
@@ -69,6 +70,18 @@ const OperationsList: React.FC<OperationsListProps> = ({
   // Nuevo: Estados para modo "Ver todas"
   const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
   const [isLoadingAll, setIsLoadingAll] = useState(false);
+  
+  // Estado para toggle Grid/Lista con persistencia en localStorage
+  const [displayType, setDisplayType] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('operations-display-type') as 'grid' | 'list') || 'list';
+    }
+    return 'list';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('operations-display-type', displayType);
+  }, [displayType]);
   
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -459,28 +472,63 @@ const OperationsList: React.FC<OperationsListProps> = ({
         </CardContent>
       </Card>
 
-      {/* Results count */}
+      {/* Results count + View Toggle */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Mostrando {operations.length} de {totalCount} operaciones
         </p>
-        {isLoading && (
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm text-muted-foreground">Cargando...</span>
+        <div className="flex items-center gap-2">
+          {isLoading && (
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-sm text-muted-foreground">Cargando...</span>
+            </div>
+          )}
+          {/* Grid/List Toggle */}
+          <div className="flex items-center border rounded-lg p-1">
+            <Button
+              variant={displayType === 'grid' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setDisplayType('grid')}
+              aria-label="Vista cuadrícula"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={displayType === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setDisplayType('list')}
+              aria-label="Vista lista"
+            >
+              <List className="h-4 w-4" />
+            </Button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Operations Table */}
-      <EnhancedOperationsTable 
-        operations={operations}
-        isLoading={isLoading}
-        onBulkAction={(action, ids) => {
-          console.log('Bulk action:', action, 'IDs:', ids);
-          // TODO: Implementar acciones masivas
-        }}
-      />
+      {/* Operations View - Grid or List */}
+      {displayType === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {operations.map(op => (
+            <OperationCard 
+              key={op.id} 
+              operation={op} 
+              searchTerm={debouncedSearchTerm} 
+            />
+          ))}
+        </div>
+      ) : (
+        <EnhancedOperationsTable 
+          operations={operations}
+          isLoading={isLoading}
+          onBulkAction={(action, ids) => {
+            console.log('Bulk action:', action, 'IDs:', ids);
+            // TODO: Implementar acciones masivas
+          }}
+        />
+      )}
 
       {/* Aviso si hay más de MAX_ITEMS_ALL */}
       {viewMode === 'all' && totalCount > MAX_ITEMS_ALL && (
