@@ -96,44 +96,70 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
     enabled: true,
   });
 
-  // Share handler with Web Share API + fallbacks
+  // Share handler with Web Share API + fallbacks + iframe detection
   const handleShare = async (operationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/oportunidades?op=${operationId}`;
+    e.preventDefault();
     
-    // Try Web Share API first (better on mobile)
-    if (navigator.share) {
+    const url = `${window.location.origin}/oportunidades?op=${operationId}`;
+    console.log('[Share] Attempting to share:', url);
+    
+    // Detect if we're in an iframe (Lovable preview)
+    const isInIframe = window.self !== window.top;
+    console.log('[Share] Is in iframe:', isInIframe);
+    
+    // Try Web Share API first (better on mobile, skip in iframe)
+    if (navigator.share && !isInIframe) {
       try {
         await navigator.share({
-          title: 'Oportunidad de inversión',
+          title: 'Oportunidad de inversión - Capittal',
           url: url
         });
+        console.log('[Share] Web Share API success');
         return;
-      } catch {
-        // User cancelled or not available, continue with clipboard
+      } catch (err) {
+        console.log('[Share] Web Share API failed or cancelled:', err);
       }
     }
     
     // Fallback: Clipboard API
     try {
-      await navigator.clipboard.writeText(url);
-      toast.success('Enlace copiado al portapapeles');
-    } catch {
-      // Final fallback: execCommand (old browsers)
-      try {
-        const textArea = document.createElement('textarea');
-        textArea.value = url;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
         toast.success('Enlace copiado al portapapeles');
-      } catch {
-        toast.error('No se pudo copiar el enlace');
+        console.log('[Share] Clipboard API success');
+        return;
       }
+    } catch (err) {
+      console.log('[Share] Clipboard API failed:', err);
     }
+    
+    // Final fallback: execCommand
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;boxShadow:none;background:transparent;opacity:0;';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const success = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (success) {
+        toast.success('Enlace copiado al portapapeles');
+        console.log('[Share] execCommand success');
+        return;
+      }
+    } catch (err) {
+      console.log('[Share] execCommand failed:', err);
+    }
+    
+    // Ultimate fallback: Show URL in toast for manual copy
+    toast.info('Copia este enlace manualmente:', { 
+      description: url,
+      duration: 10000 
+    });
+    console.log('[Share] Showing URL in toast for manual copy');
   };
 
   const renderRow = (operation: Operation, index: number) => {
