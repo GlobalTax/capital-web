@@ -14,7 +14,7 @@ import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatCurrency } from '@/shared/utils/format';
 import { formatDate } from '@/shared/utils/date';
-import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3, Kanban, User } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3, Kanban, User, X } from 'lucide-react';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
@@ -309,6 +309,11 @@ const AdminOperations = () => {
 
     setIsSaving(true);
     try {
+      // Clean highlights: trim and remove empty
+      const cleanHighlights = (editingOperation.highlights || [])
+        .map(h => h.trim())
+        .filter(h => h.length > 0);
+
       const operationData: Database['public']['Tables']['company_operations']['Insert'] = {
         company_name: editingOperation.company_name.trim(),
         sector: editingOperation.sector.trim(),
@@ -330,6 +335,7 @@ const AdminOperations = () => {
         expected_market_text: editingOperation.project_status === 'in_progress' 
           ? editingOperation.expected_market_text?.trim() || null 
           : null,
+        highlights: cleanHighlights.length > 0 ? cleanHighlights : null,
       };
 
       let result;
@@ -1643,6 +1649,101 @@ const AdminOperations = () => {
                     rows={6}
                     placeholder="Descripción detallada de la operación"
                   />
+                </div>
+              </div>
+
+              {/* Highlights / Etiquetas */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Puntos Destacados
+                  <span className="text-xs font-normal text-muted-foreground ml-2">
+                    (máx. 4 etiquetas, se muestran en las tarjetas)
+                  </span>
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Añade 2-3 puntos diferenciadores específicos de esta operación. 
+                  Evita textos genéricos.
+                </p>
+                
+                {/* Input para cada highlight */}
+                {(editingOperation.highlights || []).map((highlight, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={highlight}
+                      onChange={(e) => {
+                        const newHighlights = [...(editingOperation.highlights || [])];
+                        newHighlights[index] = e.target.value;
+                        setEditingOperation({
+                          ...editingOperation,
+                          highlights: newHighlights
+                        });
+                      }}
+                      placeholder="Ej: Contratos recurrentes con clientes"
+                      maxLength={50}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newHighlights = (editingOperation.highlights || []).filter((_, i) => i !== index);
+                        setEditingOperation({
+                          ...editingOperation,
+                          highlights: newHighlights
+                        });
+                      }}
+                    >
+                      <X className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                ))}
+                
+                {/* Botón añadir nuevo highlight */}
+                {(editingOperation.highlights || []).length < 4 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingOperation({
+                        ...editingOperation,
+                        highlights: [...(editingOperation.highlights || []), '']
+                      });
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Añadir punto destacado
+                  </Button>
+                )}
+                
+                {/* Sugerencias */}
+                <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                  <p className="text-xs font-medium text-amber-800 mb-2">💡 Ideas de etiquetas creíbles:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {['Contratos recurrentes', 'Márgenes estables', 'Cartera en crecimiento', 
+                      'Equipo con continuidad', 'Operación llave en mano', 'Posición líder regional',
+                      'Baja concentración clientes', 'Procesos profesionalizados'].map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => {
+                          if ((editingOperation.highlights || []).length < 4 && 
+                              !(editingOperation.highlights || []).includes(suggestion)) {
+                            setEditingOperation({
+                              ...editingOperation,
+                              highlights: [...(editingOperation.highlights || []), suggestion]
+                            });
+                          }
+                        }}
+                        disabled={(editingOperation.highlights || []).length >= 4 || 
+                                  (editingOperation.highlights || []).includes(suggestion)}
+                        className="px-2 py-1 text-xs bg-white border border-amber-200 rounded-full hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        + {suggestion}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
