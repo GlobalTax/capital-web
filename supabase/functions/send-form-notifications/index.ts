@@ -23,12 +23,13 @@ interface FormNotificationRequest {
 
 // Equipo completo que recibe notificaciones de formularios
 const ADMIN_EMAILS = [
-  's.navarro@capittal.es',
+  'samuel@capittal.es',
   'marcc@capittal.es',
+  'oriol@capittal.es',
   'marc@capittal.es',
-  'marcel.pardos@capittal.es',
+  'marcel@capittal.es',
   'lluis@capittal.es',
-  'samuel@capittal.es'
+  'albert@capittal.es',
 ];
 
 // Helper functions for formatting
@@ -45,6 +46,18 @@ const getPageOriginLabel = (pageOrigin: string | undefined): string => {
     'operation_inquiry': 'Consulta de Operación',
   };
   return labels[pageOrigin || ''] || pageOrigin || '';
+};
+
+const formatCurrency = (amount: number | string | undefined): string => {
+  if (!amount) return 'No especificado';
+  const num = typeof amount === 'string' ? parseFloat(amount.replace(/[^\d.-]/g, '')) : amount;
+  if (isNaN(num)) return String(amount);
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
 };
 
 const formatRevenueRange = (range: string | undefined): string => {
@@ -80,10 +93,211 @@ const formatEmployeeRange = (range: string | undefined): string => {
   return labels[range || ''] || range || 'No especificado';
 };
 
+const formatUrgency = (urgency: string | undefined): string => {
+  const labels: Record<string, string> = {
+    'urgente': '🔴 Urgente (< 1 mes)',
+    'corto': '🟠 Corto plazo (1-3 meses)',
+    'medio': '🟡 Medio plazo (3-6 meses)',
+    'largo': '🟢 Largo plazo (> 6 meses)',
+  };
+  return labels[urgency || ''] || urgency || 'No especificado';
+};
+
+const formatDateTime = (): string => {
+  return new Date().toLocaleString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Madrid'
+  });
+};
+
+// Plantilla HTML profesional base para emails internos
+const getAdminEmailBaseHtml = (
+  title: string,
+  subtitle: string,
+  contentHtml: string,
+  pageOrigin: string,
+  ctaUrl?: string,
+  ctaText?: string,
+  utmData?: { source?: string; medium?: string; campaign?: string }
+): string => {
+  const dateTime = formatDateTime();
+  
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; line-height: 1.5;">
+  <div style="max-width: 640px; margin: 0 auto; padding: 32px 16px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="color: #0f172a; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">CAPITTAL</h1>
+      <p style="color: #64748b; font-size: 14px; margin: 8px 0 0;">${subtitle}</p>
+    </div>
+
+    <!-- Main Card -->
+    <div style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); overflow: hidden;">
+      
+      <!-- Title Bar -->
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 20px 24px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600;">${title}</h2>
+        <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: #94a3b8;">
+          <span>📅 ${dateTime}</span>
+          <span>🔗 ${pageOrigin || 'Web'}</span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div style="padding: 24px;">
+        ${contentHtml}
+      </div>
+
+      ${ctaUrl ? `
+      <!-- CTA -->
+      <div style="padding: 0 24px 24px; text-align: center;">
+        <a href="${ctaUrl}" style="display: inline-block; background: #0f172a; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+          ${ctaText || 'Ver en CRM'} →
+        </a>
+      </div>
+      ` : ''}
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 24px; padding: 0 16px;">
+      ${utmData?.source || utmData?.medium || utmData?.campaign ? `
+      <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px;">
+        UTM: ${utmData.source || '-'} / ${utmData.medium || '-'} / ${utmData.campaign || '-'}
+      </p>
+      ` : ''}
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+        Este email fue generado automáticamente por Capittal.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
+  `;
+};
+
+// Generar sección de datos de contacto
+const getContactDataSection = (data: any): string => {
+  return `
+    <div style="margin-bottom: 24px;">
+      <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+        👤 Datos del Contacto
+      </h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Nombre</td>
+          <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.fullName || data.full_name || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Email</td>
+          <td style="padding: 10px 0;"><a href="mailto:${data.email}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.email}</a></td>
+        </tr>
+        ${data.phone ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Teléfono</td>
+          <td style="padding: 10px 0;"><a href="tel:${data.phone}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.phone}</a></td>
+        </tr>
+        ` : ''}
+        ${data.company ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Empresa</td>
+          <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.company}</td>
+        </tr>
+        ` : ''}
+        ${data.cif ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">CIF</td>
+          <td style="padding: 10px 0; color: #0f172a; font-size: 14px;">${data.cif}</td>
+        </tr>
+        ` : ''}
+      </table>
+    </div>
+  `;
+};
+
+// Generar sección de datos financieros
+const getFinancialDataSection = (data: any): string => {
+  const hasFinancialData = data.revenue || data.revenue_range || data.ebitda || data.ebitda_range || data.annualRevenue || data.employeeCount;
+  
+  if (!hasFinancialData) return '';
+
+  return `
+    <div style="margin-bottom: 24px;">
+      <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+        💰 Datos Financieros
+      </h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        ${data.revenue || data.annualRevenue ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Facturación</td>
+          <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.revenue || data.annualRevenue)}</td>
+        </tr>
+        ` : data.revenue_range ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Facturación</td>
+          <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatRevenueRange(data.revenue_range)}</td>
+        </tr>
+        ` : ''}
+        ${data.ebitda ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">EBITDA</td>
+          <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.ebitda)}</td>
+        </tr>
+        ` : data.ebitda_range ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">EBITDA</td>
+          <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatEbitdaRange(data.ebitda_range)}</td>
+        </tr>
+        ` : ''}
+        ${data.employeeCount ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Empleados</td>
+          <td style="padding: 10px 0; color: #0f172a; font-size: 14px;">${formatEmployeeRange(data.employeeCount)}</td>
+        </tr>
+        ` : ''}
+        ${data.urgency ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Urgencia</td>
+          <td style="padding: 10px 0; color: #0f172a; font-size: 14px;">${formatUrgency(data.urgency)}</td>
+        </tr>
+        ` : ''}
+      </table>
+    </div>
+  `;
+};
+
+// Generar sección de mensaje
+const getMessageSection = (message: string | undefined): string => {
+  if (!message) return '';
+  
+  return `
+    <div style="margin-bottom: 24px;">
+      <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+        💬 Mensaje
+      </h3>
+      <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+        <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${message}</p>
+      </div>
+    </div>
+  `;
+};
+
 const getUserConfirmationTemplate = (formType: string, data: any) => {
   const baseStyle = `
     <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #333; }
       .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
       .content { padding: 20px; background: #f9f9f9; }
       .info-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -114,7 +328,7 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
                 <li>Conocer más sobre nuestros servicios en <a href="https://capittal.es/servicios">capittal.es/servicios</a></li>
                 <li>Probar nuestra calculadora de valoración gratuita en <a href="https://capittal.es/lp/calculadora">capittal.es/lp/calculadora</a></li>
               </ul>
-              <p>Si tienes alguna pregunta urgente, no dudes en llamarnos al <strong>+34 XXX XXX XXX</strong>.</p>
+              <p>Si tienes alguna pregunta urgente, no dudes en llamarnos.</p>
             </div>
           </div>
           <div class="footer">
@@ -168,12 +382,6 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
               <p>¡Gracias por tu interés en formar parte de nuestra red de colaboradores profesionales!</p>
               <p>Hemos recibido tu solicitud y estamos muy emocionados de conocer más sobre tu experiencia en <strong>${data.profession}</strong>.</p>
               <p>Nuestro equipo revisará tu perfil y se pondrá en contacto contigo en los próximos 3-5 días hábiles para programar una entrevista inicial.</p>
-              <p>Mientras tanto, te recomendamos:</p>
-              <ul>
-                <li>Preparar ejemplos de proyectos anteriores relevantes</li>
-                <li>Revisar nuestros casos de éxito en <a href="https://capittal.es/casos-exito">capittal.es/casos-exito</a></li>
-                <li>Conocer más sobre nuestra metodología de trabajo</li>
-              </ul>
             </div>
           </div>
           <div class="footer">
@@ -195,16 +403,7 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
             <div class="info-box">
               <p>Hola <strong>${data.fullName}</strong>,</p>
               <p>Hemos recibido tu consulta sobre la operación <strong>${data.companyName}</strong>.</p>
-              <p><span class="label">ID de operación:</span> ${data.operationId}</p>
-              ${data.message ? `<p><span class="label">Tu mensaje:</span> ${data.message}</p>` : ''}
               <p>Nuestro equipo revisará tu perfil de inversor y se pondrá en contacto contigo en las próximas 24-48 horas para proporcionarte más información detallada sobre esta oportunidad.</p>
-              <p>Te recordamos que todas nuestras operaciones están sujetas a:</p>
-              <ul>
-                <li>Proceso de due diligence completo</li>
-                <li>Verificación de perfil de inversor</li>
-                <li>Firma de acuerdos de confidencialidad</li>
-                <li>Cumplimiento de requisitos regulatorios</li>
-              </ul>
             </div>
           </div>
           <div class="footer">
@@ -226,15 +425,7 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
             <div class="info-box">
               <p>¡Hola!</p>
               <p>¡Gracias por suscribirte a nuestro newsletter!</p>
-              <p>Ahora recibirás contenido exclusivo sobre:</p>
-              <ul>
-                <li>📈 Tendencias del mercado M&A</li>
-                <li>💡 Consejos para valorar empresas</li>
-                <li>🎯 Estrategias de crecimiento empresarial</li>
-                <li>📊 Análisis de sectores</li>
-                <li>🔥 Oportunidades de inversión</li>
-              </ul>
-              <p>Tu primer newsletter llegará la próxima semana. ¡No te lo pierdas!</p>
+              <p>Ahora recibirás contenido exclusivo sobre tendencias M&A, valoración de empresas y oportunidades de inversión.</p>
             </div>
           </div>
           <div class="footer">
@@ -256,7 +447,6 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
             <div class="info-box">
               <p>Hola <strong>${data.fullName || 'Usuario'}</strong>,</p>
               <p>Hemos recibido tu información y nos pondremos en contacto contigo muy pronto.</p>
-              <p>Gracias por tu interés en Capittal.</p>
             </div>
           </div>
           <div class="footer">
@@ -269,240 +459,244 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
 };
 
 const getEmailTemplate = (formType: string, data: any) => {
-  const baseStyle = `
-    <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-      .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
-      .content { padding: 20px; background: #f9f9f9; }
-      .info-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-      .label { font-weight: bold; color: #0f172a; }
-      .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
-    </style>
-  `;
+  const pageOriginLabel = getPageOriginLabel(data.page_origin);
+  const utmData = { source: data.utm_source, medium: data.utm_medium, campaign: data.utm_campaign };
 
   switch (formType) {
     case 'contact':
-      const pageOriginLabel = getPageOriginLabel(data.page_origin);
+    case 'general_contact': {
+      const contentHtml = `
+        ${getContactDataSection(data)}
+        ${getFinancialDataSection(data)}
+        ${data.serviceType ? `
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            🎯 Tipo de Servicio
+          </h3>
+          <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500;">${data.serviceType}</span>
+        </div>
+        ` : ''}
+        ${getMessageSection(data.message)}
+      `;
+      
       return {
-        subject: `🔥 Nuevo Lead ${pageOriginLabel ? `(${pageOriginLabel})` : ''} - ${data.fullName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>🎯 Nuevo Lead de Contacto${pageOriginLabel ? ` - ${pageOriginLabel}` : ''}</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Página de origen:</span> ${pageOriginLabel || data.page_origin || 'No especificada'}</p>
-              <p><span class="label">Nombre:</span> ${data.fullName}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
-              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">Tipo de servicio:</span> ${data.serviceType || 'No especificado'}</p>
-              ${data.annualRevenue ? `<p><span class="label">Facturación anual:</span> ${formatRevenueRange(data.annualRevenue)}</p>` : ''}
-              ${data.ebitda ? `<p><span class="label">EBITDA:</span> ${formatEbitdaRange(data.ebitda)}</p>` : ''}
-              ${data.employeeCount ? `<p><span class="label">Nº Empleados:</span> ${formatEmployeeRange(data.employeeCount)}</p>` : ''}
-              ${data.message ? `<p><span class="label">Mensaje:</span> ${data.message}</p>` : ''}
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Sistema de Gestión de Leads</p>
-          </div>
-        `
+        subject: `Nueva solicitud – ${data.company || data.fullName} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Solicitud de Contacto',
+          pageOriginLabel || 'Formulario de Contacto',
+          contentHtml,
+          pageOriginLabel || 'Web',
+          'https://capittal.es/admin/crm',
+          'Ver en CRM',
+          utmData
+        )
       };
+    }
 
-    case 'general_contact':
+    case 'sell_lead': {
+      const contentHtml = `
+        ${getContactDataSection(data)}
+        ${getFinancialDataSection(data)}
+        ${getMessageSection(data.message)}
+      `;
+      
       return {
-        subject: `💼 Nuevo Lead de Contacto General - ${data.fullName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>💼 Nuevo Lead de Contacto General</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Nombre:</span> ${data.fullName}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Empresa:</span> ${data.company}</p>
-              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">País:</span> ${data.country || 'No especificado'}</p>
-              <p><span class="label">Facturación anual:</span> ${data.annual_revenue || 'No especificada'}</p>
-              <p><span class="label">¿Cómo nos conociste?:</span> ${data.how_did_you_hear || 'No especificado'}</p>
-              <p><span class="label">Página de origen:</span> ${data.page_origin || 'No especificada'}</p>
-              <p><span class="label">Mensaje:</span> ${data.message}</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Sistema de Contacto</p>
-          </div>
-        `
+        subject: `Nueva solicitud de venta – ${data.company || data.fullName} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Consulta de Venta de Empresa',
+          pageOriginLabel || 'LP Venta Empresas',
+          contentHtml,
+          pageOriginLabel || 'LP Venta Empresas',
+          'https://capittal.es/admin/crm',
+          'Ver en CRM',
+          utmData
+        )
       };
+    }
 
-    case 'sell_lead':
+    case 'operation_contact': {
+      const contentHtml = `
+        ${getContactDataSection(data)}
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            🏢 Operación de Interés
+          </h3>
+          <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; border-left: 4px solid #22c55e;">
+            <p style="margin: 0 0 8px; color: #0f172a; font-size: 16px; font-weight: 600;">${data.companyName}</p>
+            <p style="margin: 0; color: #64748b; font-size: 13px;">
+              ID: <a href="https://capittal.es/oportunidades?operation=${data.operationId}" style="color: #2563eb;">${data.operationId}</a>
+            </p>
+          </div>
+        </div>
+        ${data.serviceType ? `
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            🎯 Tipo de Servicio
+          </h3>
+          <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500;">${data.serviceType}</span>
+        </div>
+        ` : ''}
+        ${getMessageSection(data.message)}
+      `;
+      
       return {
-        subject: `🏢 Nuevo Lead de Venta de Empresa - ${data.fullName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>🏢 Nueva Consulta de Venta de Empresa</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Nombre:</span> ${data.fullName}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Empresa:</span> ${data.company}</p>
-              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">Rango de facturación:</span> ${data.revenue_range || 'No especificado'}</p>
-              <p><span class="label">Mensaje:</span> ${data.message || 'Sin mensaje específico'}</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Venta de Empresas</p>
-          </div>
-        `
+        subject: `Interés en operación – ${data.companyName} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Consulta de Operación',
+          'Marketplace de Operaciones',
+          contentHtml,
+          'Marketplace',
+          `https://capittal.es/oportunidades?operation=${data.operationId}`,
+          'Ver Operación',
+          utmData
+        )
       };
+    }
 
-    case 'operation_contact':
+    case 'lead_magnet_download': {
+      const contentHtml = `
+        ${getContactDataSection({ ...data, fullName: data.fullName, company: data.user_company, phone: data.user_phone })}
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            📥 Lead Magnet
+          </h3>
+          <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500;">ID: ${data.lead_magnet_id}</span>
+        </div>
+      `;
+      
       return {
-        subject: `🎯 Nueva Consulta de Operación - ${data.fullName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>🎯 Nueva Consulta de Operación</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Nombre:</span> ${data.fullName}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
-              <p><span class="label">Teléfono:</span> ${data.phone || 'No especificado'}</p>
-              <p><span class="label">Tipo de servicio:</span> ${data.serviceType || 'No especificado'}</p>
-              <p><span class="label">Operación de interés:</span> ${data.companyName}</p>
-              <p><span class="label">ID de operación:</span> <a href="https://capittal.es/oportunidades?operation=${data.operationId}">${data.operationId}</a></p>
-              <p><span class="label">Mensaje:</span> ${data.message || 'Sin mensaje'}</p>
-              <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES')}</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Consulta de Operación</p>
-          </div>
-        `
+        subject: `Nueva descarga Lead Magnet – ${data.fullName} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Descarga de Lead Magnet',
+          'Lead Magnet',
+          contentHtml,
+          'Lead Magnet',
+          'https://capittal.es/admin/crm',
+          'Ver en CRM',
+          utmData
+        )
       };
+    }
 
-    case 'lead_magnet_download':
+    case 'collaborator': {
+      const contentHtml = `
+        ${getContactDataSection(data)}
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            💼 Perfil Profesional
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px;">Profesión</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.profession}</td>
+            </tr>
+            ${data.experience ? `
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px;">Experiencia</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 14px;">${data.experience}</td>
+            </tr>
+            ` : ''}
+          </table>
+        </div>
+        ${data.motivation ? getMessageSection(data.motivation) : ''}
+      `;
+      
       return {
-        subject: `📥 Nueva Descarga de Lead Magnet - ${data.fullName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>📥 Nueva Descarga de Lead Magnet</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Nombre:</span> ${data.fullName}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Empresa:</span> ${data.user_company || 'No especificada'}</p>
-              <p><span class="label">Teléfono:</span> ${data.user_phone || 'No especificado'}</p>
-              <p><span class="label">Lead Magnet ID:</span> ${data.lead_magnet_id}</p>
-              <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES')}</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Lead Magnet</p>
-          </div>
-        `
+        subject: `Nueva solicitud colaborador – ${data.fullName} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Solicitud de Colaborador',
+          'Programa de Colaboradores',
+          contentHtml,
+          'Colaboradores',
+          'https://capittal.es/admin/crm',
+          'Ver en CRM',
+          utmData
+        )
       };
-
-    case 'collaborator':
-      return {
-        subject: `🤝 Nueva Solicitud de Colaborador - ${data.fullName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>🤝 Nueva Solicitud de Colaborador</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Nombre:</span> ${data.fullName}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Teléfono:</span> ${data.phone}</p>
-              <p><span class="label">Empresa:</span> ${data.company || 'No especificada'}</p>
-              <p><span class="label">Profesión:</span> ${data.profession}</p>
-              <p><span class="label">Experiencia:</span> ${data.experience || 'No especificada'}</p>
-              <p><span class="label">Motivación:</span> ${data.motivation || 'No especificada'}</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Programa de Colaboradores</p>
-          </div>
-        `
-      };
+    }
 
     case 'newsletter':
       return {
-        subject: `📧 Nueva Suscripción Newsletter - ${data.email}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>📧 Nueva Suscripción Newsletter</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES')}</p>
+        subject: `Nueva suscripción newsletter – ${data.email} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Suscripción Newsletter',
+          'Newsletter',
+          `
+            <div style="text-align: center; padding: 20px;">
+              <p style="color: #64748b; margin: 0 0 8px;">Nuevo suscriptor:</p>
+              <p style="color: #0f172a; font-size: 18px; font-weight: 600; margin: 0;">
+                <a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a>
+              </p>
             </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Newsletter</p>
-          </div>
-        `
+          `,
+          'Newsletter',
+          undefined,
+          undefined,
+          utmData
+        )
       };
 
-    case 'calendar':
+    case 'calendar': {
+      const contentHtml = `
+        ${getContactDataSection({ fullName: data.clientName, email: data.clientEmail, phone: data.clientPhone, company: data.companyName })}
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            📅 Detalles de la Reunión
+          </h3>
+          <div style="background: #eff6ff; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; color: #64748b; font-size: 14px; width: 120px;">Fecha</td>
+                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.bookingDate}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Hora</td>
+                <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.bookingTime}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Tipo</td>
+                <td style="padding: 8px 0; color: #0f172a; font-size: 14px;">${data.meetingType}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Formato</td>
+                <td style="padding: 8px 0; color: #0f172a; font-size: 14px;">${data.meetingFormat}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        ${data.notes ? getMessageSection(data.notes) : ''}
+      `;
+      
       return {
-        subject: `📅 Nueva Reserva de Reunión - ${data.clientName}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>📅 Nueva Reserva de Reunión</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Cliente:</span> ${data.clientName}</p>
-              <p><span class="label">Email:</span> ${data.clientEmail}</p>
-              <p><span class="label">Teléfono:</span> ${data.clientPhone || 'No especificado'}</p>
-              <p><span class="label">Empresa:</span> ${data.companyName || 'No especificada'}</p>
-              <p><span class="label">Fecha:</span> ${data.bookingDate}</p>
-              <p><span class="label">Hora:</span> ${data.bookingTime}</p>
-              <p><span class="label">Tipo de reunión:</span> ${data.meetingType}</p>
-              <p><span class="label">Formato:</span> ${data.meetingFormat}</p>
-              <p><span class="label">Notas:</span> ${data.notes || 'Sin notas'}</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Sistema de Reservas</p>
-          </div>
-        `
+        subject: `Nueva reserva reunión – ${data.clientName} – ${data.bookingDate} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          'Nueva Reserva de Reunión',
+          'Sistema de Reservas',
+          contentHtml,
+          'Calendario',
+          'https://capittal.es/admin/calendario',
+          'Ver Calendario',
+          utmData
+        )
       };
+    }
 
     default:
       return {
-        subject: `📝 Nueva Submission - ${formType}`,
-        html: `
-          ${baseStyle}
-          <div class="header">
-            <h1>📝 Nueva Submission</h1>
-          </div>
-          <div class="content">
-            <div class="info-box">
-              <p><span class="label">Tipo:</span> ${formType}</p>
-              <p><span class="label">Email:</span> ${data.email}</p>
-              <p><span class="label">Datos:</span> ${JSON.stringify(data, null, 2)}</p>
+        subject: `Nueva submission – ${formType} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          `Nueva Submission: ${formType}`,
+          'Formulario',
+          `
+            <div style="background: #f8fafc; padding: 16px; border-radius: 8px;">
+              <pre style="margin: 0; font-size: 12px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>
             </div>
-          </div>
-          <div class="footer">
-            <p>Capittal - Sistema de Formularios</p>
-          </div>
-        `
+          `,
+          'Web',
+          'https://capittal.es/admin/crm',
+          'Ver en CRM',
+          utmData
+        )
       };
   }
 };
@@ -543,8 +737,9 @@ const handler = async (req: Request): Promise<Response> => {
     for (const adminEmail of ADMIN_EMAILS) {
       try {
         const result = await resend.emails.send({
-          from: "Capittal Forms <s.navarro@capittal.es>",
+          from: "Capittal Forms <notificaciones@capittal.es>",
           to: [adminEmail],
+          reply_to: email, // Reply-To al email del lead
           subject: adminTemplate.subject,
           html: adminTemplate.html,
         });
@@ -564,7 +759,7 @@ const handler = async (req: Request): Promise<Response> => {
     let userResult;
     try {
       const result = await resend.emails.send({
-        from: "Capittal <s.navarro@capittal.es>",
+        from: "Capittal <info@capittal.es>",
         to: [email],
         subject: userTemplate.subject,
         html: userTemplate.html,
