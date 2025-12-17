@@ -18,11 +18,13 @@ import {
   AlertCircle,
   Eye,
   RefreshCw,
-  Plus
+  Plus,
+  FileCode
 } from 'lucide-react';
 import { OperationSelector } from '@/components/admin/newsletter/OperationSelector';
 import { NewsletterPreview } from '@/components/admin/newsletter/NewsletterPreview';
 import { CampaignHistory } from '@/components/admin/newsletter/CampaignHistory';
+import { BrevoHtmlGenerator } from '@/components/admin/newsletter/BrevoHtmlGenerator';
 
 interface Operation {
   id: string;
@@ -64,6 +66,7 @@ const NewsletterPage: React.FC = () => {
   const [introText, setIntroText] = useState('');
   const [selectedOperations, setSelectedOperations] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [showBrevoGenerator, setShowBrevoGenerator] = useState(false);
   const [activeTab, setActiveTab] = useState('create');
 
   // Fetch subscribers count
@@ -271,7 +274,7 @@ const NewsletterPage: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     Se enviará a <strong>{subscriberCount}</strong> suscriptores activos
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       onClick={() => setShowPreview(true)}
@@ -280,6 +283,15 @@ const NewsletterPage: React.FC = () => {
                     >
                       <Eye className="h-4 w-4" />
                       Vista Previa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowBrevoGenerator(true)}
+                      disabled={selectedOperations.length === 0}
+                      className="gap-2"
+                    >
+                      <FileCode className="h-4 w-4" />
+                      HTML para Brevo
                     </Button>
                     <Button
                       onClick={() => sendNewsletter.mutate()}
@@ -398,6 +410,15 @@ const NewsletterPage: React.FC = () => {
           onClose={() => setShowPreview(false)}
         />
       )}
+
+      {/* Brevo HTML Generator Modal */}
+      <BrevoHtmlGenerator
+        open={showBrevoGenerator}
+        onOpenChange={setShowBrevoGenerator}
+        operations={selectedOps}
+        subject={subject}
+        introText={introText}
+      />
     </div>
   );
 };
