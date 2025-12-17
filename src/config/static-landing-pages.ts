@@ -94,5 +94,17 @@ export const staticLandingPages: StaticLandingPage[] = [
     features: ['Lead Form', 'Scheduling', 'Event Info'],
     isActive: true,
     lastUpdated: '2025-01-10'
+  },
+  {
+    id: 'lp-venta-empresas-v2',
+    title: 'Venta de Empresas V2',
+    slug: 'venta-empresas-v2',
+    url: '/lp/venta-empresas-v2',
+    type: 'conversion',
+    description: 'Landing V2 de conversión optimizada - diseño simplificado para A/B testing',
+    source_project: 'lp-venta-empresas-v2',
+    features: ['Hero + Form Above Fold', 'Diseño Simplificado', 'A/B Testing Ready', 'Testimoniales', 'FAQ'],
+    isActive: true,
+    lastUpdated: '2025-01-20'
   }
 ];
