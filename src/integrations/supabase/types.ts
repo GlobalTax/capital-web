@@ -5574,8 +5574,10 @@ export type Database = {
           click_count: number | null
           created_at: string | null
           error_message: string | null
+          html_content: string | null
           id: string
           intro_text: string | null
+          notes: string | null
           open_count: number | null
           operations_included: string[]
           preview_text: string | null
@@ -5583,6 +5585,7 @@ export type Database = {
           scheduled_for: string | null
           sent_at: string | null
           sent_by: string | null
+          sent_via: string | null
           status: string
           subject: string
           unsubscribe_count: number | null
@@ -5592,8 +5595,10 @@ export type Database = {
           click_count?: number | null
           created_at?: string | null
           error_message?: string | null
+          html_content?: string | null
           id?: string
           intro_text?: string | null
+          notes?: string | null
           open_count?: number | null
           operations_included?: string[]
           preview_text?: string | null
@@ -5601,6 +5606,7 @@ export type Database = {
           scheduled_for?: string | null
           sent_at?: string | null
           sent_by?: string | null
+          sent_via?: string | null
           status?: string
           subject: string
           unsubscribe_count?: number | null
@@ -5610,8 +5616,10 @@ export type Database = {
           click_count?: number | null
           created_at?: string | null
           error_message?: string | null
+          html_content?: string | null
           id?: string
           intro_text?: string | null
+          notes?: string | null
           open_count?: number | null
           operations_included?: string[]
           preview_text?: string | null
@@ -5619,6 +5627,7 @@ export type Database = {
           scheduled_for?: string | null
           sent_at?: string | null
           sent_by?: string | null
+          sent_via?: string | null
           status?: string
           subject?: string
           unsubscribe_count?: number | null

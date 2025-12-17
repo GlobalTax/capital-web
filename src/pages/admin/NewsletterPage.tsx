@@ -40,6 +40,7 @@ interface Operation {
 interface Campaign {
   id: string;
   subject: string;
+  intro_text?: string | null;
   operations_included: string[];
   recipients_count: number;
   sent_at: string | null;
@@ -47,6 +48,9 @@ interface Campaign {
   open_count: number;
   click_count: number;
   created_at: string;
+  sent_via?: string | null;
+  notes?: string | null;
+  html_content?: string | null;
 }
 
 interface Subscriber {
@@ -147,6 +151,19 @@ const NewsletterPage: React.FC = () => {
   const sentCampaigns = campaigns?.filter(c => c.status === 'sent').length || 0;
 
   const selectedOps = operations?.filter(op => selectedOperations.includes(op.id)) || [];
+
+  // Handle duplicating a campaign
+  const handleDuplicate = (campaign: Campaign) => {
+    setSubject(campaign.subject);
+    setIntroText(campaign.intro_text || '');
+    setSelectedOperations(campaign.operations_included || []);
+    setActiveTab('create');
+  };
+
+  // Refresh campaigns after creating/updating
+  const refreshCampaigns = () => {
+    queryClient.invalidateQueries({ queryKey: ['newsletter-campaigns'] });
+  };
 
   return (
     <div className="space-y-6">
@@ -285,25 +302,12 @@ const NewsletterPage: React.FC = () => {
                       Vista Previa
                     </Button>
                     <Button
-                      variant="outline"
                       onClick={() => setShowBrevoGenerator(true)}
                       disabled={selectedOperations.length === 0}
                       className="gap-2"
                     >
                       <FileCode className="h-4 w-4" />
-                      HTML para Brevo
-                    </Button>
-                    <Button
-                      onClick={() => sendNewsletter.mutate()}
-                      disabled={selectedOperations.length === 0 || sendNewsletter.isPending}
-                      className="gap-2"
-                    >
-                      {sendNewsletter.isPending ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                      Enviar Ahora
+                      Crear Campaña para Brevo
                     </Button>
                   </div>
                 </div>
@@ -357,8 +361,14 @@ const NewsletterPage: React.FC = () => {
 
         {/* History Tab */}
         <TabsContent value="history">
-          <CampaignHistory campaigns={campaigns || []} isLoading={campaignsLoading} />
-        </TabsContent>
+          <CampaignHistory 
+            campaigns={campaigns || []} 
+            isLoading={campaignsLoading}
+        onRefresh={refreshCampaigns}
+        operations={operations || []}
+        onDuplicate={handleDuplicate}
+      />
+    </TabsContent>
 
         {/* Subscribers Tab */}
         <TabsContent value="subscribers">
@@ -418,6 +428,7 @@ const NewsletterPage: React.FC = () => {
         operations={selectedOps}
         subject={subject}
         introText={introText}
+        onCampaignCreated={refreshCampaigns}
       />
     </div>
   );
