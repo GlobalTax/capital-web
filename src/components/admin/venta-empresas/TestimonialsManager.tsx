@@ -3,38 +3,91 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useVentaTestimonials, useUpdateVentaTestimonial } from '@/hooks/useVentaEmpresasContent';
-import { Loader2, Save, Edit, Star } from 'lucide-react';
+import { useVentaTestimonials, useUpdateVentaTestimonial, useCreateVentaTestimonial } from '@/hooks/useVentaEmpresasContent';
+import { Loader2, Save, Edit, Star, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
 const TestimonialsManager = () => {
   const { data: testimonials, isLoading } = useVentaTestimonials();
   const updateTestimonial = useUpdateVentaTestimonial();
+  const createTestimonial = useCreateVentaTestimonial();
   const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleEdit = (testimonial: any) => {
+    setIsCreating(false);
     setEditingTestimonial({ ...testimonial });
+  };
+
+  const handleNew = () => {
+    setIsCreating(true);
+    setEditingTestimonial({
+      name: '',
+      position: '',
+      company: '',
+      sector: '',
+      avatar_initials: '',
+      rating: 5,
+      quote: '',
+      price_increase: '',
+      time_to_sale: '',
+      valuation: '',
+      is_active: true,
+      display_order: (testimonials?.length || 0) + 1,
+    });
   };
 
   const handleSave = () => {
     if (!editingTestimonial) return;
 
-    updateTestimonial.mutate({
-      id: editingTestimonial.id,
-      data: {
+    if (isCreating) {
+      // Generar avatar_initials automáticamente del nombre
+      const initials = editingTestimonial.name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+
+      createTestimonial.mutate({
         name: editingTestimonial.name,
         position: editingTestimonial.position,
         company: editingTestimonial.company,
         sector: editingTestimonial.sector,
+        avatar_initials: initials || 'XX',
+        rating: editingTestimonial.rating,
         quote: editingTestimonial.quote,
         price_increase: editingTestimonial.price_increase,
         time_to_sale: editingTestimonial.time_to_sale,
         valuation: editingTestimonial.valuation,
-      },
-    });
+        is_active: true,
+        display_order: editingTestimonial.display_order,
+      });
+    } else {
+      updateTestimonial.mutate({
+        id: editingTestimonial.id,
+        data: {
+          name: editingTestimonial.name,
+          position: editingTestimonial.position,
+          company: editingTestimonial.company,
+          sector: editingTestimonial.sector,
+          rating: editingTestimonial.rating,
+          quote: editingTestimonial.quote,
+          price_increase: editingTestimonial.price_increase,
+          time_to_sale: editingTestimonial.time_to_sale,
+          valuation: editingTestimonial.valuation,
+        },
+      });
+    }
 
     setEditingTestimonial(null);
+    setIsCreating(false);
+  };
+
+  const handleClose = () => {
+    setEditingTestimonial(null);
+    setIsCreating(false);
   };
 
   if (isLoading) {
@@ -45,11 +98,17 @@ const TestimonialsManager = () => {
     );
   }
 
+  const isPending = isCreating ? createTestimonial.isPending : updateTestimonial.isPending;
+
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Lo Que Dicen Nuestros Clientes</CardTitle>
+          <Button onClick={handleNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Testimonio
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -94,10 +153,10 @@ const TestimonialsManager = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={!!editingTestimonial} onOpenChange={() => setEditingTestimonial(null)}>
+      <Dialog open={!!editingTestimonial} onOpenChange={handleClose}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar Testimonio</DialogTitle>
+            <DialogTitle>{isCreating ? 'Nuevo Testimonio' : 'Editar Testimonio'}</DialogTitle>
           </DialogHeader>
           {editingTestimonial && (
             <div className="space-y-4">
@@ -141,6 +200,19 @@ const TestimonialsManager = () => {
                     }
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label>Rating (1-5)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={editingTestimonial.rating}
+                  onChange={(e) =>
+                    setEditingTestimonial({ ...editingTestimonial, rating: parseInt(e.target.value) || 5 })
+                  }
+                />
               </div>
 
               <div>
@@ -188,13 +260,13 @@ const TestimonialsManager = () => {
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setEditingTestimonial(null)}>
+                <Button variant="outline" onClick={handleClose}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSave} disabled={updateTestimonial.isPending}>
-                  {updateTestimonial.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button onClick={handleSave} disabled={isPending}>
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   <Save className="h-4 w-4 mr-2" />
-                  Guardar
+                  {isCreating ? 'Crear' : 'Guardar'}
                 </Button>
               </div>
             </div>
