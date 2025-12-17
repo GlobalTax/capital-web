@@ -6,7 +6,7 @@ import BuyerTestimonials from '@/components/operations/BuyerTestimonials';
 import { CompareBar } from '@/components/operations/CompareBar';
 import { OperationCompareModal } from '@/components/operations/OperationCompareModal';
 import { Button } from '@/components/ui/button';
-import { Download, Bell } from 'lucide-react';
+import { Download, Bell, CheckCircle2 } from 'lucide-react';
 import BuyerPreferencesModal from '@/components/operations/BuyerPreferencesModal';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema, getProductSchema } from '@/utils/seo';
@@ -75,6 +75,12 @@ const Oportunidades = () => {
                 Configurar Alertas
               </Button>
             </div>
+
+            {/* Disclaimer de mandato */}
+            <p className="mt-6 text-sm text-muted-foreground/80 text-center flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500/70" />
+              <span>Capittal actúa con mandato directo de venta o compra en la totalidad de las oportunidades mostradas.</span>
+            </p>
           </div>
         </section>
 
