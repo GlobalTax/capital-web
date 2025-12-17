@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format'
 import { isRecentOperation } from '@/shared/utils/date';
 import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, ChevronLeft } from 'lucide-react';
 import OperationContactForm from './OperationContactForm';
+import { useOperationTracking } from '@/hooks/useOperationTracking';
 
 interface Operation {
   id: string;
@@ -36,6 +37,14 @@ interface OperationDetailsModalProps {
 
 const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation, isOpen, onClose }) => {
   const [showContactForm, setShowContactForm] = useState(false);
+  const { trackDetailView } = useOperationTracking();
+
+  // Track when modal opens
+  useEffect(() => {
+    if (isOpen && operation?.id) {
+      trackDetailView(operation.id);
+    }
+  }, [isOpen, operation?.id, trackDetailView]);
 
   const handleRequestInfo = () => {
     setShowContactForm(true);
@@ -49,7 +58,6 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
   const handleBackToDetails = () => {
     setShowContactForm(false);
   };
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -111,95 +119,95 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
           <>
             {/* Financial Information Card */}
             <div className="bg-muted rounded-lg p-6 border border-border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <TrendingUp className="mr-2 h-5 w-5 text-primary" />
-            Información Financiera
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Facturación</p>
-              <p className="text-xl font-bold text-green-600">
-                {operation.revenue_amount 
-                  ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
-                  : 'Consultar'
-                }
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">EBITDA</p>
-              <p className="text-xl font-bold text-blue-600">
-                {operation.ebitda_amount 
-                  ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
-                  : 'Consultar'
-                }
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Operation Details Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
-          <div className="flex items-start space-x-2">
-            <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-xs text-muted-foreground">Sector</p>
-              <p className="text-sm font-medium">{operation.sector}</p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-2">
-            <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-xs text-muted-foreground">Año</p>
-              <p className="text-sm font-medium">{operation.year}</p>
-            </div>
-          </div>
-          {operation.deal_type && (
-            <div className="flex items-start space-x-2">
-              <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground">Tipo de Operación</p>
-                <p className="text-sm font-medium">
-                  {operation.deal_type === 'sale' ? 'Venta' : 'Adquisición'}
-                </p>
-              </div>
-            </div>
-          )}
-          {(operation.company_size_employees || operation.company_size) && (
-            <div className="flex items-start space-x-2">
-              <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground">Empleados</p>
-                <p className="text-sm font-medium">{operation.company_size_employees || operation.company_size}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Full Description */}
-        <div className="py-4 border-t">
-          <h3 className="text-lg font-semibold mb-3">Sobre la Empresa</h3>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {operation.description}
-          </p>
-        </div>
-
-        {/* Highlights */}
-        {operation.highlights && operation.highlights.length > 0 && (
-          <div className="py-4 border-t">
-            <h3 className="text-lg font-semibold mb-3">Aspectos Destacados</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {operation.highlights.map((highlight, index) => (
-                <div 
-                  key={index}
-                  className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-800 border border-green-200"
-                >
-                  <span className="mr-2">✓</span>
-                  {highlight}
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <TrendingUp className="mr-2 h-5 w-5 text-primary" />
+                Información Financiera
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Facturación</p>
+                  <p className="text-xl font-bold text-green-600">
+                    {operation.revenue_amount 
+                      ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
+                      : 'Consultar'
+                    }
+                  </p>
                 </div>
-              ))}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">EBITDA</p>
+                  <p className="text-xl font-bold text-blue-600">
+                    {operation.ebitda_amount 
+                      ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
+                      : 'Consultar'
+                    }
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+
+            {/* Operation Details Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
+              <div className="flex items-start space-x-2">
+                <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Sector</p>
+                  <p className="text-sm font-medium">{operation.sector}</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Año</p>
+                  <p className="text-sm font-medium">{operation.year}</p>
+                </div>
+              </div>
+              {operation.deal_type && (
+                <div className="flex items-start space-x-2">
+                  <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Tipo de Operación</p>
+                    <p className="text-sm font-medium">
+                      {operation.deal_type === 'sale' ? 'Venta' : 'Adquisición'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {(operation.company_size_employees || operation.company_size) && (
+                <div className="flex items-start space-x-2">
+                  <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Empleados</p>
+                    <p className="text-sm font-medium">{operation.company_size_employees || operation.company_size}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Full Description */}
+            <div className="py-4 border-t">
+              <h3 className="text-lg font-semibold mb-3">Sobre la Empresa</h3>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                {operation.description}
+              </p>
+            </div>
+
+            {/* Highlights */}
+            {operation.highlights && operation.highlights.length > 0 && (
+              <div className="py-4 border-t">
+                <h3 className="text-lg font-semibold mb-3">Aspectos Destacados</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {operation.highlights.map((highlight, index) => (
+                    <div 
+                      key={index}
+                      className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-800 border border-green-200"
+                    >
+                      <span className="mr-2">✓</span>
+                      {highlight}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* CTA Footer */}
             <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-6 border-t">

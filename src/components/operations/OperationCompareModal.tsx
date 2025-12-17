@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Building2, MapPin, Users, Calendar, TrendingUp, Scale } from 'lucide-react';
 import { useCompare } from '@/contexts/CompareContext';
 import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
+import { useOperationTracking } from '@/hooks/useOperationTracking';
 
 interface CompareRow {
   label: string;
@@ -108,6 +109,25 @@ const compareRows: CompareRow[] = [
 
 export const OperationCompareModal: React.FC = () => {
   const { compareList, removeFromCompare, isCompareModalOpen, closeCompareModal } = useCompare();
+  const { trackCompareView } = useOperationTracking();
+  const trackedIdsRef = useRef<Set<string>>(new Set());
+
+  // Track compare views when modal opens
+  useEffect(() => {
+    if (isCompareModalOpen && compareList.length >= 2) {
+      compareList.forEach((op) => {
+        if (!trackedIdsRef.current.has(op.id)) {
+          trackCompareView(op.id);
+          trackedIdsRef.current.add(op.id);
+        }
+      });
+    }
+    
+    // Reset when modal closes
+    if (!isCompareModalOpen) {
+      trackedIdsRef.current.clear();
+    }
+  }, [isCompareModalOpen, compareList, trackCompareView]);
 
   return (
     <Dialog open={isCompareModalOpen} onOpenChange={(open) => !open && closeCompareModal()}>
