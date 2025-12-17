@@ -357,21 +357,19 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
             case 'actions':
               return (
                 <div key={column.key} style={{ width }} className="px-4 flex items-center justify-center gap-1">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          onClick={(e) => handleShare(operation.id, e)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          aria-label="Compartir operación"
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>Compartir</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {/* Botón share simplificado sin TooltipTrigger para máxima compatibilidad */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      console.log('[Share] Button clicked directly!');
+                      handleShare(operation.id, e);
+                    }}
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    aria-label="Compartir operación"
+                    title="Compartir"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
                   <Button
                     variant="ghost"
                     size="sm"
