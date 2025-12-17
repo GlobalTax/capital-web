@@ -38,7 +38,10 @@ serve(async (req) => {
       sortBy = 'created_at', 
       limit = 20, 
       offset = 0, 
-      displayLocation 
+      displayLocation,
+      valuationMin,
+      valuationMax,
+      createdAfter
     } = await req.json();
 
     console.log('📋 List operations request:', { 
@@ -51,6 +54,9 @@ serve(async (req) => {
       limit, 
       offset, 
       displayLocation,
+      valuationMin,
+      valuationMax,
+      createdAfter,
       timestamp: new Date().toISOString()
     });
 
@@ -94,6 +100,22 @@ serve(async (req) => {
     if (dealType && typeof dealType === 'string') {
       query = query.eq('deal_type', dealType);
       console.log('🤝 Deal type filter applied:', dealType);
+    }
+
+    // Valuation range filters
+    if (valuationMin && typeof valuationMin === 'number') {
+      query = query.gte('valuation_amount', valuationMin);
+      console.log('💰 Valuation min filter applied:', valuationMin);
+    }
+    if (valuationMax && typeof valuationMax === 'number') {
+      query = query.lte('valuation_amount', valuationMax);
+      console.log('💰 Valuation max filter applied:', valuationMax);
+    }
+
+    // Publication date filter
+    if (createdAfter && typeof createdAfter === 'string') {
+      query = query.gte('created_at', createdAfter);
+      console.log('📅 Created after filter applied:', createdAfter);
     }
 
     // Apply sorting with validation
