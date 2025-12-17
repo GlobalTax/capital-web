@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
 import { highlightText } from '@/shared/utils/string';
 import { isRecentOperation } from '@/shared/utils/date';
@@ -16,12 +17,14 @@ import {
   Heart,
   CheckCircle2,
   Shield,
-  Lock
+  Lock,
+  Scale
 } from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useSavedOperations } from '@/hooks/useSavedOperations';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompare } from '@/contexts/CompareContext';
 import { toast } from 'sonner';
 
 interface Operation {
@@ -64,8 +67,10 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
     isSaving, 
     isRemoving 
   } = useSavedOperations();
+  const { addToCompare, removeFromCompare, isInCompare, canAddMore } = useCompare();
 
   const isSaved = isOperationSaved(operation.id);
+  const inCompare = isInCompare(operation.id);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,23 +87,60 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
     }
   };
 
+  const handleToggleCompare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (inCompare) {
+      removeFromCompare(operation.id);
+    } else if (canAddMore) {
+      addToCompare(operation);
+    }
+  };
+
   return (
     <>
     <Card className={`relative hover:shadow-lg transition-shadow ${className} ${operation.is_featured ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-6">
-        {/* Favorite Button - Top Right */}
-        <button
-          onClick={handleToggleFavorite}
-          disabled={isSaving || isRemoving}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 disabled:opacity-50 z-10"
-          aria-label={isSaved ? 'Quitar de favoritos' : 'Añadir a favoritos'}
-        >
-          <Heart 
-            className={`h-5 w-5 transition-colors ${
-              isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
-            }`}
-          />
-        </button>
+        {/* Action Buttons - Top Right */}
+        <div className="absolute top-4 right-4 flex items-center gap-1 z-10">
+          {/* Compare Button */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleToggleCompare}
+                  disabled={!inCompare && !canAddMore}
+                  className={`p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 disabled:opacity-50 ${
+                    inCompare ? 'ring-2 ring-primary' : ''
+                  }`}
+                  aria-label={inCompare ? 'Quitar de comparación' : 'Añadir a comparación'}
+                >
+                  <Scale 
+                    className={`h-4 w-4 transition-colors ${
+                      inCompare ? 'text-primary' : 'text-gray-400'
+                    }`}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {inCompare ? 'Quitar de comparación' : canAddMore ? 'Añadir a comparación' : 'Máximo 4 operaciones'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Favorite Button */}
+          <button
+            onClick={handleToggleFavorite}
+            disabled={isSaving || isRemoving}
+            className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 disabled:opacity-50"
+            aria-label={isSaved ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+          >
+            <Heart 
+              className={`h-5 w-5 transition-colors ${
+                isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+              }`}
+            />
+          </button>
+        </div>
 
         <div className="space-y-4">
           {/* Logo/Company Initial */}

@@ -3,6 +3,8 @@ import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import OperationsList from '@/components/operations/OperationsList';
 import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import BuyerTestimonials from '@/components/operations/BuyerTestimonials';
+import { CompareBar } from '@/components/operations/CompareBar';
+import { OperationCompareModal } from '@/components/operations/OperationCompareModal';
 import { Button } from '@/components/ui/button';
 import { Download, Bell } from 'lucide-react';
 import BuyerPreferencesModal from '@/components/operations/BuyerPreferencesModal';
@@ -125,6 +127,12 @@ const Oportunidades = () => {
           sectors={activeSectors.map(s => s.name_es)}
           locations={locations}
         />
+
+        {/* Compare Bar (floating) */}
+        <CompareBar />
+        
+        {/* Compare Modal */}
+        <OperationCompareModal />
       </div>
     </UnifiedLayout>
     </>

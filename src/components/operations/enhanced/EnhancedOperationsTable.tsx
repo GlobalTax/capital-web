@@ -4,13 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Star } from 'lucide-react';
+import { Eye, Star, Scale } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
 import { formatDate } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCompare } from '@/contexts/CompareContext';
 import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
 import OperationDetailsModal from '../OperationDetailsModal';
@@ -53,6 +54,7 @@ const initialColumns: ColumnDef[] = [
   { key: 'ebitda', title: 'EBITDA', width: 140, minWidth: 100, sortable: true, visible: true },
   { key: 'published', title: 'Publicado', width: 120, minWidth: 100, sortable: true, visible: true },
   { key: 'deal_type', title: 'Tipo', width: 120, minWidth: 100, sortable: true, visible: true },
+  { key: 'compare', title: 'Comparar', width: 90, minWidth: 80, visible: true },
   { key: 'actions', title: 'Acciones', width: 120, minWidth: 100, visible: true },
 ];
 
@@ -64,6 +66,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
   const [selectedOperation, setSelectedOperation] = React.useState<Operation | null>(null);
   const [focusedIndex, setFocusedIndex] = React.useState<number>(-1);
   const isMobile = useIsMobile();
+  const { addToCompare, removeFromCompare, isInCompare, canAddMore } = useCompare();
 
   const { columns, visibleColumns, handleResize, toggleColumnVisibility } = useColumnResizing(initialColumns);
   
@@ -244,6 +247,38 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                   ) : (
                     <span className="text-muted-foreground text-xs">-</span>
                   )}
+                </div>
+              );
+
+            case 'compare':
+              const inCompare = isInCompare(operation.id);
+              return (
+                <div key={column.key} style={{ width }} className="px-4 text-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={inCompare ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (inCompare) {
+                              removeFromCompare(operation.id);
+                            } else if (canAddMore) {
+                              addToCompare(operation);
+                            }
+                          }}
+                          disabled={!inCompare && !canAddMore}
+                          className="gap-1"
+                        >
+                          <Scale className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {inCompare ? 'Quitar' : canAddMore ? 'Comparar' : 'Máx. 4'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               );
 
