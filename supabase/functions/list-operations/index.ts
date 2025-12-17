@@ -35,6 +35,7 @@ serve(async (req) => {
       location,
       companySize,
       dealType,
+      projectStatus,
       sortBy = 'created_at', 
       limit = 20, 
       offset = 0, 
@@ -50,6 +51,7 @@ serve(async (req) => {
       location,
       companySize,
       dealType,
+      projectStatus,
       sortBy, 
       limit, 
       offset, 
@@ -118,6 +120,12 @@ serve(async (req) => {
       console.log('📅 Created after filter applied:', createdAfter);
     }
 
+    // Project status filter
+    if (projectStatus && typeof projectStatus === 'string') {
+      query = query.eq('project_status', projectStatus);
+      console.log('📊 Project status filter applied:', projectStatus);
+    }
+
     // Apply sorting with validation
     const validSortFields = ['created_at', 'year', 'valuation_amount', 'company_name'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
@@ -158,7 +166,7 @@ serve(async (req) => {
     let locations: string[] = [];
     let companySizes: string[] = [];
     let dealTypes: string[] = [];
-    
+    let projectStatuses: string[] = [];
     if (!sector) {
       const { data: sectorsData, error: sectorsError } = await supabase
         .from('company_operations')
@@ -216,6 +224,20 @@ serve(async (req) => {
       dealTypes = [...new Set(typesData.map(op => op.deal_type).filter(Boolean))].sort();
     }
 
+    // Get unique project statuses
+    const { data: statusesData, error: statusesError } = await supabase
+      .from('company_operations')
+      .select('project_status')
+      .eq('is_active', true)
+      .eq('is_deleted', false)
+      .not('project_status', 'is', null);
+
+    if (statusesError) {
+      console.warn('⚠️ Project statuses query error (non-critical):', statusesError.message);
+    } else if (statusesData) {
+      projectStatuses = [...new Set(statusesData.map(op => op.project_status).filter(Boolean))].sort();
+    }
+
     console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
 
     return new Response(
@@ -225,7 +247,8 @@ serve(async (req) => {
         sectors: sectors,
         locations: locations,
         companySizes: companySizes,
-        dealTypes: dealTypes
+        dealTypes: dealTypes,
+        projectStatuses: projectStatuses
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
