@@ -5900,6 +5900,50 @@ export type Database = {
           },
         ]
       }
+      operation_views: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown
+          operation_id: string
+          referrer: string | null
+          session_id: string
+          source_page: string | null
+          user_agent: string | null
+          view_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          operation_id: string
+          referrer?: string | null
+          session_id: string
+          source_page?: string | null
+          user_agent?: string | null
+          view_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          operation_id?: string
+          referrer?: string | null
+          session_id?: string
+          source_page?: string | null
+          user_agent?: string | null
+          view_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_views_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "company_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pdf_download_logs: {
         Row: {
           created_at: string | null
@@ -8102,6 +8146,7 @@ export type Database = {
         }[]
       }
       get_lead_ai_stats: { Args: never; Returns: Json }
+      get_marketplace_analytics: { Args: { days_back?: number }; Returns: Json }
       get_news_filter_options: {
         Args: never
         Returns: {
