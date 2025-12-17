@@ -1713,6 +1713,7 @@ export type Database = {
           ebitda_multiple: number | null
           expected_market_text: string | null
           featured_image_url: string | null
+          geographic_location: string | null
           growth_percentage: number | null
           highlights: string[] | null
           id: string
@@ -1748,6 +1749,7 @@ export type Database = {
           ebitda_multiple?: number | null
           expected_market_text?: string | null
           featured_image_url?: string | null
+          geographic_location?: string | null
           growth_percentage?: number | null
           highlights?: string[] | null
           id?: string
@@ -1783,6 +1785,7 @@ export type Database = {
           ebitda_multiple?: number | null
           expected_market_text?: string | null
           featured_image_url?: string | null
+          geographic_location?: string | null
           growth_percentage?: number | null
           highlights?: string[] | null
           id?: string

@@ -78,10 +78,10 @@ serve(async (req) => {
       console.log('📍 Location filter applied:', displayLocation);
     }
 
-    // Additional location filter (separate from display_locations)
+    // Geographic location filter (real location, separate from display_locations)
     if (location && typeof location === 'string') {
-      query = query.contains('display_locations', [location]);
-      console.log('📍 Additional location filter applied:', location);
+      query = query.eq('geographic_location', location);
+      console.log('📍 Geographic location filter applied:', location);
     }
 
     // Company size filter
@@ -152,21 +152,18 @@ serve(async (req) => {
       }
     }
 
-    // Get unique locations
+    // Get unique geographic locations
     const { data: locationsData, error: locationsError } = await supabase
       .from('company_operations')
-      .select('display_locations')
+      .select('geographic_location')
       .eq('is_active', true)
       .eq('is_deleted', false)
-      .not('display_locations', 'is', null);
+      .not('geographic_location', 'is', null);
 
     if (locationsError) {
       console.warn('⚠️ Locations query error (non-critical):', locationsError.message);
     } else if (locationsData) {
-      const allLocations = locationsData
-        .flatMap(op => op.display_locations || [])
-        .filter(Boolean);
-      locations = [...new Set(allLocations)].sort();
+      locations = [...new Set(locationsData.map(op => op.geographic_location).filter(Boolean))].sort();
     }
 
     // Get unique company sizes
