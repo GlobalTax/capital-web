@@ -5,6 +5,10 @@ import { RODDownloadForm } from '@/components/operations/RODDownloadForm';
 import BuyerTestimonials from '@/components/operations/BuyerTestimonials';
 import { CompareBar } from '@/components/operations/CompareBar';
 import { OperationCompareModal } from '@/components/operations/OperationCompareModal';
+import { WishlistBar } from '@/components/operations/WishlistBar';
+import { WishlistModal } from '@/components/operations/WishlistModal';
+import { BulkInquiryForm } from '@/components/operations/BulkInquiryForm';
+import { WishlistProvider } from '@/contexts/WishlistContext';
 import { Button } from '@/components/ui/button';
 import { Download, Bell, CheckCircle2 } from 'lucide-react';
 import BuyerPreferencesModal from '@/components/operations/BuyerPreferencesModal';
@@ -22,7 +26,7 @@ const Oportunidades = () => {
   const { data: locations = [] } = useOperationLocations();
 
   return (
-    <>
+    <WishlistProvider>
       <SEOHead 
         title={t('opportunities.seo.title')}
         description={t('opportunities.seo.description')}
@@ -139,9 +143,20 @@ const Oportunidades = () => {
         
         {/* Compare Modal */}
         <OperationCompareModal />
+
+        {/* Wishlist Bar (floating, above compare bar) */}
+        <div className="pb-16">
+          <WishlistBar />
+        </div>
+        
+        {/* Wishlist Modal */}
+        <WishlistModal />
+        
+        {/* Bulk Inquiry Form */}
+        <BulkInquiryForm />
       </div>
     </UnifiedLayout>
-    </>
+    </WishlistProvider>
   );
 };
 

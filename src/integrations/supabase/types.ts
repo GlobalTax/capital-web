@@ -1136,6 +1136,72 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_inquiries: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          ip_address: unknown
+          message: string | null
+          operation_ids: string[]
+          operation_names: string[] | null
+          phone: string | null
+          processed_at: string | null
+          processed_by: string | null
+          referrer: string | null
+          status: string | null
+          updated_at: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          ip_address?: unknown
+          message?: string | null
+          operation_ids: string[]
+          operation_names?: string[] | null
+          phone?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          referrer?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          ip_address?: unknown
+          message?: string | null
+          operation_ids?: string[]
+          operation_names?: string[] | null
+          phone?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          referrer?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       business_metrics: {
         Row: {
           avg_deal_size: number

@@ -23,8 +23,7 @@ import {
 } from 'lucide-react';
 import OperationDetailsModal from './OperationDetailsModal';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import { useSavedOperations } from '@/hooks/useSavedOperations';
-import { useAuth } from '@/contexts/AuthContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useCompare } from '@/contexts/CompareContext';
 import { toast } from 'sonner';
 
@@ -46,6 +45,7 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
+  geographic_location?: string;
   created_at?: string;
   urgency_level?: 'high' | 'medium' | 'low';
   interested_parties_count?: number;
@@ -60,31 +60,19 @@ interface OperationCardProps {
 const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '', searchTerm }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useI18n();
-  const { user } = useAuth();
-  const { 
-    isOperationSaved, 
-    saveOperation, 
-    removeSavedOperation, 
-    isSaving, 
-    isRemoving 
-  } = useSavedOperations();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCompare, removeFromCompare, isInCompare, canAddMore } = useCompare();
 
-  const isSaved = isOperationSaved(operation.id);
+  const isInWishlistNow = isInWishlist(operation.id);
   const inCompare = isInCompare(operation.id);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    if (!user) {
-      toast.error('Debes iniciar sesión para guardar favoritos');
-      return;
-    }
-
-    if (isSaved) {
-      removeSavedOperation(operation.id);
+    if (isInWishlistNow) {
+      removeFromWishlist(operation.id);
     } else {
-      saveOperation({ operationId: operation.id });
+      addToWishlist(operation);
     }
   };
 
@@ -139,19 +127,29 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             </Tooltip>
           </TooltipProvider>
 
-          {/* Favorite Button */}
-          <button
-            onClick={handleToggleFavorite}
-            disabled={isSaving || isRemoving}
-            className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 disabled:opacity-50"
-            aria-label={isSaved ? 'Quitar de favoritos' : 'Añadir a favoritos'}
-          >
-            <Heart 
-              className={`h-5 w-5 transition-colors ${
-                isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
-              }`}
-            />
-          </button>
+          {/* Favorite/Wishlist Button */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 ${
+                    isInWishlistNow ? 'ring-2 ring-red-400' : ''
+                  }`}
+                  aria-label={isInWishlistNow ? 'Quitar de la cesta' : 'Añadir a la cesta'}
+                >
+                  <Heart 
+                    className={`h-5 w-5 transition-colors ${
+                      isInWishlistNow ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'
+                    }`}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isInWishlistNow ? 'Quitar de la cesta' : 'Añadir a la cesta'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Share Button */}
           <TooltipProvider>

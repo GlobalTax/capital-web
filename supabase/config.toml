@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.generate-sector-dossier]
 verify_jwt = false
+
+[functions.send-bulk-inquiry-notification]
+verify_jwt = false
