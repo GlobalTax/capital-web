@@ -5569,6 +5569,63 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_campaigns: {
+        Row: {
+          click_count: number | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          intro_text: string | null
+          open_count: number | null
+          operations_included: string[]
+          preview_text: string | null
+          recipients_count: number | null
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          subject: string
+          unsubscribe_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          click_count?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          intro_text?: string | null
+          open_count?: number | null
+          operations_included?: string[]
+          preview_text?: string | null
+          recipients_count?: number | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          subject: string
+          unsubscribe_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          click_count?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          intro_text?: string | null
+          open_count?: number | null
+          operations_included?: string[]
+          preview_text?: string | null
+          recipients_count?: number | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string
+          unsubscribe_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           company: string | null
@@ -5579,8 +5636,10 @@ export type Database = {
           interests: string[] | null
           ip_address: unknown
           is_active: boolean
+          name: string | null
           source: string | null
           subscribed_at: string
+          unsubscribe_token: string | null
           unsubscribed_at: string | null
           updated_at: string
           user_agent: string | null
@@ -5594,8 +5653,10 @@ export type Database = {
           interests?: string[] | null
           ip_address?: unknown
           is_active?: boolean
+          name?: string | null
           source?: string | null
           subscribed_at?: string
+          unsubscribe_token?: string | null
           unsubscribed_at?: string | null
           updated_at?: string
           user_agent?: string | null
@@ -5609,8 +5670,10 @@ export type Database = {
           interests?: string[] | null
           ip_address?: unknown
           is_active?: boolean
+          name?: string | null
           source?: string | null
           subscribed_at?: string
+          unsubscribe_token?: string | null
           unsubscribed_at?: string | null
           updated_at?: string
           user_agent?: string | null
