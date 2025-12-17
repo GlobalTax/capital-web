@@ -25,7 +25,8 @@ import {
   Megaphone,
   Briefcase,
   FolderOpen,
-  Store
+  Store,
+  Mail
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -253,6 +254,19 @@ export const sidebarSections: SidebarSection[] = [
         icon: TrendingUp,
         badge: "NEW",
         description: "Gestión de leads ROD"
+      },
+    ]
+  },
+  {
+    title: "📧 MARKETING",
+    description: "Comunicación con leads",
+    items: [
+      { 
+        title: "Newsletter Semanal", 
+        url: "/admin/newsletter", 
+        icon: Mail,
+        badge: "NEW",
+        description: "Envío de newsletters a suscriptores"
       },
     ]
   },

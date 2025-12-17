@@ -75,3 +75,6 @@ export const LazyPdfSignatureConfig = lazy(() => import('@/pages/admin/PdfSignat
 
 // === MARKETPLACE ANALYTICS ===
 export const LazyMarketplaceAnalytics = lazy(() => import('@/pages/admin/MarketplaceAnalytics'));
+
+// === NEWSLETTER ===
+export const LazyNewsletterPage = lazy(() => import('@/pages/admin/NewsletterPage'));

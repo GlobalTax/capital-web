@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.send-bulk-inquiry-notification]
 verify_jwt = false
+
+[functions.send-weekly-newsletter]
+verify_jwt = false
