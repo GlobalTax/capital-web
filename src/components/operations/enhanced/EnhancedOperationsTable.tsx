@@ -96,6 +96,46 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
     enabled: true,
   });
 
+  // Share handler with Web Share API + fallbacks
+  const handleShare = async (operationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/oportunidades?op=${operationId}`;
+    
+    // Try Web Share API first (better on mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Oportunidad de inversión',
+          url: url
+        });
+        return;
+      } catch {
+        // User cancelled or not available, continue with clipboard
+      }
+    }
+    
+    // Fallback: Clipboard API
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Enlace copiado al portapapeles');
+    } catch {
+      // Final fallback: execCommand (old browsers)
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success('Enlace copiado al portapapeles');
+      } catch {
+        toast.error('No se pudo copiar el enlace');
+      }
+    }
+  };
+
   const renderRow = (operation: Operation, index: number) => {
     const selected = isSelected(operation.id);
     const focused = index === focusedIndex;
@@ -294,24 +334,16 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            const url = `${window.location.origin}/oportunidades?op=${operation.id}`;
-                            try {
-                              await navigator.clipboard.writeText(url);
-                              toast.success('Enlace copiado al portapapeles');
-                            } catch {
-                              toast.error('No se pudo copiar el enlace');
-                            }
-                          }}
+                        <button
+                          type="button"
+                          onClick={(e) => handleShare(operation.id, e)}
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          aria-label="Compartir operación"
                         >
                           <Share2 className="h-4 w-4" />
-                        </Button>
+                        </button>
                       </TooltipTrigger>
-                      <TooltipContent>Copiar enlace</TooltipContent>
+                      <TooltipContent>Compartir</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                   <Button
