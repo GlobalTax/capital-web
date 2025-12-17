@@ -331,8 +331,8 @@ const AdminOperations = () => {
         short_description: editingOperation.short_description?.trim() || null,
         deal_type: editingOperation.deal_type || 'sale',
         status: editingOperation.status || 'available',
-        project_status: editingOperation.project_status || 'in_market',
-        expected_market_text: editingOperation.project_status === 'in_progress' 
+        project_status: editingOperation.project_status || 'active',
+        expected_market_text: editingOperation.project_status === 'upcoming' 
           ? editingOperation.expected_market_text?.trim() || null 
           : null,
         highlights: cleanHighlights.length > 0 ? cleanHighlights : null,
@@ -932,14 +932,14 @@ const AdminOperations = () => {
       render: (operation: Operation) => {
         const getProjectStatusBadge = (status?: string) => {
           switch (status) {
-            case 'negotiating':
-              return { className: 'bg-purple-100 text-purple-700 hover:bg-purple-100', text: 'En negociaciones' };
-            case 'in_market':
-              return { className: 'bg-green-100 text-green-700 hover:bg-green-100', text: 'En el mercado' };
-            case 'in_progress':
-              return { className: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100', text: 'In progress' };
+            case 'active':
+              return { className: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100', text: 'Activo', icon: '✓' };
+            case 'upcoming':
+              return { className: 'bg-amber-100 text-amber-700 hover:bg-amber-100', text: 'Próximamente', icon: '⏳' };
+            case 'exclusive':
+              return { className: 'bg-purple-100 text-purple-700 hover:bg-purple-100', text: 'En exclusividad', icon: '⭐' };
             default:
-              return { className: 'bg-gray-100 text-gray-600 hover:bg-gray-100', text: 'Sin estado' };
+              return { className: 'bg-gray-100 text-gray-600 hover:bg-gray-100', text: 'Sin estado', icon: '' };
           }
         };
         
@@ -948,11 +948,12 @@ const AdminOperations = () => {
         return (
           <div className="space-y-1">
             <Badge className={badgeInfo.className}>
+              {badgeInfo.icon && <span className="mr-1">{badgeInfo.icon}</span>}
               {badgeInfo.text}
             </Badge>
-            {operation.project_status === 'in_progress' && operation.expected_market_text && (
+            {operation.project_status === 'upcoming' && operation.expected_market_text && (
               <div className="text-xs text-gray-500 mt-1">
-                📅 Entrada: {operation.expected_market_text}
+                📅 {operation.expected_market_text}
               </div>
             )}
           </div>
@@ -1487,11 +1488,11 @@ const AdminOperations = () => {
                   <div>
                     <Label htmlFor="project_status" className="text-xs text-gray-600">Estado del Proyecto</Label>
                     <Select
-                      value={editingOperation.project_status || 'in_market'}
+                      value={editingOperation.project_status || 'active'}
                       onValueChange={(value) => setEditingOperation({
                         ...editingOperation,
                         project_status: value,
-                        expected_market_text: value === 'in_progress' 
+                        expected_market_text: value === 'upcoming' 
                           ? editingOperation.expected_market_text 
                           : undefined
                       })}
@@ -1500,16 +1501,16 @@ const AdminOperations = () => {
                         <SelectValue placeholder="Seleccionar estado" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="in_market">En el mercado</SelectItem>
-                        <SelectItem value="negotiating">En negociaciones</SelectItem>
-                        <SelectItem value="in_progress">In progress</SelectItem>
+                        <SelectItem value="active">✓ Activo</SelectItem>
+                        <SelectItem value="upcoming">⏳ Próximamente</SelectItem>
+                        <SelectItem value="exclusive">⭐ En exclusividad</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   
-                  {editingOperation.project_status === 'in_progress' && (
+                  {editingOperation.project_status === 'upcoming' && (
                     <div>
-                      <Label htmlFor="expected_market_text" className="text-xs text-gray-600">Entrada estimada a mercado</Label>
+                      <Label htmlFor="expected_market_text" className="text-xs text-gray-600">Disponible en</Label>
                       <Input
                         id="expected_market_text"
                         value={editingOperation.expected_market_text || ''}
@@ -1517,7 +1518,7 @@ const AdminOperations = () => {
                           ...editingOperation,
                           expected_market_text: e.target.value
                         })}
-                        placeholder="Ej: Q1 2026, H2 2025, Enero 2026"
+                        placeholder="Ej: Q1 2026, Marzo 2026, H2 2025"
                       />
                     </div>
                   )}

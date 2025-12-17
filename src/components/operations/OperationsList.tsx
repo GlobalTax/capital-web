@@ -50,12 +50,14 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [locations, setLocations] = useState<string[]>([]);
   const [companySizes, setCompanySizes] = useState<string[]>([]);
   const [dealTypes, setDealTypes] = useState<string[]>([]);
+  const [projectStatuses, setProjectStatuses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedCompanySize, setSelectedCompanySize] = useState('');
   const [selectedDealType, setSelectedDealType] = useState('');
+  const [selectedProjectStatus, setSelectedProjectStatus] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [offset, setOffset] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -118,6 +120,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
           location: selectedLocation || undefined,
           companySize: selectedCompanySize || undefined,
           dealType: selectedDealType || undefined,
+          projectStatus: selectedProjectStatus || undefined,
           sortBy,
           limit: fetchLimit,
           offset: fetchOffset,
@@ -161,6 +164,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
           setLocations(fallbackResponse.data.locations || []);
           setCompanySizes(fallbackResponse.data.companySizes || []);
           setDealTypes(fallbackResponse.data.dealTypes || []);
+          setProjectStatuses(fallbackResponse.data.projectStatuses || []);
           return;
         }
       }
@@ -171,6 +175,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
       setLocations(data.locations || []);
       setCompanySizes(data.companySizes || []);
       setDealTypes(data.dealTypes || []);
+      setProjectStatuses(data.projectStatuses || []);
 
     } catch (error) {
       console.error('Error calling list-operations Edge Function:', error);
@@ -185,7 +190,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, sortBy, offset, displayLocation, viewMode, valuationMin, valuationMax, dateFilter]);
+  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, selectedProjectStatus, sortBy, offset, displayLocation, viewMode, valuationMin, valuationMax, dateFilter]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -217,12 +222,18 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
+  const handleProjectStatusChange = (value: string) => {
+    setSelectedProjectStatus(value === 'all' ? '' : value);
+    setOffset(0);
+  };
+
   const clearAllFilters = () => {
     setSearchTerm('');
     setSelectedSector('');
     setSelectedLocation('');
     setSelectedCompanySize('');
     setSelectedDealType('');
+    setSelectedProjectStatus('');
     setValuationMin(undefined);
     setValuationMax(undefined);
     setDateFilter('');
@@ -241,7 +252,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const hasActiveFilters = searchTerm || selectedSector || selectedLocation || selectedCompanySize || selectedDealType || valuationMin || valuationMax || dateFilter;
+  const hasActiveFilters = searchTerm || selectedSector || selectedLocation || selectedCompanySize || selectedDealType || selectedProjectStatus || valuationMin || valuationMax || dateFilter;
 
 
   return (
@@ -384,8 +395,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
               </Select>
             </div>
 
-            {/* Tercera fila: Valoración y Fecha de Publicación */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Tercera fila: Valoración, Fecha, Estado Proyecto y Limpiar */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* Valuation Min */}
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Valoración mín (€k)</label>
@@ -432,8 +443,24 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Project Status Filter */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Estado</label>
+                <Select value={selectedProjectStatus || 'all'} onValueChange={handleProjectStatusChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los estados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="active">✓ Activo</SelectItem>
+                    <SelectItem value="upcoming">⏳ Próximamente</SelectItem>
+                    <SelectItem value="exclusive">⭐ En exclusividad</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
-              {/* Empty space or additional filter */}
+              {/* Clear filters button */}
               <div className="flex items-end">
                 <Button
                   variant="outline"
@@ -456,6 +483,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
                 {selectedCompanySize && <Badge variant="secondary">{selectedCompanySize}</Badge>}
                 {selectedDealType && <Badge variant="secondary">{selectedDealType}</Badge>}
+                {selectedProjectStatus && (
+                  <Badge variant="secondary">
+                    {selectedProjectStatus === 'active' ? '✓ Activo' : 
+                     selectedProjectStatus === 'upcoming' ? '⏳ Próximamente' : 
+                     '⭐ En exclusividad'}
+                  </Badge>
+                )}
                 {valuationMin && <Badge variant="secondary">Min: €{valuationMin}k</Badge>}
                 {valuationMax && <Badge variant="secondary">Max: €{valuationMax}k</Badge>}
                 {dateFilter && (

@@ -49,6 +49,8 @@ interface Operation {
   created_at?: string;
   urgency_level?: 'high' | 'medium' | 'low';
   interested_parties_count?: number;
+  project_status?: string;
+  expected_market_text?: string;
 }
 
 interface OperationCardProps {
@@ -65,6 +67,34 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
 
   const isInWishlistNow = isInWishlist(operation.id);
   const inCompare = isInCompare(operation.id);
+
+  // Project status badge helper
+  const getProjectStatusBadge = (status?: string, releaseText?: string) => {
+    switch (status) {
+      case 'active':
+        return { 
+          className: 'border-emerald-500/50 text-emerald-700 bg-emerald-50', 
+          text: 'Activo',
+          icon: '✓'
+        };
+      case 'upcoming':
+        return { 
+          className: 'border-amber-500/50 text-amber-700 bg-amber-50', 
+          text: releaseText ? `Próximamente · ${releaseText}` : 'Próximamente',
+          icon: '⏳'
+        };
+      case 'exclusive':
+        return { 
+          className: 'border-purple-500/50 text-purple-700 bg-purple-50', 
+          text: 'En exclusividad',
+          icon: '⭐'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const projectStatusBadge = getProjectStatusBadge(operation.project_status, operation.expected_market_text);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -225,6 +255,13 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 {operation.interested_parties_count && operation.interested_parties_count > 5 && (
                   <Badge className="text-xs bg-purple-500 hover:bg-purple-600">
                     {t('operations.badges.advancedProcess')}
+                  </Badge>
+                )}
+                {/* Project Status Badge */}
+                {projectStatusBadge && (
+                  <Badge variant="outline" className={`gap-1 text-xs ${projectStatusBadge.className}`}>
+                    <span>{projectStatusBadge.icon}</span>
+                    {projectStatusBadge.text}
                   </Badge>
                 )}
               </div>

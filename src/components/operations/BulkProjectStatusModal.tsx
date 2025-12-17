@@ -27,15 +27,15 @@ export const BulkProjectStatusModal: React.FC<BulkProjectStatusModalProps> = ({
   onConfirm,
   isLoading = false,
 }) => {
-  const [projectStatus, setProjectStatus] = useState<string>('in_market');
+  const [projectStatus, setProjectStatus] = useState<string>('active');
   const [expectedMarketText, setExpectedMarketText] = useState<string>('');
 
   const handleConfirm = () => {
-    onConfirm(projectStatus, projectStatus === 'in_progress' ? expectedMarketText : undefined);
+    onConfirm(projectStatus, projectStatus === 'upcoming' ? expectedMarketText : undefined);
   };
 
   const handleClose = () => {
-    setProjectStatus('in_market');
+    setProjectStatus('active');
     setExpectedMarketText('');
     onClose();
   };
@@ -65,27 +65,27 @@ export const BulkProjectStatusModal: React.FC<BulkProjectStatusModalProps> = ({
                 <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="in_market">En el mercado</SelectItem>
-                <SelectItem value="negotiating">En negociaciones</SelectItem>
-                <SelectItem value="in_progress">In progress</SelectItem>
+                <SelectItem value="active">✓ Activo</SelectItem>
+                <SelectItem value="upcoming">⏳ Próximamente</SelectItem>
+                <SelectItem value="exclusive">⭐ En exclusividad</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {projectStatus === 'in_progress' && (
+          {projectStatus === 'upcoming' && (
             <div className="space-y-2">
               <Label htmlFor="expected_market_text" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                Entrada estimada a mercado
+                Disponible en
               </Label>
               <Input
                 id="expected_market_text"
                 value={expectedMarketText}
                 onChange={(e) => setExpectedMarketText(e.target.value)}
-                placeholder="Ej: Q1 2026, H2 2025, Enero 2026"
+                placeholder="Ej: Q1 2026, Marzo 2026, H2 2025"
               />
               <p className="text-xs text-muted-foreground">
-                Este texto aparecerá junto al estado en la tabla
+                Este texto aparecerá junto al estado en las tarjetas
               </p>
             </div>
           )}
