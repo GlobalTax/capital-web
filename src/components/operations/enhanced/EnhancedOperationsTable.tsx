@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Eye, Star, Scale } from 'lucide-react';
 import { formatCurrency, normalizeValuationAmount, formatCompactCurrency } from '@/shared/utils/format';
-import { formatDate } from '@/shared/utils/date';
+import { formatDate, isRecentOperation } from '@/shared/utils/date';
 import { useColumnResizing, ColumnDef } from '@/hooks/useColumnResizing';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -148,6 +148,11 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                       <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs gap-1">
                         <Star className="h-3 w-3" />
                         Destacado
+                      </Badge>
+                    )}
+                    {isRecentOperation(operation.created_at) && (
+                      <Badge className="bg-green-500 text-white text-xs">
+                        Nuevo
                       </Badge>
                     )}
                   </div>
