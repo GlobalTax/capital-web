@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Copy, Download, Check, Eye, Code, RefreshCw } from 'lucide-react';
 import { generateBrevoHtml } from './brevoTemplate';
 import { PostCopyConfirmation } from './PostCopyConfirmation';
+import { NewsletterType } from './NewsletterTypeSelector';
 
 interface Operation {
   id: string;
@@ -32,6 +33,7 @@ interface BrevoHtmlGeneratorProps {
   subject: string;
   introText: string;
   onCampaignCreated?: () => void;
+  newsletterType?: NewsletterType;
 }
 
 export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
@@ -41,6 +43,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   subject,
   introText,
   onCampaignCreated,
+  newsletterType = 'opportunities',
 }) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -79,6 +82,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
           recipients_count: 0,
           open_count: 0,
           click_count: 0,
+          type: newsletterType,
         })
         .select()
         .single();
