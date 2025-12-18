@@ -26,6 +26,8 @@ import {
   Files
 } from 'lucide-react';
 
+type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational';
+
 interface Campaign {
   id: string;
   subject: string;
@@ -40,6 +42,7 @@ interface Campaign {
   open_count?: number;
   click_count?: number;
   intro_text?: string | null;
+  type?: NewsletterType | null;
 }
 
 interface CampaignActionsDropdownProps {
@@ -221,7 +224,7 @@ export const CampaignActionsDropdown: React.FC<CampaignActionsDropdownProps> = (
               <p className="text-sm font-medium text-muted-foreground">Asunto</p>
               <p className="font-medium">{campaign.subject}</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Estado</p>
                 <p className="capitalize">{campaign.status}</p>
@@ -229,6 +232,10 @@ export const CampaignActionsDropdown: React.FC<CampaignActionsDropdownProps> = (
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Origen</p>
                 <p className="capitalize">{campaign.sent_via || 'internal'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Tipo</p>
+                <p className="capitalize">{campaign.type || 'opportunities'}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
