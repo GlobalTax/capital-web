@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { Copy, Download, Check, Eye, Code, RefreshCw } from 'lucide-react';
 import { generateBrevoHtml } from './brevoTemplate';
 import { PostCopyConfirmation } from './PostCopyConfirmation';
@@ -114,12 +115,12 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
     try {
       const { data, error } = await supabase
         .from('newsletter_campaigns')
-        .insert({
+        .insert([{
           subject,
           intro_text: introText,
           operations_included: operations.map(op => op.id),
           articles_included: selectedArticles,
-          content_blocks: contentBlocks,
+          content_blocks: contentBlocks as unknown as Json,
           header_image_url: headerImageUrl,
           status: 'draft',
           sent_via: 'brevo',
@@ -128,7 +129,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
           open_count: 0,
           click_count: 0,
           type: newsletterType,
-        })
+        }])
         .select()
         .single();
 
