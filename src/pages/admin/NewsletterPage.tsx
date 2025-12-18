@@ -25,6 +25,7 @@ import { NewsletterTypeSelector, NewsletterType, getNewsletterTypeConfig } from 
 import { ArticleSelector, getArticlesById } from '@/components/admin/newsletter/ArticleSelector';
 import { HeaderImageUploader } from '@/components/admin/newsletter/HeaderImageUploader';
 import { ContentBlockEditor, ContentBlock } from '@/components/admin/newsletter/ContentBlockEditor';
+import { BuySideMandateSelector } from '@/components/admin/newsletter/BuySideMandateSelector';
 import { AIGenerateButton } from '@/components/admin/newsletter/AIGenerateButton';
 import { useNewsletterAI } from '@/hooks/useNewsletterAI';
 
@@ -57,6 +58,7 @@ interface Campaign {
   articles_included?: string[] | null;
   content_blocks?: ContentBlock[] | null;
   header_image_url?: string | null;
+  buy_side_mandates_included?: string[] | null;
 }
 
 const NewsletterPage: React.FC = () => {
@@ -75,6 +77,7 @@ const NewsletterPage: React.FC = () => {
   // Type-specific state
   const [selectedOperations, setSelectedOperations] = useState<string[]>([]);
   const [selectedArticles, setSelectedArticles] = useState<string[]>([]);
+  const [selectedBuySideMandates, setSelectedBuySideMandates] = useState<string[]>([]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [headerImageUrl, setHeaderImageUrl] = useState<string | null>(null);
   
@@ -126,6 +129,7 @@ const NewsletterPage: React.FC = () => {
     setSubject(config.defaultSubject);
     setSelectedOperations([]);
     setSelectedArticles([]);
+    setSelectedBuySideMandates([]);
     setContentBlocks([]);
     setHeaderImageUrl(null);
     setIntroText('');
@@ -139,6 +143,7 @@ const NewsletterPage: React.FC = () => {
     setIntroText(campaign.intro_text || '');
     setSelectedOperations(campaign.operations_included || []);
     setSelectedArticles(campaign.articles_included || []);
+    setSelectedBuySideMandates(campaign.buy_side_mandates_included || []);
     setContentBlocks(campaign.content_blocks || []);
     setHeaderImageUrl(campaign.header_image_url || null);
     setActiveTab('create');
@@ -154,6 +159,8 @@ const NewsletterPage: React.FC = () => {
     switch (newsletterType) {
       case 'opportunities':
         return selectedOperations.length > 0;
+      case 'buyside':
+        return selectedBuySideMandates.length > 0;
       case 'news':
         return selectedArticles.length > 0;
       case 'updates':
@@ -162,7 +169,7 @@ const NewsletterPage: React.FC = () => {
       default:
         return false;
     }
-  }, [newsletterType, selectedOperations.length, selectedArticles.length, contentBlocks.length]);
+  }, [newsletterType, selectedOperations.length, selectedBuySideMandates.length, selectedArticles.length, contentBlocks.length]);
 
   // Render the right-side content selector based on type
   const renderContentSelector = () => {
@@ -181,6 +188,24 @@ const NewsletterPage: React.FC = () => {
                 operations={operations || []}
                 selectedIds={selectedOperations}
                 onSelectionChange={setSelectedOperations}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      case 'buyside':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Seleccionar Mandatos de Compra</CardTitle>
+              <CardDescription>
+                Elige las empresas buscadas a incluir en el newsletter
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BuySideMandateSelector
+                selectedIds={selectedBuySideMandates}
+                onSelectionChange={setSelectedBuySideMandates}
               />
             </CardContent>
           </Card>
@@ -478,6 +503,7 @@ const NewsletterPage: React.FC = () => {
         onCampaignCreated={refreshCampaigns}
         newsletterType={newsletterType}
         selectedArticles={selectedArticles}
+        selectedBuySideMandates={selectedBuySideMandates}
         contentBlocks={contentBlocks}
         headerImageUrl={headerImageUrl}
       />

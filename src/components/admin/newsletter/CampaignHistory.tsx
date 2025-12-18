@@ -28,13 +28,13 @@ import {
   BarChart3,
   Newspaper,
   Megaphone,
-  GraduationCap
+  GraduationCap,
+  Binoculars
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CampaignActionsDropdown } from './CampaignActionsDropdown';
-
-type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational';
+import { NewsletterType } from './NewsletterTypeSelector';
 
 interface Campaign {
   id: string;
@@ -43,14 +43,18 @@ interface Campaign {
   recipients_count: number;
   sent_at: string | null;
   status: string;
-  open_count: number;
-  click_count: number;
+  open_count?: number;
+  click_count?: number;
   created_at: string;
   sent_via?: string | null;
   notes?: string | null;
   html_content?: string | null;
   intro_text?: string | null;
   type?: NewsletterType | null;
+  articles_included?: string[] | null;
+  content_blocks?: any[] | null;
+  header_image_url?: string | null;
+  buy_side_mandates_included?: string[] | null;
 }
 
 interface Operation {
@@ -112,6 +116,11 @@ function getTypeBadge(type: NewsletterType | null | undefined) {
       label: "Oportunidades", 
       icon: <BarChart3 className="h-3 w-3" />, 
       className: "bg-blue-100 text-blue-700 border-blue-200" 
+    },
+    buyside: { 
+      label: "Empresas Buscadas", 
+      icon: <Binoculars className="h-3 w-3" />, 
+      className: "bg-emerald-100 text-emerald-700 border-emerald-200" 
     },
     news: { 
       label: "Noticias", 

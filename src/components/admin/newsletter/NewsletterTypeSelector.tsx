@@ -2,9 +2,9 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Building2, Newspaper, Bell, GraduationCap, Check } from 'lucide-react';
+import { Building2, Newspaper, Bell, GraduationCap, Check, Search } from 'lucide-react';
 
-export type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational';
+export type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational' | 'buyside';
 
 interface NewsletterTypeConfig {
   id: NewsletterType;
@@ -23,6 +23,14 @@ export const NEWSLETTER_TYPES: NewsletterTypeConfig[] = [
     description: 'Selección curada de operaciones de inversión',
     frequency: 'Semanal',
     defaultSubject: 'Oportunidades de la Semana – Capittal',
+  },
+  {
+    id: 'buyside',
+    label: 'Empresas Buscadas',
+    icon: Search,
+    description: 'Perfiles de empresas que buscan nuestros inversores',
+    frequency: 'Semanal/Quincenal',
+    defaultSubject: 'Empresas Buscadas – Capittal',
   },
   {
     id: 'news',
@@ -60,7 +68,7 @@ export const NewsletterTypeSelector: React.FC<NewsletterTypeSelectorProps> = ({
   onTypeChange,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       {NEWSLETTER_TYPES.map((type) => {
         const Icon = type.icon;
         const isSelected = selectedType === type.id;
