@@ -78,3 +78,6 @@ export const LazyMarketplaceAnalytics = lazy(() => import('@/pages/admin/Marketp
 
 // === NEWSLETTER ===
 export const LazyNewsletterPage = lazy(() => import('@/pages/admin/NewsletterPage'));
+
+// === BUY-SIDE MANDATES ===
+export const LazyBuySideMandatesPage = lazy(() => import('@/pages/admin/BuySideMandatesPage'));

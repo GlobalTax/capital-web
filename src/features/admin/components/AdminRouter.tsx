@@ -52,7 +52,8 @@ import {
   LazyEmailRecipientsConfig,
   LazyPdfSignatureConfig,
   LazyMarketplaceAnalytics,
-  LazyNewsletterPage
+  LazyNewsletterPage,
+  LazyBuySideMandatesPage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -153,6 +154,7 @@ const AdminRouter = () => {
           <Route path="/configuracion/destinatarios-email" element={<LazyEmailRecipientsConfig />} />
           <Route path="/configuracion/firma-pdf" element={<LazyPdfSignatureConfig />} />
           <Route path="/newsletter" element={<LazyNewsletterPage />} />
+          <Route path="/mandatos-compra" element={<LazyBuySideMandatesPage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

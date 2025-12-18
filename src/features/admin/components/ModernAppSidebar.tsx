@@ -41,7 +41,8 @@ import {
   Flag,
   Briefcase,
   Tags,
-  Calculator
+  Calculator,
+  FileSearch
 } from 'lucide-react';
 
 const menuSections = [
@@ -75,6 +76,7 @@ const menuSections = [
     items: [
       { title: "Valoraciones Pro", url: "/admin/valoraciones-pro", icon: Calculator, badge: "PRO" },
       { title: "Operaciones", url: "/admin/operations", icon: Building2 },
+      { title: "Mandatos de Compra", url: "/admin/mandatos-compra", icon: FileSearch },
       { title: "Múltiplos", url: "/admin/multiples", icon: TrendingUp },
       { title: "Estadísticas", url: "/admin/statistics", icon: BarChart3 },
     ]
