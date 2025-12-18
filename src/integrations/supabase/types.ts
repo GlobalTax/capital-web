@@ -8373,6 +8373,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
+      is_full_admin: { Args: { check_user_id: string }; Returns: boolean }
       is_user_admin: { Args: { check_user_id: string }; Returns: boolean }
       is_user_super_admin: { Args: { check_user_id: string }; Returns: boolean }
       log_auth_security_event: {
