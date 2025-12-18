@@ -11,20 +11,18 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Mail, 
   Send, 
-  Users, 
-  BarChart3, 
   Clock, 
-  CheckCircle2, 
-  AlertCircle,
   Eye,
-  RefreshCw,
   Plus,
-  FileCode
+  FileCode,
+  FileText,
+  CheckCircle2
 } from 'lucide-react';
 import { OperationSelector } from '@/components/admin/newsletter/OperationSelector';
 import { NewsletterPreview } from '@/components/admin/newsletter/NewsletterPreview';
 import { CampaignHistory } from '@/components/admin/newsletter/CampaignHistory';
 import { BrevoHtmlGenerator } from '@/components/admin/newsletter/BrevoHtmlGenerator';
+import { NewsletterTypeSelector, NewsletterType, NEWSLETTER_TYPES, getNewsletterTypeConfig } from '@/components/admin/newsletter/NewsletterTypeSelector';
 
 interface Operation {
   id: string;
@@ -51,40 +49,23 @@ interface Campaign {
   sent_via?: string | null;
   notes?: string | null;
   html_content?: string | null;
-}
-
-interface Subscriber {
-  id: string;
-  email: string;
-  name: string | null;
-  full_name: string | null;
-  is_active: boolean;
-  created_at: string;
+  type?: NewsletterType | null;
+  articles_included?: string[] | null;
+  content_blocks?: unknown[] | null;
+  header_image_url?: string | null;
 }
 
 const NewsletterPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [subject, setSubject] = useState('Oportunidades de la Semana – Capittal');
+  const [newsletterType, setNewsletterType] = useState<NewsletterType>('opportunities');
+  const [subject, setSubject] = useState(getNewsletterTypeConfig('opportunities').defaultSubject);
   const [introText, setIntroText] = useState('');
   const [selectedOperations, setSelectedOperations] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [showBrevoGenerator, setShowBrevoGenerator] = useState(false);
   const [activeTab, setActiveTab] = useState('create');
-
-  // Fetch subscribers count
-  const { data: subscribersData } = useQuery({
-    queryKey: ['newsletter-subscribers'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('newsletter_subscribers')
-        .select('id, email, name, full_name, is_active, created_at')
-        .eq('is_active', true);
-      if (error) throw error;
-      return data as Subscriber[];
-    },
-  });
 
   // Fetch campaigns
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
@@ -94,7 +75,7 @@ const NewsletterPage: React.FC = () => {
         .from('newsletter_campaigns')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(50);
       if (error) throw error;
       return data as Campaign[];
     },
@@ -146,14 +127,28 @@ const NewsletterPage: React.FC = () => {
     },
   });
 
-  const subscriberCount = subscribersData?.length || 0;
+  // Campaign stats
   const totalCampaigns = campaigns?.length || 0;
   const sentCampaigns = campaigns?.filter(c => c.status === 'sent').length || 0;
+  const draftCampaigns = campaigns?.filter(c => c.status === 'draft').length || 0;
 
   const selectedOps = operations?.filter(op => selectedOperations.includes(op.id)) || [];
+  const currentTypeConfig = getNewsletterTypeConfig(newsletterType);
+
+  // Handle type change
+  const handleTypeChange = (type: NewsletterType) => {
+    setNewsletterType(type);
+    const config = getNewsletterTypeConfig(type);
+    setSubject(config.defaultSubject);
+    // Reset selections when changing type
+    setSelectedOperations([]);
+    setIntroText('');
+  };
 
   // Handle duplicating a campaign
   const handleDuplicate = (campaign: Campaign) => {
+    const type = campaign.type || 'opportunities';
+    setNewsletterType(type);
     setSubject(campaign.subject);
     setIntroText(campaign.intro_text || '');
     setSelectedOperations(campaign.operations_included || []);
@@ -165,74 +160,68 @@ const NewsletterPage: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['newsletter-campaigns'] });
   };
 
+  // Check if can proceed (depends on type)
+  const canProceed = () => {
+    if (newsletterType === 'opportunities') {
+      return selectedOperations.length > 0;
+    }
+    // For other types, we'll add logic in future phases
+    return false;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">📧 Newsletter Semanal</h1>
+          <h1 className="text-2xl font-bold text-foreground">📧 Newsletter</h1>
           <p className="text-muted-foreground">
-            Envía oportunidades de inversión a tus suscriptores
+            Crea y gestiona campañas de email para tus suscriptores
           </p>
         </div>
         <Button onClick={() => setActiveTab('create')} className="gap-2">
           <Plus className="h-4 w-4" />
-          Nuevo Envío
+          Nueva Campaña
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Stats Cards - Updated without subscriber count */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{subscriberCount}</p>
-                <p className="text-sm text-muted-foreground">Suscriptores</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Send className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{sentCampaigns}</p>
-                <p className="text-sm text-muted-foreground">Enviados</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <BarChart3 className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {campaigns?.[0]?.open_count || 0}%
-                </p>
-                <p className="text-sm text-muted-foreground">Tasa Apertura</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Clock className="h-5 w-5 text-amber-600" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Mail className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{totalCampaigns}</p>
                 <p className="text-sm text-muted-foreground">Total Campañas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{sentCampaigns}</p>
+                <p className="text-sm text-muted-foreground">Enviadas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-500/10 rounded-lg">
+                <FileText className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{draftCampaigns}</p>
+                <p className="text-sm text-muted-foreground">Borradores</p>
               </div>
             </div>
           </CardContent>
@@ -250,21 +239,37 @@ const NewsletterPage: React.FC = () => {
             <Clock className="h-4 w-4" />
             Historial
           </TabsTrigger>
-          <TabsTrigger value="subscribers" className="gap-2">
-            <Users className="h-4 w-4" />
-            Suscriptores
-          </TabsTrigger>
         </TabsList>
 
         {/* Create Tab */}
         <TabsContent value="create" className="space-y-6">
+          {/* Type Selector */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tipo de Newsletter</CardTitle>
+              <CardDescription>
+                Selecciona el tipo de contenido que quieres enviar
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NewsletterTypeSelector
+                selectedType={newsletterType}
+                onTypeChange={handleTypeChange}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Editor based on type */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Editor */}
             <Card>
               <CardHeader>
-                <CardTitle>Configurar Newsletter</CardTitle>
+                <div className="flex items-center gap-2">
+                  {React.createElement(currentTypeConfig.icon, { className: 'h-5 w-5 text-primary' })}
+                  <CardTitle>{currentTypeConfig.label}</CardTitle>
+                </div>
                 <CardDescription>
-                  Define el asunto e introduce el texto introductorio
+                  {currentTypeConfig.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -273,7 +278,7 @@ const NewsletterPage: React.FC = () => {
                   <Input
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Oportunidades de la Semana – Capittal"
+                    placeholder={currentTypeConfig.defaultSubject}
                     className="mt-1"
                   />
                 </div>
@@ -282,20 +287,29 @@ const NewsletterPage: React.FC = () => {
                   <Textarea
                     value={introText}
                     onChange={(e) => setIntroText(e.target.value)}
-                    placeholder="Te compartimos las últimas oportunidades de inversión disponibles en nuestro Marketplace..."
+                    placeholder="Te compartimos las últimas novedades..."
                     rows={3}
                     className="mt-1"
                   />
                 </div>
+
+                {/* Type-specific message */}
+                {newsletterType !== 'opportunities' && (
+                  <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
+                    <p className="text-sm text-muted-foreground text-center">
+                      El editor para <strong>{currentTypeConfig.label}</strong> estará disponible próximamente.
+                      <br />
+                      Por ahora, usa el tipo "Oportunidades".
+                    </p>
+                  </div>
+                )}
+
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Se enviará a <strong>{subscriberCount}</strong> suscriptores activos
-                  </p>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       onClick={() => setShowPreview(true)}
-                      disabled={selectedOperations.length === 0}
+                      disabled={!canProceed()}
                       className="gap-2"
                     >
                       <Eye className="h-4 w-4" />
@@ -303,7 +317,7 @@ const NewsletterPage: React.FC = () => {
                     </Button>
                     <Button
                       onClick={() => setShowBrevoGenerator(true)}
-                      disabled={selectedOperations.length === 0}
+                      disabled={!canProceed()}
                       className="gap-2"
                     >
                       <FileCode className="h-4 w-4" />
@@ -314,22 +328,39 @@ const NewsletterPage: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Operation Selector */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Seleccionar Operaciones</CardTitle>
-                <CardDescription>
-                  Elige las operaciones a incluir en el newsletter
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <OperationSelector
-                  operations={operations || []}
-                  selectedIds={selectedOperations}
-                  onSelectionChange={setSelectedOperations}
-                />
-              </CardContent>
-            </Card>
+            {/* Operation Selector - only for opportunities type */}
+            {newsletterType === 'opportunities' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Seleccionar Operaciones</CardTitle>
+                  <CardDescription>
+                    Elige las operaciones a incluir en el newsletter
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <OperationSelector
+                    operations={operations || []}
+                    selectedIds={selectedOperations}
+                    onSelectionChange={setSelectedOperations}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Placeholder for other types - will be implemented in future phases */}
+            {newsletterType !== 'opportunities' && (
+              <Card className="border-dashed">
+                <CardContent className="flex items-center justify-center min-h-[300px]">
+                  <div className="text-center text-muted-foreground">
+                    <currentTypeConfig.icon className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p className="font-medium">Próximamente</p>
+                    <p className="text-sm">
+                      Selector de contenido para {currentTypeConfig.label.toLowerCase()}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Selected Operations Summary */}
@@ -364,50 +395,10 @@ const NewsletterPage: React.FC = () => {
           <CampaignHistory 
             campaigns={campaigns || []} 
             isLoading={campaignsLoading}
-        onRefresh={refreshCampaigns}
-        operations={operations || []}
-        onDuplicate={handleDuplicate}
-      />
-    </TabsContent>
-
-        {/* Subscribers Tab */}
-        <TabsContent value="subscribers">
-          <Card>
-            <CardHeader>
-              <CardTitle>Suscriptores Activos</CardTitle>
-              <CardDescription>
-                Lista de emails suscritos al newsletter
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {subscribersData && subscribersData.length > 0 ? (
-                <div className="space-y-2">
-                  {subscribersData.map((sub) => (
-                    <div key={sub.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Mail className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{sub.email}</p>
-                          {sub.name && <p className="text-sm text-muted-foreground">{sub.name}</p>}
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-green-500" />
-                        Activo
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No hay suscriptores activos</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            onRefresh={refreshCampaigns}
+            operations={operations || []}
+            onDuplicate={handleDuplicate}
+          />
         </TabsContent>
       </Tabs>
 
@@ -429,6 +420,7 @@ const NewsletterPage: React.FC = () => {
         subject={subject}
         introText={introText}
         onCampaignCreated={refreshCampaigns}
+        newsletterType={newsletterType}
       />
     </div>
   );

@@ -5571,15 +5571,18 @@ export type Database = {
       }
       newsletter_campaigns: {
         Row: {
+          articles_included: string[] | null
           click_count: number | null
+          content_blocks: Json | null
           created_at: string | null
           error_message: string | null
+          header_image_url: string | null
           html_content: string | null
           id: string
           intro_text: string | null
           notes: string | null
           open_count: number | null
-          operations_included: string[]
+          operations_included: string[] | null
           preview_text: string | null
           recipients_count: number | null
           scheduled_for: string | null
@@ -5588,19 +5591,23 @@ export type Database = {
           sent_via: string | null
           status: string
           subject: string
+          type: string | null
           unsubscribe_count: number | null
           updated_at: string | null
         }
         Insert: {
+          articles_included?: string[] | null
           click_count?: number | null
+          content_blocks?: Json | null
           created_at?: string | null
           error_message?: string | null
+          header_image_url?: string | null
           html_content?: string | null
           id?: string
           intro_text?: string | null
           notes?: string | null
           open_count?: number | null
-          operations_included?: string[]
+          operations_included?: string[] | null
           preview_text?: string | null
           recipients_count?: number | null
           scheduled_for?: string | null
@@ -5609,19 +5616,23 @@ export type Database = {
           sent_via?: string | null
           status?: string
           subject: string
+          type?: string | null
           unsubscribe_count?: number | null
           updated_at?: string | null
         }
         Update: {
+          articles_included?: string[] | null
           click_count?: number | null
+          content_blocks?: Json | null
           created_at?: string | null
           error_message?: string | null
+          header_image_url?: string | null
           html_content?: string | null
           id?: string
           intro_text?: string | null
           notes?: string | null
           open_count?: number | null
-          operations_included?: string[]
+          operations_included?: string[] | null
           preview_text?: string | null
           recipients_count?: number | null
           scheduled_for?: string | null
@@ -5630,6 +5641,7 @@ export type Database = {
           sent_via?: string | null
           status?: string
           subject?: string
+          type?: string | null
           unsubscribe_count?: number | null
           updated_at?: string | null
         }
