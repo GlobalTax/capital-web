@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Mail, 
-  Send, 
   Clock, 
   Eye,
   Plus,
@@ -22,7 +21,10 @@ import { OperationSelector } from '@/components/admin/newsletter/OperationSelect
 import { NewsletterPreview } from '@/components/admin/newsletter/NewsletterPreview';
 import { CampaignHistory } from '@/components/admin/newsletter/CampaignHistory';
 import { BrevoHtmlGenerator } from '@/components/admin/newsletter/BrevoHtmlGenerator';
-import { NewsletterTypeSelector, NewsletterType, NEWSLETTER_TYPES, getNewsletterTypeConfig } from '@/components/admin/newsletter/NewsletterTypeSelector';
+import { NewsletterTypeSelector, NewsletterType, getNewsletterTypeConfig } from '@/components/admin/newsletter/NewsletterTypeSelector';
+import { ArticleSelector, getArticlesById } from '@/components/admin/newsletter/ArticleSelector';
+import { HeaderImageUploader } from '@/components/admin/newsletter/HeaderImageUploader';
+import { ContentBlockEditor, ContentBlock } from '@/components/admin/newsletter/ContentBlockEditor';
 
 interface Operation {
   id: string;
@@ -51,7 +53,7 @@ interface Campaign {
   html_content?: string | null;
   type?: NewsletterType | null;
   articles_included?: string[] | null;
-  content_blocks?: unknown[] | null;
+  content_blocks?: ContentBlock[] | null;
   header_image_url?: string | null;
 }
 
@@ -59,13 +61,21 @@ const NewsletterPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Core state
   const [newsletterType, setNewsletterType] = useState<NewsletterType>('opportunities');
   const [subject, setSubject] = useState(getNewsletterTypeConfig('opportunities').defaultSubject);
   const [introText, setIntroText] = useState('');
+  const [activeTab, setActiveTab] = useState('create');
+  
+  // Type-specific state
   const [selectedOperations, setSelectedOperations] = useState<string[]>([]);
+  const [selectedArticles, setSelectedArticles] = useState<string[]>([]);
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
+  const [headerImageUrl, setHeaderImageUrl] = useState<string | null>(null);
+  
+  // UI state
   const [showPreview, setShowPreview] = useState(false);
   const [showBrevoGenerator, setShowBrevoGenerator] = useState(false);
-  const [activeTab, setActiveTab] = useState('create');
 
   // Fetch campaigns
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
@@ -77,7 +87,7 @@ const NewsletterPage: React.FC = () => {
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
-      return data as Campaign[];
+      return data as unknown as Campaign[];
     },
   });
 
@@ -96,37 +106,6 @@ const NewsletterPage: React.FC = () => {
     },
   });
 
-  // Send newsletter mutation
-  const sendNewsletter = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('send-weekly-newsletter', {
-        body: {
-          subject,
-          intro_text: introText,
-          operation_ids: selectedOperations,
-        },
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Newsletter enviado',
-        description: `Se envió a ${data.sent} suscriptores correctamente.`,
-      });
-      queryClient.invalidateQueries({ queryKey: ['newsletter-campaigns'] });
-      setSelectedOperations([]);
-      setActiveTab('history');
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error al enviar',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
-      });
-    },
-  });
-
   // Campaign stats
   const totalCampaigns = campaigns?.length || 0;
   const sentCampaigns = campaigns?.filter(c => c.status === 'sent').length || 0;
@@ -135,38 +114,115 @@ const NewsletterPage: React.FC = () => {
   const selectedOps = operations?.filter(op => selectedOperations.includes(op.id)) || [];
   const currentTypeConfig = getNewsletterTypeConfig(newsletterType);
 
-  // Handle type change
+  // Reset all content when type changes
   const handleTypeChange = (type: NewsletterType) => {
     setNewsletterType(type);
     const config = getNewsletterTypeConfig(type);
     setSubject(config.defaultSubject);
-    // Reset selections when changing type
     setSelectedOperations([]);
+    setSelectedArticles([]);
+    setContentBlocks([]);
+    setHeaderImageUrl(null);
     setIntroText('');
   };
 
   // Handle duplicating a campaign
   const handleDuplicate = (campaign: Campaign) => {
-    const type = campaign.type || 'opportunities';
+    const type = (campaign.type || 'opportunities') as NewsletterType;
     setNewsletterType(type);
     setSubject(campaign.subject);
     setIntroText(campaign.intro_text || '');
     setSelectedOperations(campaign.operations_included || []);
+    setSelectedArticles(campaign.articles_included || []);
+    setContentBlocks(campaign.content_blocks || []);
+    setHeaderImageUrl(campaign.header_image_url || null);
     setActiveTab('create');
   };
 
-  // Refresh campaigns after creating/updating
+  // Refresh campaigns
   const refreshCampaigns = () => {
     queryClient.invalidateQueries({ queryKey: ['newsletter-campaigns'] });
   };
 
-  // Check if can proceed (depends on type)
-  const canProceed = () => {
-    if (newsletterType === 'opportunities') {
-      return selectedOperations.length > 0;
+  // Check if can proceed based on type
+  const canProceed = useMemo(() => {
+    switch (newsletterType) {
+      case 'opportunities':
+        return selectedOperations.length > 0;
+      case 'news':
+        return selectedArticles.length > 0;
+      case 'updates':
+      case 'educational':
+        return contentBlocks.length > 0;
+      default:
+        return false;
     }
-    // For other types, we'll add logic in future phases
-    return false;
+  }, [newsletterType, selectedOperations.length, selectedArticles.length, contentBlocks.length]);
+
+  // Render the right-side content selector based on type
+  const renderContentSelector = () => {
+    switch (newsletterType) {
+      case 'opportunities':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Seleccionar Operaciones</CardTitle>
+              <CardDescription>
+                Elige las operaciones a incluir en el newsletter
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OperationSelector
+                operations={operations || []}
+                selectedIds={selectedOperations}
+                onSelectionChange={setSelectedOperations}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      case 'news':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Seleccionar Artículos</CardTitle>
+              <CardDescription>
+                Elige hasta 3 artículos del blog para incluir
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ArticleSelector
+                selectedIds={selectedArticles}
+                onSelectionChange={setSelectedArticles}
+                maxArticles={3}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      case 'updates':
+      case 'educational':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Contenido del Newsletter</CardTitle>
+              <CardDescription>
+                Añade bloques de texto, imágenes y CTAs
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContentBlockEditor
+                blocks={contentBlocks}
+                onBlocksChange={setContentBlocks}
+                maxBlocks={5}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
@@ -185,7 +241,7 @@ const NewsletterPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Stats Cards - Updated without subscriber count */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -261,7 +317,7 @@ const NewsletterPage: React.FC = () => {
 
           {/* Editor based on type */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Editor */}
+            {/* Left: Configuration */}
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -282,6 +338,7 @@ const NewsletterPage: React.FC = () => {
                     className="mt-1"
                   />
                 </div>
+                
                 <div>
                   <label className="text-sm font-medium">Texto introductorio (opcional)</label>
                   <Textarea
@@ -293,15 +350,12 @@ const NewsletterPage: React.FC = () => {
                   />
                 </div>
 
-                {/* Type-specific message */}
+                {/* Header image for news, updates, educational */}
                 {newsletterType !== 'opportunities' && (
-                  <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
-                    <p className="text-sm text-muted-foreground text-center">
-                      El editor para <strong>{currentTypeConfig.label}</strong> estará disponible próximamente.
-                      <br />
-                      Por ahora, usa el tipo "Oportunidades".
-                    </p>
-                  </div>
+                  <HeaderImageUploader
+                    imageUrl={headerImageUrl}
+                    onImageChange={setHeaderImageUrl}
+                  />
                 )}
 
                 <div className="pt-4 border-t">
@@ -309,7 +363,7 @@ const NewsletterPage: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={() => setShowPreview(true)}
-                      disabled={!canProceed()}
+                      disabled={!canProceed}
                       className="gap-2"
                     >
                       <Eye className="h-4 w-4" />
@@ -317,7 +371,7 @@ const NewsletterPage: React.FC = () => {
                     </Button>
                     <Button
                       onClick={() => setShowBrevoGenerator(true)}
-                      disabled={!canProceed()}
+                      disabled={!canProceed}
                       className="gap-2"
                     >
                       <FileCode className="h-4 w-4" />
@@ -328,43 +382,12 @@ const NewsletterPage: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Operation Selector - only for opportunities type */}
-            {newsletterType === 'opportunities' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Seleccionar Operaciones</CardTitle>
-                  <CardDescription>
-                    Elige las operaciones a incluir en el newsletter
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <OperationSelector
-                    operations={operations || []}
-                    selectedIds={selectedOperations}
-                    onSelectionChange={setSelectedOperations}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Placeholder for other types - will be implemented in future phases */}
-            {newsletterType !== 'opportunities' && (
-              <Card className="border-dashed">
-                <CardContent className="flex items-center justify-center min-h-[300px]">
-                  <div className="text-center text-muted-foreground">
-                    <currentTypeConfig.icon className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p className="font-medium">Próximamente</p>
-                    <p className="text-sm">
-                      Selector de contenido para {currentTypeConfig.label.toLowerCase()}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Right: Content Selector */}
+            {renderContentSelector()}
           </div>
 
-          {/* Selected Operations Summary */}
-          {selectedOperations.length > 0 && (
+          {/* Selected Operations Summary (only for opportunities) */}
+          {newsletterType === 'opportunities' && selectedOperations.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">
@@ -402,8 +425,8 @@ const NewsletterPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Preview Modal */}
-      {showPreview && (
+      {/* Preview Modal - only for opportunities for now */}
+      {showPreview && newsletterType === 'opportunities' && (
         <NewsletterPreview
           subject={subject}
           introText={introText}
@@ -421,6 +444,9 @@ const NewsletterPage: React.FC = () => {
         introText={introText}
         onCampaignCreated={refreshCampaigns}
         newsletterType={newsletterType}
+        selectedArticles={selectedArticles}
+        contentBlocks={contentBlocks}
+        headerImageUrl={headerImageUrl}
       />
     </div>
   );
