@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Trash2, GripVertical, Type, Link, Image } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Type, Link, Image, Sparkles, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface ContentBlock {
   id: string;
@@ -27,6 +29,44 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
   onBlocksChange,
   maxBlocks = 5,
 }) => {
+  const [generatingBlockId, setGeneratingBlockId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const generateBlockContent = async (blockId: string, existingContent?: string) => {
+    setGeneratingBlockId(blockId);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-content-studio', {
+        body: {
+          type: 'newsletter',
+          template: existingContent ? 'newsletter-improve' : 'newsletter-text-block',
+          prompt: existingContent || 'Genera un párrafo informativo para un newsletter de M&A.',
+          options: { temperature: 0.7, maxTokens: 500 }
+        }
+      });
+
+      if (error) throw error;
+
+      onBlocksChange(
+        blocks.map((block) =>
+          block.id === blockId ? { ...block, content: data.content } : block
+        )
+      );
+
+      toast({
+        title: "✨ Contenido generado",
+        description: existingContent ? "Texto mejorado con IA" : "Nuevo contenido generado con IA",
+      });
+    } catch (error) {
+      console.error('Error generating block content:', error);
+      toast({
+        title: "Error al generar",
+        description: "No se pudo generar el contenido",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingBlockId(null);
+    }
+  };
   const addBlock = (type: ContentBlock['type']) => {
     if (blocks.length >= maxBlocks) return;
 
@@ -98,9 +138,26 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                 <div className="flex-1 space-y-3">
                   {block.type === 'text' && (
                     <>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Type className="h-4 w-4" />
-                        Bloque de texto
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Type className="h-4 w-4" />
+                          Bloque de texto
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => generateBlockContent(block.id, block.content || undefined)}
+                          disabled={generatingBlockId === block.id}
+                          className="h-7 px-2 text-primary hover:text-primary hover:bg-primary/10"
+                        >
+                          {generatingBlockId === block.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          ) : (
+                            <Sparkles className="h-4 w-4 mr-1" />
+                          )}
+                          {block.content ? 'Mejorar' : 'Generar'}
+                        </Button>
                       </div>
                       <Textarea
                         value={block.content}

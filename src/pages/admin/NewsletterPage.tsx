@@ -25,6 +25,8 @@ import { NewsletterTypeSelector, NewsletterType, getNewsletterTypeConfig } from 
 import { ArticleSelector, getArticlesById } from '@/components/admin/newsletter/ArticleSelector';
 import { HeaderImageUploader } from '@/components/admin/newsletter/HeaderImageUploader';
 import { ContentBlockEditor, ContentBlock } from '@/components/admin/newsletter/ContentBlockEditor';
+import { AIGenerateButton } from '@/components/admin/newsletter/AIGenerateButton';
+import { useNewsletterAI } from '@/hooks/useNewsletterAI';
 
 interface Operation {
   id: string;
@@ -60,6 +62,9 @@ interface Campaign {
 const NewsletterPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // AI hook
+  const { isGenerating, generatingField, generateSubject, generateIntro } = useNewsletterAI();
   
   // Core state
   const [newsletterType, setNewsletterType] = useState<NewsletterType>('opportunities');
@@ -330,23 +335,47 @@ const NewsletterPage: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Asunto del email</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm font-medium">Asunto del email</label>
+                    <AIGenerateButton
+                      onClick={async () => {
+                        const result = await generateSubject({
+                          newsletterType,
+                          operations: selectedOps,
+                        });
+                        if (result) setSubject(result);
+                      }}
+                      isGenerating={isGenerating && generatingField === 'subject'}
+                      tooltip="Generar asunto con IA"
+                    />
+                  </div>
                   <Input
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder={currentTypeConfig.defaultSubject}
-                    className="mt-1"
                   />
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium">Texto introductorio (opcional)</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm font-medium">Texto introductorio (opcional)</label>
+                    <AIGenerateButton
+                      onClick={async () => {
+                        const result = await generateIntro({
+                          newsletterType,
+                          operations: selectedOps,
+                        });
+                        if (result) setIntroText(result);
+                      }}
+                      isGenerating={isGenerating && generatingField === 'intro'}
+                      tooltip="Generar intro con IA"
+                    />
+                  </div>
                   <Textarea
                     value={introText}
                     onChange={(e) => setIntroText(e.target.value)}
                     placeholder="Te compartimos las últimas novedades..."
                     rows={3}
-                    className="mt-1"
                   />
                 </div>
 
