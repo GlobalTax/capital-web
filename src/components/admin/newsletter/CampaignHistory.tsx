@@ -24,11 +24,17 @@ import {
   Clock, 
   Send, 
   Search,
-  Mail
+  Mail,
+  BarChart3,
+  Newspaper,
+  Megaphone,
+  GraduationCap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CampaignActionsDropdown } from './CampaignActionsDropdown';
+
+type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational';
 
 interface Campaign {
   id: string;
@@ -44,6 +50,7 @@ interface Campaign {
   notes?: string | null;
   html_content?: string | null;
   intro_text?: string | null;
+  type?: NewsletterType | null;
 }
 
 interface Operation {
@@ -99,6 +106,38 @@ function getSentViaBadge(sentVia: string | null | undefined) {
   );
 }
 
+function getTypeBadge(type: NewsletterType | null | undefined) {
+  const config: Record<NewsletterType, { label: string; icon: React.ReactNode; className: string }> = {
+    opportunities: { 
+      label: "Oportunidades", 
+      icon: <BarChart3 className="h-3 w-3" />, 
+      className: "bg-blue-100 text-blue-700 border-blue-200" 
+    },
+    news: { 
+      label: "Noticias", 
+      icon: <Newspaper className="h-3 w-3" />, 
+      className: "bg-green-100 text-green-700 border-green-200" 
+    },
+    updates: { 
+      label: "Updates", 
+      icon: <Megaphone className="h-3 w-3" />, 
+      className: "bg-orange-100 text-orange-700 border-orange-200" 
+    },
+    educational: { 
+      label: "Educativo", 
+      icon: <GraduationCap className="h-3 w-3" />, 
+      className: "bg-purple-100 text-purple-700 border-purple-200" 
+    },
+  };
+  const { label, icon, className } = config[type || 'opportunities'] || config.opportunities;
+  return (
+    <Badge variant="secondary" className={`gap-1 ${className}`}>
+      {icon}
+      {label}
+    </Badge>
+  );
+}
+
 export const CampaignHistory: React.FC<CampaignHistoryProps> = ({ 
   campaigns, 
   isLoading, 
@@ -108,6 +147,7 @@ export const CampaignHistory: React.FC<CampaignHistoryProps> = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [originFilter, setOriginFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter campaigns
@@ -119,6 +159,12 @@ export const CampaignHistory: React.FC<CampaignHistoryProps> = ({
     if (originFilter !== 'all') {
       const campaignOrigin = campaign.sent_via || 'internal';
       if (originFilter !== campaignOrigin) return false;
+    }
+    
+    // Type filter
+    if (typeFilter !== 'all') {
+      const campaignType = campaign.type || 'opportunities';
+      if (typeFilter !== campaignType) return false;
     }
     
     // Search filter
@@ -188,6 +234,18 @@ export const CampaignHistory: React.FC<CampaignHistoryProps> = ({
               <SelectItem value="internal">Interno</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los tipos</SelectItem>
+              <SelectItem value="opportunities">Oportunidades</SelectItem>
+              <SelectItem value="news">Noticias M&A</SelectItem>
+              <SelectItem value="updates">Actualizaciones</SelectItem>
+              <SelectItem value="educational">Educativo</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Table */}
@@ -198,11 +256,12 @@ export const CampaignHistory: React.FC<CampaignHistoryProps> = ({
                 <TableRow>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Asunto</TableHead>
+                  <TableHead className="text-center">Tipo</TableHead>
                   <TableHead className="text-center">Origen</TableHead>
                   <TableHead className="text-center">Ops</TableHead>
                   <TableHead className="text-center">Enviados</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="w-[120px]">Notas</TableHead>
+                  <TableHead className="w-[100px]">Notas</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -215,8 +274,11 @@ export const CampaignHistory: React.FC<CampaignHistoryProps> = ({
                         : format(new Date(campaign.created_at), "d MMM yyyy", { locale: es })
                       }
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate font-medium">
+                    <TableCell className="max-w-[180px] truncate font-medium">
                       {campaign.subject}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {getTypeBadge(campaign.type)}
                     </TableCell>
                     <TableCell className="text-center">
                       {getSentViaBadge(campaign.sent_via)}
