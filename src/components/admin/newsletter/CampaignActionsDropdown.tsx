@@ -26,7 +26,7 @@ import {
   Files
 } from 'lucide-react';
 
-type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational';
+import { NewsletterType } from './NewsletterTypeSelector';
 
 interface Campaign {
   id: string;
@@ -43,6 +43,10 @@ interface Campaign {
   click_count?: number;
   intro_text?: string | null;
   type?: NewsletterType | null;
+  articles_included?: string[] | null;
+  content_blocks?: any[] | null;
+  header_image_url?: string | null;
+  buy_side_mandates_included?: string[] | null;
 }
 
 interface CampaignActionsDropdownProps {

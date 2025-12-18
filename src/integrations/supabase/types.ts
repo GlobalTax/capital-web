@@ -1238,6 +1238,63 @@ export type Database = {
         }
         Relationships: []
       }
+      buy_side_mandates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ebitda_max: number | null
+          ebitda_min: number | null
+          geographic_scope: string
+          id: string
+          is_active: boolean | null
+          is_new: boolean | null
+          requirements: string[] | null
+          revenue_max: number | null
+          revenue_min: number | null
+          sector: string
+          subsector: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ebitda_max?: number | null
+          ebitda_min?: number | null
+          geographic_scope: string
+          id?: string
+          is_active?: boolean | null
+          is_new?: boolean | null
+          requirements?: string[] | null
+          revenue_max?: number | null
+          revenue_min?: number | null
+          sector: string
+          subsector?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ebitda_max?: number | null
+          ebitda_min?: number | null
+          geographic_scope?: string
+          id?: string
+          is_active?: boolean | null
+          is_new?: boolean | null
+          requirements?: string[] | null
+          revenue_max?: number | null
+          revenue_min?: number | null
+          sector?: string
+          subsector?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       buyer_preferences: {
         Row: {
           alert_frequency: string | null
@@ -5572,6 +5629,7 @@ export type Database = {
       newsletter_campaigns: {
         Row: {
           articles_included: string[] | null
+          buy_side_mandates_included: string[] | null
           click_count: number | null
           content_blocks: Json | null
           created_at: string | null
@@ -5597,6 +5655,7 @@ export type Database = {
         }
         Insert: {
           articles_included?: string[] | null
+          buy_side_mandates_included?: string[] | null
           click_count?: number | null
           content_blocks?: Json | null
           created_at?: string | null
@@ -5622,6 +5681,7 @@ export type Database = {
         }
         Update: {
           articles_included?: string[] | null
+          buy_side_mandates_included?: string[] | null
           click_count?: number | null
           content_blocks?: Json | null
           created_at?: string | null

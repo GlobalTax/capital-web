@@ -19,6 +19,7 @@ import { ContentBlock } from './ContentBlockEditor';
 import { generateNewsHtml } from './templates/newsTemplate';
 import { generateUpdatesHtml } from './templates/updatesTemplate';
 import { generateEducationalHtml } from './templates/educationalTemplate';
+import { generateBuySideHtml, BuySideMandate } from './templates/buysideTemplate';
 
 interface Operation {
   id: string;
@@ -40,6 +41,7 @@ interface BrevoHtmlGeneratorProps {
   onCampaignCreated?: () => void;
   newsletterType?: NewsletterType;
   selectedArticles?: string[];
+  selectedBuySideMandates?: string[];
   contentBlocks?: ContentBlock[];
   headerImageUrl?: string | null;
 }
@@ -53,6 +55,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   onCampaignCreated,
   newsletterType = 'opportunities',
   selectedArticles = [],
+  selectedBuySideMandates = [],
   contentBlocks = [],
   headerImageUrl = null,
 }) => {
@@ -63,13 +66,17 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
+  const [buySideMandates, setBuySideMandates] = useState<BuySideMandate[]>([]);
 
   // Fetch articles when needed
   useEffect(() => {
     if (open && newsletterType === 'news' && selectedArticles.length > 0) {
       fetchArticles();
     }
-  }, [open, newsletterType, selectedArticles]);
+    if (open && newsletterType === 'buyside' && selectedBuySideMandates.length > 0) {
+      fetchBuySideMandates();
+    }
+  }, [open, newsletterType, selectedArticles, selectedBuySideMandates]);
 
   const fetchArticles = async () => {
     const { data } = await supabase
@@ -79,10 +86,20 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
     if (data) setArticles(data);
   };
 
+  const fetchBuySideMandates = async () => {
+    const { data } = await supabase
+      .from('buy_side_mandates')
+      .select('id, title, sector, geographic_scope, revenue_min, revenue_max, description, is_new')
+      .in('id', selectedBuySideMandates);
+    if (data) setBuySideMandates(data as BuySideMandate[]);
+  };
+
   const htmlCode = useMemo(() => {
     switch (newsletterType) {
       case 'opportunities':
         return generateBrevoHtml(operations, subject, introText);
+      case 'buyside':
+        return generateBuySideHtml(buySideMandates, subject, introText);
       case 'news':
         return generateNewsHtml(articles, subject, introText, headerImageUrl);
       case 'updates':
@@ -92,12 +109,13 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
       default:
         return generateBrevoHtml(operations, subject, introText);
     }
-  }, [operations, subject, introText, newsletterType, articles, contentBlocks, headerImageUrl]);
+  }, [operations, subject, introText, newsletterType, articles, buySideMandates, contentBlocks, headerImageUrl]);
 
   useEffect(() => {
     if (open && !campaignId) {
       const hasContent = 
         (newsletterType === 'opportunities' && operations.length > 0) ||
+        (newsletterType === 'buyside' && selectedBuySideMandates.length > 0) ||
         (newsletterType === 'news' && selectedArticles.length > 0) ||
         (['updates', 'educational'].includes(newsletterType) && contentBlocks.length > 0);
       
@@ -107,6 +125,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
       setCampaignId(null);
       setCopied(false);
       setArticles([]);
+      setBuySideMandates([]);
     }
   }, [open]);
 
@@ -120,6 +139,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
           intro_text: introText,
           operations_included: operations.map(op => op.id),
           articles_included: selectedArticles,
+          buy_side_mandates_included: selectedBuySideMandates,
           content_blocks: contentBlocks as unknown as Json,
           header_image_url: headerImageUrl,
           status: 'draft',
