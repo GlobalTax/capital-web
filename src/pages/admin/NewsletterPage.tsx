@@ -425,12 +425,16 @@ const NewsletterPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Preview Modal - only for opportunities for now */}
-      {showPreview && newsletterType === 'opportunities' && (
+      {/* Preview Modal - supports all types */}
+      {showPreview && (
         <NewsletterPreview
           subject={subject}
           introText={introText}
           operations={selectedOps}
+          selectedArticles={selectedArticles}
+          contentBlocks={contentBlocks}
+          headerImageUrl={headerImageUrl}
+          newsletterType={newsletterType}
           onClose={() => setShowPreview(false)}
         />
       )}
