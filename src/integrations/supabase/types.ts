@@ -6637,6 +6637,60 @@ export type Database = {
         }
         Relationships: []
       }
+      reengagement_templates: {
+        Row: {
+          brevo_segment: string
+          created_at: string | null
+          created_by: string | null
+          default_subject: string
+          description: string
+          html_template: string
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          label: string
+          slug: string
+          trigger_condition: string
+          updated_at: string | null
+          variables_used: string[] | null
+        }
+        Insert: {
+          brevo_segment: string
+          created_at?: string | null
+          created_by?: string | null
+          default_subject: string
+          description: string
+          html_template: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          label: string
+          slug: string
+          trigger_condition: string
+          updated_at?: string | null
+          variables_used?: string[] | null
+        }
+        Update: {
+          brevo_segment?: string
+          created_at?: string | null
+          created_by?: string | null
+          default_subject?: string
+          description?: string
+          html_template?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          label?: string
+          slug?: string
+          trigger_condition?: string
+          updated_at?: string | null
+          variables_used?: string[] | null
+        }
+        Relationships: []
+      }
       rh_departamentos: {
         Row: {
           codigo: string
