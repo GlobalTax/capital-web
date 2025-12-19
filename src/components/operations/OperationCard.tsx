@@ -15,8 +15,6 @@ import {
   ArrowRight,
   Info,
   Heart,
-  CheckCircle2,
-  Shield,
   Lock,
   Scale
 } from 'lucide-react';
@@ -209,14 +207,6 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 )}
               </h3>
               <div className="flex items-center gap-1 mt-1 flex-wrap">
-                <Badge variant="outline" className="gap-1 border-green-500/50 text-green-700 bg-green-50 text-xs">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Verificado
-                </Badge>
-                <Badge variant="outline" className="gap-1 border-blue-500/50 text-blue-700 bg-blue-50 text-xs">
-                  <Shield className="h-3 w-3" />
-                  DD Completo
-                </Badge>
                 {operation.is_featured && (
                   <Badge variant="secondary" className="text-xs">
                     Destacado
