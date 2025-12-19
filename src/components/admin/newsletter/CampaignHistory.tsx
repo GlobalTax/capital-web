@@ -29,7 +29,8 @@ import {
   Newspaper,
   Megaphone,
   GraduationCap,
-  Binoculars
+  Binoculars,
+  RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -136,6 +137,11 @@ function getTypeBadge(type: NewsletterType | null | undefined) {
       label: "Educativo", 
       icon: <GraduationCap className="h-3 w-3" />, 
       className: "bg-purple-100 text-purple-700 border-purple-200" 
+    },
+    reengagement: { 
+      label: "Re-engagement", 
+      icon: <RefreshCw className="h-3 w-3" />, 
+      className: "bg-amber-100 text-amber-700 border-amber-200" 
     },
   };
   const { label, icon, className } = config[type || 'opportunities'] || config.opportunities;
