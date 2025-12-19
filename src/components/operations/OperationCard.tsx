@@ -45,6 +45,8 @@ interface Operation {
   deal_type?: string;
   geographic_location?: string;
   created_at?: string;
+  updated_at?: string;
+  is_new_override?: 'auto' | 'force_on' | 'force_off';
   urgency_level?: 'high' | 'medium' | 'low';
   interested_parties_count?: number;
   project_status?: string;
@@ -212,7 +214,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                     Destacado
                   </Badge>
                 )}
-                {isRecentOperation(operation.created_at) && (
+                {isRecentOperation(operation.created_at, operation.updated_at, operation.is_new_override) && (
                   <Badge className="text-xs bg-green-500 hover:bg-green-600">
                     Nuevo
                   </Badge>
