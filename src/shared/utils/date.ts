@@ -6,13 +6,24 @@ import { es } from 'date-fns/locale';
 
 /**
  * Check if operation is recent (within 30 days)
+ * Prioritizes updated_at over created_at
  */
-export const isRecentOperation = (created_at?: string): boolean => {
-  if (!created_at) return false;
+export const isRecentOperation = (
+  created_at?: string,
+  updated_at?: string,
+  is_new_override?: 'auto' | 'force_on' | 'force_off'
+): boolean => {
+  // Manual override has priority
+  if (is_new_override === 'force_on') return true;
+  if (is_new_override === 'force_off') return false;
+  
+  // Auto mode: use 30-day rule with updated_at priority
+  const referenceDate = updated_at || created_at;
+  if (!referenceDate) return false;
   
   try {
-    const createdDate = parseISO(created_at);
-    const daysDiff = differenceInDays(new Date(), createdDate);
+    const dateObj = parseISO(referenceDate);
+    const daysDiff = differenceInDays(new Date(), dateObj);
     return daysDiff <= 30;
   } catch {
     return false;
