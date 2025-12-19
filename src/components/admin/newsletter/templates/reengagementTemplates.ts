@@ -57,44 +57,43 @@ export const REENGAGEMENT_TYPES: ReengagementConfig[] = [
 
 const baseStyles = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
     
-    body { margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+    body { margin: 0; padding: 0; font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .wrapper { background-color: #f8fafc; padding: 40px 20px; }
     .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-    .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center; }
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 40px 30px; text-align: center; }
     .logo { color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: 2px; margin: 0; }
-    .logo-accent { color: #c9a55c; }
     .content { padding: 40px 30px; }
-    .greeting { font-size: 22px; font-weight: 600; color: #1a1a2e; margin: 0 0 20px 0; }
-    .text { font-size: 16px; line-height: 1.7; color: #4a5568; margin: 0 0 20px 0; }
-    .highlight-box { background: linear-gradient(135deg, #f8f6f0 0%, #faf9f7 100%); border-left: 4px solid #c9a55c; padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; }
-    .highlight-title { font-size: 14px; font-weight: 600; color: #c9a55c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; }
-    .highlight-value { font-size: 28px; font-weight: 700; color: #1a1a2e; margin: 0; }
+    .greeting { font-size: 22px; font-weight: 600; color: #0f172a; margin: 0 0 20px 0; }
+    .text { font-size: 16px; line-height: 1.7; color: #334155; margin: 0 0 20px 0; }
+    .highlight-box { background: #f8fafc; border-left: 4px solid #0f172a; padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+    .highlight-title { font-size: 14px; font-weight: 600; color: #0f172a; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; }
+    .highlight-value { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0; }
     .cta-container { text-align: center; margin: 32px 0; }
-    .cta-button { display: inline-block; background: linear-gradient(135deg, #c9a55c 0%, #b8956e 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; }
-    .secondary-cta { display: inline-block; color: #1a1a2e; text-decoration: none; padding: 12px 24px; font-weight: 500; font-size: 14px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 12px; }
+    .cta-button { display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; }
+    .secondary-cta { display: inline-block; color: #0f172a; text-decoration: none; padding: 12px 24px; font-weight: 500; font-size: 14px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 12px; }
     .divider { height: 1px; background: linear-gradient(90deg, transparent, #e2e8f0, transparent); margin: 32px 0; }
     .stats-grid { display: table; width: 100%; margin: 24px 0; }
     .stat-item { display: table-cell; text-align: center; padding: 20px; background: #f8fafc; }
-    .stat-value { font-size: 24px; font-weight: 700; color: #1a1a2e; margin: 0; }
-    .stat-label { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; margin: 4px 0 0 0; }
-    .footer { background: #1a1a2e; padding: 30px; text-align: center; }
-    .footer-text { color: #a0aec0; font-size: 13px; margin: 0 0 16px 0; }
-    .footer-link { color: #c9a55c; text-decoration: none; }
-    .unsubscribe { color: #718096; font-size: 11px; margin-top: 20px; }
-    .unsubscribe a { color: #718096; text-decoration: underline; }
-    .tip-box { background: #eef2ff; border-radius: 8px; padding: 20px; margin: 24px 0; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0; }
+    .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 4px 0 0 0; }
+    .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 30px; text-align: center; }
+    .footer-text { color: #64748b; font-size: 13px; margin: 0 0 16px 0; }
+    .footer-link { color: #0f172a; text-decoration: none; font-weight: 500; }
+    .unsubscribe { color: #94a3b8; font-size: 11px; margin-top: 20px; }
+    .unsubscribe a { color: #94a3b8; text-decoration: underline; }
+    .tip-box { background: #f1f5f9; border-radius: 8px; padding: 20px; margin: 24px 0; border: 1px solid #e2e8f0; }
     .tip-icon { font-size: 20px; margin-right: 8px; }
-    .tip-text { font-size: 14px; color: #4338ca; margin: 0; }
+    .tip-text { font-size: 14px; color: #334155; margin: 0; }
     .bullet-list { padding-left: 20px; margin: 16px 0; }
-    .bullet-list li { color: #4a5568; margin: 8px 0; line-height: 1.6; }
+    .bullet-list li { color: #334155; margin: 8px 0; line-height: 1.6; }
   </style>
 `;
 
 const generateHeader = () => `
   <div class="header">
-    <h1 class="logo">CAPI<span class="logo-accent">TT</span>AL</h1>
+    <h1 class="logo">CAPITTAL</h1>
   </div>
 `;
 
@@ -162,7 +161,7 @@ export const generateAbandonedValuationHtml = (): string => {
         
         <div class="divider"></div>
         
-        <p class="text" style="font-size: 14px; color: #718096;">
+        <p class="text" style="font-size: 14px; color: #64748b;">
           Si tienes dudas sobre el proceso o necesitas ayuda, responde a este email. 
           Estaremos encantados de ayudarte.
         </p>
@@ -236,9 +235,9 @@ export const generateReactivationHtml = (): string => {
         
         <div class="divider"></div>
         
-        <p class="text" style="font-size: 14px; color: #718096;">
+        <p class="text" style="font-size: 14px; color: #64748b;">
           PD: Si ya no estás interesado, no te preocupes. Puedes 
-          <a href="{{unsubscribe}}" style="color: #c9a55c;">actualizar tus preferencias</a> 
+          <a href="{{unsubscribe}}" style="color: #0f172a; font-weight: 500;">actualizar tus preferencias</a> 
           en cualquier momento.
         </p>
       </div>
@@ -310,7 +309,7 @@ export const generateValueAddedHtml = (): string => {
         
         <p class="text" style="font-size: 14px;">
           ¿Quieres un análisis personalizado de tu empresa? 
-          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_value_added&utm_content=link_schedule_call" style="color: #c9a55c;">Agenda una llamada</a> 
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_value_added&utm_content=link_schedule_call" style="color: #0f172a; font-weight: 500;">Agenda una llamada</a> 
           con nuestro equipo.
         </p>
       </div>
@@ -357,7 +356,7 @@ export const generateRevaluationHtml = (): string => {
         <div class="highlight-box">
           <p class="highlight-title">Tu valoración anterior</p>
           <p class="highlight-value">{{contact.VALUATION}}</p>
-          <p style="font-size: 14px; color: #718096; margin: 8px 0 0 0;">Hace 6 meses</p>
+          <p style="font-size: 14px; color: #64748b; margin: 8px 0 0 0;">Hace 6 meses</p>
         </div>
         
         <p class="text">
@@ -384,9 +383,9 @@ export const generateRevaluationHtml = (): string => {
         
         <div class="divider"></div>
         
-        <p class="text" style="font-size: 14px; color: #718096;">
+        <p class="text" style="font-size: 14px; color: #64748b;">
           Si prefieres hablar directamente con un especialista, 
-          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_revaluation&utm_content=link_schedule_call" style="color: #c9a55c;">agenda una llamada</a>. 
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_revaluation&utm_content=link_schedule_call" style="color: #0f172a; font-weight: 500;">agenda una llamada</a>. 
           Sin compromiso.
         </p>
       </div>
@@ -425,7 +424,7 @@ export const generateNurturingHtml = (): string => {
         
         <div class="divider"></div>
         
-        <h3 style="font-size: 18px; color: #1a1a2e; margin: 0 0 16px 0;">📈 Mercado M&A España</h3>
+        <h3 style="font-size: 18px; color: #0f172a; margin: 0 0 16px 0;">📈 Mercado M&A España</h3>
         
         <div class="stats-grid">
           <div class="stat-item" style="border-right: 1px solid #e2e8f0;">
@@ -444,7 +443,7 @@ export const generateNurturingHtml = (): string => {
         
         <div class="divider"></div>
         
-        <h3 style="font-size: 18px; color: #1a1a2e; margin: 0 0 16px 0;">🎯 Destacados del mes</h3>
+        <h3 style="font-size: 18px; color: #0f172a; margin: 0 0 16px 0;">🎯 Destacados del mes</h3>
         
         <ul class="bullet-list">
           <li><strong>Sectores más activos:</strong> Tecnología, Salud, Industria</li>
@@ -455,7 +454,7 @@ export const generateNurturingHtml = (): string => {
         <div class="highlight-box">
           <p class="highlight-title">Operaciones en {{contact.SECTOR}}</p>
           <p class="highlight-value">12 transacciones cerradas</p>
-          <p style="font-size: 14px; color: #718096; margin: 8px 0 0 0;">Múltiplo medio: 5.8x EBITDA</p>
+          <p style="font-size: 14px; color: #64748b; margin: 8px 0 0 0;">Múltiplo medio: 5.8x EBITDA</p>
         </div>
         
         <div class="cta-container">
@@ -470,9 +469,9 @@ export const generateNurturingHtml = (): string => {
         
         <div class="divider"></div>
         
-        <p class="text" style="font-size: 14px; color: #718096; text-align: center;">
+        <p class="text" style="font-size: 14px; color: #64748b; text-align: center;">
           ¿Te interesa explorar opciones para <strong>{{contact.COMPANY}}</strong>?<br>
-          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_nurturing&utm_content=link_contact" style="color: #c9a55c;">Hablemos sin compromiso</a>
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_nurturing&utm_content=link_contact" style="color: #0f172a; font-weight: 500;">Hablemos sin compromiso</a>
         </p>
       </div>
       
