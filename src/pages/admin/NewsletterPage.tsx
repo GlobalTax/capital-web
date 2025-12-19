@@ -30,6 +30,7 @@ import { AIGenerateButton } from '@/components/admin/newsletter/AIGenerateButton
 import { useNewsletterAI } from '@/hooks/useNewsletterAI';
 import { ReengagementTypeSelector } from '@/components/admin/newsletter/ReengagementTypeSelector';
 import { BrevoSetupGuide } from '@/components/admin/newsletter/BrevoSetupGuide';
+import { ReengagementPreview } from '@/components/admin/newsletter/ReengagementPreview';
 import type { ReengagementType } from '@/components/admin/newsletter/templates/reengagementTemplates';
 
 interface Operation {
@@ -259,21 +260,25 @@ const NewsletterPage: React.FC = () => {
 
       case 'reengagement':
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tipo de Re-engagement</CardTitle>
-              <CardDescription>
-                Selecciona el tipo de email de recuperación a enviar
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ReengagementTypeSelector
-                selectedType={reengagementType}
-                onTypeChange={setReengagementType}
-              />
-              <BrevoSetupGuide reengagementType={reengagementType} />
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tipo de Re-engagement</CardTitle>
+                <CardDescription>
+                  Selecciona el tipo de email de recuperación a enviar
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ReengagementTypeSelector
+                  selectedType={reengagementType}
+                  onTypeChange={setReengagementType}
+                />
+                <BrevoSetupGuide reengagementType={reengagementType} />
+              </CardContent>
+            </Card>
+            
+            <ReengagementPreview reengagementType={reengagementType} />
+          </div>
         );
 
       default:
