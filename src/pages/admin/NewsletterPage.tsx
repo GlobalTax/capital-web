@@ -28,6 +28,9 @@ import { ContentBlockEditor, ContentBlock } from '@/components/admin/newsletter/
 import { BuySideMandateSelector } from '@/components/admin/newsletter/BuySideMandateSelector';
 import { AIGenerateButton } from '@/components/admin/newsletter/AIGenerateButton';
 import { useNewsletterAI } from '@/hooks/useNewsletterAI';
+import { ReengagementTypeSelector } from '@/components/admin/newsletter/ReengagementTypeSelector';
+import { BrevoSetupGuide } from '@/components/admin/newsletter/BrevoSetupGuide';
+import type { ReengagementType } from '@/components/admin/newsletter/templates/reengagementTemplates';
 
 interface Operation {
   id: string;
@@ -80,6 +83,7 @@ const NewsletterPage: React.FC = () => {
   const [selectedBuySideMandates, setSelectedBuySideMandates] = useState<string[]>([]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [headerImageUrl, setHeaderImageUrl] = useState<string | null>(null);
+  const [reengagementType, setReengagementType] = useState<ReengagementType>('reactivation');
   
   // UI state
   const [showPreview, setShowPreview] = useState(false);
@@ -133,6 +137,7 @@ const NewsletterPage: React.FC = () => {
     setContentBlocks([]);
     setHeaderImageUrl(null);
     setIntroText('');
+    setReengagementType('reactivation');
   };
 
   // Handle duplicating a campaign
@@ -166,6 +171,8 @@ const NewsletterPage: React.FC = () => {
       case 'updates':
       case 'educational':
         return contentBlocks.length > 0;
+      case 'reengagement':
+        return true;
       default:
         return false;
     }
@@ -246,6 +253,25 @@ const NewsletterPage: React.FC = () => {
                 onBlocksChange={setContentBlocks}
                 maxBlocks={5}
               />
+            </CardContent>
+          </Card>
+        );
+
+      case 'reengagement':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Tipo de Re-engagement</CardTitle>
+              <CardDescription>
+                Selecciona el tipo de email de recuperación a enviar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ReengagementTypeSelector
+                selectedType={reengagementType}
+                onTypeChange={setReengagementType}
+              />
+              <BrevoSetupGuide reengagementType={reengagementType} />
             </CardContent>
           </Card>
         );
@@ -506,6 +532,7 @@ const NewsletterPage: React.FC = () => {
         selectedBuySideMandates={selectedBuySideMandates}
         contentBlocks={contentBlocks}
         headerImageUrl={headerImageUrl}
+        reengagementType={reengagementType}
       />
     </div>
   );
