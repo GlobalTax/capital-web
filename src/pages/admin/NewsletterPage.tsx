@@ -28,10 +28,11 @@ import { ContentBlockEditor, ContentBlock } from '@/components/admin/newsletter/
 import { BuySideMandateSelector } from '@/components/admin/newsletter/BuySideMandateSelector';
 import { AIGenerateButton } from '@/components/admin/newsletter/AIGenerateButton';
 import { useNewsletterAI } from '@/hooks/useNewsletterAI';
-import { ReengagementTypeSelector } from '@/components/admin/newsletter/ReengagementTypeSelector';
+import { ReengagementTypeSelectorDynamic } from '@/components/admin/newsletter/ReengagementTypeSelectorDynamic';
 import { BrevoSetupGuide } from '@/components/admin/newsletter/BrevoSetupGuide';
-import { ReengagementPreview } from '@/components/admin/newsletter/ReengagementPreview';
-import type { ReengagementType } from '@/components/admin/newsletter/templates/reengagementTemplates';
+import { ReengagementPreviewDynamic } from '@/components/admin/newsletter/ReengagementPreviewDynamic';
+import { ReengagementTemplateManager } from '@/components/admin/newsletter/ReengagementTemplateManager';
+import type { ReengagementTemplate } from '@/hooks/useReengagementTemplates';
 
 interface Operation {
   id: string;
@@ -84,7 +85,7 @@ const NewsletterPage: React.FC = () => {
   const [selectedBuySideMandates, setSelectedBuySideMandates] = useState<string[]>([]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [headerImageUrl, setHeaderImageUrl] = useState<string | null>(null);
-  const [reengagementType, setReengagementType] = useState<ReengagementType>('reactivation');
+  const [selectedReengagementTemplate, setSelectedReengagementTemplate] = useState<ReengagementTemplate | null>(null);
   
   // UI state
   const [showPreview, setShowPreview] = useState(false);
@@ -269,15 +270,22 @@ const NewsletterPage: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <ReengagementTypeSelector
-                  selectedType={reengagementType}
-                  onTypeChange={setReengagementType}
+                <ReengagementTypeSelectorDynamic
+                  selectedTemplateId={selectedReengagementTemplate?.id || null}
+                  onTemplateChange={setSelectedReengagementTemplate}
                 />
-                <BrevoSetupGuide reengagementType={reengagementType} />
+                {selectedReengagementTemplate && (
+                  <BrevoSetupGuide reengagementType={selectedReengagementTemplate.slug as any} />
+                )}
               </CardContent>
             </Card>
             
-            <ReengagementPreview reengagementType={reengagementType} />
+            <ReengagementPreviewDynamic template={selectedReengagementTemplate} />
+            
+            <ReengagementTemplateManager
+              selectedTemplateId={selectedReengagementTemplate?.id}
+              onSelectTemplate={setSelectedReengagementTemplate}
+            />
           </div>
         );
 
