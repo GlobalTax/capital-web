@@ -55,10 +55,11 @@ export const REENGAGEMENT_TYPES: ReengagementConfig[] = [
   },
 ];
 
+const fontLink = `<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">`;
+
 const baseStyles = `
+  ${fontLink}
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
-    
     body { margin: 0; padding: 0; font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     .wrapper { background-color: #f8fafc; padding: 40px 20px; }
     .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
