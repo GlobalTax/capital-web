@@ -2,9 +2,9 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Building2, Newspaper, Bell, GraduationCap, Check, Search } from 'lucide-react';
+import { Building2, Newspaper, Bell, GraduationCap, Check, Search, RefreshCw } from 'lucide-react';
 
-export type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational' | 'buyside';
+export type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational' | 'buyside' | 'reengagement';
 
 interface NewsletterTypeConfig {
   id: NewsletterType;
@@ -55,6 +55,14 @@ export const NEWSLETTER_TYPES: NewsletterTypeConfig[] = [
     description: 'Guías, tips y reflexiones sobre M&A',
     frequency: 'Mensual',
     defaultSubject: 'Guía M&A – Capittal',
+  },
+  {
+    id: 'reengagement',
+    label: 'Re-engagement',
+    icon: RefreshCw,
+    description: 'Recuperación de leads inactivos',
+    frequency: 'Automatizado',
+    defaultSubject: 'Te echamos de menos – Capittal',
   },
 ];
 

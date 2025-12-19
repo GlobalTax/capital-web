@@ -20,6 +20,7 @@ import { generateNewsHtml } from './templates/newsTemplate';
 import { generateUpdatesHtml } from './templates/updatesTemplate';
 import { generateEducationalHtml } from './templates/educationalTemplate';
 import { generateBuySideHtml, BuySideMandate } from './templates/buysideTemplate';
+import { generateReengagementHtml, ReengagementType } from './templates/reengagementTemplates';
 
 interface Operation {
   id: string;
@@ -44,6 +45,7 @@ interface BrevoHtmlGeneratorProps {
   selectedBuySideMandates?: string[];
   contentBlocks?: ContentBlock[];
   headerImageUrl?: string | null;
+  reengagementType?: ReengagementType;
 }
 
 export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
@@ -58,6 +60,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   selectedBuySideMandates = [],
   contentBlocks = [],
   headerImageUrl = null,
+  reengagementType = 'reactivation',
 }) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -106,10 +109,12 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
         return generateUpdatesHtml(contentBlocks, subject, headerImageUrl);
       case 'educational':
         return generateEducationalHtml(contentBlocks, subject, [], headerImageUrl);
+      case 'reengagement':
+        return generateReengagementHtml(reengagementType);
       default:
         return generateBrevoHtml(operations, subject, introText);
     }
-  }, [operations, subject, introText, newsletterType, articles, buySideMandates, contentBlocks, headerImageUrl]);
+  }, [operations, subject, introText, newsletterType, articles, buySideMandates, contentBlocks, headerImageUrl, reengagementType]);
 
   useEffect(() => {
     if (open && !campaignId) {
