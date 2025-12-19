@@ -137,10 +137,11 @@ export const ReengagementPreview: React.FC<ReengagementPreviewProps> = ({
           <TabsContent value="preview" className="mt-4">
             <div className="rounded-lg border overflow-hidden bg-muted/30">
               <iframe
+                key={reengagementType}
                 srcDoc={htmlContent}
                 title="Email Preview"
-                className="w-full h-[600px] bg-white"
-                sandbox="allow-same-origin"
+                className="w-full h-[600px] bg-white border-0"
+                style={{ minHeight: '600px' }}
               />
             </div>
           </TabsContent>
