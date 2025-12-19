@@ -98,10 +98,10 @@ const generateHeader = () => `
   </div>
 `;
 
-const generateFooter = () => `
+const generateFooter = (campaign: string = 'reengagement') => `
   <div class="footer">
     <p class="footer-text">
-      <a href="https://capittal.es" class="footer-link">capittal.es</a> | 
+      <a href="https://capittal.es?utm_source=brevo&utm_medium=email&utm_campaign=${campaign}&utm_content=footer_logo" class="footer-link">capittal.es</a> | 
       <a href="mailto:info@capittal.es" class="footer-link">info@capittal.es</a>
     </p>
     <p class="footer-text">Especialistas en M&A y valoración de empresas</p>
@@ -147,7 +147,7 @@ export const generateAbandonedValuationHtml = (): string => {
         </p>
         
         <div class="cta-container">
-          <a href="https://capittal.es/lp/calculadora?utm_source=reengagement&utm_campaign=abandoned" class="cta-button">
+          <a href="https://capittal.es/lp/calculadora?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_abandoned&utm_content=cta_complete_valuation" class="cta-button">
             Completar mi valoración →
           </a>
         </div>
@@ -168,7 +168,7 @@ export const generateAbandonedValuationHtml = (): string => {
         </p>
       </div>
       
-      ${generateFooter()}
+      ${generateFooter('reengagement_abandoned')}
     </div>
   </div>
 </body>
@@ -225,11 +225,11 @@ export const generateReactivationHtml = (): string => {
         </p>
         
         <div class="cta-container">
-          <a href="https://capittal.es/contacto?utm_source=reengagement&utm_campaign=reactivation" class="cta-button">
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_reactivation&utm_content=cta_contact" class="cta-button">
             Hablemos sin compromiso
           </a>
           <br>
-          <a href="https://capittal.es/lp/calculadora?utm_source=reengagement&utm_campaign=reactivation" class="secondary-cta">
+          <a href="https://capittal.es/lp/calculadora?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_reactivation&utm_content=cta_update_valuation" class="secondary-cta">
             Actualizar mi valoración
           </a>
         </div>
@@ -243,7 +243,7 @@ export const generateReactivationHtml = (): string => {
         </p>
       </div>
       
-      ${generateFooter()}
+      ${generateFooter('reengagement_reactivation')}
     </div>
   </div>
 </body>
@@ -294,7 +294,7 @@ export const generateValueAddedHtml = (): string => {
         </p>
         
         <div class="cta-container">
-          <a href="https://capittal.es/lp/calculadora?utm_source=reengagement&utm_campaign=value_added&sector={{contact.SECTOR}}" class="cta-button">
+          <a href="https://capittal.es/lp/calculadora?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_value_added&utm_content=cta_updated_valuation" class="cta-button">
             Ver valoración actualizada →
           </a>
         </div>
@@ -310,12 +310,12 @@ export const generateValueAddedHtml = (): string => {
         
         <p class="text" style="font-size: 14px;">
           ¿Quieres un análisis personalizado de tu empresa? 
-          <a href="https://capittal.es/contacto" style="color: #c9a55c;">Agenda una llamada</a> 
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_value_added&utm_content=link_schedule_call" style="color: #c9a55c;">Agenda una llamada</a> 
           con nuestro equipo.
         </p>
       </div>
       
-      ${generateFooter()}
+      ${generateFooter('reengagement_value_added')}
     </div>
   </div>
 </body>
@@ -366,7 +366,7 @@ export const generateRevaluationHtml = (): string => {
         </p>
         
         <div class="cta-container">
-          <a href="https://capittal.es/lp/calculadora?utm_source=reengagement&utm_campaign=revaluation&company={{contact.COMPANY}}" class="cta-button">
+          <a href="https://capittal.es/lp/calculadora?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_revaluation&utm_content=cta_update_valuation" class="cta-button">
             Actualizar mi valoración →
           </a>
         </div>
@@ -386,12 +386,12 @@ export const generateRevaluationHtml = (): string => {
         
         <p class="text" style="font-size: 14px; color: #718096;">
           Si prefieres hablar directamente con un especialista, 
-          <a href="https://capittal.es/contacto" style="color: #c9a55c;">agenda una llamada</a>. 
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_revaluation&utm_content=link_schedule_call" style="color: #c9a55c;">agenda una llamada</a>. 
           Sin compromiso.
         </p>
       </div>
       
-      ${generateFooter()}
+      ${generateFooter('reengagement_revaluation')}
     </div>
   </div>
 </body>
@@ -459,11 +459,11 @@ export const generateNurturingHtml = (): string => {
         </div>
         
         <div class="cta-container">
-          <a href="https://capittal.es/blog?utm_source=reengagement&utm_campaign=nurturing" class="cta-button">
+          <a href="https://capittal.es/blog?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_nurturing&utm_content=cta_blog" class="cta-button">
             Ver análisis completo →
           </a>
           <br>
-          <a href="https://capittal.es/lp/calculadora?utm_source=reengagement&utm_campaign=nurturing" class="secondary-cta">
+          <a href="https://capittal.es/lp/calculadora?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_nurturing&utm_content=cta_valuation" class="secondary-cta">
             ¿Cuánto vale mi empresa hoy?
           </a>
         </div>
@@ -472,11 +472,11 @@ export const generateNurturingHtml = (): string => {
         
         <p class="text" style="font-size: 14px; color: #718096; text-align: center;">
           ¿Te interesa explorar opciones para <strong>{{contact.COMPANY}}</strong>?<br>
-          <a href="https://capittal.es/contacto" style="color: #c9a55c;">Hablemos sin compromiso</a>
+          <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=reengagement_nurturing&utm_content=link_contact" style="color: #c9a55c;">Hablemos sin compromiso</a>
         </p>
       </div>
       
-      ${generateFooter()}
+      ${generateFooter('reengagement_nurturing')}
     </div>
   </div>
 </body>
