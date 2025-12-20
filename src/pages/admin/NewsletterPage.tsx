@@ -139,7 +139,7 @@ const NewsletterPage: React.FC = () => {
     setContentBlocks([]);
     setHeaderImageUrl(null);
     setIntroText('');
-    setReengagementType('reactivation');
+    setSelectedReengagementTemplate(null);
   };
 
   // Handle duplicating a campaign
@@ -545,7 +545,7 @@ const NewsletterPage: React.FC = () => {
         selectedBuySideMandates={selectedBuySideMandates}
         contentBlocks={contentBlocks}
         headerImageUrl={headerImageUrl}
-        reengagementType={reengagementType}
+        reengagementType={(selectedReengagementTemplate?.slug || 'reactivation') as any}
       />
     </div>
   );
