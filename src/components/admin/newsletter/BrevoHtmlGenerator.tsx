@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
-import { Copy, Download, Check, Eye, Code, RefreshCw } from 'lucide-react';
+import { Copy, Download, Check, Eye, Code, RefreshCw, Monitor, Tablet, Smartphone, AlertTriangle, Image as ImageIcon, Link2, FileText } from 'lucide-react';
 import { generateBrevoHtml } from './brevoTemplate';
 import { PostCopyConfirmation } from './PostCopyConfirmation';
 import { NewsletterType, getNewsletterTypeConfig } from './NewsletterTypeSelector';
@@ -48,6 +48,14 @@ interface BrevoHtmlGeneratorProps {
   reengagementType?: ReengagementType;
 }
 
+type PreviewMode = 'desktop' | 'tablet' | 'mobile';
+
+const previewWidths: Record<PreviewMode, number> = {
+  desktop: 600,
+  tablet: 480,
+  mobile: 320,
+};
+
 export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   open,
   onOpenChange,
@@ -70,6 +78,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
   const [buySideMandates, setBuySideMandates] = useState<BuySideMandate[]>([]);
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
 
   // Fetch articles when needed
   useEffect(() => {
@@ -116,6 +125,17 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
     }
   }, [operations, subject, introText, newsletterType, articles, buySideMandates, contentBlocks, headerImageUrl, reengagementType]);
 
+  // HTML Statistics
+  const htmlStats = useMemo(() => {
+    const sizeInBytes = new Blob([htmlCode]).size;
+    const sizeInKB = (sizeInBytes / 1024).toFixed(1);
+    const imageCount = (htmlCode.match(/<img/g) || []).length;
+    const linkCount = (htmlCode.match(/<a /g) || []).length;
+    const isOverLimit = sizeInBytes > 102400; // 102KB Gmail limit
+    
+    return { sizeInBytes, sizeInKB, imageCount, linkCount, isOverLimit };
+  }, [htmlCode]);
+
   useEffect(() => {
     if (open && !campaignId) {
       const hasContent = 
@@ -131,6 +151,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
       setCopied(false);
       setArticles([]);
       setBuySideMandates([]);
+      setPreviewMode('desktop');
     }
   }, [open]);
 
@@ -241,10 +262,46 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'preview' | 'code')} className="flex-1 flex flex-col">
               <div className="px-6 py-2 border-b bg-muted/30">
                 <div className="flex items-center justify-between">
-                  <TabsList>
-                    <TabsTrigger value="preview" className="gap-2"><Eye className="h-4 w-4" />Vista Previa</TabsTrigger>
-                    <TabsTrigger value="code" className="gap-2"><Code className="h-4 w-4" />Código HTML</TabsTrigger>
-                  </TabsList>
+                  <div className="flex items-center gap-4">
+                    <TabsList>
+                      <TabsTrigger value="preview" className="gap-2"><Eye className="h-4 w-4" />Vista Previa</TabsTrigger>
+                      <TabsTrigger value="code" className="gap-2"><Code className="h-4 w-4" />Código HTML</TabsTrigger>
+                    </TabsList>
+                    
+                    {/* Responsive Preview Toggle */}
+                    {activeTab === 'preview' && (
+                      <div className="flex items-center gap-1 border rounded-lg p-1 bg-background">
+                        <Button
+                          variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => setPreviewMode('desktop')}
+                          title="Desktop (600px)"
+                        >
+                          <Monitor className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => setPreviewMode('tablet')}
+                          title="Tablet (480px)"
+                        >
+                          <Tablet className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => setPreviewMode('mobile')}
+                          title="Mobile (320px)"
+                        >
+                          <Smartphone className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
                       <Download className="h-4 w-4" />Descargar
@@ -258,8 +315,11 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
 
               <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
                 <div className="h-full bg-slate-100 p-4 overflow-auto">
-                  <div className="max-w-[650px] mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-                    <iframe srcDoc={htmlCode} title="Email Preview" className="w-full h-[calc(85vh-180px)] border-0" sandbox="allow-same-origin" />
+                  <div 
+                    className="mx-auto bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300"
+                    style={{ width: previewWidths[previewMode], maxWidth: '100%' }}
+                  >
+                    <iframe srcDoc={htmlCode} title="Email Preview" className="w-full h-[calc(85vh-220px)] border-0" sandbox="allow-same-origin" />
                   </div>
                 </div>
               </TabsContent>
@@ -270,6 +330,24 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
                 </ScrollArea>
               </TabsContent>
             </Tabs>
+          </div>
+
+          {/* HTML Statistics Bar */}
+          <div className="px-6 py-2 border-t bg-muted/30 flex items-center gap-4 text-xs text-muted-foreground">
+            <div className={`flex items-center gap-1.5 ${htmlStats.isOverLimit ? 'text-destructive font-medium' : ''}`}>
+              {htmlStats.isOverLimit && <AlertTriangle className="h-3.5 w-3.5" />}
+              <FileText className="h-3.5 w-3.5" />
+              <span>{htmlStats.sizeInKB} KB</span>
+              {htmlStats.isOverLimit && <span className="text-destructive">(supera 102KB de Gmail)</span>}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ImageIcon className="h-3.5 w-3.5" />
+              <span>{htmlStats.imageCount} imágenes</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Link2 className="h-3.5 w-3.5" />
+              <span>{htmlStats.linkCount} enlaces</span>
+            </div>
           </div>
 
           <div className="px-6 py-3 border-t bg-amber-50 text-sm text-amber-800">
