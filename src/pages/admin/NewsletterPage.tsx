@@ -15,7 +15,8 @@ import {
   Plus,
   FileCode,
   FileText,
-  CheckCircle2
+  CheckCircle2,
+  Code
 } from 'lucide-react';
 import { OperationSelector } from '@/components/admin/newsletter/OperationSelector';
 import { NewsletterPreview } from '@/components/admin/newsletter/NewsletterPreview';
@@ -32,6 +33,7 @@ import { ReengagementTypeSelectorDynamic } from '@/components/admin/newsletter/R
 import { BrevoSetupGuide } from '@/components/admin/newsletter/BrevoSetupGuide';
 import { ReengagementPreviewDynamic } from '@/components/admin/newsletter/ReengagementPreviewDynamic';
 import { ReengagementTemplateManager } from '@/components/admin/newsletter/ReengagementTemplateManager';
+import { SnippetLibrary } from '@/components/admin/newsletter/SnippetLibrary';
 import type { ReengagementTemplate } from '@/hooks/useReengagementTemplates';
 
 interface Operation {
@@ -364,6 +366,10 @@ const NewsletterPage: React.FC = () => {
             <Clock className="h-4 w-4" />
             Historial
           </TabsTrigger>
+          <TabsTrigger value="snippets" className="gap-2">
+            <Code className="h-4 w-4" />
+            Snippets HTML
+          </TabsTrigger>
         </TabsList>
 
         {/* Create Tab */}
@@ -515,6 +521,11 @@ const NewsletterPage: React.FC = () => {
             operations={operations || []}
             onDuplicate={handleDuplicate}
           />
+        </TabsContent>
+
+        {/* Snippets Tab */}
+        <TabsContent value="snippets" className="space-y-6">
+          <SnippetLibrary />
         </TabsContent>
       </Tabs>
 
