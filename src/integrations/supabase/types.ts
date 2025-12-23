@@ -6189,6 +6189,51 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_snippets: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          display_order: number | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          preview_image_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          preview_image_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          preview_image_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           company: string | null
