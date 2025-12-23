@@ -2595,6 +2595,57 @@ export type Database = {
           },
         ]
       }
+      custom_newsletter_templates: {
+        Row: {
+          base_template_type: string
+          created_at: string
+          created_by: string | null
+          default_intro: string | null
+          description: string | null
+          footer_config: Json | null
+          header_config: Json | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject_template: string | null
+          theme_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_template_type?: string
+          created_at?: string
+          created_by?: string | null
+          default_intro?: string | null
+          description?: string | null
+          footer_config?: Json | null
+          header_config?: Json | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject_template?: string | null
+          theme_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_template_type?: string
+          created_at?: string
+          created_by?: string | null
+          default_intro?: string | null
+          description?: string | null
+          footer_config?: Json | null
+          header_config?: Json | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject_template?: string | null
+          theme_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       custom_widgets: {
         Row: {
           created_at: string
@@ -6285,6 +6336,83 @@ export type Database = {
           unsubscribed_at?: string | null
           updated_at?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      newsletter_template_versions: {
+        Row: {
+          campaign_id: string | null
+          content_blocks: Json | null
+          created_at: string
+          created_by: string | null
+          header_image_url: string | null
+          html_content: string
+          id: string
+          intro_text: string | null
+          notes: string | null
+          subject: string | null
+          version_name: string | null
+          version_number: number
+        }
+        Insert: {
+          campaign_id?: string | null
+          content_blocks?: Json | null
+          created_at?: string
+          created_by?: string | null
+          header_image_url?: string | null
+          html_content: string
+          id?: string
+          intro_text?: string | null
+          notes?: string | null
+          subject?: string | null
+          version_name?: string | null
+          version_number?: number
+        }
+        Update: {
+          campaign_id?: string | null
+          content_blocks?: Json | null
+          created_at?: string
+          created_by?: string | null
+          header_image_url?: string | null
+          html_content?: string
+          id?: string
+          intro_text?: string | null
+          notes?: string | null
+          subject?: string | null
+          version_name?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_template_versions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_theme_settings: {
+        Row: {
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }

@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
-import { Copy, Download, Check, Eye, Code, RefreshCw, Monitor, Tablet, Smartphone, AlertTriangle, Image as ImageIcon, Link2, FileText } from 'lucide-react';
+import { Copy, Check, Eye, Code, RefreshCw, Monitor, Tablet, Smartphone, AlertTriangle, Image as ImageIcon, Link2, FileText, Settings2, History, Copy as CopyIcon } from 'lucide-react';
 import { generateBrevoHtml } from './brevoTemplate';
 import { PostCopyConfirmation } from './PostCopyConfirmation';
 import { NewsletterType, getNewsletterTypeConfig } from './NewsletterTypeSelector';
@@ -21,6 +21,13 @@ import { generateUpdatesHtml } from './templates/updatesTemplate';
 import { generateEducationalHtml } from './templates/educationalTemplate';
 import { generateBuySideHtml, BuySideMandate } from './templates/buysideTemplate';
 import { generateReengagementHtml, ReengagementType } from './templates/reengagementTemplates';
+import { ExportDropdown } from './ExportDropdown';
+import { TemplateVersionHistory } from './TemplateVersionHistory';
+import { ThemeSelector } from './ThemeSelector';
+import { HeaderFooterConfig } from './HeaderFooterConfig';
+import { CustomTemplateEditor } from './CustomTemplateEditor';
+import { getThemeById, NewsletterTheme } from '@/config/newsletterThemes';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Operation {
   id: string;
@@ -79,6 +86,12 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   const [articles, setArticles] = useState<any[]>([]);
   const [buySideMandates, setBuySideMandates] = useState<BuySideMandate[]>([]);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<NewsletterTheme>(getThemeById('capittal-classic'));
+  const [headerVariant, setHeaderVariant] = useState('centered');
+  const [footerVariant, setFooterVariant] = useState('complete');
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showDuplicateEditor, setShowDuplicateEditor] = useState(false);
 
   // Fetch articles when needed
   useEffect(() => {
@@ -303,15 +316,75 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
-                      <Download className="h-4 w-4" />Descargar
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowVersionHistory(!showVersionHistory)}
+                      className="gap-1.5"
+                      title="Historial de versiones"
+                    >
+                      <History className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSettings(!showSettings)}
+                      className="gap-1.5"
+                      title="Configuración de tema"
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDuplicateEditor(true)}
+                      className="gap-1.5"
+                      title="Duplicar como template"
+                    >
+                      <CopyIcon className="h-4 w-4" />
+                    </Button>
+                    <ExportDropdown html={htmlCode} subject={subject} />
                     <Button size="sm" onClick={handleCopy} className="gap-2 min-w-[140px]">
                       {copied ? <><Check className="h-4 w-4" />¡Copiado!</> : <><Copy className="h-4 w-4" />Copiar HTML</>}
                     </Button>
                   </div>
                 </div>
               </div>
+
+              {/* Settings Panel */}
+              <Collapsible open={showSettings}>
+                <CollapsibleContent>
+                  <div className="px-6 py-4 border-b bg-muted/20 space-y-4">
+                    <ThemeSelector
+                      selectedThemeId={selectedTheme.id}
+                      onThemeChange={setSelectedTheme}
+                    />
+                    <HeaderFooterConfig
+                      headerVariant={headerVariant}
+                      footerVariant={footerVariant}
+                      onHeaderChange={setHeaderVariant}
+                      onFooterChange={setFooterVariant}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Version History Panel */}
+              <Collapsible open={showVersionHistory}>
+                <CollapsibleContent>
+                  <div className="px-6 py-4 border-b bg-muted/20">
+                    <TemplateVersionHistory
+                      campaignId={campaignId}
+                      currentHtml={htmlCode}
+                      currentSubject={subject}
+                      currentIntro={introText}
+                      onRestore={(html) => {
+                        toast({ title: '✓ Versión restaurada - recarga para ver cambios' });
+                      }}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
               <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
                 <div className="h-full bg-slate-100 p-4 overflow-auto">
@@ -357,6 +430,13 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
       </Dialog>
 
       <PostCopyConfirmation open={showConfirmation} onOpenChange={setShowConfirmation} onConfirmSent={handleConfirmSent} onKeepDraft={handleKeepDraft} />
+      
+      {/* Duplicate as Custom Template Editor */}
+      <CustomTemplateEditor
+        open={showDuplicateEditor}
+        onOpenChange={setShowDuplicateEditor}
+        duplicateFromHtml={htmlCode}
+      />
     </>
   );
 };
