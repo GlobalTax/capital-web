@@ -9296,6 +9296,7 @@ export type Database = {
       }
       cleanup_old_audit_logs: { Args: never; Returns: number }
       cleanup_old_tracking_events: { Args: never; Returns: number }
+      complete_password_setup: { Args: never; Returns: boolean }
       copy_checklist_template_by_type: {
         Args: { p_mandato_id: string; p_tipo_operacion: string }
         Returns: number
