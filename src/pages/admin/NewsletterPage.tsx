@@ -16,7 +16,8 @@ import {
   FileCode,
   FileText,
   CheckCircle2,
-  Code
+  Code,
+  FlaskConical
 } from 'lucide-react';
 import { OperationSelector } from '@/components/admin/newsletter/OperationSelector';
 import { NewsletterPreview } from '@/components/admin/newsletter/NewsletterPreview';
@@ -34,6 +35,8 @@ import { BrevoSetupGuide } from '@/components/admin/newsletter/BrevoSetupGuide';
 import { ReengagementPreviewDynamic } from '@/components/admin/newsletter/ReengagementPreviewDynamic';
 import { ReengagementTemplateManager } from '@/components/admin/newsletter/ReengagementTemplateManager';
 import { SnippetLibrary } from '@/components/admin/newsletter/SnippetLibrary';
+import { ABVariantGenerator } from '@/components/admin/newsletter/ABVariantGenerator';
+import { AITextImprover } from '@/components/admin/newsletter/AITextImprover';
 import type { ReengagementTemplate } from '@/hooks/useReengagementTemplates';
 
 interface Operation {
@@ -92,6 +95,7 @@ const NewsletterPage: React.FC = () => {
   // UI state
   const [showPreview, setShowPreview] = useState(false);
   const [showBrevoGenerator, setShowBrevoGenerator] = useState(false);
+  const [showABGenerator, setShowABGenerator] = useState<'subject' | 'intro' | null>(null);
 
   // Fetch campaigns
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
@@ -407,17 +411,30 @@ const NewsletterPage: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-sm font-medium">Asunto del email</label>
-                    <AIGenerateButton
-                      onClick={async () => {
-                        const result = await generateSubject({
-                          newsletterType,
-                          operations: selectedOps,
-                        });
-                        if (result) setSubject(result);
-                      }}
-                      isGenerating={isGenerating && generatingField === 'subject'}
-                      tooltip="Generar asunto con IA"
-                    />
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowABGenerator('subject')}
+                        disabled={!subject.trim()}
+                        className="h-7 px-2 text-xs gap-1"
+                        title="Generar variantes A/B"
+                      >
+                        <FlaskConical className="h-3.5 w-3.5" />
+                        A/B
+                      </Button>
+                      <AIGenerateButton
+                        onClick={async () => {
+                          const result = await generateSubject({
+                            newsletterType,
+                            operations: selectedOps,
+                          });
+                          if (result) setSubject(result);
+                        }}
+                        isGenerating={isGenerating && generatingField === 'subject'}
+                        tooltip="Generar asunto con IA"
+                      />
+                    </div>
                   </div>
                   <Input
                     value={subject}
@@ -429,17 +446,35 @@ const NewsletterPage: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-sm font-medium">Texto introductorio (opcional)</label>
-                    <AIGenerateButton
-                      onClick={async () => {
-                        const result = await generateIntro({
-                          newsletterType,
-                          operations: selectedOps,
-                        });
-                        if (result) setIntroText(result);
-                      }}
-                      isGenerating={isGenerating && generatingField === 'intro'}
-                      tooltip="Generar intro con IA"
-                    />
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowABGenerator('intro')}
+                        disabled={!introText.trim()}
+                        className="h-7 px-2 text-xs gap-1"
+                        title="Generar variantes A/B"
+                      >
+                        <FlaskConical className="h-3.5 w-3.5" />
+                        A/B
+                      </Button>
+                      <AITextImprover
+                        text={introText}
+                        onApply={setIntroText}
+                        disabled={!introText.trim()}
+                      />
+                      <AIGenerateButton
+                        onClick={async () => {
+                          const result = await generateIntro({
+                            newsletterType,
+                            operations: selectedOps,
+                          });
+                          if (result) setIntroText(result);
+                        }}
+                        isGenerating={isGenerating && generatingField === 'intro'}
+                        tooltip="Generar intro con IA"
+                      />
+                    </div>
                   </div>
                   <Textarea
                     value={introText}
@@ -557,6 +592,19 @@ const NewsletterPage: React.FC = () => {
         contentBlocks={contentBlocks}
         headerImageUrl={headerImageUrl}
         reengagementType={(selectedReengagementTemplate?.slug || 'reactivation') as any}
+      />
+
+      {/* A/B Variant Generator Modal */}
+      <ABVariantGenerator
+        open={showABGenerator !== null}
+        onOpenChange={(open) => !open && setShowABGenerator(null)}
+        type={showABGenerator || 'subject'}
+        originalContent={showABGenerator === 'subject' ? subject : introText}
+        onSelectVariant={(variant) => {
+          if (showABGenerator === 'subject') setSubject(variant);
+          else setIntroText(variant);
+        }}
+        context={{ newsletterType }}
       />
     </div>
   );

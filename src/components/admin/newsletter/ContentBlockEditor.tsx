@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Trash2, GripVertical, Type, Link, Image, Sparkles, Loader2, Minus, Quote, List } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Type, Link, Image, Sparkles, Loader2, Minus, Quote, List, Wand2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { AIImageGenerator } from './AIImageGenerator';
 
 export type CTAStyle = 'primary' | 'secondary' | 'outline' | 'minimal';
 
@@ -42,6 +43,7 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
   maxBlocks = 10,
 }) => {
   const [generatingBlockId, setGeneratingBlockId] = useState<string | null>(null);
+  const [showImageGenerator, setShowImageGenerator] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateBlockContent = async (blockId: string, existingContent?: string) => {
@@ -285,9 +287,21 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                             {/* Image Block */}
                             {block.type === 'image' && (
                               <>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  {getBlockIcon(block.type)}
-                                  {getBlockLabel(block.type)}
+                                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-2">
+                                    {getBlockIcon(block.type)}
+                                    {getBlockLabel(block.type)}
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowImageGenerator(block.id)}
+                                    className="h-7 px-2 text-primary hover:text-primary hover:bg-primary/10"
+                                  >
+                                    <Wand2 className="h-4 w-4 mr-1" />
+                                    Generar con IA
+                                  </Button>
                                 </div>
                                 <Input
                                   value={block.content}
@@ -436,6 +450,17 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
           <p className="text-xs">Arrastra para reordenar o usa los botones para añadir contenido</p>
         </div>
       )}
+
+      {/* AI Image Generator Modal */}
+      <AIImageGenerator
+        open={showImageGenerator !== null}
+        onOpenChange={(open) => !open && setShowImageGenerator(null)}
+        onImageGenerated={(imageUrl) => {
+          if (showImageGenerator) {
+            updateBlock(showImageGenerator, { content: imageUrl });
+          }
+        }}
+      />
     </div>
   );
 };
