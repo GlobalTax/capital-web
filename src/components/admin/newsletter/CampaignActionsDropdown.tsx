@@ -15,6 +15,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -23,7 +33,8 @@ import {
   CheckCircle2, 
   Eye, 
   MessageSquare,
-  Files
+  Files,
+  Trash2
 } from 'lucide-react';
 
 import { NewsletterType } from './NewsletterTypeSelector';
@@ -63,8 +74,36 @@ export const CampaignActionsDropdown: React.FC<CampaignActionsDropdownProps> = (
   const { toast } = useToast();
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [notes, setNotes] = useState(campaign.notes || '');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleDelete = async () => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('newsletter_campaigns')
+        .delete()
+        .eq('id', campaign.id);
+
+      if (error) throw error;
+
+      toast({
+        title: '✓ Campaña eliminada',
+        description: 'La campaña ha sido eliminada correctamente',
+      });
+      setShowDeleteDialog(false);
+      onRefresh();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la campaña',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleCopyHtml = async () => {
     if (!campaign.html_content) {
@@ -192,6 +231,16 @@ export const CampaignActionsDropdown: React.FC<CampaignActionsDropdownProps> = (
               Duplicar
             </DropdownMenuItem>
           )}
+          
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem 
+            onClick={() => setShowDeleteDialog(true)} 
+            className="gap-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            Eliminar
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -261,6 +310,28 @@ export const CampaignActionsDropdown: React.FC<CampaignActionsDropdownProps> = (
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar campaña?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente la campaña "{campaign.subject}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
