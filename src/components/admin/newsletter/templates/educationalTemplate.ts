@@ -1,5 +1,5 @@
 // Educational Template - Guides, tips, M&A education
-import { ContentBlock } from '../ContentBlockEditor';
+import { ContentBlock, CTAStyle } from '../ContentBlockEditor';
 
 interface RelatedArticle {
   id: string;
@@ -8,6 +8,21 @@ interface RelatedArticle {
   category: string;
   reading_time: number;
 }
+
+const getCTAStyles = (style: CTAStyle = 'primary'): string => {
+  switch (style) {
+    case 'primary':
+      return 'background-color:#0f172a; color:#ffffff;';
+    case 'secondary':
+      return 'background-color:#e2e8f0; color:#0f172a;';
+    case 'outline':
+      return 'background-color:transparent; border:2px solid #0f172a; color:#0f172a;';
+    case 'minimal':
+      return 'background-color:transparent; color:#0f172a; text-decoration:underline;';
+    default:
+      return 'background-color:#0f172a; color:#ffffff;';
+  }
+};
 
 export function generateEducationalHtml(
   blocks: ContentBlock[],
@@ -33,14 +48,15 @@ export function generateEducationalHtml(
     }
 
     if (block.type === 'cta' && block.ctaUrl && block.ctaText) {
+      const ctaStyles = getCTAStyles(block.ctaStyle);
       return `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
         <tr>
           <td align="center">
             <table cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="background-color:#0f172a; border-radius:8px;">
-                  <a href="${block.ctaUrl}" target="_blank" style="display:inline-block; padding:14px 28px; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; font-family:'Plus Jakarta Sans',Arial,sans-serif;">
+                <td style="${ctaStyles} border-radius:8px;">
+                  <a href="${block.ctaUrl}" target="_blank" style="display:inline-block; padding:14px 28px; font-size:15px; font-weight:600; ${ctaStyles} text-decoration:none; font-family:'Plus Jakarta Sans',Arial,sans-serif;">
                     ${block.ctaText}
                   </a>
                 </td>
@@ -59,6 +75,45 @@ export function generateEducationalHtml(
             <img src="${block.content}" alt="Imagen" style="max-width:100%; height:auto; border-radius:12px; display:block;">
           </td>
         </tr>
+      </table>`;
+    }
+
+    if (block.type === 'divider') {
+      return `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+        <tr>
+          <td style="border-top:1px solid #e2e8f0; height:1px;"></td>
+        </tr>
+      </table>`;
+    }
+
+    if (block.type === 'quote' && block.content) {
+      return `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+        <tr>
+          <td style="border-left:4px solid #64748b; padding-left:20px;">
+            <p style="margin:0; font-size:18px; font-style:italic; line-height:1.6; color:#475569; font-family:'Plus Jakarta Sans',Arial,sans-serif;">
+              "${block.content}"
+            </p>
+          </td>
+        </tr>
+      </table>`;
+    }
+
+    if (block.type === 'list' && block.listItems && block.listItems.length > 0) {
+      const listItemsHtml = block.listItems
+        .filter(item => item.trim())
+        .map(item => `
+          <tr>
+            <td style="padding:4px 0; font-size:16px; line-height:1.6; color:#334155; font-family:'Plus Jakarta Sans',Arial,sans-serif;">
+              • ${item}
+            </td>
+          </tr>
+        `).join('');
+      
+      return `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">
+        ${listItemsHtml}
       </table>`;
     }
 
