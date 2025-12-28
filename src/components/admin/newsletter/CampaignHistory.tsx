@@ -30,7 +30,7 @@ import {
   Megaphone,
   GraduationCap,
   Binoculars,
-  RefreshCw
+  Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -138,9 +138,9 @@ function getTypeBadge(type: NewsletterType | null | undefined) {
       icon: <GraduationCap className="h-3 w-3" />, 
       className: "bg-purple-100 text-purple-700 border-purple-200" 
     },
-    reengagement: { 
-      label: "Re-engagement", 
-      icon: <RefreshCw className="h-3 w-3" />, 
+    automation: { 
+      label: "Automatización", 
+      icon: <Zap className="h-3 w-3" />, 
       className: "bg-amber-100 text-amber-700 border-amber-200" 
     },
   };
