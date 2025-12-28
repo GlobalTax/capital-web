@@ -92,3 +92,9 @@ verify_jwt = false
 
 [functions.generate-newsletter-image]
 verify_jwt = false
+
+[functions.send-precall-email]
+verify_jwt = false
+
+[functions.send-followup-email]
+verify_jwt = false

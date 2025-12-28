@@ -2059,6 +2059,7 @@ export type Database = {
           adjustment_amount: number | null
           assigned_at: string | null
           assigned_to: string | null
+          call_attempts_count: number | null
           cif: string | null
           company_name: string
           competitive_advantage: string | null
@@ -2080,6 +2081,7 @@ export type Database = {
           employee_range: string
           empresa_id: string | null
           final_valuation: number | null
+          followup_count: number | null
           form_submitted_at: string | null
           growth_rate: number | null
           has_adjustments: boolean | null
@@ -2088,13 +2090,17 @@ export type Database = {
           ip_address: unknown
           is_deleted: boolean | null
           last_activity_at: string | null
+          last_call_attempt_at: string | null
           last_modified_field: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           location: string | null
           net_profit_margin: number | null
+          notes: string | null
           ownership_participation: string | null
           phone: string | null
           phone_e164: string | null
+          precall_email_sent: boolean | null
+          precall_email_sent_at: string | null
           referrer: string | null
           revenue: number | null
           source_project: string | null
@@ -2118,6 +2124,7 @@ export type Database = {
           adjustment_amount?: number | null
           assigned_at?: string | null
           assigned_to?: string | null
+          call_attempts_count?: number | null
           cif?: string | null
           company_name: string
           competitive_advantage?: string | null
@@ -2139,6 +2146,7 @@ export type Database = {
           employee_range: string
           empresa_id?: string | null
           final_valuation?: number | null
+          followup_count?: number | null
           form_submitted_at?: string | null
           growth_rate?: number | null
           has_adjustments?: boolean | null
@@ -2147,13 +2155,17 @@ export type Database = {
           ip_address?: unknown
           is_deleted?: boolean | null
           last_activity_at?: string | null
+          last_call_attempt_at?: string | null
           last_modified_field?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           location?: string | null
           net_profit_margin?: number | null
+          notes?: string | null
           ownership_participation?: string | null
           phone?: string | null
           phone_e164?: string | null
+          precall_email_sent?: boolean | null
+          precall_email_sent_at?: string | null
           referrer?: string | null
           revenue?: number | null
           source_project?: string | null
@@ -2177,6 +2189,7 @@ export type Database = {
           adjustment_amount?: number | null
           assigned_at?: string | null
           assigned_to?: string | null
+          call_attempts_count?: number | null
           cif?: string | null
           company_name?: string
           competitive_advantage?: string | null
@@ -2198,6 +2211,7 @@ export type Database = {
           employee_range?: string
           empresa_id?: string | null
           final_valuation?: number | null
+          followup_count?: number | null
           form_submitted_at?: string | null
           growth_rate?: number | null
           has_adjustments?: boolean | null
@@ -2206,13 +2220,17 @@ export type Database = {
           ip_address?: unknown
           is_deleted?: boolean | null
           last_activity_at?: string | null
+          last_call_attempt_at?: string | null
           last_modified_field?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           location?: string | null
           net_profit_margin?: number | null
+          notes?: string | null
           ownership_participation?: string | null
           phone?: string | null
           phone_e164?: string | null
+          precall_email_sent?: boolean | null
+          precall_email_sent_at?: string | null
           referrer?: string | null
           revenue?: number | null
           source_project?: string | null
@@ -4726,6 +4744,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          lead_id: string
+          lead_type: string
+          metadata: Json | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          lead_id: string
+          lead_type?: string
+          metadata?: Json | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          lead_id?: string
+          lead_type?: string
+          metadata?: Json | null
+        }
+        Relationships: []
       }
       lead_ai_report_feedback: {
         Row: {
