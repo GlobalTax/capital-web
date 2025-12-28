@@ -1,12 +1,11 @@
 /**
- * Pipeline Column Component with Droppable area
+ * Pipeline Column Component - Memoized with native scroll
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { PipelineCard } from './PipelineCard';
 import type { PipelineLead, PipelineColumn as ColumnType } from '../types';
 
@@ -20,19 +19,13 @@ interface PipelineColumnProps {
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
-  const total = leads.reduce((sum, lead) => {
-    return sum + (lead.final_valuation || lead.valuation_range_min || 0);
-  }, 0);
-  
+  const total = leads.reduce((sum, lead) => sum + (lead.final_valuation || 0), 0);
   if (total === 0) return null;
-  
-  if (total >= 1000000) {
-    return `${(total / 1000000).toFixed(1)}M€`;
-  }
+  if (total >= 1000000) return `${(total / 1000000).toFixed(1)}M€`;
   return `${(total / 1000).toFixed(0)}K€`;
 };
 
-export const PipelineColumn: React.FC<PipelineColumnProps> = ({
+const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   column,
   leads,
   adminUsersMap,
@@ -66,44 +59,58 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({
           <CardContent 
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex-1 p-2 overflow-hidden transition-colors ${
+            className={`flex-1 p-2 overflow-y-auto transition-colors ${
               snapshot.isDraggingOver ? 'bg-primary/5' : ''
             }`}
+            style={{ maxHeight: 'calc(100vh - 280px)' }}
           >
-            <ScrollArea className="h-full">
-              <div className="space-y-2 pr-2">
-                {leads.map((lead, index) => (
-                  <Draggable key={lead.id} draggableId={lead.id} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <PipelineCard
-                          lead={lead}
-                          assignedUserName={lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : undefined}
-                          onSendPrecallEmail={() => onSendPrecallEmail(lead.id)}
-                          onRegisterCall={(answered) => onRegisterCall(lead.id, answered)}
-                          onViewDetails={() => onViewDetails(lead.id)}
-                          isDragging={snapshot.isDragging}
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-                
-                {leads.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Sin leads
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
+            <div className="space-y-2 pr-1">
+              {leads.map((lead, index) => (
+                <Draggable key={lead.id} draggableId={lead.id} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                    >
+                      <PipelineCard
+                        lead={lead}
+                        assignedUserName={lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : undefined}
+                        onSendPrecallEmail={() => onSendPrecallEmail(lead.id)}
+                        onRegisterCall={(answered) => onRegisterCall(lead.id, answered)}
+                        onViewDetails={() => onViewDetails(lead.id)}
+                        isDragging={snapshot.isDragging}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+              
+              {leads.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  Sin leads
+                </div>
+              )}
+            </div>
           </CardContent>
         )}
       </Droppable>
     </Card>
   );
 };
+
+// Memoize with custom comparison
+export const PipelineColumn = memo(PipelineColumnComponent, (prev, next) => {
+  // Compare lead IDs and count
+  if (prev.leads.length !== next.leads.length) return false;
+  if (prev.column.id !== next.column.id) return false;
+  
+  // Check if lead IDs are the same in the same order
+  for (let i = 0; i < prev.leads.length; i++) {
+    if (prev.leads[i].id !== next.leads[i].id) return false;
+    if (prev.leads[i].lead_status_crm !== next.leads[i].lead_status_crm) return false;
+  }
+  
+  return true;
+});

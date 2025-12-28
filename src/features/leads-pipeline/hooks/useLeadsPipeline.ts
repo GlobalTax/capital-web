@@ -1,7 +1,9 @@
 /**
  * Hook for managing leads pipeline data and mutations
+ * Optimized for performance with memoization
  */
 
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,7 +12,7 @@ import type { PipelineLead, LeadStatus, LeadActivity, ActivityType } from '../ty
 export const useLeadsPipeline = () => {
   const queryClient = useQueryClient();
 
-  // Fetch leads for pipeline - limited to recent 200 for performance
+  // Fetch leads for pipeline - limited to 100 for performance
   const { data: leads = [], isLoading, refetch } = useQuery({
     queryKey: ['leads-pipeline'],
     queryFn: async () => {
@@ -30,19 +32,18 @@ export const useLeadsPipeline = () => {
           email_sent,
           email_opened,
           precall_email_sent,
-          followup_count,
-          call_attempts_count,
-          notes
+          call_attempts_count
         `)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(100);
 
       if (error) throw error;
       return data as PipelineLead[];
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 60 * 3, // 3 minutes
     refetchOnWindowFocus: false,
+    gcTime: 1000 * 60 * 10, // 10 minutes cache
   });
 
   // Fetch admin users for assignment
@@ -212,13 +213,15 @@ export const useLeadsPipeline = () => {
     },
   });
 
-  // Group leads by status
-  const leadsByStatus = leads.reduce((acc, lead) => {
-    const status = lead.lead_status_crm || 'nuevo';
-    if (!acc[status]) acc[status] = [];
-    acc[status].push(lead);
-    return acc;
-  }, {} as Record<LeadStatus, PipelineLead[]>);
+  // Memoized grouping - only recalculates when leads change
+  const leadsByStatus = useMemo(() => {
+    return leads.reduce((acc, lead) => {
+      const status = lead.lead_status_crm || 'nuevo';
+      if (!acc[status]) acc[status] = [];
+      acc[status].push(lead);
+      return acc;
+    }, {} as Record<LeadStatus, PipelineLead[]>);
+  }, [leads]);
 
   return {
     leads,

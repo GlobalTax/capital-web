@@ -1,13 +1,12 @@
 /**
- * Main Leads Pipeline View with Kanban Board
+ * Main Leads Pipeline View - Optimized with useCallback
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { 
   Select,
   SelectContent,
@@ -15,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RefreshCw, Search, Filter, Users } from 'lucide-react';
+import { RefreshCw, Search, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { PipelineColumn } from './PipelineColumn';
@@ -38,19 +37,19 @@ export const LeadsPipelineView: React.FC = () => {
   const [filterAssignee, setFilterAssignee] = useState<string>('all');
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
 
-  // Create admin users map for quick lookup
-  const adminUsersMap = useMemo(() => {
-    return new Map(adminUsers.map(u => [u.user_id, u.full_name || u.email || 'Usuario']));
-  }, [adminUsers]);
+  // Memoized admin users map
+  const adminUsersMap = useMemo(() => 
+    new Map(adminUsers.map(u => [u.user_id, u.full_name || u.email || 'Usuario'])),
+    [adminUsers]
+  );
 
-  // Filter leads
+  // Memoized filtered leads
   const filteredLeadsByStatus = useMemo(() => {
     const result: Record<LeadStatus, typeof leads> = {} as any;
     
     PIPELINE_COLUMNS.forEach(col => {
       let columnLeads = leadsByStatus[col.id] || [];
       
-      // Apply search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         columnLeads = columnLeads.filter(lead => 
@@ -60,7 +59,6 @@ export const LeadsPipelineView: React.FC = () => {
         );
       }
       
-      // Apply assignee filter
       if (filterAssignee !== 'all') {
         if (filterAssignee === 'unassigned') {
           columnLeads = columnLeads.filter(lead => !lead.assigned_to);
@@ -75,31 +73,26 @@ export const LeadsPipelineView: React.FC = () => {
     return result;
   }, [leadsByStatus, searchQuery, filterAssignee]);
 
-  // Handle drag and drop
-  const handleDragEnd = (result: DropResult) => {
+  // Memoized handlers with useCallback
+  const handleDragEnd = useCallback((result: DropResult) => {
     const { destination, source, draggableId } = result;
-
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     const newStatus = destination.droppableId as LeadStatus;
-    
     updateStatus({ leadId: draggableId, status: newStatus });
     toast.success(`Lead movido a "${PIPELINE_COLUMNS.find(c => c.id === newStatus)?.label}"`);
-  };
+  }, [updateStatus]);
 
-  // Send pre-call email
-  const handleSendPrecallEmail = async (leadId: string) => {
+  const handleSendPrecallEmail = useCallback(async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
-
     if (lead.precall_email_sent) {
       toast.warning('Ya se envió un email pre-llamada a este lead');
       return;
     }
 
     setIsSendingEmail(leadId);
-    
     try {
       const { error } = await supabase.functions.invoke('send-precall-email', {
         body: {
@@ -109,9 +102,7 @@ export const LeadsPipelineView: React.FC = () => {
           email: lead.email,
         }
       });
-
       if (error) throw error;
-
       toast.success('Email pre-llamada enviado correctamente');
       refetch();
     } catch (error: any) {
@@ -119,21 +110,35 @@ export const LeadsPipelineView: React.FC = () => {
     } finally {
       setIsSendingEmail(null);
     }
-  };
+  }, [leads, refetch]);
 
-  // Handle register call
-  const handleRegisterCall = (leadId: string, answered: boolean) => {
+  const handleRegisterCall = useCallback((leadId: string, answered: boolean) => {
     registerCall({ leadId, answered });
-  };
+  }, [registerCall]);
 
-  // View lead details
-  const handleViewDetails = (leadId: string) => {
+  const handleViewDetails = useCallback((leadId: string) => {
     navigate(`/admin/valuations/${leadId}`);
-  };
+  }, [navigate]);
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setFilterAssignee('all');
+  }, []);
 
   // Calculate totals
   const totalLeads = leads.length;
-  const filteredTotal = Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0);
+  const filteredTotal = useMemo(() => 
+    Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0),
+    [filteredLeadsByStatus]
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -143,18 +148,16 @@ export const LeadsPipelineView: React.FC = () => {
           <h1 className="text-2xl font-bold">Pipeline de Leads</h1>
           <p className="text-sm text-muted-foreground">
             {filteredTotal === totalLeads 
-              ? `${totalLeads} leads en total`
+              ? `${totalLeads} leads (últimos 100)`
               : `${filteredTotal} de ${totalLeads} leads`
             }
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-1" />
-            Actualizar
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
+          <RefreshCw className="h-4 w-4 mr-1" />
+          Actualizar
+        </Button>
       </div>
 
       {/* Filters */}
@@ -162,7 +165,7 @@ export const LeadsPipelineView: React.FC = () => {
         <div className="relative flex-1 min-w-[200px] max-w-[300px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por empresa, contacto o email..."
+            placeholder="Buscar empresa, contacto..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -186,14 +189,7 @@ export const LeadsPipelineView: React.FC = () => {
         </Select>
 
         {(searchQuery || filterAssignee !== 'all') && (
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => {
-              setSearchQuery('');
-              setFilterAssignee('all');
-            }}
-          >
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
             Limpiar filtros
           </Button>
         )}

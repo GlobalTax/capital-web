@@ -1,8 +1,8 @@
 /**
- * Pipeline Lead Card Component
+ * Pipeline Lead Card Component - Memoized for performance
  */
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
-export const PipelineCard: React.FC<PipelineCardProps> = ({
+const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   lead,
   assignedUserName,
   onSendPrecallEmail,
@@ -54,17 +54,30 @@ export const PipelineCard: React.FC<PipelineCardProps> = ({
   onViewDetails,
   isDragging,
 }) => {
-  const daysAgo = formatDistanceToNow(new Date(lead.created_at), { 
-    addSuffix: true, 
-    locale: es 
-  });
+  // Memoize expensive calculations
+  const daysAgo = useMemo(() => 
+    formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: es }),
+    [lead.created_at]
+  );
 
-  const valuationAmount = lead.final_valuation || lead.valuation_range_min;
-  const hasEmailOpened = lead.email_opened;
+  const valuationFormatted = useMemo(() => 
+    formatCurrency(lead.final_valuation),
+    [lead.final_valuation]
+  );
+
+  const avatarInitials = useMemo(() => {
+    if (!assignedUserName) return null;
+    return assignedUserName.split(' ').map(n => n[0]).join('').substring(0, 2);
+  }, [assignedUserName]);
+
+  const firstName = useMemo(() => {
+    if (!assignedUserName) return null;
+    return assignedUserName.split(' ')[0];
+  }, [assignedUserName]);
 
   return (
     <Card 
-      className={`cursor-pointer transition-all hover:shadow-md ${
+      className={`cursor-pointer transition-shadow hover:shadow-md ${
         isDragging ? 'shadow-lg ring-2 ring-primary/20' : ''
       }`}
     >
@@ -106,17 +119,17 @@ export const PipelineCard: React.FC<PipelineCardProps> = ({
             <Building2 className="h-3 w-3 mr-1" />
             {lead.industry}
           </Badge>
-          {valuationAmount && (
+          {valuationFormatted && (
             <Badge variant="outline" className="text-xs font-medium">
               <DollarSign className="h-3 w-3 mr-0.5" />
-              {formatCurrency(valuationAmount)}
+              {valuationFormatted}
             </Badge>
           )}
         </div>
 
         {/* Email Status */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {hasEmailOpened ? (
+          {lead.email_opened ? (
             <span className="flex items-center text-green-600">
               <MailOpen className="h-3 w-3 mr-1" />
               Email abierto
@@ -147,10 +160,10 @@ export const PipelineCard: React.FC<PipelineCardProps> = ({
             <span className="flex items-center gap-1">
               <Avatar className="h-4 w-4">
                 <AvatarFallback className="text-[8px]">
-                  {assignedUserName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                  {avatarInitials}
                 </AvatarFallback>
               </Avatar>
-              <span className="truncate max-w-[60px]">{assignedUserName.split(' ')[0]}</span>
+              <span className="truncate max-w-[60px]">{firstName}</span>
             </span>
           ) : (
             <span className="flex items-center text-orange-500">
@@ -163,3 +176,18 @@ export const PipelineCard: React.FC<PipelineCardProps> = ({
     </Card>
   );
 };
+
+// Memoized with custom comparison
+export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
+  return (
+    prev.lead.id === next.lead.id &&
+    prev.lead.lead_status_crm === next.lead.lead_status_crm &&
+    prev.lead.email_opened === next.lead.email_opened &&
+    prev.lead.email_sent === next.lead.email_sent &&
+    prev.lead.precall_email_sent === next.lead.precall_email_sent &&
+    prev.lead.call_attempts_count === next.lead.call_attempts_count &&
+    prev.lead.final_valuation === next.lead.final_valuation &&
+    prev.assignedUserName === next.assignedUserName &&
+    prev.isDragging === next.isDragging
+  );
+});
