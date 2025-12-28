@@ -53,7 +53,8 @@ import {
   LazyPdfSignatureConfig,
   LazyMarketplaceAnalytics,
   LazyNewsletterPage,
-  LazyBuySideMandatesPage
+  LazyBuySideMandatesPage,
+  LazyLeadsPipelinePage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -91,6 +92,7 @@ const AdminRouter = () => {
           <Route path="/marketplace-analytics" element={<LazyMarketplaceAnalytics />} />
           
           {/* Lead Management */}
+          <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />

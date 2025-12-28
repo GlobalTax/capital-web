@@ -81,3 +81,6 @@ export const LazyNewsletterPage = lazy(() => import('@/pages/admin/NewsletterPag
 
 // === BUY-SIDE MANDATES ===
 export const LazyBuySideMandatesPage = lazy(() => import('@/pages/admin/BuySideMandatesPage'));
+
+// === LEADS PIPELINE ===
+export const LazyLeadsPipelinePage = lazy(() => import('@/pages/admin/LeadsPipelinePage'));
