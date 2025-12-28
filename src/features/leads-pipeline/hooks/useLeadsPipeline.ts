@@ -35,8 +35,7 @@ export const useLeadsPipeline = () => {
           call_attempts_count
         `)
         .eq('is_deleted', false)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as PipelineLead[];
