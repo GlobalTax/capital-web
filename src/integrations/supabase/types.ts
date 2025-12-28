@@ -8997,6 +8997,51 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_task_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          due_days_offset: number | null
+          id: string
+          is_active: boolean | null
+          is_automatable: boolean | null
+          lead_type: string | null
+          responsible_system: string
+          task_category: string
+          task_name: string
+          task_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          due_days_offset?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_automatable?: boolean | null
+          lead_type?: string | null
+          responsible_system: string
+          task_category: string
+          task_name: string
+          task_order: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          due_days_offset?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_automatable?: boolean | null
+          lead_type?: string | null
+          responsible_system?: string
+          task_category?: string
+          task_name?: string
+          task_order?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       banner_daily_analytics: {
