@@ -289,10 +289,16 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de administradores"
       },
       { 
+        title: "Workflow Fase 0", 
+        url: "/admin/configuracion/workflow-templates", 
+        icon: Settings,
+        badge: "NEW",
+        description: "Configurar tareas del workflow de leads"
+      },
+      { 
         title: "Destinatarios Email", 
         url: "/admin/configuracion/destinatarios-email", 
         icon: Target,
-        badge: "NEW",
         description: "Gestión de destinatarios de emails"
       },
       { 

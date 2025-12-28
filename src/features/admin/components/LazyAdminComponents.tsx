@@ -84,3 +84,6 @@ export const LazyBuySideMandatesPage = lazy(() => import('@/pages/admin/BuySideM
 
 // === LEADS PIPELINE ===
 export const LazyLeadsPipelinePage = lazy(() => import('@/pages/admin/LeadsPipelinePage'));
+
+// === WORKFLOW TEMPLATES ===
+export const LazyWorkflowTemplatesPage = lazy(() => import('@/pages/admin/WorkflowTemplatesPage'));
