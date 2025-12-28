@@ -739,6 +739,67 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_imports: {
+        Row: {
+          contacto_id: string | null
+          created_at: string
+          created_by: string | null
+          empresa_id: string | null
+          error_message: string | null
+          extracted_data: Json
+          id: string
+          image_url: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contacto_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          empresa_id?: string | null
+          error_message?: string | null
+          extracted_data?: Json
+          id?: string
+          image_url: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contacto_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          empresa_id?: string | null
+          error_message?: string | null
+          extracted_data?: Json
+          id?: string
+          image_url?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_imports_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_imports_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_imports_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+        ]
+      }
       analytics_config: {
         Row: {
           config_key: string
@@ -2465,6 +2526,8 @@ export type Database = {
         Row: {
           apellidos: string | null
           avatar: string | null
+          brevo_id: string | null
+          brevo_synced_at: string | null
           cargo: string | null
           created_at: string | null
           email: string
@@ -2481,6 +2544,8 @@ export type Database = {
         Insert: {
           apellidos?: string | null
           avatar?: string | null
+          brevo_id?: string | null
+          brevo_synced_at?: string | null
           cargo?: string | null
           created_at?: string | null
           email: string
@@ -2497,6 +2562,8 @@ export type Database = {
         Update: {
           apellidos?: string | null
           avatar?: string | null
+          brevo_id?: string | null
+          brevo_synced_at?: string | null
           cargo?: string | null
           created_at?: string | null
           email?: string
@@ -3287,6 +3354,8 @@ export type Database = {
       }
       empresas: {
         Row: {
+          brevo_id: string | null
+          brevo_synced_at: string | null
           capital_circulante: number | null
           cif: string | null
           created_at: string | null
@@ -3312,6 +3381,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          brevo_id?: string | null
+          brevo_synced_at?: string | null
           capital_circulante?: number | null
           cif?: string | null
           created_at?: string | null
@@ -3337,6 +3408,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          brevo_id?: string | null
+          brevo_synced_at?: string | null
           capital_circulante?: number | null
           cif?: string | null
           created_at?: string | null
@@ -9759,7 +9832,23 @@ export type Database = {
           website_url: string
         }[]
       }
+      sync_valuations_to_contactos: {
+        Args: never
+        Returns: {
+          contactos_created: number
+          contactos_skipped: number
+          contactos_updated: number
+        }[]
+      }
       sync_valuations_to_crm: { Args: { p_dry_run?: boolean }; Returns: Json }
+      sync_valuations_to_empresas: {
+        Args: never
+        Returns: {
+          empresas_created: number
+          empresas_skipped: number
+          empresas_updated: number
+        }[]
+      }
       unlink_valuation_from_empresa: {
         Args: { p_valuation_id: string }
         Returns: boolean

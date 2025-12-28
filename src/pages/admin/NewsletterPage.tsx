@@ -30,10 +30,9 @@ import { ContentBlockEditor, ContentBlock } from '@/components/admin/newsletter/
 import { BuySideMandateSelector } from '@/components/admin/newsletter/BuySideMandateSelector';
 import { AIGenerateButton } from '@/components/admin/newsletter/AIGenerateButton';
 import { useNewsletterAI } from '@/hooks/useNewsletterAI';
-import { ReengagementTypeSelectorDynamic } from '@/components/admin/newsletter/ReengagementTypeSelectorDynamic';
+import { AutomationTemplateGallery } from '@/components/admin/newsletter/AutomationTemplateGallery';
+import { BrevoSegmentBuilder } from '@/components/admin/newsletter/BrevoSegmentBuilder';
 import { BrevoSetupGuide } from '@/components/admin/newsletter/BrevoSetupGuide';
-import { ReengagementPreviewDynamic } from '@/components/admin/newsletter/ReengagementPreviewDynamic';
-import { ReengagementTemplateManager } from '@/components/admin/newsletter/ReengagementTemplateManager';
 import { SnippetLibrary } from '@/components/admin/newsletter/SnippetLibrary';
 import { ABVariantGenerator } from '@/components/admin/newsletter/ABVariantGenerator';
 import { AITextImprover } from '@/components/admin/newsletter/AITextImprover';
@@ -179,12 +178,12 @@ const NewsletterPage: React.FC = () => {
       case 'updates':
       case 'educational':
         return contentBlocks.length > 0;
-      case 'reengagement':
-        return true;
+      case 'automation':
+        return selectedReengagementTemplate !== null;
       default:
         return false;
     }
-  }, [newsletterType, selectedOperations.length, selectedBuySideMandates.length, selectedArticles.length, contentBlocks.length]);
+  }, [newsletterType, selectedOperations.length, selectedBuySideMandates.length, selectedArticles.length, contentBlocks.length, selectedReengagementTemplate]);
 
   // Render the right-side content selector based on type
   const renderContentSelector = () => {
@@ -265,33 +264,47 @@ const NewsletterPage: React.FC = () => {
           </Card>
         );
 
-      case 'reengagement':
+      case 'automation':
         return (
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Tipo de Re-engagement</CardTitle>
+                <CardTitle>Galería de Templates</CardTitle>
                 <CardDescription>
-                  Selecciona el tipo de email de recuperación a enviar
+                  Selecciona un template como base y edítalo con el editor
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <ReengagementTypeSelectorDynamic
+              <CardContent>
+                <AutomationTemplateGallery
                   selectedTemplateId={selectedReengagementTemplate?.id || null}
-                  onTemplateChange={setSelectedReengagementTemplate}
+                  onSelectTemplate={(template) => {
+                    setSelectedReengagementTemplate(template);
+                    // Load template content into blocks for editing
+                    if (template.html_template) {
+                      setSubject(template.default_subject);
+                    }
+                  }}
                 />
-                {selectedReengagementTemplate && (
-                  <BrevoSetupGuide reengagementType={selectedReengagementTemplate.slug as any} />
-                )}
               </CardContent>
             </Card>
             
-            <ReengagementPreviewDynamic template={selectedReengagementTemplate} />
-            
-            <ReengagementTemplateManager
-              selectedTemplateId={selectedReengagementTemplate?.id}
-              onSelectTemplate={setSelectedReengagementTemplate}
-            />
+            {selectedReengagementTemplate && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Generador de Segmentos</CardTitle>
+                    <CardDescription>
+                      Genera queries para segmentos de Brevo
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <BrevoSegmentBuilder />
+                  </CardContent>
+                </Card>
+                
+                <BrevoSetupGuide reengagementType={selectedReengagementTemplate.slug as any} />
+              </>
+            )}
           </div>
         );
 

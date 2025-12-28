@@ -131,7 +131,7 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
         return generateUpdatesHtml(contentBlocks, subject, headerImageUrl);
       case 'educational':
         return generateEducationalHtml(contentBlocks, subject, [], headerImageUrl);
-      case 'reengagement':
+      case 'automation':
         return generateReengagementHtml(reengagementType);
       default:
         return generateBrevoHtml(operations, subject, introText);
