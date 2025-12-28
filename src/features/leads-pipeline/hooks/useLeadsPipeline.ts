@@ -10,7 +10,7 @@ import type { PipelineLead, LeadStatus, LeadActivity, ActivityType } from '../ty
 export const useLeadsPipeline = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all leads for pipeline
+  // Fetch leads for pipeline - limited to recent 200 for performance
   const { data: leads = [], isLoading, refetch } = useQuery({
     queryKey: ['leads-pipeline'],
     queryFn: async () => {
@@ -25,29 +25,24 @@ export const useLeadsPipeline = () => {
           industry,
           lead_status_crm,
           final_valuation,
-          revenue,
-          ebitda,
           created_at,
           assigned_to,
-          assigned_at,
           email_sent,
           email_opened,
-          email_opened_at,
           precall_email_sent,
-          precall_email_sent_at,
           followup_count,
           call_attempts_count,
-          last_call_attempt_at,
-          notes,
-          valuation_range_min,
-          valuation_range_max
+          notes
         `)
         .eq('is_deleted', false)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       return data as PipelineLead[];
     },
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Fetch admin users for assignment
