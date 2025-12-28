@@ -26,7 +26,8 @@ import {
   Briefcase,
   FolderOpen,
   Store,
-  Mail
+  Mail,
+  Kanban
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -242,6 +243,13 @@ export const sidebarSections: SidebarSection[] = [
     title: "📈 ANALIZAR LEADS",
     description: "Gestión de prospectos",
     items: [
+      { 
+        title: "Pipeline de Leads",
+        url: "/admin/leads-pipeline", 
+        icon: Kanban,
+        badge: "NEW",
+        description: "Tablero Kanban de leads"
+      },
       { 
         title: "Contactos",
         url: "/admin/contacts", 
