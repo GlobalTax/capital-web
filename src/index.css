@@ -46,6 +46,48 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
+    /* === SEMANTIC STATUS TOKENS === */
+    --status-new: 210 100% 50%;
+    --status-new-bg: 210 100% 97%;
+    --status-pending: 38 92% 50%;
+    --status-pending-bg: 38 92% 97%;
+    --status-contacted: 262 83% 58%;
+    --status-contacted-bg: 262 83% 97%;
+    --status-qualified: 142 69% 44%;
+    --status-qualified-bg: 142 69% 97%;
+    --status-negotiation: 24 95% 53%;
+    --status-negotiation-bg: 24 95% 97%;
+    --status-closed-won: 142 76% 36%;
+    --status-closed-won-bg: 142 76% 97%;
+    --status-closed-lost: 0 72% 51%;
+    --status-closed-lost-bg: 0 72% 97%;
+    --status-archived: 215 16% 47%;
+    --status-archived-bg: 215 16% 97%;
+    
+    /* === ORIGIN TOKENS === */
+    --origin-contact: 262 83% 58%;
+    --origin-contact-bg: 262 83% 97%;
+    --origin-valuation: 210 100% 50%;
+    --origin-valuation-bg: 210 100% 97%;
+    --origin-collaborator: 142 69% 44%;
+    --origin-collaborator-bg: 142 69% 97%;
+    --origin-acquisition: 24 95% 53%;
+    --origin-acquisition-bg: 24 95% 97%;
+    --origin-advisor: 38 92% 50%;
+    --origin-advisor-bg: 38 92% 97%;
+    --origin-investor: 340 82% 52%;
+    --origin-investor-bg: 340 82% 97%;
+    
+    /* === PRIORITY TOKENS === */
+    --priority-hot: 0 72% 51%;
+    --priority-hot-bg: 0 72% 97%;
+    --priority-high: 24 95% 53%;
+    --priority-high-bg: 24 95% 97%;
+    --priority-medium: 38 92% 50%;
+    --priority-medium-bg: 38 92% 97%;
+    --priority-low: 215 16% 47%;
+    --priority-low-bg: 215 16% 97%;
+
     /* Enhanced borders and inputs */
     --border: 214 20% 89%;
     --input: 214 20% 89%;
