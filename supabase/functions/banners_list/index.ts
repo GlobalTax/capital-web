@@ -326,9 +326,7 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // CRITICAL: Set auth token for RLS context
-    supabaseClient.auth.setAuth(token);
-    
+    // Get user from token
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
