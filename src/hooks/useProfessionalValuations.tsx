@@ -62,6 +62,92 @@ async function syncToContactLeads(data: Partial<ProfessionalValuationData>): Pro
 }
 
 /**
+ * Sincroniza una valoración profesional a la base de datos de empresas
+ */
+async function syncToEmpresas(data: Partial<ProfessionalValuationData>, valuationId: string): Promise<string | null> {
+  if (!data.clientCompany) return null;
+
+  // Buscar empresa existente por CIF o nombre
+  const { data: existingEmpresa } = await supabase
+    .from('empresas')
+    .select('id')
+    .or(`cif.eq.${data.clientCif || ''},nombre.ilike.${data.clientCompany}`)
+    .maybeSingle();
+
+  if (existingEmpresa) {
+    return existingEmpresa.id;
+  }
+
+  // Crear nueva empresa
+  const empresaData = {
+    nombre: data.clientCompany,
+    cif: data.clientCif || null,
+    sector: data.sector || null,
+    ebitda: data.normalizedEbitda || null,
+    source_pro_valuation_id: valuationId,
+  };
+
+  const { data: newEmpresa, error } = await supabase
+    .from('empresas')
+    .insert([empresaData])
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Error creating empresa:', error);
+    return null;
+  }
+
+  return newEmpresa.id;
+}
+
+/**
+ * Sincroniza valoraciones pendientes a contactos (para migración masiva)
+ */
+export async function syncPendingValuationsToContacts(): Promise<{ synced: number; errors: number }> {
+  let synced = 0;
+  let errors = 0;
+
+  // Obtener valoraciones sin linked_lead_id
+  const { data: pendingValuations, error } = await supabase
+    .from('professional_valuations')
+    .select('id, client_name, client_company, client_email, client_phone, service_type')
+    .is('linked_lead_id', null);
+
+  if (error || !pendingValuations) {
+    console.error('Error fetching pending valuations:', error);
+    return { synced: 0, errors: 1 };
+  }
+
+  for (const pv of pendingValuations) {
+    if (!pv.client_email) continue;
+
+    try {
+      const linkedLeadId = await syncToContactLeads({
+        clientName: pv.client_name,
+        clientCompany: pv.client_company,
+        clientEmail: pv.client_email,
+        clientPhone: pv.client_phone,
+        serviceType: pv.service_type as any,
+      });
+
+      if (linkedLeadId) {
+        await supabase
+          .from('professional_valuations')
+          .update({ linked_lead_id: linkedLeadId, linked_lead_type: 'contact' })
+          .eq('id', pv.id);
+        synced++;
+      }
+    } catch (err) {
+      console.error('Error syncing valuation:', pv.id, err);
+      errors++;
+    }
+  }
+
+  return { synced, errors };
+}
+
+/**
  * Hook principal para gestionar valoraciones profesionales
  */
 export function useProfessionalValuations() {
