@@ -367,7 +367,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                   <div className="font-medium hover:text-primary transition-colors">
                     {contact.name}
                   </div>
-                  {/* 🔥 NEW: Badge de recurrencia */}
+                  {/* Badge de recurrencia */}
                   {contact.valuation_count && contact.valuation_count > 1 && (
                     <Badge 
                       variant="secondary" 
@@ -375,6 +375,16 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                       title={`Este contacto ha realizado ${contact.valuation_count} valoraciones`}
                     >
                       🔄 {contact.valuation_count}
+                    </Badge>
+                  )}
+                  {/* Badge Valoración Pro */}
+                  {contact.is_from_pro_valuation && (
+                    <Badge 
+                      variant="outline" 
+                      className="bg-emerald-100 text-emerald-700 border-emerald-300 text-[10px] px-1.5 py-0 h-4"
+                      title="Contacto de Valoración Pro"
+                    >
+                      Pro
                     </Badge>
                   )}
                 </div>
