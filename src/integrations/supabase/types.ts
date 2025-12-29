@@ -2066,6 +2066,8 @@ export type Database = {
           completion_percentage: number | null
           contact_name: string
           created_at: string
+          crm_contacto_id: string | null
+          crm_synced_at: string | null
           current_step: number | null
           deleted_at: string | null
           deleted_by: string | null
@@ -2131,6 +2133,8 @@ export type Database = {
           completion_percentage?: number | null
           contact_name: string
           created_at?: string
+          crm_contacto_id?: string | null
+          crm_synced_at?: string | null
           current_step?: number | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -2196,6 +2200,8 @@ export type Database = {
           completion_percentage?: number | null
           contact_name?: string
           created_at?: string
+          crm_contacto_id?: string | null
+          crm_synced_at?: string | null
           current_step?: number | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -2258,6 +2264,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "company_valuations_crm_contacto_id_fkey"
+            columns: ["crm_contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "company_valuations_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
@@ -2281,6 +2294,9 @@ export type Database = {
           company_size: string | null
           country: string | null
           created_at: string
+          crm_contacto_id: string | null
+          crm_empresa_id: string | null
+          crm_synced_at: string | null
           deleted_at: string | null
           deleted_by: string | null
           deletion_reason: string | null
@@ -2312,6 +2328,9 @@ export type Database = {
           company_size?: string | null
           country?: string | null
           created_at?: string
+          crm_contacto_id?: string | null
+          crm_empresa_id?: string | null
+          crm_synced_at?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
@@ -2343,6 +2362,9 @@ export type Database = {
           company_size?: string | null
           country?: string | null
           created_at?: string
+          crm_contacto_id?: string | null
+          crm_empresa_id?: string | null
+          crm_synced_at?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
@@ -2374,6 +2396,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "contact_leads_crm_contacto_id_fkey"
+            columns: ["crm_contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_leads_crm_empresa_id_fkey"
+            columns: ["crm_empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_leads_crm_empresa_id_fkey"
+            columns: ["crm_empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
           },
         ]
       }
@@ -2679,6 +2722,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crm_sync_log: {
+        Row: {
+          completed_at: string | null
+          contactos_created: number | null
+          empresas_created: number | null
+          errors: Json | null
+          id: string
+          leads_processed: number | null
+          started_at: string
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          contactos_created?: number | null
+          empresas_created?: number | null
+          errors?: Json | null
+          id?: string
+          leads_processed?: number | null
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          contactos_created?: number | null
+          empresas_created?: number | null
+          errors?: Json | null
+          id?: string
+          leads_processed?: number | null
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
       }
       custom_newsletter_templates: {
         Row: {
@@ -3624,6 +3703,9 @@ export type Database = {
           company: string
           country: string | null
           created_at: string
+          crm_contacto_id: string | null
+          crm_empresa_id: string | null
+          crm_synced_at: string | null
           deleted_at: string | null
           deleted_by: string | null
           deletion_reason: string | null
@@ -3658,6 +3740,9 @@ export type Database = {
           company: string
           country?: string | null
           created_at?: string
+          crm_contacto_id?: string | null
+          crm_empresa_id?: string | null
+          crm_synced_at?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
@@ -3692,6 +3777,9 @@ export type Database = {
           company?: string
           country?: string | null
           created_at?: string
+          crm_contacto_id?: string | null
+          crm_empresa_id?: string | null
+          crm_synced_at?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
@@ -3720,7 +3808,29 @@ export type Database = {
           utm_source?: string | null
           utm_term?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "general_contact_leads_crm_contacto_id_fkey"
+            columns: ["crm_contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_contact_leads_crm_empresa_id_fkey"
+            columns: ["crm_empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_contact_leads_crm_empresa_id_fkey"
+            columns: ["crm_empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+        ]
       }
       hero_slides: {
         Row: {
@@ -8604,6 +8714,42 @@ export type Database = {
           layout_name?: string
           shared_with?: string[] | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message: string
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
