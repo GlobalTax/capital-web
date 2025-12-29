@@ -1,8 +1,8 @@
 import React from 'react';
-import ContactsManager from '@/components/admin/contacts/ContactsManager';
+import LinearContactsManager from '@/components/admin/contacts/LinearContactsManager';
 
 const ContactsPage = () => {
-  return <ContactsManager />;
+  return <LinearContactsManager />;
 };
 
 export default ContactsPage;
