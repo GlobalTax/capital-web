@@ -108,3 +108,9 @@ verify_jwt = false
 
 [functions.brevo-webhook-handler]
 verify_jwt = false
+
+[functions.sync-deal-to-brevo]
+verify_jwt = false
+
+[functions.sync-company-to-brevo]
+verify_jwt = false

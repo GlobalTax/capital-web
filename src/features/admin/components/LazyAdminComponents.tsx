@@ -94,3 +94,6 @@ export const LazyWorkflowTemplatesPage = lazy(() => import('@/pages/admin/Workfl
 
 // === NOTIFICATIONS ===
 export const LazyNotificationsPage = lazy(() => import('@/pages/admin/NotificationsPage'));
+
+// === BREVO SYNC ===
+export const LazyBrevoSyncDashboard = lazy(() => import('@/pages/admin/BrevoSyncDashboard'));
