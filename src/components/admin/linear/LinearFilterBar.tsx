@@ -41,8 +41,8 @@ export const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
           {filters.map((filter) => (
             <Badge
               key={filter.id}
-              variant="subtle"
-              className="gap-1.5 pr-1"
+              variant="secondary"
+              className="gap-1.5 pr-1 bg-secondary"
             >
               <span className="text-[hsl(var(--linear-text-tertiary))]">{filter.label}:</span>
               <span>{filter.value}</span>

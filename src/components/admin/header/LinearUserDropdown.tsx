@@ -49,7 +49,7 @@ const LinearUserDropdown = ({ onLogout }: LinearUserDropdownProps) => {
       </DropdownMenuTrigger>
       
       <DropdownMenuContent 
-        className="w-56 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]" 
+        className="w-56 bg-popover border-[hsl(var(--linear-border))] shadow-md" 
         align="end" 
         sideOffset={8}
       >
