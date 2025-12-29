@@ -98,3 +98,13 @@ verify_jwt = false
 
 [functions.send-followup-email]
 verify_jwt = false
+
+# =====================================================
+# Brevo Integration - Events & Webhooks
+# =====================================================
+
+[functions.brevo-track-event]
+verify_jwt = false
+
+[functions.brevo-webhook-handler]
+verify_jwt = false
