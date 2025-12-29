@@ -28,7 +28,8 @@ import {
   Store,
   Mail,
   Kanban,
-  CalendarDays
+  CalendarDays,
+  Bell
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -291,6 +292,13 @@ export const sidebarSections: SidebarSection[] = [
     title: "⚙️ CONFIGURACIÓN",
     description: "Configuración del sistema",
     items: [
+      { 
+        title: "Notificaciones", 
+        url: "/admin/notifications", 
+        icon: Bell,
+        badge: "NEW",
+        description: "Centro de notificaciones"
+      },
       { 
         title: "Usuarios Admin", 
         url: "/admin/admin-users", 
