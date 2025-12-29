@@ -519,13 +519,30 @@ const handler = async (req: Request): Promise<Response> => {
       content: pdfAttachmentContent,
     }] : undefined;
 
+    // Determinar destinatarios CC: usar los seleccionados por el usuario si existen, sino obtener de BD
+    let internalTeam: string[];
+    if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
+      internalTeam = requestData.selectedRecipients;
+      console.log('[send-professional-valuation-email] Using user-selected CC recipients:', internalTeam.length);
+    } else {
+      internalTeam = await getInternalRecipients();
+      console.log('[send-professional-valuation-email] Using default CC recipients from DB:', internalTeam.length);
+    }
+
+    // Filtrar el email del cliente de la lista CC para evitar duplicados
+    const ccRecipients = internalTeam.filter(email => 
+      email.toLowerCase() !== requestData.recipientEmail.toLowerCase()
+    );
+
     console.log('[send-professional-valuation-email] Sending email to client:', requestData.recipientEmail);
+    console.log('[send-professional-valuation-email] CC recipients:', ccRecipients);
     console.log('[send-professional-valuation-email] Has attachment:', !!attachments);
 
-    // Enviar email al cliente CON PDF adjunto
+    // Enviar email al cliente CON PDF adjunto y equipo en CC visible
     const clientEmailResponse = await resend.emails.send({
       from: "Capittal <valoraciones@capittal.es>",
       to: [requestData.recipientEmail],
+      cc: ccRecipients.length > 0 ? ccRecipients : undefined,
       subject: subject,
       html: clientEmailHtml,
       reply_to: requestData.advisorEmail || "info@capittal.es",
@@ -535,40 +552,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
 
-    console.log('[send-professional-valuation-email] Client email sent:', clientEmailResponse);
-
-    // Determinar destinatarios: usar los seleccionados por el usuario si existen, sino obtener de BD
-    let internalTeam: string[];
-    if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
-      internalTeam = requestData.selectedRecipients;
-      console.log('[send-professional-valuation-email] Using user-selected recipients:', internalTeam.length);
-    } else {
-      internalTeam = await getInternalRecipients();
-      console.log('[send-professional-valuation-email] Using default recipients from DB:', internalTeam.length);
-    }
-    
-    // Enviar copia al equipo interno
-    let teamNotified = 0;
-    if (internalTeam.length > 0) {
-      try {
-        const internalEmailHtml = generateInternalEmailHtml(requestData, pdfPublicUrl);
-        
-        await resend.emails.send({
-          from: "Capittal <valoraciones@capittal.es>",
-          to: internalTeam,
-          subject: `[Valoración Pro] ${requestData.valuationData.clientCompany} → ${requestData.recipientEmail}`,
-          html: internalEmailHtml,
-          attachments: attachments,
-        });
-        
-        teamNotified = internalTeam.length;
-        console.log('[send-professional-valuation-email] Internal team email sent to:', internalTeam);
-      } catch (copyError: any) {
-        console.warn('[send-professional-valuation-email] Failed to send internal copy:', copyError?.message || copyError);
-      }
-    } else {
-      console.log('[send-professional-valuation-email] No internal recipients selected, skipping team notification');
-    }
+    console.log('[send-professional-valuation-email] Email sent with CC:', clientEmailResponse);
 
     return new Response(
       JSON.stringify({ 
@@ -576,8 +560,8 @@ const handler = async (req: Request): Promise<Response> => {
         messageId: clientEmailResponse.data?.id,
         sentTo: requestData.recipientEmail,
         pdfUrl: pdfPublicUrl,
-        teamNotified: teamNotified,
-        recipients: internalTeam,
+        teamNotified: ccRecipients.length,
+        ccRecipients: ccRecipients,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
