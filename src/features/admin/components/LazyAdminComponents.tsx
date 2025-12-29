@@ -90,3 +90,6 @@ export const LazyBookingsPage = lazy(() => import('@/components/admin/bookings')
 
 // === WORKFLOW TEMPLATES ===
 export const LazyWorkflowTemplatesPage = lazy(() => import('@/pages/admin/WorkflowTemplatesPage'));
+
+// === NOTIFICATIONS ===
+export const LazyNotificationsPage = lazy(() => import('@/pages/admin/NotificationsPage'));
