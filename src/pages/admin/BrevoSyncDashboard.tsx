@@ -21,9 +21,14 @@ import {
   TrendingUp,
   RotateCcw,
   Clock,
-  Zap
+  Zap,
+  Webhook,
+  UserCheck,
+  UserX,
+  ListPlus,
+  Radio
 } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { format, subDays, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, Legend } from 'recharts';
@@ -244,6 +249,51 @@ const BrevoSyncDashboard: React.FC = () => {
       return count || 0;
     },
   });
+
+  // Webhooks recibidos en tiempo real (auto-refresh cada 5s)
+  const { data: recentWebhooks, isLoading: webhooksLoading } = useQuery({
+    queryKey: ['brevo-recent-webhooks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('brevo_sync_log')
+        .select('*')
+        .or('sync_type.ilike.%inbound%,sync_type.ilike.%email_%')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data as SyncLogEntry[];
+    },
+    refetchInterval: 5000, // Auto-refresh cada 5 segundos
+  });
+
+  // Helpers para webhooks recibidos
+  const getWebhookEventIcon = (syncType: string | null) => {
+    if (!syncType) return <Webhook className="w-4 h-4 text-muted-foreground" />;
+    if (syncType.startsWith('email_')) return <Mail className="w-4 h-4 text-blue-500" />;
+    if (syncType === 'inbound_update') return <UserCheck className="w-4 h-4 text-green-500" />;
+    if (syncType === 'inbound_delete') return <UserX className="w-4 h-4 text-red-500" />;
+    if (syncType === 'inbound_list') return <ListPlus className="w-4 h-4 text-purple-500" />;
+    return <Webhook className="w-4 h-4 text-muted-foreground" />;
+  };
+
+  const getWebhookEventLabel = (syncType: string | null) => {
+    if (!syncType) return 'Webhook';
+    const labels: Record<string, string> = {
+      'email_opened': 'Email Abierto',
+      'email_clicked': 'Click en Email',
+      'email_delivered': 'Email Entregado',
+      'email_bounced': 'Rebotado',
+      'email_soft_bounced': 'Rebote Suave',
+      'email_unsubscribed': 'Baja',
+      'email_spam': 'Spam',
+      'email_blocked': 'Bloqueado',
+      'inbound_update': 'Contacto Actualizado',
+      'inbound_delete': 'Contacto Eliminado',
+      'inbound_list': 'Añadido a Lista'
+    };
+    return labels[syncType] || syncType;
+  };
 
   const handleRefresh = async () => {
     await refetchLogs();
@@ -478,6 +528,73 @@ const BrevoSyncDashboard: React.FC = () => {
               <div className="text-xs text-muted-foreground">Bajas</div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Webhooks Recibidos en Tiempo Real */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Webhook className="w-5 h-5" />
+              <div>
+                <CardTitle>Webhooks Recibidos</CardTitle>
+                <CardDescription>Últimos eventos recibidos de Brevo</CardDescription>
+              </div>
+            </div>
+            <Badge className="bg-green-500 flex items-center gap-1.5">
+              <Radio className="w-3 h-3 animate-pulse" />
+              En vivo
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {webhooksLoading ? (
+            <div className="flex justify-center py-8">
+              <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : recentWebhooks && recentWebhooks.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">Tipo</TableHead>
+                  <TableHead>Evento</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Tiempo</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentWebhooks.map((webhook) => (
+                  <TableRow key={webhook.id}>
+                    <TableCell>
+                      {getWebhookEventIcon(webhook.sync_type)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-medium">
+                        {getWebhookEventLabel(webhook.sync_type)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground font-mono">
+                      {webhook.entity_id?.includes('@') ? webhook.entity_id : '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(webhook.created_at), { addSuffix: true, locale: es })}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(webhook.sync_status)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Webhook className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>No hay webhooks recibidos todavía</p>
+              <p className="text-xs mt-1">
+                Edita un contacto en Brevo o envía un email de prueba para verificar
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
