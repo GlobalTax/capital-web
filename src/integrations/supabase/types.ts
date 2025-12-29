@@ -2085,6 +2085,7 @@ export type Database = {
       }
       company_valuations: {
         Row: {
+          acquisition_channel_id: string | null
           activity_description: string | null
           adjustment_amount: number | null
           assigned_at: string | null
@@ -2124,6 +2125,7 @@ export type Database = {
           last_activity_at: string | null
           last_call_attempt_at: string | null
           last_modified_field: string | null
+          lead_entry_date: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           location: string | null
           net_profit_margin: number | null
@@ -2152,6 +2154,7 @@ export type Database = {
           years_of_operation: number | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           activity_description?: string | null
           adjustment_amount?: number | null
           assigned_at?: string | null
@@ -2191,6 +2194,7 @@ export type Database = {
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
           last_modified_field?: string | null
+          lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           location?: string | null
           net_profit_margin?: number | null
@@ -2219,6 +2223,7 @@ export type Database = {
           years_of_operation?: number | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           activity_description?: string | null
           adjustment_amount?: number | null
           assigned_at?: string | null
@@ -2258,6 +2263,7 @@ export type Database = {
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
           last_modified_field?: string | null
+          lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           location?: string | null
           net_profit_margin?: number | null
@@ -2286,6 +2292,13 @@ export type Database = {
           years_of_operation?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "company_valuations_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "company_valuations_assigned_to_fkey"
             columns: ["assigned_to"]
@@ -2343,6 +2356,7 @@ export type Database = {
           investment_budget: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          lead_entry_date: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           phone: string | null
           referral: string | null
@@ -2379,6 +2393,7 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
           referral?: string | null
@@ -2415,6 +2430,7 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
           referral?: string | null

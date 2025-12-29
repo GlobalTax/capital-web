@@ -7,12 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { 
   ArrowLeft, 
   Mail, 
   Phone, 
   Building2, 
   Calendar,
+  CalendarIcon,
   User,
   TrendingUp,
   MessageSquare,
@@ -61,6 +65,7 @@ export default function LeadDetailPage() {
   const { syncSingleContact, isSyncing } = useBrevoSync();
   const [notes, setNotes] = useState('');
   const [acquisitionChannelId, setAcquisitionChannelId] = useState<string | null>(null);
+  const [leadEntryDate, setLeadEntryDate] = useState<Date | undefined>(undefined);
 
   // Fetch lead data
   const { data: lead, isLoading, refetch } = useQuery({
@@ -143,6 +148,7 @@ export default function LeadDetailPage() {
         company: data.company || data.company_name || '',
         assigned_admin: assignedAdmin,
         acquisition_channel_id: data.acquisition_channel_id || null,
+        lead_entry_date: data.lead_entry_date || null,
       } as LeadData;
     },
     enabled: !!id,
@@ -154,7 +160,10 @@ export default function LeadDetailPage() {
     if (lead?.acquisition_channel_id) {
       setAcquisitionChannelId(lead.acquisition_channel_id);
     }
-  }, [lead?.acquisition_channel_id]);
+    if (lead?.lead_entry_date) {
+      setLeadEntryDate(new Date(lead.lead_entry_date));
+    }
+  }, [lead?.acquisition_channel_id, lead?.lead_entry_date]);
 
   const handleSyncToBrevo = async () => {
     if (!lead) return;
@@ -243,11 +252,22 @@ export default function LeadDetailPage() {
   };
 
   const handleAcquisitionChannelChange = async (channelId: string | null) => {
-    if (!lead || lead.origin !== 'contact') return;
+    if (!lead) return;
+    
+    const tableMap: Record<string, string> = {
+      contact: 'contact_leads',
+      valuation: 'company_valuations',
+    };
+    
+    const table = tableMap[lead.origin] as any;
+    if (!table) {
+      toast({ title: 'Este tipo de lead no soporta canal de adquisición', variant: 'destructive' });
+      return;
+    }
     
     try {
       const { error } = await supabase
-        .from('contact_leads')
+        .from(table)
         .update({ acquisition_channel_id: channelId })
         .eq('id', lead.id);
 
@@ -257,6 +277,35 @@ export default function LeadDetailPage() {
       toast({ title: 'Canal de adquisición actualizado' });
     } catch (error) {
       toast({ title: 'Error', description: 'No se pudo actualizar el canal', variant: 'destructive' });
+    }
+  };
+
+  const handleLeadEntryDateChange = async (date: Date | undefined) => {
+    if (!lead) return;
+    
+    const tableMap: Record<string, string> = {
+      contact: 'contact_leads',
+      valuation: 'company_valuations',
+    };
+    
+    const table = tableMap[lead.origin] as any;
+    if (!table) {
+      toast({ title: 'Este tipo de lead no soporta fecha de entrada', variant: 'destructive' });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ lead_entry_date: date ? date.toISOString() : null })
+        .eq('id', lead.id);
+
+      if (error) throw error;
+      
+      setLeadEntryDate(date);
+      toast({ title: 'Fecha de entrada actualizada' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'No se pudo actualizar la fecha', variant: 'destructive' });
     }
   };
 
@@ -656,8 +705,8 @@ export default function LeadDetailPage() {
                   </p>
                 )}
               </div>
-              {/* Canal de adquisición - solo para contact leads */}
-              {lead.origin === 'contact' && (
+              {/* Canal de adquisición - para contact y valuation leads */}
+              {(lead.origin === 'contact' || lead.origin === 'valuation') && (
                 <>
                   <Separator />
                   <div>
@@ -666,6 +715,36 @@ export default function LeadDetailPage() {
                       value={acquisitionChannelId}
                       onChange={handleAcquisitionChannelChange}
                     />
+                  </div>
+                  <Separator />
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Fecha de entrada del lead</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !leadEntryDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {leadEntryDate ? format(leadEntryDate, "d 'de' MMMM, yyyy", { locale: es }) : "Seleccionar fecha"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={leadEntryDate}
+                          onSelect={handleLeadEntryDateChange}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Puede diferir de la fecha de registro automático
+                    </p>
                   </div>
                 </>
               )}
