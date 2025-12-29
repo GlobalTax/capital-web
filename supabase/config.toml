@@ -114,3 +114,6 @@ verify_jwt = false
 
 [functions.sync-company-to-brevo]
 verify_jwt = false
+
+[functions.brevo-retry-failed]
+verify_jwt = false

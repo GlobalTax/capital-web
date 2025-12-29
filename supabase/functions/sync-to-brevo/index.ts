@@ -118,6 +118,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const syncStartTime = Date.now();
+  
   try {
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
     if (!BREVO_API_KEY) {
@@ -416,6 +418,8 @@ serve(async (req) => {
     console.log(`📥 Brevo response status: ${brevoResponse.status}`);
     const brevoData = await safeJsonParse(brevoResponse);
 
+    const durationMs = Date.now() - syncStartTime;
+
     // Registrar resultado en message_logs
     const logEntry = {
       type: 'brevo',
@@ -435,6 +439,21 @@ serve(async (req) => {
     };
 
     await supabase.from('message_logs').insert(logEntry);
+
+    // Log to brevo_sync_log with full details
+    await supabase.from('brevo_sync_log').insert({
+      entity_id: record.id,
+      entity_type: leadType,
+      sync_status: brevoResponse.ok ? 'success' : 'failed',
+      sync_type: 'contact',
+      brevo_id: brevoData?.id?.toString() || null,
+      sync_error: brevoResponse.ok ? null : JSON.stringify(brevoData),
+      attributes_sent: contact.attributes,
+      response_data: brevoData,
+      duration_ms: durationMs,
+      sync_attempts: 1,
+      last_sync_at: new Date().toISOString(),
+    });
 
     if (!brevoResponse.ok) {
       console.error('❌ Brevo API error:', brevoData);
