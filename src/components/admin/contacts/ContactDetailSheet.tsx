@@ -19,7 +19,8 @@ import {
   Briefcase,
   DollarSign,
   FileText,
-  Send
+  Send,
+  Archive
 } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { format } from 'date-fns';
@@ -32,6 +33,7 @@ interface ContactDetailSheetProps {
   open: boolean;
   onClose: () => void;
   onNavigateToFull?: (contact: UnifiedContact) => void;
+  onArchive?: (contact: UnifiedContact) => void;
 }
 
 const getOriginConfig = (origin: ContactOrigin) => {
@@ -102,6 +104,7 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   open,
   onClose,
   onNavigateToFull,
+  onArchive,
 }) => {
   const { toast } = useToast();
 
@@ -356,13 +359,27 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 px-6 py-4 border-t border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg-elevated))]">
-          <Button
-            className="w-full"
-            onClick={() => onNavigateToFull?.(contact)}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Ver ficha completa
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+              onClick={() => {
+                if (window.confirm(`¿Archivar "${contact.name}"?`)) {
+                  onArchive?.(contact);
+                }
+              }}
+            >
+              <Archive className="h-4 w-4 mr-2" />
+              Archivar
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => onNavigateToFull?.(contact)}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Ver ficha
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
