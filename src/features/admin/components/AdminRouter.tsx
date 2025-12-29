@@ -55,7 +55,8 @@ import {
   LazyNewsletterPage,
   LazyBuySideMandatesPage,
   LazyLeadsPipelinePage,
-  LazyWorkflowTemplatesPage
+  LazyWorkflowTemplatesPage,
+  LazyBookingsPage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -94,6 +95,7 @@ const AdminRouter = () => {
           
           {/* Lead Management */}
           <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
+          <Route path="/bookings" element={<LazyBookingsPage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />

@@ -27,7 +27,8 @@ import {
   FolderOpen,
   Store,
   Mail,
-  Kanban
+  Kanban,
+  CalendarDays
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -249,6 +250,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Kanban,
         badge: "NEW",
         description: "Tablero Kanban de leads"
+      },
+      { 
+        title: "Reservas Llamadas",
+        url: "/admin/bookings", 
+        icon: CalendarDays,
+        badge: "NEW",
+        description: "Gestión de reservas de llamadas"
       },
       { 
         title: "Contactos",
