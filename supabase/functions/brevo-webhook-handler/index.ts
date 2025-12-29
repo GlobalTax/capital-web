@@ -7,9 +7,11 @@ const corsHeaders = {
 };
 
 /**
- * Brevo Webhook Handler - Edge Function
+ * Brevo Webhook Handler - Edge Function (Enhanced)
  * 
  * Recibe eventos de Brevo y actualiza la base de datos local:
+ * 
+ * EVENTOS DE EMAIL:
  * - delivered: Email entregado
  * - opened: Email abierto (puede ser múltiple)
  * - click: Click en enlace del email
@@ -18,7 +20,12 @@ const corsHeaders = {
  * - unsubscribed: Usuario se dio de baja
  * - spam: Reportado como spam
  * - blocked: Email bloqueado
- * - invalid: Email inválido
+ * - proxy_open: Apertura via proxy (Apple Mail Privacy)
+ * 
+ * EVENTOS DE CONTACTO (Sincronización Bidireccional):
+ * - contact_updated: Atributos del contacto actualizados en Brevo
+ * - contact_deleted: Contacto eliminado en Brevo
+ * - list_addition: Contacto añadido a una lista
  * 
  * Webhook URL: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-webhook-handler
  */
@@ -36,9 +43,33 @@ interface BrevoWebhookEvent {
   sending_ip?: string;
   link?: string;
   reason?: string;
+  // Marketing campaign fields
+  camp_id?: number;
+  "campaign name"?: string;
+  // Contact update fields
+  content?: Array<{ [key: string]: any }>;
+  // List fields
+  list_id?: number[];
+  // Internal key
+  key?: string;
 }
 
+// Mapeo de atributos de Brevo a campos de Capittal
+const BREVO_ATTRIBUTE_MAP: Record<string, string> = {
+  'FIRSTNAME': 'contact_name',
+  'LASTNAME': 'contact_lastname',
+  'SMS': 'phone',
+  'PHONE': 'phone',
+  'COMPANY': 'company_name',
+  'NOMBRE': 'contact_name',
+  'APELLIDOS': 'contact_lastname',
+  'EMPRESA': 'company_name',
+  'TELEFONO': 'phone',
+};
+
 serve(async (req) => {
+  const startTime = Date.now();
+  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -64,16 +95,24 @@ serve(async (req) => {
 
     console.log(`📥 [brevo-webhook-handler] Received ${events.length} event(s)`);
 
-    const results: Array<{ email: string; event: string; success: boolean; error?: string }> = [];
+    const results: Array<{ email: string; event: string; success: boolean; error?: string; sync_type?: string }> = [];
 
     for (const webhookEvent of events) {
       const { event, email, link, reason } = webhookEvent;
       const eventDate = webhookEvent.date || new Date().toISOString();
+      const campId = webhookEvent.camp_id;
+      const campaignName = webhookEvent["campaign name"];
 
       console.log(`📊 Processing event: ${event} for ${email}`);
 
       try {
-        // Buscar el contacto en todas las tablas de leads
+        // Determinar tipo de sync según el evento
+        let syncType = 'email_event';
+        if (event === 'contact_updated') syncType = 'inbound_update';
+        else if (event === 'contact_deleted') syncType = 'inbound_delete';
+        else if (event === 'list_addition') syncType = 'inbound_list';
+
+        // Tablas de leads
         const tables = [
           { name: 'company_valuations', emailField: 'email' },
           { name: 'contact_leads', emailField: 'email' },
@@ -83,9 +122,154 @@ serve(async (req) => {
         ];
 
         let updated = false;
+        let attributesReceived: Record<string, any> = {};
+        let attributesUpdated: Record<string, any> = {};
 
+        // Manejar eventos especiales de contacto
+        if (event === 'contact_updated' && webhookEvent.content) {
+          // Procesar actualización de atributos desde Brevo
+          attributesReceived = webhookEvent.content.reduce((acc, item) => ({ ...acc, ...item }), {});
+          
+          // Mapear atributos de Brevo a campos locales
+          for (const [brevoAttr, localField] of Object.entries(BREVO_ATTRIBUTE_MAP)) {
+            if (attributesReceived[brevoAttr] !== undefined) {
+              attributesUpdated[localField] = attributesReceived[brevoAttr];
+            }
+          }
+
+          // Solo actualizar si hay campos mapeados
+          if (Object.keys(attributesUpdated).length > 0) {
+            for (const table of tables) {
+              const { data: records } = await supabase
+                .from(table.name)
+                .select('id')
+                .eq(table.emailField, email)
+                .limit(10);
+
+              if (records && records.length > 0) {
+                for (const record of records) {
+                  const { error: updateError } = await supabase
+                    .from(table.name)
+                    .update({
+                      ...attributesUpdated,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', record.id);
+
+                  if (!updateError) {
+                    console.log(`✅ Updated ${table.name}:${record.id} with Brevo attributes`);
+                    updated = true;
+                  }
+                }
+              }
+            }
+          }
+
+          // Logging mejorado
+          await supabase.from('brevo_sync_log').insert({
+            entity_id: email,
+            entity_type: 'contact',
+            sync_type: syncType,
+            sync_status: updated ? 'success' : 'no_match',
+            sync_error: updated ? null : 'No matching records or no mappable attributes',
+            attributes_sent: attributesReceived,
+            response_data: { attributes_updated: attributesUpdated },
+            duration_ms: Date.now() - startTime,
+            last_sync_at: new Date().toISOString(),
+          });
+
+          results.push({ email, event, success: updated, sync_type: syncType });
+          continue;
+        }
+
+        if (event === 'contact_deleted') {
+          // Marcar contacto como eliminado en Brevo
+          for (const table of tables) {
+            const { data: records } = await supabase
+              .from(table.name)
+              .select('id')
+              .eq(table.emailField, email)
+              .limit(10);
+
+            if (records && records.length > 0) {
+              for (const record of records) {
+                const { error: updateError } = await supabase
+                  .from(table.name)
+                  .update({
+                    brevo_deleted_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', record.id);
+
+                if (!updateError) {
+                  console.log(`✅ Marked ${table.name}:${record.id} as deleted in Brevo`);
+                  updated = true;
+                }
+              }
+            }
+          }
+
+          await supabase.from('brevo_sync_log').insert({
+            entity_id: email,
+            entity_type: 'contact',
+            sync_type: syncType,
+            sync_status: updated ? 'success' : 'no_match',
+            duration_ms: Date.now() - startTime,
+            last_sync_at: new Date().toISOString(),
+          });
+
+          results.push({ email, event, success: updated, sync_type: syncType });
+          continue;
+        }
+
+        if (event === 'list_addition' && webhookEvent.list_id) {
+          // Actualizar listas de Brevo del contacto
+          const listIds = webhookEvent.list_id;
+          
+          for (const table of tables) {
+            const { data: records } = await supabase
+              .from(table.name)
+              .select('id, brevo_lists')
+              .eq(table.emailField, email)
+              .limit(10);
+
+            if (records && records.length > 0) {
+              for (const record of records) {
+                const currentLists = record.brevo_lists || [];
+                const newLists = [...new Set([...currentLists, ...listIds])];
+
+                const { error: updateError } = await supabase
+                  .from(table.name)
+                  .update({
+                    brevo_lists: newLists,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', record.id);
+
+                if (!updateError) {
+                  console.log(`✅ Updated ${table.name}:${record.id} with list_ids: ${listIds}`);
+                  updated = true;
+                }
+              }
+            }
+          }
+
+          await supabase.from('brevo_sync_log').insert({
+            entity_id: email,
+            entity_type: 'contact',
+            sync_type: syncType,
+            sync_status: updated ? 'success' : 'no_match',
+            attributes_sent: { list_id: listIds },
+            duration_ms: Date.now() - startTime,
+            last_sync_at: new Date().toISOString(),
+          });
+
+          results.push({ email, event, success: updated, sync_type: syncType });
+          continue;
+        }
+
+        // Procesar eventos de email (código original mejorado)
         for (const table of tables) {
-          // Buscar registros con este email
           const { data: records, error: selectError } = await supabase
             .from(table.name)
             .select('id')
@@ -96,12 +280,20 @@ serve(async (req) => {
             continue;
           }
 
-          // Preparar update según el tipo de evento
           let updateData: Record<string, any> = {};
+
+          // Añadir info de campaña si está disponible
+          if (campId) {
+            updateData.last_campaign_id = campId;
+          }
+          if (campaignName) {
+            updateData.last_campaign_name = campaignName;
+          }
 
           switch (event) {
             case 'delivered':
               updateData = {
+                ...updateData,
                 email_delivered: true,
                 email_delivered_at: eventDate,
               };
@@ -109,8 +301,8 @@ serve(async (req) => {
 
             case 'opened':
             case 'unique_opened':
+            case 'proxy_open':
               // Incrementar contador y actualizar fecha
-              // Usamos una consulta SQL raw para incrementar
               for (const record of records) {
                 const { error: updateError } = await supabase.rpc('increment_email_opens', {
                   p_table_name: table.name,
@@ -119,23 +311,24 @@ serve(async (req) => {
                 });
                 
                 if (updateError) {
-                  console.log(`⚠️ Could not increment opens via RPC for ${table.name}:${record.id}, using direct update`);
-                  // Fallback: update directo sin incrementar
+                  console.log(`⚠️ Could not increment opens via RPC, using direct update`);
                   await supabase
                     .from(table.name)
                     .update({
                       email_opened: true,
                       email_opened_at: eventDate,
+                      ...(campId && { last_campaign_id: campId }),
+                      ...(campaignName && { last_campaign_name: campaignName }),
                     })
                     .eq('id', record.id);
                 }
+                updated = true;
               }
-              updated = true;
-              continue; // Skip the generic update below
+              continue;
 
             case 'click':
-              // Incrementar clicks y guardar última URL
               updateData = {
+                ...updateData,
                 email_clicked: true,
                 last_email_click_at: eventDate,
                 last_clicked_url: link || null,
@@ -144,6 +337,7 @@ serve(async (req) => {
 
             case 'hard_bounce':
               updateData = {
+                ...updateData,
                 email_bounced: true,
                 email_bounce_type: 'hard',
                 email_bounce_reason: reason || 'Invalid email address',
@@ -153,6 +347,7 @@ serve(async (req) => {
 
             case 'soft_bounce':
               updateData = {
+                ...updateData,
                 email_soft_bounced: true,
                 email_bounce_type: 'soft',
                 email_bounce_reason: reason || 'Temporary delivery failure',
@@ -161,14 +356,20 @@ serve(async (req) => {
 
             case 'unsubscribed':
               updateData = {
+                ...updateData,
                 email_unsubscribed: true,
                 email_unsubscribed_at: eventDate,
               };
+              // Si viene list_id, también actualizar la lista
+              if (webhookEvent.list_id) {
+                updateData.brevo_unsubscribed_lists = webhookEvent.list_id;
+              }
               break;
 
             case 'spam':
             case 'complaint':
               updateData = {
+                ...updateData,
                 email_spam_reported: true,
                 email_spam_reported_at: eventDate,
               };
@@ -177,6 +378,7 @@ serve(async (req) => {
             case 'blocked':
             case 'invalid':
               updateData = {
+                ...updateData,
                 email_blocked: true,
                 email_valid: false,
                 email_block_reason: reason || event,
@@ -188,7 +390,7 @@ serve(async (req) => {
               continue;
           }
 
-          // Aplicar update si hay datos
+          // Aplicar update
           if (Object.keys(updateData).length > 0) {
             for (const record of records) {
               const { error: updateError } = await supabase
@@ -196,9 +398,7 @@ serve(async (req) => {
                 .update(updateData)
                 .eq('id', record.id);
 
-              if (updateError) {
-                console.log(`⚠️ Error updating ${table.name}:${record.id}:`, updateError.message);
-              } else {
+              if (!updateError) {
                 console.log(`✅ Updated ${table.name}:${record.id} with ${event} event`);
                 updated = true;
               }
@@ -206,12 +406,21 @@ serve(async (req) => {
           }
         }
 
-        // Log del evento recibido
+        // Log del evento
         await supabase.from('brevo_sync_log').insert({
           entity_id: email,
           entity_type: 'webhook_event',
+          sync_type: syncType,
           sync_status: updated ? 'success' : 'no_match',
           sync_error: updated ? null : 'No matching records found',
+          attributes_sent: { 
+            event, 
+            camp_id: campId, 
+            campaign_name: campaignName,
+            link,
+            reason,
+          },
+          duration_ms: Date.now() - startTime,
           last_sync_at: new Date().toISOString(),
         });
 
@@ -219,6 +428,7 @@ serve(async (req) => {
           email,
           event,
           success: updated,
+          sync_type: syncType,
           error: updated ? undefined : 'No matching records found',
         });
 
@@ -233,12 +443,13 @@ serve(async (req) => {
       }
     }
 
-    console.log(`📊 Processed ${results.length} events, ${results.filter(r => r.success).length} successful`);
+    console.log(`📊 Processed ${results.length} events, ${results.filter(r => r.success).length} successful in ${Date.now() - startTime}ms`);
 
     return new Response(
       JSON.stringify({ 
         success: true,
         processed: results.length,
+        duration_ms: Date.now() - startTime,
         results,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

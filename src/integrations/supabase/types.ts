@@ -129,6 +129,9 @@ export type Database = {
         Row: {
           acquisition_type: string | null
           additional_details: string | null
+          brevo_deleted_at: string | null
+          brevo_lists: number[] | null
+          brevo_unsubscribed_lists: number[] | null
           company: string
           created_at: string
           deleted_at: string | null
@@ -151,6 +154,8 @@ export type Database = {
           investment_range: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          last_campaign_id: number | null
+          last_campaign_name: string | null
           last_email_click_at: string | null
           phone: string | null
           referrer: string | null
@@ -166,6 +171,9 @@ export type Database = {
         Insert: {
           acquisition_type?: string | null
           additional_details?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company: string
           created_at?: string
           deleted_at?: string | null
@@ -188,6 +196,8 @@ export type Database = {
           investment_range?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_email_click_at?: string | null
           phone?: string | null
           referrer?: string | null
@@ -203,6 +213,9 @@ export type Database = {
         Update: {
           acquisition_type?: string | null
           additional_details?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company?: string
           created_at?: string
           deleted_at?: string | null
@@ -225,6 +238,8 @@ export type Database = {
           investment_range?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_email_click_at?: string | null
           phone?: string | null
           referrer?: string | null
@@ -1780,6 +1795,9 @@ export type Database = {
         Row: {
           assigned_at: string | null
           assigned_to: string | null
+          brevo_deleted_at: string | null
+          brevo_lists: number[] | null
+          brevo_unsubscribed_lists: number[] | null
           company: string | null
           created_at: string
           deleted_at: string | null
@@ -1805,6 +1823,8 @@ export type Database = {
           id: string
           ip_address: unknown
           is_deleted: boolean | null
+          last_campaign_id: number | null
+          last_campaign_name: string | null
           last_email_click_at: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
@@ -1818,6 +1838,9 @@ export type Database = {
         Insert: {
           assigned_at?: string | null
           assigned_to?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1843,6 +1866,8 @@ export type Database = {
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
@@ -1856,6 +1881,9 @@ export type Database = {
         Update: {
           assigned_at?: string | null
           assigned_to?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1881,6 +1909,8 @@ export type Database = {
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
@@ -1904,6 +1934,9 @@ export type Database = {
       company_acquisition_inquiries: {
         Row: {
           acquisition_type: string | null
+          brevo_deleted_at: string | null
+          brevo_lists: number[] | null
+          brevo_unsubscribed_lists: number[] | null
           company: string
           created_at: string
           deleted_at: string | null
@@ -1929,6 +1962,8 @@ export type Database = {
           investment_budget: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          last_campaign_id: number | null
+          last_campaign_name: string | null
           last_email_click_at: string | null
           message: string | null
           notes: string | null
@@ -1952,6 +1987,9 @@ export type Database = {
         }
         Insert: {
           acquisition_type?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company: string
           created_at?: string
           deleted_at?: string | null
@@ -1977,6 +2015,8 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_email_click_at?: string | null
           message?: string | null
           notes?: string | null
@@ -2000,6 +2040,9 @@ export type Database = {
         }
         Update: {
           acquisition_type?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company?: string
           created_at?: string
           deleted_at?: string | null
@@ -2025,6 +2068,8 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_email_click_at?: string | null
           message?: string | null
           notes?: string | null
@@ -2192,11 +2237,15 @@ export type Database = {
           adjustment_amount: number | null
           assigned_at: string | null
           assigned_to: string | null
+          brevo_deleted_at: string | null
+          brevo_lists: number[] | null
+          brevo_unsubscribed_lists: number[] | null
           call_attempts_count: number | null
           cif: string | null
           company_name: string
           competitive_advantage: string | null
           completion_percentage: number | null
+          contact_lastname: string | null
           contact_name: string
           created_at: string
           crm_contacto_id: string | null
@@ -2241,6 +2290,8 @@ export type Database = {
           is_deleted: boolean | null
           last_activity_at: string | null
           last_call_attempt_at: string | null
+          last_campaign_id: number | null
+          last_campaign_name: string | null
           last_clicked_url: string | null
           last_email_click_at: string | null
           last_modified_field: string | null
@@ -2278,11 +2329,15 @@ export type Database = {
           adjustment_amount?: number | null
           assigned_at?: string | null
           assigned_to?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           call_attempts_count?: number | null
           cif?: string | null
           company_name: string
           competitive_advantage?: string | null
           completion_percentage?: number | null
+          contact_lastname?: string | null
           contact_name: string
           created_at?: string
           crm_contacto_id?: string | null
@@ -2327,6 +2382,8 @@ export type Database = {
           is_deleted?: boolean | null
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_clicked_url?: string | null
           last_email_click_at?: string | null
           last_modified_field?: string | null
@@ -2364,11 +2421,15 @@ export type Database = {
           adjustment_amount?: number | null
           assigned_at?: string | null
           assigned_to?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           call_attempts_count?: number | null
           cif?: string | null
           company_name?: string
           competitive_advantage?: string | null
           completion_percentage?: number | null
+          contact_lastname?: string | null
           contact_name?: string
           created_at?: string
           crm_contacto_id?: string | null
@@ -2413,6 +2474,8 @@ export type Database = {
           is_deleted?: boolean | null
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_clicked_url?: string | null
           last_email_click_at?: string | null
           last_modified_field?: string | null
@@ -2487,6 +2550,9 @@ export type Database = {
           acquisition_channel_id: string | null
           assigned_at: string | null
           assigned_to: string | null
+          brevo_deleted_at: string | null
+          brevo_lists: number[] | null
+          brevo_unsubscribed_lists: number[] | null
           company: string
           company_size: string | null
           country: string | null
@@ -2524,6 +2590,8 @@ export type Database = {
           investment_budget: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          last_campaign_id: number | null
+          last_campaign_name: string | null
           last_clicked_url: string | null
           last_email_click_at: string | null
           lead_entry_date: string | null
@@ -2541,6 +2609,9 @@ export type Database = {
           acquisition_channel_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company: string
           company_size?: string | null
           country?: string | null
@@ -2578,6 +2649,8 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_clicked_url?: string | null
           last_email_click_at?: string | null
           lead_entry_date?: string | null
@@ -2595,6 +2668,9 @@ export type Database = {
           acquisition_channel_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
+          brevo_deleted_at?: string | null
+          brevo_lists?: number[] | null
+          brevo_unsubscribed_lists?: number[] | null
           company?: string
           company_size?: string | null
           country?: string | null
@@ -2632,6 +2708,8 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_campaign_id?: number | null
+          last_campaign_name?: string | null
           last_clicked_url?: string | null
           last_email_click_at?: string | null
           lead_entry_date?: string | null
