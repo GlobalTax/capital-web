@@ -198,7 +198,26 @@ export default function ValoracionProForm() {
 
     setIsSendingEmail(true);
     
+    // Variable para trackear el ID de la valoración (puede cambiar si es nueva)
+    let valuationId = id;
+    
     try {
+      // AUTO-GUARDAR: Si es nueva, guardar primero antes de enviar
+      if (isNew) {
+        console.log('[ValoracionProForm] Valoración nueva, guardando antes de enviar...');
+        const newValuation = await createValuation(data);
+        
+        if (!newValuation?.id) {
+          throw new Error('No se pudo guardar la valoración antes de enviar');
+        }
+        
+        valuationId = newValuation.id;
+        console.log('[ValoracionProForm] Valoración guardada con ID:', valuationId);
+        
+        // Actualizar la URL para reflejar que ya no es nueva
+        navigate(`/admin/valoraciones-pro/${valuationId}`, { replace: true });
+      }
+      
       // Generar PDF en base64 para adjuntar al email
       let pdfBase64: string | undefined;
       
@@ -271,13 +290,15 @@ export default function ValoracionProForm() {
 
       console.log('[ValoracionProForm] Email enviado:', result);
 
-      // Actualizar estado en base de datos
-      if (id && !isNew) {
-        await markAsSent(id, email);
+      // SIEMPRE marcar como enviada (ya tenemos valuationId garantizado)
+      if (valuationId) {
+        await markAsSent(valuationId, email);
+        console.log('[ValoracionProForm] Valoración marcada como enviada:', valuationId);
       }
 
       const teamCount = result?.teamNotified || 0;
-      toast.success(`Email enviado a ${email} y ${teamCount} personas del equipo`);
+      const savedMsg = isNew ? 'Valoración guardada. ' : '';
+      toast.success(`${savedMsg}Email enviado a ${email} y ${teamCount} personas del equipo`);
     } catch (error) {
       console.error('[ValoracionProForm] Error enviando email:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
