@@ -6,6 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to safely parse JSON responses (handles empty/204 responses)
+async function safeJsonParse(response: Response): Promise<any> {
+  const text = await response.text();
+  if (!text || text.trim() === '') {
+    return null;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.log(`⚠️ Could not parse response as JSON: ${text.substring(0, 200)}`);
+    return { raw: text };
+  }
+}
+
 interface BrevoContact {
   email: string;
   attributes: {
@@ -222,7 +236,8 @@ serve(async (req) => {
       body: JSON.stringify(contact),
     });
 
-    const brevoData = await brevoResponse.json();
+    console.log(`📥 Brevo response status: ${brevoResponse.status}`);
+    const brevoData = await safeJsonParse(brevoResponse);
 
     // Registrar resultado en message_logs
     const logEntry = {
@@ -261,13 +276,19 @@ serve(async (req) => {
           }),
         });
 
+        console.log(`📥 Brevo update response status: ${updateResponse.status}`);
+        
         if (updateResponse.ok) {
-          console.log('✅ Contact updated successfully');
+          console.log('✅ Contact updated successfully in Brevo');
+          const updateData = await safeJsonParse(updateResponse);
           return new Response(
-            JSON.stringify({ success: true, action: 'updated', brevo: await updateResponse.json() }),
+            JSON.stringify({ success: true, action: 'updated', brevo: updateData || { status: 'updated' } }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+        
+        const updateError = await safeJsonParse(updateResponse);
+        console.error('❌ Failed to update contact:', updateError);
       }
       
       throw new Error(`Brevo API error: ${JSON.stringify(brevoData)}`);
