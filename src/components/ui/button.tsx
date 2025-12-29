@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -6,25 +5,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[5px] text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius)] text-sm font-medium transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover hover:shadow-md hover:-translate-y-0.5",
+        default: "bg-primary text-primary-foreground shadow-[var(--shadow-sm)] hover:bg-[hsl(var(--primary-hover))]",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-red-600 hover:shadow-md hover:-translate-y-0.5",
+          "bg-destructive text-destructive-foreground shadow-[var(--shadow-sm)] hover:bg-destructive/90",
         outline:
-          "border border-border bg-background shadow-sm hover:shadow-md hover:-translate-y-0.5",
+          "border border-[hsl(var(--linear-border))] bg-background hover:bg-[hsl(var(--linear-bg-hover))]",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:shadow-md hover:-translate-y-0.5",
-        ghost: "hover:shadow-sm transition-colors duration-200",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-[hsl(var(--linear-bg-hover))]",
+        link: "text-[hsl(var(--accent-primary))] underline-offset-4 hover:underline",
+        // LINEAR-STYLE VARIANT
+        linear: "bg-transparent border border-[hsl(var(--linear-border))] text-[hsl(var(--linear-text-primary))] hover:bg-[hsl(var(--linear-bg-hover))] hover:border-[hsl(var(--linear-border))]",
+        accent: "bg-[hsl(var(--accent-primary))] text-white hover:bg-[hsl(var(--accent-hover))] shadow-[var(--shadow-sm)]",
       },
       size: {
-        default: "h-11 px-6 py-3",
-        sm: "h-9 rounded-[5px] px-4 text-xs",
-        lg: "h-12 rounded-[5px] px-8 text-base",
-        icon: "h-11 w-11",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-[var(--radius-sm)] px-3 text-xs",
+        lg: "h-10 rounded-[var(--radius-lg)] px-6",
+        icon: "h-9 w-9",
+        xs: "h-7 rounded-[var(--radius-sm)] px-2 text-xs",
       },
     },
     defaultVariants: {

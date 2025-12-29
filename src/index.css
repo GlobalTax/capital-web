@@ -3,40 +3,45 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* 
+ * CAPITTAL DESIGN SYSTEM v2.0 - Linear/Apollo Style
+ * Monochromatic palette with single accent color
+ */
 
 @layer base {
   :root {
-    /* Legal professional color scheme - Navarro style */
+    /* === CORE PALETTE === */
     --background: 0 0% 100%;
-    --foreground: 210 20% 25%;
+    --foreground: 220 14% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 20% 25%;
+    --card-foreground: 220 14% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 25%;
+    --popover-foreground: 220 14% 10%;
 
-    /* Professional navy for legal style */
-    --primary: 210 25% 20%;
+    /* Primary - Navy professional */
+    --primary: 220 14% 10%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 25% 15%;
+    --primary-hover: 220 14% 15%;
     
-    /* Legal accent color */
-    --legal-accent: 210 15% 35%;
-    --legal-accent-foreground: 0 0% 100%;
+    /* Accent - Indigo (Single accent color) */
+    --accent-primary: 238 76% 60%;
+    --accent-primary-foreground: 0 0% 100%;
+    --accent-soft: 238 76% 60% / 0.08;
+    --accent-hover: 238 76% 55%;
 
-    /* Pure white backgrounds */
-    --secondary: 0 0% 100%;
-    --secondary-foreground: 210 15% 40%;
+    /* Secondary - Subtle grays */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 14% 40%;
 
-    --muted: 0 0% 100%;
-    --muted-foreground: 210 12% 45%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 14% 46%;
 
-    --accent: 0 0% 100%;
-    --accent-foreground: 210 20% 25%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 14% 10%;
 
-    /* Status colors */
+    /* Status colors - Desaturated, subtle */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     
@@ -46,65 +51,74 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    /* === SEMANTIC STATUS TOKENS === */
-    --status-new: 210 100% 50%;
-    --status-new-bg: 210 100% 97%;
-    --status-pending: 38 92% 50%;
-    --status-pending-bg: 38 92% 97%;
-    --status-contacted: 262 83% 58%;
-    --status-contacted-bg: 262 83% 97%;
-    --status-qualified: 142 69% 44%;
-    --status-qualified-bg: 142 69% 97%;
-    --status-negotiation: 24 95% 53%;
-    --status-negotiation-bg: 24 95% 97%;
-    --status-closed-won: 142 76% 36%;
-    --status-closed-won-bg: 142 76% 97%;
-    --status-closed-lost: 0 72% 51%;
-    --status-closed-lost-bg: 0 72% 97%;
-    --status-archived: 215 16% 47%;
-    --status-archived-bg: 215 16% 97%;
+    /* === LINEAR-STYLE TOKENS === */
+    --linear-bg: 220 14% 98%;
+    --linear-bg-hover: 220 14% 96%;
+    --linear-bg-active: 220 14% 94%;
+    --linear-border: 220 14% 90%;
+    --linear-border-subtle: 220 14% 94%;
+    --linear-text-primary: 220 14% 10%;
+    --linear-text-secondary: 220 14% 46%;
+    --linear-text-tertiary: 220 14% 60%;
+
+    /* === STATUS TOKENS (Monochromatic dots) === */
+    --status-new: 238 76% 60%;
+    --status-new-bg: 238 76% 97%;
+    --status-pending: 220 14% 46%;
+    --status-pending-bg: 220 14% 97%;
+    --status-contacted: 280 60% 55%;
+    --status-contacted-bg: 280 60% 97%;
+    --status-qualified: 142 60% 45%;
+    --status-qualified-bg: 142 60% 97%;
+    --status-negotiation: 38 80% 50%;
+    --status-negotiation-bg: 38 80% 97%;
+    --status-closed-won: 142 70% 40%;
+    --status-closed-won-bg: 142 70% 97%;
+    --status-closed-lost: 0 65% 50%;
+    --status-closed-lost-bg: 0 65% 97%;
+    --status-archived: 220 14% 55%;
+    --status-archived-bg: 220 14% 97%;
     
     /* === ORIGIN TOKENS === */
-    --origin-contact: 262 83% 58%;
-    --origin-contact-bg: 262 83% 97%;
-    --origin-valuation: 210 100% 50%;
-    --origin-valuation-bg: 210 100% 97%;
-    --origin-collaborator: 142 69% 44%;
-    --origin-collaborator-bg: 142 69% 97%;
-    --origin-acquisition: 24 95% 53%;
-    --origin-acquisition-bg: 24 95% 97%;
-    --origin-advisor: 38 92% 50%;
-    --origin-advisor-bg: 38 92% 97%;
-    --origin-investor: 340 82% 52%;
-    --origin-investor-bg: 340 82% 97%;
+    --origin-contact: 280 60% 55%;
+    --origin-contact-bg: 280 60% 97%;
+    --origin-valuation: 238 76% 60%;
+    --origin-valuation-bg: 238 76% 97%;
+    --origin-collaborator: 142 60% 45%;
+    --origin-collaborator-bg: 142 60% 97%;
+    --origin-acquisition: 38 80% 50%;
+    --origin-acquisition-bg: 38 80% 97%;
+    --origin-advisor: 38 70% 50%;
+    --origin-advisor-bg: 38 70% 97%;
+    --origin-investor: 340 70% 50%;
+    --origin-investor-bg: 340 70% 97%;
     
     /* === PRIORITY TOKENS === */
-    --priority-hot: 0 72% 51%;
-    --priority-hot-bg: 0 72% 97%;
-    --priority-high: 24 95% 53%;
-    --priority-high-bg: 24 95% 97%;
-    --priority-medium: 38 92% 50%;
-    --priority-medium-bg: 38 92% 97%;
-    --priority-low: 215 16% 47%;
-    --priority-low-bg: 215 16% 97%;
+    --priority-hot: 0 65% 50%;
+    --priority-hot-bg: 0 65% 97%;
+    --priority-high: 38 80% 50%;
+    --priority-high-bg: 38 80% 97%;
+    --priority-medium: 220 14% 46%;
+    --priority-medium-bg: 220 14% 97%;
+    --priority-low: 220 14% 60%;
+    --priority-low-bg: 220 14% 97%;
 
-    /* Enhanced borders and inputs */
-    --border: 214 20% 89%;
-    --input: 214 20% 89%;
-    --ring: 215 27% 23%;
+    /* Borders and inputs */
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 238 76% 60%;
 
-    /* Modern radius system */
-    --radius: 5px;
-    --radius-sm: 5px;
-    --radius-lg: 5px;
-    --radius-xl: 5px;
+    /* Radius system - Slightly rounded */
+    --radius: 6px;
+    --radius-sm: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
 
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 27% 23% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 27% 23% / 0.1), 0 2px 4px -1px hsl(215 27% 23% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(215 27% 23% / 0.1), 0 4px 6px -2px hsl(215 27% 23% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(215 27% 23% / 0.1), 0 10px 10px -5px hsl(215 27% 23% / 0.04);
+    /* Shadows - Subtle */
+    --shadow-xs: 0 1px 2px 0 hsl(220 14% 10% / 0.03);
+    --shadow-sm: 0 1px 3px 0 hsl(220 14% 10% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(220 14% 10% / 0.05), 0 2px 4px -1px hsl(220 14% 10% / 0.03);
+    --shadow-lg: 0 10px 15px -3px hsl(220 14% 10% / 0.05), 0 4px 6px -2px hsl(220 14% 10% / 0.02);
 
     /* Spacing system */
     --space-xs: 0.5rem;
@@ -115,26 +129,28 @@
     --space-2xl: 3rem;
     --space-3xl: 4rem;
 
-    /* Modern sidebar colors - Clean White theme */
+    /* Sidebar - Clean Linear style */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 25% 27%;
-    --sidebar-primary: 215 27% 23%;
+    --sidebar-foreground: 220 14% 40%;
+    --sidebar-primary: 220 14% 10%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 98%;
-    --sidebar-accent-foreground: 215 25% 27%;
-    --sidebar-border: 214 31% 91%;
-    --sidebar-ring: 215 27% 23%;
+    --sidebar-accent: 238 76% 60% / 0.08;
+    --sidebar-accent-foreground: 238 76% 55%;
+    --sidebar-border: 220 14% 92%;
+    --sidebar-ring: 238 76% 60%;
+    --sidebar-width: 240px;
+    --sidebar-width-collapsed: 56px;
 
-    /* Custom admin panel colors - Pure white */
+    /* Admin panel */
     --admin-header-bg: 0 0% 100%;
-    --admin-content-bg: 0 0% 100%;
-    --admin-nav-hover: 0 0% 100%;
-    --admin-border: 214 31% 91%;
-    --admin-text-primary: 215 25% 27%;
-    --admin-text-secondary: 215 16% 47%;
-    --admin-success: 142 76% 36%;
-    --admin-warning: 38 92% 50%;
-    --admin-info: 215 27% 23%;
+    --admin-content-bg: 220 14% 98%;
+    --admin-nav-hover: 220 14% 96%;
+    --admin-border: 220 14% 90%;
+    --admin-text-primary: 220 14% 10%;
+    --admin-text-secondary: 220 14% 46%;
+    --admin-success: 142 60% 40%;
+    --admin-warning: 38 80% 50%;
+    --admin-info: 238 76% 60%;
   }
 }
 

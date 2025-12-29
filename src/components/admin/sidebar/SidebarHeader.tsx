@@ -1,7 +1,6 @@
 import React from 'react';
 import { SidebarHeader as UISidebarHeader, useSidebar } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { Building2 } from 'lucide-react';
 
 interface SidebarHeaderProps {
   userRole?: string;
@@ -13,18 +12,17 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ userRole }) => {
   const isCollapsed = state === 'collapsed';
 
   return (
-    <UISidebarHeader className="p-4 border-b border-gray-100">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-          <Building2 className="h-5 w-5 text-white" />
+    <UISidebarHeader className="px-3 py-4 border-b border-[hsl(var(--sidebar-border))]">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 bg-[hsl(var(--accent-primary))] rounded-md flex items-center justify-center">
+          <span className="text-white font-bold text-sm">C</span>
         </div>
         {!isCollapsed && (
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold text-gray-900">Capittal Admin</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-xs text-gray-500">Panel de Control</p>
-              {userRole && (
-                <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-gray-200 text-gray-600">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-[hsl(var(--linear-text-primary))]">Capittal</h2>
+              {userRole && userRole !== 'Cargando...' && userRole !== 'Error' && (
+                <Badge variant="ghost" size="sm" className="text-[9px]">
                   {userRole}
                 </Badge>
               )}
