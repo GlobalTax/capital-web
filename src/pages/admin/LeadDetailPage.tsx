@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  Send
+  Send,
+  Archive
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -162,6 +163,58 @@ export default function LeadDetailPage() {
     }
   };
 
+  const handleArchive = async () => {
+    if (!lead) return;
+    
+    const confirmed = window.confirm(
+      `¿Archivar "${lead.name}"?\n\nSe puede restaurar después desde la sección de archivados.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const tableMap: Record<string, string> = {
+        contact: 'contact_leads',
+        valuation: 'company_valuations',
+        collaborator: 'collaborator_applications',
+        general: 'general_contact_leads',
+        acquisition: 'acquisition_leads',
+        company_acquisition: 'company_acquisition_inquiries',
+        advisor: 'advisor_valuations',
+      };
+      
+      const table = tableMap[lead.origin] as any;
+      if (!table) throw new Error('Tipo de lead no soportado');
+      
+      const { error } = await supabase
+        .from(table)
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id,
+          deletion_reason: 'Archivado desde ficha de lead'
+        })
+        .eq('id', lead.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Contacto archivado",
+        description: "Redirigiendo a la lista de contactos...",
+      });
+      
+      navigate('/admin/contacts');
+    } catch (error) {
+      console.error('Error archiving lead:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo archivar el contacto",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAssignmentChange = () => {
     refetch();
     toast({
@@ -250,6 +303,16 @@ export default function LeadDetailPage() {
           >
             <Send className="mr-2 h-4 w-4" />
             {isSyncing ? 'Enviando...' : 'Enviar a Brevo'}
+          </Button>
+
+          {/* Botón "Archivar" */}
+          <Button 
+            variant="outline"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+            onClick={handleArchive}
+          >
+            <Archive className="mr-2 h-4 w-4" />
+            Archivar
           </Button>
 
           {/* Botón "Pasar a Fase 1" solo para valoraciones */}

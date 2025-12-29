@@ -142,6 +142,10 @@ const LinearContactsManager = () => {
         open={!!selectedContact}
         onClose={() => setSelectedContact(null)}
         onNavigateToFull={handleNavigateToFull}
+        onArchive={(contact) => {
+          setSelectedContact(null);
+          handleSoftDelete(contact.id);
+        }}
       />
     </div>
   );
