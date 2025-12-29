@@ -21,7 +21,9 @@ interface SidebarMenuItemProps {
 export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ item }) => {
   const location = useLocation();
   const { state } = useSidebar();
-  const isActive = location.pathname === item.url || location.pathname.startsWith(item.url + '/');
+  const isActive = item.url === '/admin' 
+    ? location.pathname === '/admin' || location.pathname === '/admin/'
+    : location.pathname === item.url || location.pathname.startsWith(item.url + '/');
   const isCollapsed = state === 'collapsed';
 
   const content = (
