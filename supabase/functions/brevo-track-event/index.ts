@@ -46,6 +46,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const trackStartTime = Date.now();
+  
   try {
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
     if (!BREVO_API_KEY) {
@@ -113,13 +115,20 @@ serve(async (req) => {
       }
     }
 
-    // Log en brevo_sync_log
+    const durationMs = Date.now() - trackStartTime;
+
+    // Log en brevo_sync_log with full details
     const logEntry = {
       entity_id: eventdata?.lead_id || eventdata?.valuation_id || email,
       entity_type: 'event',
       sync_status: brevoResponse.ok ? 'success' : 'failed',
+      sync_type: event,
       brevo_id: null,
       sync_error: brevoResponse.ok ? null : (brevoData ? JSON.stringify(brevoData) : responseText),
+      attributes_sent: enrichedEventData,
+      response_data: brevoData,
+      duration_ms: durationMs,
+      sync_attempts: 1,
       last_sync_at: new Date().toISOString(),
     };
 

@@ -37,6 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { LeadToOperationConverter } from '@/features/operations-management/components/integrations';
+import { useBrevoEvents } from '@/hooks/useBrevoEvents';
 
 interface LeadData {
   id: string;
@@ -63,6 +64,7 @@ export default function LeadDetailPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { syncSingleContact, isSyncing } = useBrevoSync();
+  const { trackLeadStatusChange, trackNoteAdded, trackCompanyLinked } = useBrevoEvents();
   const [notes, setNotes] = useState('');
   const [acquisitionChannelId, setAcquisitionChannelId] = useState<string | null>(null);
   const [leadEntryDate, setLeadEntryDate] = useState<Date | undefined>(undefined);
@@ -243,12 +245,17 @@ export default function LeadDetailPage() {
     });
   };
 
-  const handleStatusChange = () => {
+  const handleStatusChange = async (oldStatus?: string, newStatus?: string) => {
     refetch();
     toast({
       title: "Estado actualizado",
       description: "El estado del lead ha sido actualizado",
     });
+    
+    // Track status change in Brevo
+    if (lead?.email && oldStatus && newStatus && oldStatus !== newStatus) {
+      await trackLeadStatusChange(lead.email, lead.id, oldStatus, newStatus, lead.origin);
+    }
   };
 
   const handleAcquisitionChannelChange = async (channelId: string | null) => {

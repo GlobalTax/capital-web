@@ -18,21 +18,27 @@ import {
   Activity,
   Mail,
   MousePointer,
-  TrendingUp
+  TrendingUp,
+  RotateCcw,
+  Clock,
+  Zap
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, Legend } from 'recharts';
 
 interface SyncLogEntry {
   id: string;
   entity_id: string;
   entity_type: string;
   sync_status: string;
+  sync_type: string | null;
   brevo_id: string | null;
   sync_error: string | null;
+  duration_ms: number | null;
+  sync_attempts: number | null;
   last_sync_at: string;
-  sync_type: string | null;
   created_at: string;
 }
 
@@ -46,6 +52,7 @@ interface SyncStats {
 const BrevoSyncDashboard: React.FC = () => {
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month'>('week');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Calcular fecha de inicio según el rango
   const getStartDate = () => {
@@ -98,6 +105,7 @@ const BrevoSyncDashboard: React.FC = () => {
         webhook_event: { total: 0, success: 0, failed: 0, pending: 0 },
         company: { total: 0, success: 0, failed: 0, pending: 0 },
         deal: { total: 0, success: 0, failed: 0, pending: 0 },
+        valuation: { total: 0, success: 0, failed: 0, pending: 0 },
       };
 
       byType?.forEach(entry => {
@@ -116,6 +124,81 @@ const BrevoSyncDashboard: React.FC = () => {
       });
 
       return typeStats;
+    },
+  });
+
+  // Obtener datos para gráfico de tendencias
+  const { data: trendData } = useQuery({
+    queryKey: ['brevo-sync-trends', dateRange],
+    queryFn: async () => {
+      const startDate = getStartDate().toISOString();
+      
+      const { data, error } = await supabase
+        .from('brevo_sync_log')
+        .select('created_at, sync_status, duration_ms')
+        .gte('created_at', startDate)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      // Agrupar por día
+      const byDay: Record<string, { date: string; success: number; failed: number; avgDuration: number; count: number }> = {};
+      
+      data?.forEach(entry => {
+        const day = format(new Date(entry.created_at), 'dd/MM');
+        if (!byDay[day]) {
+          byDay[day] = { date: day, success: 0, failed: 0, avgDuration: 0, count: 0 };
+        }
+        if (entry.sync_status === 'success') {
+          byDay[day].success++;
+        } else {
+          byDay[day].failed++;
+        }
+        if (entry.duration_ms) {
+          byDay[day].avgDuration = ((byDay[day].avgDuration * byDay[day].count) + entry.duration_ms) / (byDay[day].count + 1);
+          byDay[day].count++;
+        }
+      });
+
+      return Object.values(byDay);
+    },
+  });
+
+  // Obtener métricas de performance
+  const { data: performanceStats } = useQuery({
+    queryKey: ['brevo-performance-stats', dateRange],
+    queryFn: async () => {
+      const startDate = getStartDate().toISOString();
+      
+      const { data, error } = await supabase
+        .from('brevo_sync_log')
+        .select('duration_ms, sync_type')
+        .gte('created_at', startDate)
+        .not('duration_ms', 'is', null);
+
+      if (error) throw error;
+
+      const durations = data?.map(d => d.duration_ms).filter(Boolean) as number[];
+      const avgDuration = durations.length > 0 
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+        : 0;
+      const maxDuration = durations.length > 0 ? Math.max(...durations) : 0;
+      const minDuration = durations.length > 0 ? Math.min(...durations) : 0;
+
+      // Agrupar por tipo de sync
+      const byType: Record<string, number[]> = {};
+      data?.forEach(d => {
+        const type = d.sync_type || 'unknown';
+        if (!byType[type]) byType[type] = [];
+        if (d.duration_ms) byType[type].push(d.duration_ms);
+      });
+
+      const avgByType = Object.entries(byType).map(([type, durations]) => ({
+        type,
+        avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length),
+      }));
+
+      return { avgDuration, maxDuration, minDuration, avgByType };
     },
   });
 
@@ -147,9 +230,42 @@ const BrevoSyncDashboard: React.FC = () => {
     },
   });
 
+  // Contar fallidos pendientes de retry
+  const { data: failedCount } = useQuery({
+    queryKey: ['brevo-failed-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('brevo_sync_log')
+        .select('*', { count: 'exact', head: true })
+        .eq('sync_status', 'failed')
+        .lt('sync_attempts', 3);
+
+      if (error) return 0;
+      return count || 0;
+    },
+  });
+
   const handleRefresh = async () => {
     await refetchLogs();
     toast.success('Datos actualizados');
+  };
+
+  const handleRetryFailed = async () => {
+    setIsRetrying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('brevo-retry-failed', {
+        body: { limit: 50 }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Retry completado: ${data.successful} exitosos, ${data.failed} fallidos`);
+      refetchLogs();
+    } catch (err: any) {
+      toast.error('Error al reintentar: ' + err.message);
+    } finally {
+      setIsRetrying(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -158,6 +274,8 @@ const BrevoSyncDashboard: React.FC = () => {
         return <Badge variant="default" className="bg-green-500"><CheckCircle2 className="w-3 h-3 mr-1" /> Éxito</Badge>;
       case 'failed':
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Error</Badge>;
+      case 'permanently_failed':
+        return <Badge variant="destructive" className="bg-red-700"><XCircle className="w-3 h-3 mr-1" /> Fallido Permanente</Badge>;
       case 'no_match':
         return <Badge variant="secondary"><AlertTriangle className="w-3 h-3 mr-1" /> Sin coincidencia</Badge>;
       default:
@@ -168,6 +286,7 @@ const BrevoSyncDashboard: React.FC = () => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'contact': return <Users className="w-4 h-4" />;
+      case 'valuation': return <TrendingUp className="w-4 h-4" />;
       case 'company': return <Building2 className="w-4 h-4" />;
       case 'deal': return <Briefcase className="w-4 h-4" />;
       case 'event': return <Activity className="w-4 h-4" />;
@@ -205,11 +324,21 @@ const BrevoSyncDashboard: React.FC = () => {
             <RefreshCw className="w-4 h-4 mr-2" />
             Actualizar
           </Button>
+          {failedCount && failedCount > 0 && (
+            <Button 
+              variant="secondary" 
+              onClick={handleRetryFailed}
+              disabled={isRetrying}
+            >
+              <RotateCcw className={`w-4 h-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              Reintentar {failedCount} fallidos
+            </Button>
+          )}
         </div>
       </div>
 
       {/* KPIs principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Sincronizaciones</CardTitle>
@@ -252,6 +381,21 @@ const BrevoSyncDashboard: React.FC = () => {
 
         <Card>
           <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Tiempo Medio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{performanceStats?.avgDuration || 0}ms</div>
+            <p className="text-xs text-muted-foreground">
+              Max: {performanceStats?.maxDuration || 0}ms
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Tasa Apertura</CardTitle>
           </CardHeader>
           <CardContent>
@@ -262,6 +406,40 @@ const BrevoSyncDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Gráfico de tendencias */}
+      {trendData && trendData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Tendencias de Sincronización
+            </CardTitle>
+            <CardDescription>Sincronizaciones por día</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Legend />
+                  <Bar dataKey="success" name="Exitosas" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="failed" name="Fallidas" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Engagement de emails */}
       <Card>
@@ -308,6 +486,7 @@ const BrevoSyncDashboard: React.FC = () => {
         <TabsList>
           <TabsTrigger value="all">Todos</TabsTrigger>
           <TabsTrigger value="contact">Contactos</TabsTrigger>
+          <TabsTrigger value="valuation">Valoraciones</TabsTrigger>
           <TabsTrigger value="event">Eventos</TabsTrigger>
           <TabsTrigger value="webhook_event">Webhooks</TabsTrigger>
           <TabsTrigger value="company">Empresas</TabsTrigger>
@@ -330,9 +509,10 @@ const BrevoSyncDashboard: React.FC = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tipo</TableHead>
+                      <TableHead>Operación</TableHead>
                       <TableHead>Estado</TableHead>
-                      <TableHead>Entity ID</TableHead>
-                      <TableHead>Brevo ID</TableHead>
+                      <TableHead>Duración</TableHead>
+                      <TableHead>Intentos</TableHead>
                       <TableHead>Fecha</TableHead>
                       <TableHead>Error</TableHead>
                     </TableRow>
@@ -346,12 +526,15 @@ const BrevoSyncDashboard: React.FC = () => {
                             <span className="capitalize">{log.entity_type}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(log.sync_status)}</TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {log.entity_id?.substring(0, 8)}...
+                        <TableCell className="text-xs text-muted-foreground">
+                          {log.sync_type || '-'}
                         </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {log.brevo_id || '-'}
+                        <TableCell>{getStatusBadge(log.sync_status)}</TableCell>
+                        <TableCell className="text-sm">
+                          {log.duration_ms ? `${log.duration_ms}ms` : '-'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {log.sync_attempts || 1}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(log.created_at), 'dd/MM HH:mm', { locale: es })}
@@ -380,7 +563,7 @@ const BrevoSyncDashboard: React.FC = () => {
             <CardTitle>Estadísticas por Tipo</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               {Object.entries(stats).map(([type, typeStats]) => (
                 <div key={type} className="border rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -401,6 +584,28 @@ const BrevoSyncDashboard: React.FC = () => {
                       <span className="font-medium text-red-600">{typeStats.failed}</span>
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Performance por tipo de operación */}
+      {performanceStats?.avgByType && performanceStats.avgByType.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Rendimiento por Operación
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {performanceStats.avgByType.map(({ type, avgDuration }) => (
+                <div key={type} className="text-center p-3 bg-muted/30 rounded-lg">
+                  <div className="text-lg font-bold">{avgDuration}ms</div>
+                  <div className="text-xs text-muted-foreground capitalize">{type}</div>
                 </div>
               ))}
             </div>
