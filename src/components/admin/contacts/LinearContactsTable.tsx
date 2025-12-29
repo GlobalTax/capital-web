@@ -240,7 +240,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent 
                       align="end" 
-                      className="w-40 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]"
+                      className="w-40 bg-popover border-[hsl(var(--linear-border))] shadow-md"
                     >
                       <DropdownMenuItem onClick={() => onViewDetails(contact)}>
                         <Eye className="h-3.5 w-3.5 mr-2" />

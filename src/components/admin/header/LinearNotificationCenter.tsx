@@ -67,7 +67,7 @@ const LinearNotificationCenter = () => {
       </DropdownMenuTrigger>
       
       <DropdownMenuContent 
-        className="w-72 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]" 
+        className="w-72 bg-popover border-[hsl(var(--linear-border))] shadow-md" 
         align="end"
         sideOffset={8}
       >
