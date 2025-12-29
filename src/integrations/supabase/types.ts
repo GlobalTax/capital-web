@@ -135,13 +135,23 @@ export type Database = {
           deleted_by: string | null
           deletion_reason: string | null
           email: string
+          email_bounce_type: string | null
+          email_bounced: boolean | null
+          email_clicked: boolean | null
+          email_delivered: boolean | null
+          email_delivered_at: string | null
+          email_opens_count: number | null
           email_sent: boolean | null
           email_sent_at: string | null
+          email_unsubscribed: boolean | null
+          email_unsubscribed_at: string | null
+          email_valid: boolean | null
           full_name: string
           id: string
           investment_range: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          last_email_click_at: string | null
           phone: string | null
           referrer: string | null
           sectors_of_interest: string | null
@@ -162,13 +172,23 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email: string
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           full_name: string
           id?: string
           investment_range?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_email_click_at?: string | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -189,13 +209,23 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email?: string
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           full_name?: string
           id?: string
           investment_range?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_email_click_at?: string | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -1190,39 +1220,51 @@ export type Database = {
       }
       brevo_sync_log: {
         Row: {
+          attributes_sent: Json | null
           brevo_id: string | null
           created_at: string | null
+          duration_ms: number | null
           entity_id: string
           entity_type: string
           id: string
           last_sync_at: string | null
+          response_data: Json | null
           sync_attempts: number | null
           sync_error: string | null
           sync_status: string
+          sync_type: string | null
           updated_at: string | null
         }
         Insert: {
+          attributes_sent?: Json | null
           brevo_id?: string | null
           created_at?: string | null
+          duration_ms?: number | null
           entity_id: string
           entity_type: string
           id?: string
           last_sync_at?: string | null
+          response_data?: Json | null
           sync_attempts?: number | null
           sync_error?: string | null
           sync_status?: string
+          sync_type?: string | null
           updated_at?: string | null
         }
         Update: {
+          attributes_sent?: Json | null
           brevo_id?: string | null
           created_at?: string | null
+          duration_ms?: number | null
           entity_id?: string
           entity_type?: string
           id?: string
           last_sync_at?: string | null
+          response_data?: Json | null
           sync_attempts?: number | null
           sync_error?: string | null
           sync_status?: string
+          sync_type?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1744,16 +1786,26 @@ export type Database = {
           deleted_by: string | null
           deletion_reason: string | null
           email: string
+          email_bounce_type: string | null
+          email_bounced: boolean | null
+          email_clicked: boolean | null
+          email_delivered: boolean | null
+          email_delivered_at: string | null
           email_message_id: string | null
           email_opened: boolean | null
           email_opened_at: string | null
+          email_opens_count: number | null
           email_sent: boolean | null
           email_sent_at: string | null
+          email_unsubscribed: boolean | null
+          email_unsubscribed_at: string | null
+          email_valid: boolean | null
           experience: string | null
           full_name: string
           id: string
           ip_address: unknown
           is_deleted: boolean | null
+          last_email_click_at: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
           phone: string
@@ -1772,16 +1824,26 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email: string
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           experience?: string | null
           full_name: string
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_email_click_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           phone: string
@@ -1800,16 +1862,26 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email?: string
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           experience?: string | null
           full_name?: string
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_email_click_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           phone?: string
@@ -1838,16 +1910,26 @@ export type Database = {
           deleted_by: string | null
           deletion_reason: string | null
           email: string
+          email_bounce_type: string | null
+          email_bounced: boolean | null
+          email_clicked: boolean | null
+          email_delivered: boolean | null
+          email_delivered_at: string | null
           email_message_id: string | null
           email_opened: boolean | null
           email_opened_at: string | null
+          email_opens_count: number | null
           email_sent: boolean | null
           email_sent_at: string | null
+          email_unsubscribed: boolean | null
+          email_unsubscribed_at: string | null
+          email_valid: boolean | null
           full_name: string
           id: string
           investment_budget: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          last_email_click_at: string | null
           message: string | null
           notes: string | null
           page_origin: string
@@ -1876,16 +1958,26 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email: string
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           full_name: string
           id?: string
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_email_click_at?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -1914,16 +2006,26 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email?: string
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           full_name?: string
           id?: string
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_email_click_at?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -2106,11 +2208,26 @@ export type Database = {
           ebitda: number | null
           ebitda_multiple_used: number | null
           email: string
+          email_block_reason: string | null
+          email_blocked: boolean | null
+          email_bounce_reason: string | null
+          email_bounce_type: string | null
+          email_bounced: boolean | null
+          email_clicked: boolean | null
+          email_delivered: boolean | null
+          email_delivered_at: string | null
           email_message_id: string | null
           email_opened: boolean | null
           email_opened_at: string | null
+          email_opens_count: number | null
           email_sent: boolean | null
           email_sent_at: string | null
+          email_soft_bounced: boolean | null
+          email_spam_reported: boolean | null
+          email_spam_reported_at: string | null
+          email_unsubscribed: boolean | null
+          email_unsubscribed_at: string | null
+          email_valid: boolean | null
           employee_range: string
           empresa_id: string | null
           final_valuation: number | null
@@ -2124,6 +2241,8 @@ export type Database = {
           is_deleted: boolean | null
           last_activity_at: string | null
           last_call_attempt_at: string | null
+          last_clicked_url: string | null
+          last_email_click_at: string | null
           last_modified_field: string | null
           lead_entry_date: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
@@ -2175,11 +2294,26 @@ export type Database = {
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email: string
+          email_block_reason?: string | null
+          email_blocked?: boolean | null
+          email_bounce_reason?: string | null
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_soft_bounced?: boolean | null
+          email_spam_reported?: boolean | null
+          email_spam_reported_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           employee_range: string
           empresa_id?: string | null
           final_valuation?: number | null
@@ -2193,6 +2327,8 @@ export type Database = {
           is_deleted?: boolean | null
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
+          last_clicked_url?: string | null
+          last_email_click_at?: string | null
           last_modified_field?: string | null
           lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
@@ -2244,11 +2380,26 @@ export type Database = {
           ebitda?: number | null
           ebitda_multiple_used?: number | null
           email?: string
+          email_block_reason?: string | null
+          email_blocked?: boolean | null
+          email_bounce_reason?: string | null
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_soft_bounced?: boolean | null
+          email_spam_reported?: boolean | null
+          email_spam_reported_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           employee_range?: string
           empresa_id?: string | null
           final_valuation?: number | null
@@ -2262,6 +2413,8 @@ export type Database = {
           is_deleted?: boolean | null
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
+          last_clicked_url?: string | null
+          last_email_click_at?: string | null
           last_modified_field?: string | null
           lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
@@ -2345,17 +2498,34 @@ export type Database = {
           deleted_by: string | null
           deletion_reason: string | null
           email: string
+          email_block_reason: string | null
+          email_blocked: boolean | null
+          email_bounce_reason: string | null
+          email_bounce_type: string | null
+          email_bounced: boolean | null
+          email_clicked: boolean | null
+          email_delivered: boolean | null
+          email_delivered_at: string | null
           email_message_id: string | null
           email_opened: boolean | null
           email_opened_at: string | null
+          email_opens_count: number | null
           email_sent: boolean | null
           email_sent_at: string | null
+          email_soft_bounced: boolean | null
+          email_spam_reported: boolean | null
+          email_spam_reported_at: string | null
+          email_unsubscribed: boolean | null
+          email_unsubscribed_at: string | null
+          email_valid: boolean | null
           empresa_id: string | null
           full_name: string
           id: string
           investment_budget: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          last_clicked_url: string | null
+          last_email_click_at: string | null
           lead_entry_date: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           phone: string | null
@@ -2382,17 +2552,34 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email: string
+          email_block_reason?: string | null
+          email_blocked?: boolean | null
+          email_bounce_reason?: string | null
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_soft_bounced?: boolean | null
+          email_spam_reported?: boolean | null
+          email_spam_reported_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           empresa_id?: string | null
           full_name: string
           id?: string
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_clicked_url?: string | null
+          last_email_click_at?: string | null
           lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
@@ -2419,17 +2606,34 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           email?: string
+          email_block_reason?: string | null
+          email_blocked?: boolean | null
+          email_bounce_reason?: string | null
+          email_bounce_type?: string | null
+          email_bounced?: boolean | null
+          email_clicked?: boolean | null
+          email_delivered?: boolean | null
+          email_delivered_at?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_opens_count?: number | null
           email_sent?: boolean | null
           email_sent_at?: string | null
+          email_soft_bounced?: boolean | null
+          email_spam_reported?: boolean | null
+          email_spam_reported_at?: string | null
+          email_unsubscribed?: boolean | null
+          email_unsubscribed_at?: string | null
+          email_valid?: boolean | null
           empresa_id?: string | null
           full_name?: string
           id?: string
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          last_clicked_url?: string | null
+          last_email_click_at?: string | null
           lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           phone?: string | null
@@ -10022,6 +10226,14 @@ export type Database = {
           required_role: Database["public"]["Enums"]["admin_role"]
         }
         Returns: boolean
+      }
+      increment_email_opens: {
+        Args: {
+          p_opened_at?: string
+          p_record_id: string
+          p_table_name: string
+        }
+        Returns: undefined
       }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_full_admin: { Args: { check_user_id: string }; Returns: boolean }
