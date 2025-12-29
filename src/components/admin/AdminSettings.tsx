@@ -1,16 +1,45 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Settings, User, Shield, LogOut } from 'lucide-react';
+import { Settings, User, Shield, LogOut, ChevronRight, Megaphone, Mail, FileSignature, Workflow } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AdminSettings = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut();
   };
+
+  const configLinks = [
+    {
+      title: 'Canales de Adquisición',
+      description: 'Gestiona los canales para clasificar el origen de contactos (Meta, Google Ads, etc.)',
+      icon: Megaphone,
+      href: '/admin/settings/canales',
+    },
+    {
+      title: 'Destinatarios Email',
+      description: 'Configura quién recibe las notificaciones de nuevos leads',
+      icon: Mail,
+      href: '/admin/configuracion/destinatarios-email',
+    },
+    {
+      title: 'Firma PDF',
+      description: 'Configura la firma que aparece en los PDFs de valoración',
+      icon: FileSignature,
+      href: '/admin/configuracion/firma-pdf',
+    },
+    {
+      title: 'Plantillas de Workflow',
+      description: 'Gestiona las plantillas de flujo de trabajo para operaciones',
+      icon: Workflow,
+      href: '/admin/configuracion/workflow-templates',
+    },
+  ];
 
   return (
     <div className="space-y-8">
@@ -21,6 +50,39 @@ const AdminSettings = () => {
           Gestiona tu cuenta y configuraciones del sistema
         </p>
       </div>
+
+      {/* Configuration Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Configuración del Sistema
+          </CardTitle>
+          <CardDescription>
+            Accede a las diferentes secciones de configuración
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-border">
+            {configLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => navigate(link.href)}
+                className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <link.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium">{link.title}</p>
+                  <p className="text-sm text-muted-foreground truncate">{link.description}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* User Profile */}
       <Card>
@@ -33,16 +95,16 @@ const AdminSettings = () => {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Email</label>
-              <p className="text-gray-900">{user?.email}</p>
+              <label className="text-sm font-medium text-muted-foreground">Email</label>
+              <p className="text-foreground">{user?.email}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">ID de Usuario</label>
-              <p className="text-gray-500 text-sm font-mono">{user?.id}</p>
+              <label className="text-sm font-medium text-muted-foreground">ID de Usuario</label>
+              <p className="text-muted-foreground text-sm font-mono">{user?.id}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Última conexión</label>
-              <p className="text-gray-900">
+              <label className="text-sm font-medium text-muted-foreground">Última conexión</label>
+              <p className="text-foreground">
                 {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A'}
               </p>
             </div>
@@ -61,8 +123,8 @@ const AdminSettings = () => {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-green-600">✅ Permisos de Administrador Activos</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-medium text-emerald-600">✅ Permisos de Administrador Activos</p>
+              <p className="text-sm text-muted-foreground">
                 Tienes acceso completo al panel de administración
               </p>
             </div>
@@ -74,8 +136,8 @@ const AdminSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Acciones del Sistema
+            <LogOut className="h-5 w-5" />
+            Sesión
           </CardTitle>
         </CardHeader>
         <CardContent>
