@@ -9,6 +9,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import { AdminScrollBar } from '@/components/admin/AdminScrollBar';
 import { AdminErrorBoundary } from '@/features/admin/components/AdminErrorBoundary';
 import { resetWebSocketState } from '@/utils/resetWebSocketState';
+import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -83,10 +84,14 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             {/* Header global con trigger siempre visible */}
             <header className="flex h-16 shrink-0 items-center gap-2 px-4 bg-card border-b border-border shadow-sm sticky top-0 z-50">
               <SidebarTrigger className="-ml-1" />
+              <CommandPaletteTrigger />
               <div className="flex-1">
                 <AdminHeader onLogout={onLogout} />
               </div>
             </header>
+            
+            {/* Command Palette - Global Search */}
+            <CommandPalette />
 
             {/* Barra de contexto con breadcrumbs y scroll progress */}
             <AdminScrollBar />

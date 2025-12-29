@@ -37,6 +37,7 @@ export interface SidebarItem {
   icon: LucideIcon;
   url: string;
   badge?: 'URGENTE' | 'AI' | 'NEW';
+  badgeAddedDate?: string; // ISO date for NEW badge expiration
   description?: string;
   visible?: boolean;
 }
