@@ -28,6 +28,7 @@ import { LeadTasksQuickView } from '@/features/admin/components/leads/LeadTasksQ
 import { LeadAssignmentSelect } from '@/components/admin/leads/LeadAssignmentSelect';
 import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
 import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
+import { AcquisitionChannelSelect } from '@/components/admin/contacts/AcquisitionChannelSelect';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
@@ -59,6 +60,7 @@ export default function LeadDetailPage() {
   const { toast } = useToast();
   const { syncSingleContact, isSyncing } = useBrevoSync();
   const [notes, setNotes] = useState('');
+  const [acquisitionChannelId, setAcquisitionChannelId] = useState<string | null>(null);
 
   // Fetch lead data
   const { data: lead, isLoading, refetch } = useQuery({
@@ -140,10 +142,19 @@ export default function LeadDetailPage() {
         name: data[nameField] || data.full_name || data.contact_name || 'Sin nombre',
         company: data.company || data.company_name || '',
         assigned_admin: assignedAdmin,
+        acquisition_channel_id: data.acquisition_channel_id || null,
       } as LeadData;
     },
     enabled: !!id,
+    staleTime: 0,
   });
+  
+  // Update local state when lead loads
+  React.useEffect(() => {
+    if (lead?.acquisition_channel_id) {
+      setAcquisitionChannelId(lead.acquisition_channel_id);
+    }
+  }, [lead?.acquisition_channel_id]);
 
   const handleSyncToBrevo = async () => {
     if (!lead) return;
@@ -229,6 +240,24 @@ export default function LeadDetailPage() {
       title: "Estado actualizado",
       description: "El estado del lead ha sido actualizado",
     });
+  };
+
+  const handleAcquisitionChannelChange = async (channelId: string | null) => {
+    if (!lead || lead.origin !== 'contact') return;
+    
+    try {
+      const { error } = await supabase
+        .from('contact_leads')
+        .update({ acquisition_channel_id: channelId })
+        .eq('id', lead.id);
+
+      if (error) throw error;
+      
+      setAcquisitionChannelId(channelId);
+      toast({ title: 'Canal de adquisición actualizado' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'No se pudo actualizar el canal', variant: 'destructive' });
+    }
   };
 
   if (isLoading) {
@@ -627,6 +656,19 @@ export default function LeadDetailPage() {
                   </p>
                 )}
               </div>
+              {/* Canal de adquisición - solo para contact leads */}
+              {lead.origin === 'contact' && (
+                <>
+                  <Separator />
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Canal de adquisición</label>
+                    <AcquisitionChannelSelect
+                      value={acquisitionChannelId}
+                      onChange={handleAcquisitionChannelChange}
+                    />
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
