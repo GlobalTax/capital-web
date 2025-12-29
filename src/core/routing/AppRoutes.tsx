@@ -58,6 +58,9 @@ const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(()
 
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
+
+// === BOOKING PAGE ===
+const BookingPage = lazy(() => import('@/components/booking/BookingPage'));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => import('@/pages/VentaEmpresas')));
 
 const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => import('@/pages/VentaEmpresas')));
@@ -159,6 +162,9 @@ export const AppRoutes = () => {
         <Route path="/accountex-2025" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
         <Route path="/seguridad/calculadora/*" element={<SecurityCalculator />} />
+        
+        {/* === BOOKING ROUTES === */}
+        <Route path="/book/:token" element={<BookingPage />} />
         
         {/* === SERVICE ROUTES === */}
         <Route path="/servicios/valoraciones" element={<Valoraciones />} />
