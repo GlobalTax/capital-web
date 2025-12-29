@@ -68,12 +68,16 @@ export const AdminSidebar: React.FC = () => {
 
   if (error) {
     return (
-      <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
+      <Sidebar 
+        className="border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-background))]" 
+        collapsible="icon"
+        style={{ width: 'var(--sidebar-width)' }}
+      >
         <SidebarHeader userRole="Error" />
         <SidebarContent>
           <div className="p-4 text-center">
-            <p className="text-sm text-red-500 mb-2">Error de permisos</p>
-            <p className="text-xs text-gray-500">Modo básico activo</p>
+            <p className="text-sm text-destructive mb-2">Error de permisos</p>
+            <p className="text-xs text-[hsl(var(--linear-text-tertiary))]">Modo básico activo</p>
           </div>
         </SidebarContent>
       </Sidebar>
@@ -82,12 +86,16 @@ export const AdminSidebar: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
+      <Sidebar 
+        className="border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-background))]" 
+        collapsible="icon"
+        style={{ width: 'var(--sidebar-width)' }}
+      >
         <SidebarHeader userRole="Cargando..." />
         <SidebarContent>
           <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-500">Cargando permisos...</p>
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-[hsl(var(--accent-primary))] border-t-transparent mx-auto mb-2"></div>
+            <p className="text-xs text-[hsl(var(--linear-text-tertiary))]">Cargando permisos...</p>
           </div>
         </SidebarContent>
       </Sidebar>
@@ -105,13 +113,13 @@ export const AdminSidebar: React.FC = () => {
 
     const route = clean.replace(/^\/admin\/?/, '').split('/')[0] || '';
 
-    // Mapear rutas a permisos - SINCRONIZADO con AdminRouter y useRoleBasedPermissions
+    // Mapear rutas a permisos
     const routePermissionMap: Record<string, keyof typeof menuVisibility> = {
       'lead-scoring': 'leadScoring',
       'lead-scoring-rules': 'leadScoringRules',
       'contact-leads': 'contactLeads',
       'contacts': 'contacts',
-      'form-submissions': 'contacts', // Use contacts permission for form submissions
+      'form-submissions': 'contacts',
       'contact-lists': 'contactLists',
       'collaborator-applications': 'collaboratorApplications',
       'alerts': 'alerts',
@@ -137,14 +145,11 @@ export const AdminSidebar: React.FC = () => {
       'integrations': 'integrations',
       'admin-users': 'adminUsers',
       'settings': 'settings',
-      // Nuevas rutas de tracking
       'content-performance': 'contentPerformance',
       'content-studio': 'contentStudio',
       'tracking-dashboard': 'trackingDashboard',
       'tracking-config': 'trackingConfig',
-      // Valuation Analytics
       'valuation-analytics': 'valuationAnalytics',
-      // Valoraciones Pro
       'valoraciones-pro': 'valoracionesPro'
     };
 
@@ -159,7 +164,11 @@ export const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <Sidebar className="border-r border-gray-100 bg-white" collapsible="icon">
+    <Sidebar 
+      className="border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-background))]" 
+      collapsible="icon"
+      style={{ width: 'var(--sidebar-width)' }}
+    >
       <SidebarHeader userRole={userRole} />
       
       <SidebarContent className="py-2">

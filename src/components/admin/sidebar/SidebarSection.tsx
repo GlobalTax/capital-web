@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarSection as SidebarSectionType } from '@/features/admin/config/sidebar-config';
 import { SidebarMenuItem } from './SidebarMenuItem';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarSectionProps {
@@ -28,31 +28,27 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
   if (visibleItems.length === 0) return null;
 
   return (
-    <SidebarGroup className="px-3 py-1">
+    <SidebarGroup className="px-2 py-0.5">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-2 py-2 hover:bg-muted/50 rounded-md transition-colors group"
+        className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[hsl(var(--linear-bg-hover))] rounded-md transition-colors group"
       >
-        <SidebarGroupLabel className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider pointer-events-none">
+        <SidebarGroupLabel className="text-[10px] font-medium text-[hsl(var(--linear-text-tertiary))] uppercase tracking-wider pointer-events-none m-0 p-0">
           {section.title}
         </SidebarGroupLabel>
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-muted-foreground/60 font-medium">
-            {visibleItems.length}
-          </span>
-          {isExpanded ? (
-            <ChevronDown className="h-3 w-3 text-muted-foreground/60" />
-          ) : (
-            <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
-          )}
-        </div>
+        <ChevronDown 
+          className={cn(
+            "h-3 w-3 text-[hsl(var(--linear-text-tertiary))] transition-transform duration-200",
+            !isExpanded && "-rotate-90"
+          )} 
+        />
       </button>
       
       <SidebarGroupContent className={cn(
         "overflow-hidden transition-all duration-200",
         isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
       )}>
-        <SidebarMenu className="space-y-0.5 mt-1">
+        <SidebarMenu className="space-y-0.5 mt-0.5">
           {visibleItems.map((item) => (
             <SidebarMenuItem key={item.title} item={item} />
           ))}
