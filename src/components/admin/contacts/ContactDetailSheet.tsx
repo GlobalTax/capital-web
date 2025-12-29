@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,13 +20,17 @@ import {
   DollarSign,
   FileText,
   Send,
-  Archive
+  Archive,
+  Megaphone
 } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { AcquisitionChannelSelect } from './AcquisitionChannelSelect';
+import { supabase } from '@/integrations/supabase/client';
+import { useAcquisitionChannels, CATEGORY_LABELS, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -107,10 +111,37 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   onArchive,
 }) => {
   const { toast } = useToast();
+  const { channels } = useAcquisitionChannels();
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
+    (contact as any)?.acquisition_channel_id || null
+  );
+  const [isSavingChannel, setIsSavingChannel] = useState(false);
 
   if (!contact) return null;
 
   const originConfig = getOriginConfig(contact.origin);
+  const selectedChannel = channels.find(c => c.id === selectedChannelId);
+
+  const handleChannelChange = async (channelId: string | null) => {
+    if (!contact || contact.origin !== 'contact') return;
+    
+    setIsSavingChannel(true);
+    try {
+      const { error } = await supabase
+        .from('contact_leads')
+        .update({ acquisition_channel_id: channelId })
+        .eq('id', contact.id);
+
+      if (error) throw error;
+      
+      setSelectedChannelId(channelId);
+      toast({ title: 'Canal actualizado' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'No se pudo actualizar el canal', variant: 'destructive' });
+    } finally {
+      setIsSavingChannel(false);
+    }
+  };
 
   const handleCopyEmail = () => {
     if (contact.email) {
@@ -229,6 +260,23 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
               />
             )}
           </div>
+
+          {/* Canal de adquisición (solo para contact_leads) */}
+          {contact.origin === 'contact' && (
+            <>
+              <Separator className="bg-[hsl(var(--linear-border))] my-4" />
+              <div className="space-y-1 mb-6">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                  Canal de adquisición
+                </h3>
+                <AcquisitionChannelSelect
+                  value={selectedChannelId}
+                  onChange={handleChannelChange}
+                  disabled={isSavingChannel}
+                />
+              </div>
+            </>
+          )}
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />
 

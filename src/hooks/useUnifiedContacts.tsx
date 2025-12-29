@@ -86,6 +86,9 @@ export interface UnifiedContact {
   // 🔥 NEW: Origen Valoración Pro
   is_from_pro_valuation?: boolean;
   
+  // 🔥 NEW: Canal de adquisición
+  acquisition_channel_id?: string;
+  
   // Legacy compatibility
   source?: string;
 }
@@ -149,10 +152,10 @@ export const useUnifiedContacts = () => {
     try {
       setIsLoading(true);
       
-      // Fetch contact_leads with linked empresa (exclude soft deleted)
+      // Fetch contact_leads with linked empresa and acquisition channel (exclude soft deleted)
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
-        .select('*, lead_status_crm, assigned_to, empresa_id, empresas:empresa_id(id, nombre)')
+        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, empresas:empresa_id(id, nombre)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -245,6 +248,8 @@ export const useUnifiedContacts = () => {
           empresa_nombre: (lead.empresas as any)?.nombre || null,
           // 🔥 NEW: Indicador de origen Valoración Pro
           is_from_pro_valuation: lead.referral === 'Valoración Pro',
+          // 🔥 NEW: Canal de adquisición
+          acquisition_channel_id: lead.acquisition_channel_id,
         })),
         
         // Valuation leads

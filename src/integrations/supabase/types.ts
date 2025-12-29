@@ -95,6 +95,36 @@ export type Database = {
         }
         Relationships: []
       }
+      acquisition_channels: {
+        Row: {
+          category: string
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       acquisition_leads: {
         Row: {
           acquisition_type: string | null
@@ -2288,6 +2318,7 @@ export type Database = {
       }
       contact_leads: {
         Row: {
+          acquisition_channel_id: string | null
           assigned_at: string | null
           assigned_to: string | null
           company: string
@@ -2323,6 +2354,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           company: string
@@ -2358,6 +2390,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           company?: string
@@ -2393,6 +2426,13 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "contact_leads_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contact_leads_assigned_to_fkey"
             columns: ["assigned_to"]
