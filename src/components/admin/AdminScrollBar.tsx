@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Home } from 'lucide-react';
+import { isUuid, useBreadcrumbLabel } from '@/hooks/useBreadcrumbLabel';
 
 const routeLabels: Record<string, string> = {
   '/admin': 'Dashboard',
@@ -18,6 +19,48 @@ const routeLabels: Record<string, string> = {
   '/admin/settings': 'Configuración',
   '/admin/landing-pages': 'Landing Pages',
   '/admin/analytics': 'Analytics',
+  '/admin/valoraciones-pro': 'Valoraciones Pro',
+  '/admin/sectores': 'Sectores',
+  '/admin/sector-dossiers': 'Sector Dossiers',
+  '/admin/operaciones': 'Operaciones',
+  '/admin/multiplos': 'Múltiplos',
+  '/admin/multiplos-asesores': 'Múltiplos Asesores',
+  '/admin/documentos-rod': 'Documentos ROD',
+  '/admin/equipo': 'Equipo',
+  '/admin/testimonios': 'Testimonios',
+  '/admin/lp-venta-empresas': 'LP Venta Empresas',
+  '/admin/logos-carousel': 'Logos Carousel',
+  '/admin/banners': 'Banners',
+};
+
+const formatSegment = (segment: string): string => {
+  return segment
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+// Componente para un item de breadcrumb con resolución dinámica
+const DynamicBreadcrumbItem: React.FC<{
+  segment: string;
+  parentSegment?: string;
+  path: string;
+  isLast: boolean;
+}> = ({ segment, parentSegment, path, isLast }) => {
+  const { label: dynamicLabel } = useBreadcrumbLabel(segment, parentSegment);
+  
+  // Prioridad: routeLabels > dynamicLabel (para UUIDs) > formatSegment
+  const label = routeLabels[path] || dynamicLabel || formatSegment(segment);
+
+  return (
+    <BreadcrumbItem>
+      {isLast ? (
+        <BreadcrumbPage>{label}</BreadcrumbPage>
+      ) : (
+        <BreadcrumbLink href={path}>{label}</BreadcrumbLink>
+      )}
+    </BreadcrumbItem>
+  );
 };
 
 export const AdminScrollBar: React.FC = () => {
@@ -71,18 +114,17 @@ export const AdminScrollBar: React.FC = () => {
               if (segment === 'admin') return null;
               
               const path = `/${pathSegments.slice(0, index + 1).join('/')}`;
-              const label = routeLabels[path] || segment.charAt(0).toUpperCase() + segment.slice(1);
               const isLast = index === pathSegments.length - 1;
+              const parentSegment = index > 1 ? pathSegments[index - 1] : undefined;
 
               return (
                 <span className="contents" key={path}>
-                  <BreadcrumbItem>
-                    {isLast ? (
-                      <BreadcrumbPage>{label}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink href={path}>{label}</BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
+                  <DynamicBreadcrumbItem
+                    segment={segment}
+                    parentSegment={parentSegment}
+                    path={path}
+                    isLast={isLast}
+                  />
                   {!isLast && <BreadcrumbSeparator />}
                 </span>
               );
