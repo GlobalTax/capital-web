@@ -214,47 +214,73 @@ export const useUnifiedContacts = () => {
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
 
+      // 🔥 NEW: Fetch professional_valuations linked to contact_leads
+      const { data: proValuations, error: proValuationsError } = await supabase
+        .from('professional_valuations')
+        .select('linked_lead_id, valuation_central, valuation_low, valuation_high, normalized_ebitda, sector')
+        .eq('linked_lead_type', 'contact')
+        .not('linked_lead_id', 'is', null);
+
+      if (proValuationsError) console.error('Error fetching professional valuations:', proValuationsError);
+
+      // Create map of professional valuations by linked_lead_id
+      const proValuationMap = (proValuations || []).reduce((acc, pv) => {
+        if (pv.linked_lead_id) {
+          acc[pv.linked_lead_id] = pv;
+        }
+        return acc;
+      }, {} as Record<string, { valuation_central: number | null; valuation_low: number | null; valuation_high: number | null; normalized_ebitda: number | null; sector: string | null }>);
+
       // Transform and unify data
       const unifiedData: UnifiedContact[] = [
         // Contact leads
-        ...(contactLeads || []).map(lead => ({
-          id: lead.id,
-          origin: 'contact' as const,
-          name: lead.full_name,
-          email: lead.email,
-          phone: lead.phone,
-          company: lead.company,
-          created_at: lead.created_at,
-          status: lead.status,
-          company_size: lead.company_size,
-          country: lead.country,
-          referral: lead.referral,
-          service_type: lead.service_type,
-          sectors_of_interest: lead.sectors_of_interest,
-          investment_budget: lead.investment_budget,
-          email_sent: lead.email_sent,
-          email_sent_at: lead.email_sent_at,
-          email_opened: lead.email_opened,
-          email_opened_at: lead.email_opened_at,
-          email_message_id: lead.email_message_id,
-          hubspot_sent: (lead as any).hubspot_sent || false,
-          hubspot_sent_at: (lead as any).hubspot_sent_at || null,
-          ip_address: lead.ip_address?.toString(),
-          user_agent: lead.user_agent,
-          priority: determinePriority(lead),
-          is_hot_lead: isHotLead(lead),
-          lead_status_crm: lead.lead_status_crm,
-          assigned_to: lead.assigned_to,
-          // 🔥 NEW: Empresa vinculada
-          empresa_id: lead.empresa_id,
-          empresa_nombre: (lead.empresas as any)?.nombre || null,
-          // 🔥 NEW: Indicador de origen Valoración Pro
-          is_from_pro_valuation: lead.referral === 'Valoración Pro',
-          // 🔥 NEW: Canal de adquisición
-          acquisition_channel_id: lead.acquisition_channel_id,
-          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
-          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
-        })),
+        ...(contactLeads || []).map(lead => {
+          // Check if this contact has a linked professional valuation
+          const proValuation = proValuationMap[lead.id];
+          
+          return {
+            id: lead.id,
+            origin: 'contact' as const,
+            name: lead.full_name,
+            email: lead.email,
+            phone: lead.phone,
+            company: lead.company,
+            created_at: lead.created_at,
+            status: lead.status,
+            company_size: lead.company_size,
+            country: lead.country,
+            referral: lead.referral,
+            service_type: lead.service_type,
+            sectors_of_interest: lead.sectors_of_interest,
+            investment_budget: lead.investment_budget,
+            email_sent: lead.email_sent,
+            email_sent_at: lead.email_sent_at,
+            email_opened: lead.email_opened,
+            email_opened_at: lead.email_opened_at,
+            email_message_id: lead.email_message_id,
+            hubspot_sent: (lead as any).hubspot_sent || false,
+            hubspot_sent_at: (lead as any).hubspot_sent_at || null,
+            ip_address: lead.ip_address?.toString(),
+            user_agent: lead.user_agent,
+            priority: determinePriority(lead),
+            is_hot_lead: isHotLead(lead),
+            lead_status_crm: lead.lead_status_crm,
+            assigned_to: lead.assigned_to,
+            // 🔥 NEW: Empresa vinculada
+            empresa_id: lead.empresa_id,
+            empresa_nombre: (lead.empresas as any)?.nombre || null,
+            // 🔥 NEW: Indicador de origen Valoración Pro
+            is_from_pro_valuation: lead.referral === 'Valoración Pro',
+            // 🔥 NEW: Canal de adquisición
+            acquisition_channel_id: lead.acquisition_channel_id,
+            acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+            acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+            // 🔥 NEW: Datos de Valoración Pro vinculada
+            final_valuation: proValuation?.valuation_central || undefined,
+            ebitda: proValuation?.normalized_ebitda || undefined,
+            industry: proValuation?.sector || undefined,
+          };
+        }),
         
         // Valuation leads
         ...(valuationLeads || []).map(lead => ({
