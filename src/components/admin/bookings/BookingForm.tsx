@@ -12,6 +12,8 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { AdvisorSelector } from './AdvisorSelector';
+import { ContactSelector } from './ContactSelector';
+import { ContactForBooking } from './hooks/useContactsForBooking';
 import { CreateBookingData } from './hooks/useCreateBooking';
 
 interface BookingFormProps {
@@ -56,9 +58,24 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
     send_confirmation_email: true,
   });
 
+  const [selectedContact, setSelectedContact] = useState<ContactForBooking | null>(null);
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     defaultValues?.booking_date ? new Date(defaultValues.booking_date) : undefined
   );
+
+  const handleContactSelect = (contact: ContactForBooking | null) => {
+    setSelectedContact(contact);
+    if (contact) {
+      setFormData(prev => ({
+        ...prev,
+        client_name: contact.full_name,
+        client_email: contact.email,
+        client_phone: contact.phone || '',
+        company_name: contact.company || '',
+      }));
+    }
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -86,6 +103,15 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Contact Selector */}
+      <div className="space-y-2">
+        <Label>Seleccionar contacto</Label>
+        <ContactSelector
+          selectedContact={selectedContact}
+          onSelect={handleContactSelect}
+        />
+      </div>
+
       {/* Client Info */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
