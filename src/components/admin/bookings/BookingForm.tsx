@@ -15,6 +15,7 @@ import { AdvisorSelector } from './AdvisorSelector';
 import { ContactSelector } from './ContactSelector';
 import { ContactForBooking } from './hooks/useContactsForBooking';
 import { CreateBookingData } from './hooks/useCreateBooking';
+import { useBookingConfig } from './hooks/useBookingConfig';
 
 interface BookingFormProps {
   onSubmit: (data: CreateBookingData) => void;
@@ -22,21 +23,7 @@ interface BookingFormProps {
   defaultValues?: Partial<CreateBookingData>;
 }
 
-const MEETING_TYPES = [
-  { value: 'initial_consultation', label: 'Consulta Inicial' },
-  { value: 'follow_up', label: 'Seguimiento' },
-  { value: 'valuation_review', label: 'Revisión de Valoración' },
-  { value: 'due_diligence', label: 'Due Diligence' },
-  { value: 'closing', label: 'Cierre' },
-  { value: 'other', label: 'Otro' },
-];
-
-const MEETING_FORMATS = [
-  { value: 'video_call', label: 'Videollamada' },
-  { value: 'phone_call', label: 'Llamada telefónica' },
-  { value: 'in_person', label: 'Presencial' },
-];
-
+// Fallback time slots (could be moved to DB in future)
 const TIME_SLOTS = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
   '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
@@ -44,6 +31,8 @@ const TIME_SLOTS = [
 ];
 
 export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormProps) => {
+  const { data: config, isLoading: configLoading } = useBookingConfig();
+  
   const [formData, setFormData] = useState<Partial<CreateBookingData>>({
     client_name: defaultValues?.client_name || '',
     client_email: defaultValues?.client_email || '',
@@ -219,7 +208,7 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {MEETING_TYPES.map((type) => (
+              {config?.meetingTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
@@ -238,9 +227,9 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {MEETING_FORMATS.map((format) => (
-                <SelectItem key={format.value} value={format.value}>
-                  {format.label}
+              {config?.meetingFormats.map((fmt) => (
+                <SelectItem key={fmt.value} value={fmt.value}>
+                  {fmt.label}
                 </SelectItem>
               ))}
             </SelectContent>
