@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, List, LayoutGrid } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, List, LayoutGrid, Plus, Link } from 'lucide-react';
 import { BookingsKPIs } from './BookingsKPIs';
 import { BookingFilters } from './BookingFilters';
 import { BookingsTable } from './BookingsTable';
 import { BookingsCalendarView } from './BookingsCalendarView';
+import { CreateBookingModal } from './CreateBookingModal';
+import { GenerateBookingLinkModal } from './GenerateBookingLinkModal';
 import { useBookings, BookingFilters as FiltersType } from './hooks/useBookings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -15,20 +18,34 @@ export const BookingsManager = () => {
     search: ''
   });
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
 
   const { data: bookings = [], isLoading } = useBookings(filters);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Calendar className="w-6 h-6" />
-          Reservas de Llamadas
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Gestiona las reservas de llamadas con leads y clientes
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Calendar className="w-6 h-6" />
+            Reservas de Llamadas
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Gestiona las reservas de llamadas con leads y clientes
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowLinkModal(true)}>
+            <Link className="w-4 h-4 mr-2" />
+            Generar Enlace
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Reserva
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
@@ -71,6 +88,10 @@ export const BookingsManager = () => {
           <BookingsCalendarView />
         </TabsContent>
       </Tabs>
+
+      {/* Modals */}
+      <CreateBookingModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <GenerateBookingLinkModal open={showLinkModal} onOpenChange={setShowLinkModal} />
     </div>
   );
 };
