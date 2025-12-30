@@ -60,6 +60,18 @@ const getStatusConfig = (status: string | null | undefined) => {
   return configs[status] || { label: status, color: 'bg-gray-500/10 text-gray-600' };
 };
 
+// Channel badge with Linear styling
+const getChannelConfig = (category?: string | null) => {
+  const configs: Record<string, { color: string }> = {
+    'paid': { color: 'bg-red-500/10 text-red-600 border-red-500/20' },
+    'organic': { color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    'referral': { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    'direct': { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20' },
+    'other': { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  };
+  return configs[category || 'other'] || configs.other;
+};
+
 const formatCurrency = (value?: number) => {
   if (!value) return '—';
   if (value >= 1000000) {
@@ -112,6 +124,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
             </TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Contacto</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Origen</TableHead>
+            <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Canal</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Empresa</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">Valoración</TableHead>
@@ -174,6 +187,17 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                   <Badge variant="outline" className={cn("h-5 text-[10px] font-medium border", originConfig.color)}>
                     {originConfig.label}
                   </Badge>
+                </TableCell>
+                
+                {/* Channel */}
+                <TableCell className="py-2">
+                  {contact.acquisition_channel_name ? (
+                    <Badge variant="outline" className={cn("h-5 text-[10px] font-medium border", getChannelConfig(contact.acquisition_channel_category).color)}>
+                      {contact.acquisition_channel_name}
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
                 </TableCell>
                 
                 {/* Status */}
