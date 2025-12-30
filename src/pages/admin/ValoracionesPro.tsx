@@ -129,11 +129,30 @@ export default function ValoracionesPro() {
     }
   };
 
-  const handleViewPdf = (valuation: ProfessionalValuationData) => {
-    if (valuation.pdfUrl) {
-      window.open(valuation.pdfUrl, '_blank');
-    } else {
+  const [isCheckingPdf, setIsCheckingPdf] = useState(false);
+
+  const handleViewPdf = async (valuation: ProfessionalValuationData) => {
+    if (!valuation.pdfUrl) {
       toast.error('PDF no disponible. Genera el PDF primero.');
+      return;
+    }
+
+    setIsCheckingPdf(true);
+    try {
+      // Verificar que el archivo existe en Storage antes de abrirlo
+      const response = await fetch(valuation.pdfUrl, { method: 'HEAD' });
+      
+      if (response.ok) {
+        window.open(valuation.pdfUrl, '_blank');
+      } else {
+        console.warn('[ValoracionesPro] PDF no encontrado en Storage:', valuation.pdfUrl);
+        toast.error('El archivo PDF no se encuentra. Por favor, abre la valoración y regenera el PDF.');
+      }
+    } catch (error) {
+      console.error('[ValoracionesPro] Error verificando PDF:', error);
+      toast.error('No se pudo verificar el PDF. Intenta regenerarlo desde la valoración.');
+    } finally {
+      setIsCheckingPdf(false);
     }
   };
 
@@ -376,10 +395,10 @@ export default function ValoracionesPro() {
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleViewPdf(valuation)}
-                                disabled={!valuation.pdfUrl}
+                                disabled={!valuation.pdfUrl || isCheckingPdf}
                               >
                                 <FileText className="mr-2 h-4 w-4" />
-                                Ver PDF
+                                {isCheckingPdf ? 'Verificando...' : 'Ver PDF'}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleDuplicate(valuation.id!)}>
                                 <Copy className="mr-2 h-4 w-4" />

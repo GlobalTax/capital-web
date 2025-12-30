@@ -235,6 +235,18 @@ export default function ValoracionProForm() {
         navigate(`/admin/valoraciones-pro/${valuationId}`, { replace: true });
       }
       
+      // Verificar si el PDF guardado existe (si hay URL)
+      if (data.pdfUrl) {
+        try {
+          const pdfCheckResponse = await fetch(data.pdfUrl, { method: 'HEAD' });
+          if (!pdfCheckResponse.ok) {
+            console.warn('[ValoracionProForm] PDF guardado no existe, se generará uno nuevo');
+          }
+        } catch {
+          console.warn('[ValoracionProForm] No se pudo verificar PDF existente');
+        }
+      }
+
       // Generar PDF en base64 para adjuntar al email
       let pdfBase64: string | undefined;
       
