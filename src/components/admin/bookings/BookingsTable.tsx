@@ -17,10 +17,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, CheckCircle, XCircle, Phone, Eye, FileText } from 'lucide-react';
+import { MoreHorizontal, CheckCircle, XCircle, Phone, Eye, FileText, UserCheck } from 'lucide-react';
 import { Booking, useUpdateBookingStatus } from './hooks/useBookings';
+import { useAssignBooking } from './hooks/useBookingAssignment';
 import { BookingStatusBadge } from './BookingStatusBadge';
 import { BookingDetailModal } from './BookingDetailModal';
+import { AdvisorSelector } from './AdvisorSelector';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +36,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -45,7 +49,23 @@ export const BookingsTable = ({ bookings, isLoading }: BookingsTableProps) => {
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   
+  const { user } = useAuth();
   const updateStatus = useUpdateBookingStatus();
+  const assignBooking = useAssignBooking();
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  const handleAssign = (bookingId: string, userId: string | null) => {
+    if (!user?.id) return;
+    assignBooking.mutate({ 
+      bookingId, 
+      assignedTo: userId, 
+      assignedBy: user.id 
+    });
+  };
 
   const handleConfirm = (booking: Booking) => {
     updateStatus.mutate({ id: booking.id, status: 'confirmed' });
@@ -86,6 +106,7 @@ export const BookingsTable = ({ bookings, isLoading }: BookingsTableProps) => {
               <TableHead>Cliente</TableHead>
               <TableHead>Fecha</TableHead>
               <TableHead>Hora</TableHead>
+              <TableHead>Asignado</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -96,6 +117,7 @@ export const BookingsTable = ({ bookings, isLoading }: BookingsTableProps) => {
                 <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-8 w-8" /></TableCell>
               </TableRow>
@@ -125,7 +147,7 @@ export const BookingsTable = ({ bookings, isLoading }: BookingsTableProps) => {
               <TableHead>Empresa</TableHead>
               <TableHead>Fecha</TableHead>
               <TableHead>Hora</TableHead>
-              <TableHead>Formato</TableHead>
+              <TableHead>Asignado a</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -152,7 +174,27 @@ export const BookingsTable = ({ bookings, isLoading }: BookingsTableProps) => {
                   <span className="text-sm font-mono">{booking.booking_time}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm capitalize">{booking.meeting_format}</span>
+                  {booking.assigned_user ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {getInitials(booking.assigned_user.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm truncate max-w-[100px]">
+                        {booking.assigned_user.full_name || booking.assigned_user.email}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="w-[140px]">
+                      <AdvisorSelector
+                        value={null}
+                        onChange={(userId) => handleAssign(booking.id, userId)}
+                        placeholder="Asignar..."
+                        showUnassign={false}
+                      />
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell>
                   <BookingStatusBadge status={booking.status} />
