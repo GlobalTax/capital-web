@@ -45,14 +45,14 @@ export function KeyboardShortcutsHelp() {
                     </span>
                     <div className="flex items-center gap-1">
                       {item.keys.map((key, keyIndex) => (
-                        <React.Fragment key={keyIndex}>
+                        <span key={keyIndex} className="contents">
                           {keyIndex > 0 && (
                             <span className="text-muted-foreground text-xs">+</span>
                           )}
                           <kbd className="px-2 py-1 text-xs font-mono bg-muted border border-border rounded">
                             {key}
                           </kbd>
-                        </React.Fragment>
+                        </span>
                       ))}
                     </div>
                   </div>
