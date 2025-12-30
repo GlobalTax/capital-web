@@ -313,7 +313,7 @@ const generateClientEmailHtml = (data: ValuationEmailRequest): string => {
           <strong>Capittal</strong> | Expertos en valoración y venta de empresas
         </p>
         <p style="margin:0 0 8px; font-size:12px; color:#9ca3af;">
-          Tel: +34 931 255 628 | info@capittal.es | www.capittal.es
+          Tel: +34 695 717 490 | info@capittal.es | www.capittal.es
         </p>
         <p style="margin:0; font-size:11px; color:#9ca3af;">
           Barcelona: Carrer Ausias March, 36 Principal | Madrid: P.º de la Castellana, 11
