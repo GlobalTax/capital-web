@@ -99,7 +99,7 @@ const LinearAdminHeader = ({ onLogout }: LinearAdminHeaderProps) => {
           </Link>
           
           {breadcrumbItems.map((item, index) => (
-            <React.Fragment key={item.path}>
+            <span key={item.path} className="contents">
               <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
               {item.isLast ? (
                 <span className="text-foreground font-medium truncate">
@@ -113,7 +113,7 @@ const LinearAdminHeader = ({ onLogout }: LinearAdminHeaderProps) => {
                   {item.label}
                 </Link>
               )}
-            </React.Fragment>
+            </span>
           ))}
         </nav>
       </div>
