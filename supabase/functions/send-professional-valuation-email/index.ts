@@ -168,13 +168,9 @@ const generateClientEmailHtml = (data: ValuationEmailRequest): string => {
           <span style="color:#6b7280; font-size:12px;">Facturación:</span>
           <strong style="color:#111827; font-size:12px;">${formatCurrencyCompact(y.revenue)}</strong>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <div style="display:flex; justify-content:space-between;">
           <span style="color:#6b7280; font-size:12px;">EBITDA:</span>
           <strong style="color:#111827; font-size:12px;">${formatCurrencyCompact(y.ebitda)}</strong>
-        </div>
-        <div style="display:flex; justify-content:space-between;">
-          <span style="color:#6b7280; font-size:12px;">B. Neto:</span>
-          <strong style="color:#111827; font-size:12px;">${formatCurrencyCompact(y.netProfit)}</strong>
         </div>
       </div>
     `).join('');
@@ -339,7 +335,6 @@ const generateInternalEmailHtml = (data: ValuationEmailRequest, pdfPublicUrl: st
         <td style="padding:6px 0; color:#374151;">${y.year}</td>
         <td style="padding:6px 0; color:#111827; font-weight:600;">${formatCurrency(y.revenue)}</td>
         <td style="padding:6px 0; color:#111827; font-weight:600;">${formatCurrency(y.ebitda)}</td>
-        <td style="padding:6px 0; color:#111827; font-weight:600;">${formatCurrency(y.netProfit)}</td>
       </tr>
     `).join('');
   }
@@ -383,7 +378,6 @@ const generateInternalEmailHtml = (data: ValuationEmailRequest, pdfPublicUrl: st
             <th style="padding:8px; text-align:left; font-size:12px;">Año</th>
             <th style="padding:8px; text-align:left; font-size:12px;">Facturación</th>
             <th style="padding:8px; text-align:left; font-size:12px;">EBITDA</th>
-            <th style="padding:8px; text-align:left; font-size:12px;">Beneficio Neto</th>
           </tr>
           ${financialYearsRows}
         </table>
