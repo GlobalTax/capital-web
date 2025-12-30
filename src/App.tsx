@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { OfflineState } from '@/components/EmptyStates';
 import { useAccessibility } from '@/hooks/useAccessibility';
@@ -32,6 +33,7 @@ function AppContent() {
     <div className={`min-h-screen bg-background font-sans antialiased font-size-${preferences.fontSize}`}>
       <AppRoutes />
       <Toaster />
+      <SonnerToaster position="top-right" richColors />
     </div>
   );
 }
