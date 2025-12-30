@@ -22,6 +22,15 @@ export interface Booking {
   cancellation_reason: string | null;
   created_at: string;
   updated_at: string;
+  // Assignment fields
+  assigned_to: string | null;
+  assigned_at: string | null;
+  assigned_by: string | null;
+  assigned_user?: {
+    user_id: string;
+    full_name: string | null;
+    email: string | null;
+  } | null;
 }
 
 export interface BookingFilters {
@@ -45,7 +54,10 @@ export const useBookings = (filters: BookingFilters) => {
     queryFn: async () => {
       let query = supabase
         .from('calendar_bookings')
-        .select('*')
+        .select(`
+          *,
+          assigned_user:admin_users!calendar_bookings_assigned_to_fkey(user_id, full_name, email)
+        `)
         .order('booking_datetime', { ascending: true });
 
       // Filter by status
