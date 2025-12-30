@@ -14,7 +14,8 @@ serve(async (req) => {
   try {
     const { companyName, cif } = await req.json();
     
-    console.log('[find-company-logo] Buscando logo para:', { companyName, cif });
+    console.log('[find-company-logo] Request recibido');
+    console.log('[find-company-logo] Input:', { companyName, cif });
 
     if (!companyName && !cif) {
       return new Response(
@@ -23,33 +24,69 @@ serve(async (req) => {
       );
     }
 
-    // Intentar extraer dominio del nombre de empresa
     const searchTerm = companyName || cif;
     let domain: string | null = null;
-    
-    // Limpiar nombre de empresa para buscar dominio
-    const cleanName = (companyName || '')
-      .toLowerCase()
-      .replace(/[.,\-_]/g, '')
-      .replace(/\s+(sl|sa|slu|sau|sll|scoop|sociedad\s+limitada|sociedad\s+anonima)$/i, '')
-      .trim()
-      .replace(/\s+/g, '');
+    let cleanName = '';
 
-    if (cleanName) {
-      // Probar dominios comunes
+    // 1. Detectar si el input es una URL y extraer dominio directamente
+    const urlMatch = (companyName || '').match(/^https?:\/\/(?:www\.)?([^\/\?\s]+)/i);
+    if (urlMatch) {
+      domain = urlMatch[1];
+      console.log('[find-company-logo] URL detectada, dominio extraído:', domain);
+    } else {
+      // 2. Detectar si el input ya es un dominio (ej: empresa.es)
+      const domainMatch = (companyName || '').match(/^(?:www\.)?([a-z0-9\-]+\.[a-z]{2,})$/i);
+      if (domainMatch) {
+        domain = domainMatch[1];
+        console.log('[find-company-logo] Dominio directo detectado:', domain);
+      } else {
+        // 3. Limpiar nombre de empresa para buscar dominio
+        cleanName = (companyName || '')
+          .toLowerCase()
+          .replace(/[.,\-_]/g, '')
+          .replace(/\s+(sl|sa|slu|sau|sll|scoop|sociedad\s+limitada|sociedad\s+anonima)$/i, '')
+          .trim()
+          .replace(/\s+/g, '');
+        console.log('[find-company-logo] Nombre limpio:', cleanName);
+      }
+    }
+
+    // Si ya tenemos dominio (de URL o directo), verificar con Clearbit
+    if (domain) {
+      try {
+        const testUrl = `https://logo.clearbit.com/${domain}`;
+        console.log('[find-company-logo] Probando Clearbit:', testUrl);
+        const testResponse = await fetch(testUrl, { method: 'HEAD' });
+        if (testResponse.ok) {
+          console.log('[find-company-logo] Logo encontrado via Clearbit');
+          return new Response(
+            JSON.stringify({ logoUrl: testUrl, source: 'clearbit', domain }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (e) {
+        console.log('[find-company-logo] Error probando dominio:', e);
+      }
+    }
+
+    // 4. Si no encontramos dominio directo, probar dominios comunes
+    if (cleanName && !domain) {
       const possibleDomains = [
         `${cleanName}.es`,
         `${cleanName}.com`,
         `${cleanName}.eu`,
+        `${cleanName}.net`,
       ];
       
-      // Verificar cuál existe usando Clearbit (no requiere API key)
+      console.log('[find-company-logo] Probando dominios:', possibleDomains);
+      
       for (const testDomain of possibleDomains) {
         try {
           const testUrl = `https://logo.clearbit.com/${testDomain}`;
           const testResponse = await fetch(testUrl, { method: 'HEAD' });
           if (testResponse.ok) {
             domain = testDomain;
+            console.log('[find-company-logo] Logo encontrado en:', domain);
             break;
           }
         } catch {

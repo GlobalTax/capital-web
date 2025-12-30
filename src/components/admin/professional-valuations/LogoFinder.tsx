@@ -74,7 +74,7 @@ export function LogoFinder({ companyName, cif, onLogoFound, disabled }: LogoFind
       <div className="flex gap-2">
         <div className="flex-1">
           <Input
-            placeholder="Nombre de empresa o dominio..."
+            placeholder="Web, dominio o nombre (ej: empresa.es, Acme SL)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={disabled || isSearching}
