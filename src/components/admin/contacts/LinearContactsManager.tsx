@@ -2,17 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedContacts, ContactOrigin, UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
+import { useBrevoSyncStatusBulk } from '@/hooks/useBrevoSyncStatus';
 import { useContactActions, useContactSelection } from '@/features/contacts';
 import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
 import { ContactStatsCards } from '@/features/contacts';
 import { Button } from '@/components/ui/button';
-import { Send, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const LinearContactsManager = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { 
     contacts, 
     allContacts, 
@@ -30,6 +33,13 @@ const LinearContactsManager = () => {
   const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
   const { softDelete } = useContactActions(refetch);
   const { syncBulkContacts, isSyncing } = useBrevoSync();
+  
+  // Get sync status for all selected contacts
+  const { syncedIds } = useBrevoSyncStatusBulk(selectedIds);
+  
+  // Calculate how many selected contacts are already synced
+  const alreadySyncedCount = selectedIds.filter(id => syncedIds.has(id)).length;
+  const notSyncedCount = selectedIds.length - alreadySyncedCount;
 
   const handleViewDetails = (contact: UnifiedContact) => {
     setSelectedContact(contact);
@@ -47,7 +57,27 @@ const LinearContactsManager = () => {
 
   const handleBulkSyncToBrevo = async () => {
     if (selectedIds.length === 0) return;
-    await syncBulkContacts(selectedIds, contacts);
+    
+    // Filter out already synced contacts
+    const idsToSync = selectedIds.filter(id => !syncedIds.has(id));
+    
+    if (idsToSync.length === 0) {
+      toast({
+        title: "Todos ya sincronizados",
+        description: `Los ${selectedIds.length} contactos seleccionados ya están en Brevo`,
+      });
+      clearSelection();
+      return;
+    }
+    
+    if (alreadySyncedCount > 0) {
+      toast({
+        title: "Sincronización parcial",
+        description: `${alreadySyncedCount} contactos ya estaban en Brevo, se sincronizarán ${idsToSync.length}`,
+      });
+    }
+    
+    await syncBulkContacts(idsToSync, contacts);
     clearSelection();
   };
 
@@ -84,11 +114,23 @@ const LinearContactsManager = () => {
             onClick={handleBulkSyncToBrevo} 
             variant="secondary" 
             size="sm"
-            disabled={isSyncing}
-            className="h-8"
+            disabled={isSyncing || notSyncedCount === 0}
+            className={cn(
+              "h-8",
+              notSyncedCount === 0 && "border-green-500/30 text-green-600"
+            )}
           >
-            <Send className="h-3.5 w-3.5 mr-1.5" />
-            {isSyncing ? 'Sincronizando...' : `Brevo (${selectedIds.length})`}
+            {notSyncedCount === 0 ? (
+              <>
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-green-600" />
+                Ya en Brevo ({selectedIds.length})
+              </>
+            ) : (
+              <>
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                {isSyncing ? 'Sincronizando...' : `Brevo (${notSyncedCount}${alreadySyncedCount > 0 ? `/${selectedIds.length}` : ''})`}
+              </>
+            )}
           </Button>
         )}
       </div>
