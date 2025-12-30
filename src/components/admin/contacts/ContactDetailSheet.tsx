@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,11 @@ import {
   FileText,
   Send,
   Archive,
-  Megaphone
+  Megaphone,
+  Pencil,
+  Save,
+  XCircle,
+  Loader2
 } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { format } from 'date-fns';
@@ -31,6 +35,8 @@ import { cn } from '@/lib/utils';
 import { AcquisitionChannelSelect } from './AcquisitionChannelSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useAcquisitionChannels, CATEGORY_LABELS, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
+import ContactEditForm from './ContactEditForm';
+import { useContactUpdate, ContactUpdateData } from '@/hooks/useContactUpdate';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -112,12 +118,77 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
 }) => {
   const { toast } = useToast();
   const { channels } = useAcquisitionChannels();
+  const { updateContact, isUpdating } = useContactUpdate();
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
     (contact as any)?.acquisition_channel_id || null
   );
   const [isSavingChannel, setIsSavingChannel] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<ContactUpdateData>({});
+
+  // Initialize form data when contact changes
+  useEffect(() => {
+    if (contact) {
+      setFormData({
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone || '',
+        company: contact.company || '',
+        industry: contact.industry || '',
+        employee_range: contact.employee_range || '',
+        cif: contact.cif || '',
+        revenue: contact.revenue,
+        ebitda: contact.ebitda,
+        profession: contact.profession || '',
+        experience: contact.experience || '',
+        motivation: contact.motivation || '',
+        service_type: contact.service_type || '',
+        sectors_of_interest: contact.sectors_of_interest || '',
+        investment_budget: contact.investment_budget || '',
+        target_timeline: contact.target_timeline || '',
+        preferred_location: contact.preferred_location || '',
+      });
+      setIsEditing(false);
+    }
+  }, [contact]);
 
   if (!contact) return null;
+
+  const handleSave = () => {
+    updateContact(
+      { id: contact.id, origin: contact.origin, data: formData },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+      }
+    );
+  };
+
+  const handleCancel = () => {
+    // Reset form data to original contact values
+    setFormData({
+      name: contact.name,
+      email: contact.email,
+      phone: contact.phone || '',
+      company: contact.company || '',
+      industry: contact.industry || '',
+      employee_range: contact.employee_range || '',
+      cif: contact.cif || '',
+      revenue: contact.revenue,
+      ebitda: contact.ebitda,
+      profession: contact.profession || '',
+      experience: contact.experience || '',
+      motivation: contact.motivation || '',
+      service_type: contact.service_type || '',
+      sectors_of_interest: contact.sectors_of_interest || '',
+      investment_budget: contact.investment_budget || '',
+      target_timeline: contact.target_timeline || '',
+      preferred_location: contact.preferred_location || '',
+      
+    });
+    setIsEditing(false);
+  };
 
   const originConfig = getOriginConfig(contact.origin);
   const selectedChannel = channels.find(c => c.id === selectedChannelId);
@@ -178,45 +249,96 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
                 {contact.company || 'Sin empresa'}
               </p>
             </div>
+            {!isEditing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setIsEditing(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </SheetHeader>
 
         {/* Content */}
         <div className="overflow-y-auto h-[calc(100vh-180px)] px-6 py-4">
-          {/* Quick actions */}
-          <div className="flex gap-2 mb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 h-9 border-[hsl(var(--linear-border))]"
-              onClick={() => window.open(`mailto:${contact.email}`)}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Email
-            </Button>
-            {contact.phone && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 h-9 border-[hsl(var(--linear-border))]"
-                onClick={() => window.open(`tel:${contact.phone}`)}
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                Llamar
-              </Button>
-            )}
-            {contact.phone && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 h-9 border-[hsl(var(--linear-border))]"
-                onClick={() => window.open(`https://wa.me/${contact.phone?.replace(/\D/g, '')}`)}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                WhatsApp
-              </Button>
-            )}
-          </div>
+          {isEditing ? (
+            <>
+              {/* Edit Mode */}
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                  Editando información del contacto
+                </h3>
+                <ContactEditForm
+                  contact={contact}
+                  formData={formData}
+                  onChange={setFormData}
+                />
+              </div>
+              
+              {/* Save/Cancel buttons */}
+              <div className="flex gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCancel}
+                  disabled={isUpdating}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleSave}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Guardar
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* View Mode - Quick actions */}
+              <div className="flex gap-2 mb-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 h-9 border-[hsl(var(--linear-border))]"
+                  onClick={() => window.open(`mailto:${contact.email}`)}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email
+                </Button>
+                {contact.phone && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 border-[hsl(var(--linear-border))]"
+                    onClick={() => window.open(`tel:${contact.phone}`)}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Llamar
+                  </Button>
+                )}
+                {contact.phone && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 border-[hsl(var(--linear-border))]"
+                    onClick={() => window.open(`https://wa.me/${contact.phone?.replace(/\D/g, '')}`)}
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </Button>
+                )}
+              </div>
 
           {/* Contact info section */}
           <div className="space-y-1 mb-6 group">
@@ -401,6 +523,8 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
                   )}
                 </div>
               </div>
+            </>
+          )}
             </>
           )}
         </div>
