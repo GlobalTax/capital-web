@@ -120,3 +120,6 @@ verify_jwt = false
 
 [functions.find-company-logo]
 verify_jwt = false
+
+[functions.rewrite-comparables]
+verify_jwt = false

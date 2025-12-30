@@ -1028,11 +1028,57 @@ const DisclaimerPage: React.FC<{
   </Page>
 );
 
-// Comparable Operations Page
+// Comparable Operations Page - Texto libre formateado
 const ComparableOperationsPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
-  const comparables = data.comparableOperations || [];
+  // Nuevo sistema: texto libre formateado por IA
+  const hasFormattedText = data.includeComparables && data.comparablesFormattedText;
+  // Legacy: tabla estructurada
+  const hasLegacyComparables = (data.comparableOperations?.length ?? 0) > 0;
   
-  if (comparables.length === 0) return null;
+  if (!hasFormattedText && !hasLegacyComparables) return null;
+  
+  // Si hay texto formateado, usarlo (nuevo sistema)
+  if (hasFormattedText) {
+    const paragraphs = data.comparablesFormattedText!.split('\n\n').filter(p => p.trim());
+    
+    return (
+      <Page size="A4" style={styles.contentPage}>
+        <View style={styles.header}>
+          <CapittalLogo />
+          <Text style={styles.headerCompany}>{data.clientCompany}</Text>
+        </View>
+        
+        <Text style={styles.pageTitle}>Transacciones Comparables del Sector</Text>
+        
+        <View style={styles.section}>
+          {paragraphs.map((paragraph, index) => (
+            <Text key={index} style={[styles.paragraph, { marginBottom: 10 }]}>
+              {paragraph}
+            </Text>
+          ))}
+        </View>
+        
+        {/* Nota metodológica */}
+        <View style={[styles.contextBox, { marginTop: 20 }]}>
+          <Text style={styles.contextTitle}>Nota metodológica</Text>
+          <Text style={styles.contextText}>
+            La información sobre transacciones comparables ha sido recopilada de fuentes públicas y análisis 
+            de mercado. Los múltiplos pueden variar en función del tamaño de la operación, la calidad del 
+            negocio, las sinergias potenciales y las condiciones de mercado. Estos datos se proporcionan 
+            como referencia orientativa para contextualizar la valoración.
+          </Text>
+        </View>
+        
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Capittal - Informe de Valoración Profesional</Text>
+          <Text style={styles.pageNumber}>Página 5</Text>
+        </View>
+      </Page>
+    );
+  }
+  
+  // Legacy: tabla estructurada (para valoraciones antiguas)
+  const comparables = data.comparableOperations || [];
   
   return (
     <Page size="A4" style={styles.contentPage}>
@@ -1098,7 +1144,11 @@ const ComparableOperationsPage: React.FC<{ data: ProfessionalValuationData }> = 
 
 // Main Document Component
 const ProfessionalValuationPDF: React.FC<ProfessionalValuationPDFProps> = ({ data, advisorInfo }) => {
-  const hasComparables = (data.comparableOperations?.length ?? 0) > 0;
+  // Nuevo sistema: texto libre formateado
+  const hasFormattedText = data.includeComparables && data.comparablesFormattedText;
+  // Legacy: tabla estructurada
+  const hasLegacyComparables = (data.comparableOperations?.length ?? 0) > 0;
+  const hasComparables = hasFormattedText || hasLegacyComparables;
   
   return (
     <Document

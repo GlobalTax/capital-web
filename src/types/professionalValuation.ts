@@ -155,8 +155,13 @@ export interface ProfessionalValuationData {
   // Sensibilidad
   sensitivityMatrix?: SensitivityMatrix;
   
-  // Operaciones comparables
+  // Operaciones comparables (legacy - tabla estructurada)
   comparableOperations?: ComparableOperation[];
+  
+  // Nuevo sistema de comparables basado en texto libre
+  comparablesRawText?: string;           // Texto pegado por el usuario
+  comparablesFormattedText?: string;     // Texto reescrito por IA para el PDF
+  includeComparables?: boolean;          // Toggle para incluir en PDF
   
   // Contexto
   valuationContext?: string;
@@ -270,6 +275,9 @@ export function mapDbToProfessionalValuation(dbRow: any): ProfessionalValuationD
     valuationCentral: dbRow.valuation_central,
     sensitivityMatrix: dbRow.sensitivity_matrix,
     comparableOperations: dbRow.comparable_operations || [],
+    comparablesRawText: dbRow.comparables_raw_text,
+    comparablesFormattedText: dbRow.comparables_formatted_text,
+    includeComparables: dbRow.include_comparables ?? false,
     valuationContext: dbRow.valuation_context,
     strengths: dbRow.strengths,
     weaknesses: dbRow.weaknesses,
@@ -323,6 +331,9 @@ export function mapProfessionalValuationToDb(data: Partial<ProfessionalValuation
     valuation_central: data.valuationCentral,
     sensitivity_matrix: data.sensitivityMatrix,
     comparable_operations: data.comparableOperations,
+    comparables_raw_text: data.comparablesRawText,
+    comparables_formatted_text: data.comparablesFormattedText,
+    include_comparables: data.includeComparables,
     valuation_context: data.valuationContext,
     strengths: data.strengths,
     weaknesses: data.weaknesses,
