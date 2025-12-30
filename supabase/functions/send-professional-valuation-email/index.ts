@@ -516,7 +516,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Enviar email al cliente CON PDF adjunto y equipo en CC visible
     const clientEmailResponse = await resend.emails.send({
-      from: "Capittal <valoraciones@capittal.es>",
+      from: "Capittal <samuel@capittal.es>",
       to: [requestData.recipientEmail],
       cc: ccRecipients.length > 0 ? ccRecipients : undefined,
       subject: subject,
