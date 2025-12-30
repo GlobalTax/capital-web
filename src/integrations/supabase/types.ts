@@ -7750,6 +7750,8 @@ export type Database = {
           client_name: string
           client_phone: string | null
           comparable_operations: Json | null
+          comparables_formatted_text: string | null
+          comparables_raw_text: string | null
           created_at: string
           created_by: string | null
           ebitda_multiple_high: number | null
@@ -7760,6 +7762,7 @@ export type Database = {
           email_subject: string | null
           financial_years: Json
           id: string
+          include_comparables: boolean | null
           internal_notes: string | null
           lead_source: string | null
           linked_lead_id: string | null
@@ -7801,6 +7804,8 @@ export type Database = {
           client_name: string
           client_phone?: string | null
           comparable_operations?: Json | null
+          comparables_formatted_text?: string | null
+          comparables_raw_text?: string | null
           created_at?: string
           created_by?: string | null
           ebitda_multiple_high?: number | null
@@ -7811,6 +7816,7 @@ export type Database = {
           email_subject?: string | null
           financial_years?: Json
           id?: string
+          include_comparables?: boolean | null
           internal_notes?: string | null
           lead_source?: string | null
           linked_lead_id?: string | null
@@ -7852,6 +7858,8 @@ export type Database = {
           client_name?: string
           client_phone?: string | null
           comparable_operations?: Json | null
+          comparables_formatted_text?: string | null
+          comparables_raw_text?: string | null
           created_at?: string
           created_by?: string | null
           ebitda_multiple_high?: number | null
@@ -7862,6 +7870,7 @@ export type Database = {
           email_subject?: string | null
           financial_years?: Json
           id?: string
+          include_comparables?: boolean | null
           internal_notes?: string | null
           lead_source?: string | null
           linked_lead_id?: string | null
