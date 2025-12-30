@@ -29,38 +29,53 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `Eres un analista senior de M&A especializado en el mercado español. Tu tarea es reescribir información sobre transacciones comparables para incluirla en un informe de valoración profesional.
+    const systemPrompt = `Eres un analista senior de M&A. Tu tarea es estructurar información sobre transacciones comparables para un informe de valoración.
 
-REQUISITOS OBLIGATORIOS:
-- Lenguaje formal y profesional, apropiado para un informe de valoración empresarial
-- Mantener TODOS los datos numéricos exactos (precios, múltiplos, facturación, EBITDA)
-- Eliminar emojis, tablas markdown y formato informal
-- Estructurar el contenido en párrafos claros y legibles
-- No usar bullet points con símbolos, usa párrafos narrativos
-- El texto debe poder leerse directamente en un PDF sin necesidad de formato especial
-- Máximo 800 palabras
+FORMATO DE SALIDA OBLIGATORIO:
 
-ESTRUCTURA SUGERIDA:
-1. Párrafo introductorio breve sobre el contexto del sector
-2. Descripción de cada operación relevante mencionada (nombre, año, valoración/precio, contexto)
-3. Párrafo de cierre con conclusiones sobre múltiplos típicos del sector
+📌 Transacciones recientes (España y Europa)
 
-NO incluyas:
-- Tablas con formato
-- Emojis o símbolos decorativos
-- Notas al pie o referencias
-- Títulos de sección (el título lo ponemos nosotros)
-- Frases como "Aquí tienes" o referencias al proceso de escritura`;
+🇪🇸 España
+[Para cada operación española relevante:]
+**[Comprador] adquiere [Target] ([Mes Año])**
+- Comprador: [descripción breve]
+- Target: [descripción breve]
+- Valor: [precio o "no divulgado"]
+- Múltiplo: [EV/EBITDA si disponible o rango estimado ~Xx–Yx]
+- Contexto: [1 línea sobre la lógica estratégica]
 
-    const userPrompt = `Reescribe la siguiente información sobre transacciones comparables del sector para incluirla en un informe de valoración profesional.
+🇪🇺 Europa
+[Mismo formato para operaciones europeas relevantes]
 
-CONTEXTO:
-- Empresa valorada: ${clientCompany || 'No especificada'}
+📊 Rangos de múltiplos observados
+- [Sector específico]: ~Xx–Yx EV/EBITDA
+- [Subsector o región]: ~Xx–Yx EV/EBITDA
+
+📌 Conclusión
+[2-3 líneas sobre qué múltiplos aplican al caso valorado]
+
+REGLAS ESTRICTAS:
+- Usa emojis como separadores visuales (📌 🇪🇸 🇪🇺 📊 🧠 👉)
+- Mantén TODOS los datos numéricos exactos del texto original
+- Máximo 5-7 operaciones más relevantes
+- Si no hay datos concretos, indica "no divulgado" - NUNCA inventes cifras
+- Sé conciso: cada operación máximo 4-5 líneas
+- NO generes texto de relleno ni párrafos largos narrativos
+- NO incluyas tablas markdown, solo listas con guiones
+- Máximo 600 palabras total
+- NO uses frases como "Aquí tienes" o referencias al proceso de escritura`;
+
+    const userPrompt = `Estructura la siguiente información de transacciones comparables.
+
+EMPRESA VALORADA:
+- Nombre: ${clientCompany || 'No especificada'}
 - Sector: ${sector || 'No especificado'}
 - Valoración estimada: ${valuationCentral ? `${(valuationCentral / 1000000).toFixed(1)}M€` : 'No especificada'}
 
-INFORMACIÓN ORIGINAL A REESCRIBIR:
-${rawText}`;
+INFORMACIÓN A ESTRUCTURAR:
+${rawText}
+
+Extrae las operaciones más relevantes y presenta en el formato indicado. Si el texto incluye rangos de múltiplos, inclúyelos en la sección de rangos.`;
 
     console.log('[rewrite-comparables] Llamando a Lovable AI...');
 
