@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { ProfessionalValuationData, ValuationCalculationResult } from '@/types/professionalValuation';
 import { formatCurrencyEUR, formatNumber } from '@/utils/professionalValuationCalculation';
-import { BarChart3, TrendingUp, Info, AlertTriangle } from 'lucide-react';
+import { BarChart3, TrendingUp, Info, AlertTriangle, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MultiplesStepProps {
@@ -88,28 +89,52 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
     );
   }
 
-  const { normalizedEbitda, multipleLow, multipleHigh, valuationLow, valuationHigh } = calculatedValues;
-  const multipleUsed = data.ebitdaMultipleUsed || (multipleLow + multipleHigh) / 2;
+  const { normalizedEbitda, multipleLow: calculatedLow, multipleHigh: calculatedHigh, valuationLow: calcValuationLow, valuationHigh: calcValuationHigh } = calculatedValues;
+  
+  // Detectar si se usa rango personalizado
+  const useCustomRange = data.ebitdaMultipleLow != null || data.ebitdaMultipleHigh != null;
+  
+  // Usar múltiplos personalizados si existen, sino los calculados
+  const effectiveLow = data.ebitdaMultipleLow ?? calculatedLow;
+  const effectiveHigh = data.ebitdaMultipleHigh ?? calculatedHigh;
+  
+  const multipleUsed = data.ebitdaMultipleUsed || (effectiveLow + effectiveHigh) / 2;
   const valuationCentral = normalizedEbitda * multipleUsed;
+  
+  // Recalcular valoraciones con múltiplos efectivos
+  const valuationLow = normalizedEbitda * effectiveLow;
+  const valuationHigh = normalizedEbitda * effectiveHigh;
 
-  // Detectar si el múltiplo está fuera del rango
-  const isOutOfRange = isMultipleOutOfRange(multipleUsed, multipleLow, multipleHigh);
+  // Detectar si el múltiplo está fuera del rango efectivo
+  const isOutOfRange = isMultipleOutOfRange(multipleUsed, effectiveLow, effectiveHigh);
   const deviationPercentage = isOutOfRange 
-    ? multipleUsed < multipleLow 
-      ? ((multipleLow - multipleUsed) / multipleLow * 100).toFixed(0)
-      : ((multipleUsed - multipleHigh) / multipleHigh * 100).toFixed(0)
+    ? multipleUsed < effectiveLow 
+      ? ((effectiveLow - multipleUsed) / effectiveLow * 100).toFixed(0)
+      : ((multipleUsed - effectiveHigh) / effectiveHigh * 100).toFixed(0)
     : 0;
 
   // Verificar justificación
   const hasJustification = isMultipleJustificationValid(data.multipleJustification);
 
   // Calcular posición del slider (0-100) - clamp para valores fuera de rango
-  const clampedMultiple = Math.max(multipleLow, Math.min(multipleHigh, multipleUsed));
-  const sliderValue = ((clampedMultiple - multipleLow) / (multipleHigh - multipleLow)) * 100;
+  const clampedMultiple = Math.max(effectiveLow, Math.min(effectiveHigh, multipleUsed));
+  const sliderValue = ((clampedMultiple - effectiveLow) / (effectiveHigh - effectiveLow)) * 100;
 
   const handleSliderChange = (value: number[]) => {
-    const newMultiple = multipleLow + (value[0] / 100) * (multipleHigh - multipleLow);
+    const newMultiple = effectiveLow + (value[0] / 100) * (effectiveHigh - effectiveLow);
     updateField('ebitdaMultipleUsed', Math.round(newMultiple * 10) / 10);
+  };
+  
+  const handleToggleCustomRange = (checked: boolean) => {
+    if (checked) {
+      // Activar: inicializar con valores calculados
+      updateField('ebitdaMultipleLow', calculatedLow);
+      updateField('ebitdaMultipleHigh', calculatedHigh);
+    } else {
+      // Desactivar: limpiar valores personalizados
+      updateField('ebitdaMultipleLow', undefined as any);
+      updateField('ebitdaMultipleHigh', undefined as any);
+    }
   };
 
   return (
@@ -138,11 +163,11 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
               <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div className="space-y-2">
                 <p className="text-amber-800 font-medium">
-                  Múltiplo fuera del rango del sector ({formatNumber(multipleLow, 1)}x - {formatNumber(multipleHigh, 1)}x)
+                  Múltiplo fuera del rango {useCustomRange ? 'personalizado' : 'del sector'} ({formatNumber(effectiveLow, 1)}x - {formatNumber(effectiveHigh, 1)}x)
                 </p>
                 <p className="text-amber-700 text-sm">
                   El múltiplo seleccionado ({formatNumber(multipleUsed, 1)}x) está un {deviationPercentage}% 
-                  {multipleUsed < multipleLow ? ' por debajo' : ' por encima'} del rango típico.
+                  {multipleUsed < effectiveLow ? ' por debajo' : ' por encima'} del rango.
                   <strong> Es obligatorio justificar esta desviación.</strong>
                 </p>
               </div>
@@ -153,13 +178,79 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
 
       {/* Rango de múltiplos */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Múltiplos EBITDA del sector
-          </CardTitle>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Múltiplos EBITDA
+            </CardTitle>
+            <span className={cn(
+              "text-xs px-2 py-1 rounded-full",
+              useCustomRange 
+                ? "bg-primary/10 text-primary" 
+                : "bg-muted text-muted-foreground"
+            )}>
+              {useCustomRange ? 'Personalizado' : `Sector: ${data.sector}`}
+            </span>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Toggle para rango personalizado */}
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Settings2 className="w-4 h-4 text-muted-foreground" />
+              <Label htmlFor="customRange" className="text-sm cursor-pointer">
+                Usar rango de múltiplos personalizado
+              </Label>
+            </div>
+            <Switch
+              id="customRange"
+              checked={useCustomRange}
+              onCheckedChange={handleToggleCustomRange}
+            />
+          </div>
+          
+          {/* Inputs para rango personalizado */}
+          {useCustomRange && (
+            <div className="grid grid-cols-2 gap-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+              <div className="space-y-2">
+                <Label htmlFor="customLow" className="text-sm">Múltiplo mínimo</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="customLow"
+                    type="number"
+                    value={data.ebitdaMultipleLow ?? calculatedLow}
+                    onChange={(e) => updateField('ebitdaMultipleLow', parseFloat(e.target.value) || calculatedLow)}
+                    step={0.5}
+                    min={1}
+                    max={25}
+                    className="w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">x</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customHigh" className="text-sm">Múltiplo máximo</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="customHigh"
+                    type="number"
+                    value={data.ebitdaMultipleHigh ?? calculatedHigh}
+                    onChange={(e) => updateField('ebitdaMultipleHigh', parseFloat(e.target.value) || calculatedHigh)}
+                    step={0.5}
+                    min={1}
+                    max={25}
+                    className="w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">x</span>
+                </div>
+              </div>
+              <p className="col-span-2 text-xs text-muted-foreground">
+                Rango del sector: {formatNumber(calculatedLow, 1)}x - {formatNumber(calculatedHigh, 1)}x
+              </p>
+            </div>
+          )}
+
           {/* Visualización del rango */}
           <div className="relative pt-8 pb-4">
             <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -185,9 +276,9 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
             </div>
             
             <div className="flex justify-between text-lg font-bold mt-2">
-              <span className="text-amber-600">{formatNumber(multipleLow, 1)}x</span>
-              <span className="text-green-600">{formatNumber((multipleLow + multipleHigh) / 2, 1)}x</span>
-              <span className="text-blue-600">{formatNumber(multipleHigh, 1)}x</span>
+              <span className="text-amber-600">{formatNumber(effectiveLow, 1)}x</span>
+              <span className="text-green-600">{formatNumber((effectiveLow + effectiveHigh) / 2, 1)}x</span>
+              <span className="text-blue-600">{formatNumber(effectiveHigh, 1)}x</span>
             </div>
           </div>
 
@@ -220,7 +311,7 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
               <Input
                 type="number"
                 value={multipleUsed}
-                onChange={(e) => updateField('ebitdaMultipleUsed', parseFloat(e.target.value) || multipleLow)}
+                onChange={(e) => updateField('ebitdaMultipleUsed', parseFloat(e.target.value) || effectiveLow)}
                 step={0.1}
                 min={1}
                 max={20}
@@ -285,7 +376,7 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
                 {formatCurrencyEUR(valuationLow)}
               </p>
               <p className="text-xs text-muted-foreground">
-                {formatNumber(multipleLow, 1)}x EBITDA
+                {formatNumber(effectiveLow, 1)}x EBITDA
               </p>
             </div>
 
@@ -314,7 +405,7 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
                 {formatCurrencyEUR(valuationHigh)}
               </p>
               <p className="text-xs text-muted-foreground">
-                {formatNumber(multipleHigh, 1)}x EBITDA
+                {formatNumber(effectiveHigh, 1)}x EBITDA
               </p>
             </div>
           </div>
