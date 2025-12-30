@@ -36,8 +36,10 @@ import { AcquisitionChannelSelect } from '@/components/admin/contacts/Acquisitio
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
+import { useBrevoSyncStatus } from '@/hooks/useBrevoSyncStatus';
 import { LeadToOperationConverter } from '@/features/operations-management/components/integrations';
 import { useBrevoEvents } from '@/hooks/useBrevoEvents';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LeadData {
   id: string;
@@ -68,6 +70,10 @@ export default function LeadDetailPage() {
   const [notes, setNotes] = useState('');
   const [acquisitionChannelId, setAcquisitionChannelId] = useState<string | null>(null);
   const [leadEntryDate, setLeadEntryDate] = useState<Date | undefined>(undefined);
+  
+  // Extract actual lead ID for sync status check (remove origin prefix)
+  const actualLeadId = id ? id.split('_').slice(1).join('_') : undefined;
+  const { isSynced, syncedAt, isLoading: isSyncStatusLoading } = useBrevoSyncStatus(actualLeadId);
 
   // Fetch lead data
   const { data: lead, isLoading, refetch } = useQuery({
@@ -381,14 +387,37 @@ export default function LeadDetailPage() {
           <LeadToOperationConverter lead={lead} />
 
           {/* Botón "Enviar a Brevo" */}
-          <Button 
-            variant="outline"
-            onClick={handleSyncToBrevo}
-            disabled={isSyncing}
-          >
-            <Send className="mr-2 h-4 w-4" />
-            {isSyncing ? 'Enviando...' : 'Enviar a Brevo'}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline"
+                  onClick={handleSyncToBrevo}
+                  disabled={isSyncing || isSynced || isSyncStatusLoading}
+                  className={cn(
+                    isSynced && "border-green-500/30 text-green-600 hover:bg-green-50/50"
+                  )}
+                >
+                  {isSynced ? (
+                    <>
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
+                      Enviado a Brevo
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      {isSyncing ? 'Enviando...' : 'Enviar a Brevo'}
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              {isSynced && syncedAt && (
+                <TooltipContent>
+                  <p>Sincronizado el {format(new Date(syncedAt), "d 'de' MMMM, yyyy 'a las' HH:mm", { locale: es })}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Botón "Archivar" */}
           <Button 
