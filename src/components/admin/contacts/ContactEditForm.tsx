@@ -22,13 +22,9 @@ const EMPLOYEE_RANGES = [
 ];
 
 const SERVICE_TYPES = [
-  'Venta de empresa',
-  'Compra de empresa',
-  'Valoración',
-  'Due Diligence',
-  'Reestructuración',
-  'Planificación fiscal',
-  'Otro',
+  { value: 'vender', label: 'Venta de empresa' },
+  { value: 'comprar', label: 'Compra de empresa' },
+  { value: 'otros', label: 'Otros servicios' },
 ];
 
 const ContactEditForm: React.FC<ContactEditFormProps> = ({
@@ -190,56 +186,44 @@ const ContactEditForm: React.FC<ContactEditFormProps> = ({
       )}
 
       {(contact.origin === 'contact' || contact.origin === 'general') && (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="service_type">Tipo de servicio</Label>
-              <Select
-                value={formData.service_type || ''}
-                onValueChange={(value) => updateField('service_type', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar servicio" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SERVICE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="company_size">Tamaño empresa</Label>
-              <Select
-                value={formData.company_size || ''}
-                onValueChange={(value) => updateField('company_size', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar tamaño" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EMPLOYEE_RANGES.map((range) => (
-                    <SelectItem key={range} value={range}>
-                      {range} empleados
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="service_type">Tipo de servicio</Label>
+            <Select
+              value={formData.service_type || ''}
+              onValueChange={(value) => updateField('service_type', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar servicio" />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="message">Mensaje</Label>
-            <Textarea
-              id="message"
-              value={formData.message || ''}
-              onChange={(e) => updateField('message', e.target.value)}
-              placeholder="Mensaje del contacto"
-              rows={3}
-            />
+            <Label htmlFor="company_size">Tamaño empresa</Label>
+            <Select
+              value={formData.company_size || ''}
+              onValueChange={(value) => updateField('company_size', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar tamaño" />
+              </SelectTrigger>
+              <SelectContent>
+                {EMPLOYEE_RANGES.map((range) => (
+                  <SelectItem key={range} value={range}>
+                    {range} empleados
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </>
+        </div>
       )}
 
       {(contact.origin === 'acquisition' || contact.origin === 'company_acquisition') && (
