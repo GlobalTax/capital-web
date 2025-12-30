@@ -25,7 +25,6 @@ export interface ContactUpdateData {
   investment_budget?: string;
   target_timeline?: string;
   preferred_location?: string;
-  message?: string;
 }
 
 // Map UI fields to table-specific fields
@@ -92,7 +91,6 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         company: data.company,
         service_type: data.service_type,
         company_size: data.company_size,
-        message: data.message,
       };
   }
 };
