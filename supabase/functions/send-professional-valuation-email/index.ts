@@ -135,6 +135,18 @@ const cleanPdfBase64 = (b64: string): string => {
   return trimmed.replace(/^data:application\/pdf;base64,/, '');
 };
 
+// Formato compacto para valores grandes (mejor en móvil)
+const formatCurrencyCompact = (value: number | null | undefined): string => {
+  if (typeof value !== 'number' || isNaN(value)) return '-';
+  if (Math.abs(value) >= 1000000) {
+    return `${(value / 1000000).toFixed(1).replace('.0', '')}M €`;
+  }
+  if (Math.abs(value) >= 1000) {
+    return `${Math.round(value / 1000)}K €`;
+  }
+  return `${value} €`;
+};
+
 // Generar HTML del email para cliente (estilo igual que calculadora pública)
 const generateClientEmailHtml = (data: ValuationEmailRequest): string => {
   const { recipientName, valuationData, pdfUrl, advisorName, advisorEmail, customMessage } = data;
@@ -145,80 +157,50 @@ const generateClientEmailHtml = (data: ValuationEmailRequest): string => {
   
   const personalMessage = customMessage || `Le escribimos desde el equipo de Capittal. Gracias por confiar en nosotros para la valoración de <strong>${valuationData.clientCompany}</strong>.`;
 
-  // Generar filas de años financieros si existen
+  // Generar layout de años financieros RESPONSIVE (tarjetas verticales para móvil)
   let financialYearsHtml = '';
   if (valuationData.financialYears && valuationData.financialYears.length > 0) {
-    const yearsHeaders = valuationData.financialYears.map(y => 
-      `<th style="padding: 10px 8px; text-align: right; font-weight: 600; color: #374151; font-size: 13px;">${y.year}</th>`
-    ).join('');
-    
-    const revenueRow = valuationData.financialYears.map(y => 
-      `<td style="padding: 8px; text-align: right; color: #111827; font-weight: 500;">${formatCurrency(y.revenue)}</td>`
-    ).join('');
-    
-    const ebitdaRow = valuationData.financialYears.map(y => 
-      `<td style="padding: 8px; text-align: right; color: #111827; font-weight: 500;">${formatCurrency(y.ebitda)}</td>`
-    ).join('');
-    
-    const netProfitRow = valuationData.financialYears.map(y => 
-      `<td style="padding: 8px; text-align: right; color: #111827; font-weight: 500;">${formatCurrency(y.netProfit)}</td>`
-    ).join('');
+    // Usar tarjetas verticales apiladas para mejor visualización en móvil
+    const yearCards = valuationData.financialYears.map(y => `
+      <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:6px; padding:12px; margin-bottom:8px;">
+        <p style="margin:0 0 8px; font-weight:700; color:#1a1a1a; font-size:14px; border-bottom:1px solid #e5e7eb; padding-bottom:6px;">${y.year}</p>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="color:#6b7280; font-size:12px;">Facturación:</span>
+          <strong style="color:#111827; font-size:12px;">${formatCurrencyCompact(y.revenue)}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="color:#6b7280; font-size:12px;">EBITDA:</span>
+          <strong style="color:#111827; font-size:12px;">${formatCurrencyCompact(y.ebitda)}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#6b7280; font-size:12px;">B. Neto:</span>
+          <strong style="color:#111827; font-size:12px;">${formatCurrencyCompact(y.netProfit)}</strong>
+        </div>
+      </div>
+    `).join('');
 
     financialYearsHtml = `
-      <div style="background:#f3f4f6; border-radius:8px; padding:20px; margin:20px 0;">
-        <p style="margin:0 0 12px; font-weight:600; color:#374151;">📊 Datos Financieros Analizados</p>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th style="padding:10px 8px; text-align:left; font-size:13px; color:#6b7280;">Concepto</th>
-              ${yearsHeaders}
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="border-bottom:1px solid #e5e7eb;">
-              <td style="padding:8px; color:#374151;">Facturación</td>
-              ${revenueRow}
-            </tr>
-            <tr style="border-bottom:1px solid #e5e7eb;">
-              <td style="padding:8px; color:#374151;">EBITDA</td>
-              ${ebitdaRow}
-            </tr>
-            <tr>
-              <td style="padding:8px; color:#374151;">Beneficio Neto</td>
-              ${netProfitRow}
-            </tr>
-          </tbody>
-        </table>
+      <div style="background:#f3f4f6; border-radius:8px; padding:16px; margin:20px 0;">
+        <p style="margin:0 0 12px; font-weight:600; color:#374151; font-size:14px;">📊 Datos Financieros Analizados</p>
+        ${yearCards}
       </div>
     `;
   }
 
-  // Generar tabla de ajustes de normalización si existen
+  // Generar layout de ajustes RESPONSIVE (lista vertical)
   let adjustmentsHtml = '';
   if (valuationData.normalizationAdjustments && valuationData.normalizationAdjustments.length > 0) {
-    const adjustmentRows = valuationData.normalizationAdjustments.map(adj => `
-      <tr style="border-bottom:1px solid #fcd34d;">
-        <td style="padding:8px; color:#92400e;">${adj.concept}</td>
-        <td style="padding:8px; text-align:center; color:${adj.type === 'add' ? '#059669' : '#dc2626'}; font-weight:600;">${adj.type === 'add' ? '+' : '-'}</td>
-        <td style="padding:8px; text-align:right; color:#92400e; font-weight:600;">${formatCurrency(adj.amount)}</td>
-      </tr>
+    const adjustmentItems = valuationData.normalizationAdjustments.map(adj => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #fcd34d;">
+        <span style="color:#92400e; font-size:12px; flex:1; padding-right:8px;">${adj.concept}</span>
+        <span style="color:${adj.type === 'add' ? '#059669' : '#dc2626'}; font-weight:600; font-size:12px; white-space:nowrap;">${adj.type === 'add' ? '+' : '-'} ${formatCurrencyCompact(adj.amount)}</span>
+      </div>
     `).join('');
 
     adjustmentsHtml = `
-      <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:20px; margin:20px 0;">
-        <p style="margin:0 0 12px; font-weight:600; color:#92400e;">⚙️ Ajustes de Normalización del EBITDA</p>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th style="padding:8px; text-align:left; font-size:12px; color:#92400e;">Concepto</th>
-              <th style="padding:8px; text-align:center; font-size:12px; color:#92400e;">Tipo</th>
-              <th style="padding:8px; text-align:right; font-size:12px; color:#92400e;">Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${adjustmentRows}
-          </tbody>
-        </table>
+      <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:16px; margin:20px 0;">
+        <p style="margin:0 0 12px; font-weight:600; color:#92400e; font-size:14px;">⚙️ Ajustes de Normalización</p>
+        ${adjustmentItems}
       </div>
     `;
   }
@@ -231,9 +213,9 @@ const generateClientEmailHtml = (data: ValuationEmailRequest): string => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informe de Valoración - ${valuationData.clientCompany}</title>
 </head>
-<body style="margin:0; padding:0; font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color:#f8fafc;">
-  <div style="max-width:720px; margin:0 auto; padding:24px;">
-    <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:32px; color:#111827;">
+<body style="margin:0; padding:0; font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color:#f8fafc; font-size:14px;">
+  <div style="max-width:600px; margin:0 auto; padding:16px;">
+    <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:20px; color:#111827;">
       
       <!-- Header -->
       <div style="text-align:center; margin-bottom:24px; padding-bottom:20px; border-bottom:2px solid #1a1a1a;">
