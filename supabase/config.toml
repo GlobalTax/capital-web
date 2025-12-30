@@ -117,3 +117,6 @@ verify_jwt = false
 
 [functions.brevo-retry-failed]
 verify_jwt = false
+
+[functions.find-company-logo]
+verify_jwt = false

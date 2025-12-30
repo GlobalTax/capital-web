@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { useProfessionalValuation, useProfessionalValuations } from '@/hooks/useProfessionalValuations';
@@ -54,7 +54,20 @@ export default function ValoracionProForm() {
     website: signatureConfig.website,
   } : undefined;
 
+  const location = useLocation();
+
   useEffect(() => {
+    // Priorizar datos pasados via location.state (después de guardar nueva valoración)
+    const navigationState = location.state as { savedData?: Partial<ProfessionalValuationData> } | null;
+    
+    if (navigationState?.savedData) {
+      console.log('[ValoracionProForm] Restaurando datos desde location.state');
+      setCurrentData(navigationState.savedData);
+      // Limpiar state para no interferir con recargas
+      window.history.replaceState({}, document.title);
+      return;
+    }
+    
     if (existingValuation) {
       setCurrentData(existingValuation);
     } else if (isNew && !currentData) {
@@ -68,7 +81,7 @@ export default function ValoracionProForm() {
         normalizationAdjustments: [],
       });
     }
-  }, [existingValuation, isNew, currentData]);
+  }, [existingValuation, isNew, currentData, location.state]);
 
   const handleSave = async (data: ProfessionalValuationData, isDraft: boolean = true) => {
     console.log('[ValoracionProForm] Guardando:', { isNew, isDraft, dataKeys: Object.keys(data) });
@@ -78,7 +91,11 @@ export default function ValoracionProForm() {
         console.log('[ValoracionProForm] Creada:', newValuation);
         if (newValuation?.id) {
           toast.success('Valoración creada correctamente');
-          navigate(`/admin/valoraciones-pro/${newValuation.id}`, { replace: true });
+          // Pasar datos guardados via location.state para preservarlos durante navegación
+          navigate(`/admin/valoraciones-pro/${newValuation.id}`, { 
+            replace: true,
+            state: { savedData: { ...data, id: newValuation.id } }
+          });
         } else {
           toast.error('Error: No se recibió ID de la nueva valoración');
         }

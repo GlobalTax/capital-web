@@ -7749,6 +7749,7 @@ export type Database = {
           client_logo_url: string | null
           client_name: string
           client_phone: string | null
+          comparable_operations: Json | null
           created_at: string
           created_by: string | null
           ebitda_multiple_high: number | null
@@ -7799,6 +7800,7 @@ export type Database = {
           client_logo_url?: string | null
           client_name: string
           client_phone?: string | null
+          comparable_operations?: Json | null
           created_at?: string
           created_by?: string | null
           ebitda_multiple_high?: number | null
@@ -7849,6 +7851,7 @@ export type Database = {
           client_logo_url?: string | null
           client_name?: string
           client_phone?: string | null
+          comparable_operations?: Json | null
           created_at?: string
           created_by?: string | null
           ebitda_multiple_high?: number | null

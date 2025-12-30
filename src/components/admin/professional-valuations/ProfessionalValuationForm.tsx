@@ -17,6 +17,7 @@ import {
   Calculator,
   Settings2,
   BarChart3,
+  TrendingUp,
   Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ import { ClientDataStep } from './steps/ClientDataStep';
 import { FinancialDataStep } from './steps/FinancialDataStep';
 import { NormalizationStep } from './steps/NormalizationStep';
 import { MultiplesStep } from './steps/MultiplesStep';
+import { ComparableOperationsStep } from './steps/ComparableOperationsStep';
 import { PreviewStep } from './steps/PreviewStep';
 
 import { EmailRecipientSelector } from './EmailRecipientSelector';
@@ -53,7 +55,8 @@ const STEPS = [
   { id: 2, title: 'Financieros', icon: Calculator, description: 'Datos económicos' },
   { id: 3, title: 'Normalización', icon: Settings2, description: 'Ajustes EBITDA' },
   { id: 4, title: 'Múltiplos', icon: BarChart3, description: 'Valoración' },
-  { id: 5, title: 'Resumen', icon: Eye, description: 'Vista previa' },
+  { id: 5, title: 'Comparables', icon: TrendingUp, description: 'Transacciones' },
+  { id: 6, title: 'Resumen', icon: Eye, description: 'Vista previa' },
 ];
 
 const currentYear = new Date().getFullYear();
@@ -418,6 +421,12 @@ export function ProfessionalValuationForm({
             />
           )}
           {currentStep === 5 && (
+            <ComparableOperationsStep
+              data={data}
+              updateField={updateField}
+            />
+          )}
+          {currentStep === 6 && (
             <PreviewStep
               data={dataWithCalculations}
               calculatedValues={calculatedValues}
@@ -426,7 +435,7 @@ export function ProfessionalValuationForm({
           )}
 
           {/* Selector de destinatarios - Solo visible en el último paso */}
-          {currentStep === 5 && onSendEmail && data.clientEmail && onRecipientsChange && (
+          {currentStep === 6 && onSendEmail && data.clientEmail && onRecipientsChange && (
             <div className="mt-6 pt-6 border-t">
               <EmailRecipientSelector
                 selectedRecipients={selectedRecipients}
