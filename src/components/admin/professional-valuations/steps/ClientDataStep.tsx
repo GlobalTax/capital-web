@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfessionalValuationData, VALUATION_SECTORS } from '@/types/professionalValuation';
-import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users, PenTool } from 'lucide-react';
+import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users, PenTool, Search } from 'lucide-react';
 import { LogoUploader } from '../LogoUploader';
+import { LogoFinder } from '../LogoFinder';
 import { useTeamAdvisors } from '@/hooks/useTeamAdvisors';
 
 const LEAD_SOURCES = [
@@ -174,7 +175,7 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
       )}
 
       {/* Logo del cliente (opcional) */}
-      <div className="space-y-2">
+      <div className="space-y-4">
         <Label className="flex items-center gap-2">
           <ImageIcon className="w-4 h-4" />
           Logo del cliente (opcional)
@@ -183,9 +184,17 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
           currentLogoUrl={data.clientLogoUrl || undefined}
           onLogoChange={(url) => updateField('clientLogoUrl', url || '')}
         />
-        <p className="text-xs text-muted-foreground">
-          El logo aparecerá en la portada del PDF
-        </p>
+        <div className="border-t pt-4">
+          <Label className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+            <Search className="w-4 h-4" />
+            O buscar automáticamente
+          </Label>
+          <LogoFinder
+            companyName={data.clientCompany}
+            cif={data.clientCif}
+            onLogoFound={(url) => updateField('clientLogoUrl', url)}
+          />
+        </div>
       </div>
 
       {/* Contexto de la valoración */}

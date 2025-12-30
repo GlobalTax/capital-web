@@ -88,6 +88,20 @@ export interface SensitivityMatrix {
 }
 
 /**
+ * Operación comparable para el PDF
+ */
+export interface ComparableOperation {
+  id: string;
+  companyName: string;
+  sector: string;
+  valuationAmount: number | null;
+  ebitdaAmount?: number | null;
+  ebitdaMultiple?: number | null;
+  year?: number | null;
+  dealType?: string | null;
+}
+
+/**
  * Estado del formulario de valoración
  */
 export type ValuationStatus = 'draft' | 'generated' | 'sent' | 'viewed';
@@ -139,6 +153,9 @@ export interface ProfessionalValuationData {
   
   // Sensibilidad
   sensitivityMatrix?: SensitivityMatrix;
+  
+  // Operaciones comparables
+  comparableOperations?: ComparableOperation[];
   
   // Contexto
   valuationContext?: string;
@@ -251,6 +268,7 @@ export function mapDbToProfessionalValuation(dbRow: any): ProfessionalValuationD
     valuationHigh: dbRow.valuation_high,
     valuationCentral: dbRow.valuation_central,
     sensitivityMatrix: dbRow.sensitivity_matrix,
+    comparableOperations: dbRow.comparable_operations || [],
     valuationContext: dbRow.valuation_context,
     strengths: dbRow.strengths,
     weaknesses: dbRow.weaknesses,
@@ -303,6 +321,7 @@ export function mapProfessionalValuationToDb(data: Partial<ProfessionalValuation
     valuation_high: data.valuationHigh,
     valuation_central: data.valuationCentral,
     sensitivity_matrix: data.sensitivityMatrix,
+    comparable_operations: data.comparableOperations,
     valuation_context: data.valuationContext,
     strengths: data.strengths,
     weaknesses: data.weaknesses,
