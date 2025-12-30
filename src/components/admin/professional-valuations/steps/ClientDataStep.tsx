@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfessionalValuationData, VALUATION_SECTORS } from '@/types/professionalValuation';
-import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users, PenTool, Search } from 'lucide-react';
+import { User, Building2, Mail, Phone, FileText, Briefcase, ImageIcon, Users, PenTool, Search, CheckCircle2, AlertCircle } from 'lucide-react';
 import { LogoUploader } from '../LogoUploader';
 import { LogoFinder } from '../LogoFinder';
 import { useTeamAdvisors } from '@/hooks/useTeamAdvisors';
@@ -46,6 +46,17 @@ interface ClientDataStepProps {
 
 export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
   const { data: teamAdvisors = [] } = useTeamAdvisors();
+
+  // Validación de email
+  const isValidEmail = (email: string): boolean => {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const emailValue = data.clientEmail || '';
+  const showEmailValidation = emailValue.length > 0;
+  const emailIsValid = isValidEmail(emailValue);
 
   const handleAdvisorSelect = (value: string) => {
     if (value === 'custom') {
@@ -102,13 +113,34 @@ export function ClientDataStep({ data, updateField }: ClientDataStepProps) {
             <Mail className="w-4 h-4" />
             Email
           </Label>
-          <Input
-            id="clientEmail"
-            type="email"
-            value={data.clientEmail || ''}
-            onChange={(e) => updateField('clientEmail', e.target.value)}
-            placeholder="email@empresa.com"
-          />
+          <div className="relative">
+            <Input
+              id="clientEmail"
+              type="email"
+              value={data.clientEmail || ''}
+              onChange={(e) => updateField('clientEmail', e.target.value)}
+              placeholder="email@empresa.com"
+              className={showEmailValidation ? (
+                emailIsValid 
+                  ? 'pr-10 border-green-500 focus-visible:ring-green-500' 
+                  : 'pr-10 border-amber-500 focus-visible:ring-amber-500'
+              ) : ''}
+            />
+            {showEmailValidation && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {emailIsValid ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-amber-500" />
+                )}
+              </div>
+            )}
+          </div>
+          {showEmailValidation && !emailIsValid && (
+            <p className="text-xs text-amber-600">
+              Introduce un email válido para poder enviar la valoración
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
