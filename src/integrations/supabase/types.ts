@@ -1285,6 +1285,48 @@ export type Database = {
           },
         ]
       }
+      booking_config: {
+        Row: {
+          config_type: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          duration_minutes: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          label: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          config_type: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          duration_minutes?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          config_type?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          duration_minutes?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       brevo_sync_log: {
         Row: {
           attributes_sent: Json | null
