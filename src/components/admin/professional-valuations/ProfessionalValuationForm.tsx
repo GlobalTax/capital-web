@@ -34,7 +34,7 @@ import {
 import { ClientDataStep } from './steps/ClientDataStep';
 import { FinancialDataStep } from './steps/FinancialDataStep';
 import { NormalizationStep } from './steps/NormalizationStep';
-import { MultiplesStep } from './steps/MultiplesStep';
+import { MultiplesStep, isMultipleOutOfRange, isMultipleJustificationValid } from './steps/MultiplesStep';
 import { ComparableOperationsStep } from './steps/ComparableOperationsStep';
 import { PreviewStep } from './steps/PreviewStep';
 
@@ -229,11 +229,29 @@ export function ProfessionalValuationForm({
         return data.financialYears.some(fy => fy.ebitda > 0);
       case 3:
         return true; // Ajustes son opcionales
-      case 4:
+      case 4: {
         // Validar con múltiple del usuario o del cálculo automático
         const hasMultiple = data.ebitdaMultipleUsed && data.ebitdaMultipleUsed > 0;
         const hasCalculatedMultiple = calculatedValues?.multipleUsed && calculatedValues.multipleUsed > 0;
-        return !!(data.sector && (hasMultiple || hasCalculatedMultiple));
+        const hasValidMultiple = !!(data.sector && (hasMultiple || hasCalculatedMultiple));
+        
+        // Si hay valores calculados, verificar si el múltiplo está fuera de rango
+        if (hasValidMultiple && calculatedValues) {
+          const multipleUsed = data.ebitdaMultipleUsed || 0;
+          const isOutOfRange = isMultipleOutOfRange(
+            multipleUsed, 
+            calculatedValues.multipleLow, 
+            calculatedValues.multipleHigh
+          );
+          
+          // Si está fuera de rango, exigir justificación de al menos 20 caracteres
+          if (isOutOfRange) {
+            return isMultipleJustificationValid(data.multipleJustification);
+          }
+        }
+        
+        return hasValidMultiple;
+      }
       case 5:
         return true;
       default:

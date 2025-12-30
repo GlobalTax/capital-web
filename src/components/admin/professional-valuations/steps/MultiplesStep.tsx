@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { ProfessionalValuationData, ValuationCalculationResult } from '@/types/professionalValuation';
 import { formatCurrencyEUR, formatNumber } from '@/utils/professionalValuationCalculation';
-import { BarChart3, TrendingUp, Info } from 'lucide-react';
+import { BarChart3, TrendingUp, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MultiplesStepProps {
@@ -19,6 +19,19 @@ interface MultiplesStepProps {
     field: K,
     value: ProfessionalValuationData[K]
   ) => void;
+}
+
+// Exportar función de validación para uso externo
+export function isMultipleOutOfRange(
+  multipleUsed: number,
+  multipleLow: number,
+  multipleHigh: number
+): boolean {
+  return multipleUsed < multipleLow || multipleUsed > multipleHigh;
+}
+
+export function isMultipleJustificationValid(justification: string | undefined): boolean {
+  return (justification?.trim().length || 0) >= 20;
 }
 
 export function MultiplesStep({ data, calculatedValues, updateField }: MultiplesStepProps) {
@@ -61,7 +74,7 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
                 onChange={(e) => updateField('ebitdaMultipleUsed', parseFloat(e.target.value) || 6)}
                 step={0.1}
                 min={1}
-                max={15}
+                max={20}
                 className="w-24"
               />
               <span className="text-muted-foreground">x EBITDA</span>
@@ -79,8 +92,20 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
   const multipleUsed = data.ebitdaMultipleUsed || (multipleLow + multipleHigh) / 2;
   const valuationCentral = normalizedEbitda * multipleUsed;
 
-  // Calcular posición del slider (0-100)
-  const sliderValue = ((multipleUsed - multipleLow) / (multipleHigh - multipleLow)) * 100;
+  // Detectar si el múltiplo está fuera del rango
+  const isOutOfRange = isMultipleOutOfRange(multipleUsed, multipleLow, multipleHigh);
+  const deviationPercentage = isOutOfRange 
+    ? multipleUsed < multipleLow 
+      ? ((multipleLow - multipleUsed) / multipleLow * 100).toFixed(0)
+      : ((multipleUsed - multipleHigh) / multipleHigh * 100).toFixed(0)
+    : 0;
+
+  // Verificar justificación
+  const hasJustification = isMultipleJustificationValid(data.multipleJustification);
+
+  // Calcular posición del slider (0-100) - clamp para valores fuera de rango
+  const clampedMultiple = Math.max(multipleLow, Math.min(multipleHigh, multipleUsed));
+  const sliderValue = ((clampedMultiple - multipleLow) / (multipleHigh - multipleLow)) * 100;
 
   const handleSliderChange = (value: number[]) => {
     const newMultiple = multipleLow + (value[0] / 100) * (multipleHigh - multipleLow);
@@ -104,6 +129,27 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
           </div>
         </CardContent>
       </Card>
+
+      {/* Advertencia: Múltiplo fuera de rango */}
+      {isOutOfRange && (
+        <Card className="border-amber-400 bg-amber-50 animate-in fade-in">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-amber-800 font-medium">
+                  Múltiplo fuera del rango del sector ({formatNumber(multipleLow, 1)}x - {formatNumber(multipleHigh, 1)}x)
+                </p>
+                <p className="text-amber-700 text-sm">
+                  El múltiplo seleccionado ({formatNumber(multipleUsed, 1)}x) está un {deviationPercentage}% 
+                  {multipleUsed < multipleLow ? ' por debajo' : ' por encima'} del rango típico.
+                  <strong> Es obligatorio justificar esta desviación.</strong>
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Rango de múltiplos */}
       <Card>
@@ -149,7 +195,17 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Múltiplo seleccionado</Label>
-              <span className="text-2xl font-bold text-primary">{formatNumber(multipleUsed, 1)}x</span>
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  "text-2xl font-bold",
+                  isOutOfRange ? "text-amber-600" : "text-primary"
+                )}>
+                  {formatNumber(multipleUsed, 1)}x
+                </span>
+                {isOutOfRange && (
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                )}
+              </div>
             </div>
             
             <Slider
@@ -166,9 +222,9 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
                 value={multipleUsed}
                 onChange={(e) => updateField('ebitdaMultipleUsed', parseFloat(e.target.value) || multipleLow)}
                 step={0.1}
-                min={multipleLow}
-                max={multipleHigh}
-                className="w-24"
+                min={1}
+                max={20}
+                className={cn("w-24", isOutOfRange && "border-amber-500 focus:border-amber-600")}
               />
               <span className="text-muted-foreground self-center">x EBITDA</span>
             </div>
@@ -176,14 +232,39 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
 
           {/* Justificación */}
           <div className="space-y-2">
-            <Label htmlFor="multipleJustification">Justificación del múltiplo</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="multipleJustification">
+                Justificación del múltiplo
+                {isOutOfRange && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
+              </Label>
+              {isOutOfRange && !hasJustification && (
+                <span className="text-xs text-red-500">(Obligatorio - mínimo 20 caracteres)</span>
+              )}
+            </div>
             <Textarea
               id="multipleJustification"
               value={data.multipleJustification || ''}
               onChange={(e) => updateField('multipleJustification', e.target.value)}
-              placeholder="Explica por qué has elegido este múltiplo (posición competitiva, crecimiento, dependencia del propietario...)"
-              rows={3}
+              placeholder={isOutOfRange 
+                ? "OBLIGATORIO: Explica por qué el múltiplo está fuera del rango del sector..."
+                : "Opcional: Explica por qué has elegido este múltiplo (posición competitiva, crecimiento, dependencia del propietario...)"
+              }
+              rows={isOutOfRange ? 4 : 3}
+              className={cn(
+                isOutOfRange && !hasJustification && "border-red-300 focus:border-red-500"
+              )}
             />
+            {isOutOfRange && (
+              <p className={cn(
+                "text-xs",
+                hasJustification ? "text-green-600" : "text-muted-foreground"
+              )}>
+                Caracteres: {data.multipleJustification?.length || 0}/20 mínimo
+                {hasJustification && " ✓"}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -208,13 +289,22 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
               </p>
             </div>
 
-            <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-primary">
+            <div className={cn(
+              "text-center p-4 rounded-lg border-2",
+              isOutOfRange 
+                ? "bg-amber-50 border-amber-400" 
+                : "bg-primary/10 border-primary"
+            )}>
               <p className="text-sm text-muted-foreground mb-1">Valoración Central</p>
-              <p className="text-3xl font-bold text-primary">
+              <p className={cn(
+                "text-3xl font-bold",
+                isOutOfRange ? "text-amber-700" : "text-primary"
+              )}>
                 {formatCurrencyEUR(valuationCentral)}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                 {formatNumber(multipleUsed, 1)}x EBITDA
+                {isOutOfRange && <AlertTriangle className="w-3 h-3 text-amber-500" />}
               </p>
             </div>
 
