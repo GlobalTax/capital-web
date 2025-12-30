@@ -166,8 +166,8 @@ export function ProfessionalValuationForm({
       ...baseData,
       reportedEbitda: getLatestEbitda(data.financialYears),
       normalizedEbitda: calculatedValues.normalizedEbitda,
-      ebitdaMultipleLow: calculatedValues.multipleLow,
-      ebitdaMultipleHigh: calculatedValues.multipleHigh,
+      ebitdaMultipleLow: baseData.ebitdaMultipleLow ?? calculatedValues.multipleLow,
+      ebitdaMultipleHigh: baseData.ebitdaMultipleHigh ?? calculatedValues.multipleHigh,
       // Usar valores calculados, pero mantener los existentes de DB si los calculados son 0
       valuationLow: calculatedValues.valuationLow || baseData.valuationLow,
       valuationHigh: calculatedValues.valuationHigh || baseData.valuationHigh,
