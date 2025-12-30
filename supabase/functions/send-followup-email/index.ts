@@ -126,14 +126,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "Capittal <s.navarro@capittal.es>",
+      from: "Capittal <samuel@capittal.es>",
       to: [email],
       subject,
       html: htmlWithTracking,
       text: textEmail,
-      reply_to: "s.navarro@capittal.es",
+      reply_to: "samuel@capittal.es",
       headers: {
-        "List-Unsubscribe": "<mailto:s.navarro@capittal.es?subject=unsubscribe>",
+        "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>",
       },
     });
 
