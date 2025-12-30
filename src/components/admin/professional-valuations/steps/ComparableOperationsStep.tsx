@@ -1,6 +1,6 @@
 // =============================================
-// PASO: Operaciones Comparables
-// Selección de transacciones del sector para el PDF
+// PASO: Operaciones Comparables (OPCIONAL)
+// Selección y creación de transacciones para el PDF
 // =============================================
 
 import { useState, useEffect } from 'react';
@@ -11,8 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, TrendingUp, Calendar, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Building2, TrendingUp, Calendar, Info, Plus, X } from 'lucide-react';
 import { ProfessionalValuationData, ComparableOperation } from '@/types/professionalValuation';
+import { STANDARD_SECTORS } from '@/components/admin/shared/sectorOptions';
 
 interface ComparableOperationsStepProps {
   data: ProfessionalValuationData;
@@ -34,10 +39,44 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+const DEAL_TYPES = [
+  'Venta total',
+  'Venta parcial',
+  'MBO',
+  'MBI',
+  'Fusión',
+  'Adquisición',
+  'Otro',
+];
+
+interface ManualOperationForm {
+  companyName: string;
+  sector: string;
+  valuationAmount: string;
+  ebitdaAmount: string;
+  year: string;
+  dealType: string;
+}
+
+const DEFAULT_MANUAL_FORM: ManualOperationForm = {
+  companyName: '',
+  sector: '',
+  valuationAmount: '',
+  ebitdaAmount: '',
+  year: new Date().getFullYear().toString(),
+  dealType: 'Venta total',
+};
+
 export function ComparableOperationsStep({ data, updateField }: ComparableOperationsStepProps) {
+  const [includeComparables, setIncludeComparables] = useState(() => 
+    (data.comparableOperations?.length ?? 0) > 0
+  );
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualForm, setManualForm] = useState<ManualOperationForm>(DEFAULT_MANUAL_FORM);
+  
   const selectedIds = (data.comparableOperations || []).map(op => op.id);
 
-  // Fetch company operations del mismo sector
+  // Fetch company operations (solo si está habilitado)
   const { data: operations = [], isLoading } = useQuery({
     queryKey: ['comparable-operations', data.sector],
     queryFn: async () => {
@@ -63,38 +102,23 @@ export function ComparableOperationsStep({ data, updateField }: ComparableOperat
 
       return sorted;
     },
-    enabled: true,
+    enabled: includeComparables,
   });
 
-  // Auto-seleccionar las primeras 3 operaciones del mismo sector si no hay selección
+  // Limpiar selección si se desactiva
   useEffect(() => {
-    if (operations.length > 0 && selectedIds.length === 0) {
-      const sectorMatches = operations.filter(op => op.sector === data.sector).slice(0, 3);
-      if (sectorMatches.length > 0) {
-        const autoSelected: ComparableOperation[] = sectorMatches.map(op => ({
-          id: op.id,
-          companyName: op.company_name,
-          sector: op.sector,
-          valuationAmount: op.valuation_amount,
-          ebitdaAmount: op.ebitda_amount,
-          ebitdaMultiple: op.ebitda_multiple,
-          year: op.year,
-          dealType: op.deal_type,
-        }));
-        updateField('comparableOperations', autoSelected);
-      }
+    if (!includeComparables && (data.comparableOperations?.length ?? 0) > 0) {
+      updateField('comparableOperations', []);
     }
-  }, [operations, selectedIds.length, data.sector, updateField]);
+  }, [includeComparables]);
 
   const handleToggle = (operation: typeof operations[0]) => {
     const isSelected = selectedIds.includes(operation.id);
     
     if (isSelected) {
-      // Deseleccionar
       const newSelected = (data.comparableOperations || []).filter(op => op.id !== operation.id);
       updateField('comparableOperations', newSelected);
     } else {
-      // Seleccionar (máximo 5)
       if (selectedIds.length >= 5) return;
       
       const newOp: ComparableOperation = {
@@ -111,124 +135,278 @@ export function ComparableOperationsStep({ data, updateField }: ComparableOperat
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    );
-  }
+  const handleRemoveOperation = (id: string) => {
+    const newSelected = (data.comparableOperations || []).filter(op => op.id !== id);
+    updateField('comparableOperations', newSelected);
+  };
+
+  const handleAddManual = () => {
+    const valuation = parseFloat(manualForm.valuationAmount.replace(/[^\d.-]/g, '')) || 0;
+    const ebitda = parseFloat(manualForm.ebitdaAmount.replace(/[^\d.-]/g, '')) || 0;
+    const multiple = ebitda > 0 ? valuation / ebitda : null;
+
+    if (!manualForm.companyName || !manualForm.sector || valuation <= 0) {
+      return;
+    }
+
+    if (selectedIds.length >= 5) return;
+
+    const newOp: ComparableOperation = {
+      id: `manual-${Date.now()}`,
+      companyName: manualForm.companyName,
+      sector: manualForm.sector,
+      valuationAmount: valuation,
+      ebitdaAmount: ebitda || null,
+      ebitdaMultiple: multiple,
+      year: parseInt(manualForm.year) || new Date().getFullYear(),
+      dealType: manualForm.dealType,
+      isManual: true,
+    };
+
+    updateField('comparableOperations', [...(data.comparableOperations || []), newOp]);
+    setManualForm(DEFAULT_MANUAL_FORM);
+    setShowManualForm(false);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header info */}
-      <div className="bg-muted/50 rounded-lg p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-muted-foreground mt-0.5" />
-        <div>
-          <p className="text-sm font-medium">Transacciones Comparables</p>
-          <p className="text-sm text-muted-foreground">
-            Selecciona entre 3-5 operaciones del sector que aparecerán en el PDF como referencia de mercado. 
-            Esto genera confianza mostrando múltiplos reales de transacciones.
-          </p>
-        </div>
-      </div>
-
-      {/* Counter */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Sector: <span className="font-medium text-foreground">{data.sector}</span>
-        </p>
-        <Badge variant={selectedIds.length >= 3 ? 'default' : 'secondary'}>
-          {selectedIds.length}/5 seleccionadas
-        </Badge>
-      </div>
-
-      {/* Operations list */}
-      <div className="space-y-3">
-        {operations.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>No hay operaciones disponibles para comparar</p>
+      {/* Toggle para incluir comparables */}
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-muted-foreground mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">Incluir transacciones comparables en el PDF</p>
+            <p className="text-sm text-muted-foreground">
+              Opcional: Añade operaciones del sector para generar confianza mostrando múltiplos reales.
+            </p>
           </div>
-        ) : (
-          operations.map((operation) => {
-            const isSelected = selectedIds.includes(operation.id);
-            const isSameSector = operation.sector === data.sector;
-            const isDisabled = !isSelected && selectedIds.length >= 5;
-
-            return (
-              <Card 
-                key={operation.id}
-                className={`cursor-pointer transition-all ${
-                  isSelected 
-                    ? 'border-primary bg-primary/5' 
-                    : isDisabled 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:border-muted-foreground/50'
-                }`}
-                onClick={() => !isDisabled && handleToggle(operation)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox 
-                      checked={isSelected}
-                      disabled={isDisabled}
-                      className="mt-1"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium truncate">{operation.company_name}</span>
-                        {isSameSector && (
-                          <Badge variant="outline" className="text-xs">Mismo sector</Badge>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Building2 className="w-3.5 h-3.5" />
-                          {operation.sector}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {operation.year}
-                        </span>
-                        {operation.ebitda_multiple && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            {operation.ebitda_multiple.toFixed(1)}x EBITDA
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatCurrency(operation.valuation_amount || 0)}</p>
-                      {operation.ebitda_amount && (
-                        <p className="text-xs text-muted-foreground">
-                          EBITDA: {formatCurrency(operation.ebitda_amount)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
+        </div>
+        <Switch
+          checked={includeComparables}
+          onCheckedChange={setIncludeComparables}
+        />
       </div>
 
-      {/* Selected summary */}
-      {selectedIds.length > 0 && (
-        <div className="bg-muted/30 rounded-lg p-4">
-          <p className="text-sm font-medium mb-2">Operaciones seleccionadas para el PDF:</p>
-          <div className="flex flex-wrap gap-2">
-            {(data.comparableOperations || []).map(op => (
-              <Badge key={op.id} variant="secondary">
-                {op.companyName} ({op.year}) - {op.ebitdaMultiple?.toFixed(1)}x
+      {includeComparables && (
+        <>
+          {/* Counter y botón añadir */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Sector: <span className="font-medium text-foreground">{data.sector}</span>
+            </p>
+            <div className="flex items-center gap-3">
+              <Badge variant={selectedIds.length >= 3 ? 'default' : 'secondary'}>
+                {selectedIds.length}/5 seleccionadas
               </Badge>
-            ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowManualForm(!showManualForm)}
+                disabled={selectedIds.length >= 5}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Añadir manual
+              </Button>
+            </div>
           </div>
-        </div>
+
+          {/* Formulario manual */}
+          {showManualForm && (
+            <Card className="border-primary/50">
+              <CardContent className="pt-4 space-y-4">
+                <p className="text-sm font-medium">Nueva operación manual</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nombre empresa *</Label>
+                    <Input
+                      value={manualForm.companyName}
+                      onChange={(e) => setManualForm(prev => ({ ...prev, companyName: e.target.value }))}
+                      placeholder="Ej: Empresa Tecnológica SL"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sector *</Label>
+                    <Select
+                      value={manualForm.sector}
+                      onValueChange={(v) => setManualForm(prev => ({ ...prev, sector: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar sector" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STANDARD_SECTORS.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Valoración (€) *</Label>
+                    <Input
+                      value={manualForm.valuationAmount}
+                      onChange={(e) => setManualForm(prev => ({ ...prev, valuationAmount: e.target.value }))}
+                      placeholder="Ej: 5000000"
+                      type="text"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>EBITDA (€)</Label>
+                    <Input
+                      value={manualForm.ebitdaAmount}
+                      onChange={(e) => setManualForm(prev => ({ ...prev, ebitdaAmount: e.target.value }))}
+                      placeholder="Ej: 800000"
+                      type="text"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Año</Label>
+                    <Input
+                      value={manualForm.year}
+                      onChange={(e) => setManualForm(prev => ({ ...prev, year: e.target.value }))}
+                      type="number"
+                      min={2015}
+                      max={2030}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo operación</Label>
+                    <Select
+                      value={manualForm.dealType}
+                      onValueChange={(v) => setManualForm(prev => ({ ...prev, dealType: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DEAL_TYPES.map(t => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setShowManualForm(false)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={handleAddManual}
+                    disabled={!manualForm.companyName || !manualForm.sector || !manualForm.valuationAmount}
+                  >
+                    Añadir
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Operaciones seleccionadas */}
+          {selectedIds.length > 0 && (
+            <div className="bg-muted/30 rounded-lg p-4">
+              <p className="text-sm font-medium mb-2">Operaciones para el PDF:</p>
+              <div className="flex flex-wrap gap-2">
+                {(data.comparableOperations || []).map(op => (
+                  <Badge 
+                    key={op.id} 
+                    variant={op.isManual ? 'outline' : 'secondary'}
+                    className="pr-1"
+                  >
+                    {op.companyName} ({op.year}) {op.ebitdaMultiple ? `- ${op.ebitdaMultiple.toFixed(1)}x` : ''}
+                    <button 
+                      onClick={() => handleRemoveOperation(op.id)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lista de operaciones de la BD */}
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-muted-foreground">Operaciones disponibles:</p>
+              {operations.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No hay operaciones disponibles en la base de datos</p>
+                  <p className="text-xs mt-1">Puedes añadir operaciones manualmente</p>
+                </div>
+              ) : (
+                operations.map((operation) => {
+                  const isSelected = selectedIds.includes(operation.id);
+                  const isSameSector = operation.sector === data.sector;
+                  const isDisabled = !isSelected && selectedIds.length >= 5;
+
+                  return (
+                    <Card 
+                      key={operation.id}
+                      className={`cursor-pointer transition-all ${
+                        isSelected 
+                          ? 'border-primary bg-primary/5' 
+                          : isDisabled 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : 'hover:border-muted-foreground/50'
+                      }`}
+                      onClick={() => !isDisabled && handleToggle(operation)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <Checkbox 
+                            checked={isSelected}
+                            disabled={isDisabled}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium truncate">{operation.company_name}</span>
+                              {isSameSector && (
+                                <Badge variant="outline" className="text-xs">Mismo sector</Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Building2 className="w-3.5 h-3.5" />
+                                {operation.sector}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {operation.year}
+                              </span>
+                              {operation.ebitda_multiple && (
+                                <span className="flex items-center gap-1">
+                                  <TrendingUp className="w-3.5 h-3.5" />
+                                  {operation.ebitda_multiple.toFixed(1)}x EBITDA
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">{formatCurrency(operation.valuation_amount || 0)}</p>
+                            {operation.ebitda_amount && (
+                              <p className="text-xs text-muted-foreground">
+                                EBITDA: {formatCurrency(operation.ebitda_amount)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -99,6 +99,7 @@ export interface ComparableOperation {
   ebitdaMultiple?: number | null;
   year?: number | null;
   dealType?: string | null;
+  isManual?: boolean; // Para distinguir operaciones creadas manualmente
 }
 
 /**

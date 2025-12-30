@@ -1028,8 +1028,78 @@ const DisclaimerPage: React.FC<{
   </Page>
 );
 
+// Comparable Operations Page
+const ComparableOperationsPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
+  const comparables = data.comparableOperations || [];
+  
+  if (comparables.length === 0) return null;
+  
+  return (
+    <Page size="A4" style={styles.contentPage}>
+      <View style={styles.header}>
+        <CapittalLogo />
+        <Text style={styles.headerCompany}>{data.clientCompany}</Text>
+      </View>
+      
+      <Text style={styles.pageTitle}>Transacciones Comparables del Sector</Text>
+      
+      <View style={styles.section}>
+        <Text style={styles.paragraph}>
+          A continuación se presentan operaciones de M&amp;A recientes en sectores similares que sirven como 
+          referencia para contextualizar los múltiplos aplicados en esta valoración.
+        </Text>
+      </View>
+      
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 0.25 }]}>Empresa</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.2 }]}>Sector</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.1, textAlign: 'center' }]}>Año</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.15, textAlign: 'right' }]}>EBITDA</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.1, textAlign: 'center' }]}>Múltiplo</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 0.2, textAlign: 'right' }]}>Valoración</Text>
+        </View>
+        
+        {comparables.map((op, index) => (
+          <View key={op.id} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}]}>
+            <Text style={[styles.tableCell, { flex: 0.25 }]}>{op.companyName}</Text>
+            <Text style={[styles.tableCell, { flex: 0.2, fontSize: 8 }]}>{op.sector}</Text>
+            <Text style={[styles.tableCell, { flex: 0.1, textAlign: 'center' }]}>{op.year}</Text>
+            <Text style={[styles.tableCell, { flex: 0.15, textAlign: 'right' }]}>
+              {op.ebitdaAmount ? formatCurrency(op.ebitdaAmount) : '-'}
+            </Text>
+            <Text style={[styles.tableCell, { flex: 0.1, textAlign: 'center' }]}>
+              {op.ebitdaMultiple ? `${op.ebitdaMultiple.toFixed(1)}x` : '-'}
+            </Text>
+            <Text style={[styles.tableCellBold, { flex: 0.2, textAlign: 'right' }]}>
+              {formatCurrency(op.valuationAmount || 0)}
+            </Text>
+          </View>
+        ))}
+      </View>
+      
+      {/* Nota explicativa */}
+      <View style={[styles.contextBox, { marginTop: 20 }]}>
+        <Text style={styles.contextTitle}>Nota metodológica</Text>
+        <Text style={styles.contextText}>
+          Los múltiplos de las transacciones comparables pueden variar en función del tamaño de la operación, 
+          la calidad del negocio, las sinergias potenciales y las condiciones de mercado en el momento de 
+          la transacción. Estos datos se proporcionan como referencia orientativa.
+        </Text>
+      </View>
+      
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Capittal - Informe de Valoración Profesional</Text>
+        <Text style={styles.pageNumber}>Página 5</Text>
+      </View>
+    </Page>
+  );
+};
+
 // Main Document Component
 const ProfessionalValuationPDF: React.FC<ProfessionalValuationPDFProps> = ({ data, advisorInfo }) => {
+  const hasComparables = (data.comparableOperations?.length ?? 0) > 0;
+  
   return (
     <Document
       title={`Valoración - ${data.clientCompany}`}
@@ -1042,6 +1112,7 @@ const ProfessionalValuationPDF: React.FC<ProfessionalValuationPDFProps> = ({ dat
       <FinancialAnalysisPage data={data} />
       {(data.normalizationAdjustments?.length ?? 0) > 0 && <NormalizationPage data={data} />}
       <MethodologyPage data={data} />
+      {hasComparables && <ComparableOperationsPage data={data} />}
       <DisclaimerPage data={data} advisorInfo={advisorInfo} />
     </Document>
   );

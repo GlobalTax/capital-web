@@ -241,21 +241,41 @@ export function ProfessionalValuationForm({
     }
   }, [data, calculatedValues]);
 
-  // Navegación
-  const goNext = () => {
+  // Navegación con auto-guardado
+  const goNext = async () => {
     if (currentStep < STEPS.length && isStepValid(currentStep)) {
+      // Auto-guardar como borrador antes de cambiar de paso
+      try {
+        await onSave(dataWithCalculations, true);
+      } catch (error) {
+        console.error('[ProfessionalValuationForm] Auto-save error on next:', error);
+        // Continuar aunque falle el guardado
+      }
       setCurrentStep(prev => prev + 1);
     }
   };
 
-  const goPrev = () => {
+  const goPrev = async () => {
     if (currentStep > 1) {
+      // Auto-guardar como borrador antes de cambiar de paso
+      try {
+        await onSave(dataWithCalculations, true);
+      } catch (error) {
+        console.error('[ProfessionalValuationForm] Auto-save error on prev:', error);
+        // Continuar aunque falle el guardado
+      }
       setCurrentStep(prev => prev - 1);
     }
   };
 
-  const goToStep = (step: number) => {
+  const goToStep = async (step: number) => {
     if (step >= 1 && step <= STEPS.length) {
+      // Auto-guardar como borrador antes de cambiar de paso
+      try {
+        await onSave(dataWithCalculations, true);
+      } catch (error) {
+        console.error('[ProfessionalValuationForm] Auto-save error on goToStep:', error);
+      }
       setCurrentStep(step);
     }
   };
