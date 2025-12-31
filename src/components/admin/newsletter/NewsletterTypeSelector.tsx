@@ -2,9 +2,9 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Building2, Newspaper, Bell, GraduationCap, Check, Search, Zap } from 'lucide-react';
+import { Building2, Newspaper, Bell, GraduationCap, Check, Search, Zap, Calendar } from 'lucide-react';
 
-export type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational' | 'buyside' | 'automation';
+export type NewsletterType = 'opportunities' | 'news' | 'updates' | 'educational' | 'buyside' | 'automation' | 'seasonal';
 
 interface NewsletterTypeConfig {
   id: NewsletterType;
@@ -63,6 +63,14 @@ export const NEWSLETTER_TYPES: NewsletterTypeConfig[] = [
     description: 'Templates para automatizaciones y secuencias de email',
     frequency: 'Según trigger',
     defaultSubject: 'Novedades para ti – Capittal',
+  },
+  {
+    id: 'seasonal',
+    label: 'Estacionales',
+    icon: Calendar,
+    description: 'Campañas de temporada (Año Nuevo, Q4, Verano...)',
+    frequency: 'Anual/Puntual',
+    defaultSubject: '¡Feliz Año Nuevo! – Capittal',
   },
 ];
 

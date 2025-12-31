@@ -30,7 +30,8 @@ import {
   Megaphone,
   GraduationCap,
   Binoculars,
-  Zap
+  Zap,
+  Calendar
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -142,6 +143,11 @@ function getTypeBadge(type: NewsletterType | null | undefined) {
       label: "Automatización", 
       icon: <Zap className="h-3 w-3" />, 
       className: "bg-amber-100 text-amber-700 border-amber-200" 
+    },
+    seasonal: { 
+      label: "Estacional", 
+      icon: <Calendar className="h-3 w-3" />, 
+      className: "bg-rose-100 text-rose-700 border-rose-200" 
     },
   };
   const { label, icon, className } = config[type || 'opportunities'] || config.opportunities;
