@@ -26,6 +26,49 @@ function getStatusBadge(status: string): { label: string; color: string; bgColor
   return config[status] || config.active;
 }
 
+/**
+ * Generates a VML-compatible "bulletproof" button for Outlook Windows
+ * with gradient background and rounded corners
+ */
+function generateVMLButton(
+  href: string,
+  text: string,
+  align: 'center' | 'left' = 'center',
+  size: 'normal' | 'large' = 'normal'
+): string {
+  const width = size === 'large' ? 320 : 230;
+  const height = size === 'large' ? 52 : 44;
+  const fontSize = size === 'large' ? 16 : 14;
+  const padding = size === 'large' ? '18px 40px' : '14px 28px';
+  const borderRadius = size === 'large' ? '12px' : '10px';
+
+  return `
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="${align}">
+                      <!--[if mso]>
+                      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${href}"
+                        style="height:${height}px;v-text-anchor:middle;width:${width}px;" arcsize="18%" stroke="f" fill="t">
+                        <v:fill type="gradient" angle="135" color="#0f172a" color2="#1e3a5f"/>
+                        <w:anchorlock/>
+                        <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:${fontSize}px;font-weight:600;">
+                          ${text}&nbsp;&nbsp;→
+                        </center>
+                      </v:roundrect>
+                      <![endif]-->
+                      <!--[if !mso]><!-- -->
+                      <a href="${href}" target="_blank"
+                        style="display:inline-block; background-color:#0f172a; background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);
+                        border-radius:${borderRadius}; padding:${padding}; font-size:${fontSize}px; font-weight:600; color:#ffffff; text-decoration:none;
+                        font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                        ${text}&nbsp;&nbsp;→
+                      </a>
+                      <!--<![endif]-->
+                    </td>
+                  </tr>
+                </table>`;
+}
+
 function generateOperationCard(op: Operation, index: number, total: number): string {
   const status = getStatusBadge(op.project_status);
   const isExclusive = op.project_status === 'exclusive';
@@ -43,7 +86,7 @@ function generateOperationCard(op: Operation, index: number, total: number): str
           
           ${isExclusive ? `
           <!-- RIBBON EXCLUSIVO -->
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(90deg,#f59e0b 0%,#fbbf24 100%);">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f59e0b; background:linear-gradient(90deg,#f59e0b 0%,#fbbf24 100%);">
             <tr>
               <td style="padding:8px 24px; text-align:center;">
                 <span style="font-size:11px; font-weight:700; color:#78350f; letter-spacing:1.5px; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
@@ -82,7 +125,7 @@ function generateOperationCard(op: Operation, index: number, total: number): str
                       <!-- Divider decorativo -->
                       <table width="60" cellpadding="0" cellspacing="0" border="0">
                         <tr>
-                          <td style="height:3px; background:linear-gradient(90deg,#0f172a 0%,#64748b 100%); border-radius:2px;"></td>
+                          <td style="height:3px; background-color:#0f172a; background:linear-gradient(90deg,#0f172a 0%,#64748b 100%); border-radius:2px;"></td>
                         </tr>
                       </table>
                     </td>
@@ -145,22 +188,13 @@ function generateOperationCard(op: Operation, index: number, total: number): str
                 </table>
                 ` : ''}
                 
-                <!-- CTA Button -->
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td align="${isFirst ? 'center' : 'left'}">
-                      <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                          <td style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%); border-radius:10px;">
-                            <a href="https://capittal.es/oportunidades?op=${op.id}" target="_blank" style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                              Solicitar Información&nbsp;&nbsp;→
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
+                <!-- CTA Button (VML bulletproof) -->
+                ${generateVMLButton(
+                  `https://capittal.es/oportunidades?op=${op.id}`,
+                  'Solicitar Información',
+                  isFirst ? 'center' : 'left',
+                  'normal'
+                )}
                 
               </td>
             </tr>
@@ -190,7 +224,7 @@ export function generateBrevoHtml(
     .join('\n');
 
   return `<!DOCTYPE html>
-<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -230,12 +264,6 @@ export function generateBrevoHtml(
       .mobile-hide { display: none !important; }
       .mobile-full-width { width: 100% !important; }
     }
-    
-    /* Dark Mode */
-    @media (prefers-color-scheme: dark) {
-      .dark-bg { background-color: #1e293b !important; }
-      .dark-text { color: #e2e8f0 !important; }
-    }
   </style>
 </head>
 <body style="margin:0; padding:0; background-color:#f1f5f9; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; -webkit-font-smoothing:antialiased;">
@@ -251,62 +279,92 @@ export function generateBrevoHtml(
     <tr>
       <td align="center" style="padding:40px 20px;">
         
+        <!-- OUTLOOK CONTAINER WRAPPER -->
+        <!--[if mso]>
+        <table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0" border="0">
+        <tr><td>
+        <![endif]-->
+        
         <!-- CONTAINER -->
         <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%;">
           
-          <!-- HEADER -->
+          <!-- HEADER (VML gradient + rounded corners for Outlook) -->
           <tr>
-            <td style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%); padding:0; border-radius:20px 20px 0 0; overflow:hidden;">
+            <td align="center" style="padding:0;">
               
-              <!-- Header Content -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" arcsize="3%" stroke="f" fill="t"
+                style="width:600px; height:220px;">
+                <v:fill type="gradient" angle="135" color="#0f172a" color2="#1e3a5f"/>
+                <v:textbox inset="0,0,0,0">
+              <![endif]-->
+              
+              <!--[if !mso]><!-- -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background-color:#0f172a; background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%); border-radius:20px 20px 0 0; overflow:hidden;">
                 <tr>
-                  <td style="padding:40px 40px 32px;" class="mobile-padding">
+                  <td>
+              <!--<![endif]-->
+              
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center">
-                          <!-- Logo Text -->
-                          <h1 style="margin:0; font-size:32px; font-weight:700; color:#ffffff; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; letter-spacing:2px;">
-                            CAPITTAL
-                          </h1>
-                          <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; letter-spacing:0.5px;">
-                            Asesores en M&A y Valoración
-                          </p>
+                        <td style="padding:40px 40px 32px;" class="mobile-padding">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="center">
+                                <!-- Logo Text -->
+                                <h1 style="margin:0; font-size:32px; font-weight:700; color:#ffffff; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; letter-spacing:2px;">
+                                  CAPITTAL
+                                </h1>
+                                <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; letter-spacing:0.5px;">
+                                  Asesores en M&A y Valoración
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      
+                      <!-- Decorative Gold Line -->
+                      <tr>
+                        <td align="center" style="padding:0 40px;">
+                          <table role="presentation" width="80" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td style="height:3px; background-color:#f59e0b; background:linear-gradient(90deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%); border-radius:2px;"></td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      
+                      <!-- Subtitle with Date -->
+                      <tr>
+                        <td style="padding:24px 40px 36px;" class="mobile-padding">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="center">
+                                <p style="margin:0; font-size:15px; color:#e2e8f0; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                                  Oportunidades de la Semana
+                                </p>
+                                <p style="margin:6px 0 0; font-size:13px; color:#64748b; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                                  ${currentDate}
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                     </table>
-                  </td>
-                </tr>
-                
-                <!-- Decorative Gold Line -->
-                <tr>
-                  <td align="center" style="padding:0 40px;">
-                    <table role="presentation" width="80" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="height:3px; background:linear-gradient(90deg,#f59e0b 0%,#fbbf24 50%,#f59e0b 100%); border-radius:2px;"></td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                
-                <!-- Subtitle with Date -->
-                <tr>
-                  <td style="padding:24px 40px 36px;" class="mobile-padding">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td align="center">
-                          <p style="margin:0; font-size:15px; color:#e2e8f0; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                            Oportunidades de la Semana
-                          </p>
-                          <p style="margin:6px 0 0; font-size:13px; color:#64748b; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                            ${currentDate}
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
+              
+              <!--[if !mso]><!-- -->
                   </td>
                 </tr>
               </table>
+              <!--<![endif]-->
+              
+              <!--[if mso]>
+                </v:textbox>
+              </v:roundrect>
+              <![endif]-->
               
             </td>
           </tr>
@@ -335,7 +393,7 @@ export function generateBrevoHtml(
                   <td align="center">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="height:1px; background:linear-gradient(90deg,transparent 0%,#e2e8f0 20%,#e2e8f0 80%,transparent 100%);"></td>
+                        <td style="height:1px; background-color:#e2e8f0; background:linear-gradient(90deg,transparent 0%,#e2e8f0 20%,#e2e8f0 80%,transparent 100%);"></td>
                       </tr>
                     </table>
                   </td>
@@ -362,26 +420,23 @@ export function generateBrevoHtml(
                   <td align="center">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="height:1px; background:linear-gradient(90deg,transparent 0%,#e2e8f0 20%,#e2e8f0 80%,transparent 100%);"></td>
+                        <td style="height:1px; background-color:#e2e8f0; background:linear-gradient(90deg,transparent 0%,#e2e8f0 20%,#e2e8f0 80%,transparent 100%);"></td>
                       </tr>
                     </table>
                   </td>
                 </tr>
               </table>
               
-              <!-- CTA PRINCIPAL -->
+              <!-- CTA PRINCIPAL (VML bulletproof) -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="padding:8px 0;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%); border-radius:12px; box-shadow:0 4px 14px rgba(15,23,42,0.25);">
-                          <a href="https://capittal.es/oportunidades" target="_blank" style="display:inline-block; padding:18px 40px; font-size:16px; font-weight:600; color:#ffffff; text-decoration:none; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                            Ver Todas las Oportunidades&nbsp;&nbsp;→
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
+                    ${generateVMLButton(
+                      'https://capittal.es/oportunidades',
+                      'Ver Todas las Oportunidades',
+                      'center',
+                      'large'
+                    )}
                     <p style="margin:16px 0 0; font-size:13px; color:#94a3b8; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
                       Accede a nuestro marketplace completo
                     </p>
@@ -408,82 +463,119 @@ export function generateBrevoHtml(
             </td>
           </tr>
           
-          <!-- FOOTER -->
+          <!-- FOOTER (VML for rounded corners in Outlook) -->
           <tr>
-            <td style="background-color:#0f172a; padding:36px 32px; border-radius:0 0 20px 20px;" class="mobile-padding">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                
-                <!-- Logo Footer -->
+            <td align="center" style="padding:0;">
+              
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" arcsize="3%" stroke="f" fill="t"
+                style="width:600px; height:auto; mso-wrap-style:none;">
+                <v:fill type="solid" color="#0f172a"/>
+                <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
+              <![endif]-->
+              
+              <!--[if !mso]><!-- -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background-color:#0f172a; border-radius:0 0 20px 20px;">
                 <tr>
-                  <td align="center" style="padding-bottom:20px;">
-                    <p style="margin:0; font-size:18px; font-weight:700; color:#ffffff; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; letter-spacing:1.5px;">
-                      CAPITTAL
-                    </p>
-                    <p style="margin:6px 0 0; font-size:12px; color:#64748b; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                      Asesores en M&A y valoración de empresas
-                    </p>
-                  </td>
-                </tr>
-                
-                <!-- Social Icons -->
-                <tr>
-                  <td align="center" style="padding-bottom:24px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <td>
+              <!--<![endif]-->
+              
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:36px 32px;">
                       <tr>
-                        <td style="padding:0 10px;">
-                          <a href="https://www.linkedin.com/company/104311808" target="_blank" style="text-decoration:none;">
-                            <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" width="32" height="32" style="display:block; border-radius:6px;">
-                          </a>
-                        </td>
-                        <td style="padding:0 10px;">
-                          <a href="https://capittal.es" target="_blank" style="text-decoration:none;">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png" alt="Web" width="32" height="32" style="display:block; border-radius:6px;">
-                          </a>
+                        <td>
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            
+                            <!-- Logo Footer -->
+                            <tr>
+                              <td align="center" style="padding-bottom:20px;">
+                                <p style="margin:0; font-size:18px; font-weight:700; color:#ffffff; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif; letter-spacing:1.5px;">
+                                  CAPITTAL
+                                </p>
+                                <p style="margin:6px 0 0; font-size:12px; color:#64748b; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                                  Asesores en M&A y valoración de empresas
+                                </p>
+                              </td>
+                            </tr>
+                            
+                            <!-- Social Icons -->
+                            <tr>
+                              <td align="center" style="padding-bottom:24px;">
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td style="padding:0 10px;">
+                                      <a href="https://www.linkedin.com/company/104311808" target="_blank" style="text-decoration:none;">
+                                        <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png" alt="LinkedIn" width="32" height="32" style="display:block; border-radius:6px;">
+                                      </a>
+                                    </td>
+                                    <td style="padding:0 10px;">
+                                      <a href="https://capittal.es" target="_blank" style="text-decoration:none;">
+                                        <img src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png" alt="Web" width="32" height="32" style="display:block; border-radius:6px;">
+                                      </a>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            
+                            <!-- Separator -->
+                            <tr>
+                              <td align="center" style="padding-bottom:20px;">
+                                <table role="presentation" width="100" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td style="height:1px; background-color:#334155;"></td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            
+                            <!-- Unsubscribe -->
+                            <tr>
+                              <td align="center">
+                                <p style="margin:0 0 8px; font-size:12px; color:#64748b; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                                  Has recibido este email porque estás suscrito a nuestro newsletter.
+                                </p>
+                                <p style="margin:0; font-size:12px; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                                  <a href="{{unsubscribe}}" style="color:#94a3b8; text-decoration:underline;">Darse de baja</a>
+                                  <span style="color:#475569; padding:0 8px;">·</span>
+                                  <a href="{{update_profile}}" style="color:#94a3b8; text-decoration:underline;">Actualizar preferencias</a>
+                                </p>
+                              </td>
+                            </tr>
+                            
+                            <!-- Copyright -->
+                            <tr>
+                              <td align="center" style="padding-top:20px;">
+                                <p style="margin:0; font-size:11px; color:#475569; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
+                                  © ${new Date().getFullYear()} Capittal. Todos los derechos reservados.
+                                </p>
+                              </td>
+                            </tr>
+                            
+                          </table>
                         </td>
                       </tr>
                     </table>
+              
+              <!--[if !mso]><!-- -->
                   </td>
                 </tr>
-                
-                <!-- Separator -->
-                <tr>
-                  <td align="center" style="padding-bottom:20px;">
-                    <table role="presentation" width="100" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="height:1px; background-color:#334155;"></td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                
-                <!-- Unsubscribe -->
-                <tr>
-                  <td align="center">
-                    <p style="margin:0 0 8px; font-size:12px; color:#64748b; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                      Has recibido este email porque estás suscrito a nuestro newsletter.
-                    </p>
-                    <p style="margin:0; font-size:12px; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                      <a href="{{unsubscribe}}" style="color:#94a3b8; text-decoration:underline;">Darse de baja</a>
-                      <span style="color:#475569; padding:0 8px;">·</span>
-                      <a href="{{update_profile}}" style="color:#94a3b8; text-decoration:underline;">Actualizar preferencias</a>
-                    </p>
-                  </td>
-                </tr>
-                
-                <!-- Copyright -->
-                <tr>
-                  <td align="center" style="padding-top:20px;">
-                    <p style="margin:0; font-size:11px; color:#475569; font-family:'Plus Jakarta Sans','Helvetica Neue',Arial,sans-serif;">
-                      © ${new Date().getFullYear()} Capittal. Todos los derechos reservados.
-                    </p>
-                  </td>
-                </tr>
-                
               </table>
+              <!--<![endif]-->
+              
+              <!--[if mso]>
+                </v:textbox>
+              </v:roundrect>
+              <![endif]-->
+              
             </td>
           </tr>
           
         </table>
+        
+        <!--[if mso]>
+        </td></tr></table>
+        <![endif]-->
         
       </td>
     </tr>
