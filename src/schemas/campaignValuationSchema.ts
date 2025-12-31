@@ -6,6 +6,13 @@ export const campaignValuationSchema = z.object({
     .min(1, 'El email es obligatorio')
     .email('Formato de email inválido')
     .max(255, 'Email demasiado largo'),
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || /^[+]?[0-9\s()-]{9,20}$/.test(val),
+      'Formato de teléfono inválido'
+    ),
   cif: z
     .string()
     .min(1, 'El CIF es obligatorio')

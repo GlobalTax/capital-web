@@ -6,6 +6,7 @@ import { campaignValuationSchema, CampaignValuationData } from '@/schemas/campai
 
 interface FormState {
   email: string;
+  phone: string;
   cif: string;
   revenue: string;
   ebitda: string;
@@ -14,6 +15,7 @@ interface FormState {
 
 interface FormErrors {
   email?: string;
+  phone?: string;
   cif?: string;
   revenue?: string;
   ebitda?: string;
@@ -25,6 +27,7 @@ export function useCampaignValuationForm() {
   
   const [formData, setFormData] = useState<FormState>({
     email: '',
+    phone: '',
     cif: '',
     revenue: '',
     ebitda: '',
@@ -52,6 +55,7 @@ export function useCampaignValuationForm() {
 
     const result = campaignValuationSchema.safeParse({
       email: formData.email.trim(),
+      phone: formData.phone.trim() || undefined,
       cif: formData.cif.trim().toUpperCase(),
       revenue: isNaN(revenueNum) ? undefined : revenueNum,
       ebitda: isNaN(ebitdaNum) ? undefined : ebitdaNum,
@@ -97,11 +101,13 @@ export function useCampaignValuationForm() {
       const utmContent = searchParams.get('utm_content') || null;
 
       // Insert into general_contact_leads with campaign-specific data
+      const phoneValue = formData.phone.trim() || null;
       const { data: insertedData, error } = await optimizedSupabase.from('general_contact_leads').insert({
         full_name: 'Pendiente',
         email: formData.email.trim().toLowerCase(),
+        phone: phoneValue,
         company: `CIF: ${formData.cif.trim().toUpperCase()}`,
-        message: `Campaña Valoración Cierre de Año 2025\n\nCIF: ${formData.cif.trim().toUpperCase()}\nFacturación 2025: ${revenueNum.toLocaleString('es-ES')} €\nEBITDA 2025: ${ebitdaNum.toLocaleString('es-ES')} €`,
+        message: `Campaña Valoración Cierre de Año 2025\n\nCIF: ${formData.cif.trim().toUpperCase()}\nFacturación 2025: ${revenueNum.toLocaleString('es-ES')} €\nEBITDA 2025: ${ebitdaNum.toLocaleString('es-ES')} €${phoneValue ? `\nTeléfono: ${phoneValue}` : ''}`,
         page_origin: 'valoracion_cierre_2025',
         inquiry_type: 'valoracion_campana',
         utm_source: utmSource,
@@ -133,6 +139,7 @@ export function useCampaignValuationForm() {
             fullName: 'Pendiente',
             formData: {
               cif: formData.cif.trim().toUpperCase(),
+              phone: phoneValue,
               revenue: revenueNum,
               ebitda: ebitdaNum,
               campaign: 'valoracion_cierre_2025',
@@ -145,20 +152,13 @@ export function useCampaignValuationForm() {
         }).catch((err) => console.error('Error sending notification:', err));
       }
 
-      setIsSuccess(true);
       toast({
         title: '¡Solicitud enviada!',
         description: 'Nos pondremos en contacto contigo pronto.',
       });
 
-      // Reset form
-      setFormData({
-        email: '',
-        cif: '',
-        revenue: '',
-        ebitda: '',
-        website: '',
-      });
+      // Redirect to thank you page
+      navigate('/lp/valoracion-2026/gracias');
     } catch (err) {
       console.error('Error:', err);
       toast({

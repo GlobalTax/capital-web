@@ -62,6 +62,23 @@ export function CampaignValuationForm() {
         </div>
 
         <div>
+          <Label htmlFor="phone" className="text-foreground font-medium">
+            Teléfono <span className="text-muted-foreground text-xs">(opcional)</span>
+          </Label>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="+34 612 345 678"
+            value={formData.phone}
+            onChange={(e) => updateField('phone', e.target.value)}
+            className={errors.phone ? 'border-destructive' : ''}
+          />
+          {errors.phone && (
+            <p className="text-destructive text-sm mt-1">{errors.phone}</p>
+          )}
+        </div>
+
+        <div>
           <Label htmlFor="cif" className="text-foreground font-medium">
             CIF de la empresa <span className="text-destructive">*</span>
           </Label>
