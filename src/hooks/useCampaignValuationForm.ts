@@ -4,6 +4,32 @@ import { toast } from '@/hooks/use-toast';
 import { optimizedSupabase } from '@/integrations/supabase/optimizedClient';
 import { campaignValuationSchema, CampaignValuationData } from '@/schemas/campaignValuationSchema';
 
+// Normaliza números en formato europeo (1.500.000,50) a formato parseFloat (1500000.50)
+const normalizeEuropeanNumber = (value: string): number => {
+  if (!value || typeof value !== 'string') return NaN;
+  
+  let normalized = value.trim();
+  
+  // Si tiene coma, es formato europeo (1.500.000,50)
+  if (normalized.includes(',')) {
+    // Eliminar puntos de miles y convertir coma a punto decimal
+    normalized = normalized.replace(/\./g, '').replace(',', '.');
+  } else {
+    // Si solo tiene puntos, determinar si son miles o decimales
+    const parts = normalized.split('.');
+    if (parts.length > 2) {
+      // Múltiples puntos = son separadores de miles (1.500.000)
+      normalized = normalized.replace(/\./g, '');
+    } else if (parts.length === 2 && parts[1].length === 3) {
+      // Un punto con 3 dígitos después = separador de miles (1.500)
+      normalized = normalized.replace(/\./g, '');
+    }
+    // Si es algo como "1.5" (1 punto, no 3 dígitos después), se mantiene como decimal
+  }
+  
+  return parseFloat(normalized);
+};
+
 interface FormState {
   email: string;
   phone: string;
@@ -49,9 +75,9 @@ export function useCampaignValuationForm() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Parse numeric values
-    const revenueNum = parseFloat(formData.revenue.replace(/[^0-9.-]/g, ''));
-    const ebitdaNum = parseFloat(formData.ebitda.replace(/[^0-9.-]/g, ''));
+    // Parse numeric values (formato europeo)
+    const revenueNum = normalizeEuropeanNumber(formData.revenue);
+    const ebitdaNum = normalizeEuropeanNumber(formData.ebitda);
 
     const result = campaignValuationSchema.safeParse({
       email: formData.email.trim(),
@@ -91,8 +117,9 @@ export function useCampaignValuationForm() {
     setIsSubmitting(true);
 
     try {
-      const revenueNum = parseFloat(formData.revenue.replace(/[^0-9.-]/g, ''));
-      const ebitdaNum = parseFloat(formData.ebitda.replace(/[^0-9.-]/g, ''));
+      // Parse numeric values (formato europeo)
+      const revenueNum = normalizeEuropeanNumber(formData.revenue);
+      const ebitdaNum = normalizeEuropeanNumber(formData.ebitda);
 
       // Collect UTM params
       const utmSource = searchParams.get('utm_source') || 'direct';
