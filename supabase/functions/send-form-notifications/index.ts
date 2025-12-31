@@ -495,6 +495,16 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
       };
 
     case 'campaign_valuation': {
+      console.log(`[campaign_valuation USER] Data for template:`, JSON.stringify({
+        email: data.email,
+        cif: data.cif,
+        phone: data.phone,
+        revenue: data.revenue,
+        ebitda: data.ebitda,
+        revenueFormatted: formatCurrency(data.revenue),
+        ebitdaFormatted: formatCurrency(data.ebitda)
+      }, null, 2));
+      
       const contentHtml = `
         <div style="margin-bottom: 24px;">
           <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -922,6 +932,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { submissionId, formType, email, fullName, formData }: FormNotificationRequest = await req.json();
 
     console.log(`Processing form notification: ${formType} - ${email}`);
+    console.log(`FormData received:`, JSON.stringify(formData, null, 2));
 
     // Obtener plantillas para administradores y usuario
     const adminTemplate = getEmailTemplate(formType, { 
