@@ -120,11 +120,17 @@ Deno.serve(async (req) => {
   try {
     console.log(`[${requestId}] 🚀 banners_list v${VERSION} - Starting request`);
     
-    const supabaseClient = createClient<Database>(
+    // Public client for read operations (respects RLS)
+    const supabasePublic = createClient<Database>(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
-
+    
+    // Admin client for write operations (bypasses RLS after manual auth check)
+    const supabaseAdmin = createClient<Database>(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
     const url = new URL(req.url);
     const fullPath = url.pathname;
     
@@ -141,7 +147,7 @@ Deno.serve(async (req) => {
       console.log(`[${requestId}] 📢 PUBLIC ENDPOINT - Fetching active banners for path: ${requestedPath}, audience: ${audience}`);
 
       // Fetch visible banners with basic filters only
-      const { data: banners, error } = await supabaseClient
+      const { data: banners, error } = await supabasePublic
         .from('banners')
         .select('*')
         .eq('visible', true);
@@ -276,7 +282,7 @@ Deno.serve(async (req) => {
       if (authHeader && authHeader.startsWith('Bearer ')) {
         try {
           const token = authHeader.replace('Bearer ', '');
-          const { data: { user } } = await supabaseClient.auth.getUser(token);
+          const { data: { user } } = await supabasePublic.auth.getUser(token);
           if (user) {
             userId = user.id;
           }
@@ -286,7 +292,8 @@ Deno.serve(async (req) => {
       }
 
       // Insert banner event
-      const { error: insertError } = await supabaseClient
+      // Use admin client for tracking inserts (public endpoint but needs write access)
+      const { error: insertError } = await supabaseAdmin
         .from('banner_events')
         .insert({
           banner_id: bannerId,
@@ -327,7 +334,7 @@ Deno.serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     
     // Get user from token
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabasePublic.auth.getUser(token);
     
     if (authError || !user) {
       console.error(`[${requestId}] ❌ Auth error:`, authError);
@@ -340,7 +347,7 @@ Deno.serve(async (req) => {
     console.log(`[${requestId}] ✅ User authenticated: ${user.id}, checking admin status...`);
 
     // Check if user is admin
-    const isAdmin = await isUserAdmin(supabaseClient, user.id);
+    const isAdmin = await isUserAdmin(supabaseAdmin, user.id);
     console.log(`[${requestId}] 🔐 User ${user.id} admin status: ${isAdmin}`);
     
     if (!isAdmin) {
@@ -359,7 +366,7 @@ Deno.serve(async (req) => {
       const limit = parseInt(url.searchParams.get('limit') || '20');
       const offset = (page - 1) * limit;
 
-      const { data: banners, error, count } = await supabaseClient
+      const { data: banners, error, count } = await supabaseAdmin
         .from('banners')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -389,7 +396,7 @@ Deno.serve(async (req) => {
     if (req.method === 'POST' && path === '/banners') {
       const bannerData = await req.json();
       
-      const { data: banner, error } = await supabaseClient
+      const { data: banner, error } = await supabaseAdmin
         .from('banners')
         .insert([bannerData])
         .select()
@@ -415,7 +422,7 @@ Deno.serve(async (req) => {
       const bannerId = patchMatch[1];
       const updateData = await req.json();
       
-      const { data: banner, error } = await supabaseClient
+      const { data: banner, error } = await supabaseAdmin
         .from('banners')
         .update(updateData)
         .eq('id', bannerId)
@@ -442,7 +449,7 @@ Deno.serve(async (req) => {
       const bannerId = toggleMatch[1];
       
       // First get current visibility state
-      const { data: currentBanner, error: fetchError } = await supabaseClient
+      const { data: currentBanner, error: fetchError } = await supabaseAdmin
         .from('banners')
         .select('visible')
         .eq('id', bannerId)
@@ -457,7 +464,7 @@ Deno.serve(async (req) => {
       }
 
       // Toggle visibility
-      const { data: banner, error } = await supabaseClient
+      const { data: banner, error } = await supabaseAdmin
         .from('banners')
         .update({ visible: !currentBanner.visible })
         .eq('id', bannerId)
