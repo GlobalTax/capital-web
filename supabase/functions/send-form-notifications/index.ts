@@ -115,6 +115,64 @@ const formatDateTime = (): string => {
   });
 };
 
+// Plantilla HTML profesional base para emails a usuarios (sin CRM, sin UTM)
+const getUserEmailBaseHtml = (
+  title: string,
+  subtitle: string,
+  contentHtml: string
+): string => {
+  const dateTime = formatDateTime();
+  
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; line-height: 1.5;">
+  <div style="max-width: 640px; margin: 0 auto; padding: 32px 16px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="color: #0f172a; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">CAPITTAL</h1>
+      <p style="color: #64748b; font-size: 14px; margin: 8px 0 0;">${subtitle}</p>
+    </div>
+
+    <!-- Main Card -->
+    <div style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); overflow: hidden;">
+      
+      <!-- Title Bar -->
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 20px 24px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600;">${title}</h2>
+        <div style="margin-top: 12px; font-size: 13px; color: #94a3b8;">
+          <span>📅 ${dateTime}</span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div style="padding: 24px;">
+        ${contentHtml}
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 24px; padding: 0 16px;">
+      <p style="color: #64748b; font-size: 13px; margin: 0 0 8px;">
+        ¿Tienes alguna pregunta? Contáctanos en <a href="mailto:samuel@capittal.es" style="color: #2563eb; text-decoration: none;">samuel@capittal.es</a>
+      </p>
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+        +34 695 717 490 | capittal.es
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
+  `;
+};
+
 // Plantilla HTML profesional base para emails internos
 const getAdminEmailBaseHtml = (
   title: string,
@@ -435,6 +493,99 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
           </div>
         `
       };
+
+    case 'campaign_valuation': {
+      const contentHtml = `
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            👤 Datos del Contacto
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Email</td>
+              <td style="padding: 10px 0;"><a href="mailto:${data.email}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.email}</a></td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">CIF</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.cif}</td>
+            </tr>
+            ${data.phone ? `
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Teléfono</td>
+              <td style="padding: 10px 0;"><a href="tel:${data.phone}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.phone}</a></td>
+            </tr>
+            ` : ''}
+          </table>
+        </div>
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            💰 Datos Financieros 2025
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Facturación 2025</td>
+              <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.revenue)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">EBITDA 2025</td>
+              <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.ebitda)}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <!-- Próximos Pasos -->
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            📋 Próximos Pasos
+          </h3>
+          
+          <!-- Paso 1 -->
+          <div style="display: flex; margin-bottom: 16px;">
+            <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px; flex-shrink: 0; margin-right: 12px;">1</div>
+            <div>
+              <p style="margin: 0; color: #0f172a; font-weight: 600; font-size: 14px;">Revisión (24-48h)</p>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Nuestro equipo analizará la información proporcionada sobre tu empresa.</p>
+            </div>
+          </div>
+          
+          <!-- Paso 2 -->
+          <div style="display: flex; margin-bottom: 16px;">
+            <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px; flex-shrink: 0; margin-right: 12px;">2</div>
+            <div>
+              <p style="margin: 0; color: #0f172a; font-weight: 600; font-size: 14px;">Contacto Personalizado</p>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Un asesor especializado se pondrá en contacto contigo para resolver dudas.</p>
+            </div>
+          </div>
+          
+          <!-- Paso 3 -->
+          <div style="display: flex; margin-bottom: 16px;">
+            <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px; flex-shrink: 0; margin-right: 12px;">3</div>
+            <div>
+              <p style="margin: 0; color: #0f172a; font-weight: 600; font-size: 14px;">Informe Preliminar</p>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Recibirás un primer análisis de valoración basado en los datos proporcionados.</p>
+            </div>
+          </div>
+          
+          <!-- Paso 4 -->
+          <div style="display: flex; margin-bottom: 0;">
+            <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px; flex-shrink: 0; margin-right: 12px;">4</div>
+            <div>
+              <p style="margin: 0; color: #0f172a; font-weight: 600; font-size: 14px;">Reunión de Presentación</p>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Agendaremos una reunión para presentar los resultados y discutir opciones estratégicas.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return {
+        subject: `Hemos recibido tu solicitud de valoración - Capittal`,
+        html: getUserEmailBaseHtml(
+          'Solicitud de Valoración Recibida',
+          'Campaña Cierre de Año 2025',
+          contentHtml
+        )
+      };
+    }
 
     default:
       return {
