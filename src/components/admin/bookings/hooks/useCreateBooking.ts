@@ -14,6 +14,8 @@ export interface CreateBookingData {
   assigned_to?: string;
   notes?: string;
   send_confirmation_email?: boolean;
+  lead_id?: string;
+  lead_type?: string;
 }
 
 export const useCreateBooking = () => {

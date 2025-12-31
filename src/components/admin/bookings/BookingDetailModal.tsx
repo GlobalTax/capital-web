@@ -11,9 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, User, Building2, Mail, Phone, FileText, Save, UserCheck, History } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Clock, User, Building2, Mail, Phone, FileText, Save, UserCheck, History, Link2 } from 'lucide-react';
 import { Booking, useUpdateBookingNotes, useUpdateBookingStatus } from './hooks/useBookings';
 import { useAssignBooking, useAssignmentHistory } from './hooks/useBookingAssignment';
+import { getLeadTypeLabel } from './hooks/useLeadSearch';
 import { BookingStatusBadge } from './BookingStatusBadge';
 import { AdvisorSelector } from './AdvisorSelector';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -209,6 +211,27 @@ export const BookingDetailModal = ({ booking, open, onClose }: BookingDetailModa
               <p className="text-sm font-medium capitalize">{booking.meeting_format}</p>
             </div>
           </div>
+
+          {/* Linked Lead */}
+          {booking.lead_id && booking.lead_type && (
+            <>
+              <Separator />
+              <div className="flex items-start gap-2">
+                <Link2 className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Lead vinculado</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary">
+                      {getLeadTypeLabel(booking.lead_type)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {booking.lead_id.slice(0, 8)}...
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
             {booking.cancellation_reason && (
               <>
