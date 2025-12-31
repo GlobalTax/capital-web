@@ -109,14 +109,12 @@ export function useCampaignValuationForm() {
         company: `CIF: ${formData.cif.trim().toUpperCase()}`,
         message: `Campaña Valoración Cierre de Año 2025\n\nCIF: ${formData.cif.trim().toUpperCase()}\nFacturación 2025: ${revenueNum.toLocaleString('es-ES')} €\nEBITDA 2025: ${ebitdaNum.toLocaleString('es-ES')} €${phoneValue ? `\nTeléfono: ${phoneValue}` : ''}`,
         page_origin: 'valoracion_cierre_2025',
-        inquiry_type: 'valoracion_campana',
         utm_source: utmSource,
         utm_medium: utmMedium,
         utm_campaign: utmCampaign,
         utm_content: utmContent,
         referrer: document.referrer || null,
         status: 'new',
-        priority: 'high',
       }).select('id').single();
 
       if (error) {
