@@ -9,12 +9,19 @@ interface TrackingOptions {
   enabled?: boolean;
 }
 
+// Helper function to validate UUID format
+const isValidUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 export const useBannerTracking = ({ bannerId, enabled = true }: TrackingOptions) => {
   const location = useLocation();
   const impressionTracked = useRef(false);
 
   const trackEvent = useCallback(async (event: TrackingEvent) => {
-    if (!enabled || !bannerId) return;
+    // Skip tracking if disabled, no bannerId, or bannerId is not a valid UUID (e.g., "preview")
+    if (!enabled || !bannerId || !isValidUUID(bannerId)) return;
 
     try {
       // Call the edge function to track the event
