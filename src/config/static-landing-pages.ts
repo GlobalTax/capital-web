@@ -106,5 +106,17 @@ export const staticLandingPages: StaticLandingPage[] = [
     features: ['Hero + Form Above Fold', 'Diseño Simplificado', 'A/B Testing Ready', 'Testimoniales', 'FAQ'],
     isActive: true,
     lastUpdated: '2025-01-20'
+  },
+  {
+    id: 'lp-valoracion-2026',
+    title: 'Valoración Cierre Año 2025',
+    slug: 'valoracion-2026',
+    url: '/lp/valoracion-2026',
+    type: 'conversion',
+    description: 'Landing de campaña estacional para valoración de cierre de año',
+    source_project: 'lp-valoracion-2026',
+    features: ['Formulario Simple', 'CIF + Financials', 'UTM Tracking', 'Campaña Email'],
+    isActive: true,
+    lastUpdated: '2025-01-01'
   }
 ];

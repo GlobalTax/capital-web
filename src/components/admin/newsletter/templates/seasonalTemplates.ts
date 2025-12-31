@@ -120,7 +120,7 @@ export function generateNewYearHtml(year: number = new Date().getFullYear()): st
     
     .golden-line {
       height: 4px;
-      background-color: #f59e0b;
+      background-color: #ffffff;
       margin: 0;
     }
     
@@ -246,7 +246,7 @@ export function generateNewYearHtml(year: number = new Date().getFullYear()): st
       
       <!-- Golden Line -->
       <tr>
-        <td class="golden-line" style="height: 4px; background-color: #f59e0b;"></td>
+        <td class="golden-line" style="height: 4px; background-color: #ffffff;"></td>
       </tr>
       
       <!-- Content -->
@@ -290,7 +290,7 @@ export function generateNewYearHtml(year: number = new Date().getFullYear()): st
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
             <tr>
             <td style="padding: 8px;">
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=newyear_${year}&utm_content=cta_professional_valuation" style="height: 50px; v-text-anchor: middle; width: 280px;" arcsize="16%" strokecolor="#0f172a" fillcolor="#ffffff">
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://capittal.es/lp/valoracion-2026?utm_source=brevo&utm_medium=email&utm_campaign=newyear_${year}&utm_content=cta_professional_valuation" style="height: 50px; v-text-anchor: middle; width: 280px;" arcsize="16%" strokecolor="#0f172a" fillcolor="#ffffff">
               <w:anchorlock/>
               <center style="color: #0f172a; font-family: Arial, sans-serif; font-size: 16px; font-weight: bold;">Solicitar Valoración Profesional</center>
             </v:roundrect>
@@ -299,7 +299,7 @@ export function generateNewYearHtml(year: number = new Date().getFullYear()): st
             </table>
             <![endif]-->
             <!--[if !mso]><!-->
-            <a href="https://capittal.es/contacto?utm_source=brevo&utm_medium=email&utm_campaign=newyear_${year}&utm_content=cta_professional_valuation" class="cta-button-secondary" style="display: inline-block; background-color: #ffffff; color: #0f172a !important; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Plus Jakarta Sans', Arial, sans-serif; border: 2px solid #0f172a; margin: 8px;">Solicitar Valoración Profesional</a>
+            <a href="https://capittal.es/lp/valoracion-2026?utm_source=brevo&utm_medium=email&utm_campaign=newyear_${year}&utm_content=cta_professional_valuation" class="cta-button-secondary" style="display: inline-block; background-color: #ffffff; color: #0f172a !important; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Plus Jakarta Sans', Arial, sans-serif; border: 2px solid #0f172a; margin: 8px;">Solicitar Valoración Profesional</a>
             <!--<![endif]-->
           </div>
         </td>
