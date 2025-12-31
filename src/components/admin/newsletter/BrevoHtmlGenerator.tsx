@@ -21,6 +21,7 @@ import { generateUpdatesHtml } from './templates/updatesTemplate';
 import { generateEducationalHtml } from './templates/educationalTemplate';
 import { generateBuySideHtml, BuySideMandate } from './templates/buysideTemplate';
 import { generateReengagementHtml, ReengagementType } from './templates/reengagementTemplates';
+import { generateSeasonalHtml, SeasonalType } from './templates/seasonalTemplates';
 import { ExportDropdown } from './ExportDropdown';
 import { TemplateVersionHistory } from './TemplateVersionHistory';
 import { ThemeSelector } from './ThemeSelector';
@@ -53,6 +54,8 @@ interface BrevoHtmlGeneratorProps {
   contentBlocks?: ContentBlock[];
   headerImageUrl?: string | null;
   reengagementType?: ReengagementType;
+  seasonalType?: SeasonalType;
+  seasonalYear?: number;
 }
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
@@ -76,6 +79,8 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
   contentBlocks = [],
   headerImageUrl = null,
   reengagementType = 'reactivation',
+  seasonalType = 'new_year',
+  seasonalYear = new Date().getFullYear(),
 }) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -133,10 +138,12 @@ export const BrevoHtmlGenerator: React.FC<BrevoHtmlGeneratorProps> = ({
         return generateEducationalHtml(contentBlocks, subject, [], headerImageUrl);
       case 'automation':
         return generateReengagementHtml(reengagementType);
+      case 'seasonal':
+        return generateSeasonalHtml(seasonalType, seasonalYear);
       default:
         return generateBrevoHtml(operations, subject, introText);
     }
-  }, [operations, subject, introText, newsletterType, articles, buySideMandates, contentBlocks, headerImageUrl, reengagementType]);
+  }, [operations, subject, introText, newsletterType, articles, buySideMandates, contentBlocks, headerImageUrl, reengagementType, seasonalType, seasonalYear]);
 
   // HTML Statistics
   const htmlStats = useMemo(() => {
