@@ -13,6 +13,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { AdvisorSelector } from './AdvisorSelector';
 import { ContactSelector } from './ContactSelector';
+import { LeadSearchSelect } from './LeadSearchSelect';
 import { ContactForBooking } from './hooks/useContactsForBooking';
 import { CreateBookingData } from './hooks/useCreateBooking';
 import { useBookingConfig } from './hooks/useBookingConfig';
@@ -45,7 +46,15 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
     assigned_to: defaultValues?.assigned_to || '',
     notes: defaultValues?.notes || '',
     send_confirmation_email: true,
+    lead_id: defaultValues?.lead_id || undefined,
+    lead_type: defaultValues?.lead_type || undefined,
   });
+
+  const [selectedLead, setSelectedLead] = useState<{ id: string; type: string } | null>(
+    defaultValues?.lead_id && defaultValues?.lead_type 
+      ? { id: defaultValues.lead_id, type: defaultValues.lead_type } 
+      : null
+  );
 
   const [selectedContact, setSelectedContact] = useState<ContactForBooking | null>(null);
 
@@ -64,6 +73,15 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
         company_name: contact.company || '',
       }));
     }
+  };
+
+  const handleLeadSelect = (lead: { id: string; type: string } | null) => {
+    setSelectedLead(lead);
+    setFormData(prev => ({
+      ...prev,
+      lead_id: lead?.id || undefined,
+      lead_type: lead?.type || undefined,
+    }));
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -245,6 +263,16 @@ export const BookingForm = ({ onSubmit, isLoading, defaultValues }: BookingFormP
           onChange={(value) => updateField('assigned_to', value)}
           placeholder="Selecciona un asesor (opcional)"
           showUnassign
+        />
+      </div>
+
+      {/* Lead Link */}
+      <div className="space-y-2">
+        <Label>Vincular con Lead (opcional)</Label>
+        <LeadSearchSelect
+          value={selectedLead}
+          onChange={handleLeadSelect}
+          placeholder="Buscar lead para vincular..."
         />
       </div>
 

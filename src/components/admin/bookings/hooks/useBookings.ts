@@ -31,6 +31,9 @@ export interface Booking {
     full_name: string | null;
     email: string | null;
   } | null;
+  // Lead link fields
+  lead_id: string | null;
+  lead_type: string | null;
 }
 
 export interface BookingFilters {
