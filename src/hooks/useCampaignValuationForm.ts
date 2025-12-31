@@ -97,7 +97,7 @@ export function useCampaignValuationForm() {
       const utmContent = searchParams.get('utm_content') || null;
 
       // Insert into general_contact_leads with campaign-specific data
-      const { error } = await optimizedSupabase.from('general_contact_leads').insert({
+      const { data: insertedData, error } = await optimizedSupabase.from('general_contact_leads').insert({
         full_name: 'Pendiente',
         email: formData.email.trim().toLowerCase(),
         company: `CIF: ${formData.cif.trim().toUpperCase()}`,
@@ -111,7 +111,7 @@ export function useCampaignValuationForm() {
         referrer: document.referrer || null,
         status: 'new',
         priority: 'high',
-      });
+      }).select('id').single();
 
       if (error) {
         console.error('Error submitting form:', error);
@@ -121,6 +121,28 @@ export function useCampaignValuationForm() {
           variant: 'destructive',
         });
         return;
+      }
+
+      // Send notification email to team (non-blocking)
+      if (insertedData?.id) {
+        optimizedSupabase.functions.invoke('send-form-notifications', {
+          body: {
+            submissionId: insertedData.id,
+            formType: 'campaign_valuation',
+            email: formData.email.trim().toLowerCase(),
+            fullName: 'Pendiente',
+            formData: {
+              cif: formData.cif.trim().toUpperCase(),
+              revenue: revenueNum,
+              ebitda: ebitdaNum,
+              campaign: 'valoracion_cierre_2025',
+              utmSource,
+              utmMedium,
+              utmCampaign,
+              utmContent,
+            }
+          }
+        }).catch((err) => console.error('Error sending notification:', err));
       }
 
       setIsSuccess(true);

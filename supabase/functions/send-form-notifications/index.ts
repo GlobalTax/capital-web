@@ -15,7 +15,7 @@ const corsHeaders = {
 
 interface FormNotificationRequest {
   submissionId: string;
-  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead' | 'operation_contact' | 'lead_magnet_download';
+  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead' | 'operation_contact' | 'lead_magnet_download' | 'campaign_valuation';
   email: string;
   fullName: string;
   formData: any;
@@ -44,6 +44,7 @@ const getPageOriginLabel = (pageOrigin: string | undefined): string => {
     'calculadora': 'Calculadora',
     'lp/calculadora': 'LP Calculadora',
     'operation_inquiry': 'Consulta de Operación',
+    'valoracion_cierre_2025': 'Campaña Valoración 2025',
   };
   return labels[pageOrigin || ''] || pageOrigin || '';
 };
@@ -677,6 +678,54 @@ const getEmailTemplate = (formType: string, data: any) => {
           'https://capittal.es/admin/calendario',
           'Ver Calendario',
           utmData
+        )
+      };
+    }
+
+    case 'campaign_valuation': {
+      const contentHtml = `
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            👤 Datos del Contacto
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Email</td>
+              <td style="padding: 10px 0;"><a href="mailto:${data.email}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.email}</a></td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">CIF</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.cif}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            💰 Datos Financieros 2025
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Facturación 2025</td>
+              <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.revenue)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">EBITDA 2025</td>
+              <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.ebitda)}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+      
+      return {
+        subject: `🎯 Nueva Solicitud – Campaña Valoración 2025 – Capittal`,
+        html: getAdminEmailBaseHtml(
+          '📈 Nueva Solicitud de Valoración',
+          'Campaña Cierre de Año 2025',
+          contentHtml,
+          'valoracion_cierre_2025',
+          'https://capittal.es/admin/crm',
+          'Ver en CRM',
+          { source: data.utmSource, medium: data.utmMedium, campaign: data.utmCampaign }
         )
       };
     }
