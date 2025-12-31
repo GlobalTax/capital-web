@@ -964,14 +964,21 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Enviando email de confirmación a ${email}...`);
     let userResult;
     try {
+      // Configuración especial para campaign_valuation
+      const isCampaignValuation = formType === 'campaign_valuation';
+      
       const result = await resend.emails.send({
-        from: "Capittal <info@capittal.es>",
+        from: isCampaignValuation 
+          ? "Samuel Navarro - Capittal <samuel@capittal.es>"
+          : "Capittal <info@capittal.es>",
         to: [email],
+        cc: isCampaignValuation ? ["lluis@capittal.es"] : undefined,
+        reply_to: isCampaignValuation ? "samuel@capittal.es" : undefined,
         subject: userTemplate.subject,
         html: userTemplate.html,
       });
       userResult = { status: 'fulfilled', value: result };
-      console.log(`✅ Email de confirmación enviado a ${email}`);
+      console.log(`✅ Email de confirmación enviado a ${email}${isCampaignValuation ? ' (CC: lluis@capittal.es)' : ''}`);
     } catch (error) {
       userResult = { status: 'rejected', reason: error };
       console.error(`❌ Error enviando confirmación a ${email}:`, error);
