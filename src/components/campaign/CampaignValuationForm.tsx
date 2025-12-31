@@ -5,6 +5,18 @@ import { Label } from '@/components/ui/label';
 import { Shield, CheckCircle2, Loader2 } from 'lucide-react';
 import { useCampaignValuationForm } from '@/hooks/useCampaignValuationForm';
 
+// Formatea número con puntos como separadores de miles (formato europeo)
+const formatWithThousandsSeparator = (value: string): string => {
+  const cleanValue = value.replace(/[^\d,]/g, '');
+  const parts = cleanValue.split(',');
+  const integerPart = parts[0];
+  const decimalPart = parts[1];
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return decimalPart !== undefined 
+    ? `${formattedInteger},${decimalPart}` 
+    : formattedInteger;
+};
+
 export function CampaignValuationForm() {
   const { formData, errors, isSubmitting, isSuccess, updateField, submitForm } = useCampaignValuationForm();
 
@@ -105,7 +117,7 @@ export function CampaignValuationForm() {
             type="text"
             placeholder="1.500.000"
             value={formData.revenue}
-            onChange={(e) => updateField('revenue', e.target.value)}
+            onChange={(e) => updateField('revenue', formatWithThousandsSeparator(e.target.value))}
             className={errors.revenue ? 'border-destructive' : ''}
           />
           {errors.revenue && (
@@ -122,7 +134,7 @@ export function CampaignValuationForm() {
             type="text"
             placeholder="300.000"
             value={formData.ebitda}
-            onChange={(e) => updateField('ebitda', e.target.value)}
+            onChange={(e) => updateField('ebitda', formatWithThousandsSeparator(e.target.value))}
             className={errors.ebitda ? 'border-destructive' : ''}
           />
           {errors.ebitda && (
