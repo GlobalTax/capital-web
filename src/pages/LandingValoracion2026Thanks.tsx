@@ -109,11 +109,11 @@ export default function LandingValoracion2026Thanks() {
           </h3>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
             <a 
-              href="tel:+34936666666" 
+              href="tel:+34695717490" 
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <Phone className="w-4 h-4" />
-              +34 936 666 666
+              +34 695 717 490
             </a>
             <a 
               href="mailto:info@capittal.es" 
