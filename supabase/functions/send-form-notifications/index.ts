@@ -694,27 +694,33 @@ const getEmailTemplate = (formType: string, data: any) => {
               <td style="padding: 10px 0;"><a href="mailto:${data.email}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.email}</a></td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">CIF</td>
-              <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.cif}</td>
-            </tr>
-          </table>
-        </div>
-        <div style="margin-bottom: 24px;">
-          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
-            💰 Datos Financieros 2025
-          </h3>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Facturación 2025</td>
-              <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.revenue)}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">EBITDA 2025</td>
-              <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.ebitda)}</td>
-            </tr>
-          </table>
-        </div>
-      `;
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">CIF</td>
+          <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${data.cif}</td>
+        </tr>
+        ${data.phone ? `
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">📱 Teléfono</td>
+          <td style="padding: 10px 0;"><a href="tel:${data.phone}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${data.phone}</a></td>
+        </tr>
+        ` : ''}
+      </table>
+    </div>
+    <div style="margin-bottom: 24px;">
+      <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+        💰 Datos Financieros 2025
+      </h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Facturación 2025</td>
+          <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.revenue)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">EBITDA 2025</td>
+          <td style="padding: 10px 0; color: #059669; font-size: 16px; font-weight: 700;">${formatCurrency(data.ebitda)}</td>
+        </tr>
+      </table>
+    </div>
+  `;
       
       return {
         subject: `🎯 Nueva Solicitud – Campaña Valoración 2025 – Capittal`,
