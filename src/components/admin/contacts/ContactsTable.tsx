@@ -61,6 +61,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         'lp-calculadora-principal': { label: 'LP Principal', color: 'bg-blue-100 text-blue-700 border-blue-300' },
         'lp-calculadora-fiscal': { label: 'LP Fiscal', color: 'bg-purple-100 text-purple-700 border-purple-300' },
         'lp-calculadora-asesores': { label: 'LP Asesores', color: 'bg-green-100 text-green-700 border-green-300' },
+        'lp-calculadora-meta': { label: 'LP Meta', color: 'bg-pink-100 text-pink-700 border-pink-300' },
+        'manual-admin-entry': { label: '✍️ Manual', color: 'bg-amber-100 text-amber-700 border-amber-300' },
         'capittal-main': { label: 'Principal', color: 'bg-gray-100 text-gray-700 border-gray-300' },
       };
       
