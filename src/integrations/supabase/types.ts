@@ -6962,6 +6962,7 @@ export type Database = {
           task_id: string
           updated_at: string | null
           user_id: string
+          work_task_type_id: string | null
           work_type: string
         }
         Insert: {
@@ -6981,6 +6982,7 @@ export type Database = {
           task_id: string
           updated_at?: string | null
           user_id: string
+          work_task_type_id?: string | null
           work_type: string
         }
         Update: {
@@ -7000,6 +7002,7 @@ export type Database = {
           task_id?: string
           updated_at?: string | null
           user_id?: string
+          work_task_type_id?: string | null
           work_type?: string
         }
         Relationships: [
@@ -7051,6 +7054,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "task_time_summary"
             referencedColumns: ["task_id"]
+          },
+          {
+            foreignKeyName: "mandato_time_entries_work_task_type_id_fkey"
+            columns: ["work_task_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_task_types"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9486,6 +9496,7 @@ export type Database = {
           fecha_vencimiento: string | null
           id: string
           mandato_id: string | null
+          order_index: number | null
           prioridad: string | null
           titulo: string
           updated_at: string | null
@@ -9498,6 +9509,7 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           mandato_id?: string | null
+          order_index?: number | null
           prioridad?: string | null
           titulo: string
           updated_at?: string | null
@@ -9510,6 +9522,7 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           mandato_id?: string | null
+          order_index?: number | null
           prioridad?: string | null
           titulo?: string
           updated_at?: string | null
@@ -10250,6 +10263,36 @@ export type Database = {
           title?: string
           updated_at?: string
           webinar_date?: string
+        }
+        Relationships: []
+      }
+      work_task_types: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
