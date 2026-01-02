@@ -54,26 +54,6 @@ const ExitReadinessResults: React.FC<ExitReadinessResultsProps> = ({
         </p>
       </div>
 
-      {/* Score visual */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Tu puntuación</span>
-            <span className="text-2xl font-bold">{totalScore}/{maxScore}</span>
-          </div>
-          <div className="relative h-4 bg-muted rounded-full overflow-hidden">
-            <div 
-              className={cn("h-full transition-all duration-500", getProgressColor())}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-muted-foreground mt-2">
-            <span>Necesita trabajo</span>
-            <span>En progreso</span>
-            <span>Preparado</span>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Recomendaciones */}
       {recommendations.length > 0 && (
