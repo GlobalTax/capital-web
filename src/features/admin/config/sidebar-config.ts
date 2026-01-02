@@ -29,7 +29,8 @@ import {
   Mail,
   Kanban,
   CalendarDays,
-  Bell
+  Bell,
+  UserPlus
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -89,13 +90,13 @@ export const sidebarSections: SidebarSection[] = [
         visible: false
       },
       { 
-        title: "Calculadora Meta",
-        url: "/lp/calculadora-meta", 
-        icon: Calculator,
+        title: "Entrada Manual Leads",
+        url: "/admin/calculadora-manual", 
+        icon: UserPlus,
         badge: "NEW",
-        description: "Herramienta de valoración Meta Ads"
+        description: "Introducir leads de Meta/externos"
       },
-      { 
+      {
         title: "Calculadora Asesores",
         url: "/lp/calculadora-asesores", 
         icon: Calculator,

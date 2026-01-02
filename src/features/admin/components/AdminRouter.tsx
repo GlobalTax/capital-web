@@ -63,6 +63,7 @@ import {
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
+const LazyManualLeadEntryPage = React.lazy(() => import('@/pages/admin/ManualLeadEntryPage'));
 
 const AdminRouter = () => {
   const { isAdmin, isLoading } = useAdminAuth();
@@ -104,6 +105,7 @@ const AdminRouter = () => {
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/investor-leads" element={<LazyInvestorLeadsManager />} />
+          <Route path="/calculadora-manual" element={<LazyManualLeadEntryPage />} />
           
           
           {/* Content Management */}

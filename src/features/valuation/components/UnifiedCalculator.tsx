@@ -1,7 +1,7 @@
 // ============= UNIFIED CALCULATOR COMPONENT =============
 // Single component to replace V1, V2, V3, Master, Standalone (NOT V4)
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedCalculator } from '../hooks/useUnifiedCalculator';
 import { useValuationCalculatorTracking } from '@/hooks/useValuationCalculatorTracking';
@@ -11,10 +11,6 @@ import { CalculatorConfig, ExtendedCompanyData } from '../types/unified.types';
 import { SaveStatus } from '@/components/ui/save-status';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { GenericSessionRecoveryModal } from '@/components/valuation/GenericSessionRecoveryModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { UserCog } from 'lucide-react';
 
 // Import existing UI components (we'll reuse them)
 import StepIndicator from '@/components/valuation/StepIndicator';
@@ -42,30 +38,15 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   const { t } = useI18n();
   const navigate = useNavigate();
   
-  // 🔥 NEW: Admin auth check for manual entry toggle
-  const { isAdmin } = useAuth();
-  const [isManualEntry, setIsManualEntry] = useState(false);
-  
-  // 🔥 NEW: Compute effective config with modified sourceProject for manual entries
-  const effectiveConfig = useMemo(() => {
-    if (isManualEntry && isAdmin) {
-      return {
-        ...config,
-        sourceProject: 'manual-admin-entry'
-      };
-    }
-    return config;
-  }, [config, isManualEntry, isAdmin]);
-  
-  // Initialize unified calculator with effective config
-  const calculator = useUnifiedCalculator(effectiveConfig, initialData);
+  // Initialize unified calculator
+  const calculator = useUnifiedCalculator(config, initialData);
   
   // Initialize tracking
   const tracking = useValuationCalculatorTracking();
   
   // Initialize form session tracking (Phase 2)
   const { sessionId, trackFieldTouch, linkValuation } = useFormSessionTracking({
-    formType: effectiveConfig.sourceProject || 'unified_calculator'
+    formType: config.sourceProject || 'unified_calculator'
   });
   
   // Initialize session recovery (Phase 3)
@@ -273,38 +254,11 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   const renderV2 = () => (
     <div className="min-h-screen bg-white py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 🔥 NEW: Toggle entrada manual visible solo para admins */}
-        {isAdmin && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-amber-800">
-              <UserCog className="h-4 w-4" />
-              <span>Modo administrador</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                id="manual-entry"
-                checked={isManualEntry}
-                onCheckedChange={setIsManualEntry}
-              />
-              <Label htmlFor="manual-entry" className="text-sm text-amber-800 cursor-pointer">
-                Entrada manual (Meta/otro origen)
-              </Label>
-            </div>
-          </div>
-        )}
-        
         <div className="text-center mb-8 relative">
           {/* 🔥 Badge Meta Ads para identificación */}
           {config.ui.showMetaBadge && (
             <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-semibold shadow-sm">
               Meta Ads
-            </div>
-          )}
-          
-          {/* 🔥 Badge entrada manual */}
-          {isManualEntry && isAdmin && (
-            <div className="absolute top-0 left-0 bg-amber-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-sm">
-              Entrada Manual
             </div>
           )}
           
