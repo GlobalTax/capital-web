@@ -15,7 +15,7 @@ const corsHeaders = {
 
 interface FormNotificationRequest {
   submissionId: string;
-  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead' | 'operation_contact' | 'lead_magnet_download' | 'campaign_valuation';
+  formType: 'contact' | 'collaborator' | 'newsletter' | 'calendar' | 'general_contact' | 'sell_lead' | 'operation_contact' | 'lead_magnet_download' | 'campaign_valuation' | 'exit_readiness_test';
   email: string;
   fullName: string;
   formData: any;
@@ -597,6 +597,66 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
       };
     }
 
+    case 'exit_readiness_test': {
+      const readinessLabel = data.readinessLevel === 'Preparado' ? '🟢 Preparado para vender' :
+                             data.readinessLevel === 'En Progreso' ? '🟡 En Progreso' :
+                             '🔴 Necesita Trabajo';
+      
+      const contentHtml = `
+        <div style="margin-bottom: 24px;">
+          <p style="margin: 0; color: #0f172a; font-size: 16px;">
+            Hola <strong>${data.fullName}</strong>,
+          </p>
+          <p style="margin: 12px 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Hemos recibido los resultados de tu Test Exit-Ready. Nuestro equipo está preparando un informe personalizado con recomendaciones detalladas basadas en tus respuestas.
+          </p>
+        </div>
+        
+        <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border-left: 4px solid #22c55e; margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+            📊 Tu Resultado
+          </h3>
+          <p style="margin: 0; color: #0f172a; font-size: 18px; font-weight: 700;">
+            ${readinessLabel}
+          </p>
+          <p style="margin: 8px 0 0; color: #64748b; font-size: 13px;">
+            Puntuación: ${data.score}/80 puntos
+          </p>
+        </div>
+        
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            📋 Próximos Pasos
+          </h3>
+          
+          <div style="display: flex; margin-bottom: 16px;">
+            <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px; flex-shrink: 0; margin-right: 12px;">1</div>
+            <div>
+              <p style="margin: 0; color: #0f172a; font-weight: 600; font-size: 14px;">Informe IA Personalizado</p>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">En breve recibirás por email un informe detallado con análisis y recomendaciones.</p>
+            </div>
+          </div>
+          
+          <div style="display: flex; margin-bottom: 16px;">
+            <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px; flex-shrink: 0; margin-right: 12px;">2</div>
+            <div>
+              <p style="margin: 0; color: #0f172a; font-weight: 600; font-size: 14px;">Contacto Personalizado</p>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Un asesor se pondrá en contacto contigo para resolver dudas.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return {
+        subject: `Tu resultado del Test Exit-Ready - Capittal`,
+        html: getUserEmailBaseHtml(
+          'Test Exit-Ready Completado',
+          'Diagnóstico de preparación para venta',
+          contentHtml
+        )
+      };
+    }
+
     default:
       return {
         subject: `✅ Hemos recibido tu información - Capittal`,
@@ -893,6 +953,49 @@ const getEmailTemplate = (formType: string, data: any) => {
           'https://capittal.es/admin/crm',
           'Ver en CRM',
           { source: data.utmSource, medium: data.utmMedium, campaign: data.utmCampaign }
+        )
+      };
+    }
+
+    case 'exit_readiness_test': {
+      const readinessLabel = data.readinessLevel === 'Preparado' ? '🟢 Preparado' :
+                             data.readinessLevel === 'En Progreso' ? '🟡 En Progreso' :
+                             '🔴 Necesita Trabajo';
+      
+      const contentHtml = `
+        ${getContactDataSection(data)}
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            📊 Resultado del Test
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; width: 140px; vertical-align: top;">Puntuación</td>
+              <td style="padding: 10px 0; color: #059669; font-size: 18px; font-weight: 700;">${data.score}/80 puntos</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #64748b; font-size: 14px; vertical-align: top;">Nivel de Preparación</td>
+              <td style="padding: 10px 0; color: #0f172a; font-size: 16px; font-weight: 600;">${readinessLabel}</td>
+            </tr>
+          </table>
+        </div>
+        ${data.testId ? `
+        <div style="margin-bottom: 16px;">
+          <span style="color: #64748b; font-size: 12px;">Test ID: ${data.testId}</span>
+        </div>
+        ` : ''}
+      `;
+      
+      return {
+        subject: `🎯 Nuevo Test Exit-Ready – ${data.fullName} (${data.company || 'Sin empresa'}) – Capittal`,
+        html: getAdminEmailBaseHtml(
+          '📊 Nuevo Test Exit-Ready Completado',
+          'Diagnóstico de preparación para venta',
+          contentHtml,
+          'exit_readiness_test',
+          'https://capittal.es/admin/recursos/exit-ready',
+          'Ver en Admin',
+          utmData
         )
       };
     }
