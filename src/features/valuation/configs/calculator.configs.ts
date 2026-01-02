@@ -171,6 +171,28 @@ export const ADVISOR_CONFIG: CalculatorConfig = {
   }
 };
 
+// ============= MANUAL ENTRY CONFIG (Admin) =============
+export const MANUAL_ENTRY_CONFIG: CalculatorConfig = {
+  version: 'v2',
+  steps: 1,
+  sourceProject: 'manual-admin-entry',
+  features: {
+    autosave: false,
+    tracking: false, // No tracking en admin
+    taxCalculation: false,
+    scenarios: false,
+    realTime: false,
+    standalone: false
+  },
+  ui: {
+    theme: 'default',
+    showProgress: true,
+    showSaveStatus: false,
+    customTitle: 'Entrada Manual de Lead',
+    customSubtitle: 'Para leads de Meta Ads, formularios externos u otros orígenes'
+  }
+};
+
 // ============= CONFIG HELPERS =============
 export const getConfigByVersion = (version: string): CalculatorConfig => {
   switch (version) {
