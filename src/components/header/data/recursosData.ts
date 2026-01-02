@@ -1,9 +1,34 @@
-
 import { MenuCategory } from '../types';
 
 export const recursosData: MenuCategory[] = [
   {
-    title: "Contenido y Herramientas",
+    title: "Herramientas Gratuitas",
+    items: [
+      {
+        id: "calculadora-valoracion",
+        label: "Calculadora de Valoración",
+        href: "/lp/calculadora",
+        icon: 'calculator',
+        description: "Obtén una valoración inicial de tu empresa"
+      },
+      {
+        id: "test-exit-ready",
+        label: "Test Exit-Ready",
+        href: "/recursos/test-exit-ready",
+        icon: 'clipboard-check',
+        description: "¿Está tu empresa preparada para la venta?"
+      },
+      {
+        id: "calculadora-fiscal",
+        label: "Calculadora Fiscal",
+        href: "/lp/calculadora-fiscal",
+        icon: 'receipt',
+        description: "Calcula el impacto fiscal de la venta"
+      }
+    ]
+  },
+  {
+    title: "Contenido",
     items: [
       {
         id: "blog",
@@ -32,26 +57,7 @@ export const recursosData: MenuCategory[] = [
         href: "/oportunidades/empleo",
         icon: 'briefcase',
         description: "Ofertas de trabajo en el sector M&A"
-      }
-    ]
-  },
-  {
-    title: "Herramientas Interactivas",
-    items: [
-      {
-        id: "calculadora-valoracion",
-        label: "Calculadora de Valoración",
-        href: "/lp/calculadora",
-        icon: 'calculator',
-        description: "Herramienta gratuita para valorar tu empresa"
       },
-      // {
-      //   id: "documentacion-ma",
-      //   label: "Documentación M&A",
-      //   href: "/documentacion-ma",
-      //   icon: 'file-text',
-      //   description: "Guías completas sobre M&A"
-      // },
       {
         id: "newsletter",
         label: "Newsletter",

@@ -3113,6 +3113,7 @@ export type Database = {
           id: string
           import_log_id: string | null
           linkedin: string | null
+          merged_into_contacto_id: string | null
           nombre: string
           notas: string | null
           telefono: string | null
@@ -3131,6 +3132,7 @@ export type Database = {
           id?: string
           import_log_id?: string | null
           linkedin?: string | null
+          merged_into_contacto_id?: string | null
           nombre: string
           notas?: string | null
           telefono?: string | null
@@ -3149,6 +3151,7 @@ export type Database = {
           id?: string
           import_log_id?: string | null
           linkedin?: string | null
+          merged_into_contacto_id?: string | null
           nombre?: string
           notas?: string | null
           telefono?: string | null
@@ -3175,6 +3178,13 @@ export type Database = {
             columns: ["import_log_id"]
             isOneToOne: false
             referencedRelation: "import_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contactos_merged_into_contacto_id_fkey"
+            columns: ["merged_into_contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
             referencedColumns: ["id"]
           },
           {
@@ -4145,6 +4155,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      exit_readiness_tests: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string
+          id: string
+          ip_address: unknown
+          name: string | null
+          page_origin: string | null
+          phone: string | null
+          readiness_level: string | null
+          recommendations: Json | null
+          referrer: string | null
+          responses: Json
+          total_score: number
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: unknown
+          name?: string | null
+          page_origin?: string | null
+          phone?: string | null
+          readiness_level?: string | null
+          recommendations?: Json | null
+          referrer?: string | null
+          responses?: Json
+          total_score?: number
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: unknown
+          name?: string | null
+          page_origin?: string | null
+          phone?: string | null
+          readiness_level?: string | null
+          recommendations?: Json | null
+          referrer?: string | null
+          responses?: Json
+          total_score?: number
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
       }
       fase0_document_templates: {
         Row: {
@@ -7052,6 +7128,9 @@ export type Database = {
           estado: string
           estado_negociacion: string | null
           expected_close_date: string | null
+          external_operation_id: string | null
+          external_source: string | null
+          external_synced_at: string | null
           fecha_cierre: string | null
           fecha_inicio: string | null
           id: string
@@ -7073,6 +7152,7 @@ export type Database = {
           tipo: string
           tipo_comprador_buscado: string | null
           updated_at: string | null
+          url_publica: string | null
           valor: number | null
           valoracion_esperada: number | null
           weighted_value: number | null
@@ -7089,6 +7169,9 @@ export type Database = {
           estado?: string
           estado_negociacion?: string | null
           expected_close_date?: string | null
+          external_operation_id?: string | null
+          external_source?: string | null
+          external_synced_at?: string | null
           fecha_cierre?: string | null
           fecha_inicio?: string | null
           id?: string
@@ -7110,6 +7193,7 @@ export type Database = {
           tipo?: string
           tipo_comprador_buscado?: string | null
           updated_at?: string | null
+          url_publica?: string | null
           valor?: number | null
           valoracion_esperada?: number | null
           weighted_value?: number | null
@@ -7126,6 +7210,9 @@ export type Database = {
           estado?: string
           estado_negociacion?: string | null
           expected_close_date?: string | null
+          external_operation_id?: string | null
+          external_source?: string | null
+          external_synced_at?: string | null
           fecha_cierre?: string | null
           fecha_inicio?: string | null
           id?: string
@@ -7147,6 +7234,7 @@ export type Database = {
           tipo?: string
           tipo_comprador_buscado?: string | null
           updated_at?: string | null
+          url_publica?: string | null
           valor?: number | null
           valoracion_esperada?: number | null
           weighted_value?: number | null
@@ -7996,6 +8084,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      operation_sync_log: {
+        Row: {
+          duration_ms: number | null
+          empresas_created: number | null
+          errors: Json | null
+          errors_count: number | null
+          executed_at: string | null
+          id: string
+          mandatos_created: number | null
+          mandatos_updated: number | null
+          operations_processed: number | null
+          status: string | null
+          triggered_by: string | null
+        }
+        Insert: {
+          duration_ms?: number | null
+          empresas_created?: number | null
+          errors?: Json | null
+          errors_count?: number | null
+          executed_at?: string | null
+          id?: string
+          mandatos_created?: number | null
+          mandatos_updated?: number | null
+          operations_processed?: number | null
+          status?: string | null
+          triggered_by?: string | null
+        }
+        Update: {
+          duration_ms?: number | null
+          empresas_created?: number | null
+          errors?: Json | null
+          errors_count?: number | null
+          executed_at?: string | null
+          id?: string
+          mandatos_created?: number | null
+          mandatos_updated?: number | null
+          operations_processed?: number | null
+          status?: string | null
+          triggered_by?: string | null
+        }
+        Relationships: []
       }
       operation_views: {
         Row: {
@@ -11084,6 +11214,10 @@ export type Database = {
       }
       log_tracking_access_violation: { Args: never; Returns: undefined }
       log_valuation_access_attempt: { Args: never; Returns: undefined }
+      merge_contactos: {
+        Args: { p_source_id: string; p_target_id: string; p_user_id: string }
+        Returns: Json
+      }
       monitor_security_violations: { Args: never; Returns: undefined }
       refresh_banner_analytics: { Args: never; Returns: undefined }
       refresh_mandatos_days_in_stage: { Args: never; Returns: undefined }
@@ -11100,6 +11234,24 @@ export type Database = {
         Returns: Json
       }
       rollback_import: { Args: { p_import_log_id: string }; Returns: Json }
+      search_contactos_full: {
+        Args: { search_query: string }
+        Returns: {
+          apellidos: string
+          avatar: string
+          cargo: string
+          created_at: string
+          email: string
+          empresa_nombre: string
+          empresa_principal_id: string
+          id: string
+          linkedin: string
+          nombre: string
+          notas: string
+          telefono: string
+          updated_at: string
+        }[]
+      }
       search_news_articles: {
         Args: {
           filter_category?: string
