@@ -58,8 +58,11 @@ export const useExitReadinessTest = () => {
         throw supabaseError;
       }
 
-      // Trigger AI report generation in background
+      // Sync with contact_leads for unified CRM
       if (data?.id) {
+        await syncToContactLeads(leadData, data.id, totalScore, readinessLevel, urlParams);
+        
+        // Trigger AI report generation in background
         triggerAIReportGeneration(data.id);
       }
 
@@ -80,6 +83,56 @@ export const useExitReadinessTest = () => {
     error
   };
 };
+
+// Sync lead to contact_leads for unified CRM management
+async function syncToContactLeads(
+  leadData: ExitReadinessLeadData,
+  testId: string,
+  totalScore: number,
+  readinessLevel: ReadinessLevel,
+  urlParams: URLSearchParams
+) {
+  try {
+    // Check for existing contact by email (deduplication)
+    const { data: existingContact } = await supabase
+      .from('contact_leads')
+      .select('id')
+      .eq('email', leadData.email)
+      .eq('is_deleted', false)
+      .maybeSingle();
+
+    if (!existingContact) {
+      // Insert new contact
+      await supabase
+        .from('contact_leads')
+        .insert({
+          full_name: leadData.name || leadData.email.split('@')[0],
+          email: leadData.email,
+          phone: leadData.phone || null,
+          company: leadData.company_name || null,
+          service_type: 'vender',
+          source: 'exit_readiness_test',
+          status: 'new',
+          message: `Test Exit-Ready completado. Puntuación: ${totalScore}/80. Nivel: ${readinessLevel}`,
+          utm_source: urlParams.get('utm_source'),
+          utm_medium: urlParams.get('utm_medium'),
+          utm_campaign: urlParams.get('utm_campaign'),
+          utm_content: urlParams.get('utm_content'),
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent,
+          linked_lead_id: testId,
+          linked_lead_type: 'exit_readiness_test'
+        });
+      
+      console.log('[ExitReadiness] New contact synced to contact_leads');
+    } else {
+      console.log('[ExitReadiness] Contact already exists, skipping sync');
+    }
+  } catch (err) {
+    console.error('[ExitReadiness] Error syncing to contact_leads:', err);
+    // Don't throw - this is a secondary operation
+  }
+}
 
 // Trigger AI report generation without waiting for response
 async function triggerAIReportGeneration(testId: string) {
