@@ -48,13 +48,19 @@ export const useExitReadinessTest = () => {
           utm_campaign: urlParams.get('utm_campaign'),
           utm_content: urlParams.get('utm_content'),
           referrer: document.referrer || null,
-          user_agent: navigator.userAgent
+          user_agent: navigator.userAgent,
+          ai_report_status: 'pending'
         })
         .select()
         .single();
 
       if (supabaseError) {
         throw supabaseError;
+      }
+
+      // Trigger AI report generation in background
+      if (data?.id) {
+        triggerAIReportGeneration(data.id);
       }
 
       return { success: true, data };
@@ -74,3 +80,23 @@ export const useExitReadinessTest = () => {
     error
   };
 };
+
+// Trigger AI report generation without waiting for response
+async function triggerAIReportGeneration(testId: string) {
+  try {
+    console.log('[ExitReadiness] Triggering AI report generation for test:', testId);
+    
+    const response = await supabase.functions.invoke('generate-exit-readiness-report', {
+      body: { testId }
+    });
+    
+    if (response.error) {
+      console.error('[ExitReadiness] AI report generation failed:', response.error);
+    } else {
+      console.log('[ExitReadiness] AI report generation triggered successfully');
+    }
+  } catch (err) {
+    console.error('[ExitReadiness] Error triggering AI report:', err);
+    // Don't throw - this is a background operation
+  }
+}
