@@ -325,15 +325,16 @@ const ExitReadyAdmin: React.FC = () => {
               <div>
                 <h4 className="font-medium mb-2">Respuestas</h4>
                 <div className="space-y-2">
-                  {selectedTest.responses?.map((response, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b">
-                      <span className="text-sm">Pregunta {response.question_id}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{response.answer}</span>
-                        <Badge variant="outline">{response.points} pts</Badge>
+                  {Array.isArray(selectedTest.responses) && 
+                    (selectedTest.responses as Array<{ question_id: number; question_key: string; answer: string; points: number }>).map((response, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b">
+                        <span className="text-sm">Pregunta {response.question_id}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">{response.answer}</span>
+                          <Badge variant="outline">{response.points} pts</Badge>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
 

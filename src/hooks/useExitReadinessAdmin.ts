@@ -1,6 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
+
+export interface ExitReadinessResponse {
+  question_id: number;
+  question_key: string;
+  answer: string;
+  points: number;
+}
 
 export interface ExitReadinessTestAdmin {
   id: string;
@@ -8,7 +16,7 @@ export interface ExitReadinessTestAdmin {
   name: string | null;
   phone: string | null;
   company_name: string | null;
-  responses: unknown;
+  responses: Json;
   total_score: number;
   readiness_level: string;
   recommendations: string[];
