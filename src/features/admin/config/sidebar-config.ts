@@ -285,6 +285,19 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "📚 RECURSOS",
+    description: "Gestión de recursos y herramientas",
+    items: [
+      { 
+        title: "Test Exit-Ready",
+        url: "/admin/recursos/exit-ready", 
+        icon: ClipboardList,
+        badge: "NEW",
+        description: "Tests de preparación para venta"
+      },
+    ]
+  },
+  {
     title: "📧 MARKETING",
     description: "Comunicación con leads",
     items: [

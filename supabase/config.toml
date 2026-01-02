@@ -123,3 +123,6 @@ verify_jwt = false
 
 [functions.rewrite-comparables]
 verify_jwt = false
+
+[functions.generate-exit-readiness-report]
+verify_jwt = false
