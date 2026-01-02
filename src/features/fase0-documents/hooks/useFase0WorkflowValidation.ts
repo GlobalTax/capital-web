@@ -135,8 +135,8 @@ export const useFase0WorkflowValidation = (
     }
 
     const ndaSigned = isDocumentSigned('nda');
-    const hasMandatoVenta = isDocumentSigned('propuesta_mandato_venta');
-    const hasMandatoCompra = isDocumentSigned('propuesta_mandato_compra');
+    const hasMandatoVenta = isDocumentSigned('mandato_venta');
+    const hasMandatoCompra = isDocumentSigned('mandato_compra');
 
     // Check if any mandate is signed
     if (ndaSigned && (hasMandatoVenta || hasMandatoCompra)) {

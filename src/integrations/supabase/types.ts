@@ -6348,6 +6348,7 @@ export type Database = {
           tipo_operacion: string | null
           updated_at: string | null
           url_relacionada: string | null
+          workstream: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Insert: {
           created_at?: string | null
@@ -6370,6 +6371,7 @@ export type Database = {
           tipo_operacion?: string | null
           updated_at?: string | null
           url_relacionada?: string | null
+          workstream?: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Update: {
           created_at?: string | null
@@ -6392,6 +6394,7 @@ export type Database = {
           tipo_operacion?: string | null
           updated_at?: string | null
           url_relacionada?: string | null
+          workstream?: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Relationships: [
           {
@@ -6432,6 +6435,7 @@ export type Database = {
           sistema: string | null
           tarea: string
           tipo_operacion: string | null
+          workstream: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Insert: {
           activo?: boolean | null
@@ -6447,6 +6451,7 @@ export type Database = {
           sistema?: string | null
           tarea: string
           tipo_operacion?: string | null
+          workstream?: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Update: {
           activo?: boolean | null
@@ -6462,6 +6467,7 @@ export type Database = {
           sistema?: string | null
           tarea?: string
           tipo_operacion?: string | null
+          workstream?: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Relationships: []
       }
@@ -10871,6 +10877,14 @@ export type Database = {
     Enums: {
       access_level: "internal" | "client" | "public"
       admin_role: "super_admin" | "admin" | "editor" | "viewer"
+      dd_workstream:
+        | "legal"
+        | "financial"
+        | "commercial"
+        | "ops"
+        | "it"
+        | "tax"
+        | "other"
       document_category:
         | "nda"
         | "financial_statements"
@@ -11062,6 +11076,15 @@ export const Constants = {
     Enums: {
       access_level: ["internal", "client", "public"],
       admin_role: ["super_admin", "admin", "editor", "viewer"],
+      dd_workstream: [
+        "legal",
+        "financial",
+        "commercial",
+        "ops",
+        "it",
+        "tax",
+        "other",
+      ],
       document_category: [
         "nda",
         "financial_statements",
