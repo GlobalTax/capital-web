@@ -4136,18 +4136,21 @@ export type Database = {
           notes: string | null
           pdf_storage_path: string | null
           pdf_url: string | null
+          previous_version_id: string | null
           reference_number: string
           sent_at: string | null
           sent_by: string | null
           sent_to_email: string | null
           signature_data: Json | null
           signed_at: string | null
+          signed_by: string | null
           signed_by_ip: unknown
           signed_by_name: string | null
           status: string | null
           template_id: string | null
           updated_at: string | null
           valid_until: string | null
+          version_number: number | null
           view_count: number | null
           viewed_at: string | null
         }
@@ -4162,18 +4165,21 @@ export type Database = {
           notes?: string | null
           pdf_storage_path?: string | null
           pdf_url?: string | null
+          previous_version_id?: string | null
           reference_number: string
           sent_at?: string | null
           sent_by?: string | null
           sent_to_email?: string | null
           signature_data?: Json | null
           signed_at?: string | null
+          signed_by?: string | null
           signed_by_ip?: unknown
           signed_by_name?: string | null
           status?: string | null
           template_id?: string | null
           updated_at?: string | null
           valid_until?: string | null
+          version_number?: number | null
           view_count?: number | null
           viewed_at?: string | null
         }
@@ -4188,22 +4194,32 @@ export type Database = {
           notes?: string | null
           pdf_storage_path?: string | null
           pdf_url?: string | null
+          previous_version_id?: string | null
           reference_number?: string
           sent_at?: string | null
           sent_by?: string | null
           sent_to_email?: string | null
           signature_data?: Json | null
           signed_at?: string | null
+          signed_by?: string | null
           signed_by_ip?: unknown
           signed_by_name?: string | null
           status?: string | null
           template_id?: string | null
           updated_at?: string | null
           valid_until?: string | null
+          version_number?: number | null
           view_count?: number | null
           viewed_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fase0_documents_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "fase0_documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fase0_documents_template_id_fkey"
             columns: ["template_id"]
@@ -4212,6 +4228,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fase0_workflow_rules: {
+        Row: {
+          action: Json
+          condition: Json
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          rule_name: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          action?: Json
+          condition?: Json
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          rule_name: string
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          action?: Json
+          condition?: Json
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          rule_name?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       fee_templates: {
         Row: {
@@ -10849,6 +10904,10 @@ export type Database = {
         | "ganado"
         | "perdido"
         | "archivado"
+        | "fase0_activo"
+        | "fase0_bloqueado"
+        | "mandato_propuesto"
+        | "mandato_firmado"
       proposal_status:
         | "draft"
         | "sent"
@@ -11039,6 +11098,10 @@ export const Constants = {
         "ganado",
         "perdido",
         "archivado",
+        "fase0_activo",
+        "fase0_bloqueado",
+        "mandato_propuesto",
+        "mandato_firmado",
       ],
       proposal_status: [
         "draft",

@@ -72,7 +72,7 @@ export interface UnifiedContact {
   score?: number;
   
   // CRM fields
-  lead_status_crm?: 'nuevo' | 'contactado' | 'calificado' | 'descartado' | 'contactando' | 'en_espera' | 'propuesta_enviada' | 'negociacion' | 'ganado' | 'perdido' | 'archivado' | null;
+  lead_status_crm?: 'nuevo' | 'contactado' | 'calificado' | 'descartado' | 'contactando' | 'en_espera' | 'propuesta_enviada' | 'negociacion' | 'ganado' | 'perdido' | 'archivado' | 'fase0_activo' | 'fase0_bloqueado' | 'mandato_propuesto' | 'mandato_firmado' | null;
   assigned_to?: string;
   assigned_to_name?: string | null;
   

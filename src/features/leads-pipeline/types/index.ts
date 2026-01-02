@@ -11,7 +11,11 @@ export type LeadStatus =
   | 'en_espera'
   | 'ganado'
   | 'perdido'
-  | 'archivado';
+  | 'archivado'
+  | 'fase0_activo'
+  | 'fase0_bloqueado'
+  | 'mandato_propuesto'
+  | 'mandato_firmado';
 
 export interface LeadActivity {
   id: string;
@@ -78,8 +82,12 @@ export const PIPELINE_COLUMNS: PipelineColumn[] = [
   { id: 'nuevo', label: 'Nuevos', color: 'bg-blue-500', icon: '📥' },
   { id: 'contactando', label: 'Contactando', color: 'bg-yellow-500', icon: '📞' },
   { id: 'calificado', label: 'Calificados', color: 'bg-green-500', icon: '✅' },
+  { id: 'fase0_activo', label: 'Pre-Mandato', color: 'bg-orange-500', icon: '📋' },
+  { id: 'fase0_bloqueado', label: 'Bloqueado (NDA)', color: 'bg-red-400', icon: '🔒' },
   { id: 'propuesta_enviada', label: 'Propuesta Enviada', color: 'bg-purple-500', icon: '📄' },
+  { id: 'mandato_propuesto', label: 'Mandato Propuesto', color: 'bg-indigo-500', icon: '📝' },
   { id: 'negociacion', label: 'Negociación', color: 'bg-orange-500', icon: '🤝' },
+  { id: 'mandato_firmado', label: 'Mandato Firmado', color: 'bg-emerald-500', icon: '✍️' },
   { id: 'en_espera', label: 'En Espera', color: 'bg-gray-500', icon: '⏸️' },
   { id: 'ganado', label: 'Ganados', color: 'bg-emerald-600', icon: '🏆' },
   { id: 'perdido', label: 'Perdidos', color: 'bg-red-500', icon: '❌' },
