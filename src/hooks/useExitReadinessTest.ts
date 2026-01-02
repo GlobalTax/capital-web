@@ -62,6 +62,9 @@ export const useExitReadinessTest = () => {
       if (data?.id) {
         await syncToContactLeads(leadData, data.id, totalScore, readinessLevel, urlParams);
         
+        // Notify team about new Exit-Ready test completion
+        notifyTeam(data.id, leadData, totalScore, readinessLevel, urlParams);
+        
         // Trigger AI report generation in background
         triggerAIReportGeneration(data.id);
       }
@@ -150,6 +153,48 @@ async function triggerAIReportGeneration(testId: string) {
     }
   } catch (err) {
     console.error('[ExitReadiness] Error triggering AI report:', err);
+    // Don't throw - this is a background operation
+  }
+}
+
+// Notify team about new Exit-Ready test completion
+async function notifyTeam(
+  testId: string,
+  leadData: ExitReadinessLeadData,
+  totalScore: number,
+  readinessLevel: ReadinessLevel,
+  urlParams: URLSearchParams
+) {
+  try {
+    console.log('[ExitReadiness] Notifying team about completed test:', testId);
+    
+    const response = await supabase.functions.invoke('send-form-notifications', {
+      body: {
+        submissionId: testId,
+        formType: 'exit_readiness_test',
+        email: leadData.email,
+        fullName: leadData.name || leadData.email.split('@')[0],
+        formData: {
+          company: leadData.company_name,
+          phone: leadData.phone,
+          score: totalScore,
+          readinessLevel,
+          testId: testId,
+          utm_source: urlParams.get('utm_source'),
+          utm_medium: urlParams.get('utm_medium'),
+          utm_campaign: urlParams.get('utm_campaign'),
+          utm_content: urlParams.get('utm_content')
+        }
+      }
+    });
+    
+    if (response.error) {
+      console.error('[ExitReadiness] Team notification failed:', response.error);
+    } else {
+      console.log('[ExitReadiness] Team notified successfully');
+    }
+  } catch (err) {
+    console.error('[ExitReadiness] Error notifying team:', err);
     // Don't throw - this is a background operation
   }
 }
