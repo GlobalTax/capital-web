@@ -130,9 +130,20 @@ export const useCreateFase0Template = () => {
       description?: string;
       is_active?: boolean;
     }) => {
+      const insertData: Record<string, unknown> = {
+        document_type: template.document_type,
+        name: template.name,
+        version: template.version || '1.0',
+        sections: template.sections || [],
+        available_variables: template.available_variables || [],
+        fee_structure: template.fee_structure || null,
+        description: template.description || null,
+        is_active: template.is_active ?? true,
+      };
+      
       const { data, error } = await supabase
         .from('fase0_document_templates')
-        .insert([template as Record<string, unknown>])
+        .insert(insertData as never)
         .select()
         .single();
       

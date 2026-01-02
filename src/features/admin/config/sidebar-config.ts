@@ -30,7 +30,8 @@ import {
   Kanban,
   CalendarDays,
   Bell,
-  UserPlus
+  UserPlus,
+  Shield
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -273,6 +274,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: TrendingUp,
         badge: "NEW",
         description: "Gestión de leads ROD"
+      },
+      { 
+        title: "Documentos Fase 0",
+        url: "/admin/documentos-fase0", 
+        icon: Shield,
+        badge: "NEW",
+        description: "NDA y Propuestas de Mandato"
       },
     ]
   },

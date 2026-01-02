@@ -25,7 +25,8 @@ import {
   Pencil,
   Save,
   XCircle,
-  Loader2
+  Loader2,
+  Shield
 } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { format } from 'date-fns';
@@ -37,6 +38,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAcquisitionChannels, CATEGORY_LABELS, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 import ContactEditForm from './ContactEditForm';
 import { useContactUpdate, ContactUpdateData } from '@/hooks/useContactUpdate';
+import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-documents';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -525,6 +527,31 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
               </div>
             </>
           )}
+
+          {/* Documentos Fase 0 - Pre-Mandato */}
+          <Separator className="bg-[hsl(var(--linear-border))] my-4" />
+          <div className="space-y-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Shield className="h-3 w-3" />
+              Documentos Pre-Mandato
+            </h3>
+            <Fase0DocumentButtons
+              leadId={contact.id}
+              leadType={contact.origin === 'valuation' ? 'valuation' : 'contact'}
+              leadData={{
+                full_name: contact.name,
+                company: contact.company,
+                email: contact.email,
+                phone: contact.phone,
+                sector: contact.industry,
+                final_valuation: contact.final_valuation,
+              }}
+            />
+            <Fase0DocumentsList
+              leadId={contact.id}
+              leadType={contact.origin === 'valuation' ? 'valuation' : 'contact'}
+            />
+          </div>
             </>
           )}
         </div>

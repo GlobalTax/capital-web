@@ -64,6 +64,7 @@ import {
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
 const LazyManualLeadEntryPage = React.lazy(() => import('@/pages/admin/ManualLeadEntryPage'));
+const LazyFase0TemplatesPage = React.lazy(() => import('@/pages/admin/Fase0TemplatesPage'));
 
 const AdminRouter = () => {
   const { isAdmin, isLoading } = useAdminAuth();
@@ -101,6 +102,7 @@ const AdminRouter = () => {
           <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
           <Route path="/bookings" element={<LazyBookingsPage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
+          <Route path="/documentos-fase0" element={<LazyFase0TemplatesPage />} />
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />

@@ -3324,6 +3324,42 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access_logs: {
+        Row: {
+          access_type: string
+          accessed_at: string
+          documento_id: string
+          documento_nombre: string | null
+          id: string
+          ip_address: unknown
+          user_agent: string | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type?: string
+          accessed_at?: string
+          documento_id: string
+          documento_nombre?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Update: {
+          access_type?: string
+          accessed_at?: string
+          documento_id?: string
+          documento_nombre?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_downloads: {
         Row: {
           created_at: string | null
@@ -10619,6 +10655,14 @@ export type Database = {
       log_critical_security_violation: {
         Args: { details?: Json; table_name: string; violation_type: string }
         Returns: undefined
+      }
+      log_document_access: {
+        Args: {
+          p_access_type?: string
+          p_documento_id: string
+          p_documento_nombre?: string
+        }
+        Returns: string
       }
       log_login_attempt: {
         Args: {

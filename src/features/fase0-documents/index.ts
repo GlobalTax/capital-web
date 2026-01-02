@@ -4,3 +4,4 @@
 export * from './types';
 export * from './hooks/useFase0Templates';
 export * from './hooks/useFase0Documents';
+export * from './components';
