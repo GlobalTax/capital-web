@@ -223,7 +223,7 @@ export const Phase0ChecklistCards: React.FC<Phase0ChecklistCardsProps> = ({
                     </Button>
                   )}
 
-                  {(docStatus.status === 'draft' || docStatus.status === 'generated') && docStatus.documentId && (
+                  {docStatus.status === 'draft' && docStatus.documentId && (
                     <>
                       <Button 
                         size="sm" 
