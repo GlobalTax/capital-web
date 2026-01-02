@@ -89,13 +89,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Recursos descargables",
         visible: false
       },
-      { 
-        title: "Entrada Manual Leads",
-        url: "/admin/calculadora-manual", 
-        icon: UserPlus,
-        badge: "NEW",
-        description: "Introducir leads de Meta/externos"
-      },
       {
         title: "Calculadora Asesores",
         url: "/lp/calculadora-asesores", 
@@ -128,13 +121,6 @@ export const sidebarSections: SidebarSection[] = [
     title: "🏢 GESTIONAR DATOS",
     description: "Información corporativa",
     items: [
-      { 
-        title: "Valoraciones Pro", 
-        url: "/admin/valoraciones-pro", 
-        icon: Calculator,
-        badge: "NEW",
-        description: "Sistema de valoración profesional"
-      },
       { 
         title: "Sectores", 
         url: "/admin/sectors", 
@@ -247,6 +233,20 @@ export const sidebarSections: SidebarSection[] = [
     title: "📈 ANALIZAR LEADS",
     description: "Gestión de prospectos",
     items: [
+      { 
+        title: "Entrada Manual Leads",
+        url: "/admin/calculadora-manual", 
+        icon: UserPlus,
+        badge: "NEW",
+        description: "Introducir leads de Meta/externos"
+      },
+      { 
+        title: "Valoraciones Pro", 
+        url: "/admin/valoraciones-pro", 
+        icon: Calculator,
+        badge: "NEW",
+        description: "Sistema de valoración profesional"
+      },
       { 
         title: "Pipeline de Leads",
         url: "/admin/leads-pipeline", 
