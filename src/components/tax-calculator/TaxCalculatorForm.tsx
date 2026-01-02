@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Building2, User, Info, Euro, Calendar, Percent } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Building2, User, Info, ArrowRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TaxCalculatorFormProps {
@@ -17,14 +17,6 @@ interface TaxCalculatorFormProps {
   onCalculate: () => void;
   isFormValid: boolean;
 }
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(value);
-};
 
 const InfoTooltip = ({ content }: { content: string }) => (
   <TooltipProvider>
@@ -39,6 +31,12 @@ const InfoTooltip = ({ content }: { content: string }) => (
   </TooltipProvider>
 );
 
+const SectionBadge = ({ number }: { number: string }) => (
+  <span className="inline-flex items-center justify-center w-7 h-7 text-xs font-semibold bg-primary text-primary-foreground rounded-full">
+    {number}
+  </span>
+);
+
 export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
   formData,
   updateField,
@@ -48,33 +46,35 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
   return (
     <div className="space-y-6">
       {/* Datos de la Operación */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Calculator className="h-5 w-5 text-primary" />
-            Datos de la Operación
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm overflow-hidden">
+        <CardContent className="pt-6 space-y-5">
+          {/* Header de sección */}
+          <div className="flex items-center gap-3 pb-2">
+            <SectionBadge number="1" />
+            <h3 className="text-lg font-semibold text-foreground">Datos de la Operación</h3>
+          </div>
+
           {/* Precio de Venta */}
           <div className="space-y-2">
-            <Label htmlFor="salePrice" className="flex items-center">
-              <Euro className="h-4 w-4 mr-2 text-muted-foreground" />
+            <Label htmlFor="salePrice" className="flex items-center text-sm font-medium">
               Precio de Venta Estimado
               <InfoTooltip content="Valor total por el que esperas vender tu empresa o participaciones." />
             </Label>
-            <CurrencyInput
-              id="salePrice"
-              placeholder="2.000.000"
-              value={formData.salePrice}
-              onChange={(value) => updateField('salePrice', value)}
-              className="text-lg font-medium"
-            />
+            <div className="relative">
+              <CurrencyInput
+                id="salePrice"
+                placeholder="2.000.000"
+                value={formData.salePrice}
+                onChange={(value) => updateField('salePrice', value)}
+                className="text-lg font-medium pl-4 pr-10 h-12 bg-background"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+            </div>
           </div>
 
           {/* Tipo de Contribuyente */}
           <div className="space-y-3">
-            <Label className="flex items-center">
+            <Label className="flex items-center text-sm font-medium">
               Tipo de Contribuyente
               <InfoTooltip content="Las personas físicas tributan por IRPF y las sociedades por Impuesto de Sociedades. Los tipos y beneficios fiscales varían." />
             </Label>
@@ -85,50 +85,56 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
             >
               <Label
                 htmlFor="individual"
-                className={`flex items-center justify-center gap-2 p-4 border rounded-lg cursor-pointer transition-all ${
+                className={`flex items-center justify-center gap-2.5 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                   formData.taxpayerType === 'individual'
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                    : 'border-border hover:border-primary/50'
+                    ? 'border-primary bg-primary/5 shadow-sm'
+                    : 'border-border/60 bg-background hover:border-primary/40 hover:bg-muted/30'
                 }`}
               >
                 <RadioGroupItem value="individual" id="individual" className="sr-only" />
-                <User className="h-5 w-5" />
-                <span className="font-medium">Persona Física</span>
+                <User className={`h-5 w-5 ${formData.taxpayerType === 'individual' ? 'text-primary' : 'text-muted-foreground'}`} />
+                <span className={`font-medium ${formData.taxpayerType === 'individual' ? 'text-primary' : 'text-foreground'}`}>
+                  Persona Física
+                </span>
               </Label>
               <Label
                 htmlFor="company"
-                className={`flex items-center justify-center gap-2 p-4 border rounded-lg cursor-pointer transition-all ${
+                className={`flex items-center justify-center gap-2.5 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                   formData.taxpayerType === 'company'
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                    : 'border-border hover:border-primary/50'
+                    ? 'border-primary bg-primary/5 shadow-sm'
+                    : 'border-border/60 bg-background hover:border-primary/40 hover:bg-muted/30'
                 }`}
               >
                 <RadioGroupItem value="company" id="company" className="sr-only" />
-                <Building2 className="h-5 w-5" />
-                <span className="font-medium">Sociedad</span>
+                <Building2 className={`h-5 w-5 ${formData.taxpayerType === 'company' ? 'text-primary' : 'text-muted-foreground'}`} />
+                <span className={`font-medium ${formData.taxpayerType === 'company' ? 'text-primary' : 'text-foreground'}`}>
+                  Sociedad
+                </span>
               </Label>
             </RadioGroup>
           </div>
 
           {/* Valor de Adquisición */}
           <div className="space-y-2">
-            <Label htmlFor="acquisitionValue" className="flex items-center">
-              <Euro className="h-4 w-4 mr-2 text-muted-foreground" />
+            <Label htmlFor="acquisitionValue" className="flex items-center text-sm font-medium">
               Valor de Adquisición
               <InfoTooltip content="Precio original al que adquiriste las participaciones o empresa. Se usará para calcular la ganancia patrimonial." />
             </Label>
-            <CurrencyInput
-              id="acquisitionValue"
-              placeholder="500.000"
-              value={formData.acquisitionValue}
-              onChange={(value) => updateField('acquisitionValue', value)}
-            />
+            <div className="relative">
+              <CurrencyInput
+                id="acquisitionValue"
+                placeholder="500.000"
+                value={formData.acquisitionValue}
+                onChange={(value) => updateField('acquisitionValue', value)}
+                className="pl-4 pr-10 h-12 bg-background"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+            </div>
           </div>
 
           {/* Fecha de Adquisición */}
           <div className="space-y-2">
-            <Label htmlFor="acquisitionDate" className="flex items-center">
-              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+            <Label htmlFor="acquisitionDate" className="flex items-center text-sm font-medium">
               Fecha de Adquisición
               <InfoTooltip content="Si adquiriste antes del 31/12/1994, podrías beneficiarte de coeficientes de abatimiento que reducen la ganancia tributable." />
             </Label>
@@ -138,65 +144,72 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
               value={formData.acquisitionDate}
               onChange={(e) => updateField('acquisitionDate', e.target.value)}
               max={new Date().toISOString().split('T')[0]}
+              className="h-12 bg-background"
             />
           </div>
 
           {/* Porcentaje a Vender */}
           <div className="space-y-3">
-            <Label className="flex items-center">
-              <Percent className="h-4 w-4 mr-2 text-muted-foreground" />
-              Porcentaje a Vender: {formData.salePercentage}%
+            <Label className="flex items-center text-sm font-medium">
+              Porcentaje a Vender
               <InfoTooltip content="Indica qué porcentaje de tu participación vas a vender. Puedes simular ventas parciales." />
             </Label>
-            <Slider
-              value={[formData.salePercentage]}
-              onValueChange={([value]) => updateField('salePercentage', value)}
-              min={1}
-              max={100}
-              step={1}
-              className="py-2"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>1%</span>
-              <span>50%</span>
-              <span>100%</span>
+            <div className="pt-2 pb-1">
+              <Slider
+                value={[formData.salePercentage]}
+                onValueChange={([value]) => updateField('salePercentage', value)}
+                min={1}
+                max={100}
+                step={1}
+                className="py-2"
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">1%</span>
+              <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                {formData.salePercentage}%
+              </span>
+              <span className="text-xs text-muted-foreground">100%</span>
             </div>
           </div>
 
           {/* Base Imponible (solo sociedades) */}
           {formData.taxpayerType === 'company' && (
             <div className="space-y-2">
-              <Label htmlFor="currentTaxBase" className="flex items-center">
-                <Euro className="h-4 w-4 mr-2 text-muted-foreground" />
+              <Label htmlFor="currentTaxBase" className="flex items-center text-sm font-medium">
                 Base Imponible Actual (anual)
                 <InfoTooltip content="Si tu base imponible es inferior a 1M€, puedes beneficiarte del tipo reducido para PYMEs (15% primeros 300K€)." />
               </Label>
-              <CurrencyInput
-                id="currentTaxBase"
-                placeholder="800.000"
-                value={formData.currentTaxBase}
-                onChange={(value) => updateField('currentTaxBase', value)}
-              />
+              <div className="relative">
+                <CurrencyInput
+                  id="currentTaxBase"
+                  placeholder="800.000"
+                  value={formData.currentTaxBase}
+                  onChange={(value) => updateField('currentTaxBase', value)}
+                  className="pl-4 pr-10 h-12 bg-background"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Beneficios Fiscales */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Percent className="h-5 w-5 text-primary" />
-            Beneficios Fiscales Aplicables
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm overflow-hidden">
+        <CardContent className="pt-6 space-y-5">
+          {/* Header de sección */}
+          <div className="flex items-center gap-3 pb-2">
+            <SectionBadge number="2" />
+            <h3 className="text-lg font-semibold text-foreground">Beneficios Fiscales</h3>
+          </div>
+
           {formData.taxpayerType === 'individual' ? (
             /* Renta Vitalicia - Solo personas físicas */
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50">
                 <Label htmlFor="vitaliciaPlan" className="flex items-center cursor-pointer">
-                  Renta Vitalicia (+65 años)
+                  <span className="font-medium">Renta Vitalicia (+65 años)</span>
                   <InfoTooltip content="Mayores de 65 años pueden destinar la ganancia a una renta vitalicia y quedar exentos del IRPF sobre esa parte (máximo 240.000€)." />
                 </Label>
                 <Switch
@@ -206,14 +219,20 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
                 />
               </div>
               {formData.vitaliciaPlan && (
-                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
-                  <Label htmlFor="vitaliciaAmount">Cantidad destinada a renta vitalicia</Label>
-                  <CurrencyInput
-                    id="vitaliciaAmount"
-                    placeholder="240.000"
-                    value={formData.vitaliciaAmount}
-                    onChange={(value) => updateField('vitaliciaAmount', value)}
-                  />
+                <div className="space-y-2 pl-4 border-l-2 border-primary/30 ml-2">
+                  <Label htmlFor="vitaliciaAmount" className="text-sm font-medium">
+                    Cantidad destinada a renta vitalicia
+                  </Label>
+                  <div className="relative">
+                    <CurrencyInput
+                      id="vitaliciaAmount"
+                      placeholder="240.000"
+                      value={formData.vitaliciaAmount}
+                      onChange={(value) => updateField('vitaliciaAmount', value)}
+                      className="pl-4 pr-10 h-12 bg-background"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+                  </div>
                   <p className="text-xs text-muted-foreground">Máximo exento: 240.000 €</p>
                 </div>
               )}
@@ -221,9 +240,9 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
           ) : (
             /* Reinversión - Solo sociedades */
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50">
                 <Label htmlFor="reinvestmentPlan" className="flex items-center cursor-pointer">
-                  Exención por Reinversión
+                  <span className="font-medium">Exención por Reinversión</span>
                   <InfoTooltip content="Si reinviertes la ganancia en otra empresa o activos cualificados en un plazo de 3 años, puedes diferir o reducir la tributación." />
                 </Label>
                 <Switch
@@ -233,14 +252,20 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
                 />
               </div>
               {formData.reinvestmentPlan && (
-                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
-                  <Label htmlFor="reinvestmentAmount">Cantidad a reinvertir</Label>
-                  <CurrencyInput
-                    id="reinvestmentAmount"
-                    placeholder="1.000.000"
-                    value={formData.reinvestmentAmount}
-                    onChange={(value) => updateField('reinvestmentAmount', value)}
-                  />
+                <div className="space-y-2 pl-4 border-l-2 border-primary/30 ml-2">
+                  <Label htmlFor="reinvestmentAmount" className="text-sm font-medium">
+                    Cantidad a reinvertir
+                  </Label>
+                  <div className="relative">
+                    <CurrencyInput
+                      id="reinvestmentAmount"
+                      placeholder="1.000.000"
+                      value={formData.reinvestmentAmount}
+                      onChange={(value) => updateField('reinvestmentAmount', value)}
+                      className="pl-4 pr-10 h-12 bg-background"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -248,9 +273,10 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
 
           {/* Info sobre abatimiento */}
           {formData.taxpayerType === 'individual' && formData.acquisitionDate && new Date(formData.acquisitionDate).getFullYear() < 1995 && (
-            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-              <p className="text-sm text-primary font-medium">
-                ✓ Se aplicarán coeficientes de abatimiento por adquisición anterior a 1995
+            <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">
+              <p className="text-sm text-primary font-medium flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs">✓</span>
+                Se aplicarán coeficientes de abatimiento por adquisición anterior a 1995
               </p>
             </div>
           )}
@@ -261,15 +287,15 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
       <Button
         onClick={onCalculate}
         disabled={!isFormValid}
-        className="w-full py-6 text-lg font-semibold"
+        className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl rounded-xl group"
         size="lg"
       >
-        <Calculator className="h-5 w-5 mr-2" />
         Calcular Impacto Fiscal
+        <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
       </Button>
 
       {/* Disclaimer */}
-      <p className="text-xs text-muted-foreground text-center px-4">
+      <p className="text-xs text-muted-foreground text-center px-4 leading-relaxed">
         Esta calculadora proporciona una estimación orientativa. Los resultados no constituyen asesoramiento fiscal.
         Consulta con un profesional para tu caso específico.
       </p>
