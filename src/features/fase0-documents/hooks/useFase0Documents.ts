@@ -1,0 +1,281 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import type { 
+  Fase0Document, 
+  Fase0DocumentType,
+  Fase0LeadType,
+  CreateFase0DocumentInput,
+  Fase0FilledData,
+} from '../types';
+
+const QUERY_KEY = 'fase0-documents';
+
+// Fetch documents by lead
+export const useFase0DocumentsByLead = (leadId: string | undefined, leadType: Fase0LeadType) => {
+  return useQuery({
+    queryKey: [QUERY_KEY, 'by-lead', leadId, leadType],
+    queryFn: async () => {
+      if (!leadId) return [];
+      
+      const { data, error } = await supabase
+        .from('fase0_documents')
+        .select('*')
+        .eq('lead_id', leadId)
+        .eq('lead_type', leadType)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      return (data || []).map(doc => ({
+        ...doc,
+        filled_data: doc.filled_data || {},
+        signature_data: doc.signature_data || null,
+      })) as Fase0Document[];
+    },
+    enabled: !!leadId,
+  });
+};
+
+// Fetch single document
+export const useFase0Document = (documentId: string | undefined) => {
+  return useQuery({
+    queryKey: [QUERY_KEY, 'single', documentId],
+    queryFn: async () => {
+      if (!documentId) return null;
+      
+      const { data, error } = await supabase
+        .from('fase0_documents')
+        .select('*')
+        .eq('id', documentId)
+        .single();
+      
+      if (error) throw error;
+      
+      return {
+        ...data,
+        filled_data: data.filled_data || {},
+        signature_data: data.signature_data || null,
+      } as Fase0Document;
+    },
+    enabled: !!documentId,
+  });
+};
+
+// Fetch all documents (for admin)
+export const useFase0Documents = (filters?: {
+  documentType?: Fase0DocumentType;
+  status?: string;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: [QUERY_KEY, 'all', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('fase0_documents')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (filters?.documentType) {
+        query = query.eq('document_type', filters.documentType);
+      }
+      if (filters?.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters?.limit) {
+        query = query.limit(filters.limit);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      return (data || []).map(doc => ({
+        ...doc,
+        filled_data: doc.filled_data || {},
+        signature_data: doc.signature_data || null,
+      })) as Fase0Document[];
+    },
+  });
+};
+
+// Create document
+export const useCreateFase0Document = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (input: CreateFase0DocumentInput) => {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      const insertData = {
+        template_id: input.template_id || null,
+        document_type: input.document_type,
+        lead_id: input.lead_id,
+        lead_type: input.lead_type,
+        filled_data: input.filled_data as Record<string, unknown>,
+        valid_until: input.valid_until || null,
+        notes: input.notes || null,
+        created_by: userData.user?.id || null,
+        status: 'draft',
+      };
+      
+      const { data, error } = await supabase
+        .from('fase0_documents')
+        .insert([insertData])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as unknown as Fase0Document;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Documento creado');
+      return data;
+    },
+    onError: (error) => {
+      console.error('Error creating document:', error);
+      toast.error('Error al crear el documento');
+    },
+  });
+};
+
+// Update document
+export const useUpdateFase0Document = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      updates 
+    }: { 
+      id: string; 
+      updates: Record<string, unknown>
+    }) => {
+      const { data, error } = await supabase
+        .from('fase0_documents')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as unknown as Fase0Document;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
+    onError: (error) => {
+      console.error('Error updating document:', error);
+      toast.error('Error al actualizar el documento');
+    },
+  });
+};
+
+// Delete document
+export const useDeleteFase0Document = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('fase0_documents')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Documento eliminado');
+    },
+    onError: (error) => {
+      console.error('Error deleting document:', error);
+      toast.error('Error al eliminar el documento');
+    },
+  });
+};
+
+// Helper: Pre-fill data from lead
+export const prefillDataFromLead = (
+  lead: {
+    full_name?: string;
+    company?: string;
+    company_name?: string;
+    email?: string;
+    phone?: string;
+    sector?: string;
+    final_valuation?: number;
+  },
+  documentType: Fase0DocumentType
+): Fase0FilledData => {
+  const today = new Date();
+  const validityDate = new Date(today);
+  validityDate.setDate(validityDate.getDate() + 30);
+  
+  const baseData: Fase0FilledData = {
+    cliente_nombre: lead.full_name || '',
+    cliente_empresa: lead.company || lead.company_name || '',
+    cliente_email: lead.email || '',
+    cliente_telefono: lead.phone || '',
+    ciudad: 'Barcelona',
+    fecha_documento: today.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
+    advisor_nombre: '',
+    advisor_cargo: 'Director',
+  };
+  
+  if (documentType === 'nda') {
+    return {
+      ...baseData,
+      tipo_operacion: 'venta',
+      duracion_años: '3',
+    };
+  }
+  
+  if (documentType === 'mandato_venta') {
+    const valuation = lead.final_valuation || 0;
+    return {
+      ...baseData,
+      sector: lead.sector || '',
+      valoracion_min: valuation ? (valuation * 0.85).toLocaleString('es-ES') : '',
+      valoracion_max: valuation ? (valuation * 1.15).toLocaleString('es-ES') : '',
+      retainer: '15000',
+      success_fee_pct: '5',
+      honorario_minimo: '75000',
+      duracion_mandato: '12',
+      fecha_validez: validityDate.toLocaleDateString('es-ES'),
+    };
+  }
+  
+  if (documentType === 'mandato_compra') {
+    return {
+      ...baseData,
+      sector: lead.sector || '',
+      inversion_min: '',
+      inversion_max: '',
+      retainer: '5000',
+      success_fee_pct: '4',
+      honorario_minimo: '50000',
+      duracion_mandato: '12',
+      fecha_validez: validityDate.toLocaleDateString('es-ES'),
+    };
+  }
+  
+  return baseData;
+};
+
+// Helper: Replace variables in template content
+export const replaceVariables = (content: string, data: Fase0FilledData): string => {
+  let result = content;
+  
+  Object.entries(data).forEach(([key, value]) => {
+    const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+    result = result.replace(regex, value || `[${key}]`);
+  });
+  
+  return result;
+};

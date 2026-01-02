@@ -4043,6 +4043,140 @@ export type Database = {
           },
         ]
       }
+      fase0_document_templates: {
+        Row: {
+          available_variables: Json | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          document_type: string
+          fee_structure: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sections: Json
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          available_variables?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          document_type: string
+          fee_structure?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sections?: Json
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          available_variables?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          document_type?: string
+          fee_structure?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sections?: Json
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
+      fase0_documents: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          document_type: string
+          filled_data: Json
+          id: string
+          lead_id: string
+          lead_type: string
+          notes: string | null
+          pdf_storage_path: string | null
+          pdf_url: string | null
+          reference_number: string
+          sent_at: string | null
+          sent_by: string | null
+          sent_to_email: string | null
+          signature_data: Json | null
+          signed_at: string | null
+          signed_by_ip: unknown
+          signed_by_name: string | null
+          status: string | null
+          template_id: string | null
+          updated_at: string | null
+          valid_until: string | null
+          view_count: number | null
+          viewed_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          document_type: string
+          filled_data?: Json
+          id?: string
+          lead_id: string
+          lead_type: string
+          notes?: string | null
+          pdf_storage_path?: string | null
+          pdf_url?: string | null
+          reference_number: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_to_email?: string | null
+          signature_data?: Json | null
+          signed_at?: string | null
+          signed_by_ip?: unknown
+          signed_by_name?: string | null
+          status?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+          valid_until?: string | null
+          view_count?: number | null
+          viewed_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          document_type?: string
+          filled_data?: Json
+          id?: string
+          lead_id?: string
+          lead_type?: string
+          notes?: string | null
+          pdf_storage_path?: string | null
+          pdf_url?: string | null
+          reference_number?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_to_email?: string | null
+          signature_data?: Json | null
+          signed_at?: string | null
+          signed_by_ip?: unknown
+          signed_by_name?: string | null
+          status?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+          valid_until?: string | null
+          view_count?: number | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fase0_documents_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "fase0_document_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fee_templates: {
         Row: {
           base_fee_percentage: number | null
@@ -10292,6 +10426,8 @@ export type Database = {
         }
         Returns: Json
       }
+      current_user_can_read: { Args: never; Returns: boolean }
+      current_user_can_write: { Args: never; Returns: boolean }
       current_user_has_rh_access: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
       current_user_is_rh_admin: { Args: never; Returns: boolean }
@@ -10312,6 +10448,10 @@ export type Database = {
           window_minutes?: number
         }
         Returns: boolean
+      }
+      generate_fase0_reference_number: {
+        Args: { doc_type: string }
+        Returns: string
       }
       generate_mandato_alerts: { Args: never; Returns: undefined }
       generate_proposal_number: { Args: never; Returns: string }
