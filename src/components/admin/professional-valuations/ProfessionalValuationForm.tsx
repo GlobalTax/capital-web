@@ -238,13 +238,18 @@ export function ProfessionalValuationForm({
         // Si hay valores calculados, verificar si el múltiplo está fuera de rango
         if (hasValidMultiple && calculatedValues) {
           const multipleUsed = data.ebitdaMultipleUsed || 0;
+          
+          // CORRECCION: Usar valores efectivos (personalizados si existen, sino del sector)
+          const effectiveLow = data.ebitdaMultipleLow ?? calculatedValues.multipleLow;
+          const effectiveHigh = data.ebitdaMultipleHigh ?? calculatedValues.multipleHigh;
+          
           const isOutOfRange = isMultipleOutOfRange(
             multipleUsed, 
-            calculatedValues.multipleLow, 
-            calculatedValues.multipleHigh
+            effectiveLow, 
+            effectiveHigh
           );
           
-          // Si está fuera de rango, exigir justificación de al menos 20 caracteres
+          // Si está fuera de rango del efectivo, exigir justificación de al menos 20 caracteres
           if (isOutOfRange) {
             return isMultipleJustificationValid(data.multipleJustification);
           }
