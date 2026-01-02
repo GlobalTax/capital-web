@@ -1,6 +1,7 @@
 import React from 'react';
 import { TaxFormData } from '@/hooks/useTaxCalculator';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -44,11 +45,6 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
   onCalculate,
   isFormValid,
 }) => {
-  const handleNumberChange = (field: keyof TaxFormData, value: string) => {
-    const numValue = parseFloat(value.replace(/[^\d.-]/g, '')) || 0;
-    updateField(field, numValue as TaxFormData[typeof field]);
-  };
-
   return (
     <div className="space-y-6">
       {/* Datos de la Operación */}
@@ -67,12 +63,11 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
               Precio de Venta Estimado
               <InfoTooltip content="Valor total por el que esperas vender tu empresa o participaciones." />
             </Label>
-            <Input
+            <CurrencyInput
               id="salePrice"
-              type="text"
-              placeholder="2.000.000 €"
-              value={formData.salePrice > 0 ? formData.salePrice.toLocaleString('es-ES') : ''}
-              onChange={(e) => handleNumberChange('salePrice', e.target.value)}
+              placeholder="2.000.000"
+              value={formData.salePrice}
+              onChange={(value) => updateField('salePrice', value)}
               className="text-lg font-medium"
             />
           </div>
@@ -122,12 +117,11 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
               Valor de Adquisición
               <InfoTooltip content="Precio original al que adquiriste las participaciones o empresa. Se usará para calcular la ganancia patrimonial." />
             </Label>
-            <Input
+            <CurrencyInput
               id="acquisitionValue"
-              type="text"
-              placeholder="500.000 €"
-              value={formData.acquisitionValue > 0 ? formData.acquisitionValue.toLocaleString('es-ES') : ''}
-              onChange={(e) => handleNumberChange('acquisitionValue', e.target.value)}
+              placeholder="500.000"
+              value={formData.acquisitionValue}
+              onChange={(value) => updateField('acquisitionValue', value)}
             />
           </div>
 
@@ -177,12 +171,11 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
                 Base Imponible Actual (anual)
                 <InfoTooltip content="Si tu base imponible es inferior a 1M€, puedes beneficiarte del tipo reducido para PYMEs (15% primeros 300K€)." />
               </Label>
-              <Input
+              <CurrencyInput
                 id="currentTaxBase"
-                type="text"
-                placeholder="800.000 €"
-                value={formData.currentTaxBase > 0 ? formData.currentTaxBase.toLocaleString('es-ES') : ''}
-                onChange={(e) => handleNumberChange('currentTaxBase', e.target.value)}
+                placeholder="800.000"
+                value={formData.currentTaxBase}
+                onChange={(value) => updateField('currentTaxBase', value)}
               />
             </div>
           )}
@@ -215,12 +208,11 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
               {formData.vitaliciaPlan && (
                 <div className="space-y-2 pl-4 border-l-2 border-primary/20">
                   <Label htmlFor="vitaliciaAmount">Cantidad destinada a renta vitalicia</Label>
-                  <Input
+                  <CurrencyInput
                     id="vitaliciaAmount"
-                    type="text"
-                    placeholder="240.000 €"
-                    value={formData.vitaliciaAmount > 0 ? formData.vitaliciaAmount.toLocaleString('es-ES') : ''}
-                    onChange={(e) => handleNumberChange('vitaliciaAmount', e.target.value)}
+                    placeholder="240.000"
+                    value={formData.vitaliciaAmount}
+                    onChange={(value) => updateField('vitaliciaAmount', value)}
                   />
                   <p className="text-xs text-muted-foreground">Máximo exento: 240.000 €</p>
                 </div>
@@ -243,12 +235,11 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
               {formData.reinvestmentPlan && (
                 <div className="space-y-2 pl-4 border-l-2 border-primary/20">
                   <Label htmlFor="reinvestmentAmount">Cantidad a reinvertir</Label>
-                  <Input
+                  <CurrencyInput
                     id="reinvestmentAmount"
-                    type="text"
-                    placeholder="1.000.000 €"
-                    value={formData.reinvestmentAmount > 0 ? formData.reinvestmentAmount.toLocaleString('es-ES') : ''}
-                    onChange={(e) => handleNumberChange('reinvestmentAmount', e.target.value)}
+                    placeholder="1.000.000"
+                    value={formData.reinvestmentAmount}
+                    onChange={(value) => updateField('reinvestmentAmount', value)}
                   />
                 </div>
               )}
