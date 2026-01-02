@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { Resend } from 'npm:resend@2.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,6 +43,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -74,7 +76,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Test not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    );
     }
 
     // Fetch questions for context
@@ -162,20 +164,18 @@ INSTRUCCIONES IMPORTANTES:
       // Use Lovable AI API
       console.log('[generate-exit-readiness-report] Using Lovable AI API');
       
-      const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${lovableApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'google/gemini-2.5-flash',
           messages: [
             { role: 'system', content: 'Eres un consultor senior de M&A especializado en preparación de empresas para la venta.' },
             { role: 'user', content: prompt }
           ],
-          temperature: 0.7,
-          max_tokens: 2000
         })
       });
 
@@ -210,9 +210,46 @@ INSTRUCCIONES IMPORTANTES:
 
     console.log(`[generate-exit-readiness-report] Report generated successfully for test: ${testId}`);
 
+    // Send email with the report
+    let emailSent = false;
+    if (resendApiKey && testData.email) {
+      try {
+        console.log('[generate-exit-readiness-report] Sending email to:', testData.email);
+        const resend = new Resend(resendApiKey);
+        
+        const emailHtml = generateEmailHtml(testData as TestData, reportContent, levelLabel);
+        
+        const { error: emailError } = await resend.emails.send({
+          from: 'Capittal <samuel@capittal.es>',
+          to: [testData.email],
+          cc: ['lluis@capittal.es'],
+          subject: `Tu Informe Exit-Ready - ${testData.company_name || 'Capittal'}`,
+          html: emailHtml,
+        });
+
+        if (emailError) {
+          console.error('[generate-exit-readiness-report] Email error:', emailError);
+        } else {
+          emailSent = true;
+          console.log('[generate-exit-readiness-report] Email sent successfully');
+          
+          // Update email sent status
+          await supabase
+            .from('exit_readiness_tests')
+            .update({ email_sent: true, email_sent_at: new Date().toISOString() })
+            .eq('id', testId);
+        }
+      } catch (emailErr) {
+        console.error('[generate-exit-readiness-report] Email send error:', emailErr);
+      }
+    } else {
+      console.log('[generate-exit-readiness-report] Skipping email - no RESEND_API_KEY or email');
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
+        emailSent,
         reportContent: reportContent.substring(0, 500) + '...' // Preview only
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -332,4 +369,125 @@ Te recomendamos agendar una consulta gratuita con nuestro equipo para:
 - Diseñar un plan personalizado de preparación Exit-Ready
 
 **Contacta con nosotros en info@capittal.es o visita capittal.es para más información.**`;
+}
+
+function generateEmailHtml(testData: TestData, reportContent: string, levelLabel: string): string {
+  const userName = testData.name || 'Empresario';
+  const companyName = testData.company_name || 'tu empresa';
+  
+  // Convert markdown to simple HTML
+  const reportHtml = reportContent
+    .replace(/^## (.+)$/gm, '<h2 style="color: #0f172a; font-size: 20px; font-weight: 700; margin: 28px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;">$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^- (.+)$/gm, '<li style="margin: 6px 0; color: #334155;">$1</li>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li style="margin: 8px 0; color: #334155;"><strong>$1.</strong> $2</li>')
+    .replace(/\n\n/g, '</p><p style="margin: 12px 0; color: #334155; line-height: 1.6;">')
+    .replace(/<li/g, '</ul><ul style="margin: 12px 0; padding-left: 20px;"><li')
+    .replace(/<\/li>\n<\/ul>/g, '</li></ul>')
+    .replace(/<\/ul><ul[^>]*>/g, '');
+
+  // Determine badge color based on readiness level
+  const badgeColors: Record<string, { bg: string; text: string }> = {
+    'ready': { bg: '#dcfce7', text: '#166534' },
+    'in_progress': { bg: '#fef3c7', text: '#92400e' },
+    'needs_work': { bg: '#ffedd5', text: '#9a3412' }
+  };
+  const badge = badgeColors[testData.readiness_level] || badgeColors['in_progress'];
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tu Informe Exit-Ready - Capittal</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px 40px; text-align: center;">
+              <img src="https://capittal.es/lovable-uploads/capittal-logo-white.png" alt="Capittal" width="140" style="display: block; margin: 0 auto 16px;">
+              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0;">Tu Informe Exit-Ready</h1>
+            </td>
+          </tr>
+          
+          <!-- Greeting -->
+          <tr>
+            <td style="padding: 32px 40px 24px;">
+              <p style="margin: 0 0 16px; color: #334155; font-size: 16px; line-height: 1.6;">
+                Hola <strong>${userName}</strong>,
+              </p>
+              <p style="margin: 0 0 24px; color: #334155; font-size: 16px; line-height: 1.6;">
+                Gracias por completar el Test Exit-Ready de Capittal. A continuación encontrarás tu informe personalizado con un análisis detallado del nivel de preparación de <strong>${companyName}</strong> para un proceso de venta.
+              </p>
+              
+              <!-- Score Badge -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background-color: #f1f5f9; border-radius: 8px; padding: 20px; text-align: center;">
+                    <p style="margin: 0 0 8px; color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Puntuación</p>
+                    <p style="margin: 0 0 12px; color: #0f172a; font-size: 36px; font-weight: 700;">${testData.total_score}<span style="font-size: 20px; color: #64748b;">/100</span></p>
+                    <span style="display: inline-block; background-color: ${badge.bg}; color: ${badge.text}; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">${levelLabel}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Report Content -->
+          <tr>
+            <td style="padding: 0 40px 32px;">
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
+                ${reportHtml}
+              </div>
+            </td>
+          </tr>
+          
+          <!-- CTA -->
+          <tr>
+            <td style="padding: 0 40px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px;">
+                <tr>
+                  <td style="padding: 32px; text-align: center;">
+                    <h3 style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 0 0 12px;">¿Quieres dar el siguiente paso?</h3>
+                    <p style="color: #94a3b8; font-size: 14px; margin: 0 0 24px;">Agenda una consulta gratuita con nuestro equipo de expertos.</p>
+                    <a href="https://capittal.es/contacto" style="display: inline-block; background-color: #ffffff; color: #0f172a; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none;">Solicitar consulta gratuita</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 24px 40px; border-top: 1px solid #e2e8f0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="margin: 0 0 8px; color: #64748b; font-size: 14px;">
+                      <strong>Capittal</strong> · Especialistas en M&A
+                    </p>
+                    <p style="margin: 0 0 8px; color: #64748b; font-size: 14px;">
+                      📞 +34 695 717 490 · ✉️ info@capittal.es
+                    </p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                      Este informe es confidencial y está destinado únicamente al destinatario.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
