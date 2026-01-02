@@ -98,115 +98,115 @@ export function FinancialDataStep({ financialYears, updateFinancialYear }: Finan
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2 text-sm font-medium text-muted-foreground">
-                    Concepto
-                  </th>
-                  {financialYears
-                    .sort((a, b) => a.year - b.year)
-                    .map((fy, index) => (
-                      <th key={fy.year} className="text-center py-2 px-2 min-w-[140px]">
-                        <Input
-                          type="number"
-                          value={fy.year}
-                          onChange={(e) => updateFinancialYear(index, { year: parseInt(e.target.value) || 0 })}
-                          className="w-24 mx-auto text-center font-semibold"
-                        />
+            {(() => {
+              // Ordenar una sola vez y mantener referencia al índice original
+              const sortedYears = financialYears
+                .map((fy, originalIndex) => ({ ...fy, originalIndex }))
+                .sort((a, b) => a.year - b.year);
+
+              return (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2 text-sm font-medium text-muted-foreground">
+                        Concepto
                       </th>
-                    ))}
-                </tr>
-              </thead>
-              <tbody>
-                {/* Facturación */}
-                <tr className="border-b">
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
-                      <Euro className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">Facturación</span>
-                    </div>
-                  </td>
-                  {financialYears
-                    .sort((a, b) => a.year - b.year)
-                    .map((fy, index) => (
-                      <td key={`revenue-${fy.year}`} className="py-3 px-2">
-                        <Input
-                          type="number"
-                          value={fy.revenue || ''}
-                          onChange={(e) => updateFinancialYear(
-                            financialYears.findIndex(f => f.year === fy.year),
-                            { revenue: parseFloat(e.target.value) || 0 }
-                          )}
-                          placeholder="0"
-                          className="text-right"
-                        />
-                        {fy.revenue > 0 && (
-                          <p className="text-xs text-muted-foreground text-right mt-1">
-                            {formatCurrencyEUR(fy.revenue)}
-                          </p>
-                        )}
+                      {sortedYears.map((fy) => (
+                        <th key={fy.year} className="text-center py-2 px-2 min-w-[140px]">
+                          <Input
+                            type="number"
+                            value={fy.year}
+                            onChange={(e) => updateFinancialYear(fy.originalIndex, { year: parseInt(e.target.value) || 0 })}
+                            className="w-24 mx-auto text-center font-semibold"
+                          />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Facturación */}
+                    <tr className="border-b">
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2">
+                          <Euro className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Facturación</span>
+                        </div>
                       </td>
-                    ))}
-                </tr>
-
-                {/* EBITDA */}
-                <tr className="border-b bg-primary/5">
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
-                      <Euro className="w-4 h-4 text-primary" />
-                      <span className="font-bold text-primary">EBITDA *</span>
-                    </div>
-                  </td>
-                  {financialYears
-                    .sort((a, b) => a.year - b.year)
-                    .map((fy, index) => (
-                      <td key={`ebitda-${fy.year}`} className="py-3 px-2">
-                        <Input
-                          type="number"
-                          value={fy.ebitda || ''}
-                          onChange={(e) => updateFinancialYear(
-                            financialYears.findIndex(f => f.year === fy.year),
-                            { ebitda: parseFloat(e.target.value) || 0 }
+                      {sortedYears.map((fy) => (
+                        <td key={`revenue-${fy.year}`} className="py-3 px-2">
+                          <Input
+                            type="number"
+                            value={fy.revenue || ''}
+                            onChange={(e) => updateFinancialYear(
+                              fy.originalIndex,
+                              { revenue: parseFloat(e.target.value) || 0 }
+                            )}
+                            placeholder="0"
+                            className="text-right"
+                          />
+                          {fy.revenue > 0 && (
+                            <p className="text-xs text-muted-foreground text-right mt-1">
+                              {formatCurrencyEUR(fy.revenue)}
+                            </p>
                           )}
-                          placeholder="0"
-                          className="text-right border-primary/50"
-                        />
-                        {fy.ebitda > 0 && (
-                          <p className="text-xs text-primary text-right mt-1 font-medium">
-                            {formatCurrencyEUR(fy.ebitda)}
-                          </p>
-                        )}
-                      </td>
-                    ))}
-                </tr>
-
-
-                {/* Margen EBITDA calculado */}
-                <tr className="bg-muted/30">
-                  <td className="py-3 px-2">
-                    <span className="text-sm text-muted-foreground">Margen EBITDA</span>
-                  </td>
-                  {financialYears
-                    .sort((a, b) => a.year - b.year)
-                    .map((fy) => {
-                      const margin = calculateEbitdaMargin(fy.ebitda, fy.revenue);
-                      return (
-                        <td key={`margin-${fy.year}`} className="py-3 px-2 text-center">
-                          <span className={cn(
-                            'text-sm font-medium',
-                            margin > 15 && 'text-green-600',
-                            margin > 0 && margin <= 15 && 'text-amber-600',
-                            margin <= 0 && 'text-red-600'
-                          )}>
-                            {fy.revenue > 0 ? `${margin.toFixed(1)}%` : '-'}
-                          </span>
                         </td>
-                      );
-                    })}
-                </tr>
-              </tbody>
-            </table>
+                      ))}
+                    </tr>
+
+                    {/* EBITDA */}
+                    <tr className="border-b bg-primary/5">
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2">
+                          <Euro className="w-4 h-4 text-primary" />
+                          <span className="font-bold text-primary">EBITDA *</span>
+                        </div>
+                      </td>
+                      {sortedYears.map((fy) => (
+                        <td key={`ebitda-${fy.year}`} className="py-3 px-2">
+                          <Input
+                            type="number"
+                            value={fy.ebitda || ''}
+                            onChange={(e) => updateFinancialYear(
+                              fy.originalIndex,
+                              { ebitda: parseFloat(e.target.value) || 0 }
+                            )}
+                            placeholder="0"
+                            className="text-right border-primary/50"
+                          />
+                          {fy.ebitda > 0 && (
+                            <p className="text-xs text-primary text-right mt-1 font-medium">
+                              {formatCurrencyEUR(fy.ebitda)}
+                            </p>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+
+                    {/* Margen EBITDA calculado */}
+                    <tr className="bg-muted/30">
+                      <td className="py-3 px-2">
+                        <span className="text-sm text-muted-foreground">Margen EBITDA</span>
+                      </td>
+                      {sortedYears.map((fy) => {
+                        const margin = calculateEbitdaMargin(fy.ebitda, fy.revenue);
+                        return (
+                          <td key={`margin-${fy.year}`} className="py-3 px-2 text-center">
+                            <span className={cn(
+                              'text-sm font-medium',
+                              margin > 15 && 'text-green-600',
+                              margin > 0 && margin <= 15 && 'text-amber-600',
+                              margin <= 0 && 'text-red-600'
+                            )}>
+                              {fy.revenue > 0 ? `${margin.toFixed(1)}%` : '-'}
+                            </span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              );
+            })()}
           </div>
 
           <p className="text-xs text-muted-foreground mt-4">

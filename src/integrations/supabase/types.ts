@@ -1081,6 +1081,45 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_rates: {
+        Row: {
+          created_at: string | null
+          currency: string
+          description: string | null
+          effective_from: string
+          effective_to: string | null
+          hourly_rate: number
+          id: string
+          is_active: boolean | null
+          role: Database["public"]["Enums"]["admin_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          hourly_rate?: number
+          id?: string
+          is_active?: boolean | null
+          role: Database["public"]["Enums"]["admin_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          hourly_rate?: number
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["admin_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       blog_analytics: {
         Row: {
           id: string
@@ -3502,7 +3541,21 @@ export type Database = {
             foreignKeyName: "document_folders_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "document_folders_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_folders_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
           {
@@ -3643,7 +3696,21 @@ export type Database = {
             foreignKeyName: "documentos_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "documentos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
           {
@@ -4753,7 +4820,21 @@ export type Database = {
             foreignKeyName: "interacciones_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "interacciones_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interacciones_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -6202,6 +6283,72 @@ export type Database = {
         }
         Relationships: []
       }
+      mandato_activity: {
+        Row: {
+          activity_description: string | null
+          activity_type: string
+          created_at: string
+          created_by: string | null
+          entity_id: string | null
+          id: string
+          mandato_id: string
+        }
+        Insert: {
+          activity_description?: string | null
+          activity_type: string
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          id?: string
+          mandato_id: string
+        }
+        Update: {
+          activity_description?: string | null
+          activity_type?: string
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          id?: string
+          mandato_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandato_activity_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_activity_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_activity_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_activity_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_activity_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mandato_alerts: {
         Row: {
           alert_type: string
@@ -6264,7 +6411,21 @@ export type Database = {
             foreignKeyName: "mandato_alerts_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_alerts_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_alerts_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -6415,7 +6576,21 @@ export type Database = {
             foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -6522,7 +6697,21 @@ export type Database = {
             foreignKeyName: "mandato_contactos_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_contactos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_contactos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -6627,7 +6816,21 @@ export type Database = {
             foreignKeyName: "mandato_empresas_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_empresas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_empresas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -6742,7 +6945,21 @@ export type Database = {
             foreignKeyName: "mandato_time_entries_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_time_entries_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_time_entries_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
           {
@@ -6825,6 +7042,8 @@ export type Database = {
       }
       mandatos: {
         Row: {
+          closed_at: string | null
+          closed_by: string | null
           created_at: string | null
           days_in_stage: number | null
           descripcion: string | null
@@ -6838,7 +7057,10 @@ export type Database = {
           id: string
           import_log_id: string | null
           last_activity_at: string | null
+          loss_notes: string | null
+          loss_reason: Database["public"]["Enums"]["loss_reason_type"] | null
           numero_ofertas_recibidas: number | null
+          outcome: Database["public"]["Enums"]["mandato_outcome"] | null
           perfil_empresa_buscada: string | null
           pipeline_stage: string | null
           prioridad: string | null
@@ -6854,8 +7076,11 @@ export type Database = {
           valor: number | null
           valoracion_esperada: number | null
           weighted_value: number | null
+          won_value: number | null
         }
         Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
           created_at?: string | null
           days_in_stage?: number | null
           descripcion?: string | null
@@ -6869,7 +7094,10 @@ export type Database = {
           id?: string
           import_log_id?: string | null
           last_activity_at?: string | null
+          loss_notes?: string | null
+          loss_reason?: Database["public"]["Enums"]["loss_reason_type"] | null
           numero_ofertas_recibidas?: number | null
+          outcome?: Database["public"]["Enums"]["mandato_outcome"] | null
           perfil_empresa_buscada?: string | null
           pipeline_stage?: string | null
           prioridad?: string | null
@@ -6885,8 +7113,11 @@ export type Database = {
           valor?: number | null
           valoracion_esperada?: number | null
           weighted_value?: number | null
+          won_value?: number | null
         }
         Update: {
+          closed_at?: string | null
+          closed_by?: string | null
           created_at?: string | null
           days_in_stage?: number | null
           descripcion?: string | null
@@ -6900,7 +7131,10 @@ export type Database = {
           id?: string
           import_log_id?: string | null
           last_activity_at?: string | null
+          loss_notes?: string | null
+          loss_reason?: Database["public"]["Enums"]["loss_reason_type"] | null
           numero_ofertas_recibidas?: number | null
+          outcome?: Database["public"]["Enums"]["mandato_outcome"] | null
           perfil_empresa_buscada?: string | null
           pipeline_stage?: string | null
           prioridad?: string | null
@@ -6916,6 +7150,7 @@ export type Database = {
           valor?: number | null
           valoracion_esperada?: number | null
           weighted_value?: number | null
+          won_value?: number | null
         }
         Relationships: [
           {
@@ -9168,7 +9403,21 @@ export type Database = {
             foreignKeyName: "tareas_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "tareas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tareas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -9985,7 +10234,21 @@ export type Database = {
             foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_checklist_tasks_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -10030,7 +10293,21 @@ export type Database = {
             foreignKeyName: "mandato_alerts_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_alerts_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_alerts_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
         ]
@@ -10084,7 +10361,21 @@ export type Database = {
             foreignKeyName: "documentos_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "documentos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
             referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
             referencedColumns: ["id"]
           },
           {
@@ -10223,6 +10514,22 @@ export type Database = {
           },
         ]
       }
+      v_mandato_costs: {
+        Row: {
+          billable_cost: number | null
+          billable_hours: number | null
+          billable_percentage: number | null
+          descripcion: string | null
+          empresa_nombre: string | null
+          entries_count: number | null
+          estado: string | null
+          mandato_id: string | null
+          tipo: string | null
+          total_cost: number | null
+          total_hours: number | null
+        }
+        Relationships: []
+      }
       v_mandatos_stuck: {
         Row: {
           created_at: string | null
@@ -10281,6 +10588,23 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      v_mandatos_winloss: {
+        Row: {
+          closed_at: string | null
+          empresa_nombre: string | null
+          estado: string | null
+          id: string | null
+          loss_notes: string | null
+          loss_reason: Database["public"]["Enums"]["loss_reason_type"] | null
+          outcome: Database["public"]["Enums"]["mandato_outcome"] | null
+          pipeline_stage: string | null
+          sector: string | null
+          tipo: string | null
+          valor: number | null
+          won_value: number | null
+        }
+        Relationships: []
       }
       v_nominas_completo: {
         Row: {
@@ -10922,6 +11246,17 @@ export type Database = {
         | "fase0_bloqueado"
         | "mandato_propuesto"
         | "mandato_firmado"
+      loss_reason_type:
+        | "precio"
+        | "competidor"
+        | "timing"
+        | "fit_estrategico"
+        | "due_diligence"
+        | "financiacion"
+        | "cambio_prioridades"
+        | "relacion_cliente"
+        | "otro"
+      mandato_outcome: "open" | "won" | "lost" | "cancelled"
       proposal_status:
         | "draft"
         | "sent"
@@ -11126,6 +11461,18 @@ export const Constants = {
         "mandato_propuesto",
         "mandato_firmado",
       ],
+      loss_reason_type: [
+        "precio",
+        "competidor",
+        "timing",
+        "fit_estrategico",
+        "due_diligence",
+        "financiacion",
+        "cambio_prioridades",
+        "relacion_cliente",
+        "otro",
+      ],
+      mandato_outcome: ["open", "won", "lost", "cancelled"],
       proposal_status: [
         "draft",
         "sent",
