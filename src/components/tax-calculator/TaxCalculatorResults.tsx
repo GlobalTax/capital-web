@@ -29,8 +29,9 @@ export const TaxCalculatorResults: React.FC<TaxCalculatorResultsProps> = ({
   formData,
   onBack,
 }) => {
-  const totalBenefits = result.abatementBenefit + result.reinvestmentBenefit + result.vitaliciaBenefit;
+  const totalBenefits = result.abatementBenefit + result.reinvestmentBenefit + result.vitaliciaBenefit + result.article21Benefit;
   const hasBenefits = totalBenefits > 0;
+  const hasArticle21 = result.article21Benefit > 0;
 
   return (
     <div className="space-y-6">
@@ -88,6 +89,32 @@ export const TaxCalculatorResults: React.FC<TaxCalculatorResultsProps> = ({
               <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-400">Beneficios Fiscales</h3>
             </div>
 
+            {/* Art. 21 LIS - Exención participaciones significativas */}
+            {hasArticle21 && (
+              <div className="p-4 bg-emerald-100/50 dark:bg-emerald-900/30 rounded-xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Exención Art. 21 LIS (99%)</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    -{formatCurrency(result.article21Benefit)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div>
+                    <span>Plusvalía exenta:</span>
+                    <span className="ml-1 font-medium text-emerald-600 dark:text-emerald-400">
+                      {formatCurrency(result.article21Benefit)}
+                    </span>
+                  </div>
+                  <div>
+                    <span>Plusvalía tributable (1%):</span>
+                    <span className="ml-1 font-medium text-foreground">
+                      {formatCurrency(result.taxableGain)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {result.abatementBenefit > 0 && (
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-foreground">Coeficientes de abatimiento (pre-1995)</span>
@@ -112,11 +139,16 @@ export const TaxCalculatorResults: React.FC<TaxCalculatorResultsProps> = ({
                 </span>
               </div>
             )}
-            <Separator className="bg-emerald-200/50 dark:bg-emerald-800/30" />
-            <div className="flex justify-between items-center font-medium pt-1">
-              <span className="text-foreground">Ganancia tributable</span>
-              <span className="text-lg font-bold text-foreground">{formatCurrency(result.taxableGain)}</span>
-            </div>
+            
+            {!hasArticle21 && (
+              <>
+                <Separator className="bg-emerald-200/50 dark:bg-emerald-800/30" />
+                <div className="flex justify-between items-center font-medium pt-1">
+                  <span className="text-foreground">Ganancia tributable</span>
+                  <span className="text-lg font-bold text-foreground">{formatCurrency(result.taxableGain)}</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
