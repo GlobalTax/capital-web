@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { calculateSpanishTaxImpact, TaxCalculationResult } from '@/utils/taxCalculation';
 
+export type TaxCalculatorStep = 'form' | 'capture' | 'results';
+
 export interface TaxFormData {
   salePrice: number;
   taxpayerType: 'individual' | 'company';
@@ -39,7 +41,7 @@ const initialFormData: TaxFormData = {
 
 export const useTaxCalculator = () => {
   const [formData, setFormData] = useState<TaxFormData>(initialFormData);
-  const [showResults, setShowResults] = useState(false);
+  const [step, setStep] = useState<TaxCalculatorStep>('form');
 
   const updateField = useCallback(<K extends keyof TaxFormData>(
     field: K,
@@ -50,7 +52,7 @@ export const useTaxCalculator = () => {
 
   const resetForm = useCallback(() => {
     setFormData(initialFormData);
-    setShowResults(false);
+    setStep('form');
   }, []);
 
   const isFormValid = useMemo(() => {
@@ -113,9 +115,17 @@ export const useTaxCalculator = () => {
 
   const calculateTax = useCallback(() => {
     if (isFormValid) {
-      setShowResults(true);
+      setStep('capture');
     }
   }, [isFormValid]);
+
+  const onLeadCaptured = useCallback(() => {
+    setStep('results');
+  }, []);
+
+  const goBackToForm = useCallback(() => {
+    setStep('form');
+  }, []);
 
   return {
     formData,
@@ -123,9 +133,11 @@ export const useTaxCalculator = () => {
     resetForm,
     isFormValid,
     taxResult,
-    showResults,
-    setShowResults,
+    step,
+    setStep,
     calculateTax,
+    onLeadCaptured,
+    goBackToForm,
     article21Eligibility,
   };
 };

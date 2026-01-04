@@ -2,6 +2,7 @@ import React from 'react';
 import { useTaxCalculator } from '@/hooks/useTaxCalculator';
 import { TaxCalculatorForm } from './TaxCalculatorForm';
 import { TaxCalculatorResults } from './TaxCalculatorResults';
+import { TaxLeadCaptureForm } from './TaxLeadCaptureForm';
 
 export const TaxCalculator: React.FC = () => {
   const {
@@ -9,9 +10,10 @@ export const TaxCalculator: React.FC = () => {
     updateField,
     isFormValid,
     taxResult,
-    showResults,
-    setShowResults,
+    step,
     calculateTax,
+    onLeadCaptured,
+    goBackToForm,
     article21Eligibility,
   } = useTaxCalculator();
 
@@ -40,19 +42,30 @@ export const TaxCalculator: React.FC = () => {
       </div>
 
       {/* Contenido */}
-      {showResults && taxResult ? (
-        <TaxCalculatorResults
-          result={taxResult}
-          formData={formData}
-          onBack={() => setShowResults(false)}
-        />
-      ) : (
+      {step === 'form' && (
         <TaxCalculatorForm
           formData={formData}
           updateField={updateField}
           onCalculate={calculateTax}
           isFormValid={isFormValid}
           article21Eligibility={article21Eligibility}
+        />
+      )}
+
+      {step === 'capture' && taxResult && (
+        <TaxLeadCaptureForm
+          taxResult={taxResult}
+          formData={formData}
+          onSubmit={onLeadCaptured}
+          onBack={goBackToForm}
+        />
+      )}
+
+      {step === 'results' && taxResult && (
+        <TaxCalculatorResults
+          result={taxResult}
+          formData={formData}
+          onBack={goBackToForm}
         />
       )}
     </div>
