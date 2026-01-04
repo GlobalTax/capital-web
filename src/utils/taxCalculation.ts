@@ -13,6 +13,11 @@ interface TaxSimulatorData {
   vitaliciaPlan: boolean;
   vitaliciaAmount: number;
   reinvestmentQualifies?: boolean;
+  // Art. 21 LIS - Exención participaciones significativas (solo sociedades)
+  applyArticle21: boolean;
+  participationPercentage: number;
+  meetsSubjectToTaxRequirement: boolean;
+  meetsEconomicActivityRequirement: boolean;
 }
 
 export interface TaxCalculationResult {
@@ -27,6 +32,7 @@ export interface TaxCalculationResult {
   reinvestmentBenefit: number;
   vitaliciaBenefit: number;
   abatementBenefit: number;
+  article21Benefit: number;
   taxBreakdown: {
     description: string;
     amount: number;
@@ -96,6 +102,36 @@ const calculateAbatementCoefficient = (
   return reducibleGain * reductionRate;
 };
 
+// Verificar elegibilidad Art. 21 LIS (exención 99% participaciones significativas)
+const checkArticle21Eligibility = (
+  participationPercentage: number,
+  acquisitionValue: number,
+  yearsHeld: number,
+  meetsSubjectToTax: boolean,
+  meetsEconomicActivity: boolean
+): { eligible: boolean; exemptionRate: number; reason?: string } => {
+  // Requisito 1: Participación ≥ 5% O valor adquisición > 20M€
+  const meetsParticipationThreshold = participationPercentage >= 5 || acquisitionValue >= 20000000;
+  
+  // Requisito 2: Tenencia mínima ≥ 1 año
+  const meetsHoldingPeriod = yearsHeld >= 1;
+  
+  if (!meetsParticipationThreshold) {
+    return { eligible: false, exemptionRate: 0, reason: 'Participación < 5% y valor < 20M€' };
+  }
+  if (!meetsHoldingPeriod) {
+    return { eligible: false, exemptionRate: 0, reason: 'Tenencia < 1 año' };
+  }
+  if (!meetsSubjectToTax) {
+    return { eligible: false, exemptionRate: 0, reason: 'Filial no tributa ≥10%' };
+  }
+  if (!meetsEconomicActivity) {
+    return { eligible: false, exemptionRate: 0, reason: 'Filial sin actividad económica' };
+  }
+  
+  return { eligible: true, exemptionRate: 0.99 }; // 99% exento
+};
+
 export const calculateSpanishTaxImpact = (
   simulatorData: TaxSimulatorData,
   salePrice: number
@@ -129,6 +165,7 @@ export const calculateSpanishTaxImpact = (
   let taxBreakdown: { description: string; amount: number; rate: number; }[] = [];
   let reinvestmentBenefit = 0;
   let vitaliciaBenefit = 0;
+  let article21Benefit = 0;
   
   if (simulatorData.taxpayerType === 'individual') {
     // PERSONAS FÍSICAS - Nuevos tramos IRPF 2025
@@ -144,44 +181,71 @@ export const calculateSpanishTaxImpact = (
     }
   } else {
     // SOCIEDADES - Ley 27/2014 del Impuesto sobre Sociedades
-    if (simulatorData.currentTaxBase && simulatorData.currentTaxBase <= 1000000) {
-      // PYME: 15% primeros 300K, 25% resto
-      if (taxableGain <= 300000) {
-        totalTax = taxableGain * 0.15;
-        taxBreakdown.push({
-          description: 'Tipo reducido PYME (hasta 300.000€)',
-          amount: taxableGain,
-          rate: 15
-        });
-      } else {
-        // Primeros 300K al 15%
-        const first300k = 300000 * 0.15;
-        const remainder = (taxableGain - 300000) * 0.25;
-        totalTax = first300k + remainder;
+    
+    // Verificar si aplica Art. 21 LIS (exención participaciones significativas)
+    if (simulatorData.applyArticle21 && capitalGain > 0) {
+      const eligibility = checkArticle21Eligibility(
+        simulatorData.participationPercentage,
+        acquisitionValue,
+        simulatorData.yearsHeld,
+        simulatorData.meetsSubjectToTaxRequirement,
+        simulatorData.meetsEconomicActivityRequirement
+      );
+      
+      if (eligibility.eligible) {
+        // 99% de la plusvalía está exenta
+        article21Benefit = capitalGain * eligibility.exemptionRate;
+        taxableGain = capitalGain * (1 - eligibility.exemptionRate); // Solo tributa el 1%
         
         taxBreakdown.push({
-          description: 'Tipo reducido PYME (hasta 300.000€)',
-          amount: 300000,
-          rate: 15
+          description: 'Exención Art. 21 LIS (99%)',
+          amount: article21Benefit,
+          rate: 0
         });
+      }
+    }
+    
+    // Calcular impuesto sobre la ganancia tributable
+    if (taxableGain > 0) {
+      if (simulatorData.currentTaxBase && simulatorData.currentTaxBase <= 1000000) {
+        // PYME: 15% primeros 300K, 25% resto
+        if (taxableGain <= 300000) {
+          totalTax = taxableGain * 0.15;
+          taxBreakdown.push({
+            description: 'Tipo reducido PYME (hasta 300.000€)',
+            amount: taxableGain,
+            rate: 15
+          });
+        } else {
+          // Primeros 300K al 15%
+          const first300k = 300000 * 0.15;
+          const remainder = (taxableGain - 300000) * 0.25;
+          totalTax = first300k + remainder;
+          
+          taxBreakdown.push({
+            description: 'Tipo reducido PYME (hasta 300.000€)',
+            amount: 300000,
+            rate: 15
+          });
+          taxBreakdown.push({
+            description: 'Tipo general PYME (resto)',
+            amount: taxableGain - 300000,
+            rate: 25
+          });
+        }
+      } else {
+        // Tipo general: 25%
+        totalTax = taxableGain * 0.25;
         taxBreakdown.push({
-          description: 'Tipo general PYME (resto)',
-          amount: taxableGain - 300000,
+          description: 'Tipo general sociedades',
+          amount: taxableGain,
           rate: 25
         });
       }
-    } else {
-      // Tipo general: 25%
-      totalTax = taxableGain * 0.25;
-      taxBreakdown.push({
-        description: 'Tipo general sociedades',
-        amount: taxableGain,
-        rate: 25
-      });
     }
     
-    // Beneficio por reinversión (solo sociedades)
-    if (simulatorData.reinvestmentPlan && simulatorData.reinvestmentAmount > 0) {
+    // Beneficio por reinversión (solo sociedades, adicional a Art. 21)
+    if (simulatorData.reinvestmentPlan && simulatorData.reinvestmentAmount > 0 && !simulatorData.applyArticle21) {
       const reinvestmentPercentage = Math.min(simulatorData.reinvestmentAmount / capitalGain, 1);
       reinvestmentBenefit = totalTax * reinvestmentPercentage * 0.12; // 12% de reducción
       totalTax -= reinvestmentBenefit;
@@ -205,6 +269,7 @@ export const calculateSpanishTaxImpact = (
     reinvestmentBenefit,
     vitaliciaBenefit,
     abatementBenefit,
+    article21Benefit,
     taxBreakdown
   };
 };

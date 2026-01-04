@@ -12,6 +12,7 @@ export const TaxCalculator: React.FC = () => {
     showResults,
     setShowResults,
     calculateTax,
+    article21Eligibility,
   } = useTaxCalculator();
 
   return (
@@ -51,6 +52,7 @@ export const TaxCalculator: React.FC = () => {
           updateField={updateField}
           onCalculate={calculateTax}
           isFormValid={isFormValid}
+          article21Eligibility={article21Eligibility}
         />
       )}
     </div>

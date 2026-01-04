@@ -12,6 +12,11 @@ export interface TaxFormData {
   reinvestmentAmount: number;
   vitaliciaPlan: boolean;
   vitaliciaAmount: number;
+  // Art. 21 LIS - Exención participaciones significativas (solo sociedades)
+  applyArticle21: boolean;
+  participationPercentage: number;
+  meetsSubjectToTaxRequirement: boolean;
+  meetsEconomicActivityRequirement: boolean;
 }
 
 const initialFormData: TaxFormData = {
@@ -25,6 +30,11 @@ const initialFormData: TaxFormData = {
   reinvestmentAmount: 0,
   vitaliciaPlan: false,
   vitaliciaAmount: 0,
+  // Art. 21 LIS - valores por defecto (requisitos marcados por defecto)
+  applyArticle21: false,
+  participationPercentage: 100,
+  meetsSubjectToTaxRequirement: true,
+  meetsEconomicActivityRequirement: true,
 };
 
 export const useTaxCalculator = () => {
@@ -52,6 +62,27 @@ export const useTaxCalculator = () => {
     );
   }, [formData]);
 
+  // Verificar elegibilidad Art. 21 LIS
+  const article21Eligibility = useMemo(() => {
+    if (formData.taxpayerType !== 'company' || !formData.applyArticle21) {
+      return { eligible: false, reason: '' };
+    }
+
+    const yearsHeld = formData.acquisitionDate
+      ? Math.floor((Date.now() - new Date(formData.acquisitionDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      : 0;
+
+    const meetsParticipation = formData.participationPercentage >= 5 || formData.acquisitionValue >= 20000000;
+    const meetsHolding = yearsHeld >= 1;
+
+    if (!meetsParticipation) return { eligible: false, reason: 'Participación < 5% y valor < 20M€' };
+    if (!meetsHolding) return { eligible: false, reason: 'Tenencia < 1 año' };
+    if (!formData.meetsSubjectToTaxRequirement) return { eligible: false, reason: 'Filial no tributa ≥10%' };
+    if (!formData.meetsEconomicActivityRequirement) return { eligible: false, reason: 'Filial sin actividad económica' };
+
+    return { eligible: true, reason: '' };
+  }, [formData]);
+
   const taxResult: TaxCalculationResult | null = useMemo(() => {
     if (!isFormValid || formData.salePrice <= 0) return null;
 
@@ -71,6 +102,10 @@ export const useTaxCalculator = () => {
         reinvestmentAmount: formData.reinvestmentAmount,
         vitaliciaPlan: formData.vitaliciaPlan,
         vitaliciaAmount: formData.vitaliciaAmount,
+        applyArticle21: formData.applyArticle21,
+        participationPercentage: formData.participationPercentage,
+        meetsSubjectToTaxRequirement: formData.meetsSubjectToTaxRequirement,
+        meetsEconomicActivityRequirement: formData.meetsEconomicActivityRequirement,
       },
       formData.salePrice
     );
@@ -91,5 +126,6 @@ export const useTaxCalculator = () => {
     showResults,
     setShowResults,
     calculateTax,
+    article21Eligibility,
   };
 };

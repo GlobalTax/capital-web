@@ -8,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
-import { Building2, User, Info, ArrowRight } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Building2, User, Info, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TaxCalculatorFormProps {
@@ -16,6 +17,7 @@ interface TaxCalculatorFormProps {
   updateField: <K extends keyof TaxFormData>(field: K, value: TaxFormData[K]) => void;
   onCalculate: () => void;
   isFormValid: boolean;
+  article21Eligibility?: { eligible: boolean; reason: string };
 }
 
 const InfoTooltip = ({ content }: { content: string }) => (
@@ -42,6 +44,7 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
   updateField,
   onCalculate,
   isFormValid,
+  article21Eligibility,
 }) => {
   return (
     <div className="space-y-6">
@@ -238,34 +241,137 @@ export const TaxCalculatorForm: React.FC<TaxCalculatorFormProps> = ({
               )}
             </div>
           ) : (
-            /* Reinversión - Solo sociedades */
+            /* Beneficios Sociedades */
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50">
-                <Label htmlFor="reinvestmentPlan" className="flex items-center cursor-pointer">
-                  <span className="font-medium">Exención por Reinversión</span>
-                  <InfoTooltip content="Si reinviertes la ganancia en otra empresa o activos cualificados en un plazo de 3 años, puedes diferir o reducir la tributación." />
-                </Label>
-                <Switch
-                  id="reinvestmentPlan"
-                  checked={formData.reinvestmentPlan}
-                  onCheckedChange={(checked) => updateField('reinvestmentPlan', checked)}
-                />
-              </div>
-              {formData.reinvestmentPlan && (
-                <div className="space-y-2 pl-4 border-l-2 border-primary/30 ml-2">
-                  <Label htmlFor="reinvestmentAmount" className="text-sm font-medium">
-                    Cantidad a reinvertir
+              {/* Art. 21 LIS - Exención participaciones significativas */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50">
+                  <Label htmlFor="applyArticle21" className="flex items-center cursor-pointer">
+                    <span className="font-medium">Exención Art. 21 LIS (99%)</span>
+                    <InfoTooltip content="Si la sociedad vende participaciones en otra sociedad y cumple los requisitos del Art. 21 LIS, el 99% de la plusvalía está exenta." />
                   </Label>
-                  <div className="relative">
-                    <CurrencyInput
-                      id="reinvestmentAmount"
-                      placeholder="1.000.000"
-                      value={formData.reinvestmentAmount}
-                      onChange={(value) => updateField('reinvestmentAmount', value)}
-                      className="pl-4 pr-10 h-12 bg-background"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+                  <Switch
+                    id="applyArticle21"
+                    checked={formData.applyArticle21}
+                    onCheckedChange={(checked) => {
+                      updateField('applyArticle21', checked);
+                      // Desactivar reinversión si se activa Art. 21
+                      if (checked) updateField('reinvestmentPlan', false);
+                    }}
+                  />
+                </div>
+                
+                {formData.applyArticle21 && (
+                  <div className="space-y-4 pl-4 border-l-2 border-primary/30 ml-2">
+                    {/* Porcentaje de participación */}
+                    <div className="space-y-2">
+                      <Label htmlFor="participationPercentage" className="text-sm font-medium flex items-center">
+                        Porcentaje de participación en la filial
+                        <InfoTooltip content="Debe ser ≥ 5% del capital social O el valor de adquisición debe superar 20M€." />
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="participationPercentage"
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={0.1}
+                          value={formData.participationPercentage}
+                          onChange={(e) => updateField('participationPercentage', parseFloat(e.target.value) || 0)}
+                          className="pr-10 h-12 bg-background"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
+                      </div>
+                    </div>
+                    
+                    {/* Requisitos */}
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium text-foreground">Requisitos (marcar si se cumplen):</p>
+                      
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="meetsSubjectToTax"
+                          checked={formData.meetsSubjectToTaxRequirement}
+                          onCheckedChange={(checked) => updateField('meetsSubjectToTaxRequirement', !!checked)}
+                        />
+                        <Label htmlFor="meetsSubjectToTax" className="text-sm leading-relaxed cursor-pointer">
+                          La filial tributa a un tipo ≥ 10%
+                          <span className="block text-xs text-muted-foreground">Sujeta a impuesto similar al IS español</span>
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="meetsEconomicActivity"
+                          checked={formData.meetsEconomicActivityRequirement}
+                          onCheckedChange={(checked) => updateField('meetsEconomicActivityRequirement', !!checked)}
+                        />
+                        <Label htmlFor="meetsEconomicActivity" className="text-sm leading-relaxed cursor-pointer">
+                          La filial tiene actividad económica
+                          <span className="block text-xs text-muted-foreground">No es una sociedad patrimonial/holding</span>
+                        </Label>
+                      </div>
+                    </div>
+                    
+                    {/* Indicador de elegibilidad */}
+                    {article21Eligibility && (
+                      <div className={`p-3 rounded-lg flex items-center gap-2 ${
+                        article21Eligibility.eligible 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50' 
+                          : 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50'
+                      }`}>
+                        {article21Eligibility.eligible ? (
+                          <>
+                            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                              Cumple requisitos → Exención del 99% de la plusvalía
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                              No cumple: {article21Eligibility.reason}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
+                )}
+              </div>
+              
+              {/* Reinversión - Solo si no aplica Art. 21 */}
+              {!formData.applyArticle21 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50">
+                    <Label htmlFor="reinvestmentPlan" className="flex items-center cursor-pointer">
+                      <span className="font-medium">Exención por Reinversión</span>
+                      <InfoTooltip content="Si reinviertes la ganancia en otra empresa o activos cualificados en un plazo de 3 años, puedes diferir o reducir la tributación." />
+                    </Label>
+                    <Switch
+                      id="reinvestmentPlan"
+                      checked={formData.reinvestmentPlan}
+                      onCheckedChange={(checked) => updateField('reinvestmentPlan', checked)}
+                    />
+                  </div>
+                  {formData.reinvestmentPlan && (
+                    <div className="space-y-2 pl-4 border-l-2 border-primary/30 ml-2">
+                      <Label htmlFor="reinvestmentAmount" className="text-sm font-medium">
+                        Cantidad a reinvertir
+                      </Label>
+                      <div className="relative">
+                        <CurrencyInput
+                          id="reinvestmentAmount"
+                          placeholder="1.000.000"
+                          value={formData.reinvestmentAmount}
+                          onChange={(value) => updateField('reinvestmentAmount', value)}
+                          className="pl-4 pr-10 h-12 bg-background"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">€</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
