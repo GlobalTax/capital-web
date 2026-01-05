@@ -26,7 +26,7 @@ const SearchFundsHero: React.FC = () => {
   };
 
   return (
-    <section className="relative bg-background py-16 md:py-24 overflow-hidden">
+    <section className="relative bg-background py-20 md:py-32 overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02]">
         <div className="absolute inset-0" style={{
@@ -72,11 +72,13 @@ const SearchFundsHero: React.FC = () => {
               <InteractiveHoverButton 
                 text="Soy empresario y quiero vender"
                 onClick={scrollToContact}
+                size="lg"
               />
               <InteractiveHoverButton 
                 text="Soy Searcher y busco deal flow"
                 onClick={() => navigate('/contacto?origen=search-funds-searcher')}
-                className="bg-transparent border-2 border-foreground text-foreground hover:bg-foreground hover:text-background"
+                variant="secondary"
+                size="lg"
               />
             </div>
 
