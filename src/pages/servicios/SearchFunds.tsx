@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import {
   SearchFundsHero,
   SearchFundsWhatAre,
@@ -34,20 +33,16 @@ const SearchFunds = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <SearchFundsHero />
-        <SearchFundsWhatAre />
-        <SearchFundsWhyCapittal />
-        <SearchFundsForSellers />
-        <SearchFundsForSearchers />
-        <SearchFundsProcess />
-        <SearchFundsFAQ />
-        <SearchFundsCTA />
-      </main>
-      <Footer />
-    </div>
+    <UnifiedLayout variant="home">
+      <SearchFundsHero />
+      <SearchFundsWhatAre />
+      <SearchFundsWhyCapittal />
+      <SearchFundsForSellers />
+      <SearchFundsForSearchers />
+      <SearchFundsProcess />
+      <SearchFundsFAQ />
+      <SearchFundsCTA />
+    </UnifiedLayout>
   );
 };
 
