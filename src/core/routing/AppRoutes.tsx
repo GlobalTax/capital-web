@@ -58,6 +58,7 @@ const Industrial = lazy(() => import('@/pages/sectores/Industrial').catch(() => 
 const RetailConsumer = lazy(() => import('@/pages/sectores/RetailConsumer').catch(() => import('@/pages/VentaEmpresas')));
 const Energia = lazy(() => import('@/pages/sectores/Energia').catch(() => import('@/pages/VentaEmpresas')));
 const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(() => import('@/pages/VentaEmpresas')));
+const DistribucionCosmeticaProfesional = lazy(() => import('@/pages/sectores/DistribucionCosmeticaProfesional').catch(() => import('@/pages/VentaEmpresas')));
 
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
@@ -208,6 +209,7 @@ export const AppRoutes = () => {
         <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
         <Route path="/sectores/energia" element={<Energia />} />
         <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
+        <Route path="/sectores/distribucion-cosmetica-profesional" element={<DistribucionCosmeticaProfesional />} />
         
         {/* === JOB POSTS ROUTES === */}
         <Route path="/oportunidades/empleo" element={<JobsPage />} />
