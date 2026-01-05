@@ -1,8 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, TrendingUp, Users, Building2 } from 'lucide-react';
-import { SimpleButton } from '@/components/ui/simple-button';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const SearchFundsHero: React.FC = () => {
+  const navigate = useNavigate();
+  
   const benefits = [
     "Emprendedores de élite que invierten su futuro en tu empresa",
     "Proceso de due diligence riguroso y profesional",
@@ -66,14 +69,15 @@ const SearchFundsHero: React.FC = () => {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <SimpleButton onClick={scrollToContact}>
-                Soy empresario y quiero vender
-              </SimpleButton>
-              <a href="/contacto?origen=search-funds-searcher">
-                <SimpleButton variant="outline">
-                  Soy Searcher y busco deal flow
-                </SimpleButton>
-              </a>
+              <InteractiveHoverButton 
+                text="Soy empresario y quiero vender"
+                onClick={scrollToContact}
+              />
+              <InteractiveHoverButton 
+                text="Soy Searcher y busco deal flow"
+                onClick={() => navigate('/contacto?origen=search-funds-searcher')}
+                className="bg-transparent border-2 border-foreground text-foreground hover:bg-foreground hover:text-background"
+              />
             </div>
 
             {/* Trust indicators */}
