@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Building2, TrendingUp, Users, Calendar, MapPin } from 'lucide-react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-import { ResourceCenterNav } from '@/components/search-funds-center';
+
 
 const cases = [
   {
@@ -92,8 +92,6 @@ const SearchFundsCases = () => {
       </Helmet>
 
       <div className="pt-24">
-        <ResourceCenterNav />
-        
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-4xl font-bold text-center mb-4">Casos de Éxito</h1>

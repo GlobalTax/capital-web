@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-import { ResourceCenterNav, ResourceCenterHero, ResourceCenterGrid } from '@/components/search-funds-center';
+import { ResourceCenterHero, ResourceCenterGrid } from '@/components/search-funds-center';
 
 const SearchFundsResourceCenter = () => {
   useEffect(() => {
@@ -20,7 +20,6 @@ const SearchFundsResourceCenter = () => {
       </Helmet>
 
       <div className="pt-24">
-        <ResourceCenterNav />
         <ResourceCenterHero />
         <ResourceCenterGrid />
       </div>
