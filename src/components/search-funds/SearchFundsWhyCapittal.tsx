@@ -47,8 +47,8 @@ export const SearchFundsWhyCapittal = () => {
               ¿Por qué trabajar con Capittal?
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              En un mercado donde la profesionalización es escasa y la desconfianza es alta, 
-              Capittal aporta el rigor y la seriedad que los empresarios españoles merecen.
+              Entendemos las dudas que surgen ante un modelo relativamente nuevo. 
+              Por eso aportamos transparencia, estructura y acompañamiento en cada paso del proceso.
             </p>
           </div>
 
