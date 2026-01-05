@@ -28,6 +28,13 @@ export const serviciosData: MenuCategory[] = [
         icon: 'calculator',
         description: "Valoraciones precisas y profesionales de empresas",
         image: "/lovable-uploads/5459d292-9157-404f-915b-a1608e1f4779.png"
+      },
+      {
+        id: "search-funds",
+        label: "Search Funds",
+        href: "/servicios/search-funds",
+        icon: 'users',
+        description: "Conectamos tu empresa con emprendedores que la harán crecer"
       }
     ]
   },
