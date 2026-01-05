@@ -59,11 +59,11 @@ export const recursosData: MenuCategory[] = [
         description: "Ofertas de trabajo en el sector M&A"
       },
       {
-        id: "guia-search-funds",
-        label: "Guía Search Funds",
-        href: "/recursos/search-funds",
+        id: "centro-search-funds",
+        label: "Centro Search Funds",
+        href: "/search-funds/recursos",
         icon: 'graduation-cap',
-        description: "Todo sobre el modelo de adquisición empresarial"
+        description: "Guías, glosario y recursos sobre Search Funds"
       },
       {
         id: "newsletter",
