@@ -62,12 +62,12 @@ const SearchFundsHero: React.FC = () => {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
               <InteractiveHoverButton 
-                text="Soy empresario y quiero vender"
+                text="Quiero vender"
                 onClick={scrollToContact}
                 size="lg"
               />
               <InteractiveHoverButton 
-                text="Soy Searcher y busco deal flow"
+                text="Busco dealflow"
                 onClick={() => navigate('/contacto?origen=search-funds-searcher')}
                 variant="secondary"
                 size="lg"
