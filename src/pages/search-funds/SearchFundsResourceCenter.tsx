@@ -19,7 +19,7 @@ const SearchFundsResourceCenter = () => {
         <link rel="canonical" href="https://capittal.es/search-funds/recursos" />
       </Helmet>
 
-      <div>
+      <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <ResourceCenterHero />
         <ResourceCenterGrid />
       </div>
