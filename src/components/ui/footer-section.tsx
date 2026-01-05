@@ -11,7 +11,7 @@ export function Footerdemo() {
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="mb-4">
@@ -19,24 +19,24 @@ export function Footerdemo() {
                 Capittal
               </Link>
             </div>
-            <p className="text-gray-300 mb-4 max-w-md">
+            <p className="text-gray-300 mb-4 max-w-md text-sm">
               {t('footer.company.description')}
             </p>
             <div className="space-y-2">
-              <div className="flex items-start text-gray-300">
-                <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
-                <div className="space-y-1">
+              <div className="flex items-start text-gray-300 text-sm">
+                <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                <div className="space-y-0.5">
                   <span className="block">{t('footer.company.address')}</span>
-                  <span className="block text-sm">{t('footer.company.otherOffices')}</span>
+                  <span className="block text-xs text-gray-400">{t('footer.company.otherOffices')}</span>
                 </div>
               </div>
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-gray-300 text-sm">
                 <Phone className="h-4 w-4 mr-2" />
                 <a href="tel:+34695717490" className="hover:text-white transition-colors">
                   {t('footer.company.phone')}
                 </a>
               </div>
-              <div className="flex items-center text-gray-300">
+              <div className="flex items-center text-gray-300 text-sm">
                 <Mail className="h-4 w-4 mr-2" />
                 <a href="mailto:info@capittal.es" className="hover:text-white transition-colors">
                   {t('footer.company.email')}
@@ -47,8 +47,8 @@ export function Footerdemo() {
 
           {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">{t('footer.section.services')}</h3>
-            <ul className="space-y-2">
+            <h3 className="text-sm font-semibold mb-4 text-white">{t('footer.section.services')}</h3>
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link to={getLocalizedUrl('serviciosValoraciones', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.valoraciones')}
@@ -57,6 +57,11 @@ export function Footerdemo() {
               <li>
                 <Link to={getLocalizedUrl('ventaEmpresas', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.ventaEmpresas')}
+                </Link>
+              </li>
+              <li>
+                <Link to={getLocalizedUrl('compraEmpresas', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.compraEmpresas')}
                 </Link>
               </li>
               <li>
@@ -69,13 +74,97 @@ export function Footerdemo() {
                   {t('footer.link.asesoramientoLegal')}
                 </Link>
               </li>
+              <li>
+                <Link to="/servicios/reestructuraciones" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.reestructuraciones')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/servicios/search-funds" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.searchFunds')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Sectors */}
+          <div>
+            <h3 className="text-sm font-semibold mb-4 text-white">{t('footer.section.sectors')}</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/sectores/tecnologia" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.tecnologia')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/sectores/healthcare" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.healthcare')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/sectores/energia" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.energia')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/sectores/industrial" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.industrial')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/sectores/inmobiliario" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.inmobiliario')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/sectores/retail-consumer" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.retail')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/sectores/financial-services" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.financiero')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h3 className="text-sm font-semibold mb-4 text-white">{t('footer.section.resources')}</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to={getLocalizedUrl('blog', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.blog')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/recursos/newsletter" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.newsletter')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/search-funds/recursos" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.centroSearchFunds')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/oportunidades" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.oportunidades')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/lp/calculadora" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.calculadora')}
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">{t('footer.section.company')}</h3>
-            <ul className="space-y-2">
+            <h3 className="text-sm font-semibold mb-4 text-white">{t('footer.section.company')}</h3>
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/nosotros" className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.nosotros')}
@@ -89,6 +178,16 @@ export function Footerdemo() {
               <li>
                 <Link to={getLocalizedUrl('casosExito', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.casosExito')}
+                </Link>
+              </li>
+              <li>
+                <Link to={getLocalizedUrl('programaColaboradores', lang)} className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.programaColaboradores')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/por-que-elegirnos" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.porQueElegirnos')}
                 </Link>
               </li>
               <li>
