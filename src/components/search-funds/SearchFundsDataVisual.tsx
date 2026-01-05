@@ -317,17 +317,6 @@ export const SearchFundsDataVisual: React.FC = () => {
       <div className="mt-4 relative z-10">
         <GrowthChart />
       </div>
-      
-      {/* Footer con logos */}
-      <motion.div 
-        className="mt-4 pt-4 border-t border-border text-center relative z-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <span className="text-xs text-muted-foreground">Respaldado por </span>
-        <span className="text-xs font-semibold text-foreground">IESE • IE • ESADE</span>
-      </motion.div>
     </motion.div>
   );
 };
