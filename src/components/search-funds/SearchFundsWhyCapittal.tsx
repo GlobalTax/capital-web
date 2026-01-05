@@ -69,27 +69,32 @@ export const SearchFundsWhyCapittal = () => {
             {differentiators.map((item, index) => (
               <div 
                 key={index}
-                className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all hover:border-primary/30"
+                className="group bg-white dark:bg-slate-800/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 
+                           hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <item.icon className="w-6 h-6 text-primary" />
+                {/* Número decorativo + Icono */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-blue-500/10 
+                                  flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <item.icon className="w-7 h-7 text-primary" />
+                  </div>
+                  <span className="text-4xl font-bold text-slate-100 dark:text-slate-700 select-none">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+                
+                {/* Título */}
+                <h3 className="font-bold text-lg text-foreground mb-3 group-hover:text-primary transition-colors">
+                  {item.title}
+                </h3>
+                
+                {/* Descripción */}
+                <p className="text-muted-foreground leading-relaxed">
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>
-
-          {/* Quote */}
-          <blockquote className="mt-12 bg-gradient-to-r from-primary/5 to-blue-500/5 rounded-2xl p-8 border-l-4 border-primary">
-            <p className="text-lg text-foreground italic mb-4">
-              "Los Search Funds son emprendedores de primer nivel que invierten su propio futuro en tu empresa. 
-              Nosotros filtramos los serios de los oportunistas."
-            </p>
-            <footer className="text-sm text-muted-foreground">
-              — Equipo de M&A, Capittal
-            </footer>
-          </blockquote>
         </div>
       </div>
     </section>
