@@ -18,49 +18,11 @@ interface SectorStatsV2Props {
   accentColor?: 'emerald' | 'blue' | 'amber' | 'slate' | 'stone' | 'rose' | 'indigo' | 'pink';
 }
 
-const colorClasses = {
-  emerald: {
-    accentLine: 'from-emerald-400 to-emerald-600',
-    textGradient: 'from-emerald-600 to-emerald-800'
-  },
-  blue: {
-    accentLine: 'from-blue-400 to-blue-600',
-    textGradient: 'from-blue-600 to-blue-800'
-  },
-  amber: {
-    accentLine: 'from-amber-400 to-amber-600',
-    textGradient: 'from-amber-600 to-amber-800'
-  },
-  slate: {
-    accentLine: 'from-slate-400 to-slate-600',
-    textGradient: 'from-slate-600 to-slate-800'
-  },
-  stone: {
-    accentLine: 'from-stone-400 to-stone-600',
-    textGradient: 'from-stone-600 to-stone-800'
-  },
-  rose: {
-    accentLine: 'from-rose-400 to-rose-600',
-    textGradient: 'from-rose-600 to-rose-800'
-  },
-  indigo: {
-    accentLine: 'from-indigo-400 to-indigo-600',
-    textGradient: 'from-indigo-600 to-indigo-800'
-  },
-  pink: {
-    accentLine: 'from-pink-400 to-purple-600',
-    textGradient: 'from-pink-600 to-purple-700'
-  }
-};
-
 const SectorStatsV2: React.FC<SectorStatsV2Props> = ({
   title = "Cifras Clave del Sector",
   subtitle,
   stats,
-  accentColor = 'emerald'
 }) => {
-  const colors = colorClasses[accentColor];
-
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,14 +45,14 @@ const SectorStatsV2: React.FC<SectorStatsV2Props> = ({
           {stats.map((stat, index) => (
             <div 
               key={index}
-              className="group relative p-8 rounded-2xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-200 hover:shadow-xl transition-all duration-300"
+              className="group relative p-8 rounded-2xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-300 hover:shadow-xl transition-all duration-300"
             >
               {/* Top accent line */}
-              <div className={`absolute top-0 left-8 right-8 h-1 rounded-b-full bg-gradient-to-r ${colors.accentLine} opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <div className="absolute top-0 left-8 right-8 h-1 rounded-b-full bg-slate-900 opacity-0 group-hover:opacity-100 transition-opacity" />
               
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
-                  <span className={`text-4xl md:text-5xl font-bold bg-gradient-to-r ${colors.textGradient} bg-clip-text text-transparent`}>
+                  <span className="text-4xl md:text-5xl font-bold text-slate-900">
                     {stat.value}
                   </span>
                   

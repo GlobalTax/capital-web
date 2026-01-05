@@ -17,80 +17,18 @@ interface SectorMarketInsightsProps {
   accentColor?: 'emerald' | 'blue' | 'amber' | 'slate' | 'stone' | 'rose' | 'indigo' | 'pink';
 }
 
-const colorClasses = {
-  emerald: {
-    bulletBg: 'bg-emerald-100',
-    bulletIcon: 'text-emerald-600',
-    cardBg: 'bg-emerald-50',
-    cardText: 'text-emerald-600',
-    cardHover: 'hover:border-emerald-200'
-  },
-  blue: {
-    bulletBg: 'bg-blue-100',
-    bulletIcon: 'text-blue-600',
-    cardBg: 'bg-blue-50',
-    cardText: 'text-blue-600',
-    cardHover: 'hover:border-blue-200'
-  },
-  amber: {
-    bulletBg: 'bg-amber-100',
-    bulletIcon: 'text-amber-600',
-    cardBg: 'bg-amber-50',
-    cardText: 'text-amber-600',
-    cardHover: 'hover:border-amber-200'
-  },
-  slate: {
-    bulletBg: 'bg-slate-200',
-    bulletIcon: 'text-slate-600',
-    cardBg: 'bg-slate-100',
-    cardText: 'text-slate-600',
-    cardHover: 'hover:border-slate-300'
-  },
-  stone: {
-    bulletBg: 'bg-stone-100',
-    bulletIcon: 'text-stone-600',
-    cardBg: 'bg-stone-50',
-    cardText: 'text-stone-600',
-    cardHover: 'hover:border-stone-200'
-  },
-  rose: {
-    bulletBg: 'bg-rose-100',
-    bulletIcon: 'text-rose-600',
-    cardBg: 'bg-rose-50',
-    cardText: 'text-rose-600',
-    cardHover: 'hover:border-rose-200'
-  },
-  indigo: {
-    bulletBg: 'bg-indigo-100',
-    bulletIcon: 'text-indigo-600',
-    cardBg: 'bg-indigo-50',
-    cardText: 'text-indigo-600',
-    cardHover: 'hover:border-indigo-200'
-  },
-  pink: {
-    bulletBg: 'bg-pink-100',
-    bulletIcon: 'text-pink-600',
-    cardBg: 'bg-pink-50',
-    cardText: 'text-pink-600',
-    cardHover: 'hover:border-pink-200'
-  }
-};
-
 const SectorMarketInsights: React.FC<SectorMarketInsightsProps> = ({
   title = "Contexto de Mercado",
   subtitle,
   description,
   bulletPoints,
   insightCards,
-  accentColor = 'emerald'
 }) => {
-  const colors = colorClasses[accentColor];
-
   const defaultIcons = [
-    <TrendingUp className={`h-6 w-6 ${colors.bulletIcon}`} />,
-    <Users className={`h-6 w-6 ${colors.bulletIcon}`} />,
-    <Globe className={`h-6 w-6 ${colors.bulletIcon}`} />,
-    <Lightbulb className={`h-6 w-6 ${colors.bulletIcon}`} />
+    <TrendingUp className="h-6 w-6 text-slate-700" />,
+    <Users className="h-6 w-6 text-slate-700" />,
+    <Globe className="h-6 w-6 text-slate-700" />,
+    <Lightbulb className="h-6 w-6 text-slate-700" />
   ];
 
   return (
@@ -115,8 +53,8 @@ const SectorMarketInsights: React.FC<SectorMarketInsightsProps> = ({
             <ul className="space-y-4">
               {bulletPoints.map((point, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <div className={`flex-shrink-0 w-6 h-6 rounded-full ${colors.bulletBg} flex items-center justify-center mt-0.5`}>
-                    <svg className={`w-4 h-4 ${colors.bulletIcon}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center mt-0.5">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -131,16 +69,16 @@ const SectorMarketInsights: React.FC<SectorMarketInsightsProps> = ({
             {insightCards.map((card, index) => (
               <div 
                 key={index}
-                className={`p-6 rounded-2xl border border-slate-100 ${colors.cardHover} hover:shadow-lg transition-all duration-300 ${
+                className={`p-6 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300 ${
                   index === 0 ? 'bg-gradient-to-br from-slate-50 to-white' : 'bg-white'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl ${colors.cardBg} flex items-center justify-center mb-4`}>
+                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-4">
                   {card.icon || defaultIcons[index % defaultIcons.length]}
                 </div>
                 
                 {card.value && (
-                  <div className={`text-2xl font-bold ${colors.cardText} mb-1`}>
+                  <div className="text-2xl font-bold text-slate-900 mb-1">
                     {card.value}
                   </div>
                 )}
