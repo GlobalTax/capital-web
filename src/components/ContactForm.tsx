@@ -14,7 +14,7 @@ interface ContactFormProps {
   pageOrigin?: string;
   showTitle?: boolean;
   className?: string;
-  variant?: 'default' | 'compra' | 'venta';
+  variant?: 'default' | 'compra' | 'venta' | 'search-funds';
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({ 

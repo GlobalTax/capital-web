@@ -9,7 +9,7 @@ interface ContactProps {
   pageOrigin?: string;
   className?: string;
   id?: string;
-  variant?: 'default' | 'compra' | 'venta';
+  variant?: 'default' | 'compra' | 'venta' | 'search-funds';
 }
 
 const Contact: React.FC<ContactProps> = ({ 
@@ -34,6 +34,12 @@ const Contact: React.FC<ContactProps> = ({
         return {
           title: title || t('contact.venta.title'),
           description: description || t('contact.venta.subtitle'),
+          bgClass: "bg-background"
+        };
+      case 'search-funds':
+        return {
+          title: title || "¿Exploramos si tu empresa encaja con un Search Fund?",
+          description: description || "Cuéntanos tu situación y te ayudaremos a evaluar si este modelo es adecuado para ti.",
           bgClass: "bg-background"
         };
       default:

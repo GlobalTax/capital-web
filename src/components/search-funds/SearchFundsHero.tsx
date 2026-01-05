@@ -1,86 +1,138 @@
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Shield, Users, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { CheckCircle, TrendingUp, Users, Building2 } from 'lucide-react';
+import { SimpleButton } from '@/components/ui/simple-button';
 
-export const SearchFundsHero = () => {
+const SearchFundsHero: React.FC = () => {
+  const benefits = [
+    "Emprendedores de élite que invierten su futuro en tu empresa",
+    "Proceso de due diligence riguroso y profesional",
+    "Horizonte de 5-7 años con implicación operativa total"
+  ];
+
+  const stats = [
+    { value: "#1", label: "España líder en Europa", icon: TrendingUp },
+    { value: "67+", label: "Search Funds creados", icon: Building2 },
+    { value: "32%", label: "Rentabilidad histórica", icon: TrendingUp },
+  ];
+
+  const scrollToContact = () => {
+    const element = document.getElementById('contact');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+    <section className="relative bg-background py-16 md:py-24 overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-[0.02]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }} />
       </div>
-      
+
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white/80 text-sm mb-8">
-            <Shield className="w-4 h-4" />
-            <span>Servicio especializado en M&A</span>
-          </div>
-          
-          {/* Main Headline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Search Funds: 
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
-              Emprendedores que harán crecer tu empresa
-            </span>
-          </h1>
-          
-          {/* Subheadline */}
-          <p className="text-xl text-white/70 mb-8 max-w-3xl mx-auto">
-            Conectamos empresarios españoles con Search Funds profesionales y verificados. 
-            Aportamos el rigor y la seriedad que este modelo de inversión necesita en España.
-          </p>
-          
-          {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mb-10">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">#1</div>
-              <div className="text-sm text-white/60">España en Europa</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">67+</div>
-              <div className="text-sm text-white/60">Search Funds creados</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">32%</div>
-              <div className="text-sm text-white/60">IRR histórico medio</div>
-            </div>
-          </div>
-          
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-white text-slate-900 hover:bg-white/90 text-lg px-8">
-              <Link to="/contacto?origen=search-funds-vendedor">
-                Soy empresario y quiero vender
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 text-lg px-8">
-              <Link to="/contacto?origen=search-funds-searcher">
-                Soy Searcher y busco deal flow
-              </Link>
-            </Button>
-          </div>
-          
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center gap-6 mt-12 text-white/60 text-sm">
-            <div className="flex items-center gap-2">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left Column - Content */}
+          <div className="space-y-8">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
               <Users className="w-4 h-4" />
-              <span>+500 empresas valoradas</span>
+              Servicio especializado en M&A
             </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              <span>Operaciones desde €1M a €20M</span>
+
+            {/* Title */}
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                Search Funds: <br />
+                <span className="text-primary">El futuro de la sucesión empresarial</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
+                Conectamos tu empresa con emprendedores de primer nivel que buscan 
+                liderar y hacer crecer negocios consolidados.
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>100% confidencial</span>
+
+            {/* Benefits */}
+            <ul className="space-y-3">
+              {benefits.map((benefit, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-muted-foreground">{benefit}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <SimpleButton onClick={scrollToContact}>
+                Soy empresario y quiero vender
+              </SimpleButton>
+              <a href="/contacto?origen=search-funds-searcher">
+                <SimpleButton variant="outline">
+                  Soy Searcher y busco deal flow
+                </SimpleButton>
+              </a>
             </div>
+
+            {/* Trust indicators */}
+            <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                <span>+200 empresas valoradas</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                <span>Confidencialidad 100%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Stats Card */}
+          <div className="relative">
+            <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
+              <div className="space-y-6">
+                <div className="text-center pb-6 border-b border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Search Funds en España
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    El mercado más activo de Europa
+                  </p>
+                </div>
+
+                <div className="grid gap-6">
+                  {stats.map((stat, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
+                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <stat.icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                        <div className="text-sm text-muted-foreground">{stat.label}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-6 border-t border-border">
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <span>Respaldado por</span>
+                    <span className="font-semibold text-foreground">IESE • IE • ESADE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Decorative elements */}
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
+            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
           </div>
         </div>
       </div>
     </section>
   );
 };
+
+export default SearchFundsHero;
