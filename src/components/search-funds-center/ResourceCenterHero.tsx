@@ -3,7 +3,7 @@ import { GraduationCap } from 'lucide-react';
 
 export const ResourceCenterHero = () => {
   return (
-    <section className="relative pt-8 md:pt-12 pb-16 md:pb-24 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+    <section className="relative pt-8 md:pt-12 pb-16 md:pb-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
