@@ -16,7 +16,13 @@ import {
   SearchFundsForSearchers,
   SearchFundsProcess,
   SearchFundsFAQ,
-  SearchFundsCTA
+  SearchFundsCTA,
+  SearchFundsComparison,
+  SearchFundsFitCalculator,
+  SearchFundsTestimonials,
+  SearchFundsResources,
+  SearchFundsInstitutions,
+  SearchFundsVideo
 } from '@/components/search-funds';
 
 const SEO_CONFIG = {
@@ -87,10 +93,16 @@ const SearchFunds = () => {
       />
       <SearchFundsHero />
       <SearchFundsWhatAre />
+      <SearchFundsComparison />
+      <SearchFundsFitCalculator />
       <SearchFundsWhyCapittal />
       <SearchFundsForSellers />
       <SearchFundsForSearchers />
+      <SearchFundsTestimonials />
       <SearchFundsProcess />
+      <SearchFundsResources />
+      <SearchFundsInstitutions />
+      <SearchFundsVideo />
       <SearchFundsFAQ />
       <SearchFundsCTA />
     </UnifiedLayout>
