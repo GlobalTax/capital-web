@@ -7,6 +7,7 @@ import { BlogPost } from '@/types/blog';
 import { Book, Settings, Globe, Image, Plus } from 'lucide-react';
 import ImageUploadField from '@/components/admin/ImageUploadField';
 import AuthorSelector from './AuthorSelector';
+import TagSelector from './TagSelector';
 import { useBlogCategories } from '@/hooks/useBlogCategories';
 import { useState } from 'react';
 
@@ -24,8 +25,7 @@ const SimpleBlogEditorSidebar = ({ post, updatePost, errors = {} }: SimpleBlogEd
   const [newCategory, setNewCategory] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
   
-  const handleTagsChange = (tagsString: string) => {
-    const tags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+  const handleTagsChange = (tags: string[]) => {
     updatePost({ tags });
   };
 
@@ -135,15 +135,11 @@ const SimpleBlogEditorSidebar = ({ post, updatePost, errors = {} }: SimpleBlogEd
             />
           </div>
 
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-2 block">Tags</label>
-            <Input
-              value={post.tags?.join(', ') || ''}
-              onChange={(e) => handleTagsChange(e.target.value)}
-              placeholder="tag1, tag2, tag3..."
-              className="mt-1"
-            />
-          </div>
+          <TagSelector
+            selectedTags={post.tags || []}
+            onChange={handleTagsChange}
+            category={post.category}
+          />
         </CardContent>
       </Card>
 
