@@ -1,81 +1,158 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import SectorHero from '@/components/SectorHero';
-import LegalSectorContent from '@/components/sector/LegalSectorContent';
-import LegalExpertiseGrid from '@/components/sector/LegalExpertiseGrid';
-import LegalTestimonials from '@/components/sector/LegalTestimonials';
 import { Hospital, Heart, Pill, Stethoscope } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
+import {
+  SectorHeroV2,
+  SectorStatsV2,
+  SectorMarketInsights,
+  SectorExpertiseGrid,
+  SectorMethodology,
+  SectorCaseStudyV2,
+  SectorFAQ,
+  SectorCTAV2
+} from '@/components/sector-v2';
 
 const Healthcare = () => {
   useHreflang();
-  const contentSections = [
-    {
-      title: 'Asesoramiento Especializado en Healthcare',
-      content: 'Nuestro equipo multidisciplinar incluye profesionales con experiencia específica en el sector sanitario y farmacéutico, que comprenden tanto los aspectos regulatorios como las particularidades operativas del healthcare.',
-      subsections: [
-        {
-          title: 'Conocimiento Regulatorio',
-          content: 'Experiencia en normativas sanitarias, regulación farmacéutica y compliance en el sector salud.'
-        },
-        {
-          title: 'Valoración Clínica',
-          content: 'Análisis de capacidades médicas, tecnología sanitaria y protocolos de calidad asistencial.'
-        }
-      ]
+
+  const heroMetrics = [
+    { value: '€85B', label: 'Mercado sanitario España', trend: '+6.2%' },
+    { value: '350+', label: 'Operaciones M&A/año' },
+    { value: '8-12x', label: 'Múltiplo EBITDA medio' },
+    { value: '€2.5M', label: 'Ticket medio operación' }
+  ];
+
+  const stats = [
+    { 
+      value: '€85B', 
+      label: 'Gasto Sanitario Total', 
+      trend: { value: '+6.2%', direction: 'up' as const },
+      description: 'Gasto sanitario público y privado en España'
     },
-    {
-      title: 'Metodologías de Valoración en Healthcare',
-      content: 'El sector sanitario presenta características únicas que requieren enfoques de valoración especializados. Consideramos factores como regulación sanitaria, ciclos de desarrollo de productos farmacéuticos y modelos de reembolso.',
-      subsections: [
-        {
-          title: 'Centros Sanitarios',
-          content: 'Valoración de clínicas, hospitales y centros especializados considerando licencias, ubicación y cartera de servicios.'
-        },
-        {
-          title: 'Farmacéutica y Biotecnología',
-          content: 'Análisis de pipelines de desarrollo, valoración de patentes y valoración de riesgos regulatorios.'
-        }
-      ]
+    { 
+      value: '350+', 
+      label: 'Operaciones M&A', 
+      trend: { value: '+15%', direction: 'up' as const },
+      description: 'Transacciones anuales en el sector salud'
+    },
+    { 
+      value: '12%', 
+      label: 'Crecimiento Privado', 
+      trend: { value: '+2.1pp', direction: 'up' as const },
+      description: 'Cuota de mercado de sanidad privada'
+    },
+    { 
+      value: '€420M', 
+      label: 'Inversión en Biotech', 
+      trend: { value: '+28%', direction: 'up' as const },
+      description: 'Capital invertido en biotecnología'
     }
   ];
+
+  const marketInsights = {
+    description: 'El sector healthcare español está experimentando una transformación acelerada impulsada por la digitalización, el envejecimiento demográfico y la creciente demanda de servicios especializados. España se posiciona como hub europeo de ensayos clínicos y desarrollo biotecnológico.',
+    bulletPoints: [
+      'Consolidación acelerada en clínicas dentales, oftalmología y dermatología',
+      'Crecimiento del 15% anual en telemedicina y salud digital',
+      'España entre los top 5 europeos en ensayos clínicos',
+      'Inversión récord de fondos en residencias y servicios geriátricos'
+    ],
+    insightCards: [
+      { title: 'Clínicas Especializadas', value: '8-10x', description: 'Múltiplo EBITDA para clínicas con alta recurrencia' },
+      { title: 'Farmacéuticas', value: '12-15x', description: 'Valoración premium por I+D y patentes' },
+      { title: 'Digital Health', value: '4-6x', description: 'Múltiplo ingresos para healthtech' },
+      { title: 'Residencias', value: '15-18x', description: 'Múltiplo por cama en ubicaciones prime' }
+    ]
+  };
 
   const expertiseItems = [
     {
       icon: Hospital,
       title: 'Centros Sanitarios',
-      description: 'Experiencia en valoración de hospitales, clínicas y centros médicos especializados.',
-      features: ['Análisis de licencias sanitarias', 'Valoración de equipamiento médico', 'Valoración de carteras de pacientes']
+      description: 'Valoración de hospitales, clínicas y centros médicos con análisis de licencias y equipamiento.',
+      features: ['Análisis de licencias sanitarias', 'Valoración de equipamiento', 'Cartera de pacientes']
     },
     {
       icon: Heart,
       title: 'Servicios Especializados',
-      description: 'Conocimiento en centros de especialidades médicas y servicios de alta complejidad.',
-      features: ['Análisis de especialidades médicas', 'Valoración de tecnología avanzada', 'Estudio de mercados específicos']
+      description: 'Clínicas dentales, oftalmología, dermatología y otras especialidades de alta demanda.',
+      features: ['Ratios de recurrencia', 'Análisis de especialidades', 'Potencial de consolidación']
     },
     {
       icon: Pill,
       title: 'Farmacéutica',
-      description: 'Especialización en empresas farmacéuticas, desde distribución hasta desarrollo de medicamentos.',
-      features: ['Valoración de pipelines', 'Análisis de patentes', 'Valoración regulatoria']
+      description: 'Empresas farmacéuticas, distribución y desarrollo de medicamentos.',
+      features: ['Valoración de pipelines', 'Análisis de patentes', 'Due diligence regulatoria']
     },
     {
       icon: Stethoscope,
       title: 'Tecnología Sanitaria',
-      description: 'Experiencia en empresas de tecnología médica y dispositivos sanitarios.',
-      features: ['Análisis de innovación médica', 'Valoración de certificaciones', 'Estudio de mercados regulados']
+      description: 'Healthtech, dispositivos médicos y soluciones de salud digital.',
+      features: ['Análisis de certificaciones', 'Valoración de tecnología', 'Escalabilidad']
     }
   ];
 
-  const testimonials = [
+  const methodologySteps = [
     {
-      content: 'Trabajar con Capittal nos permitió maximizar el valor de nuestra clínica durante el proceso de venta. Su profundo conocimiento del sector sanitario y su enfoque profesional fueron fundamentales para el éxito de la operación.',
+      number: '1',
+      title: 'Análisis Regulatorio',
+      description: 'Revisión exhaustiva de licencias, certificaciones y cumplimiento normativo sanitario.',
+      features: ['Licencias sanitarias', 'Certificaciones ISO', 'Compliance RGPD sanitario', 'Acreditaciones']
+    },
+    {
+      number: '2',
+      title: 'Valoración Clínica',
+      description: 'Evaluación de capacidades médicas, tecnología y protocolos de calidad asistencial.',
+      features: ['Equipamiento médico', 'Protocolos clínicos', 'Cartera de servicios', 'Indicadores de calidad']
+    },
+    {
+      number: '3',
+      title: 'Estrategia de Venta',
+      description: 'Identificación de compradores estratégicos y estructuración óptima de la operación.',
+      features: ['Mapeo de compradores', 'Negociación regulada', 'Transición del equipo médico', 'Continuidad asistencial']
+    }
+  ];
+
+  const caseStudy = {
+    companyName: 'Grupo Clínico Mediterráneo',
+    sector: 'Red de Clínicas Dentales',
+    description: 'Asesoramos en la venta del 100% del capital a un grupo europeo de consolidación dental. La operación incluyó 12 clínicas en la Comunidad Valenciana con más de 45.000 pacientes activos.',
+    metrics: [
+      { value: '€8.2M', label: 'Valoración' },
+      { value: '9.5x', label: 'Múltiplo EBITDA' },
+      { value: '6 meses', label: 'Tiempo cierre' }
+    ],
+    testimonial: {
+      quote: 'Capittal entendió perfectamente las particularidades de nuestro sector. Su conocimiento del mercado dental y su red de contactos fueron decisivos para conseguir las mejores condiciones.',
       author: 'Dr. Miguel Rodríguez',
-      role: 'Director Médico',
-      company: 'Clínica San Rafael'
+      role: 'Fundador y Director Médico'
+    }
+  };
+
+  const faqs = [
+    {
+      question: '¿Qué múltiplos de valoración se utilizan en el sector healthcare?',
+      answer: 'Los múltiplos varían según el subsector: clínicas especializadas suelen valorarse entre 8-10x EBITDA, farmacéuticas entre 12-15x, y healthtech entre 4-6x ingresos. Factores como la recurrencia de pacientes, licencias y ubicación pueden elevar significativamente estos ratios.'
+    },
+    {
+      question: '¿Cómo afecta la regulación a la venta de una empresa sanitaria?',
+      answer: 'Las operaciones en healthcare requieren due diligence regulatoria específica: verificación de licencias sanitarias, cumplimiento RGPD sanitario, acreditaciones y autorizaciones autonómicas. En Capittal gestionamos todo el proceso regulatorio para asegurar una transición sin interrupciones.'
+    },
+    {
+      question: '¿Qué tipos de compradores están activos en el sector salud español?',
+      answer: 'El mercado español atrae principalmente a grupos de consolidación europeos (especialmente en dental y oftalmología), fondos de private equity especializados en healthcare, aseguradoras con estrategia de integración vertical, y grupos hospitalarios en expansión.'
+    },
+    {
+      question: '¿Cuánto tiempo lleva vender una clínica o empresa sanitaria?',
+      answer: 'El proceso típico dura entre 6-12 meses dependiendo de la complejidad regulatoria y el tamaño de la operación. Las clínicas especializadas con documentación ordenada pueden cerrar en 4-6 meses, mientras que operaciones con múltiples licencias pueden requerir más tiempo.'
+    },
+    {
+      question: '¿Qué pasa con el equipo médico tras la venta?',
+      answer: 'La continuidad del equipo médico es clave para el valor de la operación. Estructuramos acuerdos que protegen tanto al vendedor como al equipo, incluyendo cláusulas de permanencia, incentivos de retención y planes de transición ordenada.'
     }
   ];
 
@@ -83,9 +160,9 @@ const Healthcare = () => {
     <div className="min-h-screen bg-background">
       <SEOHead 
         title="Valoración de Empresas Healthcare y Farmacéuticas | Capittal"
-        description="Expertos en M&A y valoración de empresas del sector salud: farmacéuticas, dispositivos médicos, servicios sanitarios. Análisis especializado en healthcare en España."
+        description="Expertos en M&A y valoración de empresas del sector salud: clínicas, farmacéuticas, dispositivos médicos. +350 operaciones anuales en healthcare en España."
         canonical="https://capittal.es/sectores/healthcare"
-        keywords="valoración empresas healthcare, M&A farmacéuticas, valoración dispositivos médicos, valoración salud"
+        keywords="valoración empresas healthcare, M&A farmacéuticas, vender clínica, valoración dispositivos médicos"
         structuredData={[
           getServiceSchema(
             "Valoración de Empresas Healthcare",
@@ -101,25 +178,64 @@ const Healthcare = () => {
       />
       <Header />
       
-      <SectorHero
-        sector="Healthcare"
-        title="Asesoramiento especializado en healthcare"
-        description="Experiencia en M&A para el sector sanitario y farmacéutico con conocimiento regulatorio específico y enfoque multidisciplinar."
-        primaryButtonText="Consultar Proyecto"
-        secondaryButtonText="Ver Experiencia"
+      <SectorHeroV2
+        badge="Sector Healthcare"
+        title="Expertos en M&A del Sector Salud"
+        description="Asesoramiento especializado en valoración y venta de empresas sanitarias. Conocimiento profundo del mercado, regulación y compradores del sector healthcare español."
+        metrics={heroMetrics}
+        accentColor="emerald"
       />
       
-      <LegalSectorContent sections={contentSections} />
+      <SectorStatsV2 
+        title="El Sector Healthcare en Cifras"
+        subtitle="España es uno de los mercados sanitarios más activos de Europa en operaciones M&A"
+        stats={stats}
+        accentColor="emerald"
+      />
       
-      <LegalExpertiseGrid 
+      <SectorMarketInsights
+        title="Contexto del Mercado Healthcare"
+        description={marketInsights.description}
+        bulletPoints={marketInsights.bulletPoints}
+        insightCards={marketInsights.insightCards}
+        accentColor="emerald"
+      />
+      
+      <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los subsectores del healthcare"
         items={expertiseItems}
+        accentColor="emerald"
       />
       
-      <LegalTestimonials 
-        testimonials={testimonials}
-        ctaText="Ver Casos de Healthcare"
+      <SectorMethodology
+        title="Metodología Específica Healthcare"
+        subtitle="Un proceso adaptado a las particularidades regulatorias del sector sanitario"
+        steps={methodologySteps}
+        accentColor="emerald"
+      />
+      
+      <SectorCaseStudyV2
+        title="Caso de Éxito Healthcare"
+        companyName={caseStudy.companyName}
+        sector={caseStudy.sector}
+        description={caseStudy.description}
+        metrics={caseStudy.metrics}
+        testimonial={caseStudy.testimonial}
+        accentColor="emerald"
+      />
+      
+      <SectorFAQ
+        title="Preguntas Frecuentes - Healthcare"
+        subtitle="Resolvemos las dudas más habituales sobre M&A en el sector sanitario"
+        faqs={faqs}
+        accentColor="emerald"
+      />
+      
+      <SectorCTAV2
+        title="¿Tienes una empresa del sector salud?"
+        description="Obtén una valoración confidencial de tu clínica, empresa farmacéutica o negocio sanitario. Nuestros expertos en healthcare te asesorarán sin compromiso."
+        accentColor="emerald"
       />
       
       <Footer />
