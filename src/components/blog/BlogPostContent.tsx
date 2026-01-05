@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
+import BlogValuationCTA from './BlogValuationCTA';
+import BlogContactSection from './BlogContactSection';
 
 interface BlogPostContentProps {
   post: BlogPost;
@@ -223,6 +225,9 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
               </div>
             )}
 
+            {/* Formulario de contacto */}
+            <BlogContactSection postSlug={post.slug} />
+
             <div className="mt-8 flex justify-center">
               <Button
                 variant="outline"
@@ -264,9 +269,13 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
                     ))}
                   </ul>
                 </nav>
-                <Separator className="my-6" />
               </>
             )}
+            
+            {/* CTA Valoración - Sidebar */}
+            <div className="mt-6">
+              <BlogValuationCTA />
+            </div>
             </div>
           </div>
         </div>
