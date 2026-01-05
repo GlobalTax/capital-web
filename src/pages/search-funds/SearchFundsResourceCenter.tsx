@@ -19,7 +19,7 @@ const SearchFundsResourceCenter = () => {
         <link rel="canonical" href="https://capittal.es/search-funds/recursos" />
       </Helmet>
 
-      <div className="pt-24">
+      <div className="pt-20">
         <ResourceCenterHero />
         <ResourceCenterGrid />
       </div>
