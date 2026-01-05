@@ -64,6 +64,15 @@ const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pa
 const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady').catch(() => import('@/pages/VentaEmpresas')));
 const SearchFundsHub = lazy(() => import('@/pages/recursos/SearchFundsHub'));
 
+// === SEARCH FUNDS RESOURCE CENTER ===
+const SearchFundsResourceCenter = lazy(() => import('@/pages/search-funds/SearchFundsResourceCenter'));
+const SearchFundsGuide = lazy(() => import('@/pages/search-funds/SearchFundsGuide'));
+const SearchFundsGlossary = lazy(() => import('@/pages/search-funds/SearchFundsGlossary'));
+const SearchFundsTools = lazy(() => import('@/pages/search-funds/SearchFundsTools'));
+const SearchFundsCases = lazy(() => import('@/pages/search-funds/SearchFundsCases'));
+const SearchFundsLibrary = lazy(() => import('@/pages/search-funds/SearchFundsLibrary'));
+const SearchFundsCommunity = lazy(() => import('@/pages/search-funds/SearchFundsCommunity'));
+
 // === BOOKING PAGE ===
 const BookingPage = lazy(() => import('@/components/booking/BookingPage'));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => import('@/pages/VentaEmpresas')));
@@ -203,11 +212,19 @@ export const AppRoutes = () => {
         <Route path="/recursos/blog" element={<Blog />} />
         <Route path="/recursos/test-exit-ready" element={<TestExitReady />} />
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
-        <Route path="/recursos/search-funds" element={<SearchFundsHub />} />
-        <Route path="/guia-search-funds" element={<Navigate to="/recursos/search-funds" replace />} />
-        
         <Route path="/recursos/newsletter" element={<Newsletter />} />
         <Route path="/recursos/webinars" element={<Webinars />} />
+        
+        {/* === SEARCH FUNDS RESOURCE CENTER === */}
+        <Route path="/search-funds/recursos" element={<SearchFundsResourceCenter />} />
+        <Route path="/search-funds/recursos/guia" element={<SearchFundsGuide />} />
+        <Route path="/search-funds/recursos/glosario" element={<SearchFundsGlossary />} />
+        <Route path="/search-funds/recursos/herramientas" element={<SearchFundsTools />} />
+        <Route path="/search-funds/recursos/casos" element={<SearchFundsCases />} />
+        <Route path="/search-funds/recursos/biblioteca" element={<SearchFundsLibrary />} />
+        <Route path="/search-funds/recursos/comunidad" element={<SearchFundsCommunity />} />
+        <Route path="/recursos/search-funds" element={<Navigate to="/search-funds/recursos" replace />} />
+        <Route path="/guia-search-funds" element={<Navigate to="/search-funds/recursos/guia" replace />} />
         
         {/* === LANDING PAGES === */}
         <Route path="/landing/:slug" element={<LandingPageView />} />
