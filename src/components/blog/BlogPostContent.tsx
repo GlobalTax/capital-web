@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUp, ArrowLeft, Home, Clock } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -65,6 +66,11 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
     });
   };
 
+  // Detectar si el contenido ya es HTML
+  const isHtmlContent = (content: string) => {
+    return /<(h[1-6]|p|div|ul|ol|li|strong|em|a|span|br|img)[^>]*>/i.test(content);
+  };
+
   // Simple markdown parser para contenido básico
   const parseMarkdown = (content: string) => {
     return content
@@ -78,21 +84,57 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
       .replace(/^(.*)$/gim, '<p>$1</p>');
   };
 
-  // Extraer secciones para el índice
+  // Añadir IDs a los headings del HTML para navegación
+  const addIdsToHeadings = (content: string) => {
+    return content.replace(/<h2([^>]*)>([^<]+)<\/h2>/gi, (match, attrs, title) => {
+      if (/id=["'][^"']+["']/.test(attrs)) return match;
+      const id = title.trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-');
+      return `<h2${attrs} id="${id}">${title}</h2>`;
+    });
+  };
+
+  // Extraer secciones tanto de HTML como de Markdown
   const extractSections = (content: string) => {
-    const sections = [];
-    const lines = content.split('\n');
+    const sections: { id: string; title: string }[] = [];
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.startsWith('## ')) {
-        const title = line.replace('## ', '');
-        const id = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
-        sections.push({ id, title });
+    // Primero intentar extraer de HTML (<h2>)
+    const htmlMatches = content.matchAll(/<h2[^>]*>([^<]+)<\/h2>/gi);
+    for (const match of htmlMatches) {
+      const title = match[1].trim();
+      const id = title.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-');
+      sections.push({ id, title });
+    }
+    
+    // Si no hay HTML h2, buscar ## en Markdown
+    if (sections.length === 0) {
+      const lines = content.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('## ')) {
+          const title = line.replace('## ', '');
+          const id = title.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, '-');
+          sections.push({ id, title });
+        }
       }
     }
     
     return sections;
+  };
+
+  // Procesar contenido: si es HTML, solo añadir IDs; si es Markdown, parsear
+  const getFormattedContent = (content: string) => {
+    if (isHtmlContent(content)) {
+      return addIdsToHeadings(content);
+    }
+    return parseMarkdown(content);
   };
 
   const sections = extractSections(post.content);
@@ -199,12 +241,12 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
         <Separator className="mb-20 mt-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
-          <div className="lg:col-span-9">
-            <div className="prose dark:prose-invert max-w-none">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
+          <div className="lg:col-span-8">
+            <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-10 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-relaxed prose-p:mb-4 prose-li:leading-relaxed">
               <div 
                 dangerouslySetInnerHTML={{ 
-                  __html: parseMarkdown(post.content) 
+                  __html: DOMPurify.sanitize(getFormattedContent(post.content)) 
                 }}
               />
             </div>
@@ -245,8 +287,8 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
             </div>
           </div>
 
-          <div className="lg:col-span-3">
-            <div className="sticky top-8 space-y-4 max-w-xs ml-auto">
+          <div className="lg:col-span-4">
+            <div className="sticky top-24 space-y-4">
             {sections.length > 0 && (
               <>
                 <span className="text-lg font-medium">En esta página</span>
