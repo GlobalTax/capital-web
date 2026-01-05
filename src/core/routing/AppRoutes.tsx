@@ -73,6 +73,12 @@ const SearchFundsCases = lazy(() => import('@/pages/search-funds/SearchFundsCase
 const SearchFundsLibrary = lazy(() => import('@/pages/search-funds/SearchFundsLibrary'));
 const SearchFundsCommunity = lazy(() => import('@/pages/search-funds/SearchFundsCommunity'));
 
+// === SEARCH FUNDS ADVANCED GUIDES ===
+const SearchFundsSourcing = lazy(() => import('@/pages/search-funds/SearchFundsSourcing'));
+const SearchFundsValuation = lazy(() => import('@/pages/search-funds/SearchFundsValuation'));
+const SearchFundsNegotiation = lazy(() => import('@/pages/search-funds/SearchFundsNegotiation'));
+const SearchFundsPostAcquisition = lazy(() => import('@/pages/search-funds/SearchFundsPostAcquisition'));
+
 // === BOOKING PAGE ===
 const BookingPage = lazy(() => import('@/components/booking/BookingPage'));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => import('@/pages/VentaEmpresas')));
@@ -223,6 +229,13 @@ export const AppRoutes = () => {
         <Route path="/search-funds/recursos/casos" element={<SearchFundsCases />} />
         <Route path="/search-funds/recursos/biblioteca" element={<SearchFundsLibrary />} />
         <Route path="/search-funds/recursos/comunidad" element={<SearchFundsCommunity />} />
+        
+        {/* === SEARCH FUNDS ADVANCED GUIDES === */}
+        <Route path="/search-funds/recursos/sourcing" element={<SearchFundsSourcing />} />
+        <Route path="/search-funds/recursos/valoracion" element={<SearchFundsValuation />} />
+        <Route path="/search-funds/recursos/negociacion" element={<SearchFundsNegotiation />} />
+        <Route path="/search-funds/recursos/post-adquisicion" element={<SearchFundsPostAcquisition />} />
+        
         <Route path="/recursos/search-funds" element={<Navigate to="/search-funds/recursos" replace />} />
         <Route path="/guia-search-funds" element={<Navigate to="/search-funds/recursos/guia" replace />} />
         
