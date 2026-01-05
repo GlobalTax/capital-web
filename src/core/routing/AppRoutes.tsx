@@ -62,6 +62,7 @@ const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(()
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
 const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady').catch(() => import('@/pages/VentaEmpresas')));
+const SearchFundsHub = lazy(() => import('@/pages/recursos/SearchFundsHub'));
 
 // === BOOKING PAGE ===
 const BookingPage = lazy(() => import('@/components/booking/BookingPage'));
@@ -202,6 +203,8 @@ export const AppRoutes = () => {
         <Route path="/recursos/blog" element={<Blog />} />
         <Route path="/recursos/test-exit-ready" element={<TestExitReady />} />
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
+        <Route path="/recursos/search-funds" element={<SearchFundsHub />} />
+        <Route path="/guia-search-funds" element={<Navigate to="/recursos/search-funds" replace />} />
         
         <Route path="/recursos/newsletter" element={<Newsletter />} />
         <Route path="/recursos/webinars" element={<Webinars />} />

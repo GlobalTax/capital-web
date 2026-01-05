@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FileText, Calculator, Podcast, BookOpen, ArrowRight } from 'lucide-react';
+import { FileText, Calculator, Podcast, BookOpen, ArrowRight, GraduationCap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 
@@ -14,6 +14,14 @@ interface Resource {
 }
 
 const resources: Resource[] = [
+  {
+    id: '0',
+    title: 'Centro de Recursos Search Funds',
+    description: 'Guía completa con todo lo que necesitas saber sobre el modelo de Search Funds.',
+    icon: GraduationCap,
+    link: '/recursos/search-funds',
+    tag: 'Hub'
+  },
   {
     id: '1',
     title: 'Guía completa de Search Funds',
