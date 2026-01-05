@@ -20,8 +20,51 @@ interface SectorCaseStudyV2Props {
     author: string;
     role: string;
   };
-  accentColor?: string;
+  accentColor?: 'emerald' | 'blue' | 'amber' | 'slate' | 'stone' | 'rose' | 'indigo' | 'pink';
 }
+
+const colorClasses = {
+  emerald: {
+    avatarGradient: 'from-emerald-400 to-emerald-600',
+    icon: 'text-emerald-400',
+    testimonialGradient: 'from-emerald-600 to-emerald-700'
+  },
+  blue: {
+    avatarGradient: 'from-blue-400 to-blue-600',
+    icon: 'text-blue-400',
+    testimonialGradient: 'from-blue-600 to-blue-700'
+  },
+  amber: {
+    avatarGradient: 'from-amber-400 to-amber-600',
+    icon: 'text-amber-400',
+    testimonialGradient: 'from-amber-500 to-amber-600'
+  },
+  slate: {
+    avatarGradient: 'from-slate-400 to-slate-600',
+    icon: 'text-slate-400',
+    testimonialGradient: 'from-slate-600 to-slate-700'
+  },
+  stone: {
+    avatarGradient: 'from-stone-400 to-stone-600',
+    icon: 'text-stone-400',
+    testimonialGradient: 'from-stone-600 to-stone-700'
+  },
+  rose: {
+    avatarGradient: 'from-rose-400 to-rose-600',
+    icon: 'text-rose-400',
+    testimonialGradient: 'from-rose-500 to-rose-600'
+  },
+  indigo: {
+    avatarGradient: 'from-indigo-400 to-indigo-600',
+    icon: 'text-indigo-400',
+    testimonialGradient: 'from-indigo-600 to-indigo-700'
+  },
+  pink: {
+    avatarGradient: 'from-pink-400 to-purple-600',
+    icon: 'text-pink-400',
+    testimonialGradient: 'from-pink-500 to-purple-600'
+  }
+};
 
 const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
   title = "Caso de Éxito",
@@ -33,6 +76,7 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
   accentColor = 'emerald'
 }) => {
   const metricIcons = [TrendingUp, Target, Clock];
+  const colors = colorClasses[accentColor];
 
   return (
     <section className="py-20 bg-slate-900">
@@ -51,7 +95,7 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
             {/* Left - Company Info */}
             <div className="p-10 lg:p-12">
               <div className="flex items-center gap-3 mb-6">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-${accentColor}-400 to-${accentColor}-600 flex items-center justify-center`}>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.avatarGradient} flex items-center justify-center`}>
                   <span className="text-xl font-bold text-white">
                     {companyName.charAt(0)}
                   </span>
@@ -72,7 +116,7 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
                   const Icon = metricIcons[index % metricIcons.length];
                   return (
                     <div key={index} className="text-center p-4 rounded-xl bg-white/5">
-                      <Icon className={`h-5 w-5 text-${accentColor}-400 mx-auto mb-2`} />
+                      <Icon className={`h-5 w-5 ${colors.icon} mx-auto mb-2`} />
                       <div className="text-2xl font-bold text-white mb-1">
                         {metric.value}
                       </div>
@@ -87,7 +131,7 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
             
             {/* Right - Testimonial */}
             {testimonial && (
-              <div className={`p-10 lg:p-12 bg-gradient-to-br from-${accentColor}-600 to-${accentColor}-700 flex flex-col justify-center`}>
+              <div className={`p-10 lg:p-12 bg-gradient-to-br ${colors.testimonialGradient} flex flex-col justify-center`}>
                 <Quote className="h-10 w-10 text-white/30 mb-6" />
                 
                 <blockquote className="text-xl text-white font-medium mb-8 leading-relaxed">
