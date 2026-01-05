@@ -20,51 +20,51 @@ const Healthcare = () => {
   useHreflang();
 
   const heroMetrics = [
-    { value: '€85B', label: 'Mercado sanitario España', trend: '+6.2%' },
-    { value: '350+', label: 'Operaciones M&A/año' },
+    { value: '€105B', label: 'Gasto sanitario 2024', trend: '+7.5%' },
+    { value: '400+', label: 'Operaciones M&A/año' },
     { value: '8-12x', label: 'Múltiplo EBITDA medio' },
-    { value: '€2.5M', label: 'Ticket medio operación' }
+    { value: '12.6M', label: 'Asegurados salud privada' }
   ];
 
   const stats = [
     { 
-      value: '€85B', 
+      value: '€105B', 
       label: 'Gasto Sanitario Total', 
-      trend: { value: '+6.2%', direction: 'up' as const },
-      description: 'Gasto sanitario público y privado en España'
+      trend: { value: '+7.5%', direction: 'up' as const },
+      description: 'Gasto sanitario público y privado en España 2024'
     },
     { 
-      value: '350+', 
+      value: '400+', 
       label: 'Operaciones M&A', 
-      trend: { value: '+15%', direction: 'up' as const },
+      trend: { value: '+18%', direction: 'up' as const },
       description: 'Transacciones anuales en el sector salud'
     },
     { 
-      value: '12%', 
-      label: 'Crecimiento Privado', 
-      trend: { value: '+2.1pp', direction: 'up' as const },
-      description: 'Cuota de mercado de sanidad privada'
+      value: '12.6M', 
+      label: 'Asegurados Privados', 
+      trend: { value: '+7.4%', direction: 'up' as const },
+      description: 'Pólizas de salud privada activas'
     },
     { 
-      value: '€420M', 
-      label: 'Inversión en Biotech', 
-      trend: { value: '+28%', direction: 'up' as const },
-      description: 'Capital invertido en biotecnología'
+      value: '€500M+', 
+      label: 'Inversión PE 2024', 
+      trend: { value: '+32%', direction: 'up' as const },
+      description: 'Private equity en healthcare español'
     }
   ];
 
   const marketInsights = {
-    description: 'El sector healthcare español está experimentando una transformación acelerada impulsada por la digitalización, el envejecimiento demográfico y la creciente demanda de servicios especializados. España se posiciona como hub europeo de ensayos clínicos y desarrollo biotecnológico.',
+    description: 'El sector healthcare español vive una consolidación sin precedentes. Alantra PE ha invertido más de €100M en crear la mayor plataforma de laboratorios dentales, mientras Miura vendió Terrats a Avista por €250M. Los 12.6 millones de asegurados privados impulsan la demanda de servicios especializados.',
     bulletPoints: [
-      'Consolidación acelerada en clínicas dentales, oftalmología y dermatología',
-      'Crecimiento del 15% anual en telemedicina y salud digital',
-      'España entre los top 5 europeos en ensayos clínicos',
-      'Inversión récord de fondos en residencias y servicios geriátricos'
+      'Alantra y Miura lideran la consolidación con >€350M invertidos en 2024',
+      '12.6 millones de asegurados en salud privada (+7.4% interanual)',
+      'Gasto sanitario público: 7.15% del PIB, por debajo de media UE',
+      'IA impulsará el 30% de nuevos descubrimientos farmacéuticos en 2025'
     ],
     insightCards: [
-      { title: 'Clínicas Especializadas', value: '8-10x', description: 'Múltiplo EBITDA para clínicas con alta recurrencia' },
-      { title: 'Farmacéuticas', value: '12-15x', description: 'Valoración premium por I+D y patentes' },
-      { title: 'Digital Health', value: '4-6x', description: 'Múltiplo ingresos para healthtech' },
+      { title: 'Clínicas Dentales', value: '8-10x', description: 'Múltiplo EBITDA, consolidación activa (Alantra, Miura)' },
+      { title: 'Laboratorios Dentales', value: '6-8x', description: 'Múltiplo EBITDA, digitalización premium' },
+      { title: 'Oftalmología', value: '9-12x', description: 'Alta recurrencia y demanda creciente' },
       { title: 'Residencias', value: '15-18x', description: 'Múltiplo por cama en ubicaciones prime' }
     ]
   };
@@ -136,7 +136,11 @@ const Healthcare = () => {
   const faqs = [
     {
       question: '¿Qué múltiplos de valoración se utilizan en el sector healthcare?',
-      answer: 'Los múltiplos varían según el subsector: clínicas especializadas suelen valorarse entre 8-10x EBITDA, farmacéuticas entre 12-15x, y healthtech entre 4-6x ingresos. Factores como la recurrencia de pacientes, licencias y ubicación pueden elevar significativamente estos ratios.'
+      answer: 'Los múltiplos varían según el subsector: clínicas dentales entre 8-10x EBITDA (Alantra y Miura pagando premium), oftalmología 9-12x por alta recurrencia, laboratorios dentales 6-8x, y residencias geriátricas €15-18K por cama en ubicaciones prime. La operación de Terrats (€250M a ~10x EBITDA) marca referencia del mercado.'
+    },
+    {
+      question: '¿Qué papel juega el Private Equity en el sector salud español?',
+      answer: 'El PE es el motor de consolidación del sector. Alantra PE ha creado la mayor plataforma de laboratorios dentales con ~20 adquisiciones y objetivo de 25. Miura vendió Terrats a Avista por €250M y sigue activo con Dental Ibérica. Portobello, MCH y otros fondos compiten por activos de calidad, elevando los múltiplos.'
     },
     {
       question: '¿Cómo afecta la regulación a la venta de una empresa sanitaria?',
@@ -144,15 +148,11 @@ const Healthcare = () => {
     },
     {
       question: '¿Qué tipos de compradores están activos en el sector salud español?',
-      answer: 'El mercado español atrae principalmente a grupos de consolidación europeos (especialmente en dental y oftalmología), fondos de private equity especializados en healthcare, aseguradoras con estrategia de integración vertical, y grupos hospitalarios en expansión.'
+      answer: 'Los más activos son: fondos especializados en healthcare (Alantra PE, Miura, Portobello), grupos de consolidación europeos en dental y oftalmología, aseguradoras con integración vertical (Sanitas, Adeslas), y family offices buscando activos resilientes con flujos recurrentes.'
     },
     {
       question: '¿Cuánto tiempo lleva vender una clínica o empresa sanitaria?',
-      answer: 'El proceso típico dura entre 6-12 meses dependiendo de la complejidad regulatoria y el tamaño de la operación. Las clínicas especializadas con documentación ordenada pueden cerrar en 4-6 meses, mientras que operaciones con múltiples licencias pueden requerir más tiempo.'
-    },
-    {
-      question: '¿Qué pasa con el equipo médico tras la venta?',
-      answer: 'La continuidad del equipo médico es clave para el valor de la operación. Estructuramos acuerdos que protegen tanto al vendedor como al equipo, incluyendo cláusulas de permanencia, incentivos de retención y planes de transición ordenada.'
+      answer: 'El proceso típico dura entre 6-12 meses dependiendo de la complejidad regulatoria y el tamaño. Clínicas especializadas con documentación ordenada pueden cerrar en 4-6 meses. La alta competencia entre compradores en dental y oftalmología está acelerando los tiempos de cierre.'
     }
   ];
 
@@ -183,14 +183,14 @@ const Healthcare = () => {
         title="Expertos en M&A del Sector Salud"
         description="Asesoramiento especializado en valoración y venta de empresas sanitarias. Conocimiento profundo del mercado, regulación y compradores del sector healthcare español."
         metrics={heroMetrics}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorStatsV2 
         title="El Sector Healthcare en Cifras"
         subtitle="España es uno de los mercados sanitarios más activos de Europa en operaciones M&A"
         stats={stats}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorMarketInsights
@@ -198,21 +198,21 @@ const Healthcare = () => {
         description={marketInsights.description}
         bulletPoints={marketInsights.bulletPoints}
         insightCards={marketInsights.insightCards}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los subsectores del healthcare"
         items={expertiseItems}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorMethodology
         title="Metodología Específica Healthcare"
         subtitle="Un proceso adaptado a las particularidades regulatorias del sector sanitario"
         steps={methodologySteps}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorCaseStudyV2
@@ -222,20 +222,20 @@ const Healthcare = () => {
         description={caseStudy.description}
         metrics={caseStudy.metrics}
         testimonial={caseStudy.testimonial}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorFAQ
         title="Preguntas Frecuentes - Healthcare"
         subtitle="Resolvemos las dudas más habituales sobre M&A en el sector sanitario"
         faqs={faqs}
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <SectorCTAV2
         title="¿Tienes una empresa del sector salud?"
         description="Obtén una valoración confidencial de tu clínica, empresa farmacéutica o negocio sanitario. Nuestros expertos en healthcare te asesorarán sin compromiso."
-        accentColor="emerald"
+        accentColor="slate"
       />
       
       <Footer />
