@@ -9,7 +9,7 @@ const BuyerTestimonials = () => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-gradient-to-b from-secondary/5 to-background">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex justify-center items-center min-h-[400px]">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -24,7 +24,7 @@ const BuyerTestimonials = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-secondary/5 to-background">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
