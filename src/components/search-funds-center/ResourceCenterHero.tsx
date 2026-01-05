@@ -1,11 +1,5 @@
 import { motion } from 'framer-motion';
-import { GraduationCap, TrendingUp, Users, Building2 } from 'lucide-react';
-
-const stats = [
-  { icon: Users, value: '50+', label: 'Searchers activos en España' },
-  { icon: Building2, value: '120+', label: 'Transacciones cerradas' },
-  { icon: TrendingUp, value: '32.6%', label: 'IRR histórico medio' },
-];
+import { GraduationCap } from 'lucide-react';
 
 export const ResourceCenterHero = () => {
   return (
@@ -35,32 +29,11 @@ export const ResourceCenterHero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
           >
             Guías, herramientas, glosario y recursos para dominar el modelo de adquisición empresarial 
             que está transformando el mercado español.
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div
-                  key={index}
-                  className="flex flex-col items-center p-6 rounded-2xl bg-card border"
-                >
-                  <Icon className="h-8 w-8 text-primary mb-3" />
-                  <span className="text-3xl font-bold mb-1">{stat.value}</span>
-                  <span className="text-sm text-muted-foreground text-center">{stat.label}</span>
-                </div>
-              );
-            })}
-          </motion.div>
         </div>
       </div>
     </section>
