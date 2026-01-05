@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, TrendingUp, Users, Building2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { CheckCircle, Users } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { SearchFundsDataVisual } from './SearchFundsDataVisual';
 
 const SearchFundsHero: React.FC = () => {
   const navigate = useNavigate();
@@ -10,12 +12,6 @@ const SearchFundsHero: React.FC = () => {
     "Emprendedores de élite que invierten su futuro en tu empresa",
     "Proceso de due diligence riguroso y profesional",
     "Horizonte de 5-7 años con implicación operativa total"
-  ];
-
-  const stats = [
-    { value: "#1", label: "España líder en Europa", icon: TrendingUp },
-    { value: "67+", label: "Search Funds creados", icon: Building2 },
-    { value: "32%", label: "Rentabilidad histórica", icon: TrendingUp },
   ];
 
   const scrollToContact = () => {
@@ -87,46 +83,15 @@ const SearchFundsHero: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column - Stats Card */}
-          <div className="relative">
-            <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
-              <div className="space-y-6">
-                <div className="text-center pb-6 border-b border-border">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Search Funds en España
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    El mercado más activo de Europa
-                  </p>
-                </div>
-
-                <div className="grid gap-6">
-                  {stats.map((stat, index) => (
-                    <div key={index} className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
-                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <stat.icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                        <div className="text-sm text-muted-foreground">{stat.label}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-6 border-t border-border">
-                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <span>Respaldado por</span>
-                    <span className="font-semibold text-foreground">IESE • IE • ESADE</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
-            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
-          </div>
+          {/* Right Column - Animated Data Visual */}
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <SearchFundsDataVisual />
+          </motion.div>
         </div>
       </div>
     </section>
