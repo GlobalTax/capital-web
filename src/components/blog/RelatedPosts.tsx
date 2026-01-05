@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
 
@@ -66,7 +67,18 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
 
                 {/* Meta información */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-4 w-4 border">
+                      {post.author_avatar_url ? (
+                        <AvatarImage src={post.author_avatar_url} alt={post.author_name} />
+                      ) : (
+                        <AvatarFallback className="text-[8px]">
+                          {post.author_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <span>{post.author_name.split(' ')[0]}</span>
+                    <span className="text-muted-foreground/50">·</span>
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(post.published_at || post.created_at)}</span>
                   </div>
