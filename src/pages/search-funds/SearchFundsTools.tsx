@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { Calculator, ClipboardCheck, FileSpreadsheet, ArrowRight } from 'lucide-react';
+import { Calculator, ClipboardCheck, FileSpreadsheet, ArrowRight, Scale } from 'lucide-react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-
 import { Button } from '@/components/ui/button';
 import { SearchFundsFitCalculator } from '@/components/search-funds/SearchFundsFitCalculator';
+import { SearchFundsComparator } from '@/components/search-funds/SearchFundsComparator';
 
 const tools = [
   {
@@ -42,7 +42,7 @@ const SearchFundsTools = () => {
         <title>Herramientas Search Funds | Calculadoras y Tests | Capittal</title>
         <meta 
           name="description" 
-          content="Herramientas gratuitas para Search Funds: calculadora de fit, valoración de empresas, test exit-ready y más. Evalúa si tu empresa es candidata." 
+          content="Herramientas gratuitas para Search Funds: calculadora de fit, comparador SF vs PE, valoración de empresas, test exit-ready y más. Evalúa si tu empresa es candidata." 
         />
         <link rel="canonical" href="https://capittal.es/search-funds/recursos/herramientas" />
       </Helmet>
@@ -59,6 +59,20 @@ const SearchFundsTools = () => {
             <section className="mb-16">
               <h2 className="text-2xl font-semibold mb-6">Calculadora de Fit para Search Funds</h2>
               <SearchFundsFitCalculator />
+            </section>
+
+            {/* Comparator: SF vs PE vs Traditional */}
+            <section className="mb-16">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Scale className="h-5 w-5 text-primary" />
+                </div>
+                <h2 className="text-2xl font-semibold">Comparador: Search Fund vs Private Equity vs M&A Tradicional</h2>
+              </div>
+              <p className="text-muted-foreground mb-6">
+                Compara las características, ventajas y desventajas de cada modelo de adquisición para entender cuál encaja mejor con tu situación.
+              </p>
+              <SearchFundsComparator />
             </section>
 
             {/* Other Tools */}
