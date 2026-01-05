@@ -126,6 +126,11 @@ export function Footerdemo() {
                   {t('footer.link.financiero')}
                 </Link>
               </li>
+              <li>
+                <Link to="/sectores/distribucion-cosmetica-profesional" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.link.cosmeticaProfesional')}
+                </Link>
+              </li>
             </ul>
           </div>
 
