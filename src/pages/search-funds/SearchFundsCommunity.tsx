@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { ExternalLink, GraduationCap, Users, Calendar, Linkedin } from 'lucide-react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-import { ResourceCenterNav } from '@/components/search-funds-center';
+
 import { Button } from '@/components/ui/button';
 
 const institutions = [
@@ -80,8 +80,6 @@ const SearchFundsCommunity = () => {
       </Helmet>
 
       <div className="pt-24">
-        <ResourceCenterNav />
-        
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold text-center mb-4">Comunidad</h1>

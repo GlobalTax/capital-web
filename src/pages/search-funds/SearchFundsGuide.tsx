@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-import { ResourceCenterNav } from '@/components/search-funds-center';
 import {
   SearchFundsHubHero,
   TableOfContents,
@@ -31,8 +30,6 @@ const SearchFundsGuide = () => {
       </Helmet>
 
       <div className="pt-24">
-        <ResourceCenterNav />
-        
         <div className="container mx-auto px-4 py-12">
           <div className="flex flex-col lg:flex-row gap-12">
             <aside className="lg:w-64 flex-shrink-0">

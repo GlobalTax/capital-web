@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-import { ResourceCenterNav, GlossarySearch, GlossaryCard } from '@/components/search-funds-center';
+import { GlossarySearch, GlossaryCard } from '@/components/search-funds-center';
 
 const glossaryTerms = [
   {
@@ -135,8 +135,6 @@ const SearchFundsGlossary = () => {
       </Helmet>
 
       <div className="pt-24">
-        <ResourceCenterNav />
-        
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold text-center mb-4">Glosario M&A y Search Funds</h1>

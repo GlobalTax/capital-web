@@ -1,4 +1,3 @@
-export { ResourceCenterNav } from './ResourceCenterNav';
 export { ResourceCenterHero } from './ResourceCenterHero';
 export { ResourceCenterGrid } from './ResourceCenterGrid';
 export { GlossarySearch } from './GlossarySearch';
