@@ -14,8 +14,19 @@ interface SectorCTAV2Props {
     text: string;
     href: string;
   };
-  accentColor?: string;
+  accentColor?: 'emerald' | 'blue' | 'amber' | 'slate' | 'stone' | 'rose' | 'indigo' | 'pink';
 }
+
+const colorClasses = {
+  emerald: 'from-emerald-600 via-emerald-700 to-emerald-800',
+  blue: 'from-blue-600 via-blue-700 to-blue-800',
+  amber: 'from-amber-500 via-amber-600 to-amber-700',
+  slate: 'from-slate-700 via-slate-800 to-slate-900',
+  stone: 'from-stone-600 via-stone-700 to-stone-800',
+  rose: 'from-rose-500 via-rose-600 to-rose-700',
+  indigo: 'from-indigo-600 via-indigo-700 to-indigo-800',
+  pink: 'from-pink-500 via-pink-600 to-purple-700'
+};
 
 const SectorCTAV2: React.FC<SectorCTAV2Props> = ({
   title,
@@ -24,8 +35,10 @@ const SectorCTAV2: React.FC<SectorCTAV2Props> = ({
   secondaryCTA = { text: 'Hablar con un Experto', href: '/contacto' },
   accentColor = 'emerald'
 }) => {
+  const gradient = colorClasses[accentColor];
+
   return (
-    <section className={`py-24 bg-gradient-to-br from-${accentColor}-600 via-${accentColor}-700 to-${accentColor}-800 relative overflow-hidden`}>
+    <section className={`py-24 bg-gradient-to-br ${gradient} relative overflow-hidden`}>
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{

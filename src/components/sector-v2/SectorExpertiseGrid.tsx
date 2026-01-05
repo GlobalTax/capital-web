@@ -12,8 +12,51 @@ interface SectorExpertiseGridProps {
   title?: string;
   subtitle?: string;
   items: ExpertiseItem[];
-  accentColor?: string;
+  accentColor?: 'emerald' | 'blue' | 'amber' | 'slate' | 'stone' | 'rose' | 'indigo' | 'pink';
 }
+
+const colorClasses = {
+  emerald: {
+    iconGradient: 'from-emerald-500 to-emerald-600',
+    titleHover: 'group-hover:text-emerald-700',
+    dot: 'bg-emerald-500'
+  },
+  blue: {
+    iconGradient: 'from-blue-500 to-blue-600',
+    titleHover: 'group-hover:text-blue-700',
+    dot: 'bg-blue-500'
+  },
+  amber: {
+    iconGradient: 'from-amber-500 to-amber-600',
+    titleHover: 'group-hover:text-amber-700',
+    dot: 'bg-amber-500'
+  },
+  slate: {
+    iconGradient: 'from-slate-500 to-slate-600',
+    titleHover: 'group-hover:text-slate-700',
+    dot: 'bg-slate-500'
+  },
+  stone: {
+    iconGradient: 'from-stone-500 to-stone-600',
+    titleHover: 'group-hover:text-stone-700',
+    dot: 'bg-stone-500'
+  },
+  rose: {
+    iconGradient: 'from-rose-500 to-rose-600',
+    titleHover: 'group-hover:text-rose-700',
+    dot: 'bg-rose-500'
+  },
+  indigo: {
+    iconGradient: 'from-indigo-500 to-indigo-600',
+    titleHover: 'group-hover:text-indigo-700',
+    dot: 'bg-indigo-500'
+  },
+  pink: {
+    iconGradient: 'from-pink-500 to-purple-600',
+    titleHover: 'group-hover:text-pink-700',
+    dot: 'bg-pink-500'
+  }
+};
 
 const SectorExpertiseGrid: React.FC<SectorExpertiseGridProps> = ({
   title = "Nuestra Especialización",
@@ -21,6 +64,8 @@ const SectorExpertiseGrid: React.FC<SectorExpertiseGridProps> = ({
   items,
   accentColor = 'emerald'
 }) => {
+  const colors = colorClasses[accentColor];
+
   return (
     <section className="py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,12 +94,12 @@ const SectorExpertiseGrid: React.FC<SectorExpertiseGridProps> = ({
                 </div>
                 
                 {/* Icon */}
-                <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br from-${accentColor}-500 to-${accentColor}-600 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${colors.iconGradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
                   <Icon className="h-7 w-7 text-white" />
                 </div>
                 
                 {/* Content */}
-                <h3 className={`text-xl font-bold text-slate-900 mb-3 group-hover:text-${accentColor}-700 transition-colors`}>
+                <h3 className={`text-xl font-bold text-slate-900 mb-3 ${colors.titleHover} transition-colors`}>
                   {item.title}
                 </h3>
                 
@@ -67,7 +112,7 @@ const SectorExpertiseGrid: React.FC<SectorExpertiseGridProps> = ({
                   <ul className="space-y-2">
                     {item.features.map((feature, fIndex) => (
                       <li key={fIndex} className="flex items-center gap-2 text-sm text-slate-500">
-                        <div className={`w-1.5 h-1.5 rounded-full bg-${accentColor}-500`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
                         {feature}
                       </li>
                     ))}
