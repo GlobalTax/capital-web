@@ -103,7 +103,7 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs de navegación */}
         <nav className="mb-6">
           <Breadcrumb>
@@ -199,8 +199,8 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
         <Separator className="mb-20 mt-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
-          <div className="lg:col-span-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
+          <div className="lg:col-span-9">
             <div className="prose dark:prose-invert max-w-none">
               <div 
                 dangerouslySetInnerHTML={{ 
@@ -245,8 +245,8 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
             </div>
           </div>
 
-          <div className="lg:col-span-4">
-            <div className="sticky top-8 space-y-4">
+          <div className="lg:col-span-3">
+            <div className="sticky top-8 space-y-4 max-w-xs ml-auto">
             {sections.length > 0 && (
               <>
                 <span className="text-lg font-medium">En esta página</span>
