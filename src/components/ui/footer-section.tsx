@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin, Linkedin, Twitter } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 
@@ -201,10 +201,33 @@ export function Footerdemo() {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-gray-400 text-sm">
               {t('footer.copyright', { year: currentYear })}
             </div>
+            
+            {/* Social Media Icons */}
+            <div className="flex items-center space-x-4">
+              <a 
+                href="https://www.linkedin.com/company/capittal" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+              <a 
+                href="https://twitter.com/capittal_es" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Twitter"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+            </div>
+            
             <div className="flex space-x-6">
               <Link to="/politica-privacidad" className="text-gray-400 hover:text-white text-sm transition-colors">
                 {t('footer.link.privacidad')}
