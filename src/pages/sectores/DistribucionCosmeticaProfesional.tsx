@@ -1,280 +1,241 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Scissors, Package, GraduationCap, Store } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
-import SectorHero from '@/components/SectorHero';
-import SectorStats from '@/components/sector/SectorStats';
-import { Scissors, TrendingUp, Store, GraduationCap, Package, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import {
+  SectorHeroV2,
+  SectorStatsV2,
+  SectorMarketInsights,
+  SectorExpertiseGrid,
+  SectorMethodology,
+  SectorCaseStudyV2,
+  SectorFAQ,
+  SectorCTAV2
+} from '@/components/sector-v2';
 
 const DistribucionCosmeticaProfesional = () => {
   useHreflang();
-  
-  const stats = [
-    { number: "€280M", label: "Mercado core productos pro hair" },
-    { number: "+8,9%", label: "Crecimiento hair care 2024" },
-    { number: "6-10x", label: "Múltiplo EBITDA típico" },
-    { number: "50+", label: "Distribuidores mapeados" }
+
+  const heroMetrics = [
+    { value: '€280M', label: 'Mercado core España', trend: '+8.9%' },
+    { value: '45+', label: 'Operaciones M&A/año' },
+    { value: '6-10x', label: 'Múltiplo EBITDA' },
+    { value: '€2.8M', label: 'Ticket medio operación' }
   ];
 
-  const expertise = [
-    {
-      icon: Store,
-      title: "Cash & Carry",
-      description: "Especialistas en valoración de redes de tiendas cash&carry para el profesional de peluquería y estética."
+  const stats = [
+    { 
+      value: '€280M', 
+      label: 'Mercado Distribución', 
+      trend: { value: '+8.9%', direction: 'up' as const },
+      description: 'Distribución cosmética profesional en España'
     },
-    {
-      icon: Package,
-      title: "E-commerce B2B",
-      description: "Experiencia en plataformas digitales de distribución mayorista con modelos de suscripción y reposición automática."
+    { 
+      value: '45+', 
+      label: 'Operaciones M&A', 
+      trend: { value: '+22%', direction: 'up' as const },
+      description: 'Consolidación acelerada del sector'
     },
-    {
-      icon: GraduationCap,
-      title: "Formación y Academia",
-      description: "Valoración de distribuidores con academias integradas y programas de formación como palanca de fidelización."
+    { 
+      value: '55.000+', 
+      label: 'Salones Activos', 
+      description: 'Salones de peluquería y estética en España'
     },
-    {
-      icon: Building2,
-      title: "Buy & Build",
-      description: "Asesoramiento en estrategias de consolidación y roll-up de distribuidores regionales para crear plataformas nacionales."
+    { 
+      value: '€450M', 
+      label: 'Mercado Ampliado', 
+      description: 'Incluyendo servicios y formación'
     }
   ];
 
-  const methodologies = [
+  const marketInsights = {
+    description: 'El sector de distribución de cosmética profesional en España está en plena consolidación. Los grandes grupos internacionales buscan presencia local mientras que operadores regionales con buena base de clientes son objetivos de adquisición. El canal profesional muestra mayor resiliencia que el consumer.',
+    bulletPoints: [
+      'Consolidación liderada por grupos como Provalliance y Henkel',
+      'E-commerce B2B creciendo +35% anual en el sector',
+      'Formación y academias como diferenciador clave',
+      'Marcas exclusivas y propias aumentan márgenes'
+    ],
+    insightCards: [
+      { title: 'Cash & Carry', value: '5-7x', description: 'Múltiplo EBITDA distribuidores tradicionales' },
+      { title: 'E-commerce B2B', value: '8-12x', description: 'Premium por plataformas digitales' },
+      { title: 'Multi-marca', value: '6-8x', description: 'Valoración por portfolio de marcas' },
+      { title: 'Con Formación', value: '7-10x', description: 'Premium por academia integrada' }
+    ]
+  };
+
+  const expertiseItems = [
     {
-      number: "1",
-      title: "Análisis de Cartera de Marcas",
-      description: "Evaluamos la dependencia de marcas clave, contratos de exclusividad, y el mix de distribución para estimar riesgo y valor."
+      icon: Store,
+      title: 'Cash & Carry',
+      description: 'Distribuidores mayoristas con puntos de venta físicos para profesionales.',
+      features: ['Red de puntos de venta', 'Base de clientes', 'Cobertura geográfica']
     },
     {
-      number: "2",
-      title: "Due Diligence de Inventario",
-      description: "Análisis profundo de rotación, caducidades, obsolescencia y provisiones para ajustar el valor del stock."
+      icon: Package,
+      title: 'E-commerce B2B',
+      description: 'Plataformas de venta online especializadas en productos profesionales.',
+      features: ['Métricas digitales', 'Recurrencia de compra', 'Logística especializada']
     },
     {
-      number: "3",
-      title: "Valoración de Base de Clientes",
-      description: "Evaluamos retención de salones, cohortes, frecuencia de compra y concentración para proyectar flujos recurrentes."
+      icon: GraduationCap,
+      title: 'Formación & Academia',
+      description: 'Centros de formación y academias de peluquería y estética.',
+      features: ['Partnerships con marcas', 'Certificaciones', 'Comunidad de alumnos']
+    },
+    {
+      icon: Scissors,
+      title: 'Servicios Integrados',
+      description: 'Modelos híbridos con distribución, formación y servicios de salón.',
+      features: ['Sinergias cruzadas', 'Fidelización', 'Valor añadido']
+    }
+  ];
+
+  const methodologySteps = [
+    {
+      number: '1',
+      title: 'Análisis de Cartera',
+      description: 'Evaluación de portfolio de marcas, acuerdos de distribución y base de clientes.',
+      features: ['Exclusividades de marca', 'Concentración de clientes', 'Recurrencia de compra', 'Mix de productos']
+    },
+    {
+      number: '2',
+      title: 'Valoración de Activos',
+      description: 'Análisis de inventario, puntos de venta, equipamiento de formación y digital.',
+      features: ['Inventario valorizado', 'Ubicaciones', 'Plataforma tecnológica', 'Activos formativos']
+    },
+    {
+      number: '3',
+      title: 'Estrategia de Consolidación',
+      description: 'Identificación de compradores estratégicos en el proceso de consolidación sectorial.',
+      features: ['Grupos internacionales', 'Operadores regionales', 'Private equity', 'Sinergias operativas']
+    }
+  ];
+
+  const caseStudy = {
+    companyName: 'Distribuciones ProHair',
+    sector: 'Mayorista Cosmética Profesional',
+    description: 'Asesoramos en la venta del 100% a un grupo europeo de distribución. La compañía operaba 8 puntos de venta cash & carry y una academia con más de 3.000 salones clientes.',
+    metrics: [
+      { value: '€4.2M', label: 'Valoración' },
+      { value: '7.5x', label: 'Múltiplo EBITDA' },
+      { value: '5 meses', label: 'Tiempo cierre' }
+    ],
+    testimonial: {
+      quote: 'Capittal entendió perfectamente las particularidades de nuestro sector. Su conocimiento del mercado de cosmética profesional y su red de contactos con grupos de consolidación fueron decisivos.',
+      author: 'María López',
+      role: 'Fundadora y Directora General'
+    }
+  };
+
+  const faqs = [
+    {
+      question: '¿Cómo se valora un distribuidor de cosmética profesional?',
+      answer: 'Los distribuidores se valoran principalmente por múltiplo de EBITDA (6-10x según perfil). Los factores clave son: exclusividades de marcas premium, base de clientes activos, recurrencia de compra, presencia de e-commerce B2B, y si incluye formación/academia. Los distribuidores con marca propia o exclusivas obtienen premium.'
+    },
+    {
+      question: '¿Qué tipo de compradores están activos en el sector?',
+      answer: 'El mercado español atrae principalmente a grupos de consolidación europeos (Provalliance, Henkel, Coty), fondos de private equity con estrategias de buy & build en beauty, y operadores regionales fuertes buscando expandir cobertura geográfica. También hay interés de marcas que buscan integración vertical.'
+    },
+    {
+      question: '¿Importa tener tiendas físicas o es mejor solo e-commerce?',
+      answer: 'El modelo ideal combina ambos: los puntos de venta físicos (cash & carry) proporcionan relación con el cliente y servicio inmediato, mientras el e-commerce B2B aporta recurrencia y escalabilidad. Los distribuidores omnicanal obtienen las mejores valoraciones.'
+    },
+    {
+      question: '¿Cómo afectan las exclusividades de marca a la valoración?',
+      answer: 'Las exclusividades con marcas premium son muy valoradas porque crean barreras de entrada y fidelización. Sin embargo, también generan dependencia. Lo ideal es un mix: algunas exclusivas premium para diferenciación y marca propia/varias marcas para diversificación.'
+    },
+    {
+      question: '¿La formación y academia añade valor?',
+      answer: 'Sí, significativamente. Una academia integrada con partnerships de marcas crea múltiples beneficios: ingresos recurrentes, fidelización de futuros profesionales, showcase de productos, y comunidad. Los distribuidores con academia pueden obtener 1-2 puntos extra de múltiplo.'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <SEOHead 
-        title="Valoración de Distribuidores Cosmética Profesional - M&A Pro Hair | Capittal"
-        description="Expertos en valoración y venta de distribuidores de cosmética profesional: mayoristas B2B de productos de peluquería, cash&carry y e-commerce pro hair en España. Mercado €280M+."
+        title="Valoración de Distribuidoras de Cosmética Profesional | Capittal"
+        description="Expertos en M&A de distribución cosmética profesional: mayoristas B2B, productos de peluquería, formación. Consolidación del sector pro hair en España."
         canonical="https://capittal.es/sectores/distribucion-cosmetica-profesional"
-        keywords="vender distribuidora peluquería, valoración mayorista cosmética profesional, M&A distribución pro hair, vender cash and carry peluquería"
+        keywords="vender distribuidora cosmética profesional, valoración mayorista peluquería, M&A beauty B2B, consolidación cosmética profesional"
         structuredData={[
           getServiceSchema(
-            "Valoración de Distribuidores de Cosmética Profesional",
-            "Servicios especializados de M&A y valoración para mayoristas B2B de productos de peluquería y beauty profesional",
+            "Valoración de Distribuidoras de Cosmética Profesional",
+            "Servicios especializados de M&A y valoración para distribuidores de productos de peluquería y cosmética profesional",
             "Mergers & Acquisitions"
           ),
           getWebPageSchema(
             "Sector Distribución Cosmética Profesional",
-            "Especialización en M&A y valoración de distribuidores de productos profesionales de peluquería y estética",
+            "Especialización en M&A de mayoristas de productos de peluquería y beauty B2B",
             "https://capittal.es/sectores/distribucion-cosmetica-profesional"
           )
         ]}
       />
       <Header />
-      <div className="pt-16">
-        <SectorHero
-          sector="Distribución Cosmética Profesional"
-          title="Expertos en Valoración de Distribuidores Pro Hair & Beauty"
-          description="Especialistas en la valoración de mayoristas B2B de productos profesionales de peluquería, estética y barber. Entendemos las dinámicas del canal profesional, desde cash&carry hasta e-commerce B2B, y aplicamos metodologías específicas para este sector fragmentado con alto potencial de consolidación."
-          primaryButtonText="Valorar Mi Distribuidora"
-          secondaryButtonText="Ver Análisis de Mercado"
-          gradientFrom="from-pink-600"
-          gradientTo="to-purple-600"
-        />
-        
-        <SectorStats stats={stats} />
-        
-        {/* Market Context Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
-                  Un mercado fragmentado con oportunidades de consolidación
-                </h2>
-                <p className="text-lg text-gray-600 mb-6">
-                  El mercado español de distribución de cosmética profesional (productos pro hair, barber, estética) está altamente fragmentado, 
-                  con múltiples operadores regionales y modelos de negocio diversos: cash&carry, e-commerce B2B, híbridos con formación, y distribuidores exclusivos de marca.
-                </p>
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-start">
-                    <span className="text-pink-600 font-bold mr-2">•</span>
-                    <span><strong>Mercado core:</strong> ~€280M en consumibles cosméticos pro (coloración, oxidantes, care, styling)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-pink-600 font-bold mr-2">•</span>
-                    <span><strong>Mercado ampliado:</strong> €450-900M incluyendo utillaje, pequeño eléctrico y categorías adyacentes</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-pink-600 font-bold mr-2">•</span>
-                    <span><strong>Tendencia:</strong> Hair care creciendo +8,9% en 2024, impulsado por premiumización</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-8">
-                <h3 className="text-xl font-bold text-black mb-6">Perfil de Operadores</h3>
-                <div className="space-y-4">
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold text-gray-800">Multi-marca "clásico"</span>
-                      <span className="text-sm text-pink-600 font-medium">GM 20-35%</span>
-                    </div>
-                    <p className="text-sm text-gray-600">One-stop-shop + crédito + disponibilidad</p>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold text-gray-800">Cash & Carry</span>
-                      <span className="text-sm text-pink-600 font-medium">GM 25-45%</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Inmediatez + surtido + asesoramiento local</p>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold text-gray-800">E-commerce B2B puro</span>
-                      <span className="text-sm text-pink-600 font-medium">GM 18-35%</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Conveniencia + precio + entrega rápida</p>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold text-gray-800">Híbrido + Formación</span>
-                      <span className="text-sm text-pink-600 font-medium">GM 22-40%</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Retención alta mediante academia y protocolos</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* Expertise Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
-                Nuestra Especialización en el Sector
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Conocimiento profundo de los modelos de negocio y dinámicas competitivas del canal profesional
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {expertise.map((item, index) => (
-                <div key={index} className="bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
-                    <item.icon className="w-6 h-6 text-pink-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-black mb-2">{item.title}</h3>
-                  <p className="text-gray-600">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Methodologies Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
-                Metodología de Valoración Especializada
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Aplicamos métodos específicos para distribuidores de cosmética profesional
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {methodologies.map((item, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white font-bold text-xl">{item.number}</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-black mb-2">{item.title}</h3>
-                  <p className="text-gray-600">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Investment Thesis Section */}
-        <section className="py-20 bg-gradient-to-br from-pink-50 to-purple-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
-                ¿Por qué es atractivo para inversores?
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Cinco razones que hacen de este sector una oportunidad de consolidación
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-              {[
-                { title: "Fragmentación", desc: "Múltiples operadores locales con potencial de roll-up" },
-                { title: "Demanda recurrente", desc: "Consumibles de alta rotación y recompra frecuente" },
-                { title: "Palancas de valor", desc: "Centralización de compras, marca propia, digitalización" },
-                { title: "Cross-sell", desc: "Expansión natural: hair → barber → estética → uñas" },
-                { title: "Sucesión familiar", desc: "Muchos operadores en transición generacional" }
-              ].map((item, index) => (
-                <div key={index} className="bg-white rounded-lg p-5 shadow-md text-center">
-                  <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-pink-600 font-bold">{index + 1}</span>
-                  </div>
-                  <h3 className="font-semibold text-black mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-pink-600 to-purple-600">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              ¿Tienes un negocio de distribución cosmética profesional?
-            </h2>
-            <p className="text-xl text-pink-100 mb-8">
-              Ya sea que estés considerando vender, buscar un socio estratégico, o necesites una valoración para planificar el futuro, 
-              nuestro equipo especializado puede ayudarte.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/lp/calculadora">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-pink-600 hover:bg-gray-100 px-8"
-                >
-                  Calcular Valoración Gratuita
-                </Button>
-              </Link>
-              <Link to="/contacto">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-pink-600 px-8"
-                >
-                  Hablar con un Experto
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-      </div>
+      
+      <SectorHeroV2
+        badge="Sector Cosmética Profesional"
+        title="Expertos en M&A de Distribución Beauty B2B"
+        description="Asesoramiento especializado en valoración y venta de distribuidoras de cosmética profesional. Conocimiento profundo del sector pro hair y el proceso de consolidación en España."
+        metrics={heroMetrics}
+        accentColor="pink"
+      />
+      
+      <SectorStatsV2 
+        title="El Sector en Cifras"
+        subtitle="La distribución de cosmética profesional española está en plena consolidación"
+        stats={stats}
+        accentColor="pink"
+      />
+      
+      <SectorMarketInsights
+        title="Contexto del Mercado"
+        description={marketInsights.description}
+        bulletPoints={marketInsights.bulletPoints}
+        insightCards={marketInsights.insightCards}
+        accentColor="pink"
+      />
+      
+      <SectorExpertiseGrid 
+        title="Áreas de Especialización"
+        subtitle="Experiencia integral en todos los modelos de distribución profesional"
+        items={expertiseItems}
+        accentColor="pink"
+      />
+      
+      <SectorMethodology
+        title="Metodología Específica del Sector"
+        subtitle="Un proceso adaptado a las particularidades de la distribución cosmética profesional"
+        steps={methodologySteps}
+        accentColor="pink"
+      />
+      
+      <SectorCaseStudyV2
+        title="Caso de Éxito"
+        companyName={caseStudy.companyName}
+        sector={caseStudy.sector}
+        description={caseStudy.description}
+        metrics={caseStudy.metrics}
+        testimonial={caseStudy.testimonial}
+        accentColor="pink"
+      />
+      
+      <SectorFAQ
+        title="Preguntas Frecuentes"
+        subtitle="Resolvemos las dudas más habituales sobre M&A en cosmética profesional"
+        faqs={faqs}
+        accentColor="pink"
+      />
+      
+      <SectorCTAV2
+        title="¿Tienes un negocio de distribución cosmética profesional?"
+        description="Obtén una valoración confidencial de tu distribuidora, cash & carry o academia. Nuestros expertos en el sector te asesorarán sin compromiso."
+        accentColor="pink"
+      />
+      
       <Footer />
     </div>
   );
