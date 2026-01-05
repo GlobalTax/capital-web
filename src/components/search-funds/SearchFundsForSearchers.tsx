@@ -1,6 +1,6 @@
-import { Target, Shield, Zap, Handshake, CheckCircle, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Target, Shield, Zap, Handshake, CheckCircle } from 'lucide-react';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const benefits = [
   {
@@ -34,19 +34,21 @@ const requirements = [
 ];
 
 export const SearchFundsForSearchers = () => {
+  const navigate = useNavigate();
+
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-16">
-            <span className="text-blue-400 font-medium text-sm uppercase tracking-wider">
+            <span className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
               Para Searchers
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mt-4 mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               ¿Eres Searcher y buscas deal flow en España?
             </h2>
-            <p className="text-lg text-white/70 max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Capittal es tu puerta de entrada a empresas españolas de calidad. 
               Te conectamos con propietarios que entienden el modelo Search Fund y están listos para negociar.
             </p>
@@ -57,15 +59,15 @@ export const SearchFundsForSearchers = () => {
             {benefits.map((benefit, index) => (
               <div 
                 key={index} 
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-colors"
+                className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <benefit.icon className="w-6 h-6 text-blue-400" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <benefit.icon className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white mb-2">{benefit.title}</h3>
-                    <p className="text-sm text-white/60">{benefit.description}</p>
+                    <h3 className="font-semibold text-foreground mb-2">{benefit.title}</h3>
+                    <p className="text-sm text-muted-foreground">{benefit.description}</p>
                   </div>
                 </div>
               </div>
@@ -74,40 +76,36 @@ export const SearchFundsForSearchers = () => {
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Requirements */}
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-6">
+            <div className="bg-card border border-border rounded-2xl p-8">
+              <h3 className="text-xl font-semibold text-foreground mb-6">
                 Lo que buscamos en un Searcher
               </h3>
               <div className="space-y-4">
                 {requirements.map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-white/80">{item}</span>
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* CTA Card */}
-            <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">
+            <div className="text-center lg:text-left">
+              <h3 className="text-2xl font-bold text-foreground mb-4">
                 Únete a nuestra red de Searchers
               </h3>
-              <p className="text-white/70 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Completa nuestro formulario de registro y te contactaremos para verificar tu perfil 
                 y darte acceso a nuestro deal flow cualificado.
               </p>
-              <div className="space-y-4">
-                <Button asChild size="lg" className="w-full bg-white text-slate-900 hover:bg-white/90">
-                  <Link to="/contacto?origen=search-funds-searcher">
-                    Registrarme como Searcher
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <p className="text-xs text-white/50 text-center">
-                  Proceso de verificación en 48-72h. Sin coste hasta encontrar empresa.
-                </p>
-              </div>
+              <InteractiveHoverButton 
+                text="Registrarme como Searcher →"
+                onClick={() => navigate('/contacto?origen=search-funds-searcher')}
+              />
+              <p className="text-xs text-muted-foreground mt-4">
+                Proceso de verificación en 48-72h. Sin coste hasta encontrar empresa.
+              </p>
             </div>
           </div>
         </div>
@@ -115,3 +113,5 @@ export const SearchFundsForSearchers = () => {
     </section>
   );
 };
+
+export default SearchFundsForSearchers;

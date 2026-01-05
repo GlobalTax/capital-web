@@ -1,6 +1,6 @@
-import { CheckCircle, XCircle, ArrowRight, Heart, Clock, TrendingUp, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, XCircle, Heart, Clock, TrendingUp, Users } from 'lucide-react';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const benefits = [
   {
@@ -50,16 +50,18 @@ const myths = [
 ];
 
 export const SearchFundsForSellers = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-16">
-            <span className="text-primary font-medium text-sm uppercase tracking-wider">
+            <span className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
               Para empresarios
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               ¿Por qué vender a un Search Fund?
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -71,9 +73,12 @@ export const SearchFundsForSellers = () => {
           {/* Benefits Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {benefits.map((benefit, index) => (
-              <div key={index} className="text-center p-6">
-                <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-                  <benefit.icon className="w-7 h-7 text-green-600 dark:text-green-400" />
+              <div 
+                key={index} 
+                className="bg-card border border-border rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <benefit.icon className="w-7 h-7 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">{benefit.title}</h3>
                 <p className="text-sm text-muted-foreground">{benefit.description}</p>
@@ -90,21 +95,21 @@ export const SearchFundsForSellers = () => {
               <div className="space-y-3">
                 {idealProfile.map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                     <span className="text-muted-foreground">{item}</span>
                   </div>
                 ))}
               </div>
-              <Button asChild className="mt-8 w-full" size="lg">
-                <Link to="/lp/calculadora?origen=search-funds">
-                  Valorar mi empresa gratis
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+              <div className="mt-8">
+                <InteractiveHoverButton 
+                  text="Valorar mi empresa gratis →"
+                  onClick={() => navigate('/lp/calculadora?origen=search-funds')}
+                />
+              </div>
             </div>
 
             {/* Myths vs Reality */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-8">
+            <div className="bg-muted/30 border border-border rounded-2xl p-8">
               <h3 className="text-xl font-semibold text-foreground mb-6">
                 Mitos vs Realidad
               </h3>
@@ -112,11 +117,11 @@ export const SearchFundsForSellers = () => {
                 {myths.map((item, index) => (
                   <div key={index} className="space-y-2">
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                       <span className="text-muted-foreground line-through">{item.myth}</span>
                     </div>
                     <div className="flex items-start gap-2 pl-7">
-                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                       <span className="text-foreground font-medium">{item.reality}</span>
                     </div>
                   </div>
@@ -129,3 +134,5 @@ export const SearchFundsForSellers = () => {
     </section>
   );
 };
+
+export default SearchFundsForSellers;
