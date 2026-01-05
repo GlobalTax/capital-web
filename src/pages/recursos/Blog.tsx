@@ -3,7 +3,8 @@ import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getOrganizationSchema } from '@/utils/seo';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, User, Tag } from 'lucide-react';
+import { ArrowRight, Calendar, Tag } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useBlogFilters } from '@/hooks/useBlogFilters';
 import BlogFilters from '@/components/blog/BlogFilters';
@@ -138,8 +139,16 @@ const Blog = () => {
                               <Calendar className="h-4 w-4" />
                               <span>{featuredArticle.published_at ? formatDate(featuredArticle.published_at) : formatDate(featuredArticle.created_at)}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
+                          <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6 border">
+                                {featuredArticle.author_avatar_url ? (
+                                  <AvatarImage src={featuredArticle.author_avatar_url} alt={featuredArticle.author_name} />
+                                ) : (
+                                  <AvatarFallback className="text-xs">
+                                    {featuredArticle.author_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                )}
+                              </Avatar>
                               <span>{featuredArticle.author_name}</span>
                             </div>
                             <span className="px-3 py-1 bg-gray-100 rounded-lg font-medium">
@@ -187,6 +196,17 @@ const Blog = () => {
                             
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Avatar className="h-5 w-5 border">
+                                  {article.author_avatar_url ? (
+                                    <AvatarImage src={article.author_avatar_url} alt={article.author_name} />
+                                  ) : (
+                                    <AvatarFallback className="text-[10px]">
+                                      {article.author_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  )}
+                                </Avatar>
+                                <span className="hidden sm:inline">{article.author_name.split(' ')[0]}</span>
+                                <span className="text-gray-300">·</span>
                                 <Calendar className="h-3 w-3" />
                                 <span>{article.published_at ? formatDate(article.published_at) : formatDate(article.created_at)}</span>
                               </div>

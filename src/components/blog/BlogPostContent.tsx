@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUp, Calendar, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowUp, ArrowLeft, Home, Clock } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
@@ -96,12 +95,60 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
   const sections = extractSections(post.content);
 
-  const currentUrl = window.location.href;
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substr(0, maxLength).trim() + '...';
+  };
 
   return (
     <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumbs de navegación */}
+        <nav className="mb-6">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" className="flex items-center gap-1 text-muted-foreground hover:text-primary">
+                    <Home className="h-4 w-4" />
+                    Inicio
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/recursos/blog" className="text-muted-foreground hover:text-primary">
+                    Blog
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-foreground font-medium max-w-[200px] truncate">
+                  {truncateText(post.title, 40)}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </nav>
 
-        <h1 className="mb-8 mt-12 max-w-4xl text-3xl font-semibold md:text-5xl">
+        {/* Botones de navegación rápida */}
+        <div className="flex gap-3 mb-8">
+          <Link to="/recursos/blog">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Blog
+            </Button>
+          </Link>
+          <Link to="/">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Home className="h-4 w-4" />
+              Página Principal
+            </Button>
+          </Link>
+        </div>
+
+        <h1 className="mb-8 mt-4 max-w-4xl text-3xl font-semibold md:text-5xl">
           {post.title}
         </h1>
 
