@@ -27,7 +27,7 @@ const searcherProfiles = [
 ];
 
 const metrics = [
-  { value: "67+", label: "Searchers activos", icon: Users },
+  { value: "21+", label: "Searchers activos", icon: Users },
   { value: "€85M", label: "Capacidad total", icon: TrendingUp }
 ];
 
