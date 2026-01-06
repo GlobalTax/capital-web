@@ -13,5 +13,4 @@ export { SearchFundsFitCalculator } from './SearchFundsFitCalculator';
 export { SearchFundsComparison } from './SearchFundsComparison';
 export { SearchFundsTestimonials } from './SearchFundsTestimonials';
 export { SearchFundsResources } from './SearchFundsResources';
-export { SearchFundsInstitutions } from './SearchFundsInstitutions';
 export { SearchFundsVideo } from './SearchFundsVideo';
