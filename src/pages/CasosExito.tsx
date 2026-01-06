@@ -56,13 +56,13 @@ const CasosExito = () => {
       />
       <UnifiedLayout>
       <div className="pt-16">
-        <section className="py-20 bg-white">
+        <section className="py-20 md:py-32 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6">
                 {t('casosExito.title')}
               </h1>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
                 {t('casosExito.subtitle')}
               </p>
             </div>

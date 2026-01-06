@@ -37,13 +37,13 @@ const PorQueElegirnosHero = () => {
   ];
 
   return (
-    <section className="bg-white py-20 overflow-hidden">
+    <section className="bg-background py-20 md:py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="animate-fade-in">
-            <h1 className="text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
               Por Qué Elegir
-              <span className="block text-transparent bg-gradient-to-r from-gray-600 to-black bg-clip-text">
+              <span className="block text-primary">
                 Capittal
               </span>
             </h1>
