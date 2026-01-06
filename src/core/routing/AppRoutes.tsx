@@ -53,12 +53,14 @@ const SearchFunds = lazy(() => import('@/pages/servicios/SearchFunds'));
 // === SECTOR PAGES ===
 const Tecnologia = lazy(() => import('@/pages/sectores/Tecnologia').catch(() => import('@/pages/VentaEmpresas')));
 const Healthcare = lazy(() => import('@/pages/sectores/Healthcare').catch(() => import('@/pages/VentaEmpresas')));
-const FinancialServices = lazy(() => import('@/pages/sectores/FinancialServices').catch(() => import('@/pages/VentaEmpresas')));
 const Industrial = lazy(() => import('@/pages/sectores/Industrial').catch(() => import('@/pages/VentaEmpresas')));
 const RetailConsumer = lazy(() => import('@/pages/sectores/RetailConsumer').catch(() => import('@/pages/VentaEmpresas')));
 const Energia = lazy(() => import('@/pages/sectores/Energia').catch(() => import('@/pages/VentaEmpresas')));
-const Inmobiliario = lazy(() => import('@/pages/sectores/Inmobiliario').catch(() => import('@/pages/VentaEmpresas')));
-const DistribucionCosmeticaProfesional = lazy(() => import('@/pages/sectores/DistribucionCosmeticaProfesional').catch(() => import('@/pages/VentaEmpresas')));
+const Seguridad = lazy(() => import('@/pages/sectores/Seguridad').catch(() => import('@/pages/VentaEmpresas')));
+const Construccion = lazy(() => import('@/pages/sectores/Construccion').catch(() => import('@/pages/VentaEmpresas')));
+const Alimentacion = lazy(() => import('@/pages/sectores/Alimentacion').catch(() => import('@/pages/VentaEmpresas')));
+const Logistica = lazy(() => import('@/pages/sectores/Logistica').catch(() => import('@/pages/VentaEmpresas')));
+const MedioAmbiente = lazy(() => import('@/pages/sectores/MedioAmbiente').catch(() => import('@/pages/VentaEmpresas')));
 
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
@@ -204,12 +206,14 @@ export const AppRoutes = () => {
         {/* === SECTOR ROUTES === */}
         <Route path="/sectores/tecnologia" element={<Tecnologia />} />
         <Route path="/sectores/healthcare" element={<Healthcare />} />
-        <Route path="/sectores/financial-services" element={<FinancialServices />} />
         <Route path="/sectores/industrial" element={<Industrial />} />
         <Route path="/sectores/retail-consumer" element={<RetailConsumer />} />
         <Route path="/sectores/energia" element={<Energia />} />
-        <Route path="/sectores/inmobiliario" element={<Inmobiliario />} />
-        <Route path="/sectores/distribucion-cosmetica-profesional" element={<DistribucionCosmeticaProfesional />} />
+        <Route path="/sectores/seguridad" element={<Seguridad />} />
+        <Route path="/sectores/construccion" element={<Construccion />} />
+        <Route path="/sectores/alimentacion" element={<Alimentacion />} />
+        <Route path="/sectores/logistica" element={<Logistica />} />
+        <Route path="/sectores/medio-ambiente" element={<MedioAmbiente />} />
         
         {/* === JOB POSTS ROUTES === */}
         <Route path="/oportunidades/empleo" element={<JobsPage />} />
