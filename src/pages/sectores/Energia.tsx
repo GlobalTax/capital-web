@@ -5,16 +5,15 @@ import { Zap, Sun, Wind, Leaf } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
-import { useSectorCaseStudy } from '@/hooks/useSectorCaseStudy';
 import {
   SectorHeroV2,
   SectorStatsV2,
   SectorMarketInsights,
   SectorExpertiseGrid,
   SectorMethodology,
-  SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const Energia = () => {
@@ -118,26 +117,6 @@ const Energia = () => {
     }
   ];
 
-  // Fallback para caso de estudio cuando no hay operaciones del marketplace
-  const fallbackCaseStudy = {
-    companyName: 'Operación tipo Cartera Julieta',
-    sector: 'Portfolio Solar Fotovoltaico',
-    description: 'Asesoramiento en la venta de portfolio solar de 250MW en operación a fondo de infraestructuras europeo. Activos con PPAs corporativos a 12-15 años con contrapartes investment grade.',
-    metrics: [
-      { value: '€320M', label: 'Valoración' },
-      { value: '11,5x', label: 'Múltiplo EBITDA' },
-      { value: '8 meses', label: 'Tiempo cierre' }
-    ],
-    testimonial: {
-      quote: 'La experiencia del equipo en renovables y su acceso directo a fondos de infraestructuras europeos nos permitió maximizar el valor de nuestra cartera solar con un proceso competitivo.',
-      author: 'Director de M&A',
-      role: 'IPP Español'
-    }
-  };
-
-  // Hook que busca operaciones reales del marketplace, con fallback al caso estático
-  const { caseStudy, isLoading: caseStudyLoading, isFromMarketplace } = useSectorCaseStudy('energia', fallbackCaseStudy);
-
   const faqs = [
     {
       question: '¿Cómo se valora una planta solar o eólica en 2025?',
@@ -220,19 +199,11 @@ const Energia = () => {
         accentColor="slate"
       />
       
-      {caseStudy && (
-        <SectorCaseStudyV2
-          title={isFromMarketplace ? "Operación en Cartera" : "Caso de Éxito Energía"}
-          companyName={caseStudy.companyName}
-          sector={caseStudy.sector}
-          description={caseStudy.description}
-          metrics={caseStudy.metrics}
-          testimonial={caseStudy.testimonial}
-          operationLink={caseStudy.operationLink}
-          isLoading={caseStudyLoading}
-          accentColor="slate"
-        />
-      )}
+      <SectorOperationsGrid
+        sectorKey="energia"
+        title="Operaciones en Cartera"
+        subtitle="Oportunidades activas en el sector energético y renovables"
+      />
       
       <SectorFAQ
         title="Preguntas Frecuentes - Energía"
