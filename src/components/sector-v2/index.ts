@@ -6,3 +6,4 @@ export { default as SectorCaseStudyV2 } from './SectorCaseStudyV2';
 export { default as SectorFAQ } from './SectorFAQ';
 export { default as SectorCTAV2 } from './SectorCTAV2';
 export { default as SectorMarketInsights } from './SectorMarketInsights';
+export { default as SectorOperationsGrid } from './SectorOperationsGrid';
