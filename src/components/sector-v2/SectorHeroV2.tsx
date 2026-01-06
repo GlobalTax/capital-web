@@ -37,7 +37,7 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
   const metricIcons = [TrendingUp, Building2, Users, Target];
 
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <section className="relative py-20 md:py-32 bg-background overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-[0.03]">
         <div className="absolute inset-0" style={{
@@ -46,19 +46,21 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
         }} />
       </div>
       
-      {/* Gradient Accent */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-200 to-transparent" />
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Content */}
           <div className="space-y-8">
-            <Badge 
-              variant="outline" 
-              className="px-4 py-2 text-sm font-medium border-slate-300 text-slate-700 bg-white"
-            >
+            <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
               {badge}
-            </Badge>
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              {title}
+            </h1>
+            
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl">
+              {description}
+            </p>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
               {title}
@@ -95,8 +97,8 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
           
           {/* Metrics Dashboard */}
           <div className="relative">
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <div className="bg-card rounded-xl shadow-xl border border-border p-8 space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-border">
                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
                 <span className="text-sm font-medium text-slate-500">Métricas del Sector</span>
               </div>
@@ -107,7 +109,7 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
                   return (
                     <div 
                       key={index}
-                      className="group p-5 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-lg transition-all duration-300 border border-transparent hover:border-slate-200"
+                      className="group p-5 rounded-xl bg-muted hover:bg-card hover:shadow-lg transition-all duration-300 border border-transparent hover:border-border"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <Icon className="h-5 w-5 text-slate-700" />
@@ -125,12 +127,9 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
                       </div>
                     </div>
                   );
-                })}
+              })}
               </div>
             </div>
-            
-            {/* Decorative elements */}
-            <div className="absolute -z-10 -top-4 -right-4 w-full h-full rounded-3xl bg-gradient-to-br from-slate-200 to-slate-100" />
           </div>
         </div>
       </div>

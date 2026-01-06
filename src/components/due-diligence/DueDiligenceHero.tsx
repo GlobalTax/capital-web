@@ -6,22 +6,22 @@ import { Search, FileText, BarChart3, Shield } from 'lucide-react';
 
 const DueDiligenceHero = () => {
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold text-black leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 Due Diligence
-                <span className="block text-black">Profesional y Estratégico</span>
+                <span className="block text-slate-900">Profesional y Estratégico</span>
               </h1>
-              <p className="text-xl text-black leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
                 Análisis completo financiero, legal y comercial tanto para compradores 
                 como vendedores. Identificamos riesgos, oportunidades y maximizamos el valor en cada operación.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm text-black">
+            <div className="grid grid-cols-2 gap-4 text-sm text-slate-600">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span>Análisis 360°</span>
@@ -53,7 +53,7 @@ const DueDiligenceHero = () => {
           </div>
 
           <div className="relative">
-            <div className="bg-white rounded-lg shadow-xl p-6 border border-gray-300">
+            <div className="bg-card rounded-xl shadow-xl p-6 border border-border">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-black">Dashboard de Due Diligence</h3>
