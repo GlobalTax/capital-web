@@ -59,7 +59,7 @@ export const SearchFundsFAQ = () => {
               Preguntas frecuentes
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">
-              Resolvemos tus dudas
+              Preguntas frecuentes sobre Search Funds en España
             </h2>
             <p className="text-lg text-muted-foreground">
               Las preguntas más comunes de empresarios y Searchers sobre trabajar con Search Funds.

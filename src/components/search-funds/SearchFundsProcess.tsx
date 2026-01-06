@@ -103,7 +103,7 @@ export const SearchFundsProcess = () => {
               Nuestro proceso
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">
-              Cómo trabajamos con Search Funds
+              Proceso de venta a Search Funds: Paso a paso
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Un proceso estructurado y profesional que protege a ambas partes 
