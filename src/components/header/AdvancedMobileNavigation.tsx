@@ -10,7 +10,7 @@ import { serviciosData } from './data/serviciosData';
 import { sectoresData } from './data/sectoresData';
 import { nosotrosData } from './data/nosotrosData';
 import { recursosData } from './data/recursosData';
-import { colaboradoresData } from './data/colaboradoresData';
+import { searchFundsData } from './data/searchFundsData';
 
 interface AdvancedMobileNavigationProps {
   isMenuOpen: boolean;
@@ -34,8 +34,10 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
     { id: 'servicios', title: t('nav.servicios'), items: serviciosData.flatMap(category => category.items) },
     { id: 'nosotros', title: t('nav.nosotros'), items: nosotrosData.flatMap(category => category.items) },
     { id: 'recursos', title: t('nav.recursos'), items: recursosData.flatMap(category => category.items) },
-    { id: 'colaboradores', title: t('nav.colaboradores'), items: [{ label: t('nav.colaboradores'), href: getLocalizedUrl('programaColaboradores', lang) }] },
   ];
+
+  // Flatten Search Funds items for mobile
+  const searchFundsItems = searchFundsData.categories.flatMap(category => category.items);
 
   return (
     <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg animate-slide-in max-h-[80vh] overflow-y-auto">
@@ -71,6 +73,34 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
           </div>
         ))}
 
+        {/* Search Funds - Sección expandible */}
+        <div>
+          <button
+            onClick={() => toggleSection('search-funds')}
+            className="flex items-center justify-between w-full text-left text-black text-sm font-medium py-2 hover:text-gray-600 transition-colors"
+          >
+            <span>Search Funds</span>
+            {expandedSection === 'search-funds' ? 
+              <ChevronDown className="h-4 w-4" /> : 
+              <ChevronRight className="h-4 w-4" />
+            }
+          </button>
+          
+          {expandedSection === 'search-funds' && (
+            <div className="pl-4 space-y-2 mt-2 border-l-2 border-gray-100">
+              {searchFundsItems.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200 py-1"
+                  onClick={closeMenu}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Sectores */}
         {sectoresData?.[0]?.items?.length > 0 && (
@@ -103,13 +133,13 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
           </div>
         )}
 
-        {/* Search Funds - Link directo */}
+        {/* Colaboradores - Link directo */}
         <Link
-          to="/servicios/search-funds"
+          to={getLocalizedUrl('programaColaboradores', lang)}
           className="block text-black text-sm font-medium py-2 hover:text-gray-600 transition-colors"
           onClick={closeMenu}
         >
-          Search Funds
+          {t('nav.colaboradores')}
         </Link>
 
         {/* Botones de acción */}

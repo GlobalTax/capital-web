@@ -12,7 +12,8 @@ import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
-import { serviciosData, sectoresData, recursosData, nosotrosData, colaboradoresData } from './menuDataIndex';
+import { serviciosData, sectoresData, recursosData, nosotrosData } from './menuDataIndex';
+import { searchFundsData } from './data/searchFundsData';
 
 const ServiciosMenu = () => (
   <div className="grid gap-8 lg:grid-cols-4">
@@ -206,6 +207,68 @@ const NosotrosMenu = () => (
   </div>
 );
 
+const SearchFundsMenu = () => (
+  <div className="grid gap-8 lg:grid-cols-3">
+    {/* Featured Card */}
+    <div className="lg:col-span-1">
+      <Link
+        to={searchFundsData.featured.href}
+        className="group relative flex h-full flex-col overflow-hidden rounded-lg bg-black text-white p-6 hover:bg-gray-900 transition-all duration-300"
+      >
+        <div className="relative z-10 flex flex-col text-left h-full">
+          <span className="mb-4 text-xs font-medium tracking-wider uppercase opacity-80">
+            Herramienta Destacada
+          </span>
+          <div className="mt-auto">
+            <div className="flex items-center space-x-1 text-sm font-medium mb-2">
+              {searchFundsData.featured.title}
+              <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="text-xs opacity-80">
+              {searchFundsData.featured.description}
+            </p>
+          </div>
+        </div>
+      </Link>
+    </div>
+
+    {/* Categories */}
+    <div className="lg:col-span-2 grid gap-6">
+      {searchFundsData.categories.map((category) => (
+        <div key={category.title} className="space-y-4">
+          <div className="border-b border-gray-200 pb-2">
+            <strong className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+              {category.title}
+            </strong>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {category.items.map((item) => (
+              <NavigationMenuLink key={item.id} asChild>
+                <Link
+                  to={item.href}
+                  className="group flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900 group-hover:text-black">
+                      {item.label}
+                    </div>
+                    {item.description && (
+                      <p className="mt-1 text-xs text-gray-500 group-hover:text-gray-600">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  <ArrowRight className="size-4 text-gray-400 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </NavigationMenuLink>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const AdvancedDesktopNavigation = () => {
   const { user, isAdmin } = useAuth();
   const { t, lang } = useI18n();
@@ -259,15 +322,19 @@ const AdvancedDesktopNavigation = () => {
               </div>
             </NavigationMenuContent>
           </NavigationMenuItem>
-      </NavigationMenuList>
-      </NavigationMenu>
 
-      <Link
-        to="/servicios/search-funds"
-        className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
-      >
-        Search Funds
-      </Link>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger className="text-black text-sm font-medium hover:text-gray-600 bg-transparent hover:bg-transparent">
+              Search Funds
+            </NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <div className="w-[700px] p-6">
+                <SearchFundsMenu />
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
 
       <Link
         to={getLocalizedUrl('programaColaboradores', lang)}
