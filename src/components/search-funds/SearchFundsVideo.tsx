@@ -43,9 +43,6 @@ export const SearchFundsVideo = () => {
               <div className="absolute top-4 left-16 w-3 h-3 rounded-full bg-green-500/50" />
             </div>
 
-            <p className="mt-6 text-sm text-slate-400">
-              ¿Prefieres hablar con un experto? <a href="/contacto" className="text-primary hover:underline">Agenda una llamada</a>
-            </p>
           </motion.div>
         </div>
       </section>
