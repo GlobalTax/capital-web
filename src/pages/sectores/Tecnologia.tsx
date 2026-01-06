@@ -20,51 +20,51 @@ const Tecnologia = () => {
   useHreflang();
 
   const heroMetrics = [
-    { value: '€45B', label: 'Inversión tech España', trend: '+22%' },
-    { value: '280+', label: 'Operaciones M&A/año' },
+    { value: '€2.9B', label: 'Inversión VC 2024', trend: '+60%' },
+    { value: '300+', label: 'Operaciones públicas 2024' },
     { value: '4-8x', label: 'Múltiplo ARR SaaS' },
-    { value: '€5.2M', label: 'Ticket medio operación' }
+    { value: '€9.7M', label: 'Ticket medio (+36% YoY)' }
   ];
 
   const stats = [
     { 
-      value: '€45B', 
-      label: 'Inversión en Tech', 
-      trend: { value: '+22%', direction: 'up' as const },
-      description: 'Inversión total en sector tecnológico español'
+      value: '€2.9B', 
+      label: 'Inversión VC 2024', 
+      trend: { value: '+60%', direction: 'up' as const },
+      description: 'Mejor dato desde 2021, recuperación fuerte'
     },
     { 
-      value: '280+', 
-      label: 'Operaciones M&A', 
-      trend: { value: '+18%', direction: 'up' as const },
-      description: 'Transacciones anuales en tech'
+      value: '300+', 
+      label: 'Operaciones Públicas', 
+      trend: { value: '+15%', direction: 'up' as const },
+      description: 'Transacciones en 2024, ecosistema maduro'
     },
     { 
-      value: '€2.1B', 
-      label: 'Venture Capital', 
-      trend: { value: '+35%', direction: 'up' as const },
-      description: 'Capital invertido en startups tech'
+      value: '€3.1B', 
+      label: 'Captación Startups', 
+      trend: { value: '+36%', direction: 'up' as const },
+      description: 'Capital captado por startups españolas'
     },
     { 
-      value: '45%', 
-      label: 'Exits a Internac.', 
-      description: 'Compradores internacionales en exits tech'
+      value: 'Top 5', 
+      label: 'Ecosistema Europeo', 
+      description: 'España en ranking Dealroom 2025'
     }
   ];
 
   const marketInsights = {
-    description: 'El ecosistema tech español ha madurado significativamente, con Barcelona y Madrid consolidándose como hubs europeos. La abundancia de talento técnico y costes competitivos atraen inversión internacional, mientras que los fondos locales incrementan su sofisticación.',
+    description: 'El ecosistema tech español ha registrado un crecimiento del 60% en inversión VC en 2024, alcanzando €2.9B. Barcelona y Madrid se consolidan como hubs europeos, con mega-rondas como Sequra (+€100M), TravelPerk, Factorial y Exoticca liderando la actividad.',
     bulletPoints: [
-      'España en top 5 europeo en atracción de talento tech',
-      'Múltiplos SaaS entre 4-8x ARR según crecimiento y retención',
-      'Creciente interés de corporates europeos en adquisiciones',
-      'Fondos growth locales con €500M+ para late stage'
+      'España Top 5 europeo en ecosistema startup (Dealroom 2025)',
+      'Software B2B domina el 65% del M&A tech en 2025',
+      'Ciberseguridad e IA son los subsectores con mayor actividad',
+      'M&A defensivo: consolidación y servicios IT lideran las operaciones'
     ],
     insightCards: [
-      { title: 'SaaS B2B', value: '5-8x', description: 'Múltiplo ARR para SaaS con NRR >110%' },
-      { title: 'FinTech', value: '6-10x', description: 'Premium por licencias reguladas' },
-      { title: 'E-commerce', value: '1-3x', description: 'Múltiplo ingresos según márgenes' },
-      { title: 'Deep Tech', value: '8-15x', description: 'Valoración basada en IP y potencial' }
+      { title: 'SaaS B2B', value: '5-8x', description: 'Múltiplo ARR, premium por NRR >110%' },
+      { title: 'FinTech', value: '6-10x', description: 'Premium por regulación y licencias' },
+      { title: 'Ciberseguridad', value: '8-12x', description: 'Demanda récord, escasez de activos' },
+      { title: 'AI / Deep Tech', value: '10-20x', description: 'Valoraciones premium por IP' }
     ]
   };
 
@@ -117,29 +117,33 @@ const Tecnologia = () => {
   ];
 
   const caseStudy = {
-    companyName: 'TechFlow Analytics',
+    companyName: 'SaaS Analytics Platform',
     sector: 'SaaS B2B - Business Intelligence',
-    description: 'Asesoramos en la venta a un grupo de software europeo. La compañía había alcanzado €3M ARR con excelentes métricas de retención (NRR 125%) y un equipo de 35 personas.',
+    description: 'Asesoramos en la venta a un grupo de software europeo. La compañía había alcanzado €4.5M ARR con excelentes métricas de retención (NRR 128%) y un equipo de 40 personas. Similar a operaciones como Sequra y TravelPerk en estructura.',
     metrics: [
-      { value: '€18M', label: 'Valoración' },
-      { value: '6x', label: 'Múltiplo ARR' },
-      { value: '5 meses', label: 'Tiempo cierre' }
+      { value: '€32M', label: 'Valoración' },
+      { value: '7.1x', label: 'Múltiplo ARR' },
+      { value: '4 meses', label: 'Tiempo cierre' }
     ],
     testimonial: {
       quote: 'Capittal entendió perfectamente las métricas SaaS y supo comunicar nuestra historia de crecimiento a los compradores. Conseguimos un múltiplo muy superior al que esperábamos.',
-      author: 'David Torres',
-      role: 'CEO y Co-fundador'
+      author: 'CEO y Co-fundador',
+      role: 'SaaS B2B'
     }
   };
 
   const faqs = [
     {
-      question: '¿Cómo se valora una empresa SaaS?',
-      answer: 'Las empresas SaaS se valoran principalmente por múltiplo de ARR (Annual Recurring Revenue), típicamente entre 4-8x. Los factores clave son: crecimiento YoY (>40% es premium), Net Revenue Retention (>110% es excelente), márgenes brutos (>70%), y eficiencia de CAC payback.'
+      question: '¿Cómo se valora una empresa SaaS en 2025?',
+      answer: 'Las empresas SaaS se valoran principalmente por múltiplo de ARR (Annual Recurring Revenue), típicamente entre 4-8x en 2025. Los factores clave son: crecimiento YoY (>40% es premium), Net Revenue Retention (>110% es excelente), márgenes brutos (>70%), y eficiencia de CAC payback. En España, rondas como Sequra (+€100M) y Factorial demuestran múltiplos premium.'
     },
     {
       question: '¿Qué múltiplos se pagan por startups tech en España?',
-      answer: 'Los múltiplos varían significativamente: SaaS B2B con buen crecimiento obtiene 5-8x ARR, FinTech regulado 6-10x, e-commerce 1-3x ingresos según márgenes, y deep tech/AI puede alcanzar 8-15x por el valor de la IP. El contexto de mercado y el tipo de comprador influyen mucho.'
+      answer: 'Los múltiplos en 2024-2025 varían: SaaS B2B con buen crecimiento obtiene 5-8x ARR, FinTech regulado 6-10x, ciberseguridad 8-12x (demanda récord), y AI/deep tech puede alcanzar 10-20x por el valor de la IP. El ticket medio ha subido a €9.7M (+36% vs 2023).'
+    },
+    {
+      question: '¿Cuál es el estado del mercado tech español en 2025?',
+      answer: 'España se posiciona en el Top 5 europeo (Dealroom 2025). La inversión VC alcanzó €2.9B en 2024 (+60% vs 2023), con más de 300 operaciones públicas. Las tendencias dominantes son M&A defensivo, software B2B (65% del mercado), ciberseguridad e infraestructura digital.'
     },
     {
       question: '¿Es necesario tener beneficios para vender una empresa tech?',
@@ -147,11 +151,7 @@ const Tecnologia = () => {
     },
     {
       question: '¿Qué tipo de compradores buscan empresas tech españolas?',
-      answer: 'El mercado español atrae principalmente a: grupos de software europeos y americanos en expansión, fondos de private equity con estrategias de buy & build en tech, corporates buscando adquisiciones de producto/talento, y cada vez más, grandes tech asiáticos explorando Europa.'
-    },
-    {
-      question: '¿Cómo funciona el earn-out en operaciones tech?',
-      answer: 'Los earn-outs son muy comunes en tech, típicamente representando 20-40% del precio. Se estructuran sobre métricas como ARR, crecimiento, retención de clientes clave o retención de equipo fundador. Es crítico negociar bien los términos para que sean alcanzables y medibles.'
+      answer: 'El mercado español atrae principalmente a: grupos de software europeos y americanos en expansión (65% M&A 2025), fondos de private equity con estrategias de buy & build en tech, corporates buscando adquisiciones de producto/talento, y fondos especializados en ciberseguridad e IA.'
     }
   ];
 
@@ -182,36 +182,36 @@ const Tecnologia = () => {
         title="Expertos en M&A del Sector Tech"
         description="Asesoramiento especializado en valoración y venta de empresas tecnológicas. Entendemos las métricas SaaS, los ciclos de funding y el ecosistema de compradores tech."
         metrics={heroMetrics}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorStatsV2 
         title="El Sector Tech en Cifras"
-        subtitle="España se consolida como hub tecnológico europeo con un ecosistema M&A cada vez más maduro"
+        subtitle="España Top 5 europeo con €2.9B invertidos en 2024 (+60% YoY)"
         stats={stats}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorMarketInsights
-        title="Contexto del Mercado Tech"
+        title="Contexto del Mercado Tech 2024-2025"
         description={marketInsights.description}
         bulletPoints={marketInsights.bulletPoints}
         insightCards={marketInsights.insightCards}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los subsectores tecnológicos"
         items={expertiseItems}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorMethodology
         title="Metodología Específica Tech"
         subtitle="Un proceso adaptado a las particularidades de valoración de empresas tecnológicas"
         steps={methodologySteps}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorCaseStudyV2
@@ -221,20 +221,20 @@ const Tecnologia = () => {
         description={caseStudy.description}
         metrics={caseStudy.metrics}
         testimonial={caseStudy.testimonial}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorFAQ
         title="Preguntas Frecuentes - Tech"
         subtitle="Resolvemos las dudas más habituales sobre M&A en el sector tecnológico"
         faqs={faqs}
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <SectorCTAV2
         title="¿Tienes una empresa tecnológica?"
         description="Obtén una valoración confidencial de tu startup, SaaS o empresa tech. Nuestros expertos en tecnología te asesorarán sin compromiso."
-        accentColor="blue"
+        accentColor="slate"
       />
       
       <Footer />
