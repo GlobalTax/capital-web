@@ -13,7 +13,8 @@ import {
   SectorMethodology,
   SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const FinancialServices = () => {
@@ -182,14 +183,14 @@ const FinancialServices = () => {
         title="Expertos en M&A del Sector Financiero"
         description="Asesoramiento especializado en valoración y venta de entidades financieras. Conocimiento profundo de regulación, metodologías específicas y proceso de autorización."
         metrics={heroMetrics}
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <SectorStatsV2 
         title="El Sector Financiero en Cifras"
         subtitle="El sistema financiero español se transforma con consolidación y digitalización"
         stats={stats}
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <SectorMarketInsights
@@ -197,22 +198,24 @@ const FinancialServices = () => {
         description={marketInsights.description}
         bulletPoints={marketInsights.bulletPoints}
         insightCards={marketInsights.insightCards}
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los subsectores financieros"
         items={expertiseItems}
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <SectorMethodology
         title="Metodología Específica Financiera"
         subtitle="Un proceso adaptado a las particularidades regulatorias del sector"
         steps={methodologySteps}
-        accentColor="indigo"
+        accentColor="slate"
       />
+      
+      <SectorOperationsGrid sectorKey="financial-services" />
       
       <SectorCaseStudyV2
         title="Caso de Éxito Financiero"
@@ -221,20 +224,20 @@ const FinancialServices = () => {
         description={caseStudy.description}
         metrics={caseStudy.metrics}
         testimonial={caseStudy.testimonial}
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <SectorFAQ
         title="Preguntas Frecuentes - Financiero"
         subtitle="Resolvemos las dudas más habituales sobre M&A en servicios financieros"
         faqs={faqs}
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <SectorCTAV2
         title="¿Tienes una entidad financiera?"
         description="Obtén una valoración confidencial de tu banco, gestora, aseguradora o fintech. Nuestros expertos en servicios financieros te asesorarán sin compromiso."
-        accentColor="indigo"
+        accentColor="slate"
       />
       
       <Footer />

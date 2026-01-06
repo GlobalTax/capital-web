@@ -3,27 +3,25 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Mapeo de sectores de páginas a valores en BD
 const SECTOR_MAPPING: Record<string, string[]> = {
-  'energia': ['Energía y Renovables', 'Energía', 'Renovables', 'Solar', 'Eólica'],
-  'tecnologia': ['Tecnología', 'Software', 'SaaS', 'Tech'],
-  'healthcare': ['Salud', 'Healthcare', 'Biotecnología', 'Farmacéutico', 'Salud y Biotecnología'],
-  'salud': ['Salud', 'Healthcare', 'Biotecnología', 'Farmacéutico', 'Salud y Biotecnología'],
-  'industrial': ['Industrial', 'Manufacturero', 'Industria', 'Industrial y Manufacturero'],
-  'retail': ['Retail', 'Consumo', 'E-commerce', 'Turismo y Hostelería', 'Comercio'],
-  'alimentacion': ['Alimentación', 'Alimentación y Bebidas', 'Bebidas', 'Food & Beverage'],
-  'financial-services': ['Servicios Financieros', 'Fintech', 'Seguros', 'Banca'],
-  'inmobiliario': ['Inmobiliario', 'Real Estate', 'Proptech'],
-  'cosmetica': ['Cosmética', 'Belleza', 'Cuidado Personal'],
+  'energia': ['Energía y Renovables', 'Energías Renovables'],
+  'tecnologia': ['Tecnología', 'SaaS', 'SaaS Vertical', 'Consultoría TIC', 'Consultoría SAP', 'Telecomunicaciones', 'Tecnología, SaaS, Consultoría TIC'],
+  'healthcare': ['Salud y Biotecnología', 'Distribución Sanitaria'],
+  'industrial': ['Industrial y Manufacturero', 'Frío Industrial', 'Estructuras Metálicas', 'Logística y Transporte', 'Construcción', 'Alquiler Maquinaria'],
+  'retail': ['Retail y Consumo', 'Turismo y Hostelería', 'Restauración', 'Turismo', 'Retail y Consumo, Turismo y Hostelería'],
+  'financial-services': ['Servicios Financieros', 'Fintech', 'Seguros'],
+  'inmobiliario': ['Inmobiliario', 'Real Estate'],
+  'cosmetica': ['Cosmética', 'Belleza', 'Productos Desechables'],
 };
 
-// URL filter values for marketplace link
 const SECTOR_URL_FILTER: Record<string, string> = {
   'energia': 'Energía y Renovables',
   'tecnologia': 'Tecnología',
   'healthcare': 'Salud y Biotecnología',
-  'salud': 'Salud y Biotecnología',
   'industrial': 'Industrial y Manufacturero',
-  'retail': 'Turismo y Hostelería',
-  'alimentacion': 'Alimentación y Bebidas',
+  'retail': 'Retail y Consumo',
+  'financial-services': 'Servicios Financieros',
+  'inmobiliario': 'Inmobiliario',
+  'cosmetica': 'Cosmética',
 };
 
 export interface SectorOperation {

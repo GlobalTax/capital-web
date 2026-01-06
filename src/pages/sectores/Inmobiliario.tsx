@@ -13,7 +13,8 @@ import {
   SectorMethodology,
   SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const Inmobiliario = () => {
@@ -182,14 +183,14 @@ const Inmobiliario = () => {
         title="Expertos en M&A del Sector Real Estate"
         description="Asesoramiento especializado en valoración y venta de activos inmobiliarios. Conocimiento profundo del mercado, inversores institucionales y estructuras óptimas."
         metrics={heroMetrics}
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <SectorStatsV2 
         title="El Sector Inmobiliario en Cifras"
         subtitle="España es uno de los mercados inmobiliarios más atractivos de Europa para inversores institucionales"
         stats={stats}
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <SectorMarketInsights
@@ -197,22 +198,24 @@ const Inmobiliario = () => {
         description={marketInsights.description}
         bulletPoints={marketInsights.bulletPoints}
         insightCards={marketInsights.insightCards}
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los segmentos inmobiliarios"
         items={expertiseItems}
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <SectorMethodology
         title="Metodología Específica Real Estate"
         subtitle="Un proceso adaptado a las particularidades del mercado inmobiliario"
         steps={methodologySteps}
-        accentColor="stone"
+        accentColor="slate"
       />
+      
+      <SectorOperationsGrid sectorKey="inmobiliario" />
       
       <SectorCaseStudyV2
         title="Caso de Éxito Inmobiliario"
@@ -221,20 +224,20 @@ const Inmobiliario = () => {
         description={caseStudy.description}
         metrics={caseStudy.metrics}
         testimonial={caseStudy.testimonial}
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <SectorFAQ
         title="Preguntas Frecuentes - Inmobiliario"
         subtitle="Resolvemos las dudas más habituales sobre M&A en el sector real estate"
         faqs={faqs}
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <SectorCTAV2
         title="¿Tienes activos inmobiliarios?"
         description="Obtén una valoración confidencial de tu portfolio, edificio o empresa inmobiliaria. Nuestros expertos en real estate te asesorarán sin compromiso."
-        accentColor="stone"
+        accentColor="slate"
       />
       
       <Footer />
