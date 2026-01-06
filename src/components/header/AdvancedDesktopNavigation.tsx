@@ -259,9 +259,15 @@ const AdvancedDesktopNavigation = () => {
               </div>
             </NavigationMenuContent>
           </NavigationMenuItem>
-        </NavigationMenuList>
+      </NavigationMenuList>
       </NavigationMenu>
 
+      <Link
+        to="/servicios/search-funds"
+        className="text-black text-sm font-medium hover:text-gray-600 transition-colors duration-200"
+      >
+        Search Funds
+      </Link>
 
       <Link
         to={getLocalizedUrl('programaColaboradores', lang)}

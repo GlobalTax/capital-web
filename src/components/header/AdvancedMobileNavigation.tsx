@@ -103,6 +103,15 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
           </div>
         )}
 
+        {/* Search Funds - Link directo */}
+        <Link
+          to="/servicios/search-funds"
+          className="block text-black text-sm font-medium py-2 hover:text-gray-600 transition-colors"
+          onClick={closeMenu}
+        >
+          Search Funds
+        </Link>
+
         {/* Botones de acción */}
         <div className="border-t border-gray-200 pt-4 space-y-3">
           {/* DEV ONLY - Admin access for development */}
