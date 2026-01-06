@@ -13,7 +13,8 @@ import {
   SectorMethodology,
   SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const Healthcare = () => {
@@ -214,6 +215,8 @@ const Healthcare = () => {
         steps={methodologySteps}
         accentColor="slate"
       />
+      
+      <SectorOperationsGrid sectorKey="healthcare" />
       
       <SectorCaseStudyV2
         title="Caso de Éxito Healthcare"

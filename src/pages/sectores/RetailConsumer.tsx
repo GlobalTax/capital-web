@@ -13,7 +13,8 @@ import {
   SectorMethodology,
   SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const RetailConsumer = () => {
@@ -182,14 +183,14 @@ const RetailConsumer = () => {
         title="Expertos en M&A del Sector Retail"
         description="Asesoramiento especializado en valoración y venta de marcas de consumo. Conocimiento profundo de e-commerce, retail omnicanal y tendencias de consumidor."
         metrics={heroMetrics}
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <SectorStatsV2 
         title="El Sector Retail en Cifras"
         subtitle="El retail español se transforma hacia modelos digitales y sostenibles"
         stats={stats}
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <SectorMarketInsights
@@ -197,22 +198,24 @@ const RetailConsumer = () => {
         description={marketInsights.description}
         bulletPoints={marketInsights.bulletPoints}
         insightCards={marketInsights.insightCards}
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los subsectores de retail y consumo"
         items={expertiseItems}
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <SectorMethodology
         title="Metodología Específica Retail"
         subtitle="Un proceso adaptado a las particularidades del sector de consumo"
         steps={methodologySteps}
-        accentColor="rose"
+        accentColor="slate"
       />
+      
+      <SectorOperationsGrid sectorKey="retail" />
       
       <SectorCaseStudyV2
         title="Caso de Éxito Retail"
@@ -221,20 +224,20 @@ const RetailConsumer = () => {
         description={caseStudy.description}
         metrics={caseStudy.metrics}
         testimonial={caseStudy.testimonial}
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <SectorFAQ
         title="Preguntas Frecuentes - Retail"
         subtitle="Resolvemos las dudas más habituales sobre M&A en el sector retail"
         faqs={faqs}
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <SectorCTAV2
         title="¿Tienes una marca o negocio retail?"
         description="Obtén una valoración confidencial de tu marca, e-commerce o cadena de retail. Nuestros expertos en consumo te asesorarán sin compromiso."
-        accentColor="rose"
+        accentColor="slate"
       />
       
       <Footer />

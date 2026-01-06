@@ -13,7 +13,8 @@ import {
   SectorMethodology,
   SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const DistribucionCosmeticaProfesional = () => {
@@ -181,14 +182,14 @@ const DistribucionCosmeticaProfesional = () => {
         title="Expertos en M&A de Distribución Beauty B2B"
         description="Asesoramiento especializado en valoración y venta de distribuidoras de cosmética profesional. Conocimiento profundo del sector pro hair y el proceso de consolidación en España."
         metrics={heroMetrics}
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <SectorStatsV2 
         title="El Sector en Cifras"
         subtitle="La distribución de cosmética profesional española está en plena consolidación"
         stats={stats}
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <SectorMarketInsights
@@ -196,22 +197,24 @@ const DistribucionCosmeticaProfesional = () => {
         description={marketInsights.description}
         bulletPoints={marketInsights.bulletPoints}
         insightCards={marketInsights.insightCards}
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <SectorExpertiseGrid 
         title="Áreas de Especialización"
         subtitle="Experiencia integral en todos los modelos de distribución profesional"
         items={expertiseItems}
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <SectorMethodology
         title="Metodología Específica del Sector"
         subtitle="Un proceso adaptado a las particularidades de la distribución cosmética profesional"
         steps={methodologySteps}
-        accentColor="pink"
+        accentColor="slate"
       />
+      
+      <SectorOperationsGrid sectorKey="cosmetica" />
       
       <SectorCaseStudyV2
         title="Caso de Éxito"
@@ -220,20 +223,20 @@ const DistribucionCosmeticaProfesional = () => {
         description={caseStudy.description}
         metrics={caseStudy.metrics}
         testimonial={caseStudy.testimonial}
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <SectorFAQ
         title="Preguntas Frecuentes"
         subtitle="Resolvemos las dudas más habituales sobre M&A en cosmética profesional"
         faqs={faqs}
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <SectorCTAV2
         title="¿Tienes un negocio de distribución cosmética profesional?"
         description="Obtén una valoración confidencial de tu distribuidora, cash & carry o academia. Nuestros expertos en el sector te asesorarán sin compromiso."
-        accentColor="pink"
+        accentColor="slate"
       />
       
       <Footer />

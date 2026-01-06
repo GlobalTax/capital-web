@@ -13,7 +13,8 @@ import {
   SectorMethodology,
   SectorCaseStudyV2,
   SectorFAQ,
-  SectorCTAV2
+  SectorCTAV2,
+  SectorOperationsGrid
 } from '@/components/sector-v2';
 
 const Industrial = () => {
@@ -213,6 +214,8 @@ const Industrial = () => {
         steps={methodologySteps}
         accentColor="slate"
       />
+      
+      <SectorOperationsGrid sectorKey="industrial" />
       
       <SectorCaseStudyV2
         title="Caso de Éxito Industrial"
