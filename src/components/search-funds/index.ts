@@ -14,3 +14,4 @@ export { SearchFundsComparison } from './SearchFundsComparison';
 export { SearchFundsTestimonials } from './SearchFundsTestimonials';
 export { SearchFundsResources } from './SearchFundsResources';
 export { SearchFundsVideo } from './SearchFundsVideo';
+export { SearchFundsOperationsGrid } from './SearchFundsOperationsGrid';
