@@ -51,7 +51,7 @@ export const SearchFundsWhatAre = () => {
               Entendiendo el modelo
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">
-              ¿Qué es un Search Fund?
+              ¿Qué es un Search Fund? Guía completa para empresarios
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Un Search Fund es un modelo de "emprendimiento a través de la adquisición" donde un emprendedor 

@@ -187,3 +187,72 @@ export const getLocalBusinessSchema = (
     "addressCountry": "ES"
   }
 });
+
+/**
+ * HowTo schema for step-by-step processes (improves Rich Snippets)
+ */
+export const getHowToSchema = (
+  name: string,
+  description: string,
+  steps: Array<{ name: string; text: string; url?: string }>
+) => ({
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": name,
+  "description": description,
+  "step": steps.map((step, index) => ({
+    "@type": "HowToStep",
+    "position": index + 1,
+    "name": step.name,
+    "text": step.text,
+    ...(step.url && { "url": step.url })
+  }))
+});
+
+/**
+ * ProfessionalService schema - more specific than generic Service
+ */
+export const getProfessionalServiceSchema = (
+  name: string,
+  description: string,
+  serviceType: string,
+  areaServed: string = "España"
+) => ({
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": name,
+  "description": description,
+  "serviceType": serviceType,
+  "provider": getOrganizationSchema(),
+  "areaServed": {
+    "@type": "Country",
+    "name": areaServed
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Servicios de M&A para Search Funds",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Valoración empresarial gratuita"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Matching con Search Funds verificados"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Asesoramiento en negociación y due diligence"
+        }
+      }
+    ]
+  }
+});

@@ -62,7 +62,7 @@ export const SearchFundsForSellers = () => {
               Para empresarios
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              ¿Por qué vender a un Search Fund?
+              Ventajas de vender tu empresa a un Search Fund
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Si buscas un comprador que cuide tu legado, mantenga a tu equipo y haga crecer 
