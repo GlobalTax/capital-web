@@ -136,10 +136,10 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
 
               {/* Link to operation if from marketplace */}
               {operationLink && (
-                <div className="mt-6">
-                  <Button asChild variant="outline" size="sm" className="border-white/20 text-white hover:bg-white hover:text-slate-900 group">
+                <div className="mt-8">
+                  <Button asChild size="sm" className="bg-white text-slate-900 hover:bg-white/90 font-medium">
                     <Link to={operationLink}>
-                      Ver operación
+                      Ver operación en el marketplace
                       <ExternalLink className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -173,7 +173,7 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
         </div>
         
         <div className="text-center mt-12">
-          <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white hover:text-slate-900 group">
+          <Button asChild variant="outline" className="border-white/40 text-white hover:bg-white hover:text-slate-900 group backdrop-blur-sm">
             <Link to="/casos-exito">
               Ver más casos de éxito
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
