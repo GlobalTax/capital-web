@@ -22,7 +22,8 @@ import {
   SearchFundsFitCalculator,
   SearchFundsTestimonials,
   SearchFundsResources,
-  SearchFundsVideo
+  SearchFundsVideo,
+  SearchFundsOperationsGrid
 } from '@/components/search-funds';
 
 const SEO_CONFIG = {
@@ -122,6 +123,7 @@ const SearchFunds = () => {
       <SearchFundsHero />
       <SearchFundsWhatAre />
       <SearchFundsComparison />
+      <SearchFundsOperationsGrid />
       <SearchFundsFitCalculator />
       <SearchFundsWhyCapittal />
       <SearchFundsForSellers />
