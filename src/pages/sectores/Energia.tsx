@@ -5,6 +5,7 @@ import { Zap, Sun, Wind, Leaf } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
+import { useSectorCaseStudy } from '@/hooks/useSectorCaseStudy';
 import {
   SectorHeroV2,
   SectorStatsV2,
@@ -117,8 +118,8 @@ const Energia = () => {
     }
   ];
 
-  // Caso basado en operaciones públicas tipo Acciona/Iberdrola
-  const caseStudy = {
+  // Fallback para caso de estudio cuando no hay operaciones del marketplace
+  const fallbackCaseStudy = {
     companyName: 'Operación tipo Cartera Julieta',
     sector: 'Portfolio Solar Fotovoltaico',
     description: 'Asesoramiento en la venta de portfolio solar de 250MW en operación a fondo de infraestructuras europeo. Activos con PPAs corporativos a 12-15 años con contrapartes investment grade.',
@@ -133,6 +134,9 @@ const Energia = () => {
       role: 'IPP Español'
     }
   };
+
+  // Hook que busca operaciones reales del marketplace, con fallback al caso estático
+  const { caseStudy, isLoading: caseStudyLoading, isFromMarketplace } = useSectorCaseStudy('energia', fallbackCaseStudy);
 
   const faqs = [
     {
@@ -216,15 +220,19 @@ const Energia = () => {
         accentColor="slate"
       />
       
-      <SectorCaseStudyV2
-        title="Caso de Éxito Energía"
-        companyName={caseStudy.companyName}
-        sector={caseStudy.sector}
-        description={caseStudy.description}
-        metrics={caseStudy.metrics}
-        testimonial={caseStudy.testimonial}
-        accentColor="slate"
-      />
+      {caseStudy && (
+        <SectorCaseStudyV2
+          title={isFromMarketplace ? "Operación en Cartera" : "Caso de Éxito Energía"}
+          companyName={caseStudy.companyName}
+          sector={caseStudy.sector}
+          description={caseStudy.description}
+          metrics={caseStudy.metrics}
+          testimonial={caseStudy.testimonial}
+          operationLink={caseStudy.operationLink}
+          isLoading={caseStudyLoading}
+          accentColor="slate"
+        />
+      )}
       
       <SectorFAQ
         title="Preguntas Frecuentes - Energía"

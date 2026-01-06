@@ -1,8 +1,9 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Quote, TrendingUp, Clock, Target, ArrowRight } from 'lucide-react';
+import { Quote, TrendingUp, Clock, Target, ArrowRight, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CaseMetric {
   value: string;
@@ -21,7 +22,51 @@ interface SectorCaseStudyV2Props {
     role: string;
   };
   accentColor?: 'emerald' | 'blue' | 'amber' | 'slate' | 'stone' | 'rose' | 'indigo' | 'pink';
+  operationLink?: string;
+  isLoading?: boolean;
 }
+
+// Skeleton component for loading state
+const CaseStudySkeleton: React.FC = () => (
+  <section className="py-20 bg-slate-900">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-12">
+        <Skeleton className="h-6 w-32 mx-auto mb-4 bg-white/10" />
+        <Skeleton className="h-10 w-80 mx-auto bg-white/10" />
+      </div>
+      <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 overflow-hidden">
+        <div className="grid lg:grid-cols-2 gap-0">
+          <div className="p-10 lg:p-12">
+            <div className="flex items-center gap-3 mb-6">
+              <Skeleton className="w-12 h-12 rounded-xl bg-white/10" />
+              <div>
+                <Skeleton className="h-6 w-40 mb-2 bg-white/10" />
+                <Skeleton className="h-4 w-24 bg-white/10" />
+              </div>
+            </div>
+            <Skeleton className="h-20 w-full mb-8 bg-white/10" />
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-24 rounded-xl bg-white/10" />
+              ))}
+            </div>
+          </div>
+          <div className="p-10 lg:p-12 bg-slate-800">
+            <Skeleton className="h-10 w-10 mb-6 bg-white/10" />
+            <Skeleton className="h-32 w-full mb-8 bg-white/10" />
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-12 h-12 rounded-full bg-white/10" />
+              <div>
+                <Skeleton className="h-5 w-32 mb-2 bg-white/10" />
+                <Skeleton className="h-4 w-24 bg-white/10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
 
 const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
   title = "Caso de Éxito",
@@ -30,8 +75,14 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
   description,
   metrics,
   testimonial,
+  operationLink,
+  isLoading = false,
 }) => {
   const metricIcons = [TrendingUp, Target, Clock];
+
+  if (isLoading) {
+    return <CaseStudySkeleton />;
+  }
 
   return (
     <section className="py-20 bg-slate-900">
@@ -82,6 +133,18 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
                   );
                 })}
               </div>
+
+              {/* Link to operation if from marketplace */}
+              {operationLink && (
+                <div className="mt-6">
+                  <Button asChild variant="outline" size="sm" className="border-white/20 text-white hover:bg-white hover:text-slate-900 group">
+                    <Link to={operationLink}>
+                      Ver operación
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </div>
             
             {/* Right - Testimonial */}
