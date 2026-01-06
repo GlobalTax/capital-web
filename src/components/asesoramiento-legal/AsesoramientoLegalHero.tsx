@@ -6,22 +6,22 @@ import { Phone, Download } from 'lucide-react';
 
 const AsesoramientoLegalHero = () => {
   return (
-    <section className="relative py-20 bg-background overflow-hidden">
+    <section className="relative py-20 md:py-32 bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Content */}
           <div className="space-y-8">
             <div className="space-y-6">
-              <div className="inline-flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
                 En colaboración con el equipo de Navarro Legal
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 Asesoramiento Legal
                 <span className="block text-primary">M&A Especializado</span>
               </h1>
               
-              <p className="text-xl text-black leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
                 Protege tu transacción con la experiencia combinada de nuestros consultores de M&A 
                 y Navarro Legal. Gestionamos todos los aspectos legales para que tu operación sea un éxito.
               </p>
@@ -29,13 +29,13 @@ const AsesoramientoLegalHero = () => {
 
             {/* Key Metrics */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-black mb-2">+100</div>
-                <div className="text-sm text-black">Operaciones Asesoradas</div>
+              <div className="text-center p-4 bg-card border border-border rounded-xl">
+                <div className="text-3xl font-bold text-slate-900 mb-2">+100</div>
+                <div className="text-sm text-slate-600">Operaciones Asesoradas</div>
               </div>
-              <div className="text-center p-4 bg-card border rounded-lg">
-                <div className="text-3xl font-bold text-black mb-2">905 millones</div>
-                <div className="text-sm text-black">Valor Total Protegido</div>
+              <div className="text-center p-4 bg-card border border-border rounded-xl">
+                <div className="text-3xl font-bold text-slate-900 mb-2">905 millones</div>
+                <div className="text-sm text-slate-600">Valor Total Protegido</div>
               </div>
             </div>
 

@@ -6,16 +6,16 @@ import { RefreshCw, TrendingUp, Shield, Target } from 'lucide-react';
 
 const ReestructuracionesHero = () => {
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold text-black leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 Reestructuraciones
-                <span className="block text-black">Empresariales</span>
+                <span className="block text-slate-900">Empresariales</span>
               </h1>
-              <p className="text-xl text-black leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
                 Procesos de reestructuración operativa y financiera diseñados 
                 para maximizar el valor empresarial y asegurar la viabilidad futura.
               </p>
@@ -23,20 +23,20 @@ const ReestructuracionesHero = () => {
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-black">Reestructuración Operativa</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-600">Reestructuración Operativa</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-black">Reestructuración Financiera</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-600">Reestructuración Financiera</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-black">Optimización de Costes</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-600">Optimización de Costes</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-black">Turnaround Management</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-600">Turnaround Management</span>
               </div>
             </div>
 
@@ -53,7 +53,7 @@ const ReestructuracionesHero = () => {
           </div>
 
           <div className="relative">
-            <div className="bg-white rounded-lg shadow-xl p-6 border border-gray-300">
+            <div className="bg-card rounded-xl shadow-xl p-6 border border-border">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-black">Plan de Reestructuración</h3>

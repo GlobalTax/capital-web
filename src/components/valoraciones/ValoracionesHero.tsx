@@ -45,19 +45,19 @@ const ValoracionesHero = () => {
   ];
 
   return (
-    <section className="py-20 md:py-32 bg-white">
+    <section className="py-20 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div>
-            <div className="inline-flex items-center bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
               Expertos en Valoración
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
               Valoración Profesional de Empresas
             </h1>
             
-            <p className="text-lg md:text-xl text-black mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-600 mb-8 leading-relaxed">
               Valoraciones precisas con metodologías reconocidas internacionalmente. 
               Más de 15 años de experiencia en M&A y valoraciones corporativas.
             </p>
@@ -66,7 +66,7 @@ const ValoracionesHero = () => {
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                  <span className="text-black">{benefit}</span>
+                  <span className="text-slate-600">{benefit}</span>
                 </div>
               ))}
             </div>

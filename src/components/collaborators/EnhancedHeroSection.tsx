@@ -28,36 +28,36 @@ export const EnhancedHeroSection = () => {
   return (
     <div className="bg-background">
       {/* Main Hero Section */}
-      <section className="pt-32 pb-20">
+      <section className="py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             {/* Left Content */}
             <div className="space-y-8">
-              <Badge className="bg-primary text-primary-foreground px-4 py-1.5">
+              <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
                 {t('collab.hero.badge')}
-              </Badge>
+              </div>
               
-              <h1 className="text-5xl md:text-6xl font-bold text-black leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 {t('collab.hero.title')}
               </h1>
               
-              <p className="text-xl text-black leading-relaxed max-w-lg">
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-lg">
                 {t('collab.hero.subtitle')}
               </p>
 
               {/* Statistics */}
               <div className="grid grid-cols-3 gap-6 py-8">
                 <div>
-                  <div className="text-3xl font-bold text-black">{t('collab.hero.stat1_value')}</div>
-                  <div className="text-sm text-black">{t('collab.hero.stat1')}</div>
+                  <div className="text-3xl font-bold text-slate-900">{t('collab.hero.stat1_value')}</div>
+                  <div className="text-sm text-slate-600">{t('collab.hero.stat1')}</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-black">{t('collab.hero.stat2_value')}</div>
-                  <div className="text-sm text-black">{t('collab.hero.stat2')}</div>
+                  <div className="text-3xl font-bold text-slate-900">{t('collab.hero.stat2_value')}</div>
+                  <div className="text-sm text-slate-600">{t('collab.hero.stat2')}</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-black">{t('collab.hero.stat3_value')}</div>
-                  <div className="text-sm text-black">{t('collab.hero.stat3')}</div>
+                  <div className="text-3xl font-bold text-slate-900">{t('collab.hero.stat3_value')}</div>
+                  <div className="text-sm text-slate-600">{t('collab.hero.stat3')}</div>
                 </div>
               </div>
 
@@ -79,38 +79,38 @@ export const EnhancedHeroSection = () => {
             </div>
 
             {/* Right Collaborators Dashboard Panel */}
-            <div className="bg-card border rounded-lg shadow-sm">
+            <div className="bg-card border border-border rounded-xl shadow-xl">
               {/* Header */}
-              <div className="bg-slate-900 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
                 <h3 className="text-lg font-medium">Capital Collaborators - Network Dashboard</h3>
-                <Badge className="bg-blue-600 text-white px-2 py-1 text-xs">+12 Nuevos</Badge>
+                <div className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">+12 Nuevos</div>
               </div>
               
               {/* Top Stats */}
-              <div className="p-6 border-b">
+              <div className="p-6 border-b border-border">
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <div className="text-2xl font-bold text-black">50+</div>
-                    <div className="text-sm text-black">Colaboradores Activos</div>
+                    <div className="text-2xl font-bold text-slate-900">50+</div>
+                    <div className="text-sm text-slate-600">Colaboradores Activos</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-black">€1.2B</div>
-                    <div className="text-sm text-black">Valor Gestionado</div>
+                    <div className="text-2xl font-bold text-slate-900">€1.2B</div>
+                    <div className="text-sm text-slate-600">Valor Gestionado</div>
                   </div>
                 </div>
               </div>
               
               {/* Recent Activity */}
               <div className="p-6">
-                <h4 className="text-sm font-medium text-black mb-4">Actividad Reciente</h4>
+                <h4 className="text-sm font-medium text-slate-900 mb-4">Actividad Reciente</h4>
                 <div className="space-y-4">
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`w-3 h-3 rounded-full ${activity.color}`}></div>
                         <div>
-                          <div className="font-medium text-black text-sm">{activity.name}</div>
-                          <div className="text-xs text-black">{activity.value}</div>
+                          <div className="font-medium text-slate-900 text-sm">{activity.name}</div>
+                          <div className="text-xs text-slate-600">{activity.value}</div>
                         </div>
                       </div>
                       <div className={`font-medium text-xs ${activity.statusColor}`}>
@@ -121,9 +121,9 @@ export const EnhancedHeroSection = () => {
                 </div>
                 
                 {/* Footer Stats */}
-                <div className="mt-6 pt-4 border-t flex justify-between text-sm">
-                  <span className="text-black">98,7% Satisfacción</span>
-                  <span className="text-black">23 activos</span>
+                <div className="mt-6 pt-4 border-t border-border flex justify-between text-sm">
+                  <span className="text-slate-600">98,7% Satisfacción</span>
+                  <span className="text-slate-600">23 activos</span>
                 </div>
               </div>
             </div>
