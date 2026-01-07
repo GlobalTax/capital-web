@@ -9,8 +9,8 @@ const SearchFundsCTA = () => {
         <Link to="/servicios/search-funds">
           <div className="bg-slate-900 rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 hover:bg-slate-800 transition-colors group cursor-pointer">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg">
-                <Target className="w-6 h-6 text-primary" />
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Target className="w-6 h-6 text-white" />
               </div>
               <div className="text-center md:text-left">
                 <h3 className="text-lg md:text-xl font-semibold text-white">
@@ -21,7 +21,7 @@ const SearchFundsCTA = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
+            <div className="flex items-center gap-2 text-white group-hover:translate-x-1 transition-transform">
               <span className="font-medium">Visitar centro</span>
               <ArrowRight className="w-5 h-5" />
             </div>
