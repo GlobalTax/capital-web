@@ -691,32 +691,6 @@ const ValuationPDFDocument: React.FC<ValuationPDFDocumentProps> = ({ companyData
           </View>
         </View>
 
-        {/* Análisis cualitativo */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T.qualitativeAnalysis}</Text>
-          <View style={styles.competitiveAdvantageBox}>
-            <Text style={styles.subsectionTitle}>{T.competitiveAdvantage}</Text>
-            <Text style={styles.competitiveAdvantageText}>
-              {companyData.competitiveAdvantage}
-            </Text>
-          </View>
-          
-          <View style={styles.factorsGrid}>
-            <View style={styles.factorBox}>
-              <Text style={styles.factorTitle}>{T.shareOwnership}</Text>
-              <Text style={styles.factorList}>
-                {getOwnershipLabel(companyData.ownershipParticipation)}
-              </Text>
-            </View>
-            <View style={styles.factorBox}>
-              <Text style={styles.factorTitle}>{T.profitability}</Text>
-              <Text style={styles.factorList}>
-                {T.ebitdaMargin} {((companyData.ebitda / companyData.revenue) * 100).toFixed(1)}%
-              </Text>
-            </View>
-          </View>
-        </View>
-
         {/* Disclaimer Inmuebles - Destacado */}
         <View style={{
           backgroundColor: '#fef2f2',
