@@ -205,18 +205,30 @@ const handler = async (req: Request): Promise<Response> => {
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
-    // Emails actualizados para Exchange/Microsoft 365 - todos los destinatarios internos
-    const baseRecipients = [
+    // Destinatarios SOLO internos - el cliente NO debe recibir este email
+    const internalRecipients = [
       "samuel@capittal.es",
-      "pau@capittal.es",
-      "marcc@capittal.es", 
+      "marcc@capittal.es",
+      "oriol@capittal.es",
       "marc@capittal.es",
+      "marcel@capittal.es",
       "lluis@capittal.es",
-      "l.linares@nrro.es",
-      "oriol@capittal.es"
+      "albert@capittal.es"
     ];
-    const extraRecipient = recipientEmail?.trim();
-    const recipients = Array.from(new Set([...baseRecipients, ...(extraRecipient ? [extraRecipient] : [])]));
+
+    // El email del lead se usará SOLO para reply_to, NO como destinatario
+    const leadEmail = companyData.email?.trim() || recipientEmail?.trim();
+
+    // GUARDRAIL: Asegurar que el lead NO está en los destinatarios internos
+    if (leadEmail) {
+      const leadInRecipients = internalRecipients.some(
+        email => email.toLowerCase() === leadEmail.toLowerCase()
+      );
+      if (leadInRecipients) {
+        console.error('GUARDRAIL: Lead email detectado en destinatarios internos, bloqueando:', leadEmail);
+        throw new Error('Lead email cannot be in internal recipients');
+      }
+    }
 
     // Detectar si es calculadora de asesores
     const isAdvisorCalculation = source === 'advisor' || (companyData.industry && (
@@ -333,18 +345,19 @@ if (pdfToAttach) {
       `Calculadora de valoración - Capittal`;
 
     let emailResponse: any;
-    console.log("Attempting to send email to recipients:", recipients);
+    console.log("Attempting to send INTERNAL email to:", internalRecipients);
+    console.log("Lead email (reply_to only):", leadEmail);
     console.log("Subject:", subject);
     
     try {
       console.log("Trying primary sender: Capittal <samuel@capittal.es>");
       emailResponse = await resend.emails.send({
         from: "Capittal <samuel@capittal.es>",
-        to: recipients,
+        to: internalRecipients,
         subject,
         html: htmlInternal,
         text: internalText,
-        reply_to: "samuel@capittal.es",
+        reply_to: leadEmail || "samuel@capittal.es",
          headers: { 
            "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
@@ -357,11 +370,11 @@ if (pdfToAttach) {
       console.log("Trying fallback sender: Capittal (Test) <onboarding@resend.dev>");
       emailResponse = await resend.emails.send({
         from: "Capittal (Test) <onboarding@resend.dev>",
-        to: recipients,
+        to: internalRecipients,
         subject: `${subject} (pruebas)`,
         html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
-        reply_to: "samuel@capittal.es",
+        reply_to: leadEmail || "samuel@capittal.es",
          headers: { 
            "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
