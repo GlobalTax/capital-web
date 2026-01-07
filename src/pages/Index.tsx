@@ -6,6 +6,7 @@ import { getOrganizationSchema, getWebPageSchema } from '@/utils/seo';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import Hero from '@/components/Hero';
 import SocialProofCompact from '@/components/SocialProofCompact';
+import SearchFundsCTA from '@/components/home/SearchFundsCTA';
 import Services from '@/components/Services';
 import EcosistemaIntegral from '@/components/EcosistemaIntegral';
 import CaseStudiesCompact from '@/components/CaseStudiesCompact';
@@ -65,6 +66,7 @@ const Index = () => {
       />
       <Hero />
       <SocialProofCompact />
+      <SearchFundsCTA />
       <Services />
       <EcosistemaIntegral />
       <CaseStudiesCompact />
