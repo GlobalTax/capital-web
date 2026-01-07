@@ -268,13 +268,15 @@ const handler = async (req: Request): Promise<Response> => {
       ? LEAD_SOURCE_LABELS[payload.leadSource] || payload.leadSource 
       : 'No especificado';
 
-    // 🔥 Subject actualizado para manuales
+    // 🔥 Subject actualizado para manuales (BLINDADO)
     const subject = isManualEntry
-      ? `[MANUAL] Nueva valoración recibida - ${companyData.companyName || "Capittal"}`
+      ? `[ENTRADA MANUAL] Nueva valoración recibida - ${companyData.companyName || "Capittal"}`
       : isAdvisorCalculation 
         ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
         : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
-
+    
+    // 🔥 From name diferenciado para manuales
+    const fromName = isManualEntry ? 'Capittal (Manual)' : 'Capittal';
     // 🔥 Bloque HTML para valoraciones manuales (tabla email-safe para Gmail/Outlook)
     const manualEntryBlock = isManualEntry ? `
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; margin-bottom:20px;">
@@ -409,14 +411,23 @@ if (pdfToAttach) {
       `Calculadora de valoración - Capittal`;
 
     let emailResponse: any;
-    console.log("Attempting to send INTERNAL email to:", internalRecipients);
-    console.log("Lead email (reply_to only):", leadEmail);
-    console.log("Subject:", subject);
+    
+    // 📧 DEBUG OBLIGATORIO: verificar datos antes de enviar
+    console.log('📧 INTERNAL EMAIL SENDING:', {
+      isManualEntry,
+      sourceProject: payload.sourceProject || 'NOT SET',
+      leadSource: payload.leadSource || 'NOT SET',
+      leadSourceDetail: payload.leadSourceDetail || 'NOT SET',
+      subject,
+      fromName,
+      recipientCount: internalRecipients.length,
+      leadEmail
+    });
     
     try {
-      console.log("Trying primary sender: Capittal <samuel@capittal.es>");
+      console.log(`Trying sender: ${fromName} <samuel@capittal.es>`);
       emailResponse = await resend.emails.send({
-        from: "Capittal <samuel@capittal.es>",
+        from: `${fromName} <samuel@capittal.es>`,
         to: internalRecipients,
         subject,
         html: htmlInternal,
