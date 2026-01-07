@@ -62,14 +62,6 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
               {description}
             </p>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-              {title}
-            </h1>
-            
-            <p className="text-xl text-slate-600 leading-relaxed max-w-xl">
-              {description}
-            </p>
-            
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button 
                 asChild 
