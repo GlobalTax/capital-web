@@ -101,7 +101,7 @@ export const SearchFundsForSearchers = () => {
               </p>
               <InteractiveHoverButton 
                 text="Registrarme como Searcher →"
-                onClick={() => navigate('/contacto?origen=search-funds-searcher')}
+                onClick={() => navigate('/search-funds/registro-searcher')}
               />
               <p className="text-xs text-muted-foreground mt-4">
                 Proceso de verificación en 48-72h. Sin coste hasta encontrar empresa.

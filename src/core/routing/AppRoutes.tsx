@@ -82,6 +82,10 @@ const SearchFundsValuation = lazy(() => import('@/pages/search-funds/SearchFunds
 const SearchFundsNegotiation = lazy(() => import('@/pages/search-funds/SearchFundsNegotiation'));
 const SearchFundsPostAcquisition = lazy(() => import('@/pages/search-funds/SearchFundsPostAcquisition'));
 
+// === SEARCHER REGISTRATION ===
+const SearcherRegistration = lazy(() => import('@/pages/SearcherRegistration'));
+const SearcherRegistrationConfirmation = lazy(() => import('@/pages/SearcherRegistrationConfirmation'));
+
 // === BOOKING PAGE ===
 const BookingPage = lazy(() => import('@/components/booking/BookingPage'));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => import('@/pages/VentaEmpresas')));
@@ -241,6 +245,10 @@ export const AppRoutes = () => {
         <Route path="/search-funds/recursos/valoracion" element={<SearchFundsValuation />} />
         <Route path="/search-funds/recursos/negociacion" element={<SearchFundsNegotiation />} />
         <Route path="/search-funds/recursos/post-adquisicion" element={<SearchFundsPostAcquisition />} />
+        
+        {/* === SEARCHER REGISTRATION === */}
+        <Route path="/search-funds/registro-searcher" element={<SearcherRegistration />} />
+        <Route path="/search-funds/registro-confirmado" element={<SearcherRegistrationConfirmation />} />
         
         <Route path="/recursos/search-funds" element={<Navigate to="/search-funds/recursos" replace />} />
         <Route path="/guia-search-funds" element={<Navigate to="/search-funds/recursos/guia" replace />} />
