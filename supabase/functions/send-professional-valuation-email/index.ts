@@ -15,12 +15,10 @@ const corsHeaders = {
 // Fallback: Equipo interno por defecto si la BD no está disponible
 const DEFAULT_INTERNAL_TEAM = [
   "samuel@capittal.es",
-  "pau@capittal.es", 
   "marcc@capittal.es",
   "marc@capittal.es",
   "lluis@capittal.es",
-  "oriol@capittal.es",
-  "valoraciones@capittal.es"
+  "oriol@capittal.es"
 ];
 
 // Función para obtener destinatarios activos desde la BD
