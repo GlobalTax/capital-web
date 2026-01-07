@@ -9449,6 +9449,137 @@ export type Database = {
           },
         ]
       }
+      searcher_leads: {
+        Row: {
+          additional_criteria: string | null
+          background: string | null
+          brevo_lists: number[] | null
+          created_at: string
+          deal_type_preferences: string[] | null
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          fund_raised: string | null
+          gdpr_consent: boolean
+          how_found_us: string | null
+          id: string
+          investor_backing: string | null
+          investor_names: string | null
+          ip_address: unknown
+          is_verified: boolean | null
+          job_title: string | null
+          linkedin_url: string | null
+          marketing_consent: boolean | null
+          max_ebitda: number | null
+          max_revenue: number | null
+          min_ebitda: number | null
+          min_revenue: number | null
+          notes: string | null
+          phone: string | null
+          preferred_locations: string[] | null
+          preferred_sectors: string[] | null
+          referrer: string | null
+          search_phase: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          additional_criteria?: string | null
+          background?: string | null
+          brevo_lists?: number[] | null
+          created_at?: string
+          deal_type_preferences?: string[] | null
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          fund_raised?: string | null
+          gdpr_consent?: boolean
+          how_found_us?: string | null
+          id?: string
+          investor_backing?: string | null
+          investor_names?: string | null
+          ip_address?: unknown
+          is_verified?: boolean | null
+          job_title?: string | null
+          linkedin_url?: string | null
+          marketing_consent?: boolean | null
+          max_ebitda?: number | null
+          max_revenue?: number | null
+          min_ebitda?: number | null
+          min_revenue?: number | null
+          notes?: string | null
+          phone?: string | null
+          preferred_locations?: string[] | null
+          preferred_sectors?: string[] | null
+          referrer?: string | null
+          search_phase?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          additional_criteria?: string | null
+          background?: string | null
+          brevo_lists?: number[] | null
+          created_at?: string
+          deal_type_preferences?: string[] | null
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          fund_raised?: string | null
+          gdpr_consent?: boolean
+          how_found_us?: string | null
+          id?: string
+          investor_backing?: string | null
+          investor_names?: string | null
+          ip_address?: unknown
+          is_verified?: boolean | null
+          job_title?: string | null
+          linkedin_url?: string | null
+          marketing_consent?: boolean | null
+          max_ebitda?: number | null
+          max_revenue?: number | null
+          min_ebitda?: number | null
+          min_revenue?: number | null
+          notes?: string | null
+          phone?: string | null
+          preferred_locations?: string[] | null
+          preferred_sectors?: string[] | null
+          referrer?: string | null
+          search_phase?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "searcher_leads_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       sector_multiples: {
         Row: {
           description: string | null

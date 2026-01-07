@@ -47,6 +47,25 @@ export const searchFundsData: SearchFundsData = {
       ]
     },
     {
+      title: "Para Searchers",
+      items: [
+        {
+          id: "registro-searcher",
+          label: "Registrarme como Searcher",
+          href: "/search-funds/registro-searcher",
+          icon: 'user-plus',
+          description: "Accede a nuestro deal flow cualificado"
+        },
+        {
+          id: "sourcing",
+          label: "Guía de Sourcing",
+          href: "/search-funds/recursos/sourcing",
+          icon: 'search',
+          description: "Cómo encontrar empresas objetivo"
+        }
+      ]
+    },
+    {
       title: "Aprende",
       items: [
         {
