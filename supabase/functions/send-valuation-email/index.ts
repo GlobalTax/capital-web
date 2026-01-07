@@ -244,6 +244,14 @@ const handler = async (req: Request): Promise<Response> => {
     // 🔥 NEW: Detectar si es valoración manual
     const isManualEntry = payload.sourceProject === 'manual-admin-entry';
     
+    // 📧 Debug obligatorio para verificar recepción de datos manuales
+    console.log('📧 Manual entry detection:', {
+      sourceProject: payload.sourceProject,
+      leadSource: payload.leadSource,
+      leadSourceDetail: payload.leadSourceDetail,
+      isManualEntry
+    });
+    
     // Mapa de etiquetas legibles para canales de origen
     const LEAD_SOURCE_LABELS: Record<string, string> = {
       'meta-ads': 'Meta Ads (Facebook/Instagram)',
@@ -267,25 +275,33 @@ const handler = async (req: Request): Promise<Response> => {
         ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
         : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
 
-    // 🔥 Bloque HTML para valoraciones manuales
+    // 🔥 Bloque HTML para valoraciones manuales (tabla email-safe para Gmail/Outlook)
     const manualEntryBlock = isManualEntry ? `
-      <div style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; padding:16px; margin-bottom:20px;">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-          <span style="background:#f59e0b; color:white; padding:4px 12px; border-radius:4px; font-weight:700; font-size:14px;">✍️ VALORACIÓN MANUAL</span>
-        </div>
-        <table style="width:100%;">
-          <tr>
-            <td style="padding:4px 0; color:#92400e; font-weight:600;">Canal de origen:</td>
-            <td style="padding:4px 0; color:#78350f; font-weight:700;">${leadSourceLabel}</td>
-          </tr>
-          ${payload.leadSourceDetail ? `
-            <tr>
-              <td style="padding:4px 0; color:#92400e; font-weight:600;">Detalle:</td>
-              <td style="padding:4px 0; color:#78350f;">${payload.leadSourceDetail}</td>
-            </tr>
-          ` : ''}
-        </table>
-      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; margin-bottom:20px;">
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background:#f59e0b; color:#ffffff; padding:6px 14px; border-radius:4px; font-weight:700; font-size:14px; font-family:Arial,sans-serif;">
+                  ✍️ ENTRADA MANUAL
+                </td>
+              </tr>
+            </table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+              <tr>
+                <td style="padding:4px 0; color:#92400e; font-weight:600; font-family:Arial,sans-serif; width:140px;">Canal de origen:</td>
+                <td style="padding:4px 0; color:#78350f; font-weight:700; font-family:Arial,sans-serif;">${leadSourceLabel}</td>
+              </tr>
+              ${payload.leadSourceDetail ? `
+              <tr>
+                <td style="padding:4px 0; color:#92400e; font-weight:600; font-family:Arial,sans-serif; width:140px;">Detalle:</td>
+                <td style="padding:4px 0; color:#78350f; font-family:Arial,sans-serif;">${payload.leadSourceDetail}</td>
+              </tr>
+              ` : ''}
+            </table>
+          </td>
+        </tr>
+      </table>
     ` : '';
 
     // HTML para emails internos (equipo Capittal)

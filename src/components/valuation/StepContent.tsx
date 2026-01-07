@@ -22,6 +22,11 @@ interface StepContentProps {
   handleFieldBlur?: (field: string) => void;
   errors?: Record<string, string>;
   uniqueToken?: string;
+  sourceProject?: string;
+  extraMetadata?: {
+    leadSource?: string;
+    leadSourceDetail?: string;
+  };
 }
 
 const StepContent: React.FC<StepContentProps> = ({
@@ -35,7 +40,9 @@ const StepContent: React.FC<StepContentProps> = ({
   getFieldState,
   handleFieldBlur,
   errors,
-  uniqueToken
+  uniqueToken,
+  sourceProject,
+  extraMetadata
 }) => {
   switch (currentStep) {
     case 1:
@@ -79,6 +86,8 @@ const StepContent: React.FC<StepContentProps> = ({
           isCalculating={isCalculating}
           resetCalculator={resetCalculator}
           uniqueToken={uniqueToken}
+          sourceProject={sourceProject}
+          extraMetadata={extraMetadata}
         />
       );
     default:
