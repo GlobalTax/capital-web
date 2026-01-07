@@ -261,7 +261,16 @@ export const useOptimizedSupabaseValuation = () => {
   }, [withRetry]);
 
   // Optimized save valuation with background processing
-  const saveValuation = useCallback(async (companyData: CompanyData, result: ValuationResult, uniqueToken?: string) => {
+  const saveValuation = useCallback(async (
+    companyData: CompanyData, 
+    result: ValuationResult, 
+    uniqueToken?: string,
+    options?: {
+      sourceProject?: string;
+      leadSource?: string;
+      leadSourceDetail?: string;
+    }
+  ) => {
     console.log('🎯 saveValuation called with:', { 
       hasCompanyData: !!companyData, 
       hasResult: !!result, 
@@ -402,7 +411,11 @@ export const useOptimizedSupabaseValuation = () => {
                   firma: 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid'
                 },
                 subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal',
-                lang
+                lang,
+                // 🔥 NEW: Pass manual entry metadata
+                sourceProject: options?.sourceProject,
+                leadSource: options?.leadSource,
+                leadSourceDetail: options?.leadSourceDetail
               }
             });
 

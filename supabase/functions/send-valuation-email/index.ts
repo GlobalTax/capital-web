@@ -62,6 +62,10 @@ interface SendValuationEmailRequest {
   pdfOnly?: boolean; // si true, solo genera/sube PDF y devuelve URL, no envía emails
   lang?: 'es' | 'ca' | 'val' | 'gl';
   source?: 'advisor' | 'standard'; // Para identificar calculadora de asesores
+  // 🔥 NEW: Manual entry fields
+  sourceProject?: string; // 'manual-admin-entry', 'lp-calculadora-principal', etc.
+  leadSource?: string; // 'meta-ads', 'google-ads', 'referido', etc.
+  leadSourceDetail?: string; // Detalle adicional
 }
 
 const euros = (n?: number | null, locale: string = "es-ES") =>
@@ -237,14 +241,58 @@ const handler = async (req: Request): Promise<Response> => {
       companyData.industry.includes('contable')
     ));
 
-    const subject = isAdvisorCalculation 
-      ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
-      : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
+    // 🔥 NEW: Detectar si es valoración manual
+    const isManualEntry = payload.sourceProject === 'manual-admin-entry';
+    
+    // Mapa de etiquetas legibles para canales de origen
+    const LEAD_SOURCE_LABELS: Record<string, string> = {
+      'meta-ads': 'Meta Ads (Facebook/Instagram)',
+      'google-ads': 'Google Ads',
+      'llamada-entrante': 'Llamada Entrante',
+      'referido': 'Referido',
+      'feria-evento': 'Feria / Evento',
+      'linkedin': 'LinkedIn',
+      'email-directo': 'Email Directo',
+      'otro': 'Otro'
+    };
+    
+    const leadSourceLabel = payload.leadSource 
+      ? LEAD_SOURCE_LABELS[payload.leadSource] || payload.leadSource 
+      : 'No especificado';
+
+    // 🔥 Subject actualizado para manuales
+    const subject = isManualEntry
+      ? `[MANUAL] Nueva valoración recibida - ${companyData.companyName || "Capittal"}`
+      : isAdvisorCalculation 
+        ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
+        : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
+
+    // 🔥 Bloque HTML para valoraciones manuales
+    const manualEntryBlock = isManualEntry ? `
+      <div style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; padding:16px; margin-bottom:20px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="background:#f59e0b; color:white; padding:4px 12px; border-radius:4px; font-weight:700; font-size:14px;">✍️ VALORACIÓN MANUAL</span>
+        </div>
+        <table style="width:100%;">
+          <tr>
+            <td style="padding:4px 0; color:#92400e; font-weight:600;">Canal de origen:</td>
+            <td style="padding:4px 0; color:#78350f; font-weight:700;">${leadSourceLabel}</td>
+          </tr>
+          ${payload.leadSourceDetail ? `
+            <tr>
+              <td style="padding:4px 0; color:#92400e; font-weight:600;">Detalle:</td>
+              <td style="padding:4px 0; color:#78350f;">${payload.leadSourceDetail}</td>
+            </tr>
+          ` : ''}
+        </table>
+      </div>
+    ` : '';
 
     // HTML para emails internos (equipo Capittal)
     const htmlInternal = `
       <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
         <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
+          ${manualEntryBlock}
           <h1 style="margin:0 0 8px; color:#111827; font-size:20px;">Nueva valoración recibida</h1>
           <p style="margin:0 0 16px; color:#6b7280;">Calculadora de valoración - Capittal</p>
 
@@ -284,7 +332,7 @@ const handler = async (req: Request): Promise<Response> => {
             ` : ''}
           </table>
 
-          <p style="margin:16px 0 0; color:#6b7280; font-size:12px;">Este correo se generó automáticamente desde la calculadora${isAdvisorCalculation ? ' de asesores' : ''} de Capittal.</p>
+          <p style="margin:16px 0 0; color:#6b7280; font-size:12px;">Este correo se generó automáticamente desde la calculadora${isManualEntry ? ' (entrada manual)' : isAdvisorCalculation ? ' de asesores' : ''} de Capittal.</p>
         </div>
       </div>
     `;

@@ -27,19 +27,24 @@ interface UnifiedCalculatorProps {
   config: CalculatorConfig;
   initialData?: Partial<ExtendedCompanyData>;
   className?: string;
+  extraMetadata?: {
+    leadSource?: string;
+    leadSourceDetail?: string;
+  };
 }
 
 // ============= MAIN COMPONENT =============
 export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
   config,
   initialData,
-  className = ''
+  className = '',
+  extraMetadata
 }) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   
-  // Initialize unified calculator
-  const calculator = useUnifiedCalculator(config, initialData);
+  // Initialize unified calculator with extraMetadata for manual entries
+  const calculator = useUnifiedCalculator(config, initialData, extraMetadata);
   
   // Initialize tracking
   const tracking = useValuationCalculatorTracking();
