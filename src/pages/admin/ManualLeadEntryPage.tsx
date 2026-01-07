@@ -99,6 +99,10 @@ const ManualLeadEntryPage = () => {
         <UnifiedCalculator 
           config={MANUAL_ENTRY_CONFIG}
           className="[&>div]:min-h-0 [&>div]:py-0"
+          extraMetadata={{
+            leadSource,
+            leadSourceDetail
+          }}
         />
       </div>
 

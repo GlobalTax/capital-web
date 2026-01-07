@@ -57,7 +57,11 @@ const createInitialState = (config: CalculatorConfig): CalculatorState => ({
 });
 
 // ============= MAIN HOOK =============
-export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Partial<ExtendedCompanyData>) => {
+export const useUnifiedCalculator = (
+  config: CalculatorConfig, 
+  initialData?: Partial<ExtendedCompanyData>,
+  extraMetadata?: { leadSource?: string; leadSourceDetail?: string }
+) => {
   const { handleError, handleAsyncError } = useErrorHandler();
   const [state, setState] = useState<CalculatorState>(() => {
     const initial = createInitialState(config);
@@ -336,6 +340,7 @@ export const useUnifiedCalculator = (config: CalculatorConfig, initialData?: Par
     sectorMultiples,
     isCurrentStepValid,
     isFormValid,
+    extraMetadata, // 🔥 NEW: Expose metadata for manual entries
     
     // Actions
     updateField,
