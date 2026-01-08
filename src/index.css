@@ -191,8 +191,68 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-normal;
+    @apply font-display font-normal;
   }
+}
+
+/* === TYPOGRAPHY SYSTEM - NRRO International === */
+
+/* Hero Title - General Sans 400 */
+.hero-title {
+  @apply font-display font-normal;
+  font-size: clamp(2.5rem, 5vw + 1rem, 5.5rem);
+  line-height: 1.1;
+}
+
+/* Service Hero Title - General Sans 400 */
+.service-hero-title {
+  @apply font-display font-normal;
+  font-size: clamp(3rem, 6vw + 1rem, 6rem);
+  line-height: 1.1;
+}
+
+/* Stat Number - General Sans 600 */
+.stat-number {
+  @apply font-display font-semibold;
+  font-size: clamp(3rem, 4vw + 1rem, 4.5rem);
+  line-height: 1;
+}
+
+/* Metodologia Title - Roboto Mono 400 */
+.metodologia-title {
+  @apply font-mono font-normal;
+  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+  line-height: 1.2;
+}
+
+/* Badge Hero (dark background) */
+.badge-hero {
+  @apply font-sans font-bold text-xs tracking-wide uppercase;
+}
+
+/* Badge Hero Light (light background) */
+.badge-hero-light {
+  @apply font-sans font-bold text-xs tracking-wide uppercase;
+}
+
+/* Section Overline - Roboto Mono 500 */
+.section-overline {
+  @apply font-mono font-medium text-xs tracking-widest uppercase;
+}
+
+/* Service Body - Roboto Mono 400 */
+.service-body {
+  @apply font-mono font-normal text-base leading-relaxed;
+}
+
+/* Lead Text - Plus Jakarta Sans */
+.text-lead {
+  @apply font-sans text-lg md:text-xl leading-relaxed;
+}
+
+/* Overline with Mono */
+.text-overline {
+  @apply font-mono font-light text-xs tracking-wide uppercase;
 
   html {
     scroll-behavior: smooth;

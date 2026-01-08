@@ -19,8 +19,10 @@ export default {
 		},
 		extend: {
 		fontFamily: {
-			'heading': ['General Sans', 'system-ui', 'sans-serif'],
+			'display': ['General Sans', 'system-ui', 'sans-serif'],
 			'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+			'mono': ['Roboto Mono', 'ui-monospace', 'monospace'],
+			'serif': ['Playfair Display', 'Georgia', 'serif'],
 		},
 			colors: {
 				border: 'hsl(var(--border))',
