@@ -15,7 +15,7 @@ const Hero: React.FC<HeroProps> = ({ onDownloadReport }) => {
     <section className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-6 text-foreground">
+          <h1 className="text-5xl font-normal mb-6 text-foreground">
             El futuro de las asesorías<br />
             <span className="text-primary">post-on-premise</span>
           </h1>
@@ -42,17 +42,17 @@ const Hero: React.FC<HeroProps> = ({ onDownloadReport }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="text-center">
               <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <div className="text-2xl font-bold text-foreground">67k</div>
+              <div className="text-2xl font-normal text-foreground">67k</div>
               <div className="text-sm text-muted-foreground">asesorías analizadas</div>
             </div>
             <div className="text-center">
               <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <div className="text-2xl font-bold text-foreground">35%</div>
+              <div className="text-2xl font-normal text-foreground">35%</div>
               <div className="text-sm text-muted-foreground">ahorro tiempo administrativo</div>
             </div>
             <div className="text-center">
               <Shield className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <div className="text-2xl font-bold text-foreground">ROI 300%</div>
+              <div className="text-2xl font-normal text-foreground">ROI 300%</div>
               <div className="text-sm text-muted-foreground">retorno primer año</div>
             </div>
           </div>
