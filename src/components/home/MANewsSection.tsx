@@ -29,7 +29,7 @@ export const MANewsSection: React.FC = () => {
         .select('*')
         .eq('is_published', true)
         .order('published_at', { ascending: false })
-        .limit(4);
+        .limit(8);
 
       if (error) throw error;
       return (data || []) as unknown as NewsArticle[];
@@ -46,7 +46,7 @@ export const MANewsSection: React.FC = () => {
             <Skeleton className="h-5 w-96 mx-auto" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <Skeleton key={i} className="h-48 rounded-lg" />
             ))}
           </div>
