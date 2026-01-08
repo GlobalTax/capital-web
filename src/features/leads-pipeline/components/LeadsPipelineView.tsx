@@ -145,7 +145,7 @@ export const LeadsPipelineView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
-          <h1 className="text-2xl font-bold">Pipeline de Leads</h1>
+          <h1 className="text-2xl font-normal">Pipeline de Leads</h1>
           <p className="text-sm text-muted-foreground">
             {filteredTotal === totalLeads 
               ? `${totalLeads} leads (últimos 100)`

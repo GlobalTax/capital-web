@@ -9,7 +9,7 @@ const BlogValuationCTA = () => {
         <div className="p-2.5 bg-white/10 rounded-lg">
           <Calculator className="h-6 w-6" />
         </div>
-        <h3 className="font-bold text-lg leading-tight">
+        <h3 className="font-normal text-lg leading-tight">
           ¿Cuánto vale tu empresa?
         </h3>
       </div>

@@ -15,7 +15,7 @@ const TrustSignals: React.FC = () => {
               <Shield className="w-4 h-4 mr-2" />
               Confianza y Seguridad
             </Badge>
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl font-normal mb-4">
               Certificaciones y garantías
             </h2>
           </div>

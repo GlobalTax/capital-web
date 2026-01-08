@@ -14,7 +14,7 @@ export const SearchFundsHubCTA: React.FC = () => {
         className="bg-gradient-to-br from-primary/10 via-primary/5 to-background rounded-2xl p-8 md:p-12"
       >
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-2xl md:text-3xl font-normal text-foreground mb-4">
             ¿Listo para dar el siguiente paso?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">

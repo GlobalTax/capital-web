@@ -45,7 +45,7 @@ const JobsPage = () => {
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold">
+              <h1 className="text-4xl md:text-5xl font-normal">
                 Únete a Capittal
               </h1>
               <p className="text-xl text-muted-foreground">
@@ -167,7 +167,7 @@ const JobsPage = () => {
         {/* CTA Section */}
         <section className="bg-primary/5 py-16">
           <div className="container mx-auto px-4 text-center space-y-6">
-            <h2 className="text-3xl font-bold">¿No encuentras lo que buscas?</h2>
+            <h2 className="text-3xl font-normal">¿No encuentras lo que buscas?</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Envíanos tu candidatura espontánea y te contactaremos cuando tengamos
               una posición que se ajuste a tu perfil.

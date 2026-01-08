@@ -32,7 +32,7 @@ const VentaEmpresasHeroLanding = () => {
               +200 empresas vendidas exitosamente
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
               Vende tu empresa al{" "}
               <span className="text-primary">mejor precio</span>
             </h1>

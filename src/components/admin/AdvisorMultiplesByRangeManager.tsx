@@ -157,7 +157,7 @@ const AdvisorMultiplesByRangeManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Múltiplos por Rangos</h2>
+          <h2 className="text-2xl font-normal text-foreground">Múltiplos por Rangos</h2>
           <p className="text-sm text-muted-foreground mt-1">
             Configura múltiplos específicos según tamaño de facturación, EBITDA y resultado neto
           </p>
@@ -177,7 +177,7 @@ const AdvisorMultiplesByRangeManager = () => {
 
       {showForm && (
         <Card className="p-6">
-          <h3 className="text-lg font-bold text-foreground mb-4">
+          <h3 className="text-lg font-normal text-foreground mb-4">
             {editingRange ? 'Editar Rango' : 'Nuevo Rango'}
           </h3>
           
@@ -365,7 +365,7 @@ const AdvisorMultiplesByRangeManager = () => {
       <div className="space-y-6">
         {Object.entries(groupedRanges).map(([sectorName, sectorRanges]) => (
           <Card key={sectorName} className="p-6">
-            <h3 className="text-xl font-bold text-foreground mb-4">{sectorName}</h3>
+            <h3 className="text-xl font-normal text-foreground mb-4">{sectorName}</h3>
             <div className="space-y-4">
               {sectorRanges.sort((a, b) => a.display_order - b.display_order).map((range) => (
                 <div key={range.id} className="border border-border rounded-lg p-4">

@@ -9,7 +9,7 @@ const ValoracionesCTANew = () => {
     <section className="py-20 bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-6">
+          <h2 className="text-4xl font-normal mb-6">
             Valora tu Empresa Hoy Mismo
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -26,7 +26,7 @@ const ValoracionesCTANew = () => {
                 <Calculator className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold">Calculadora Gratuita</h3>
+                <h3 className="text-2xl font-normal">Calculadora Gratuita</h3>
                 <p className="text-gray-400">Valoración orientativa inmediata</p>
               </div>
             </div>
@@ -72,7 +72,7 @@ const ValoracionesCTANew = () => {
                 <Award className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold">Valoración Profesional</h3>
+                <h3 className="text-2xl font-normal">Valoración Profesional</h3>
                 <p className="text-gray-600">Análisis completo certificado</p>
               </div>
             </div>
@@ -119,7 +119,7 @@ const ValoracionesCTANew = () => {
 
         {/* Comparison Table */}
         <div className="mt-12 bg-slate-900 rounded-lg p-6">
-          <h3 className="text-xl font-semibold text-center mb-6">Comparación de Servicios</h3>
+          <h3 className="text-xl font-normal text-center mb-6">Comparación de Servicios</h3>
           
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

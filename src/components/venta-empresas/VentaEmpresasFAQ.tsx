@@ -42,7 +42,7 @@ const VentaEmpresasFAQ = () => {
     <section id="faq" className="py-24 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-black mb-6">
             {t('ventaEmpresas.faq.title')}
           </h2>
           <p className="text-lg text-black">

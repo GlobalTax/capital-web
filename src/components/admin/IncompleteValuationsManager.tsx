@@ -257,7 +257,7 @@ const IncompleteValuationsManager: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Formularios Incompletos</h1>
+        <h1 className="text-3xl font-normal mb-2">Formularios Incompletos</h1>
         <p className="text-muted-foreground mb-4">
           Análisis de usuarios que abandonaron el proceso de valoración
         </p>

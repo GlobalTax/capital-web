@@ -104,7 +104,7 @@ const MarketInsights = () => {
   return <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-black mb-6">
             Capittal Market
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
@@ -143,7 +143,7 @@ const MarketInsights = () => {
 
         {/* Market Intelligence CTA */}
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-8 text-center">
-          <h3 className="text-2xl font-bold text-black mb-4">
+          <h3 className="text-2xl font-normal text-black mb-4">
             Inteligencia de Mercado Capittal
           </h3>
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">

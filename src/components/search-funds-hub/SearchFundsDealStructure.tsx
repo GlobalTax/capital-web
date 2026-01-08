@@ -78,7 +78,7 @@ export const SearchFundsDealStructure: React.FC = () => {
   return (
     <section id="estructura" className="py-16 scroll-mt-24">
       <div className="mb-12">
-        <h2 className="text-3xl font-bold text-foreground mb-4">
+        <h2 className="text-3xl font-normal text-foreground mb-4">
           Estructura de la Oferta
         </h2>
         <p className="text-muted-foreground max-w-3xl">

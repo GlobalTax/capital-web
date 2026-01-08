@@ -28,7 +28,7 @@ const VentaEmpresasComparison = () => {
             <TrendingUp className="h-4 w-4" />
             Comparativa Objetiva
           </div>
-          <h2 className="text-4xl font-bold mb-4 text-slate-900">
+          <h2 className="text-4xl font-normal mb-4 text-slate-900">
             Vender Con Capittal vs Por Tu Cuenta
           </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">

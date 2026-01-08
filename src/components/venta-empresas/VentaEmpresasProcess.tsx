@@ -41,7 +41,7 @@ const VentaEmpresasProcess = () => {
     <section id="proceso" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-slate-900 mb-6">
             {t('ventaEmpresas.process.title')}
           </h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
@@ -86,7 +86,7 @@ const VentaEmpresasProcess = () => {
         </div>
 
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out max-w-4xl mx-auto text-center">
-          <h3 className="text-xl font-bold text-black mb-4">
+          <h3 className="text-xl font-normal text-black mb-4">
             Timeline del Proceso
           </h3>
           <div className="mb-8 space-y-3">

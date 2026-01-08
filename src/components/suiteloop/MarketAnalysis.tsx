@@ -38,7 +38,7 @@ const MarketAnalysis: React.FC = () => {
               <TrendingUp className="w-4 h-4 mr-2" />
               Análisis de Mercado
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-normal mb-4">
               Tamaño de mercado y segmentación
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -185,7 +185,7 @@ const MarketAnalysis: React.FC = () => {
                   <Users className="w-8 h-8 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-2">
+                  <h3 className="text-xl font-normal mb-2">
                     Target de modernización: 25.460 asesorías
                   </h3>
                   <p className="text-muted-foreground mb-4">

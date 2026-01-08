@@ -74,7 +74,7 @@ const AIContentStudioWrapper = () => {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold flex items-center gap-3 mb-2">
+        <h1 className="text-3xl font-normal flex items-center gap-3 mb-2">
           <Brain className="h-8 w-8 text-blue-600" />
           AI Content Studio Pro
         </h1>

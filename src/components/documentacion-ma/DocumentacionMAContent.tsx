@@ -265,7 +265,7 @@ const DocumentacionMAContent = () => {
     <div className="space-y-8">
       {/* Hero Section */}
       <section className="text-center max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
+        <h1 className="text-4xl md:text-5xl font-normal text-foreground mb-6 leading-tight">
           Guía de Conocimiento M&A
         </h1>
         <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
@@ -324,7 +324,7 @@ const DocumentacionMAContent = () => {
 
       {/* Final CTA */}
       <section className="bg-muted/30 rounded-2xl p-8 text-center">
-        <h2 className="text-3xl font-bold text-foreground mb-4">
+        <h2 className="text-3xl font-normal text-foreground mb-4">
           ¿Listo para tu próxima operación?
         </h2>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
