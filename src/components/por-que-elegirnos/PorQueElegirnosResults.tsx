@@ -44,7 +44,7 @@ const PorQueElegirnosResults = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-black mb-6">
+          <h2 className="text-4xl font-normal text-black mb-6">
             Resultados que Hablan por Nosotros
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -65,7 +65,7 @@ const PorQueElegirnosResults = () => {
               
               <div 
                 ref={stat.count.ref}
-                className="text-5xl font-bold text-black mb-3 group-hover:scale-105 transition-transform duration-300"
+                className="text-5xl font-normal text-black mb-3 group-hover:scale-105 transition-transform duration-300"
               >
                 {stat.prefix}{stat.count.count}
               </div>
@@ -86,7 +86,7 @@ const PorQueElegirnosResults = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
           
           <div className="relative z-10">
-            <h3 className="text-3xl font-bold mb-4">
+            <h3 className="text-3xl font-normal mb-4">
               ¿Listo para Maximizar el Valor de tu Empresa?
             </h3>
             <p className="text-xl mb-8 opacity-90">

@@ -58,7 +58,7 @@ const Contact: React.FC<ContactProps> = ({
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
+            <h1 className="text-4xl font-normal text-foreground mb-4">
               {variantContent.title}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

@@ -24,7 +24,7 @@ const VentaEmpresasHero = () => {
               {t('ventaEmpresas.hero.badge')}
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
               {t('ventaEmpresas.hero.title')}{" "}
               <span className="text-primary">{t('ventaEmpresas.hero.titleHighlight')}</span>
             </h1>
@@ -71,15 +71,15 @@ const VentaEmpresasHero = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-black">200+</div>
+                    <div className="text-2xl font-normal text-black">200+</div>
                     <div className="text-xs text-black">Operaciones</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-black">€902M</div>
+                    <div className="text-2xl font-normal text-black">€902M</div>
                     <div className="text-xs text-black">Valor Total</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-black">98,7%</div>
+                    <div className="text-2xl font-normal text-black">98,7%</div>
                     <div className="text-xs text-black">Éxito</div>
                   </div>
                 </div>

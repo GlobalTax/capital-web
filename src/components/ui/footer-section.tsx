@@ -15,7 +15,7 @@ export function Footerdemo() {
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="mb-4">
-              <Link to="/" className="text-2xl font-bold text-white">
+              <Link to="/" className="text-2xl font-normal text-white">
                 Capittal
               </Link>
             </div>

@@ -40,7 +40,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
                 {year}
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-black mb-2">{title}</h3>
+            <h3 className="text-2xl font-normal text-black mb-2">{title}</h3>
             <p className="text-gray-600 leading-relaxed">{description}</p>
           </div>
           {logoUrl && (
@@ -80,7 +80,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
                   Valor de la Operación
                 </h4>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-2xl font-bold text-black">
+                  <div className="text-2xl font-normal text-black">
                     {isValueConfidential ? 'Confidencial' : `${valueAmount}M${valueCurrency}`}
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
@@ -153,7 +153,7 @@ const DetailedCaseStudies = () => {
       <section className="pt-20 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-black mb-6">
+            <h1 className="text-4xl md:text-5xl font-normal text-black mb-6">
               Casos de Éxito
             </h1>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
@@ -164,15 +164,15 @@ const DetailedCaseStudies = () => {
           
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="text-center">
-              <div className="text-4xl font-bold text-black mb-2">200+</div>
+              <div className="text-4xl font-normal text-black mb-2">200+</div>
               <div className="text-gray-600">Transacciones Exitosas</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-black mb-2">€2.5B+</div>
+              <div className="text-4xl font-normal text-black mb-2">€2.5B+</div>
               <div className="text-gray-600">Valor Total Asesorado</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-black mb-2">98%</div>
+              <div className="text-4xl font-normal text-black mb-2">98%</div>
               <div className="text-gray-600">Tasa de Éxito</div>
             </div>
           </div>
@@ -198,7 +198,7 @@ const DetailedCaseStudies = () => {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-black mb-4">
+            <h2 className="text-3xl font-normal text-black mb-4">
               Nuestro Proceso de Éxito
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -250,7 +250,7 @@ const DetailedCaseStudies = () => {
       {/* CTA Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-black">
+          <h2 className="text-3xl md:text-4xl font-normal mb-6 text-black">
             ¿Listo para Escribir tu Historia de Éxito?
           </h2>
           <p className="text-xl mb-8 text-gray-600">

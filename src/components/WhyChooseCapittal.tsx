@@ -32,7 +32,7 @@ const WhyChooseCapittal = () => {
             {t('why.badge')}
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             {t('why.title')}
           </h2>
           
@@ -51,12 +51,12 @@ const WhyChooseCapittal = () => {
             >
               {/* Highlight */}
               <div className="flex items-center justify-between mb-6">
-                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-bold border-0.5 border-border">
+                <div className="bg-black text-white px-3 py-1 rounded-lg text-sm font-normal border-0.5 border-border">
                   {reason.highlight}
                 </div>
               </div>
               
-              <h3 className="text-xl font-bold text-black mb-4">
+              <h3 className="text-xl font-normal text-black mb-4">
                 {reason.title}
               </h3>
               
