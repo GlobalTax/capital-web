@@ -60,7 +60,7 @@ const CompraEmpresasCTA = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-normal mb-6">
               Solicitar Análisis de Oportunidades
             </h2>
             <p className="text-lg text-blue-100">

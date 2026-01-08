@@ -27,7 +27,7 @@ const PlanificacionFiscalWhyOptimize = () => {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             ¿Por qué Optimizar la Fiscalidad en M&A?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -43,7 +43,7 @@ const PlanificacionFiscalWhyOptimize = () => {
                 <benefit.icon className="w-8 h-8 text-black" />
               </div>
               
-              <h3 className="text-xl font-bold text-black mb-4">
+              <h3 className="text-xl font-normal text-black mb-4">
                 {benefit.title}
               </h3>
               

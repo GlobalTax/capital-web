@@ -63,7 +63,7 @@ const AsesoramientoLegalBenefits = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             ¿Por Qué Confiar en Nuestro Equipo Legal?
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -75,7 +75,7 @@ const AsesoramientoLegalBenefits = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {benefits.map((benefit, index) => (
           <div key={index} className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center group">
-              <h3 className="text-lg font-bold text-black mb-4">
+              <h3 className="text-lg font-normal text-black mb-4">
                 {benefit.title}
               </h3>
               
@@ -94,13 +94,13 @@ const AsesoramientoLegalBenefits = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h3 className="text-2xl font-bold text-black mb-8">
+            <h3 className="text-2xl font-normal text-black mb-8">
               Casos Legales Resueltos
             </h3>
             <div className="space-y-6">
               {casosExito.map((caso, index) => (
                 <div key={index} className={`border-l-4 ${caso.highlight ? 'border-black bg-gray-50' : 'border-gray-300'} pl-6 py-4 rounded-r-lg`}>
-                  <h4 className="font-bold text-lg text-black">{caso.tipo}</h4>
+                  <h4 className="font-normal text-lg text-black">{caso.tipo}</h4>
                   <p className="text-gray-600 mb-1"><strong>Desafío:</strong> {caso.problema}</p>
                   <p className="text-gray-600 mb-1"><strong>Solución:</strong> {caso.solucion}</p>
                   <p className="text-green-600 font-semibold">{caso.resultado}</p>
@@ -110,7 +110,7 @@ const AsesoramientoLegalBenefits = () => {
           </div>
           
           <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-            <h4 className="text-xl font-bold text-black mb-8 text-center">
+            <h4 className="text-xl font-normal text-black mb-8 text-center">
               Nuestros Resultados Legales
             </h4>
             <div className="grid grid-cols-2 gap-8">

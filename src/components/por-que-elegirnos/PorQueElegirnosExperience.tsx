@@ -37,7 +37,7 @@ const PorQueElegirnosExperience = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-black mb-6">
+          <h2 className="text-4xl font-normal text-black mb-6">
             Una Experiencia que Marca la Diferencia
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -59,7 +59,7 @@ const PorQueElegirnosExperience = () => {
                     <Icon className="h-8 w-8" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-black mb-4 group-hover:text-gray-700 transition-colors">
+                    <h3 className="text-2xl font-normal text-black mb-4 group-hover:text-gray-700 transition-colors">
                       {experience.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors">

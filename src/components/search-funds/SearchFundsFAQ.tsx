@@ -58,7 +58,7 @@ export const SearchFundsFAQ = () => {
             <span className="text-primary font-medium text-sm uppercase tracking-wider">
               Preguntas frecuentes
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">
+            <h2 className="text-3xl md:text-4xl font-normal text-foreground mt-4 mb-6">
               Preguntas frecuentes sobre Search Funds en España
             </h2>
             <p className="text-lg text-muted-foreground">

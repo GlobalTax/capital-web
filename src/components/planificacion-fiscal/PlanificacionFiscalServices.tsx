@@ -38,7 +38,7 @@ const PlanificacionFiscalServices = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             Nuestros Servicios de Planificación Fiscal
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -50,7 +50,7 @@ const PlanificacionFiscalServices = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <div key={index} className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group">
-              <h3 className="text-xl font-bold text-black mb-4">
+              <h3 className="text-xl font-normal text-black mb-4">
                 {service.title}
               </h3>
               
@@ -72,7 +72,7 @@ const PlanificacionFiscalServices = () => {
 
         <div className="mt-16 bg-gray-50 border border-gray-300 rounded-lg p-8">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-black mb-4">
+            <h3 className="text-2xl font-normal text-black mb-4">
               Enfoque Integral y Personalizado
             </h3>
             <p className="text-gray-600 max-w-4xl mx-auto leading-relaxed">

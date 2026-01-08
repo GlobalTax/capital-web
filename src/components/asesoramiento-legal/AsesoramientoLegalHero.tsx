@@ -16,7 +16,7 @@ const AsesoramientoLegalHero = () => {
                 En colaboración con el equipo de Navarro Legal
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 leading-tight">
                 Asesoramiento Legal
                 <span className="block text-primary">M&A Especializado</span>
               </h1>

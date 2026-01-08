@@ -37,7 +37,7 @@ export const EnhancedHeroSection = () => {
                 {t('collab.hero.badge')}
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 leading-tight">
                 {t('collab.hero.title')}
               </h1>
               

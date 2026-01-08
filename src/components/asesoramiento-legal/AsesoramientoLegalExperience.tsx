@@ -35,7 +35,7 @@ const AsesoramientoLegalExperience = () => {
       {/* Partnership Banner */}
       <section className="py-16 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+          <h2 className="text-2xl md:text-3xl font-normal mb-4">
             Trabajamos con Navarro Legal
           </h2>
           <p className="text-lg opacity-90">
@@ -49,7 +49,7 @@ const AsesoramientoLegalExperience = () => {
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-normal text-foreground mb-4">
               Nuestra Experiencia Legal
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">

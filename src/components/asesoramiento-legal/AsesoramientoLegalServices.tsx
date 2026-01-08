@@ -35,7 +35,7 @@ const AsesoramientoLegalServices = () => {
     <section className="py-20 bg-muted/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-normal text-foreground mb-4">
             Servicios Legales Especializados
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">

@@ -45,7 +45,7 @@ export const SearchFundsForSearchers = () => {
             <span className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
               Para Searchers
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl md:text-4xl font-normal text-foreground mb-6">
               ¿Eres Searcher y buscas deal flow en España?
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -92,7 +92,7 @@ export const SearchFundsForSearchers = () => {
 
             {/* CTA Card */}
             <div className="text-center lg:text-left">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
+              <h3 className="text-2xl font-normal text-foreground mb-4">
                 Únete a nuestra red de Searchers
               </h3>
               <p className="text-muted-foreground mb-6">

@@ -107,7 +107,7 @@ const MinimalistHero = () => {
             Líderes en M&A desde 2008
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 mb-6">
             Por Qué Elegir Capittal
           </h1>
           
