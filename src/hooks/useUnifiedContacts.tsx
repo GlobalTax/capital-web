@@ -91,6 +91,10 @@ export interface UnifiedContact {
   acquisition_channel_name?: string;
   acquisition_channel_category?: string;
   
+  // 🔥 AI Company Summary
+  ai_company_summary?: string;
+  ai_company_summary_at?: string;
+
   // Legacy compatibility
   source?: string;
 }

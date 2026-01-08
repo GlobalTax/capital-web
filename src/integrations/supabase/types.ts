@@ -2445,6 +2445,8 @@ export type Database = {
           acquisition_channel_id: string | null
           activity_description: string | null
           adjustment_amount: number | null
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
           assigned_at: string | null
           assigned_to: string | null
           brevo_deleted_at: string | null
@@ -2537,6 +2539,8 @@ export type Database = {
           acquisition_channel_id?: string | null
           activity_description?: string | null
           adjustment_amount?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2629,6 +2633,8 @@ export type Database = {
           acquisition_channel_id?: string | null
           activity_description?: string | null
           adjustment_amount?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2758,6 +2764,8 @@ export type Database = {
       contact_leads: {
         Row: {
           acquisition_channel_id: string | null
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
           assigned_at: string | null
           assigned_to: string | null
           brevo_deleted_at: string | null
@@ -2818,6 +2826,8 @@ export type Database = {
         }
         Insert: {
           acquisition_channel_id?: string | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2878,6 +2888,8 @@ export type Database = {
         }
         Update: {
           acquisition_channel_id?: string | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -4860,6 +4872,8 @@ export type Database = {
       }
       general_contact_leads: {
         Row: {
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
           annual_revenue: string | null
           cif: string | null
           company: string
@@ -4897,6 +4911,8 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
           annual_revenue?: string | null
           cif?: string | null
           company: string
@@ -4934,6 +4950,8 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
           annual_revenue?: string | null
           cif?: string | null
           company?: string
