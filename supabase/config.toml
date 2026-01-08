@@ -132,3 +132,6 @@ verify_jwt = false
 
 [functions.process-news-ai]
 verify_jwt = false
+
+[functions.generate-company-summary]
+verify_jwt = false

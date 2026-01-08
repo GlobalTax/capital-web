@@ -40,6 +40,7 @@ import { useBrevoSyncStatus } from '@/hooks/useBrevoSyncStatus';
 import { LeadToOperationConverter } from '@/features/operations-management/components/integrations';
 import { useBrevoEvents } from '@/hooks/useBrevoEvents';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AICompanySummaryBlock } from '@/components/admin/leads/AICompanySummaryBlock';
 
 interface LeadData {
   id: string;
@@ -707,6 +708,22 @@ export default function LeadDetailPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Resumen Automático de Empresa (IA) */}
+          <AICompanySummaryBlock
+            leadId={lead.id}
+            origin={lead.origin}
+            contactData={{
+              company_name: lead.company || lead.company_name || '',
+              website: lead.website,
+              email: lead.email,
+              phone: lead.phone,
+              cif: lead.cif,
+              country: lead.country || lead.location || 'España',
+            }}
+            existingSummary={lead.ai_company_summary}
+            existingSummaryAt={lead.ai_company_summary_at}
+          />
         </div>
 
         {/* Columna lateral */}
