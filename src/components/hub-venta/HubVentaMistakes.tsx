@@ -40,7 +40,7 @@ const HubVentaMistakes: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="font-mono text-xs font-light uppercase tracking-widest text-red-500 mb-4">
+          <p className="font-mono text-xs font-light uppercase tracking-widest text-amber-600 mb-4">
             Evita estos errores
           </p>
           <h2 className="text-3xl md:text-4xl font-normal text-slate-900 mb-4">
@@ -56,15 +56,15 @@ const HubVentaMistakes: React.FC = () => {
           {mistakes.map((mistake, index) => (
             <div
               key={index}
-              className="group relative bg-red-50/50 border border-red-100 rounded-xl p-6 hover:bg-white hover:border-red-200 hover:shadow-lg transition-all"
+              className="group relative bg-slate-50 border border-slate-200 rounded-xl p-6 hover:bg-white hover:border-slate-300 hover:shadow-lg transition-all"
             >
               {/* Number */}
-              <div className="absolute top-4 right-4 text-4xl font-bold text-red-100 group-hover:text-red-200 transition-colors">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-slate-200 group-hover:text-slate-300 transition-colors">
                 {String(index + 1).padStart(2, '0')}
               </div>
 
               {/* Icon */}
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-100 text-red-600 mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 mb-4">
                 <mistake.icon className="h-6 w-6" />
               </div>
 
