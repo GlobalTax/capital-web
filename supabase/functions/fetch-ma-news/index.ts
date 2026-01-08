@@ -184,14 +184,53 @@ serve(async (req) => {
           return 'M&A';
         };
 
+        // Clean content from tracking pixels, markdown images, and junk
+        const cleanContent = (text: string): string => {
+          if (!text) return '';
+          return text
+            // Remove markdown images
+            .replace(/!\[.*?\]\(.*?\)/g, '')
+            // Remove tracking URLs and pixels
+            .replace(/https?:\/\/[^\s]*pixelcounter[^\s]*/g, '')
+            .replace(/https?:\/\/[^\s]*permutive[^\s]*/g, '')
+            .replace(/https?:\/\/[^\s]*tracking[^\s]*/g, '')
+            // Remove standalone URLs
+            .replace(/^https?:\/\/\S+\s*/gm, '')
+            // Remove markdown links but keep text
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            // Remove extra whitespace
+            .replace(/\n{3,}/g, '\n\n')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+        };
+
+        // Extract clean excerpt (first meaningful paragraph)
+        const extractExcerpt = (content: string, title: string): string => {
+          const cleaned = cleanContent(content);
+          // Find first sentence that's at least 50 chars and doesn't look like junk
+          const sentences = cleaned.split(/[.!?]\s+/);
+          for (const sentence of sentences) {
+            const trimmed = sentence.trim();
+            if (trimmed.length >= 50 && 
+                !trimmed.startsWith('http') && 
+                !trimmed.startsWith('!') &&
+                !trimmed.includes('pixelcounter') &&
+                !trimmed.includes('blocked')) {
+              return trimmed.substring(0, 200) + (trimmed.length > 200 ? '...' : '');
+            }
+          }
+          // Fallback: use title-based excerpt
+          return `Noticia sobre ${title.substring(0, 150)}...`;
+        };
+
         const articlesToInsert = newArticles.map(article => ({
           title: article.title?.substring(0, 255) || 'Sin título',
           slug: article.title?.toLowerCase()
             .replace(/[^a-z0-9\s-]/g, '')
             .replace(/\s+/g, '-')
             .substring(0, 100) + '-' + Date.now(),
-          content: article.content || '',
-          excerpt: article.content?.substring(0, 200)?.replace(/\n/g, ' ')?.trim() || '',
+          content: cleanContent(article.content || ''),
+          excerpt: extractExcerpt(article.content || '', article.title || ''),
           source_name: article.source_name,
           source_url: article.source_url,
           category: categorizeArticle(article.content || '', article.title || ''),
