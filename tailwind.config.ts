@@ -19,7 +19,7 @@ export default {
 		},
 		extend: {
 		fontFamily: {
-			'sans': ['General Sans', 'system-ui', 'sans-serif'],
+			'sans': ['General Sans', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
 		},
 			colors: {
 				border: 'hsl(var(--border))',
