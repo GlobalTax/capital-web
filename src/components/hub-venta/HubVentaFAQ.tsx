@@ -36,6 +36,27 @@ const faqs = [
     question: '¿Qué documentación necesito para empezar?',
     answer: 'Para la valoración inicial necesitamos: estados financieros de los últimos 3 años, balance y cuenta de resultados actual, información sobre la estructura de propiedad, y una descripción general del negocio. Todo el proceso es confidencial desde el primer momento.',
   },
+  // New FAQs
+  {
+    question: '¿Puedo vender solo una parte de mi empresa?',
+    answer: 'Sí, es posible vender una participación minoritaria o mayoritaria manteniendo parte del capital. Esta opción es habitual cuando el empresario quiere capitalizar parte de su esfuerzo pero seguir involucrado, o cuando busca un socio estratégico para acelerar el crecimiento. Analizamos qué estructura es óptima para tus objetivos.',
+  },
+  {
+    question: '¿Qué pasa con mis empleados después de la venta?',
+    answer: 'Los empleados están protegidos por la normativa de sucesión de empresas, que obliga al comprador a mantener las condiciones laborales existentes. Además, muchos compradores valoran especialmente los equipos estables y suelen ofrecer incentivos de retención. Podemos negociar cláusulas específicas de protección para empleados clave.',
+  },
+  {
+    question: '¿Qué es un earnout y cómo funciona?',
+    answer: 'Un earnout es una parte del precio de venta que se paga en el futuro, condicionada a que la empresa alcance ciertos objetivos (facturación, beneficios, retención de clientes...). Es una herramienta útil cuando comprador y vendedor tienen diferentes expectativas de valor. Típicamente representa un 10-30% del precio total.',
+  },
+  {
+    question: '¿Cuál es el momento ideal para vender mi empresa?',
+    answer: 'El mejor momento es cuando la empresa está en crecimiento, con buenos resultados y perspectivas positivas. Vender "desde arriba" te da poder de negociación. Evita vender por necesidad o cuando los resultados están cayendo. Idealmente, planifica la venta con 2-3 años de antelación para optimizar la preparación.',
+  },
+  {
+    question: '¿Qué diferencia hay entre vender a un fondo vs. a un comprador estratégico?',
+    answer: 'Los fondos de inversión buscan rentabilizar su inversión en 4-7 años y suelen pagar múltiplos más conservadores, pero pueden mantener al equipo gestor. Los compradores estratégicos (empresas del sector) pueden pagar primas por sinergias y suelen integrarte en su estructura. Cada perfil tiene ventajas según tu situación.',
+  },
 ];
 
 const HubVentaFAQ: React.FC = () => {
@@ -75,6 +96,9 @@ const HubVentaFAQ: React.FC = () => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
+          <p className="font-mono text-xs font-light uppercase tracking-widest text-slate-500 mb-4">
+            Resolvemos tus dudas
+          </p>
           <h2 className="text-3xl md:text-4xl font-normal text-slate-900">
             Preguntas Frecuentes
           </h2>
@@ -104,6 +128,17 @@ const HubVentaFAQ: React.FC = () => {
             </AccordionItem>
           ))}
         </Accordion>
+
+        {/* More Questions CTA */}
+        <div className="mt-8 text-center">
+          <p className="text-slate-600 mb-4">¿Tienes más preguntas?</p>
+          <button
+            onClick={() => document.getElementById('hero-form')?.scrollIntoView({ behavior: 'smooth' })}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-colors"
+          >
+            Consultar sin compromiso
+          </button>
+        </div>
       </div>
     </section>
   );

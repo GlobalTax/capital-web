@@ -1,9 +1,15 @@
 export { default as HubVentaHero } from './HubVentaHero';
+export { default as HubVentaTrustLogos } from './HubVentaTrustLogos';
 export { default as HubVentaBenefits } from './HubVentaBenefits';
+export { default as HubVentaComparison } from './HubVentaComparison';
 export { default as HubVentaProcess } from './HubVentaProcess';
+export { default as HubVentaMistakes } from './HubVentaMistakes';
 export { default as HubVentaProfiles } from './HubVentaProfiles';
+export { default as HubVentaMarketStats } from './HubVentaMarketStats';
 export { default as HubVentaSectors } from './HubVentaSectors';
 export { default as HubVentaCases } from './HubVentaCases';
+export { default as HubVentaTestimonials } from './HubVentaTestimonials';
+export { default as HubVentaGuarantees } from './HubVentaGuarantees';
 export { default as HubVentaFAQ } from './HubVentaFAQ';
 export { default as HubVentaFinalCTA } from './HubVentaFinalCTA';
 export { default as HubVentaStickyMobile } from './HubVentaStickyMobile';

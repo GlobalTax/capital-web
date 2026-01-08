@@ -4,11 +4,17 @@ import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
 import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
 import {
   HubVentaHero,
+  HubVentaTrustLogos,
   HubVentaBenefits,
+  HubVentaComparison,
   HubVentaProcess,
+  HubVentaMistakes,
   HubVentaProfiles,
+  HubVentaMarketStats,
   HubVentaSectors,
   HubVentaCases,
+  HubVentaTestimonials,
+  HubVentaGuarantees,
   HubVentaFAQ,
   HubVentaFinalCTA,
   HubVentaStickyMobile,
@@ -60,11 +66,17 @@ const HubVentaEmpresa: React.FC = () => {
         
         <main className="pt-16">
           <HubVentaHero />
+          <HubVentaTrustLogos />
           <HubVentaBenefits />
+          <HubVentaComparison />
           <HubVentaProcess />
+          <HubVentaMistakes />
           <HubVentaProfiles />
+          <HubVentaMarketStats />
           <HubVentaSectors />
           <HubVentaCases />
+          <HubVentaTestimonials />
+          <HubVentaGuarantees />
           <HubVentaFAQ />
           <HubVentaFinalCTA />
         </main>
