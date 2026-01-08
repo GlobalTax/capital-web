@@ -38,6 +38,7 @@ const LandingSuiteLoop = lazy(() => import('@/pages/LandingSuiteLoop'));
 const LandingAccountex = lazy(() => import('@/pages/LandingAccountex'));
 const LandingValoracion2026 = lazy(() => import('@/pages/LandingValoracion2026'));
 const LandingValoracion2026Thanks = lazy(() => import('@/pages/LandingValoracion2026Thanks'));
+const HubVentaEmpresa = lazy(() => import('@/pages/HubVentaEmpresa'));
 import SecurityCalculator from '@/pages/SecurityCalculator';
 
 // === SERVICE PAGES ===
@@ -189,6 +190,7 @@ export const AppRoutes = () => {
         <Route path="/lp/valoracion-2026" element={<LandingValoracion2026 />} />
         <Route path="/lp/valoracion-2026/gracias" element={<LandingValoracion2026Thanks />} />
         <Route path="/lp/valoracion-2026/*" element={<LandingValoracion2026 />} />
+        <Route path="/venta-de-empresa" element={<HubVentaEmpresa />} />
         <Route path="/accountex" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/accountex-2025" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
