@@ -82,19 +82,23 @@ const ContactEditForm: React.FC<ContactEditFormProps> = ({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="cif">CIF</Label>
+          <Input
+            id="cif"
+            value={formData.cif || ''}
+            onChange={(e) => updateField('cif', e.target.value)}
+            placeholder="B12345678"
+            maxLength={32}
+          />
+        </div>
+      </div>
+
       {/* Origin-specific fields */}
       {contact.origin === 'valuation' && (
         <>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cif">CIF</Label>
-              <Input
-                id="cif"
-                value={formData.cif || ''}
-                onChange={(e) => updateField('cif', e.target.value)}
-                placeholder="B12345678"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="industry">Sector</Label>
               <Input
@@ -104,8 +108,6 @@ const ContactEditForm: React.FC<ContactEditFormProps> = ({
                 placeholder="Sector de actividad"
               />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="employee_range">Empleados</Label>
               <Select
