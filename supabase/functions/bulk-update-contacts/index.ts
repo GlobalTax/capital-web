@@ -126,8 +126,16 @@ serve(async (req) => {
       errors: [],
     };
 
-    // Tables that support acquisition_channel_id
-    const tablesWithChannel = ['contact_leads', 'general_contact_leads'];
+    // Tables that support acquisition_channel_id (now all tables)
+    const tablesWithChannel = [
+      'contact_leads',
+      'general_contact_leads',
+      'company_valuations',
+      'collaborator_applications',
+      'acquisition_leads',
+      'company_acquisition_inquiries',
+      'advisor_valuations',
+    ];
 
     // Process each table
     for (const [table, ids] of Object.entries(contactsByTable)) {
