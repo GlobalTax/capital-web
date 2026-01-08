@@ -60,11 +60,30 @@ Datos adicionales
 ❌ No completes campos con suposiciones
 ✅ Si un dato no existe, escribe literalmente: "No disponible públicamente"
 ✅ Mantén tono profesional, neutro y corporativo
-✅ No incluyas opiniones ni valoraciones personales
+✅ No incluyas opiniones ni valoraciones personales`;
 
-💡 PRIORIDADES SEGÚN INPUT
-Si hay URL, prioriza web oficial
-Si hay CIF, prioriza registro mercantil y directorios empresariales`;
+const getCIFPriorityInstructions = (cif: string | undefined) => {
+  if (!cif) return '';
+  return `
+
+⚠️ PRIORIDAD ABSOLUTA - SE HA PROPORCIONADO CIF: ${cif}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEBES priorizar OBLIGATORIAMENTE estas fuentes en este orden:
+1. Registro Mercantil Central (BORME) - Buscar por CIF
+2. Directorios empresariales españoles (Empresite, Infocif, Einforma, Axesor)
+3. Base de datos de la AEAT / Hacienda
+4. Listados de sociedades (eInforma, Expansión)
+
+El CIF es el identificador fiscal OFICIAL. Úsalo para:
+- Validar el nombre mercantil completo
+- Confirmar domicilio fiscal registrado
+- Verificar fecha de constitución
+- Obtener datos registrales precisos
+
+Si encuentras discrepancias entre la web y los registros oficiales,
+PRIORIZA SIEMPRE la información del registro mercantil.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -91,6 +110,9 @@ serve(async (req) => {
     if (cif) inputData.push(`CIF: ${cif}`);
     if (country) inputData.push(`País: ${country}`);
 
+    // Build dynamic system prompt with CIF priority if available
+    const dynamicSystemPrompt = SYSTEM_PROMPT + getCIFPriorityInstructions(cif);
+
     const userPrompt = `Analiza la siguiente empresa y genera el resumen estructurado:\n\n${inputData.join('\n')}`;
 
     // Try OpenAI first, fallback to Lovable AI
@@ -111,7 +133,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: dynamicSystemPrompt },
             { role: 'user', content: userPrompt }
           ],
           max_tokens: 2000,
@@ -130,7 +152,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash',
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: dynamicSystemPrompt },
             { role: 'user', content: userPrompt }
           ],
         }),

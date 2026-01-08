@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, RefreshCw, Copy, Pencil, X, Check, AlertTriangle, Loader2 } from 'lucide-react';
+import { Sparkles, RefreshCw, Copy, Pencil, X, Check, AlertTriangle, Loader2, StickyNote } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useCompanyAISummary } from '@/hooks/useCompanyAISummary';
@@ -21,6 +21,7 @@ interface AICompanySummaryBlockProps {
   };
   existingSummary?: string | null;
   existingSummaryAt?: string | null;
+  onUseInNotes?: (summary: string) => void;
 }
 
 export const AICompanySummaryBlock: React.FC<AICompanySummaryBlockProps> = ({
@@ -29,6 +30,7 @@ export const AICompanySummaryBlock: React.FC<AICompanySummaryBlockProps> = ({
   contactData,
   existingSummary,
   existingSummaryAt,
+  onUseInNotes,
 }) => {
   const {
     summary,
@@ -146,6 +148,12 @@ export const AICompanySummaryBlock: React.FC<AICompanySummaryBlockProps> = ({
                 <Pencil className="h-4 w-4 mr-1" />
                 Editar manualmente
               </Button>
+              {onUseInNotes && (
+                <Button variant="outline" size="sm" onClick={() => onUseInNotes(summary)}>
+                  <StickyNote className="h-4 w-4 mr-1" />
+                  Usar en nota interna
+                </Button>
+              )}
             </div>
           </div>
         )}

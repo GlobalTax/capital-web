@@ -69,6 +69,7 @@ export default function LeadDetailPage() {
   const { syncSingleContact, isSyncing } = useBrevoSync();
   const { trackLeadStatusChange, trackNoteAdded, trackCompanyLinked } = useBrevoEvents();
   const [notes, setNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [acquisitionChannelId, setAcquisitionChannelId] = useState<string | null>(null);
   const [leadEntryDate, setLeadEntryDate] = useState<Date | undefined>(undefined);
   
@@ -172,7 +173,10 @@ export default function LeadDetailPage() {
     if (lead?.lead_entry_date) {
       setLeadEntryDate(new Date(lead.lead_entry_date));
     }
-  }, [lead?.acquisition_channel_id, lead?.lead_entry_date]);
+    if (lead?.notes !== undefined) {
+      setNotes(lead.notes || '');
+    }
+  }, [lead?.acquisition_channel_id, lead?.lead_entry_date, lead?.notes]);
 
   const handleSyncToBrevo = async () => {
     if (!lead) return;
@@ -321,6 +325,47 @@ export default function LeadDetailPage() {
     } catch (error) {
       toast({ title: 'Error', description: 'No se pudo actualizar la fecha', variant: 'destructive' });
     }
+  };
+
+  const handleSaveNotes = async () => {
+    if (!lead) return;
+    
+    const tableMap: Record<string, string> = {
+      contact: 'contact_leads',
+      valuation: 'company_valuations',
+      general: 'general_contact_leads',
+    };
+    
+    const table = tableMap[lead.origin] as any;
+    if (!table) {
+      toast({ title: 'Este tipo de lead no soporta notas internas', variant: 'destructive' });
+      return;
+    }
+    
+    setIsSavingNotes(true);
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ notes })
+        .eq('id', lead.id);
+
+      if (error) throw error;
+      
+      toast({ title: '✅ Nota guardada' });
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({ title: 'Error', description: 'No se pudo guardar la nota', variant: 'destructive' });
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+
+  const handleUseAISummaryInNotes = (summaryText: string) => {
+    setNotes(prev => prev ? `${prev}\n\n---\n\n📋 Resumen IA:\n${summaryText}` : `📋 Resumen IA:\n${summaryText}`);
+    toast({ 
+      title: '📝 Añadido a notas', 
+      description: 'El resumen se ha copiado a las notas internas. Recuerda guardar.' 
+    });
   };
 
   if (isLoading) {
@@ -702,9 +747,13 @@ export default function LeadDetailPage() {
                 rows={4}
                 className="mb-3"
               />
-              <Button size="sm">
+              <Button 
+                size="sm" 
+                onClick={handleSaveNotes}
+                disabled={isSavingNotes}
+              >
                 <MessageSquare className="mr-2 h-4 w-4" />
-                Guardar Nota
+                {isSavingNotes ? 'Guardando...' : 'Guardar Nota'}
               </Button>
             </CardContent>
           </Card>
@@ -723,6 +772,7 @@ export default function LeadDetailPage() {
             }}
             existingSummary={lead.ai_company_summary}
             existingSummaryAt={lead.ai_company_summary_at}
+            onUseInNotes={handleUseAISummaryInNotes}
           />
         </div>
 
