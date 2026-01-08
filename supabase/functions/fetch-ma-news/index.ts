@@ -61,22 +61,33 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get current hour to determine which source to use (rotating)
-    const currentHour = new Date().getUTCHours();
-    // Map hours to source index: 0h->0, 6h->1, 12h->2, 18h->3, others->based on day
-    let sourceIndex: number;
-    if (currentHour >= 0 && currentHour < 6) {
-      sourceIndex = 0;
-    } else if (currentHour >= 6 && currentHour < 12) {
-      sourceIndex = 1;
-    } else if (currentHour >= 12 && currentHour < 18) {
-      sourceIndex = 2;
-    } else {
-      sourceIndex = 3;
+    // Get source from request body or rotate based on time
+    let requestedSource: number | undefined;
+    try {
+      const body = await req.json();
+      requestedSource = body?.source_index;
+    } catch {
+      // No body or invalid JSON, use rotation
     }
-    // Add day of week to rotate through all 5 sources
-    const dayOfWeek = new Date().getUTCDay();
-    sourceIndex = (sourceIndex + dayOfWeek) % NEWS_SOURCES.length;
+
+    let sourceIndex: number;
+    if (requestedSource !== undefined && requestedSource >= 0 && requestedSource < NEWS_SOURCES.length) {
+      sourceIndex = requestedSource;
+    } else {
+      // Rotate based on hour and day
+      const currentHour = new Date().getUTCHours();
+      if (currentHour >= 0 && currentHour < 6) {
+        sourceIndex = 0;
+      } else if (currentHour >= 6 && currentHour < 12) {
+        sourceIndex = 1;
+      } else if (currentHour >= 12 && currentHour < 18) {
+        sourceIndex = 2;
+      } else {
+        sourceIndex = 3;
+      }
+      const dayOfWeek = new Date().getUTCDay();
+      sourceIndex = (sourceIndex + dayOfWeek) % NEWS_SOURCES.length;
+    }
 
     const source = NEWS_SOURCES[sourceIndex];
     const allNews: any[] = [];
