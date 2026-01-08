@@ -123,8 +123,8 @@ export const MANewsSection: React.FC = () => {
                     {article.title}
                   </h3>
 
-                  {/* Excerpt */}
-                  <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+                  {/* Excerpt - show more text */}
+                  <p className="text-xs text-muted-foreground mb-4 line-clamp-4">
                     {article.excerpt}
                   </p>
 
