@@ -27,7 +27,7 @@ const VentaEmpresasHeroService = () => {
 
             {/* Professional Headline */}
             <div className="space-y-6">
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-normal text-gray-900 leading-tight">
                 Servicio Integral de
                 <span className="text-blue-600"> Venta de Empresas</span>
               </h1>
@@ -105,7 +105,7 @@ const VentaEmpresasHeroService = () => {
                   <span className="text-2xl text-white font-bold">M&A</span>
                 </div>
                 
-                <h3 className="text-2xl font-bold text-black">Resultados Profesionales</h3>
+                <h3 className="text-2xl font-normal text-black">Resultados Profesionales</h3>
                 
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="p-4 bg-gray-50 rounded-lg">

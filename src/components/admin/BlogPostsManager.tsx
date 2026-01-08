@@ -201,7 +201,7 @@ const BlogPostsManager = memo(() => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-black">Gestión de Blog</h2>
+          <h2 className="text-2xl font-normal text-black">Gestión de Blog</h2>
           <p className="text-gray-600">Crea y gestiona los posts del blog con ayuda de IA</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

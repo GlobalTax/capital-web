@@ -49,7 +49,7 @@ const VentaEmpresasBenefits = () => {
     <section id="beneficios" className="py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-black mb-6">
             {t('why.title')}
           </h2>
           <p className="text-lg text-black max-w-3xl mx-auto">
@@ -90,7 +90,7 @@ const VentaEmpresasBenefits = () => {
         {/* Company Track Record */}
         <div className="bg-card border border-border rounded-lg p-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-black mb-4">
+            <h3 className="text-2xl font-normal text-black mb-4">
               Nuestro Historial
             </h3>
             <p className="text-black">

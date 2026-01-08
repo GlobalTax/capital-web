@@ -20,7 +20,7 @@ const VentaEmpresasCaseStudies = () => {
     <section id="casos" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground mb-6">
             Casos de Éxito
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -68,7 +68,7 @@ const VentaEmpresasCaseStudies = () => {
                       )}
                       
                       {/* Título del caso */}
-                      <h3 className="text-lg font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                      <h3 className="text-lg font-normal text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2">
                         {study.title}
                       </h3>
                       

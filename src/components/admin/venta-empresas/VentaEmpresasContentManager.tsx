@@ -8,7 +8,7 @@ const VentaEmpresasContentManager = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Gestión de Contenidos - Venta de Empresas</h2>
+        <h2 className="text-2xl font-normal mb-2">Gestión de Contenidos - Venta de Empresas</h2>
         <p className="text-muted-foreground">
           Administra los textos que se muestran en la landing page de venta de empresas
         </p>

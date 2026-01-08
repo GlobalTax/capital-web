@@ -62,7 +62,7 @@ const VentaEmpresasServiceIntegration = () => {
             Enfoque Integral M&A
           </div>
           
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl lg:text-5xl font-normal text-gray-900 mb-6">
             Servicios <span className="text-blue-600">Integrados</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto">
@@ -83,7 +83,7 @@ const VentaEmpresasServiceIntegration = () => {
                 {service.icon}
               </div>
               
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
+              <h3 className="text-xl font-normal text-gray-900 mb-3">
                 {service.title}
               </h3>
               
@@ -107,7 +107,7 @@ const VentaEmpresasServiceIntegration = () => {
 
         {/* Process Integration */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
+          <h3 className="text-3xl font-normal text-gray-900 text-center mb-8">
             Integración por Fases del Proceso
           </h3>
           
@@ -118,7 +118,7 @@ const VentaEmpresasServiceIntegration = () => {
                   {phase.icon}
                 </div>
                 
-                <h4 className="text-xl font-bold text-gray-900 mb-4">
+                <h4 className="text-xl font-normal text-gray-900 mb-4">
                   {phase.phase}
                 </h4>
                 
@@ -138,7 +138,7 @@ const VentaEmpresasServiceIntegration = () => {
         <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div>
-              <h3 className="text-3xl font-bold mb-6">
+              <h3 className="text-3xl font-normal mb-6">
                 Ventajas del Enfoque Integrado
               </h3>
               
@@ -176,7 +176,7 @@ const VentaEmpresasServiceIntegration = () => {
             
             <div className="text-center">
               <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl p-6 border border-white border-opacity-20">
-                <h4 className="text-2xl font-bold mb-4">Resultado Integrado</h4>
+                <h4 className="text-2xl font-normal mb-4">Resultado Integrado</h4>
                 <div className="text-4xl font-bold text-yellow-300 mb-2">+15-25%</div>
                 <div className="text-blue-100">Incremento promedio en el precio final</div>
                 <div className="text-sm text-blue-200 mt-4">
@@ -190,7 +190,7 @@ const VentaEmpresasServiceIntegration = () => {
         {/* CTA Section */}
         <div className="mt-16 text-center">
           <div className="max-w-3xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+            <h3 className="text-2xl font-normal text-gray-900 mb-4">
               ¿Quieres Conocer Más Sobre Nuestro Enfoque Integrado?
             </h3>
             <p className="text-gray-600 mb-6">

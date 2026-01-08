@@ -118,7 +118,7 @@ export const WebinarManager = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestión de Webinars</h1>
+          <h1 className="text-3xl font-normal text-foreground">Gestión de Webinars</h1>
           <p className="text-muted-foreground">
             Administra webinars, registros y contenido educativo
           </p>

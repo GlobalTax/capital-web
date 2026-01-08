@@ -174,7 +174,7 @@ const MultiplesManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-black">Gestión de Múltiplos por Sector</h2>
+        <h2 className="text-2xl font-normal text-black">Gestión de Múltiplos por Sector</h2>
         <Button
           onClick={() => {
             setFormData(emptyMultiple);
@@ -189,7 +189,7 @@ const MultiplesManager = () => {
 
       {showForm && (
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-bold text-black mb-4">
+          <h3 className="text-lg font-normal text-black mb-4">
             {editingMultiple ? 'Editar Múltiplo' : 'Nuevo Múltiplo'}
           </h3>
           
@@ -321,7 +321,7 @@ const MultiplesManager = () => {
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center space-x-4 mb-2">
-                  <h3 className="text-lg font-bold text-black">{multiple.sector_name}</h3>
+                  <h3 className="text-lg font-normal text-black">{multiple.sector_name}</h3>
                   {!multiple.is_active && (
                     <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
                       Borrador

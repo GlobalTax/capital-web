@@ -30,7 +30,7 @@ const VentaEmpresasTestimonials = () => {
             <Star className="h-4 w-4 fill-current" />
             +200 Operaciones Exitosas
           </div>
-          <h2 className="text-4xl font-bold mb-4 text-foreground">
+          <h2 className="text-4xl font-normal mb-4 text-foreground">
             Lo Que Dicen Nuestros Clientes
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

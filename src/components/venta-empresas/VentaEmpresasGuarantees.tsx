@@ -66,7 +66,7 @@ const VentaEmpresasGuarantees = () => {
             <Shield className="h-4 w-4" />
             Tu Tranquilidad es Nuestra Prioridad
           </div>
-          <h2 className="text-4xl font-bold mb-4">
+          <h2 className="text-4xl font-normal mb-4">
             Garantías que Te Protegen
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -84,7 +84,7 @@ const VentaEmpresasGuarantees = () => {
                 <div className="inline-block bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-lg mb-4 border border-green-200">
                   {guarantee.badge}
                 </div>
-                <h3 className="font-bold text-slate-900 mb-3 text-base">
+                <h3 className="font-normal text-slate-900 mb-3 text-base">
                   {guarantee.title}
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
@@ -99,7 +99,7 @@ const VentaEmpresasGuarantees = () => {
         <div className="bg-card border rounded-2xl p-8 mb-12">
           <div className="text-center mb-8">
             <Award className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-2xl font-bold mb-2">Reconocimientos y Certificaciones</h3>
+            <h3 className="text-2xl font-normal mb-2">Reconocimientos y Certificaciones</h3>
             <p className="text-muted-foreground">Avalados por las principales instituciones del sector</p>
           </div>
 

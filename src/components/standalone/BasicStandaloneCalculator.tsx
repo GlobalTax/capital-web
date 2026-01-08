@@ -99,7 +99,7 @@ Calculado con Capittal.`;
             <div className="p-2 rounded-xl bg-primary shadow-lg">
               <Calculator className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold text-foreground">
+            <h1 className="text-4xl font-normal text-foreground">
               Simulador de Valoración
             </h1>
           </div>
@@ -165,7 +165,7 @@ Calculado con Capittal.`;
         {/* Escenarios Grid */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-6">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-normal bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Escenarios de Valoración
             </h3>
             <Badge variant="secondary" className="px-3 py-1">
@@ -213,7 +213,7 @@ Calculado con Capittal.`;
                   <div className="p-2 rounded-full bg-primary text-primary-foreground">
                     <TrendingUp className="h-5 w-5" />
                   </div>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-green-500 bg-clip-text text-transparent">
+                  <h3 className="text-2xl font-normal bg-gradient-to-r from-primary to-green-500 bg-clip-text text-transparent">
                     Mejor Resultado: {bestScenario.name}
                   </h3>
                   <Badge variant="default" className="animate-pulse">

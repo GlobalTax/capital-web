@@ -157,7 +157,7 @@ export const PageManager = () => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Páginas</h1>
+          <h1 className="text-3xl font-normal text-gray-900">Gestión de Páginas</h1>
           <p className="text-gray-600 mt-1">
             Administra todas las páginas del sitio web
           </p>

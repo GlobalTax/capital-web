@@ -115,7 +115,7 @@ const VentaEmpresasHeroWithForm = () => {
               <span className="text-slate-900 text-sm font-medium">+200 operaciones exitosas</span>
             </div>
 
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-foreground">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-normal leading-tight text-foreground">
               Vende tu empresa al
               <span className="text-foreground font-black"> máximo precio</span>
             </h1>
@@ -173,7 +173,7 @@ const VentaEmpresasHeroWithForm = () => {
           <div className="relative">
             <div className="bg-card rounded-2xl p-6 lg:p-8 shadow-2xl border border-border">
               <div className="text-center mb-6">
-                <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
+                <h2 className="text-xl lg:text-2xl font-normal text-foreground mb-2">
                   Solicita tu consulta gratuita
                 </h2>
                 <p className="text-muted-foreground text-sm">

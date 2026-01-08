@@ -16,7 +16,7 @@ const BlogContactSection = ({ postSlug }: BlogContactSectionProps) => {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-full mb-4">
             <MessageCircle className="h-7 w-7 text-primary" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+          <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-3">
             ¿Tienes dudas sobre este tema?
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">

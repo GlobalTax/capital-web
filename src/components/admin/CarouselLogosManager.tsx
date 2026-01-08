@@ -213,7 +213,7 @@ const CarouselLogosManager = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-black mb-2">Acceso Denegado</h2>
+          <h2 className="text-xl font-normal text-black mb-2">Acceso Denegado</h2>
           <p className="text-gray-600">No tienes permisos para acceder a este panel.</p>
         </div>
       </div>
@@ -223,7 +223,7 @@ const CarouselLogosManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-black">Logos del Carrusel</h2>
+        <h2 className="text-2xl font-normal text-black">Logos del Carrusel</h2>
         <Button 
           onClick={() => setShowAddForm(true)}
           className="bg-black text-white border border-gray-300 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
@@ -386,7 +386,7 @@ const CarouselLogosManager = () => {
                       />
                     )}
                     <div>
-                      <h3 className="text-lg font-bold text-black">{logo.company_name}</h3>
+                      <h3 className="text-lg font-normal text-black">{logo.company_name}</h3>
                       <p className="text-sm text-gray-600">
                         Orden: {logo.display_order} | {logo.is_active ? 'Activo' : 'Inactivo'}
                       </p>
