@@ -196,12 +196,29 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   const selectedChannel = channels.find(c => c.id === selectedChannelId);
 
   const handleChannelChange = async (channelId: string | null) => {
-    if (!contact || contact.origin !== 'contact') return;
+    if (!contact) return;
+    
+    // Mapeo de origen a tabla
+    const tableMap: Record<string, string> = {
+      'contact': 'contact_leads',
+      'valuation': 'company_valuations',
+      'general': 'general_contact_leads',
+      'collaborator': 'collaborator_applications',
+      'acquisition': 'acquisition_leads',
+      'advisor': 'advisor_valuations',
+      'company_acquisition': 'company_acquisition_inquiries',
+    };
+    
+    const table = tableMap[contact.origin];
+    if (!table) {
+      toast({ title: 'Error', description: 'Tipo de contacto no soportado', variant: 'destructive' });
+      return;
+    }
     
     setIsSavingChannel(true);
     try {
       const { error } = await supabase
-        .from('contact_leads')
+        .from(table as any)
         .update({ acquisition_channel_id: channelId })
         .eq('id', contact.id);
 
@@ -385,22 +402,18 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
             )}
           </div>
 
-          {/* Canal de adquisición (solo para contact_leads) */}
-          {contact.origin === 'contact' && (
-            <>
-              <Separator className="bg-[hsl(var(--linear-border))] my-4" />
-              <div className="space-y-1 mb-6">
-                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                  Canal de adquisición
-                </h3>
-                <AcquisitionChannelSelect
-                  value={selectedChannelId}
-                  onChange={handleChannelChange}
-                  disabled={isSavingChannel}
-                />
-              </div>
-            </>
-          )}
+          {/* Canal de adquisición - disponible para TODOS los contactos */}
+          <Separator className="bg-[hsl(var(--linear-border))] my-4" />
+          <div className="space-y-1 mb-6">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              Canal de adquisición
+            </h3>
+            <AcquisitionChannelSelect
+              value={selectedChannelId}
+              onChange={handleChannelChange}
+              disabled={isSavingChannel}
+            />
+          </div>
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />
 

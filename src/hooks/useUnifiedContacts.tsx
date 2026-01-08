@@ -170,7 +170,7 @@ export const useUnifiedContacts = () => {
       // Fetch company_valuations (exclude soft deleted)
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*, lead_status_crm, assigned_to')
+        .select('*, lead_status_crm, assigned_to, acquisition_channel:acquisition_channel_id(id, name, category)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -179,7 +179,7 @@ export const useUnifiedContacts = () => {
       // Fetch collaborator_applications (exclude soft deleted)
       const { data: collaboratorLeads, error: collaboratorError } = await supabase
         .from('collaborator_applications')
-        .select('*, lead_status_crm, assigned_to')
+        .select('*, lead_status_crm, assigned_to, acquisition_channel:acquisition_channel_id(id, name, category)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -195,7 +195,7 @@ export const useUnifiedContacts = () => {
       // Fetch acquisition_leads (exclude soft deleted)
       const { data: acquisitionLeads, error: acquisitionError } = await supabase
         .from('acquisition_leads')
-        .select('*')
+        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -204,7 +204,7 @@ export const useUnifiedContacts = () => {
       // Fetch company_acquisition_inquiries (exclude soft deleted)
       const { data: companyAcquisitionLeads, error: companyAcquisitionError } = await supabase
         .from('company_acquisition_inquiries')
-        .select('*')
+        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -213,7 +213,7 @@ export const useUnifiedContacts = () => {
       // Fetch advisor_valuations
       const { data: advisorLeads, error: advisorError } = await supabase
         .from('advisor_valuations')
-        .select('*')
+        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
         .order('created_at', { ascending: false });
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
@@ -319,6 +319,10 @@ export const useUnifiedContacts = () => {
           is_hot_lead: isHotLead(lead),
           lead_status_crm: lead.lead_status_crm,
           assigned_to: lead.assigned_to,
+          // Canal de adquisición
+          acquisition_channel_id: lead.acquisition_channel_id,
+          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
         })),
         
         // Collaborator applications
@@ -347,6 +351,10 @@ export const useUnifiedContacts = () => {
           is_hot_lead: isHotLead(lead),
           lead_status_crm: lead.lead_status_crm,
           assigned_to: lead.assigned_to,
+          // Canal de adquisición
+          acquisition_channel_id: (lead as any).acquisition_channel_id,
+          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
         })),
         
         // General contact leads (if table exists)
@@ -406,6 +414,10 @@ export const useUnifiedContacts = () => {
           referrer: lead.referrer,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+          // Canal de adquisición
+          acquisition_channel_id: (lead as any).acquisition_channel_id,
+          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
         })),
         
         // Company acquisition inquiries
@@ -437,6 +449,10 @@ export const useUnifiedContacts = () => {
           referrer: lead.referrer,
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
+          // Canal de adquisición
+          acquisition_channel_id: (lead as any).acquisition_channel_id,
+          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
         })),
         
         // Advisor leads (calculadora de asesores)
@@ -463,6 +479,10 @@ export const useUnifiedContacts = () => {
           user_agent: lead.user_agent,
           priority: (lead.ebitda && Number(lead.ebitda) > 50000 ? 'hot' : 'warm') as 'hot' | 'warm' | 'cold',
           is_hot_lead: lead.ebitda && Number(lead.ebitda) > 50000,
+          // Canal de adquisición
+          acquisition_channel_id: (lead as any).acquisition_channel_id,
+          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
         })),
       ];
 

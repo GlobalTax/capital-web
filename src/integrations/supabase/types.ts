@@ -127,6 +127,7 @@ export type Database = {
       }
       acquisition_leads: {
         Row: {
+          acquisition_channel_id: string | null
           acquisition_type: string | null
           additional_details: string | null
           brevo_deleted_at: string | null
@@ -169,6 +170,7 @@ export type Database = {
           utm_source: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           acquisition_type?: string | null
           additional_details?: string | null
           brevo_deleted_at?: string | null
@@ -211,6 +213,7 @@ export type Database = {
           utm_source?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           acquisition_type?: string | null
           additional_details?: string | null
           brevo_deleted_at?: string | null
@@ -252,7 +255,15 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "acquisition_leads_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ad_conversions: {
         Row: {
@@ -720,6 +731,7 @@ export type Database = {
       }
       advisor_valuations: {
         Row: {
+          acquisition_channel_id: string | null
           cif: string
           company_name: string
           contact_name: string
@@ -751,6 +763,7 @@ export type Database = {
           whatsapp_opt_in: boolean | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           cif: string
           company_name: string
           contact_name: string
@@ -782,6 +795,7 @@ export type Database = {
           whatsapp_opt_in?: boolean | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           cif?: string
           company_name?: string
           contact_name?: string
@@ -812,7 +826,15 @@ export type Database = {
           user_agent?: string | null
           whatsapp_opt_in?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "advisor_valuations_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_imports: {
         Row: {
@@ -2003,6 +2025,7 @@ export type Database = {
       }
       collaborator_applications: {
         Row: {
+          acquisition_channel_id: string | null
           assigned_at: string | null
           assigned_to: string | null
           brevo_deleted_at: string | null
@@ -2046,6 +2069,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2089,6 +2113,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2133,6 +2158,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "collaborator_applications_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "collaborator_applications_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
@@ -2143,6 +2175,7 @@ export type Database = {
       }
       company_acquisition_inquiries: {
         Row: {
+          acquisition_channel_id: string | null
           acquisition_type: string | null
           brevo_deleted_at: string | null
           brevo_lists: number[] | null
@@ -2196,6 +2229,7 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           acquisition_type?: string | null
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
@@ -2249,6 +2283,7 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           acquisition_type?: string | null
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
@@ -2302,6 +2337,13 @@ export type Database = {
           utm_term?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "company_acquisition_inquiries_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_acquisition_inquiries_processed_by"
             columns: ["processed_by"]
