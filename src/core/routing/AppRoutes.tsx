@@ -64,6 +64,7 @@ const MedioAmbiente = lazy(() => import('@/pages/sectores/MedioAmbiente').catch(
 
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
+const Noticias = lazy(() => import('@/pages/recursos/Noticias'));
 const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady').catch(() => import('@/pages/VentaEmpresas')));
 const SearchFundsHub = lazy(() => import('@/pages/recursos/SearchFundsHub'));
 
@@ -226,6 +227,7 @@ export const AppRoutes = () => {
         {/* === RESOURCE ROUTES === */}
         <Route path="/blog" element={<Navigate to="/recursos/blog" replace />} />
         <Route path="/recursos/blog" element={<Blog />} />
+        <Route path="/recursos/noticias" element={<Noticias />} />
         <Route path="/recursos/test-exit-ready" element={<TestExitReady />} />
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
         <Route path="/recursos/newsletter" element={<Newsletter />} />

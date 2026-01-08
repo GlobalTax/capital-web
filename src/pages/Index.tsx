@@ -11,6 +11,7 @@ import Services from '@/components/Services';
 import EcosistemaIntegral from '@/components/EcosistemaIntegral';
 import CaseStudiesCompact from '@/components/CaseStudiesCompact';
 import WhyChooseCapittal from '@/components/WhyChooseCapittal';
+import MANewsSection from '@/components/home/MANewsSection';
 import Contact from '@/components/Contact';
 
 const Index = () => {
@@ -70,6 +71,7 @@ const Index = () => {
       <Services />
       <EcosistemaIntegral />
       <CaseStudiesCompact />
+      <MANewsSection />
       <WhyChooseCapittal />
       <Contact />
     </UnifiedLayout>
