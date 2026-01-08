@@ -259,7 +259,7 @@ const HubVentaHero: React.FC = () => {
                   placeholder="Nombre completo *"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className="bg-slate-50 border-slate-200"
+                  className="bg-slate-50 border-slate-200 text-slate-900"
                   required
                 />
                 <Input
@@ -267,7 +267,7 @@ const HubVentaHero: React.FC = () => {
                   placeholder="Email *"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-slate-50 border-slate-200"
+                  className="bg-slate-50 border-slate-200 text-slate-900"
                   required
                 />
               </div>
@@ -278,14 +278,14 @@ const HubVentaHero: React.FC = () => {
                   placeholder="Teléfono *"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="bg-slate-50 border-slate-200"
+                  className="bg-slate-50 border-slate-200 text-slate-900"
                   required
                 />
                 <Input
                   placeholder="Nombre de la empresa *"
                   value={formData.company}
                   onChange={(e) => handleInputChange('company', e.target.value)}
-                  className="bg-slate-50 border-slate-200"
+                  className="bg-slate-50 border-slate-200 text-slate-900"
                   required
                 />
               </div>
@@ -294,7 +294,7 @@ const HubVentaHero: React.FC = () => {
                 value={formData.sector}
                 onValueChange={(value) => handleInputChange('sector', value)}
               >
-                <SelectTrigger className="bg-slate-50 border-slate-200">
+                <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
                   <SelectValue placeholder="Sector de actividad" />
                 </SelectTrigger>
                 <SelectContent>
@@ -308,7 +308,7 @@ const HubVentaHero: React.FC = () => {
                 value={formData.revenue}
                 onValueChange={(value) => handleInputChange('revenue', value)}
               >
-                <SelectTrigger className="bg-slate-50 border-slate-200">
+                <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
                   <SelectValue placeholder="Facturación aproximada" />
                 </SelectTrigger>
                 <SelectContent>
@@ -322,7 +322,7 @@ const HubVentaHero: React.FC = () => {
                 value={formData.situation}
                 onValueChange={(value) => handleInputChange('situation', value)}
               >
-                <SelectTrigger className="bg-slate-50 border-slate-200">
+                <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
                   <SelectValue placeholder="¿Cuál es tu situación?" />
                 </SelectTrigger>
                 <SelectContent>
@@ -336,7 +336,7 @@ const HubVentaHero: React.FC = () => {
                 placeholder="Mensaje adicional (opcional)"
                 value={formData.message}
                 onChange={(e) => handleInputChange('message', e.target.value)}
-                className="bg-slate-50 border-slate-200 min-h-[80px]"
+                className="bg-slate-50 border-slate-200 text-slate-900 min-h-[80px]"
               />
 
               <Button 
