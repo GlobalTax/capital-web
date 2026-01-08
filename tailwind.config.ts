@@ -19,7 +19,8 @@ export default {
 		},
 		extend: {
 		fontFamily: {
-			'sans': ['General Sans', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+			'heading': ['General Sans', 'system-ui', 'sans-serif'],
+			'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
 		},
 			colors: {
 				border: 'hsl(var(--border))',
