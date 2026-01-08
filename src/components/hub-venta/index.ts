@@ -1,0 +1,9 @@
+export { default as HubVentaHero } from './HubVentaHero';
+export { default as HubVentaBenefits } from './HubVentaBenefits';
+export { default as HubVentaProcess } from './HubVentaProcess';
+export { default as HubVentaProfiles } from './HubVentaProfiles';
+export { default as HubVentaSectors } from './HubVentaSectors';
+export { default as HubVentaCases } from './HubVentaCases';
+export { default as HubVentaFAQ } from './HubVentaFAQ';
+export { default as HubVentaFinalCTA } from './HubVentaFinalCTA';
+export { default as HubVentaStickyMobile } from './HubVentaStickyMobile';
