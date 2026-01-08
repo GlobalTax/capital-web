@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Calculator, TrendingUp, Building2, ArrowRight } from 'lucide-react';
 
 const DocumentacionMAPopularArticles = () => {
@@ -42,13 +42,13 @@ const DocumentacionMAPopularArticles = () => {
               </div>
               <h3 className="text-xl font-medium text-gray-900 mb-4">{articulo.title}</h3>
               <p className="text-gray-500 mb-8 font-light leading-relaxed">{articulo.description}</p>
-              <a 
-                href={articulo.link}
+              <Link 
+                to={articulo.link}
                 className="text-gray-900 font-medium hover:text-gray-600 flex items-center gap-3 group-hover:gap-4 transition-all duration-300"
               >
                 <span>Explorar</span>
                 <ArrowRight className="w-4 h-4 transition-transform duration-300" />
-              </a>
+              </Link>
             </div>
           ))}
         </div>
