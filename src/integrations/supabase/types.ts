@@ -2763,6 +2763,7 @@ export type Database = {
           brevo_deleted_at: string | null
           brevo_lists: number[] | null
           brevo_unsubscribed_lists: number[] | null
+          cif: string | null
           company: string
           company_size: string | null
           country: string | null
@@ -2822,6 +2823,7 @@ export type Database = {
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
           brevo_unsubscribed_lists?: number[] | null
+          cif?: string | null
           company: string
           company_size?: string | null
           country?: string | null
@@ -2881,6 +2883,7 @@ export type Database = {
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
           brevo_unsubscribed_lists?: number[] | null
+          cif?: string | null
           company?: string
           company_size?: string | null
           country?: string | null

@@ -58,6 +58,7 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         email: data.email,
         phone: data.phone,
         company: data.company,
+        cif: data.cif,
         sectors_of_interest: data.sectors_of_interest,
         investment_budget: data.investment_budget,
         target_timeline: data.target_timeline,
@@ -68,6 +69,7 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         email: data.email,
         phone: data.phone,
         company: data.company,
+        cif: data.cif,
         sectors_of_interest: data.sectors_of_interest,
         investment_budget: data.investment_budget,
         target_timeline: data.target_timeline,
@@ -89,6 +91,7 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         email: data.email,
         phone: data.phone,
         company: data.company,
+        cif: data.cif,
         service_type: data.service_type,
         company_size: data.company_size,
       };

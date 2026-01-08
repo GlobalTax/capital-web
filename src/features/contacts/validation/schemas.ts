@@ -9,6 +9,7 @@ export const contactUpdateSchema = z.object({
   notes: z.string().max(1000).optional(),
   tags: z.array(z.string()).optional(),
   last_contact_at: z.string().datetime().optional(),
+  cif: z.string().max(32).optional(),
 });
 
 export const contactFiltersSchema = z.object({
