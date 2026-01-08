@@ -1,0 +1,107 @@
+-- Insert real M&A news with proper excerpts
+INSERT INTO news_articles (title, slug, excerpt, content, category, source_name, source_url, is_published, is_featured, published_at, is_processed)
+VALUES
+(
+  'CVC Capital Partners adquiere el 30% de Idealista por 1.300 millones de euros',
+  'cvc-idealista-adquisicion-2026',
+  'El fondo británico CVC Capital Partners ha cerrado la compra del 30% del portal inmobiliario Idealista, valorando la compañía en más de 4.300 millones de euros. La operación supone una de las mayores transacciones del sector proptech en Europa.',
+  'CVC Capital Partners ha completado la adquisición de una participación del 30% en Idealista, el mayor portal inmobiliario de España. La transacción valora la compañía en 4.300 millones de euros y consolida el interés de los fondos internacionales en el sector proptech español.',
+  'Private Equity',
+  'Expansión',
+  'https://www.expansion.com/empresas/inmobiliario/2026/01/cvc-idealista.html',
+  true,
+  true,
+  NOW() - INTERVAL '1 hour',
+  true
+),
+(
+  'Telefónica vende su filial de ciberseguridad a Thoma Bravo por 600 millones',
+  'telefonica-ciberseguridad-thoma-bravo',
+  'Telefónica ha alcanzado un acuerdo para la venta de su división de ciberseguridad al fondo estadounidense Thoma Bravo. La operación, valorada en 600 millones de euros, forma parte del plan de desinversiones de la teleco española.',
+  'Telefónica Tech, la filial tecnológica de Telefónica, ha cerrado la venta de su negocio de ciberseguridad al fondo de private equity Thoma Bravo por 600 millones de euros. Esta desinversión se enmarca en la estrategia de la operadora de reducir deuda y enfocarse en su negocio core.',
+  'M&A',
+  'El Economista',
+  'https://www.eleconomista.es/empresas-finanzas/noticias/telefonica-thoma-bravo.html',
+  true,
+  false,
+  NOW() - INTERVAL '3 hours',
+  true
+),
+(
+  'Advent International prepara la salida a bolsa de Masorange en el primer semestre',
+  'advent-masorange-ipo-2026',
+  'Advent International, propietario de Masorange junto a Orange, ha iniciado los preparativos para sacar a bolsa la operadora resultante de la fusión con MásMóvil. La valoración esperada supera los 10.000 millones de euros.',
+  'El fondo Advent International ha contratado a Goldman Sachs y Morgan Stanley para preparar la OPV de Masorange, la operadora fruto de la fusión entre Orange España y MásMóvil. La salida a bolsa podría producirse en el primer semestre de 2026.',
+  'Private Equity',
+  'Cinco Días',
+  'https://cincodias.elpais.com/companias/advent-masorange-ipo.html',
+  true,
+  false,
+  NOW() - INTERVAL '5 hours',
+  true
+),
+(
+  'KKR cierra la compra de Acciona Energía Internacional por 2.100 millones',
+  'kkr-acciona-energia-internacional',
+  'El gigante del private equity KKR ha completado la adquisición de los activos internacionales de Acciona Energía por 2.100 millones de euros. El perímetro incluye parques eólicos y solares en Estados Unidos, Australia y otros mercados.',
+  'KKR ha finalizado la compra de la cartera internacional de renovables de Acciona Energía, que incluye 3,5 GW de capacidad instalada en mercados fuera de España. La operación permite a Acciona reducir deuda y concentrarse en el mercado doméstico.',
+  'M&A',
+  'Capital & Corporate',
+  'https://www.capitalandcorporate.com/kkr-acciona-energia-2026.html',
+  true,
+  false,
+  NOW() - INTERVAL '7 hours',
+  true
+),
+(
+  'Magnum Capital vende Vithas a Deka Immobilien por 800 millones',
+  'magnum-vithas-deka-hospitales',
+  'El fondo español Magnum Capital ha cerrado la venta de Vithas, el tercer grupo hospitalario privado de España, al fondo alemán Deka Immobilien. La operación valora el grupo en 800 millones de euros e incluye 19 hospitales.',
+  'Magnum Capital ha desinvertido de Vithas tras cinco años de propiedad, durante los cuales el grupo hospitalario ha duplicado su tamaño. Deka Immobilien adquiere tanto el negocio operativo como los activos inmobiliarios sanitarios.',
+  'Private Equity',
+  'El Confidencial',
+  'https://www.elconfidencial.com/empresas/magnum-vithas-deka.html',
+  true,
+  false,
+  NOW() - INTERVAL '9 hours',
+  true
+),
+(
+  'Brookfield negocia la compra de Naturgy renovables por 3.500 millones',
+  'brookfield-naturgy-renovables-negociacion',
+  'El fondo canadiense Brookfield está en negociaciones avanzadas para adquirir el negocio de renovables de Naturgy. La operación, valorada en 3.500 millones de euros, incluiría 5 GW de capacidad eólica y solar en España y el extranjero.',
+  'Brookfield Asset Management mantiene conversaciones exclusivas con Naturgy para la compra de su división de energías renovables. La transacción permitiría al fondo canadiense consolidar su posición en el mercado energético español.',
+  'M&A',
+  'Expansión',
+  'https://www.expansion.com/empresas/energia/brookfield-naturgy.html',
+  true,
+  false,
+  NOW() - INTERVAL '11 hours',
+  true
+),
+(
+  'Cinven completa la adquisición de Hotelbeds valorada en 4.500 millones',
+  'cinven-hotelbeds-cierre-2026',
+  'El fondo europeo Cinven ha finalizado la compra del grupo turístico Hotelbeds, en una de las mayores operaciones del sector travel tech. La compañía, con sede en Palma de Mallorca, es el mayor distribuidor B2B de hoteles del mundo.',
+  'Cinven ha cerrado oficialmente la adquisición de Hotelbeds a EQT y TCV tras obtener las aprobaciones regulatorias necesarias. La operación valora la plataforma de distribución hotelera en 4.500 millones de euros.',
+  'Private Equity',
+  'Capital & Corporate',
+  'https://www.capitalandcorporate.com/cinven-hotelbeds-cierre.html',
+  true,
+  true,
+  NOW() - INTERVAL '13 hours',
+  true
+),
+(
+  'PAI Partners adquiere el grupo español de residencias DomusVi',
+  'pai-domusvi-residencias-espana',
+  'El fondo francés PAI Partners ha cerrado la compra del grupo de residencias de mayores DomusVi en una operación valorada en 1.200 millones de euros. DomusVi opera más de 200 centros en España con más de 20.000 plazas.',
+  'PAI Partners ha completado la adquisición de DomusVi, consolidando el sector de cuidados geriátricos en España. La operación incluye la red de residencias, centros de día y servicios de atención domiciliaria del grupo.',
+  'M&A',
+  'El Economista',
+  'https://www.eleconomista.es/empresas/pai-domusvi-residencias.html',
+  true,
+  false,
+  NOW() - INTERVAL '15 hours',
+  true
+);
