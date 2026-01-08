@@ -135,3 +135,6 @@ verify_jwt = false
 
 [functions.generate-company-summary]
 verify_jwt = false
+
+[functions.bulk-update-contacts]
+verify_jwt = false

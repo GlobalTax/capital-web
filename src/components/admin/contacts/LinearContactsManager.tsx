@@ -8,6 +8,7 @@ import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
 import { ContactStatsCards } from '@/features/contacts';
+import { BulkChannelSelect } from './BulkChannelSelect';
 import { Button } from '@/components/ui/button';
 import { Send, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -110,28 +111,35 @@ const LinearContactsManager = () => {
         </div>
         
         {selectedIds.length > 0 && (
-          <Button 
-            onClick={handleBulkSyncToBrevo} 
-            variant="secondary" 
-            size="sm"
-            disabled={isSyncing || notSyncedCount === 0}
-            className={cn(
-              "h-8",
-              notSyncedCount === 0 && "border-green-500/30 text-green-600"
-            )}
-          >
-            {notSyncedCount === 0 ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-                Ya en Brevo ({selectedIds.length})
-              </>
-            ) : (
-              <>
-                <Send className="h-3.5 w-3.5 mr-1.5" />
-                {isSyncing ? 'Sincronizando...' : `Brevo (${notSyncedCount}${alreadySyncedCount > 0 ? `/${selectedIds.length}` : ''})`}
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <BulkChannelSelect 
+              selectedIds={selectedIds}
+              contacts={contacts}
+              onSuccess={clearSelection}
+            />
+            <Button 
+              onClick={handleBulkSyncToBrevo} 
+              variant="secondary" 
+              size="sm"
+              disabled={isSyncing || notSyncedCount === 0}
+              className={cn(
+                "h-8",
+                notSyncedCount === 0 && "border-green-500/30 text-green-600"
+              )}
+            >
+              {notSyncedCount === 0 ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-green-600" />
+                  Ya en Brevo ({selectedIds.length})
+                </>
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5 mr-1.5" />
+                  {isSyncing ? 'Sincronizando...' : `Brevo (${notSyncedCount}${alreadySyncedCount > 0 ? `/${selectedIds.length}` : ''})`}
+                </>
+              )}
+            </Button>
+          </div>
         )}
       </div>
 
