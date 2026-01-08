@@ -31,7 +31,8 @@ import {
   CalendarDays,
   Bell,
   UserPlus,
-  Shield
+  Shield,
+  Newspaper
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -281,6 +282,19 @@ export const sidebarSections: SidebarSection[] = [
         icon: Shield,
         badge: "NEW",
         description: "NDA y Propuestas de Mandato"
+      },
+    ]
+  },
+  {
+    title: "📰 NOTICIAS M&A",
+    description: "Gestión de noticias automatizadas",
+    items: [
+      { 
+        title: "Noticias M&A",
+        url: "/admin/noticias", 
+        icon: Newspaper,
+        badge: "NEW",
+        description: "Moderar y publicar noticias"
       },
     ]
   },

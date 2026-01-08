@@ -65,6 +65,7 @@ import {
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
 const LazyManualLeadEntryPage = React.lazy(() => import('@/pages/admin/ManualLeadEntryPage'));
 const LazyFase0TemplatesPage = React.lazy(() => import('@/pages/admin/Fase0TemplatesPage'));
+const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news/NewsArticlesManager').then(m => ({ default: m.NewsArticlesManager })));
 
 const AdminRouter = () => {
   const { isAdmin, isLoading } = useAdminAuth();
@@ -124,6 +125,7 @@ const AdminRouter = () => {
           <Route path="/landing-pages" element={<LazyLandingPagesPage />} />
           <Route path="/landing-pages-unified" element={<LazyUnifiedLandingPagesPage />} />
           <Route path="/banners" element={<LazyAdminBanners />} />
+          <Route path="/noticias" element={<LazyNewsArticlesManager />} />
           
           {/* Job Posts Management - Complete */}
           <Route path="/jobs" element={<LazyJobPostsManager />} />
