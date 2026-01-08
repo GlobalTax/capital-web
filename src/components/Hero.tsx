@@ -33,7 +33,7 @@ const Hero = () => {
                 </div>
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-slate-900 mb-6 leading-tight">
                 {t('hero.title')}{" "}
                 <span className="text-primary">{t('hero.title.highlight')}</span>{" "}
                 {t('hero.title.end')}
@@ -56,11 +56,11 @@ const Hero = () => {
               {/* Stats Row */}
               <div className="grid grid-cols-2 gap-8 mb-10">
                 <div>
-                  <div className="text-3xl font-bold text-slate-900 mb-2">€902M</div>
+                  <div className="text-3xl font-medium text-slate-900 mb-2">€902M</div>
                   <div className="text-slate-600">{t('hero.stat.transactionalValue')}</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-slate-900 mb-2">98,7%</div>
+                  <div className="text-3xl font-medium text-slate-900 mb-2">98,7%</div>
                   <div className="text-slate-600">{t('hero.stat.successRate')}</div>
                 </div>
               </div>
@@ -111,7 +111,7 @@ const Hero = () => {
                 aria-label="Panel de estadísticas de Capittal Market"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-slate-900">{t('hero.dashboard.title')}</h3>
+                  <h3 className="text-lg font-medium text-slate-900">{t('hero.dashboard.title')}</h3>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                     <span className="text-xs text-slate-600 font-medium">{t('hero.dashboard.live')}</span>
@@ -121,15 +121,15 @@ const Hero = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-3 gap-4 text-center mb-6">
                     <div>
-                      <div className="text-2xl font-bold text-slate-900">200+</div>
+                      <div className="text-2xl font-medium text-slate-900">200+</div>
                       <div className="text-xs text-slate-600">{t('hero.dashboard.operations')}</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-slate-900">€902M</div>
+                      <div className="text-2xl font-medium text-slate-900">€902M</div>
                       <div className="text-xs text-slate-600">{t('hero.dashboard.totalValue')}</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-slate-900">60+</div>
+                      <div className="text-2xl font-medium text-slate-900">60+</div>
                       <div className="text-xs text-slate-600">{t('hero.dashboard.specialists')}</div>
                     </div>
                   </div>
@@ -141,7 +141,7 @@ const Hero = () => {
                         <span className="font-medium text-slate-900">Industrial Tech</span>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-slate-900">€45M</div>
+                        <div className="font-medium text-slate-900">€45M</div>
                         <div className="text-sm text-emerald-600 font-medium">+15%</div>
                       </div>
                     </div>
@@ -152,7 +152,7 @@ const Hero = () => {
                         <span className="font-medium text-slate-900">Retail Chain</span>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-slate-900">€32M</div>
+                        <div className="font-medium text-slate-900">€32M</div>
                         <div className="text-sm text-blue-600 font-medium">+12%</div>
                       </div>
                     </div>
@@ -163,7 +163,7 @@ const Hero = () => {
                         <span className="font-medium text-slate-900">SaaS Platform</span>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-slate-900">€28M</div>
+                        <div className="font-medium text-slate-900">€28M</div>
                         <div className="text-sm text-purple-600 font-medium">+18%</div>
                       </div>
                     </div>
