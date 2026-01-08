@@ -24,7 +24,7 @@ const SectorExpertiseGrid: React.FC<SectorExpertiseGridProps> = ({
     <section className="py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-normal text-slate-900 mb-4">
             {title}
           </h2>
           {subtitle && (
@@ -53,7 +53,7 @@ const SectorExpertiseGrid: React.FC<SectorExpertiseGridProps> = ({
                 </div>
                 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors">
+                <h3 className="text-xl font-normal text-slate-900 mb-3 group-hover:text-slate-700 transition-colors">
                   {item.title}
                 </h3>
                 

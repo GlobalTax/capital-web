@@ -222,7 +222,7 @@ const SectorOperationsGrid: React.FC<SectorOperationsGridProps> = ({
           <Badge className="mb-4 bg-slate-900 text-white hover:bg-slate-800">
             Oportunidades Activas
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-normal text-slate-900 mb-4">
             {title}
           </h2>
           {subtitle && (

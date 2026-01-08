@@ -53,7 +53,7 @@ const ValoracionesHero = () => {
               Expertos en Valoración
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 mb-6 leading-tight">
               Valoración Profesional de Empresas
             </h1>
             
