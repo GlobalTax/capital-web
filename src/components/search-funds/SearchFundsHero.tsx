@@ -35,7 +35,7 @@ const SearchFundsHero: React.FC = () => {
 
             {/* Title */}
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-foreground leading-tight">
                 Search Funds: <br />
                 <span className="text-primary">El futuro de la sucesión empresarial</span>
               </h1>

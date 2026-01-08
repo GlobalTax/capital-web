@@ -38,7 +38,7 @@ const differentiators = [
             Nuestras Ventajas Competitivas
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             Lo Que Nos Diferencia
           </h2>
           
@@ -62,7 +62,7 @@ const differentiators = [
                 </div>
               </div>
               
-              <h3 className="text-xl font-bold text-black mb-4">
+              <h3 className="text-xl font-normal text-black mb-4">
                 {item.title}
               </h3>
               

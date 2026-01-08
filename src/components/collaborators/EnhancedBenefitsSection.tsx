@@ -71,7 +71,7 @@ export const EnhancedBenefitsSection = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-black mb-6">
             {t('collab.benefits.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -98,7 +98,7 @@ export const EnhancedBenefitsSection = () => {
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-lg font-bold text-black mb-4">
+                  <h3 className="text-lg font-normal text-black mb-4">
                     {benefit.title}
                   </h3>
                   

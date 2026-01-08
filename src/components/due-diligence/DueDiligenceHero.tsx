@@ -11,7 +11,7 @@ const DueDiligenceHero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 leading-tight">
                 Due Diligence
                 <span className="block text-slate-900">Profesional y Estratégico</span>
               </h1>
@@ -56,7 +56,7 @@ const DueDiligenceHero = () => {
             <div className="bg-card rounded-xl shadow-xl p-6 border border-border">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-black">Dashboard de Due Diligence</h3>
+                  <h3 className="text-lg font-normal text-black">Dashboard de Due Diligence</h3>
                   <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                     En Progreso
                   </div>
@@ -97,7 +97,7 @@ const DueDiligenceHero = () => {
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-bold text-black mb-2">Próximos Hitos</h4>
+                  <h4 className="font-normal text-black mb-2">Próximos Hitos</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div>• Revisión de contratos principales</div>
                     <div>• Análisis de competencia</div>

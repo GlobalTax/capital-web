@@ -17,7 +17,7 @@ const MinimalistCTA = () => {
             Empezar Ahora
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             ¿Listo para maximizar el valor de tu empresa?
           </h2>
           

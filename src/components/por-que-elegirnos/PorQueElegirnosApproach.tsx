@@ -42,7 +42,7 @@ const PorQueElegirnosApproach = () => {
     <section className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-black mb-6">
+          <h2 className="text-4xl font-normal text-black mb-6">
             Nuestro Enfoque
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -67,7 +67,7 @@ const PorQueElegirnosApproach = () => {
                     <div className={`bg-gradient-to-br ${approach.iconColor} text-white rounded-2xl w-16 h-16 flex items-center justify-center mr-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg`}>
                       <Icon className="h-8 w-8" />
                     </div>
-                    <h3 className="text-2xl font-bold text-black group-hover:text-gray-800 transition-colors">
+                    <h3 className="text-2xl font-normal text-black group-hover:text-gray-800 transition-colors">
                       {approach.title}
                     </h3>
                   </div>

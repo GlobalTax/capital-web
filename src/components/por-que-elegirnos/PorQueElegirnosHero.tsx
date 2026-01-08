@@ -41,7 +41,7 @@ const PorQueElegirnosHero = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="animate-fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 mb-6 leading-tight">
               Por Qué Elegir
               <span className="block text-primary">
                 Capittal

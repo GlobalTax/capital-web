@@ -11,7 +11,7 @@ const ReestructuracionesHero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 leading-tight">
                 Reestructuraciones
                 <span className="block text-slate-900">Empresariales</span>
               </h1>
@@ -56,7 +56,7 @@ const ReestructuracionesHero = () => {
             <div className="bg-card rounded-xl shadow-xl p-6 border border-border">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-black">Plan de Reestructuración</h3>
+                  <h3 className="text-lg font-normal text-black">Plan de Reestructuración</h3>
                   <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                     Activo
                   </div>
@@ -97,7 +97,7 @@ const ReestructuracionesHero = () => {
                 </div>
 
                 <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-bold text-black mb-2">Objetivos Principales</h4>
+                  <h4 className="font-normal text-black mb-2">Objetivos Principales</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div>• Reducir costes operativos en 25%</div>
                     <div>• Mejorar flujo de caja en 18 meses</div>

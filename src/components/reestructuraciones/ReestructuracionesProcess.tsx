@@ -35,7 +35,7 @@ const ReestructuracionesProcess = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             Nuestro Proceso de Reestructuración
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -51,7 +51,7 @@ const ReestructuracionesProcess = () => {
                 <div className="text-black mb-4 flex justify-center">
                   {step.icon}
                 </div>
-                <h3 className="text-lg font-bold text-black mb-3">
+                <h3 className="text-lg font-normal text-black mb-3">
                   {step.title}
                 </h3>
                 <p className="text-gray-600 text-sm mb-4 leading-relaxed">
@@ -67,7 +67,7 @@ const ReestructuracionesProcess = () => {
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <h3 className="text-xl font-bold text-black mb-4">
+            <h3 className="text-xl font-normal text-black mb-4">
               Tasa de Éxito
             </h3>
             <div className="text-3xl font-bold text-green-600 mb-2">87%</div>
@@ -77,7 +77,7 @@ const ReestructuracionesProcess = () => {
           </div>
           
           <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <h3 className="text-xl font-bold text-black mb-4">
+            <h3 className="text-xl font-normal text-black mb-4">
               Ahorro Promedio
             </h3>
             <div className="text-3xl font-bold text-black mb-2">32%</div>
@@ -87,7 +87,7 @@ const ReestructuracionesProcess = () => {
           </div>
           
           <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-            <h3 className="text-xl font-bold text-black mb-4">
+            <h3 className="text-xl font-normal text-black mb-4">
               Tiempo de Recuperación
             </h3>
             <div className="text-3xl font-bold text-black mb-2">18</div>

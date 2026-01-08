@@ -61,7 +61,7 @@ export const SearchFundsForSellers = () => {
             <span className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
               Para empresarios
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl md:text-4xl font-normal text-foreground mb-6">
               Ventajas de vender tu empresa a un Search Fund
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">

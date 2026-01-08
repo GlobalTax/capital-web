@@ -9,7 +9,7 @@ const DueDiligenceCTA = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="space-y-8">
           <div className="space-y-6">
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+            <h2 className="text-4xl md:text-5xl font-normal leading-tight">
               ¿Listo para un Análisis Completo?
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">

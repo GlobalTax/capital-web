@@ -12,7 +12,7 @@ const LegalServiceTechnical = () => {
         {/* Header Section */}
         <div className="mb-12">
           <div className="flex items-center gap-4 mb-6">
-            <h1 className="text-4xl font-bold text-foreground">
+            <h1 className="text-4xl font-normal text-foreground">
               Asesoramiento Legal M&A
             </h1>
             <Badge variant="secondary" className="text-xs">

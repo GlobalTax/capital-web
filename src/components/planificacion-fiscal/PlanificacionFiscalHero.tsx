@@ -13,7 +13,7 @@ const PlanificacionFiscalHero = () => {
               <div className="inline-flex items-center bg-black text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
                 Optimización Fiscal desde 2008
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-6 leading-tight">
                 Planificación y{' '}
                 <span className="text-black">Optimización Fiscal en M&A</span>
               </h1>
@@ -48,7 +48,7 @@ const PlanificacionFiscalHero = () => {
 
           <div className="lg:col-span-5">
             <div className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-              <h3 className="text-lg font-bold text-black mb-4">
+              <h3 className="text-lg font-normal text-black mb-4">
                 Simulador de Optimización Fiscal
               </h3>
               

@@ -50,7 +50,7 @@ const DueDiligenceTypes = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             Tipos de Due Diligence
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -69,7 +69,7 @@ const DueDiligenceTypes = () => {
                       {ddType.icon}
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold">{ddType.title}</h3>
+                      <h3 className="text-2xl font-normal">{ddType.title}</h3>
                       <p className="text-lg opacity-90">{ddType.subtitle}</p>
                     </div>
                   </div>
@@ -80,7 +80,7 @@ const DueDiligenceTypes = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <h4 className="text-lg font-bold text-black mb-3 flex items-center">
+                    <h4 className="text-lg font-normal text-black mb-3 flex items-center">
                       <Target className="mr-2" size={20} />
                       Objetivos
                     </h4>
@@ -95,7 +95,7 @@ const DueDiligenceTypes = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-lg font-bold text-black mb-3 flex items-center">
+                    <h4 className="text-lg font-normal text-black mb-3 flex items-center">
                       <TrendingUp className="mr-2" size={20} />
                       Beneficios
                     </h4>
