@@ -99,50 +99,50 @@ export const MANewsSection: React.FC = () => {
         {/* News Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {news.map((article) => (
-            <Card 
-              key={article.id} 
-              className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20"
+            <a
+              key={article.id}
+              href={article.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
             >
-              <CardContent className="p-5">
-                {/* Category Badge */}
-                <Badge 
-                  variant="secondary" 
-                  className={`mb-3 text-xs ${getCategoryColor(article.category)}`}
-                >
-                  {article.category}
-                </Badge>
+              <Card 
+                className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20 cursor-pointer h-full"
+              >
+                <CardContent className="p-5">
+                  {/* Category Badge */}
+                  <Badge 
+                    variant="secondary" 
+                    className={`mb-3 text-xs ${getCategoryColor(article.category)}`}
+                  >
+                    {article.category}
+                  </Badge>
 
-                {/* Title */}
-                <h3 className="text-sm font-normal text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                  {article.title}
-                </h3>
+                  {/* Title */}
+                  <h3 className="text-sm font-normal text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                    {article.title}
+                  </h3>
 
-                {/* Excerpt */}
-                <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
-                  {article.excerpt}
-                </p>
+                  {/* Excerpt */}
+                  <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+                    {article.excerpt}
+                  </p>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(article.published_at || article.created_at)}</span>
-                  </div>
-                  
-                  {article.source_url && (
-                    <a 
-                      href={article.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 hover:text-primary transition-colors"
-                    >
+                  {/* Footer */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{formatDate(article.published_at || article.created_at)}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1 group-hover:text-primary transition-colors">
                       <span className="truncate max-w-[80px]">{article.source_name}</span>
                       <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </a>
           ))}
         </div>
 
