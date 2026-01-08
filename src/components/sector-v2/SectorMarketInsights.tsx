@@ -37,7 +37,7 @@ const SectorMarketInsights: React.FC<SectorMarketInsightsProps> = ({
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left - Text Content */}
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-normal text-slate-900 mb-4">
               {title}
             </h2>
             {subtitle && (

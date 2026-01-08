@@ -29,7 +29,7 @@ const SectorStatsV2: React.FC<SectorStatsV2Props> = ({
         {(title || subtitle) && (
           <div className="text-center mb-16">
             {title && (
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-normal text-slate-900 mb-4">
                 {title}
               </h2>
             )}

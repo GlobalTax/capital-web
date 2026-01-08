@@ -54,7 +54,7 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
               {badge}
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 leading-tight">
               {title}
             </h1>
             
@@ -111,7 +111,7 @@ const SectorHeroV2: React.FC<SectorHeroV2Props> = ({
                           </span>
                         )}
                       </div>
-                      <div className="text-2xl font-bold text-slate-900 mb-1">
+                      <div className="text-2xl font-normal text-slate-900 mb-1">
                         {metric.value}
                       </div>
                       <div className="text-sm text-slate-500">

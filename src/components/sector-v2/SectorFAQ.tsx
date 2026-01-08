@@ -51,7 +51,7 @@ const SectorFAQ: React.FC<SectorFAQProps> = ({
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-200 mb-6">
             <HelpCircle className="h-7 w-7 text-slate-700" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-normal text-slate-900 mb-4">
             {title}
           </h2>
           {subtitle && (

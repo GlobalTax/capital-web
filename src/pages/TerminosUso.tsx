@@ -21,7 +21,7 @@ const TerminosUso = () => {
       <UnifiedLayout variant="home">
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-8">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-normal text-slate-900 mb-8">
             Términos y Condiciones de Uso
           </h1>
           
@@ -34,7 +34,7 @@ const TerminosUso = () => {
 
             <div className="space-y-8">
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">1. Aceptación de los Términos</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">1. Aceptación de los Términos</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Al acceder y utilizar este sitio web o cualquiera de los servicios y herramientas que Capittal ofrece, 
                   usted declara que ha leído, entendido y acepta quedar obligado por estos Términos y Condiciones 
@@ -44,7 +44,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">2. Definiciones</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">2. Definiciones</h2>
                 <div className="text-gray-600 leading-relaxed space-y-3">
                   <p><strong>"Sitio" o "Plataforma":</strong> el portal web capittal.es y todas las páginas y funcionalidades asociadas.</p>
                   <p><strong>"Herramienta de Valoración":</strong> software y formularios que permiten obtener una estimación del valor de una empresa en función de la información aportada por el Usuario.</p>
@@ -53,7 +53,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">3. Uso del Sitio y Servicios</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">3. Uso del Sitio y Servicios</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   El Sitio puede ser utilizado únicamente para fines legítimos. Usted se compromete a no:
                 </p>
@@ -70,7 +70,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">4. Uso de la Herramienta de Valoración</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">4. Uso de la Herramienta de Valoración</h2>
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold text-black mb-2">4.1 Finalidad Informativa</h3>
@@ -110,7 +110,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">5. Propiedad Intelectual</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">5. Propiedad Intelectual</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Todos los contenidos del Sitio, incluidas marcas, textos, gráficos, logotipos, iconos, imágenes, 
                   vídeos y software, son propiedad de Capittal o se usan con licencia y están protegidos por las 
@@ -120,7 +120,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">6. Obligaciones del Usuario</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">6. Obligaciones del Usuario</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">El Usuario se compromete a:</p>
                 <ul className="text-gray-600 leading-relaxed space-y-2 ml-4">
                   <li>• Facilitar información veraz y actualizada cuando se le solicite</li>
@@ -130,7 +130,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">7. Exención de Responsabilidad</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">7. Exención de Responsabilidad</h2>
                 <p className="text-gray-600 leading-relaxed">
                   La información publicada en el Sitio tiene fines exclusivamente informativos y no constituye 
                   asesoramiento profesional específico. Capittal no garantiza que el contenido sea preciso, 
@@ -140,7 +140,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">8. Limitación de Responsabilidad</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">8. Limitación de Responsabilidad</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   En la medida permitida por la ley, Capittal y sus proveedores no serán responsables de daños 
                   directos, indirectos, incidentales, especiales o consecuentes derivados de:
@@ -153,7 +153,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">9. Indemnización</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">9. Indemnización</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Usted se compromete a indemnizar y mantener indemne a Capittal, sus directivos, empleados 
                   y colaboradores frente a cualquier reclamación, daño, pérdida, responsabilidad, costes 
@@ -163,7 +163,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">10. Modificaciones</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">10. Modificaciones</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Capittal podrá modificar estos Términos y Condiciones en cualquier momento, publicando una versión 
                   actualizada en el Sitio. Las modificaciones entrarán en vigor desde su publicación, por lo que se 
@@ -173,7 +173,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">11. Ley Aplicable y Jurisdicción</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">11. Ley Aplicable y Jurisdicción</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Estos Términos y Condiciones se regirán e interpretarán de acuerdo con las leyes de España. 
                   Para cualquier controversia que pudiera derivarse del acceso o uso del Sitio, usted se somete 
@@ -182,7 +182,7 @@ const TerminosUso = () => {
               </div>
 
               <div className="bg-white border-0.5 border-black rounded-lg p-6">
-                <h2 className="text-xl font-bold text-black mb-4">12. Contacto</h2>
+                <h2 className="text-xl font-normal text-slate-900 mb-4">12. Contacto</h2>
                 <p className="text-gray-600 leading-relaxed">
                   Para cualquier duda sobre estos Términos y Condiciones, puede contactar con Capittal en 
                   <a href="mailto:info@capittal.es" className="text-blue-600 hover:text-blue-800 underline ml-1">info@capittal.es</a> 

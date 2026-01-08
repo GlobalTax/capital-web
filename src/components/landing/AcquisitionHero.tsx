@@ -9,7 +9,7 @@ const AcquisitionHero = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column - Content */}
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 leading-tight">
               Conectamos empresas con 
               <span className="text-primary"> oportunidades</span> de crecimiento
             </h1>

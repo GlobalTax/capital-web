@@ -91,7 +91,7 @@ const SectorCaseStudyV2: React.FC<SectorCaseStudyV2Props> = ({
           <Badge className="mb-4 bg-white/10 text-white border-white/20 hover:bg-white/20">
             {title}
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-white">
+          <h2 className="text-3xl md:text-4xl font-normal text-white">
             Resultados que hablan por sí solos
           </h2>
         </div>
