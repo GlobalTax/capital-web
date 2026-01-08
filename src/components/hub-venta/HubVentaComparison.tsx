@@ -33,12 +33,6 @@ const comparisonData = [
     brokerGeneral: { value: '+5-10%', status: 'partial' },
   },
   {
-    aspect: 'Coste inicial',
-    capittal: { value: '0€', status: 'full' },
-    sinAsesor: { value: '0€', status: 'full' },
-    brokerGeneral: { value: 'Variable', status: 'partial' },
-  },
-  {
     aspect: 'Especialización M&A',
     capittal: { value: 'Exclusiva', status: 'full' },
     sinAsesor: { value: 'Ninguna', status: 'none' },
