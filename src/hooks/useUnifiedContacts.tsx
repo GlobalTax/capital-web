@@ -188,7 +188,7 @@ export const useUnifiedContacts = () => {
       // Fetch general_contact_leads (if exists, exclude soft deleted)
       const { data: generalLeads, error: generalError } = await supabase
         .from('general_contact_leads')
-        .select('*')
+        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -374,6 +374,10 @@ export const useUnifiedContacts = () => {
           priority: determinePriority(lead),
           is_hot_lead: isHotLead(lead),
           source: 'general',
+          // 🔥 NEW: Canal de adquisición
+          acquisition_channel_id: (lead as any).acquisition_channel_id,
+          acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
+          acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
         })),
         
         // Acquisition leads

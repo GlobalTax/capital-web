@@ -4872,6 +4872,7 @@ export type Database = {
       }
       general_contact_leads: {
         Row: {
+          acquisition_channel_id: string | null
           ai_company_summary: string | null
           ai_company_summary_at: string | null
           annual_revenue: string | null
@@ -4911,6 +4912,7 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           ai_company_summary?: string | null
           ai_company_summary_at?: string | null
           annual_revenue?: string | null
@@ -4950,6 +4952,7 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           ai_company_summary?: string | null
           ai_company_summary_at?: string | null
           annual_revenue?: string | null
@@ -4989,6 +4992,13 @@ export type Database = {
           utm_term?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "general_contact_leads_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "general_contact_leads_crm_contacto_id_fkey"
             columns: ["crm_contacto_id"]
