@@ -43,7 +43,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
       <div className="p-6 space-y-4">
         {/* Name & Position */}
         <div className="text-center">
-          <h3 className="text-xl font-bold text-foreground mb-1">
+          <h3 className="text-xl font-normal text-foreground mb-1">
             {member.name}
           </h3>
           {member.position && (
@@ -144,7 +144,7 @@ const Team = () => {
             Nuestro Equipo
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 mb-6">
             Expertos en M&A
           </h1>
           
@@ -154,19 +154,19 @@ const Team = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-foreground mb-2">25+</div>
+              <div className="text-3xl font-normal text-foreground mb-2">25+</div>
               <div className="text-sm text-muted-foreground font-medium">Años Experiencia</div>
             </div>
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-foreground mb-2">100+</div>
+              <div className="text-3xl font-normal text-foreground mb-2">100+</div>
               <div className="text-sm text-muted-foreground font-medium">Transacciones</div>
             </div>
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-foreground mb-2">€900M</div>
+              <div className="text-3xl font-normal text-foreground mb-2">€900M</div>
               <div className="text-sm text-muted-foreground font-medium">Valor Gestionado</div>
             </div>
             <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out text-center">
-              <div className="text-3xl font-bold text-foreground mb-2">98,7%</div>
+              <div className="text-3xl font-normal text-foreground mb-2">98,7%</div>
               <div className="text-sm text-muted-foreground font-medium">Tasa Éxito</div>
             </div>
           </div>
@@ -205,7 +205,7 @@ const Team = () => {
                 return (
                   <div key={section}>
                     {sections.length > 1 && (
-                      <h2 className="text-2xl font-bold text-foreground mb-8 text-center">
+                      <h2 className="text-2xl font-normal text-foreground mb-8 text-center">
                         {section}
                       </h2>
                     )}

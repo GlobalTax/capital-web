@@ -31,7 +31,7 @@ const LogoCarousel = () => {
   return (
     <section className="py-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-4">
+        <h2 className="text-2xl font-normal text-foreground mb-4">
           Empresas que Confían en Nosotros
         </h2>
         <p className="text-muted-foreground text-lg mb-8">

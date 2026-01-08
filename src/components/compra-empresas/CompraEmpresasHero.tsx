@@ -25,7 +25,7 @@ const CompraEmpresasHero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-slate-900 mb-6 leading-tight">
               {t('compraEmpresas.hero.title')}
             </h1>
             <p className="text-xl text-slate-700 mb-8 leading-relaxed">
@@ -63,7 +63,7 @@ const CompraEmpresasHero = () => {
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 relative z-10">
               {/* Dashboard Header */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                <h3 className="text-lg font-bold text-slate-900">Oportunidades Industriales</h3>
+                <h3 className="text-lg font-normal text-slate-900">Oportunidades Industriales</h3>
                 <div className="text-sm text-emerald-600 font-medium">🟢 Actualizado hoy</div>
               </div>
 
@@ -78,7 +78,7 @@ const CompraEmpresasHero = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-slate-900">{oportunidad.valor}</div>
+                      <div className="font-normal text-slate-900">{oportunidad.valor}</div>
                       <div className="text-xs text-emerald-600">{oportunidad.ebitda}</div>
                     </div>
                   </div>
@@ -88,11 +88,11 @@ const CompraEmpresasHero = () => {
               {/* Summary Stats */}
               <div className="mt-6 pt-4 border-t border-gray-100 grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">16</div>
+                  <div className="text-2xl font-normal text-slate-900">16</div>
                   <div className="text-xs text-slate-600">Empresas industriales</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900">€180M</div>
+                  <div className="text-2xl font-normal text-slate-900">€180M</div>
                   <div className="text-xs text-slate-600">Valor total portfolio</div>
                 </div>
               </div>

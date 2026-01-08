@@ -65,7 +65,7 @@ const Services = () => {
       <section id="servicios" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-black mb-6">
             {t('services.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -80,7 +80,7 @@ const Services = () => {
               <div key={index} className="group" role="listitem">
                 <div className="bg-white border border-gray-300 rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out" role="article" aria-labelledby={`service-${index}`}>
                   {/* Title */}
-                  <h3 id={`service-${index}`} className="text-xl font-bold text-black mb-4">
+                  <h3 id={`service-${index}`} className="text-xl font-normal text-black mb-4">
                     {service.title}
                   </h3>
                   

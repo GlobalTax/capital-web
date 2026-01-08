@@ -21,7 +21,7 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
       ref={ref}
       className="text-center bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-300"
     >
-      <div className="text-3xl md:text-4xl font-bold text-black mb-2">
+      <div className="text-3xl md:text-4xl font-normal text-black mb-2">
         {count}
       </div>
       <div className="text-sm text-gray-600 font-medium">

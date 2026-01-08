@@ -100,7 +100,7 @@ const CaseStudiesCompact = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             {t('cases.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -161,7 +161,7 @@ const CaseStudiesCompact = () => {
                       {case_.is_value_confidential ? (
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">{t('cases.valuation')}</span>
-                          <div className="inline-flex items-center px-3 py-1 text-sm font-bold text-orange-700 bg-orange-100 border border-orange-200 rounded-lg">
+                          <div className="inline-flex items-center px-3 py-1 text-sm font-normal text-orange-700 bg-orange-100 border border-orange-200 rounded-lg">
                             <svg className="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
                             </svg>
@@ -171,7 +171,7 @@ const CaseStudiesCompact = () => {
                       ) : case_.value_amount ? (
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">{t('cases.valuation')}</span>
-                          <span className="text-xl font-bold text-black">
+                          <span className="text-xl font-normal text-black">
                             {case_.value_amount}M{case_.value_currency}
                           </span>
                         </div>

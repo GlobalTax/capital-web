@@ -8,7 +8,7 @@ const LandingHeaderMinimal: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo sin navegación */}
           <div className="flex-shrink-0" aria-label="Capittal - Logo">
-            <span className="text-2xl font-bold text-black select-none">Capittal</span>
+            <span className="text-2xl font-normal text-black select-none">Capittal</span>
           </div>
           {/* Elementos de acción eliminados para la landing */}
         </div>

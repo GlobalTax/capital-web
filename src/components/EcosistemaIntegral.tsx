@@ -144,7 +144,7 @@ const EcosistemaIntegral = () => {
             {t('ecosystem.badge')}
           </div>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">
+          <h2 className="text-3xl md:text-4xl font-normal text-black mb-6">
             {t('ecosystem.title')}
           </h2>
           
@@ -179,7 +179,7 @@ const EcosistemaIntegral = () => {
                   <IconComponent className="w-6 h-6 text-white" />
                 </div>
                 
-                <h3 className="text-lg font-bold text-black mb-3">
+                <h3 className="text-lg font-normal text-black mb-3">
                   {service.title}
                 </h3>
                 
@@ -194,7 +194,7 @@ const EcosistemaIntegral = () => {
         {/* Professional Profiles */}
         <div className="mb-16">
           <div className="text-center mb-12">
-            <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
+            <h3 className="text-2xl md:text-3xl font-normal text-black mb-4">
               {t('ecosystem.teamTitle')}
             </h3>
             <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -214,7 +214,7 @@ const EcosistemaIntegral = () => {
                     <IconComponent className="w-5 h-5 text-white" />
                   </div>
                   
-                  <h4 className="text-base font-bold text-black mb-2">
+                  <h4 className="text-base font-normal text-black mb-2">
                     {profile.title}
                   </h4>
                   
@@ -229,7 +229,7 @@ const EcosistemaIntegral = () => {
 
         {/* Commitment Message */}
         <div className="text-center bg-white rounded-lg p-8 shadow-sm border border-gray-200">
-          <h3 className="text-xl font-bold text-black mb-4">
+          <h3 className="text-xl font-normal text-black mb-4">
             {t('ecosystem.commitmentTitle')}
           </h3>
           <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
