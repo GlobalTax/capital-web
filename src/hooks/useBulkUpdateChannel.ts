@@ -1,10 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useOptimisticContactUpdate } from './useOptimisticContactUpdate';
+import { UnifiedContact } from './useUnifiedContacts';
 
 interface BulkUpdateChannelParams {
-  contactIds: string[]; // Format: "origin_uuid"
+  contactIds: string[];
   channelId: string;
+  channelName?: string;
+  channelCategory?: string;
 }
 
 interface BulkUpdateResponse {
@@ -18,8 +22,32 @@ interface BulkUpdateResponse {
 export function useBulkUpdateChannel() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { 
+    updateContactsInCache, 
+    getSnapshot, 
+    restoreSnapshot,
+    cancelQueries 
+  } = useOptimisticContactUpdate();
 
   return useMutation({
+    // 1. OPTIMISTIC UPDATE (antes del request)
+    onMutate: async ({ contactIds, channelId, channelName, channelCategory }: BulkUpdateChannelParams) => {
+      // Cancelar queries en vuelo
+      await cancelQueries();
+
+      // Guardar snapshot para rollback
+      const previousContacts = getSnapshot();
+
+      // Actualizar cache optimísticamente
+      updateContactsInCache(contactIds, {
+        acquisition_channel_id: channelId,
+        acquisition_channel_name: channelName,
+        acquisition_channel_category: channelCategory,
+      });
+
+      return { previousContacts };
+    },
+
     mutationFn: async ({ contactIds, channelId }: BulkUpdateChannelParams): Promise<BulkUpdateResponse> => {
       const { data, error } = await supabase.functions.invoke('bulk-update-contacts', {
         body: {
@@ -37,9 +65,26 @@ export function useBulkUpdateChannel() {
 
       return data as BulkUpdateResponse;
     },
+
+    // 2. ROLLBACK en error
+    onError: (err, variables, context) => {
+      if (context?.previousContacts) {
+        restoreSnapshot(context.previousContacts);
+      }
+      toast({
+        title: 'Error',
+        description: err.message || 'Error al actualizar los canales',
+        variant: 'destructive',
+      });
+    },
+
+    // 3. REVALIDACIÓN silenciosa en éxito
     onSuccess: (data) => {
-      // Invalidate contacts query to refresh the table
-      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+      // Solo invalida queries en background, no refetch inmediato
+      queryClient.invalidateQueries({
+        queryKey: ['unified-contacts'],
+        refetchType: 'none',
+      });
 
       if (data.failed_count === 0) {
         toast({
@@ -59,13 +104,6 @@ export function useBulkUpdateChannel() {
           variant: 'destructive',
         });
       }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Error al actualizar los canales',
-        variant: 'destructive',
-      });
     },
   });
 }

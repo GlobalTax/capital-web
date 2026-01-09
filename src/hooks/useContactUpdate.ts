@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ContactOrigin } from '@/hooks/useUnifiedContacts';
+import { ContactOrigin, UnifiedContact } from '@/hooks/useUnifiedContacts';
+import { useOptimisticContactUpdate } from './useOptimisticContactUpdate';
 
 export interface ContactUpdateData {
   name?: string;
@@ -25,6 +26,11 @@ export interface ContactUpdateData {
   investment_budget?: string;
   target_timeline?: string;
   preferred_location?: string;
+  // CRM fields
+  lead_status_crm?: string;
+  assigned_to?: string;
+  // Channel
+  acquisition_channel_id?: string;
 }
 
 // Map UI fields to table-specific fields
@@ -41,6 +47,9 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         cif: data.cif,
         revenue: data.revenue,
         ebitda: data.ebitda,
+        lead_status_crm: data.lead_status_crm,
+        assigned_to: data.assigned_to,
+        acquisition_channel_id: data.acquisition_channel_id,
       };
     case 'collaborator':
       return {
@@ -51,6 +60,9 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         profession: data.profession,
         experience: data.experience,
         motivation: data.motivation,
+        lead_status_crm: data.lead_status_crm,
+        assigned_to: data.assigned_to,
+        acquisition_channel_id: data.acquisition_channel_id,
       };
     case 'acquisition':
       return {
@@ -62,6 +74,7 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         sectors_of_interest: data.sectors_of_interest,
         investment_budget: data.investment_budget,
         target_timeline: data.target_timeline,
+        acquisition_channel_id: data.acquisition_channel_id,
       };
     case 'company_acquisition':
       return {
@@ -74,6 +87,7 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         investment_budget: data.investment_budget,
         target_timeline: data.target_timeline,
         preferred_location: data.preferred_location,
+        acquisition_channel_id: data.acquisition_channel_id,
       };
     case 'advisor':
       return {
@@ -82,6 +96,7 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         phone: data.phone,
         company_name: data.company,
         cif: data.cif,
+        acquisition_channel_id: data.acquisition_channel_id,
       };
     case 'contact':
     case 'general':
@@ -94,6 +109,9 @@ const mapFieldsToTable = (origin: ContactOrigin, data: ContactUpdateData) => {
         cif: data.cif,
         service_type: data.service_type,
         company_size: data.company_size,
+        lead_status_crm: data.lead_status_crm,
+        assigned_to: data.assigned_to,
+        acquisition_channel_id: data.acquisition_channel_id,
       };
   }
 };
@@ -121,8 +139,35 @@ const getTableName = (origin: ContactOrigin): string => {
 export const useContactUpdate = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { 
+    updateContactInCache, 
+    getSnapshot, 
+    restoreSnapshot,
+    cancelQueries 
+  } = useOptimisticContactUpdate();
 
   const updateMutation = useMutation({
+    // 1. OPTIMISTIC UPDATE (antes del request)
+    onMutate: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      origin: ContactOrigin;
+      data: ContactUpdateData;
+    }) => {
+      // Cancelar queries en vuelo
+      await cancelQueries();
+
+      // Guardar snapshot para rollback
+      const previousContacts = getSnapshot();
+
+      // Actualizar cache optimísticamente
+      updateContactInCache(id, data as Partial<UnifiedContact>);
+
+      return { previousContacts };
+    },
+
     mutationFn: async ({
       id,
       origin,
@@ -134,7 +179,7 @@ export const useContactUpdate = () => {
     }) => {
       const tableName = getTableName(origin);
       const mappedData = mapFieldsToTable(origin, data);
-      
+
       // Filter out undefined values
       const cleanData = Object.fromEntries(
         Object.entries(mappedData).filter(([_, v]) => v !== undefined)
@@ -148,23 +193,38 @@ export const useContactUpdate = () => {
       if (error) throw error;
       return { id, origin, data: cleanData };
     },
-    onSuccess: () => {
-      // Invalidate all contact-related queries
-      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
-      queryClient.invalidateQueries({ queryKey: ['contact-leads'] });
-      queryClient.invalidateQueries({ queryKey: ['company-valuations'] });
-      queryClient.invalidateQueries({ queryKey: ['collaborator-applications'] });
-      
-      toast({
-        title: 'Contacto actualizado',
-        description: 'Los cambios se han guardado correctamente.',
-      });
-    },
-    onError: (error: Error) => {
+
+    // 2. ROLLBACK en error
+    onError: (error: Error, variables, context) => {
+      if (context?.previousContacts) {
+        restoreSnapshot(context.previousContacts);
+      }
       toast({
         title: 'Error al actualizar',
         description: error.message,
         variant: 'destructive',
+      });
+    },
+
+    // 3. REVALIDACIÓN silenciosa en éxito
+    onSuccess: () => {
+      // Solo invalida queries en background, no refetch inmediato
+      queryClient.invalidateQueries({
+        queryKey: ['unified-contacts'],
+        refetchType: 'none',
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['contact-leads'],
+        refetchType: 'none',
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['company-valuations'],
+        refetchType: 'none',
+      });
+
+      toast({
+        title: 'Contacto actualizado',
+        description: 'Los cambios se han guardado correctamente.',
       });
     },
   });
