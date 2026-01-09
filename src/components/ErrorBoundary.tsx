@@ -75,7 +75,7 @@ class ErrorBoundary extends Component<Props, State> {
   getErrorType = (error: Error | null) => {
     if (!error) return 'unknown';
     
-    const message = error.message.toLowerCase();
+    const message = (error.message || error.toString() || '').toLowerCase();
     if (message.includes('failed to fetch dynamically imported module')) return 'module-loading';
     if (message.includes('network') || message.includes('fetch')) return 'network';
     if (message.includes('chunk') || message.includes('loading')) return 'loading';

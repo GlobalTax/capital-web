@@ -195,7 +195,7 @@ export const useErrorRecovery = (options: RecoveryOptions = {}) => {
       'bad_request'
     ];
     
-    const errorMessage = error.message.toLowerCase();
+    const errorMessage = (error.message || error.toString() || '').toLowerCase();
     return !nonRetryableErrors.some(errorType => 
       errorMessage.includes(errorType)
     );
