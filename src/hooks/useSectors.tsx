@@ -3,13 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Sector, CreateSectorRequest, UpdateSectorRequest, SectorWithChildren } from '@/types/sectors';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 export const useSectors = (includeInactive = false) => {
   const queryClient = useQueryClient();
+  const { lang } = useI18n();
 
-  // Fetch all sectors
+  // Fetch all sectors with locale-resolved names
   const { data: sectors = [], isLoading, error } = useQuery({
-    queryKey: ['sectors', includeInactive],
+    queryKey: ['sectors', includeInactive, lang],
     queryFn: async (): Promise<Sector[]> => {
       let query = supabase
         .from('sectors')
@@ -23,7 +25,13 @@ export const useSectors = (includeInactive = false) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data || [];
+      
+      // Resolve name by locale with fallback to ES
+      return (data || []).map(sector => ({
+        ...sector,
+        // Add resolved name property based on current locale
+        name: lang === 'en' && sector.name_en ? sector.name_en : sector.name_es
+      }));
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

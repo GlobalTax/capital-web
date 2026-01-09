@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from '@/hooks/useDebounce';
 import { EnhancedOperationsTable } from './enhanced/EnhancedOperationsTable';
 import OperationCard from './OperationCard';
+import { useI18n } from '@/shared/i18n/I18nProvider';
 
 // Constantes para límites
 const MAX_ITEMS_ALL = 500;
@@ -36,6 +37,11 @@ interface Operation {
   created_at?: string;
 }
 
+interface SectorOption {
+  key: string;
+  label: string;
+}
+
 interface OperationsListProps {
   displayLocation?: string;
   limit?: number;
@@ -45,8 +51,9 @@ const OperationsList: React.FC<OperationsListProps> = ({
   displayLocation = 'operaciones',
   limit = 20 
 }) => {
+  const { lang, t } = useI18n();
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [sectors, setSectors] = useState<string[]>([]);
+  const [sectors, setSectors] = useState<SectorOption[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [companySizes, setCompanySizes] = useState<string[]>([]);
   const [dealTypes, setDealTypes] = useState<string[]>([]);
@@ -115,6 +122,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
       // Use the new list-operations Edge Function
       const { data, error } = await supabase.functions.invoke('list-operations', {
         body: {
+          locale: lang, // Send current language for translated content
           searchTerm: debouncedSearchTerm || undefined,
           sector: selectedSector || undefined,
           location: selectedLocation || undefined,
@@ -145,6 +153,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
         
         const fallbackResponse = await supabase.functions.invoke('list-operations', {
           body: {
+            locale: lang,
             searchTerm: debouncedSearchTerm || undefined,
             sector: selectedSector || undefined,
             location: selectedLocation || undefined,
@@ -190,7 +199,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, selectedProjectStatus, sortBy, offset, displayLocation, viewMode, valuationMin, valuationMax, dateFilter]);
+  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, selectedProjectStatus, sortBy, offset, displayLocation, viewMode, valuationMin, valuationMax, dateFilter, lang]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -262,7 +271,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Filter className="h-5 w-5" />
-            Filtros y Búsqueda
+            {t('operations.filters.title') || 'Filtros y Búsqueda'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -273,7 +282,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por empresa o descripción..."
+                  placeholder={t('operations.filters.search')}
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="pl-10 pr-20"
@@ -294,24 +303,24 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 
                 {/* Sector Suggestions */}
                 {searchTerm.length >= 2 && sectors.filter(s => 
-                  s.toLowerCase().includes(searchTerm.toLowerCase())
+                  s.label.toLowerCase().includes(searchTerm.toLowerCase())
                 ).length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
                     {sectors
-                      .filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+                      .filter(s => s.label.toLowerCase().includes(searchTerm.toLowerCase()))
                       .slice(0, 5)
                       .map((sector) => (
                         <button
-                          key={sector}
+                          key={sector.key}
                           onClick={() => {
-                            setSelectedSector(sector);
+                            setSelectedSector(sector.key);
                             setSearchTerm('');
                             setOffset(0);
                           }}
                           className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
                         >
                           <Sparkles className="h-4 w-4 text-primary" />
-                          <span className="text-sm">{sector}</span>
+                          <span className="text-sm">{sector.label}</span>
                         </button>
                       ))}
                   </div>
@@ -321,13 +330,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
               {/* Sector Filter */}
               <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos los sectores" />
+                  <SelectValue placeholder={t('operations.filters.allSectors')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los sectores</SelectItem>
+                  <SelectItem value="all">{t('operations.filters.allSectors')}</SelectItem>
                   {sectors.map((sector) => (
-                    <SelectItem key={sector} value={sector}>
-                      {sector}
+                    <SelectItem key={sector.key} value={sector.key}>
+                      {sector.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -336,10 +345,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
               {/* Location Filter */}
               <Select value={selectedLocation || 'all'} onValueChange={handleLocationChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todas las ubicaciones" />
+                  <SelectValue placeholder={t('operations.filters.allLocations')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas las ubicaciones</SelectItem>
+                  <SelectItem value="all">{t('operations.filters.allLocations')}</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location} value={location}>
                       {location}
@@ -354,10 +363,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
               {/* Company Size Filter */}
               <Select value={selectedCompanySize || 'all'} onValueChange={handleCompanySizeChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos los tamaños" />
+                  <SelectValue placeholder={t('operations.filters.allSizes')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los tamaños</SelectItem>
+                  <SelectItem value="all">{t('operations.filters.allSizes')}</SelectItem>
                   {companySizes.map((size) => (
                     <SelectItem key={size} value={size}>
                       {size}
@@ -369,10 +378,10 @@ const OperationsList: React.FC<OperationsListProps> = ({
               {/* Deal Type Filter */}
               <Select value={selectedDealType || 'all'} onValueChange={handleDealTypeChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos los tipos" />
+                  <SelectValue placeholder={t('operations.filters.allTypes')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  <SelectItem value="all">{t('operations.filters.allTypes')}</SelectItem>
                   {dealTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
@@ -384,13 +393,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
               {/* Sort */}
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Ordenar por" />
+                  <SelectValue placeholder={t('operations.filters.sortBy') || 'Ordenar por'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="created_at">Más recientes</SelectItem>
-                  <SelectItem value="year">Año</SelectItem>
-                  <SelectItem value="valuation_amount">Valoración</SelectItem>
-                  <SelectItem value="company_name">Nombre</SelectItem>
+                  <SelectItem value="created_at">{t('operations.filters.mostRecent') || 'Más recientes'}</SelectItem>
+                  <SelectItem value="year">{t('operations.filters.year') || 'Año'}</SelectItem>
+                  <SelectItem value="valuation_amount">{t('operations.filters.valuation') || 'Valoración'}</SelectItem>
+                  <SelectItem value="company_name">{t('operations.filters.name') || 'Nombre'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

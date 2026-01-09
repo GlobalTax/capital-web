@@ -2413,6 +2413,8 @@ export type Database = {
           deal_type: string | null
           deleted_at: string | null
           description: string
+          description_ca: string | null
+          description_en: string | null
           display_locations: string[] | null
           ebitda_amount: number | null
           ebitda_multiple: number | null
@@ -2431,6 +2433,8 @@ export type Database = {
           revenue_amount: number | null
           sector: string
           short_description: string | null
+          short_description_ca: string | null
+          short_description_en: string | null
           source_lead_id: string | null
           source_lead_type: string | null
           status: string | null
@@ -2450,6 +2454,8 @@ export type Database = {
           deal_type?: string | null
           deleted_at?: string | null
           description: string
+          description_ca?: string | null
+          description_en?: string | null
           display_locations?: string[] | null
           ebitda_amount?: number | null
           ebitda_multiple?: number | null
@@ -2468,6 +2474,8 @@ export type Database = {
           revenue_amount?: number | null
           sector: string
           short_description?: string | null
+          short_description_ca?: string | null
+          short_description_en?: string | null
           source_lead_id?: string | null
           source_lead_type?: string | null
           status?: string | null
@@ -2487,6 +2495,8 @@ export type Database = {
           deal_type?: string | null
           deleted_at?: string | null
           description?: string
+          description_ca?: string | null
+          description_en?: string | null
           display_locations?: string[] | null
           ebitda_amount?: number | null
           ebitda_multiple?: number | null
@@ -2505,6 +2515,8 @@ export type Database = {
           revenue_amount?: number | null
           sector?: string
           short_description?: string | null
+          short_description_ca?: string | null
+          short_description_en?: string | null
           source_lead_id?: string | null
           source_lead_type?: string | null
           status?: string | null
