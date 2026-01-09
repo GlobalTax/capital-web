@@ -10,7 +10,8 @@ import { logger } from '@/utils/logger';
  * Características:
  * - Sin dependencias de React Query
  * - Sin timeouts complejos
- * - Cache simple en memoria
+ * - Cache simple en memoria con TTL reducido (1 min)
+ * - Invalidación en tiempo real via Supabase Realtime
  * - No race conditions
  * - Fail fast
  */
@@ -33,8 +34,9 @@ interface AdminAuthActions {
 }
 
 // Cache simple en memoria (se resetea al recargar página)
+// TTL reducido a 1 minuto para minimizar ventana de acceso post-revocación
 const adminCache = new Map<string, { isAdmin: boolean; role: AdminRole; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+const CACHE_TTL = 60 * 1000; // 1 minuto (antes era 5 minutos)
 
 export function useAdminAuth(): AdminAuthState & AdminAuthActions {
   const [state, setState] = useState<AdminAuthState>({
@@ -49,6 +51,7 @@ export function useAdminAuth(): AdminAuthState & AdminAuthActions {
   const { toast } = useToast();
   const mountedRef = useRef(true);
   const checkingRef = useRef(false);
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   /**
    * Verifica el estado de admin desde DB
@@ -205,6 +208,78 @@ export function useAdminAuth(): AdminAuthState & AdminAuthActions {
       subscription?.unsubscribe();
     };
   }, [handleAuthChange]);
+
+  /**
+   * Suscripción Realtime para invalidar cache cuando cambia admin_users
+   * Esto asegura que si se revoca acceso, el usuario pierde permisos inmediatamente
+   */
+  useEffect(() => {
+    if (!state.user?.id) {
+      // Limpiar canal si no hay usuario
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+        realtimeChannelRef.current = null;
+      }
+      return;
+    }
+
+    const userId = state.user.id;
+
+    // Crear canal para escuchar cambios en admin_users del usuario actual
+    const channel = supabase
+      .channel(`admin_changes_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'admin_users',
+          filter: `user_id=eq.${userId}`
+        },
+        async (payload) => {
+          logger.info('Admin status changed via realtime', undefined, {
+            context: 'auth',
+            component: 'useAdminAuth',
+            userId
+          });
+
+          // Invalidar cache inmediatamente
+          adminCache.delete(userId);
+
+          // Re-verificar estado de admin
+          const { isAdmin, role } = await checkAdminStatus(userId);
+          
+          if (mountedRef.current) {
+            setState(prev => {
+              // Si perdió acceso admin, notificar
+              if (!isAdmin && prev.isAdmin) {
+                toast({
+                  title: "Acceso actualizado",
+                  description: "Tus permisos de administrador han sido modificados.",
+                  variant: "default",
+                });
+              }
+              
+              return {
+                ...prev,
+                isAdmin,
+                role,
+              };
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+        realtimeChannelRef.current = null;
+      }
+    };
+  }, [state.user?.id, checkAdminStatus, toast]);
 
   /**
    * Iniciar sesión
