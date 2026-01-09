@@ -192,7 +192,7 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
           </Link>
         </div>
 
-        <h1 className="mb-8 mt-4 max-w-4xl text-3xl font-semibold md:text-5xl">
+        <h1 className="mb-8 mt-4 max-w-4xl text-3xl font-normal md:text-5xl">
           {post.title}
         </h1>
 
@@ -243,7 +243,7 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
           <div className="lg:col-span-8">
-            <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-10 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-relaxed prose-p:mb-4 prose-li:leading-relaxed">
+            <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:font-normal prose-h2:mt-10 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-normal prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-relaxed prose-p:mb-4 prose-li:leading-relaxed">
               <div 
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(getFormattedContent(post.content)) 
