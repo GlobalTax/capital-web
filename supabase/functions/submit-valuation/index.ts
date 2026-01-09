@@ -71,9 +71,10 @@ function getIp(req: Request): string | null {
   return hdr.split(",")[0].trim();
 }
 
-// ✅ SECURE: Genera token criptográficamente seguro (256 bits de entropía)
+// ✅ SECURE: Genera token criptográficamente seguro compatible con VARCHAR(32)
+// Usamos 24 bytes (192 bits) que produce exactamente 32 caracteres en base64url
 function generateSecureToken(): string {
-  const bytes = new Uint8Array(32); // 256 bits
+  const bytes = new Uint8Array(24); // 192 bits → 32 chars en base64url
   crypto.getRandomValues(bytes);
   // Codificar en base64url (URL-safe)
   return btoa(String.fromCharCode(...bytes))
