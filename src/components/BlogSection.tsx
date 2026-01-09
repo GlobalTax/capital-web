@@ -47,7 +47,7 @@ const BlogSection = () => {
     <section className="py-32">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-1">
-          <h1 className="text-2xl font-semibold md:text-4xl text-black">
+          <h1 className="text-2xl font-normal md:text-4xl text-black">
             Artículos Especializados
           </h1>
           <Link to="/recursos/blog">
@@ -66,7 +66,7 @@ const BlogSection = () => {
               <span className="text-sm font-medium text-gray-500">
                 {item.category}
               </span>
-              <h3 className="mb-1 text-lg font-semibold text-black">{item.title}</h3>
+              <h3 className="mb-1 text-lg font-normal text-black">{item.title}</h3>
               <p className="mb-4 text-sm text-gray-600">
                 {item.description}
               </p>

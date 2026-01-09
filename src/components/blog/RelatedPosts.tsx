@@ -54,7 +54,7 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
                 </Badge>
 
                 {/* Título */}
-                <h3 className="font-semibold text-sm leading-tight mb-2 group-hover:text-primary transition-colors">
+                <h3 className="font-normal text-sm leading-tight mb-2 group-hover:text-primary transition-colors">
                   {post.title}
                 </h3>
 
