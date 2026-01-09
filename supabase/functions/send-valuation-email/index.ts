@@ -558,6 +558,38 @@ if (pdfToAttach) {
       }
     }
 
+    // ✅ REGISTRO EN DB: Actualizar email_sent = true después del envío exitoso
+    if (companyData.email) {
+      try {
+        const { error: updateError } = await supabase
+          .from('company_valuations')
+          .update({ 
+            email_sent: true, 
+            email_sent_at: new Date().toISOString(),
+            email_message_id: emailResponse?.data?.id || null
+          })
+          .eq('email', companyData.email)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (updateError) {
+          console.warn('⚠️ Could not update email_sent flag:', updateError.message);
+        } else {
+          console.log('✅ Updated email_sent = true for:', companyData.email);
+        }
+      } catch (e: any) {
+        console.warn('⚠️ Exception updating email_sent:', e?.message || e);
+      }
+    }
+
+    // Log summary para verificar flujo completo
+    console.log('=== SEND-VALUATION-EMAIL SUMMARY ===');
+    console.log('📧 Internal email sent to:', internalRecipients.length, 'recipients');
+    console.log('📧 Client email sent to:', companyData.email);
+    console.log('📧 Email message ID:', emailResponse?.data?.id);
+    console.log('📧 PDF URL:', pdfPublicUrl);
+    console.log('=====================================');
+
     // Replicar metadatos al CRM/segunda DB vía función sync-leads
     try {
       const syncPayload = {
