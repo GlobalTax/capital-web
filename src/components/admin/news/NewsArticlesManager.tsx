@@ -1,17 +1,18 @@
 // ============= NEWS ARTICLES MANAGER =============
-// Panel de administración de noticias M&A con bulk actions y soft delete
+// Panel de administración de noticias M&A con bulk actions, soft delete y analytics
 
 import { useState, useMemo } from 'react';
 import { useNewsArticles, NewsArticle, NewsFilters } from '@/hooks/useNewsArticles';
 import { NewsStatsCards } from './NewsStatsCards';
 import { NewsArticleEditor } from './NewsArticleEditor';
 import { BulkNewsActions } from './BulkNewsActions';
+import { NewsAnalytics } from './NewsAnalytics';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -53,6 +54,7 @@ import {
   Loader2,
   RotateCcw,
   Archive,
+  BarChart3,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -194,41 +196,59 @@ export const NewsArticlesManager = () => {
       {/* Stats */}
       <NewsStatsCards stats={stats} />
 
-      {/* Main Card */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <Tabs
-              value={filters.status}
-              onValueChange={handleTabChange}
-            >
-              <TabsList>
-                <TabsTrigger value="all">Todas</TabsTrigger>
-                <TabsTrigger value="pending">Pendientes</TabsTrigger>
-                <TabsTrigger value="published">Publicadas</TabsTrigger>
-                <TabsTrigger value="deleted" className="gap-1.5">
-                  <Archive className="h-3.5 w-3.5" />
-                  Archivadas
-                  {stats?.deleted ? (
-                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
-                      {stats.deleted}
-                    </Badge>
-                  ) : null}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+      {/* Main Tabs */}
+      <Tabs defaultValue="articles" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="articles" className="gap-1.5">
+            <Newspaper className="h-3.5 w-3.5" />
+            Artículos
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
 
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar noticias..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-        </CardHeader>
+        <TabsContent value="analytics">
+          <NewsAnalytics />
+        </TabsContent>
+
+        <TabsContent value="articles">
+          {/* Articles Card */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <Tabs
+                  value={filters.status}
+                  onValueChange={handleTabChange}
+                >
+                  <TabsList>
+                    <TabsTrigger value="all">Todas</TabsTrigger>
+                    <TabsTrigger value="pending">Pendientes</TabsTrigger>
+                    <TabsTrigger value="published">Publicadas</TabsTrigger>
+                    <TabsTrigger value="deleted" className="gap-1.5">
+                      <Archive className="h-3.5 w-3.5" />
+                      Archivadas
+                      {stats?.deleted ? (
+                        <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
+                          {stats.deleted}
+                        </Badge>
+                      ) : null}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar noticias..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+            </CardHeader>
 
         <CardContent>
           {isLoading ? (
@@ -411,8 +431,10 @@ export const NewsArticlesManager = () => {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
 
       {/* Bulk Actions Bar */}
       <BulkNewsActions
