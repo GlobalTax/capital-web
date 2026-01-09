@@ -9858,6 +9858,7 @@ export type Database = {
           is_active: boolean | null
           is_deleted: boolean | null
           is_latest: boolean | null
+          language: string
           title: string
           total_downloads: number | null
           updated_at: string | null
@@ -9878,6 +9879,7 @@ export type Database = {
           is_active?: boolean | null
           is_deleted?: boolean | null
           is_latest?: boolean | null
+          language?: string
           title: string
           total_downloads?: number | null
           updated_at?: string | null
@@ -9898,6 +9900,7 @@ export type Database = {
           is_active?: boolean | null
           is_deleted?: boolean | null
           is_latest?: boolean | null
+          language?: string
           title?: string
           total_downloads?: number | null
           updated_at?: string | null

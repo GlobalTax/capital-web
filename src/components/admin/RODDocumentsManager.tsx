@@ -47,6 +47,7 @@ interface RODDocument {
   deactivated_at: string | null;
   is_deleted: boolean;
   deleted_at: string | null;
+  language: 'es' | 'en';
 }
 
 export const RODDocumentsManager = () => {
@@ -57,6 +58,7 @@ export const RODDocumentsManager = () => {
     title: '',
     version: '',
     file_type: 'pdf' as 'pdf' | 'excel',
+    language: 'es' as 'es' | 'en',
     description: ''
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -126,6 +128,7 @@ export const RODDocumentsManager = () => {
           file_type: uploadData.file_type,
           file_size_bytes: selectedFile.size,
           description: uploadData.description,
+          language: uploadData.language,
           is_latest: true
         });
 
@@ -138,7 +141,7 @@ export const RODDocumentsManager = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
       setSelectedFile(null);
-      setUploadData({ title: '', version: '', file_type: 'pdf', description: '' });
+      setUploadData({ title: '', version: '', file_type: 'pdf', language: 'es', description: '' });
     },
     onError: (error: any) => {
       toast({
@@ -149,12 +152,28 @@ export const RODDocumentsManager = () => {
     }
   });
 
-  // Activate document mutation
+  // Activate document mutation - ahora por idioma
   const activateMutation = useMutation({
     mutationFn: async (docId: string) => {
+      // Obtener el documento para saber su idioma y tipo
+      const doc = documents?.find(d => d.id === docId);
+      if (!doc) throw new Error('Documento no encontrado');
+      
+      // Desactivar otros documentos del MISMO idioma y tipo
+      const { error: deactivateError } = await supabase
+        .from('rod_documents')
+        .update({ is_active: false, deactivated_at: new Date().toISOString() })
+        .eq('language', doc.language)
+        .eq('file_type', doc.file_type)
+        .eq('is_deleted', false)
+        .neq('id', docId);
+      
+      if (deactivateError) throw deactivateError;
+      
+      // Activar el documento seleccionado
       const { error } = await supabase
         .from('rod_documents')
-        .update({ is_active: true })
+        .update({ is_active: true, activated_at: new Date().toISOString() })
         .eq('id', docId);
       
       if (error) throw error;
@@ -162,7 +181,7 @@ export const RODDocumentsManager = () => {
     onSuccess: () => {
       toast({
         title: "✅ ROD activada",
-        description: "Este documento ahora se enviará a nuevos leads"
+        description: "Este documento ahora se enviará a nuevos leads de su idioma"
       });
       queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
     }
@@ -221,7 +240,8 @@ export const RODDocumentsManager = () => {
     setIsUploading(false);
   };
 
-  const activeDoc = documents?.find(d => d.is_active);
+  const activeDocsES = documents?.filter(d => d.is_active && d.language === 'es') || [];
+  const activeDocsEN = documents?.filter(d => d.is_active && d.language === 'en') || [];
   const totalDownloads = documents?.reduce((sum, d) => sum + d.total_downloads, 0) || 0;
 
   // Filter documents
@@ -369,7 +389,7 @@ export const RODDocumentsManager = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="file_type">Tipo de Documento *</Label>
               <Select
@@ -382,6 +402,21 @@ export const RODDocumentsManager = () => {
                 <SelectContent>
                   <SelectItem value="pdf">PDF</SelectItem>
                   <SelectItem value="excel">Excel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="language">Idioma del Documento *</Label>
+              <Select
+                value={uploadData.language}
+                onValueChange={(value: 'es' | 'en') => setUploadData({ ...uploadData, language: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="es">🇪🇸 Español</SelectItem>
+                  <SelectItem value="en">🇬🇧 English</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -466,15 +501,26 @@ export const RODDocumentsManager = () => {
             <CardHeader>
               <CardTitle>Versiones de ROD</CardTitle>
               <CardDescription>
-                {activeDoc ? (
-                  <span className="text-green-600 font-medium">
-                    ✅ Versión activa: {activeDoc.version}
-                  </span>
-                ) : (
-                  <span className="text-amber-600 font-medium">
-                    ⚠️ No hay ninguna versión activa
-                  </span>
-                )}
+                <div className="flex flex-wrap gap-3">
+                  {activeDocsES.length > 0 ? (
+                    <span className="text-green-600 font-medium">
+                      🇪🇸 ES activo: {activeDocsES[0].version}
+                    </span>
+                  ) : (
+                    <span className="text-amber-600 font-medium">
+                      🇪🇸 ES: sin versión activa
+                    </span>
+                  )}
+                  {activeDocsEN.length > 0 ? (
+                    <span className="text-green-600 font-medium">
+                      🇬🇧 EN activo: {activeDocsEN[0].version}
+                    </span>
+                  ) : (
+                    <span className="text-amber-600 font-medium">
+                      🇬🇧 EN: sin versión activa
+                    </span>
+                  )}
+                </div>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -507,6 +553,9 @@ export const RODDocumentsManager = () => {
                                 {doc.is_active && <Badge variant="default">ACTIVA</Badge>}
                                 {doc.is_latest && <Badge variant="outline">ÚLTIMA</Badge>}
                                 <Badge variant="secondary">{doc.file_type.toUpperCase()}</Badge>
+                                <Badge variant="outline" className={doc.language === 'es' ? 'bg-amber-50' : 'bg-blue-50'}>
+                                  {doc.language === 'es' ? '🇪🇸 ES' : '🇬🇧 EN'}
+                                </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 Versión {doc.version} • {format(new Date(doc.created_at), "d 'de' MMMM yyyy", { locale: es })}

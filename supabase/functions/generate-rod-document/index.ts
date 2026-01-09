@@ -17,6 +17,7 @@ interface RODRequest {
   sectors_of_interest?: string;
   preferred_location?: string;
   document_format: 'pdf' | 'excel';
+  language?: 'es' | 'en';  // NUEVO: idioma del documento
   gdpr_consent: boolean;
   marketing_consent?: boolean;
   referrer?: string;
@@ -92,23 +93,50 @@ serve(async (req) => {
 
     console.log(`✅ Fetched ${operations?.length || 0} active operations`);
 
-    // ===== 2. Obtener ROD activa de la base de datos =====
-    const { data: activeROD, error: rodError } = await supabase
+    // ===== 2. Obtener RODs activas de la base de datos (multi-idioma) =====
+    const requestedLang = requestData.language || 'es';
+    
+    console.log('event=open_deals_download_requested', {
+      lang: requestedLang,
+      format: requestData.document_format,
+      email: requestData.email
+    });
+    
+    const { data: activeRODs, error: rodError } = await supabase
       .from('rod_documents')
       .select('*')
       .eq('is_active', true)
-      .eq('is_deleted', false)
-      .single();
+      .eq('is_deleted', false);
 
-    if (rodError || !activeROD) {
-      console.error('❌ No active ROD document found:', rodError);
+    if (rodError || !activeRODs?.length) {
+      console.error('❌ No active ROD documents found:', rodError);
       throw new Error('No hay documento ROD activo disponible. Por favor contacte al administrador.');
     }
 
+    // Determinar qué ROD servir según idioma solicitado
+    let selectedROD = activeRODs.find(r => r.language === requestedLang);
+    
+    // Fallback: si no existe el idioma solicitado, usar el disponible
+    if (!selectedROD) {
+      selectedROD = activeRODs[0];
+      console.log(`⚠️ Language ${requestedLang} not available, using fallback: ${selectedROD.language}`);
+    }
+    
+    const availableLanguages = [...new Set(activeRODs.map(r => r.language))];
+
     console.log('✅ Using active ROD:', {
-      id: activeROD.id,
-      version: activeROD.version,
-      title: activeROD.title
+      id: selectedROD.id,
+      version: selectedROD.version,
+      title: selectedROD.title,
+      language: selectedROD.language,
+      requested_language: requestedLang,
+      available_languages: availableLanguages
+    });
+    
+    console.log('event=open_deals_download_served', {
+      lang: selectedROD.language,
+      asset_id: selectedROD.id,
+      version: selectedROD.version
     });
 
     // ===== 3. Crear lead de inversor con referencia a ROD =====
@@ -124,7 +152,7 @@ serve(async (req) => {
         sectors_of_interest: requestData.sectors_of_interest,
         preferred_location: requestData.preferred_location,
         document_format: requestData.document_format,
-        rod_document_id: activeROD.id,
+        rod_document_id: selectedROD.id,
         gdpr_consent: requestData.gdpr_consent,
         marketing_consent: requestData.marketing_consent || false,
         referrer: requestData.referrer,
@@ -150,8 +178,8 @@ serve(async (req) => {
     // ===== 4. Incrementar contador de descargas en ROD =====
     const { error: updateError } = await supabase
       .from('rod_documents')
-      .update({ total_downloads: (activeROD.total_downloads || 0) + 1 })
-      .eq('id', activeROD.id);
+      .update({ total_downloads: (selectedROD.total_downloads || 0) + 1 })
+      .eq('id', selectedROD.id);
 
     if (updateError) {
       console.warn('⚠️ Error updating download count (non-critical):', updateError);
@@ -162,11 +190,15 @@ serve(async (req) => {
       try {
         const resend = new Resend(resendApiKey);
         
+        const emailSubject = selectedROD.language === 'en' 
+          ? 'Your Open Deals Report (ROD) - Capittal'
+          : 'Tu Relación de Open Deals (ROD) - Capittal';
+          
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'Capittal <oportunidades@capittal.es>',
           to: [requestData.email],
-          subject: 'Tu Relación de Open Deals (ROD) - Capittal',
-          html: generateEmailHTML(requestData.full_name, activeROD.file_url, operations?.length || 0)
+          subject: emailSubject,
+          html: generateEmailHTML(requestData.full_name, selectedROD.file_url, operations?.length || 0, selectedROD.language)
         });
 
         if (emailError) {
@@ -193,11 +225,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        download_url: activeROD.file_url,
+        download_url: selectedROD.file_url,
         lead_id: leadData.id,
         operations_count: operations?.length || 0,
-        rod_version: activeROD.version,
-        message: 'ROD enviada exitosamente'
+        rod_version: selectedROD.version,
+        served_language: selectedROD.language,
+        available_languages: availableLanguages,
+        message: selectedROD.language === 'en' ? 'ROD sent successfully' : 'ROD enviada exitosamente'
       }),
       {
         status: 200,
@@ -262,7 +296,78 @@ function generateDocumentContent(operations: any[], format: 'pdf' | 'excel'): Ui
   return new TextEncoder().encode(content);
 }
 
-function generateEmailHTML(name: string, downloadUrl: string, operationsCount: number): string {
+function generateEmailHTML(name: string, downloadUrl: string, operationsCount: number, language: string = 'es'): string {
+  const isEnglish = language === 'en';
+  
+  if (isEnglish) {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+            .button { display: inline-block; background: #1e40af; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .stats { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Thank you for your interest, ${name}!</h1>
+              <p>Your Open Deals Report is ready</p>
+            </div>
+            
+            <div class="content">
+              <p>Dear ${name},</p>
+              
+              <p>Thank you for your interest in our investment opportunities. We have prepared your personalized Open Deals Report (ROD) with detailed information about our active operations.</p>
+              
+              <div class="stats">
+                <strong>📊 Your ROD includes:</strong>
+                <ul>
+                  <li>${operationsCount} active operations</li>
+                  <li>Detailed valuation information</li>
+                  <li>Key financial data</li>
+                  <li>Sectors and locations</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center;">
+                <a href="${downloadUrl}" class="button">
+                  📥 Download ROD
+                </a>
+              </div>
+              
+              <p><strong>Next steps:</strong></p>
+              <ol>
+                <li>Review the operations that best match your profile</li>
+                <li>Our team will contact you within 24-48 hours</li>
+                <li>Schedule a meeting to discuss specific opportunities</li>
+              </ol>
+              
+              <p>If you have any questions or need additional information, please don't hesitate to contact us.</p>
+              
+              <p>Best regards,<br>
+              <strong>Capittal Team</strong><br>
+              oportunidades@capittal.es</p>
+            </div>
+            
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} Capittal. All rights reserved.</p>
+              <p>This email contains confidential information. If you received it by mistake, please delete it.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+  
+  // Spanish version (default)
   return `
     <!DOCTYPE html>
     <html>
