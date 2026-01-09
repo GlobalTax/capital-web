@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUnifiedContacts, ContactOrigin, UnifiedContact } from '@/hooks/useUnifiedContacts';
+import { useUnifiedContacts, UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useBrevoSyncStatusBulk } from '@/hooks/useBrevoSyncStatus';
 import { useContactActions, useContactSelection } from '@/features/contacts';
 import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
-import { ContactStatsCards } from '@/features/contacts';
 import { BulkChannelSelect } from './BulkChannelSelect';
 import { Button } from '@/components/ui/button';
 import { Send, RefreshCw, CheckCircle2 } from 'lucide-react';
@@ -32,7 +31,9 @@ const LinearContactsManager = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
-  const { softDelete } = useContactActions(refetch);
+  
+  // useContactActions ya no necesita onRefetch - usa optimistic updates
+  const { softDelete, bulkSoftDelete } = useContactActions();
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   
   // Get sync status for all selected contacts
@@ -54,6 +55,12 @@ const LinearContactsManager = () => {
   const handleSoftDelete = async (contactId: string) => {
     const contact = contacts.find(c => c.id === contactId);
     if (contact) await softDelete(contact);
+  };
+
+  const handleBulkSoftDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const success = await bulkSoftDelete(contacts, selectedIds);
+    if (success) clearSelection();
   };
 
   const handleBulkSyncToBrevo = async () => {

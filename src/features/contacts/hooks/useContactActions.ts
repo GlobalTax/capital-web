@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useOptimisticContactUpdate } from '@/hooks/useOptimisticContactUpdate';
 import type { ContactOrigin } from '@/hooks/useUnifiedContacts';
 
 interface Contact {
@@ -8,14 +9,34 @@ interface Contact {
   origin: ContactOrigin;
 }
 
-export const useContactActions = (onRefetch: () => void) => {
+const tableMap: Record<ContactOrigin, string> = {
+  contact: 'contact_leads',
+  valuation: 'company_valuations',
+  collaborator: 'collaborator_applications',
+  acquisition: 'acquisition_leads',
+  company_acquisition: 'company_acquisition_inquiries',
+  general: 'general_contact_leads',
+  advisor: 'advisor_valuations',
+};
+
+export const useContactActions = () => {
   const { toast } = useToast();
+  const { 
+    removeContactFromCache, 
+    removeContactsFromCache,
+    getSnapshot, 
+    restoreSnapshot 
+  } = useOptimisticContactUpdate();
 
   const softDelete = async (contact: Contact) => {
     const confirmed = window.confirm(
       `¿Archivar "${contact.name}"?\n\nSe puede restaurar después desde la sección de archivados.`
     );
     if (!confirmed) return;
+
+    // 1. OPTIMISTIC: Guardar snapshot y eliminar de UI
+    const snapshot = getSnapshot();
+    removeContactFromCache(contact.id);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -24,16 +45,6 @@ export const useContactActions = (onRefetch: () => void) => {
         deleted_at: new Date().toISOString(),
         deleted_by: user?.id,
         deletion_reason: 'Archivado desde gestión de contactos'
-      };
-
-      const tableMap: Record<ContactOrigin, string> = {
-        contact: 'contact_leads',
-        valuation: 'company_valuations',
-        collaborator: 'collaborator_applications',
-        acquisition: 'acquisition_leads',
-        company_acquisition: 'company_acquisition_inquiries',
-        general: 'general_contact_leads',
-        advisor: 'advisor_valuations',
       };
 
       const table = tableMap[contact.origin];
@@ -45,9 +56,9 @@ export const useContactActions = (onRefetch: () => void) => {
         title: "Contacto archivado",
         description: "Se puede restaurar desde la sección 'Archivados'",
       });
-      
-      onRefetch();
     } catch (error) {
+      // 2. ROLLBACK: Restaurar estado previo
+      restoreSnapshot(snapshot);
       console.error('Error archivando contacto:', error);
       toast({
         title: "Error",
@@ -68,17 +79,11 @@ export const useContactActions = (onRefetch: () => void) => {
     );
     if (!confirmed2) return;
 
-    try {
-      const tableMap: Record<ContactOrigin, string> = {
-        contact: 'contact_leads',
-        valuation: 'company_valuations',
-        collaborator: 'collaborator_applications',
-        acquisition: 'acquisition_leads',
-        company_acquisition: 'company_acquisition_inquiries',
-        general: 'general_contact_leads',
-        advisor: 'advisor_valuations',
-      };
+    // 1. OPTIMISTIC: Guardar snapshot y eliminar de UI
+    const snapshot = getSnapshot();
+    removeContactFromCache(contact.id);
 
+    try {
       const table = tableMap[contact.origin];
       const { error } = await (supabase as any).from(table).delete().eq('id', contact.id);
 
@@ -88,9 +93,9 @@ export const useContactActions = (onRefetch: () => void) => {
         title: "Contacto eliminado",
         description: "Eliminación permanente completada",
       });
-      
-      onRefetch();
     } catch (error) {
+      // 2. ROLLBACK: Restaurar estado previo
+      restoreSnapshot(snapshot);
       console.error('Error eliminando contacto:', error);
       toast({
         title: "Error",
@@ -105,7 +110,11 @@ export const useContactActions = (onRefetch: () => void) => {
     const confirmed = window.confirm(
       `¿Archivar ${count} contacto${count > 1 ? 's' : ''}?\n\nSe pueden restaurar después.`
     );
-    if (!confirmed) return;
+    if (!confirmed) return false;
+
+    // 1. OPTIMISTIC: Guardar snapshot y eliminar de UI
+    const snapshot = getSnapshot();
+    removeContactsFromCache(selectedIds);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -125,17 +134,8 @@ export const useContactActions = (onRefetch: () => void) => {
         }
       });
 
-      const tableMap: Record<string, string> = {
-        contact: 'contact_leads',
-        valuation: 'company_valuations',
-        collaborator: 'collaborator_applications',
-        acquisition: 'acquisition_leads',
-        company_acquisition: 'company_acquisition_inquiries',
-        general: 'general_contact_leads',
-      };
-
       const promises = Object.entries(byOrigin).map(([origin, ids]) => {
-        const table = tableMap[origin];
+        const table = tableMap[origin as ContactOrigin];
         return (supabase as any).from(table).update(updates).in('id', ids);
       });
 
@@ -144,10 +144,11 @@ export const useContactActions = (onRefetch: () => void) => {
       toast({
         title: `${count} contacto${count > 1 ? 's' : ''} archivado${count > 1 ? 's' : ''}`,
       });
-      
-      onRefetch();
+
       return true;
     } catch (error) {
+      // 2. ROLLBACK: Restaurar estado previo
+      restoreSnapshot(snapshot);
       console.error('Error archivando contactos:', error);
       toast({
         title: "Error",
@@ -160,16 +161,20 @@ export const useContactActions = (onRefetch: () => void) => {
 
   const bulkHardDelete = async (contacts: Contact[], selectedIds: string[]) => {
     const count = selectedIds.length;
-    
+
     const confirmed1 = window.confirm(
       `⚠️ ELIMINAR ${count} CONTACTO${count > 1 ? 'S' : ''} DEFINITIVAMENTE?\n\nEsta acción NO se puede deshacer.`
     );
-    if (!confirmed1) return;
+    if (!confirmed1) return false;
 
     const confirmed2 = window.confirm(
       '⚠️ CONFIRMACIÓN FINAL\n\n¿Eliminar permanentemente? IRREVERSIBLE.'
     );
-    if (!confirmed2) return;
+    if (!confirmed2) return false;
+
+    // 1. OPTIMISTIC: Guardar snapshot y eliminar de UI
+    const snapshot = getSnapshot();
+    removeContactsFromCache(selectedIds);
 
     try {
       const byOrigin: Record<string, string[]> = {};
@@ -181,17 +186,8 @@ export const useContactActions = (onRefetch: () => void) => {
         }
       });
 
-      const tableMap: Record<string, string> = {
-        contact: 'contact_leads',
-        valuation: 'company_valuations',
-        collaborator: 'collaborator_applications',
-        acquisition: 'acquisition_leads',
-        company_acquisition: 'company_acquisition_inquiries',
-        general: 'general_contact_leads',
-      };
-
       const promises = Object.entries(byOrigin).map(([origin, ids]) => {
-        const table = tableMap[origin];
+        const table = tableMap[origin as ContactOrigin];
         return (supabase as any).from(table).delete().in('id', ids);
       });
 
@@ -200,10 +196,11 @@ export const useContactActions = (onRefetch: () => void) => {
       toast({
         title: `${count} contacto${count > 1 ? 's' : ''} eliminado${count > 1 ? 's' : ''} permanentemente`,
       });
-      
-      onRefetch();
+
       return true;
     } catch (error) {
+      // 2. ROLLBACK: Restaurar estado previo
+      restoreSnapshot(snapshot);
       console.error('Error eliminando contactos:', error);
       toast({
         title: "Error",

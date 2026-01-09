@@ -22,7 +22,8 @@ const ContactsManager = () => {
   const [activeTab, setActiveTab] = useState<ContactOrigin | 'all'>('all');
 
   const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
-  const { softDelete, hardDelete, bulkSoftDelete, bulkHardDelete } = useContactActions(refetch);
+  // useContactActions ya no necesita onRefetch - usa optimistic updates
+  const { softDelete, hardDelete, bulkSoftDelete, bulkHardDelete } = useContactActions();
   const { syncBulkContacts, isSyncing } = useBrevoSync();
 
   const handleTabChange = (value: string) => {
