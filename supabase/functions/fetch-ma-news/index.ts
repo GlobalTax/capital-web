@@ -41,6 +41,15 @@ const NEWS_SOURCES = [
   }
 ];
 
+// Generate SHA-256 hash for title deduplication
+async function generateTitleHash(title: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(title.toLowerCase().trim().replace(/\s+/g, ' '));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -117,6 +126,15 @@ serve(async (req) => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Firecrawl search failed:`, response.status, errorText);
+        
+        // Create error notification
+        await supabase.from('admin_notifications_news').insert({
+          type: 'scrape_error',
+          title: `Error en scraping: ${source.name}`,
+          message: `Firecrawl devolvió error ${response.status}`,
+          metadata: { source: source.name, status: response.status }
+        });
+        
         return new Response(
           JSON.stringify({ success: false, error: `Firecrawl error: ${response.status}` }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -153,25 +171,64 @@ serve(async (req) => {
 
     } catch (error) {
       console.error(`Error fetching from ${source.name}:`, error);
+      
+      // Create error notification
+      await supabase.from('admin_notifications_news').insert({
+        type: 'scrape_error',
+        title: `Error en scraping: ${source.name}`,
+        message: error.message,
+        metadata: { source: source.name, error: error.message }
+      });
+      
       return new Response(
         JSON.stringify({ success: false, error: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Store news, checking for duplicates
+    // Store news, checking for duplicates by URL and title hash
     let insertedCount = 0;
+    let duplicatesByHash = 0;
+    
     if (allNews.length > 0) {
-      const urls = allNews.map(n => n.source_url);
-      const { data: existingNews } = await supabase
+      // Generate hashes for all articles
+      const articlesWithHash = await Promise.all(
+        allNews.map(async (article) => ({
+          ...article,
+          title_hash: await generateTitleHash(article.title)
+        }))
+      );
+
+      // Check for existing articles by URL
+      const urls = articlesWithHash.map(n => n.source_url);
+      const { data: existingByUrl } = await supabase
         .from('news_articles')
         .select('source_url')
         .in('source_url', urls);
 
-      const existingUrls = new Set((existingNews || []).map(n => n.source_url));
-      const newArticles = allNews.filter(n => !existingUrls.has(n.source_url));
+      const existingUrls = new Set((existingByUrl || []).map(n => n.source_url));
 
-      console.log(`📝 New articles to insert: ${newArticles.length} (${existingUrls.size} duplicates skipped)`);
+      // Check for existing articles by title hash
+      const hashes = articlesWithHash.map(n => n.title_hash);
+      const { data: existingByHash } = await supabase
+        .from('news_articles')
+        .select('title_hash')
+        .in('title_hash', hashes);
+
+      const existingHashes = new Set((existingByHash || []).map(n => n.title_hash));
+
+      // Filter out duplicates by URL or hash
+      const newArticles = articlesWithHash.filter(n => {
+        if (existingUrls.has(n.source_url)) return false;
+        if (existingHashes.has(n.title_hash)) {
+          duplicatesByHash++;
+          console.log(`🔄 Duplicate by hash: "${n.title.substring(0, 50)}..."`);
+          return false;
+        }
+        return true;
+      });
+
+      console.log(`📝 New articles to insert: ${newArticles.length} (${existingUrls.size} by URL, ${duplicatesByHash} by hash duplicates skipped)`);
 
       if (newArticles.length > 0) {
         // Determine category based on content
@@ -188,26 +245,20 @@ serve(async (req) => {
         const cleanContent = (text: string): string => {
           if (!text) return '';
           return text
-            // Remove markdown images
             .replace(/!\[.*?\]\(.*?\)/g, '')
-            // Remove tracking URLs and pixels
             .replace(/https?:\/\/[^\s]*pixelcounter[^\s]*/g, '')
             .replace(/https?:\/\/[^\s]*permutive[^\s]*/g, '')
             .replace(/https?:\/\/[^\s]*tracking[^\s]*/g, '')
-            // Remove standalone URLs
             .replace(/^https?:\/\/\S+\s*/gm, '')
-            // Remove markdown links but keep text
             .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-            // Remove extra whitespace
             .replace(/\n{3,}/g, '\n\n')
             .replace(/\s{2,}/g, ' ')
             .trim();
         };
 
-        // Extract clean excerpt (first meaningful paragraph)
+        // Extract clean excerpt
         const extractExcerpt = (content: string, title: string): string => {
           const cleaned = cleanContent(content);
-          // Find first sentence that's at least 50 chars and doesn't look like junk
           const sentences = cleaned.split(/[.!?]\s+/);
           for (const sentence of sentences) {
             const trimmed = sentence.trim();
@@ -219,7 +270,6 @@ serve(async (req) => {
               return trimmed.substring(0, 200) + (trimmed.length > 200 ? '...' : '');
             }
           }
-          // Fallback: use title-based excerpt
           return `Noticia sobre ${title.substring(0, 150)}...`;
         };
 
@@ -233,8 +283,9 @@ serve(async (req) => {
           excerpt: extractExcerpt(article.content || '', article.title || ''),
           source_name: article.source_name,
           source_url: article.source_url,
+          title_hash: article.title_hash,
           category: categorizeArticle(article.content || '', article.title || ''),
-          is_published: false, // Needs admin approval
+          is_published: false,
           is_featured: false,
           fetched_at: article.fetched_at,
           is_processed: false
@@ -249,6 +300,21 @@ serve(async (req) => {
         } else {
           insertedCount = articlesToInsert.length;
           console.log(`✅ Inserted ${insertedCount} new articles from ${source.name}`);
+          
+          // Create notification for new pending articles
+          if (insertedCount > 0) {
+            await supabase.from('admin_notifications_news').insert({
+              type: 'new_pending_news',
+              title: `${insertedCount} noticias nuevas pendientes`,
+              message: `Se importaron ${insertedCount} noticias de ${source.name}`,
+              metadata: { 
+                source: source.name, 
+                count: insertedCount,
+                duplicates_by_hash: duplicatesByHash
+              }
+            });
+            console.log('📬 Admin notification created for new articles');
+          }
         }
       }
     }
@@ -260,7 +326,8 @@ serve(async (req) => {
         source_index: sourceIndex,
         found: allNews.length,
         inserted: insertedCount,
-        message: `Fetched ${allNews.length} articles from ${source.name}, inserted ${insertedCount} new`
+        duplicates_by_hash: duplicatesByHash,
+        message: `Fetched ${allNews.length} articles from ${source.name}, inserted ${insertedCount} new (${duplicatesByHash} hash duplicates)`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
