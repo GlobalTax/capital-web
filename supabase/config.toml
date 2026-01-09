@@ -99,10 +99,6 @@ verify_jwt = false
 [functions.send-followup-email]
 verify_jwt = false
 
-# =====================================================
-# Brevo Integration - Events & Webhooks
-# =====================================================
-
 [functions.brevo-track-event]
 verify_jwt = false
 
@@ -137,4 +133,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.bulk-update-contacts]
+verify_jwt = false
+
+[functions.get-valuation-by-token]
 verify_jwt = false

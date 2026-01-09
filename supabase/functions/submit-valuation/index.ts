@@ -71,6 +71,26 @@ function getIp(req: Request): string | null {
   return hdr.split(",")[0].trim();
 }
 
+// ✅ SECURE: Genera token criptográficamente seguro (256 bits de entropía)
+function generateSecureToken(): string {
+  const bytes = new Uint8Array(32); // 256 bits
+  crypto.getRandomValues(bytes);
+  // Codificar en base64url (URL-safe)
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+// ✅ SECURE: Genera hash SHA-256 del token
+async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 Deno.serve(async (req) => {
   // Set timeout for the entire request
   const timeout = setTimeout(() => {
@@ -86,9 +106,6 @@ Deno.serve(async (req) => {
     console.log('=== SUBMIT VALUATION START ===');
     console.log('Request method:', req.method);
     console.log('Timestamp:', new Date().toISOString());
-    console.log('RESEND_API_KEY exists:', !!Deno.env.get("RESEND_API_KEY"));
-    console.log('SUPABASE_URL exists:', !!Deno.env.get("SUPABASE_URL"));
-    console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
     
     const supabase = getClient();
 
@@ -115,17 +132,18 @@ Deno.serve(async (req) => {
     const ip = getIp(req);
     const ua = req.headers.get("user-agent") || null;
 
-    // Generate a unique token
-    const generateToken = () => Math.random().toString(36).substring(2, 15) + 
-                                Math.random().toString(36).substring(2, 15);
-    const token = generateToken();
+    // ✅ SECURE: Generar token criptográficamente seguro
+    const token = generateSecureToken();
+    const tokenHash = await hashToken(token);
     
-    console.log("📝 Generated token for valuation:", token);
-    console.log("📋 Processing data for:", body.company_name, body.email);
+    // ⚠️ NO logueamos el token completo por seguridad
+    console.log("📝 Generated secure token (hash prefix):", tokenHash.substring(0, 12) + "...");
+    console.log("📋 Processing data for:", body.company_name);
 
     const insertPayload = {
       ...body,
-      unique_token: token,
+      unique_token: token, // Se mantiene para compatibilidad, pero el acceso será por hash
+      token_hash: tokenHash, // Nuevo: hash seguro
       ip_address: body.ip_address ?? ip,
       user_agent: body.user_agent ?? ua,
     } as Record<string, any>;
@@ -142,6 +160,23 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: error.message }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
+    }
+
+    // ✅ Crear token en la nueva tabla de share tokens
+    if (data?.id) {
+      try {
+        await supabase.rpc('create_share_token', {
+          p_valuation_id: data.id,
+          p_token_hash: tokenHash,
+          p_expires_minutes: 120, // 2 horas
+          p_max_views: 5,
+          p_ip: ip
+        });
+        console.log("✅ Share token created in new secure system");
+      } catch (shareError) {
+        console.warn("⚠️ Could not create share token (non-blocking):", shareError);
+        // No bloqueamos el flujo si falla, el token legacy sigue funcionando
+      }
     }
 
     console.log('=== SUBMIT VALUATION SUCCESS ===');

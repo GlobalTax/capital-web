@@ -2565,6 +2565,7 @@ export type Database = {
           status_updated_at: string | null
           time_spent_seconds: number | null
           token_expires_at: string | null
+          token_hash: string | null
           token_used_at: string | null
           unique_token: string | null
           user_agent: string | null
@@ -2659,6 +2660,7 @@ export type Database = {
           status_updated_at?: string | null
           time_spent_seconds?: number | null
           token_expires_at?: string | null
+          token_hash?: string | null
           token_used_at?: string | null
           unique_token?: string | null
           user_agent?: string | null
@@ -2753,6 +2755,7 @@ export type Database = {
           status_updated_at?: string | null
           time_spent_seconds?: number | null
           token_expires_at?: string | null
+          token_hash?: string | null
           token_used_at?: string | null
           unique_token?: string | null
           user_agent?: string | null
@@ -10468,6 +10471,64 @@ export type Database = {
         }
         Relationships: []
       }
+      token_access_log: {
+        Row: {
+          access_ip: unknown
+          accessed_at: string | null
+          failure_reason: string | null
+          id: string
+          success: boolean
+          token_hash_prefix: string | null
+          token_id: string | null
+          user_agent: string | null
+          valuation_id: string | null
+        }
+        Insert: {
+          access_ip?: unknown
+          accessed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          success: boolean
+          token_hash_prefix?: string | null
+          token_id?: string | null
+          user_agent?: string | null
+          valuation_id?: string | null
+        }
+        Update: {
+          access_ip?: unknown
+          accessed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          success?: boolean
+          token_hash_prefix?: string | null
+          token_id?: string | null
+          user_agent?: string | null
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_access_log_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_share_tokens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_access_log_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_access_log_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_ratings: {
         Row: {
           company_sector: string | null
@@ -10725,6 +10786,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      valuation_share_tokens: {
+        Row: {
+          created_at: string | null
+          created_by_ip: unknown
+          expires_at: string
+          id: string
+          last_accessed_at: string | null
+          max_views: number | null
+          revoked_at: string | null
+          token_hash: string
+          valuation_id: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_ip?: unknown
+          expires_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          max_views?: number | null
+          revoked_at?: string | null
+          token_hash: string
+          valuation_id: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_ip?: unknown
+          expires_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          max_views?: number | null
+          revoked_at?: string | null
+          token_hash?: string
+          valuation_id?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_share_tokens_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "valuation_share_tokens_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       valuation_sync_log: {
         Row: {
@@ -11771,6 +11886,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_token_rate_limit: {
+        Args: {
+          p_ip: unknown
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_user_admin_role: {
         Args: { check_user_id: string }
         Returns: string
@@ -11804,6 +11927,16 @@ export type Database = {
           p_parent_document_id: string
           p_storage_path: string
           p_uploaded_by?: string
+        }
+        Returns: string
+      }
+      create_share_token: {
+        Args: {
+          p_expires_minutes?: number
+          p_ip?: unknown
+          p_max_views?: number
+          p_token_hash: string
+          p_valuation_id: string
         }
         Returns: string
       }
@@ -12207,6 +12340,14 @@ export type Database = {
           policy_count: number
           security_status: string
           table_name: string
+        }[]
+      }
+      validate_share_token: {
+        Args: { p_ip?: unknown; p_token_hash: string }
+        Returns: {
+          failure_reason: string
+          is_valid: boolean
+          valuation_id: string
         }[]
       }
       validate_strong_password: {
