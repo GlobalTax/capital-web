@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Download, FileText, Table2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const formSchema = z.object({
   full_name: z.string()
@@ -46,6 +47,7 @@ const formSchema = z.object({
   sectors_of_interest: z.string().optional(),
   preferred_location: z.string().optional(),
   document_format: z.enum(['pdf', 'excel']),
+  document_language: z.enum(['es', 'en']).optional(),
   gdpr_consent: z.boolean().refine(val => val === true, {
     message: 'Debes aceptar la política de privacidad'
   }),
@@ -63,6 +65,23 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  // Obtener idiomas activos disponibles
+  const { data: availableLanguages = [] } = useQuery({
+    queryKey: ['rod-available-languages'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rod_documents')
+        .select('language')
+        .eq('is_active', true)
+        .eq('is_deleted', false);
+      
+      if (error) throw error;
+      const languages = [...new Set(data?.map(d => d.language as 'es' | 'en') || [])];
+      return languages;
+    },
+    enabled: open, // Solo ejecutar cuando el modal esté abierto
+  });
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -71,6 +90,7 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
       phone: '',
       company: '',
       document_format: 'pdf',
+      document_language: undefined,
       gdpr_consent: false,
       marketing_consent: false,
     },
@@ -91,10 +111,15 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
         utm_content: urlParams.get('utm_content') || undefined,
       };
 
+      // Determinar idioma: si hay selector y el usuario eligió, usar ese; si solo hay 1, usar ese
+      const selectedLanguage = data.document_language || 
+        (availableLanguages.length === 1 ? availableLanguages[0] : 'es');
+
       // Llamar al edge function
       const { data: result, error } = await supabase.functions.invoke('generate-rod-document', {
         body: {
           ...data,
+          language: selectedLanguage,
           ...trackingData,
         },
       });
@@ -306,6 +331,43 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
               </button>
             </div>
           </div>
+
+          {/* Selector de Idioma del Documento - Solo si hay >1 idioma */}
+          {availableLanguages.length > 1 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Idioma del Documento</h3>
+              <p className="text-sm text-muted-foreground">
+                El documento está disponible en varios idiomas
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => form.setValue('document_language', 'es')}
+                  className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-colors ${
+                    form.watch('document_language') === 'es'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <span className="text-2xl">🇪🇸</span>
+                  <span className="font-medium">Español</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => form.setValue('document_language', 'en')}
+                  className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-colors ${
+                    form.watch('document_language') === 'en'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <span className="text-2xl">🇬🇧</span>
+                  <span className="font-medium">English</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Consentimientos GDPR */}
           <div className="space-y-4">
