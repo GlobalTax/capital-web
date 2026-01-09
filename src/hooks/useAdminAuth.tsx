@@ -38,6 +38,10 @@ interface AdminAuthActions {
 const adminCache = new Map<string, { isAdmin: boolean; role: AdminRole; timestamp: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minuto (antes era 5 minutos)
 
+// === SINGLETON: Prevenir suscripciones múltiples al canal Realtime ===
+let globalRealtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+let globalRealtimeUserId: string | null = null;
+
 export function useAdminAuth(): AdminAuthState & AdminAuthActions {
   const [state, setState] = useState<AdminAuthState>({
     user: null,
@@ -51,7 +55,6 @@ export function useAdminAuth(): AdminAuthState & AdminAuthActions {
   const { toast } = useToast();
   const mountedRef = useRef(true);
   const checkingRef = useRef(false);
-  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   /**
    * Verifica el estado de admin desde DB
@@ -212,21 +215,34 @@ export function useAdminAuth(): AdminAuthState & AdminAuthActions {
   /**
    * Suscripción Realtime para invalidar cache cuando cambia admin_users
    * Esto asegura que si se revoca acceso, el usuario pierde permisos inmediatamente
+   * === SINGLETON: Solo una suscripción global para evitar duplicados ===
    */
   useEffect(() => {
     if (!state.user?.id) {
-      // Limpiar canal si no hay usuario
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-        realtimeChannelRef.current = null;
+      // Limpiar canal global si no hay usuario
+      if (globalRealtimeChannel) {
+        supabase.removeChannel(globalRealtimeChannel);
+        globalRealtimeChannel = null;
+        globalRealtimeUserId = null;
       }
       return;
     }
 
     const userId = state.user.id;
 
+    // Si ya hay una suscripción activa para este usuario, no crear otra
+    if (globalRealtimeUserId === userId && globalRealtimeChannel) {
+      return;
+    }
+
+    // Limpiar suscripción anterior si existe (cambio de usuario)
+    if (globalRealtimeChannel) {
+      supabase.removeChannel(globalRealtimeChannel);
+    }
+
     // Crear canal para escuchar cambios en admin_users del usuario actual
-    const channel = supabase
+    globalRealtimeUserId = userId;
+    globalRealtimeChannel = supabase
       .channel(`admin_changes_${userId}`)
       .on(
         'postgres_changes',
@@ -271,14 +287,8 @@ export function useAdminAuth(): AdminAuthState & AdminAuthActions {
       )
       .subscribe();
 
-    realtimeChannelRef.current = channel;
-
-    return () => {
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-        realtimeChannelRef.current = null;
-      }
-    };
+    // Nota: NO limpiamos en el cleanup porque es global
+    // Se limpia solo cuando cambia el usuario o se hace logout
   }, [state.user?.id, checkAdminStatus, toast]);
 
   /**
