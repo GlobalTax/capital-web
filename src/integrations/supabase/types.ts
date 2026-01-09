@@ -352,6 +352,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          metadata: Json | null
+          read_at: string | null
+          read_by: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          read_by?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          read_by?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       admin_notifications_log: {
         Row: {
           created_at: string
@@ -7683,6 +7719,8 @@ export type Database = {
           brevo_deal_id: string | null
           brevo_synced_at: string | null
           categoria: string
+          ccaa_disponible: boolean | null
+          ccaa_fecha: string | null
           cliente_externo: string | null
           closed_at: string | null
           closed_by: string | null
@@ -7690,6 +7728,11 @@ export type Database = {
           created_at: string | null
           days_in_stage: number | null
           descripcion: string | null
+          doc_datapack: string | null
+          doc_im: string | null
+          doc_rod: string | null
+          doc_teaser: string | null
+          doc_valoracion: string | null
           empresa_principal_id: string | null
           es_interno: boolean | null
           estado: string
@@ -7708,11 +7751,15 @@ export type Database = {
           last_activity_at: string | null
           loss_notes: string | null
           loss_reason: Database["public"]["Enums"]["loss_reason_type"] | null
+          nombre_proyecto: string | null
           numero_ofertas_recibidas: number | null
           outcome: Database["public"]["Enums"]["mandato_outcome"] | null
           parent_mandato_id: string | null
           perfil_empresa_buscada: string | null
           pipeline_stage: string | null
+          platform_arx: string | null
+          platform_deale: string | null
+          platform_dealsuite: string | null
           prioridad: string | null
           probability: number | null
           rango_inversion_max: number | null
@@ -7734,6 +7781,8 @@ export type Database = {
           brevo_deal_id?: string | null
           brevo_synced_at?: string | null
           categoria?: string
+          ccaa_disponible?: boolean | null
+          ccaa_fecha?: string | null
           cliente_externo?: string | null
           closed_at?: string | null
           closed_by?: string | null
@@ -7741,6 +7790,11 @@ export type Database = {
           created_at?: string | null
           days_in_stage?: number | null
           descripcion?: string | null
+          doc_datapack?: string | null
+          doc_im?: string | null
+          doc_rod?: string | null
+          doc_teaser?: string | null
+          doc_valoracion?: string | null
           empresa_principal_id?: string | null
           es_interno?: boolean | null
           estado?: string
@@ -7759,11 +7813,15 @@ export type Database = {
           last_activity_at?: string | null
           loss_notes?: string | null
           loss_reason?: Database["public"]["Enums"]["loss_reason_type"] | null
+          nombre_proyecto?: string | null
           numero_ofertas_recibidas?: number | null
           outcome?: Database["public"]["Enums"]["mandato_outcome"] | null
           parent_mandato_id?: string | null
           perfil_empresa_buscada?: string | null
           pipeline_stage?: string | null
+          platform_arx?: string | null
+          platform_deale?: string | null
+          platform_dealsuite?: string | null
           prioridad?: string | null
           probability?: number | null
           rango_inversion_max?: number | null
@@ -7785,6 +7843,8 @@ export type Database = {
           brevo_deal_id?: string | null
           brevo_synced_at?: string | null
           categoria?: string
+          ccaa_disponible?: boolean | null
+          ccaa_fecha?: string | null
           cliente_externo?: string | null
           closed_at?: string | null
           closed_by?: string | null
@@ -7792,6 +7852,11 @@ export type Database = {
           created_at?: string | null
           days_in_stage?: number | null
           descripcion?: string | null
+          doc_datapack?: string | null
+          doc_im?: string | null
+          doc_rod?: string | null
+          doc_teaser?: string | null
+          doc_valoracion?: string | null
           empresa_principal_id?: string | null
           es_interno?: boolean | null
           estado?: string
@@ -7810,11 +7875,15 @@ export type Database = {
           last_activity_at?: string | null
           loss_notes?: string | null
           loss_reason?: Database["public"]["Enums"]["loss_reason_type"] | null
+          nombre_proyecto?: string | null
           numero_ofertas_recibidas?: number | null
           outcome?: Database["public"]["Enums"]["mandato_outcome"] | null
           parent_mandato_id?: string | null
           perfil_empresa_buscada?: string | null
           pipeline_stage?: string | null
+          platform_arx?: string | null
+          platform_deale?: string | null
+          platform_dealsuite?: string | null
           prioridad?: string | null
           probability?: number | null
           rango_inversion_max?: number | null
@@ -8000,13 +8069,17 @@ export type Database = {
         Row: {
           author_avatar_url: string | null
           author_name: string
+          auto_published: boolean | null
           category: string
           content: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           excerpt: string | null
           featured_image_url: string | null
           fetched_at: string | null
           id: string
+          is_deleted: boolean | null
           is_featured: boolean | null
           is_processed: boolean | null
           is_published: boolean | null
@@ -8021,18 +8094,23 @@ export type Database = {
           source_url: string | null
           tags: string[] | null
           title: string
+          title_hash: string | null
           updated_at: string
         }
         Insert: {
           author_avatar_url?: string | null
           author_name?: string
+          auto_published?: boolean | null
           category: string
           content: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           excerpt?: string | null
           featured_image_url?: string | null
           fetched_at?: string | null
           id?: string
+          is_deleted?: boolean | null
           is_featured?: boolean | null
           is_processed?: boolean | null
           is_published?: boolean | null
@@ -8047,18 +8125,23 @@ export type Database = {
           source_url?: string | null
           tags?: string[] | null
           title: string
+          title_hash?: string | null
           updated_at?: string
         }
         Update: {
           author_avatar_url?: string | null
           author_name?: string
+          auto_published?: boolean | null
           category?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           excerpt?: string | null
           featured_image_url?: string | null
           fetched_at?: string | null
           id?: string
+          is_deleted?: boolean | null
           is_featured?: boolean | null
           is_processed?: boolean | null
           is_published?: boolean | null
@@ -8073,6 +8156,7 @@ export type Database = {
           source_url?: string | null
           tags?: string[] | null
           title?: string
+          title_hash?: string | null
           updated_at?: string
         }
         Relationships: []
