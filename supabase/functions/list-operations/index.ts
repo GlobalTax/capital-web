@@ -42,8 +42,11 @@ serve(async (req) => {
       displayLocation,
       valuationMin,
       valuationMax,
-      createdAfter
+      createdAfter,
+      locale = 'es' // NUEVO: idioma solicitado (es, en, ca)
     } = await req.json();
+
+    console.log('🌍 Locale requested:', locale);
 
     console.log('📋 List operations request:', { 
       searchTerm, 
@@ -59,6 +62,7 @@ serve(async (req) => {
       valuationMin,
       valuationMax,
       createdAfter,
+      locale,
       timestamp: new Date().toISOString()
     });
 
@@ -161,25 +165,29 @@ serve(async (req) => {
       );
     }
 
-    // Get unique sectors for filter options (only if not already filtered)
-    let sectors: string[] = [];
+    // Get unique sectors for filter options with translations
+    let sectors: { key: string; label: string }[] = [];
     let locations: string[] = [];
     let companySizes: string[] = [];
     let dealTypes: string[] = [];
     let projectStatuses: string[] = [];
-    if (!sector) {
-      const { data: sectorsData, error: sectorsError } = await supabase
-        .from('company_operations')
-        .select('sector')
-        .eq('is_active', true)
-        .eq('is_deleted', false)
-        .not('sector', 'is', null);
+    
+    // Fetch sectors from sectors table with translations
+    const { data: sectorsData, error: sectorsError } = await supabase
+      .from('sectors')
+      .select('name_es, name_en, slug')
+      .eq('is_active', true)
+      .order('display_order');
 
-      if (sectorsError) {
-        console.warn('⚠️ Sectors query error (non-critical):', sectorsError.message);
-      } else {
-        sectors = [...new Set(sectorsData?.map(item => item.sector).filter(Boolean) || [])].sort();
-      }
+    if (sectorsError) {
+      console.warn('⚠️ Sectors query error (non-critical):', sectorsError.message);
+    } else if (sectorsData) {
+      // Resolve sector name by locale with fallback to ES
+      sectors = sectorsData.map(s => ({
+        key: s.slug,
+        label: (locale === 'en' && s.name_en) ? s.name_en : s.name_es
+      }));
+      console.log(`📊 Resolved ${sectors.length} sectors for locale: ${locale}`);
     }
 
     // Get unique geographic locations
@@ -240,15 +248,32 @@ serve(async (req) => {
 
     console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
 
+    // Resolve operation descriptions by locale with fallback to ES
+    const resolvedData = (data || []).map(op => ({
+      ...op,
+      // Resolve description by locale
+      resolved_description: locale === 'en' && op.description_en 
+        ? op.description_en 
+        : locale === 'ca' && op.description_ca
+          ? op.description_ca
+          : op.description,
+      resolved_short_description: locale === 'en' && op.short_description_en 
+        ? op.short_description_en 
+        : locale === 'ca' && op.short_description_ca
+          ? op.short_description_ca
+          : op.short_description
+    }));
+
     return new Response(
       JSON.stringify({
-        data: data || [],
+        data: resolvedData,
         count: count || 0,
         sectors: sectors,
         locations: locations,
         companySizes: companySizes,
         dealTypes: dealTypes,
-        projectStatuses: projectStatuses
+        projectStatuses: projectStatuses,
+        locale: locale
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

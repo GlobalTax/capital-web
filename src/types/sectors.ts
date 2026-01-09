@@ -2,6 +2,7 @@ export interface Sector {
   id: string;
   name_es: string;
   name_en?: string;
+  name?: string; // Resolved name based on current locale (computed in useSectors)
   slug: string;
   parent_id?: string;
   description?: string;
