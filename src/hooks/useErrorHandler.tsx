@@ -39,8 +39,8 @@ export const useErrorHandler = (): UseErrorHandlerReturn => {
     logError(error, context);
     
     // Solo mostrar toast para errores críticos, no de tracking
-    if (!error.message.toLowerCase().includes('tracking') && 
-        !error.message.toLowerCase().includes('404')) {
+    const errorMessage = (error.message || error.toString() || '').toLowerCase();
+    if (!errorMessage.includes('tracking') && !errorMessage.includes('404')) {
       const errorContext = typeof context === 'string' ? { component: context } : context;
       const contextMessage = errorContext?.component 
         ? ` en ${errorContext.component}` 
