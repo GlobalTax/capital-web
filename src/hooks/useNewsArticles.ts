@@ -1,5 +1,5 @@
 // ============= NEWS ARTICLES HOOK =============
-// React Query hook para gestión de noticias M&A
+// React Query hook para gestión de noticias M&A con soft delete y bulk actions
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,10 @@ export interface NewsArticle {
   is_published: boolean | null;
   is_featured: boolean | null;
   is_processed: boolean | null;
+  is_deleted: boolean | null;
+  deleted_at: string | null;
+  deleted_by: string | null;
+  auto_published: boolean | null;
   published_at: string | null;
   fetched_at: string | null;
   processed_at: string | null;
@@ -30,7 +34,7 @@ export interface NewsArticle {
 }
 
 export interface NewsFilters {
-  status: 'all' | 'pending' | 'published';
+  status: 'all' | 'pending' | 'published' | 'deleted';
   category?: string;
   search?: string;
 }
@@ -47,11 +51,19 @@ export const useNewsArticles = (filters?: NewsFilters) => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Apply filters
-      if (filters?.status === 'pending') {
-        query = query.eq('is_published', false);
-      } else if (filters?.status === 'published') {
-        query = query.eq('is_published', true);
+      // Filter by deleted status
+      if (filters?.status === 'deleted') {
+        query = query.eq('is_deleted', true);
+      } else {
+        // Por defecto, excluir eliminados
+        query = query.eq('is_deleted', false);
+        
+        // Apply publication filters
+        if (filters?.status === 'pending') {
+          query = query.eq('is_published', false);
+        } else if (filters?.status === 'published') {
+          query = query.eq('is_published', true);
+        }
       }
 
       if (filters?.category) {
@@ -68,23 +80,32 @@ export const useNewsArticles = (filters?: NewsFilters) => {
     },
   });
 
-  // Stats query
+  // Stats query (excluye eliminados)
   const { data: stats } = useQuery({
     queryKey: ['news-articles-stats'],
     queryFn: async () => {
       const { data: all, error: allError } = await supabase
         .from('news_articles')
-        .select('id, is_published, is_processed, created_at', { count: 'exact' });
+        .select('id, is_published, is_processed, is_deleted, created_at', { count: 'exact' });
 
       if (allError) throw allError;
 
+      const active = all?.filter(a => !a.is_deleted) || [];
+      const deleted = all?.filter(a => a.is_deleted).length || 0;
       const today = new Date().toISOString().split('T')[0];
-      const pending = all?.filter(a => !a.is_published).length || 0;
-      const published = all?.filter(a => a.is_published).length || 0;
-      const processed = all?.filter(a => a.is_processed).length || 0;
-      const todayCount = all?.filter(a => a.created_at?.startsWith(today)).length || 0;
+      const pending = active.filter(a => !a.is_published).length || 0;
+      const published = active.filter(a => a.is_published).length || 0;
+      const processed = active.filter(a => a.is_processed).length || 0;
+      const todayCount = active.filter(a => a.created_at?.startsWith(today)).length || 0;
 
-      return { total: all?.length || 0, pending, published, processed, todayCount };
+      return { 
+        total: active.length, 
+        pending, 
+        published, 
+        processed, 
+        todayCount,
+        deleted 
+      };
     },
   });
 
@@ -147,22 +168,50 @@ export const useNewsArticles = (filters?: NewsFilters) => {
     },
   });
 
-  // Delete mutation
+  // Soft delete mutation (en lugar de hard delete)
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('news_articles')
-        .delete()
+        .update({ 
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id || null
+        })
         .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['news-articles'] });
       queryClient.invalidateQueries({ queryKey: ['news-articles-stats'] });
-      toast.success('Noticia eliminada');
+      toast.success('Noticia archivada');
     },
     onError: (error) => {
-      toast.error('Error al eliminar: ' + error.message);
+      toast.error('Error al archivar: ' + error.message);
+    },
+  });
+
+  // Restore mutation (recuperar de soft delete)
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('news_articles')
+        .update({ 
+          is_deleted: false,
+          deleted_at: null,
+          deleted_by: null
+        })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['news-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['news-articles-stats'] });
+      toast.success('Noticia restaurada');
+    },
+    onError: (error) => {
+      toast.error('Error al restaurar: ' + error.message);
     },
   });
 
@@ -184,18 +233,121 @@ export const useNewsArticles = (filters?: NewsFilters) => {
     },
   });
 
+  // ============= BULK MUTATIONS =============
+
+  // Bulk publish
+  const bulkPublishMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('news_articles')
+        .update({ 
+          is_published: true, 
+          published_at: new Date().toISOString() 
+        })
+        .in('id', ids);
+      if (error) throw error;
+      return { count: ids.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['news-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['news-articles-stats'] });
+      toast.success(`${data.count} noticias publicadas`);
+    },
+    onError: (error) => {
+      toast.error('Error al publicar: ' + error.message);
+    },
+  });
+
+  // Bulk unpublish
+  const bulkUnpublishMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('news_articles')
+        .update({ is_published: false })
+        .in('id', ids);
+      if (error) throw error;
+      return { count: ids.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['news-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['news-articles-stats'] });
+      toast.success(`${data.count} noticias despublicadas`);
+    },
+    onError: (error) => {
+      toast.error('Error al despublicar: ' + error.message);
+    },
+  });
+
+  // Bulk soft delete
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('news_articles')
+        .update({ 
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id || null
+        })
+        .in('id', ids);
+      if (error) throw error;
+      return { count: ids.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['news-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['news-articles-stats'] });
+      toast.success(`${data.count} noticias archivadas`);
+    },
+    onError: (error) => {
+      toast.error('Error al archivar: ' + error.message);
+    },
+  });
+
+  // Bulk restore
+  const bulkRestoreMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('news_articles')
+        .update({ 
+          is_deleted: false,
+          deleted_at: null,
+          deleted_by: null
+        })
+        .in('id', ids);
+      if (error) throw error;
+      return { count: ids.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['news-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['news-articles-stats'] });
+      toast.success(`${data.count} noticias restauradas`);
+    },
+    onError: (error) => {
+      toast.error('Error al restaurar: ' + error.message);
+    },
+  });
+
   return {
     articles,
     stats,
     isLoading,
     error,
     refetch,
+    // Single mutations
     publish: publishMutation.mutate,
     unpublish: unpublishMutation.mutate,
     toggleFeatured: toggleFeaturedMutation.mutate,
     deleteArticle: deleteMutation.mutate,
+    restoreArticle: restoreMutation.mutate,
     updateArticle: updateMutation.mutate,
+    // Bulk mutations
+    bulkPublish: bulkPublishMutation.mutate,
+    bulkUnpublish: bulkUnpublishMutation.mutate,
+    bulkDelete: bulkDeleteMutation.mutate,
+    bulkRestore: bulkRestoreMutation.mutate,
+    // Loading states
     isPublishing: publishMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isBulkProcessing: bulkPublishMutation.isPending || bulkUnpublishMutation.isPending || bulkDeleteMutation.isPending || bulkRestoreMutation.isPending,
   };
 };
