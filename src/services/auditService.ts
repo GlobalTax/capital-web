@@ -16,7 +16,9 @@ export type AuditAction =
   | 'SEND_CREDENTIALS'
   | 'LOGIN'
   | 'LOGOUT'
-  | 'FAILED_LOGIN';
+  | 'FAILED_LOGIN'
+  | 'BULK_ARCHIVE_CONTACTS'
+  | 'BULK_DELETE_CONTACTS';
 
 export interface AuditEvent {
   action: AuditAction;
@@ -259,4 +261,64 @@ export async function getRecentAuditEvents(limit: number = 100): Promise<any[]> 
     });
     return [];
   }
+}
+
+/**
+ * Registra el archivado masivo de contactos
+ */
+export async function logBulkArchiveContacts(
+  actorId: string,
+  contactIds: string[],
+  successCount: number,
+  failedCount: number
+): Promise<void> {
+  await logAuditEvent({
+    action: 'BULK_ARCHIVE_CONTACTS',
+    userId: actorId,
+    newValues: {
+      total_selected: contactIds.length,
+      success_count: successCount,
+      failed_count: failedCount,
+    },
+  });
+
+  logger.info('Bulk archive contacts logged', {
+    actorId,
+    totalSelected: contactIds.length,
+    successCount,
+    failedCount
+  }, {
+    context: 'audit',
+    component: 'auditService'
+  });
+}
+
+/**
+ * Registra la eliminación masiva de contactos
+ */
+export async function logBulkDeleteContacts(
+  actorId: string,
+  contactIds: string[],
+  successCount: number,
+  failedCount: number
+): Promise<void> {
+  await logAuditEvent({
+    action: 'BULK_DELETE_CONTACTS',
+    userId: actorId,
+    newValues: {
+      total_selected: contactIds.length,
+      success_count: successCount,
+      failed_count: failedCount,
+    },
+  });
+
+  logger.info('Bulk delete contacts logged', {
+    actorId,
+    totalSelected: contactIds.length,
+    successCount,
+    failedCount
+  }, {
+    context: 'audit',
+    component: 'auditService'
+  });
 }

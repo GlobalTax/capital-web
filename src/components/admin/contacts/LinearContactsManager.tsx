@@ -8,8 +8,10 @@ import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
 import { BulkChannelSelect } from './BulkChannelSelect';
+import BulkArchiveDialog from './BulkArchiveDialog';
+import BulkDeleteDialog from './BulkDeleteDialog';
 import { Button } from '@/components/ui/button';
-import { Send, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Send, RefreshCw, CheckCircle2, Archive, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,11 +31,15 @@ const LinearContactsManager = () => {
   
   const [selectedContact, setSelectedContact] = useState<UnifiedContact | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
   
   // useContactActions ya no necesita onRefetch - usa optimistic updates
-  const { softDelete, bulkSoftDelete } = useContactActions();
+  const { softDelete, bulkSoftDelete, bulkHardDelete } = useContactActions();
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   
   // Get sync status for all selected contacts
@@ -57,10 +63,30 @@ const LinearContactsManager = () => {
     if (contact) await softDelete(contact);
   };
 
-  const handleBulkSoftDelete = async () => {
+  const handleBulkArchive = async () => {
     if (selectedIds.length === 0) return;
-    const success = await bulkSoftDelete(contacts, selectedIds);
-    if (success) clearSelection();
+    setIsArchiving(true);
+    try {
+      const result = await bulkSoftDelete(contacts, selectedIds);
+      if (result.success || result.successCount > 0) {
+        clearSelection();
+      }
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    setIsDeleting(true);
+    try {
+      const result = await bulkHardDelete(contacts, selectedIds);
+      if (result.success || result.successCount > 0) {
+        clearSelection();
+      }
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleBulkSyncToBrevo = async () => {
@@ -119,6 +145,28 @@ const LinearContactsManager = () => {
         
         {selectedIds.length > 0 && (
           <div className="flex items-center gap-2">
+            {/* Archivar button */}
+            <Button 
+              onClick={() => setShowArchiveDialog(true)}
+              variant="outline" 
+              size="sm"
+              className="h-8"
+            >
+              <Archive className="h-3.5 w-3.5 mr-1.5" />
+              Archivar ({selectedIds.length})
+            </Button>
+            
+            {/* Eliminar button */}
+            <Button 
+              onClick={() => setShowDeleteDialog(true)}
+              variant="outline" 
+              size="sm"
+              className="h-8 text-destructive hover:text-destructive border-destructive/50 hover:bg-destructive/10"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              Eliminar
+            </Button>
+
             <BulkChannelSelect 
               selectedIds={selectedIds}
               contacts={contacts}
@@ -203,6 +251,24 @@ const LinearContactsManager = () => {
           setSelectedContact(null);
           handleSoftDelete(contact.id);
         }}
+      />
+
+      {/* Bulk Archive Dialog */}
+      <BulkArchiveDialog
+        open={showArchiveDialog}
+        onOpenChange={setShowArchiveDialog}
+        selectedCount={selectedIds.length}
+        onConfirm={handleBulkArchive}
+        isLoading={isArchiving}
+      />
+
+      {/* Bulk Delete Dialog */}
+      <BulkDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        selectedCount={selectedIds.length}
+        onConfirm={handleBulkDelete}
+        isLoading={isDeleting}
       />
     </div>
   );
