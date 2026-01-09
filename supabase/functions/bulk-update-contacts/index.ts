@@ -137,6 +137,17 @@ serve(async (req) => {
       'advisor_valuations',
     ];
 
+    // Tables that have updated_at column
+    const tablesWithUpdatedAt = [
+      'contact_leads',
+      'general_contact_leads',
+      'collaborator_applications',
+      'acquisition_leads',
+      'company_acquisition_inquiries',
+      'advisor_valuations',
+      // 'company_valuations' does NOT have updated_at
+    ];
+
     // Process each table
     for (const [table, ids] of Object.entries(contactsByTable)) {
       if (ids.length === 0) continue;
@@ -155,12 +166,18 @@ serve(async (req) => {
       }
 
       try {
+        // Build update payload - only include updated_at if the table supports it
+        const updatePayload: Record<string, unknown> = {
+          acquisition_channel_id: updates.acquisition_channel_id,
+        };
+        
+        if (tablesWithUpdatedAt.includes(table)) {
+          updatePayload.updated_at = new Date().toISOString();
+        }
+
         const { data, error } = await supabase
           .from(table)
-          .update({ 
-            acquisition_channel_id: updates.acquisition_channel_id,
-            updated_at: new Date().toISOString()
-          })
+          .update(updatePayload)
           .in('id', ids)
           .select('id');
 
