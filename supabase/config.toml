@@ -137,3 +137,9 @@ verify_jwt = false
 
 [functions.get-valuation-by-token]
 verify_jwt = false
+
+[functions.submit-accountex-lead]
+verify_jwt = false
+
+[functions.submit-contact-lead]
+verify_jwt = false

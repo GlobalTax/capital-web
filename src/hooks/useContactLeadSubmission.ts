@@ -3,13 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 /**
- * Hook para envío seguro de contact leads con protección anti-spam
+ * Hook para envío seguro de contact leads via Edge Function
  * 
  * Características de seguridad:
  * - Honeypot field para detectar bots
- * - Validación local antes de enviar a DB
- * - Rate limiting: 2 leads/día por IP
- * - Mensajes amigables de error
+ * - Validación server-side
+ * - Rate limiting por IP real
+ * - Captura de IP real en servidor
  */
 
 export interface ContactLeadData {
@@ -30,65 +30,37 @@ export const useContactLeadSubmission = () => {
     setIsSubmitting(true);
 
     try {
-      // HONEYPOT CHECK: Campo invisible que solo los bots llenan
-      // Si está lleno, simulamos éxito pero no guardamos (engañar al bot)
-      if (data.website && data.website.trim() !== '') {
-        console.log('🍯 Honeypot triggered - bot detected');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        toast.success('Solicitud enviada correctamente');
-        return { success: true };
-      }
-
-      // Validación adicional de seguridad (anti-spam)
-      const emailLower = data.email.toLowerCase();
-      const nameLower = data.full_name.toLowerCase();
-      const companyLower = data.company.toLowerCase();
-
-      if (
-        emailLower.includes('test') ||
-        emailLower.includes('fake') ||
-        emailLower.includes('spam') ||
-        nameLower.includes('test') ||
-        companyLower.includes('test')
-      ) {
-        toast.error('Por favor, usa datos reales para contactarnos');
-        return { success: false };
-      }
-
-      // Insertar lead con tracking automático
-      const { error } = await supabase
-        .from('contact_leads')
-        .insert({
-          full_name: data.full_name.trim(),
-          email: data.email.trim().toLowerCase(),
-          company: data.company.trim(),
+      // Call secure Edge Function
+      const { data: response, error } = await supabase.functions.invoke('submit-contact-lead', {
+        body: {
+          full_name: data.full_name,
+          email: data.email,
+          company: data.company,
           service_type: data.service_type,
-          phone: data.phone?.trim(),
-          sectors_of_interest: data.sectors_of_interest?.trim(),
-          // Estos campos los captura automáticamente Supabase con RLS
-          ip_address: null,
-          user_agent: navigator.userAgent,
-          referrer: document.referrer || null,
-        });
+          phone: data.phone,
+          sectors_of_interest: data.sectors_of_interest,
+          // Pass honeypot for server-side check
+          website: data.website,
+        },
+      });
 
       if (error) {
         console.error('Error submitting contact lead:', error);
-
-        // Manejo específico de rate limit
-        if (error.message.includes('rate_limit') || error.message.includes('rate limit')) {
-          toast.error('Has alcanzado el límite de solicitudes (2 por día). Inténtalo mañana o contáctanos directamente.', {
-            duration: 8000,
-          });
-          return { success: false };
-        }
-
-        // Otros errores de validación RLS
-        if (error.message.includes('policy') || error.message.includes('violates')) {
-          toast.error('Los datos proporcionados no son válidos. Verifica tu información.');
-          return { success: false };
-        }
-        
         toast.error('Error al enviar la solicitud. Inténtalo más tarde.');
+        return { success: false };
+      }
+
+      // Check for rate limit error
+      if (response?.error === 'rate_limit') {
+        toast.error(response.message || 'Has alcanzado el límite de solicitudes. Inténtalo más tarde.', {
+          duration: 8000,
+        });
+        return { success: false };
+      }
+
+      // Check for validation errors
+      if (response?.error) {
+        toast.error(response.message || 'Los datos proporcionados no son válidos.');
         return { success: false };
       }
 
@@ -97,7 +69,7 @@ export const useContactLeadSubmission = () => {
 
     } catch (error) {
       console.error('Unexpected error submitting contact lead:', error);
-      toast.error('Error inesperado. Por favor, inténtalo más tarde o contáctanos directamente.');
+      toast.error('Error inesperado. Por favor, inténtalo más tarde.');
       return { success: false };
     } finally {
       setIsSubmitting(false);

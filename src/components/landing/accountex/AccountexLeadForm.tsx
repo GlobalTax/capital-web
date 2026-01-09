@@ -63,29 +63,40 @@ const AccountexLeadForm = ({ onSuccess }: AccountexLeadFormProps) => {
     setIsSubmitting(true);
 
     try {
-      // Tracking data
-      const trackingData = {
-        ip_address: null, // Will be set by database
-        user_agent: navigator.userAgent,
-        referrer: document.referrer || null,
-        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
-        utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
-        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
-      };
+      // Get UTM params from URL
+      const urlParams = new URLSearchParams(window.location.search);
 
-      // Insert to Supabase
-      const { error } = await supabase.from('accountex_leads').insert([{
-        full_name: values.full_name,
-        company: values.company,
-        email: values.email,
-        phone: values.phone || null,
-        message: values.message || null,
-        preferred_meeting_date: values.preferred_meeting_date || null,
-        sectors_of_interest: values.sectors_of_interest || null,
-        ...trackingData,
-      }]);
+      // Call secure Edge Function instead of direct insert
+      const { data, error } = await supabase.functions.invoke('submit-accountex-lead', {
+        body: {
+          full_name: values.full_name,
+          company: values.company,
+          email: values.email,
+          phone: values.phone || null,
+          message: values.message || null,
+          preferred_meeting_date: values.preferred_meeting_date || null,
+          sectors_of_interest: values.sectors_of_interest || null,
+          utm_source: urlParams.get('utm_source'),
+          utm_medium: urlParams.get('utm_medium'),
+          utm_campaign: urlParams.get('utm_campaign'),
+        },
+      });
 
       if (error) throw error;
+
+      // Check for rate limit error
+      if (data?.error === 'rate_limit') {
+        toast({
+          title: 'Límite alcanzado',
+          description: data.message || 'Has alcanzado el límite de solicitudes. Inténtalo más tarde.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (data?.error) {
+        throw new Error(data.message || 'Error al enviar la solicitud');
+      }
 
       toast({
         title: '¡Solicitud enviada!',
