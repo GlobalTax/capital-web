@@ -1,12 +1,20 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useOptimisticContactUpdate } from '@/hooks/useOptimisticContactUpdate';
+import { logBulkArchiveContacts, logBulkDeleteContacts } from '@/services/auditService';
 import type { ContactOrigin } from '@/hooks/useUnifiedContacts';
 
 interface Contact {
   id: string;
   name: string;
   origin: ContactOrigin;
+}
+
+export interface BulkActionResult {
+  success: boolean;
+  successCount: number;
+  failedCount: number;
+  failed: Array<{ id: string; name: string; reason: string }>;
 }
 
 const tableMap: Record<ContactOrigin, string> = {
@@ -105,12 +113,13 @@ export const useContactActions = () => {
     }
   };
 
-  const bulkSoftDelete = async (contacts: Contact[], selectedIds: string[]) => {
-    const count = selectedIds.length;
-    const confirmed = window.confirm(
-      `¿Archivar ${count} contacto${count > 1 ? 's' : ''}?\n\nSe pueden restaurar después.`
-    );
-    if (!confirmed) return false;
+  const bulkSoftDelete = async (contacts: Contact[], selectedIds: string[]): Promise<BulkActionResult> => {
+    const result: BulkActionResult = {
+      success: true,
+      successCount: 0,
+      failedCount: 0,
+      failed: [],
+    };
 
     // 1. OPTIMISTIC: Guardar snapshot y eliminar de UI
     const snapshot = getSnapshot();
@@ -125,27 +134,73 @@ export const useContactActions = () => {
         deletion_reason: 'Archivado masivamente desde gestión de contactos'
       };
 
-      const byOrigin: Record<string, string[]> = {};
+      // Group contacts by origin
+      const byOrigin: Record<string, { ids: string[]; contacts: Contact[] }> = {};
       selectedIds.forEach(id => {
         const contact = contacts.find(c => c.id === id);
         if (contact) {
-          if (!byOrigin[contact.origin]) byOrigin[contact.origin] = [];
-          byOrigin[contact.origin].push(id);
+          if (!byOrigin[contact.origin]) {
+            byOrigin[contact.origin] = { ids: [], contacts: [] };
+          }
+          byOrigin[contact.origin].ids.push(id);
+          byOrigin[contact.origin].contacts.push(contact);
         }
       });
 
-      const promises = Object.entries(byOrigin).map(([origin, ids]) => {
+      // Process each origin
+      for (const [origin, group] of Object.entries(byOrigin)) {
         const table = tableMap[origin as ContactOrigin];
-        return (supabase as any).from(table).update(updates).in('id', ids);
-      });
+        const { data, error } = await (supabase as any)
+          .from(table)
+          .update(updates)
+          .in('id', group.ids)
+          .select('id');
 
-      await Promise.all(promises);
+        if (error) {
+          // Mark all in this origin as failed
+          for (const contact of group.contacts) {
+            result.failed.push({
+              id: contact.id,
+              name: contact.name,
+              reason: error.message,
+            });
+          }
+          result.failedCount += group.ids.length;
+        } else {
+          result.successCount += data?.length || group.ids.length;
+        }
+      }
 
-      toast({
-        title: `${count} contacto${count > 1 ? 's' : ''} archivado${count > 1 ? 's' : ''}`,
-      });
+      // Log audit event
+      await logBulkArchiveContacts(
+        user?.id || 'unknown',
+        selectedIds,
+        result.successCount,
+        result.failedCount
+      );
 
-      return true;
+      result.success = result.failedCount === 0;
+
+      // Show toast based on result
+      if (result.success) {
+        toast({
+          title: `${result.successCount} contacto${result.successCount > 1 ? 's' : ''} archivado${result.successCount > 1 ? 's' : ''}`,
+        });
+      } else if (result.successCount > 0) {
+        toast({
+          title: `Archivados: ${result.successCount} / Fallidos: ${result.failedCount}`,
+          description: "Algunos contactos no se pudieron archivar",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudieron archivar los contactos",
+          variant: "destructive",
+        });
+      }
+
+      return result;
     } catch (error) {
       // 2. ROLLBACK: Restaurar estado previo
       restoreSnapshot(snapshot);
@@ -155,49 +210,100 @@ export const useContactActions = () => {
         description: "No se pudieron archivar los contactos",
         variant: "destructive",
       });
-      return false;
+      return {
+        success: false,
+        successCount: 0,
+        failedCount: selectedIds.length,
+        failed: selectedIds.map(id => ({
+          id,
+          name: contacts.find(c => c.id === id)?.name || id,
+          reason: (error as Error).message,
+        })),
+      };
     }
   };
 
-  const bulkHardDelete = async (contacts: Contact[], selectedIds: string[]) => {
-    const count = selectedIds.length;
-
-    const confirmed1 = window.confirm(
-      `⚠️ ELIMINAR ${count} CONTACTO${count > 1 ? 'S' : ''} DEFINITIVAMENTE?\n\nEsta acción NO se puede deshacer.`
-    );
-    if (!confirmed1) return false;
-
-    const confirmed2 = window.confirm(
-      '⚠️ CONFIRMACIÓN FINAL\n\n¿Eliminar permanentemente? IRREVERSIBLE.'
-    );
-    if (!confirmed2) return false;
+  const bulkHardDelete = async (contacts: Contact[], selectedIds: string[]): Promise<BulkActionResult> => {
+    const result: BulkActionResult = {
+      success: true,
+      successCount: 0,
+      failedCount: 0,
+      failed: [],
+    };
 
     // 1. OPTIMISTIC: Guardar snapshot y eliminar de UI
     const snapshot = getSnapshot();
     removeContactsFromCache(selectedIds);
 
     try {
-      const byOrigin: Record<string, string[]> = {};
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Group contacts by origin
+      const byOrigin: Record<string, { ids: string[]; contacts: Contact[] }> = {};
       selectedIds.forEach(id => {
         const contact = contacts.find(c => c.id === id);
         if (contact) {
-          if (!byOrigin[contact.origin]) byOrigin[contact.origin] = [];
-          byOrigin[contact.origin].push(id);
+          if (!byOrigin[contact.origin]) {
+            byOrigin[contact.origin] = { ids: [], contacts: [] };
+          }
+          byOrigin[contact.origin].ids.push(id);
+          byOrigin[contact.origin].contacts.push(contact);
         }
       });
 
-      const promises = Object.entries(byOrigin).map(([origin, ids]) => {
+      // Process each origin
+      for (const [origin, group] of Object.entries(byOrigin)) {
         const table = tableMap[origin as ContactOrigin];
-        return (supabase as any).from(table).delete().in('id', ids);
-      });
+        const { error } = await (supabase as any)
+          .from(table)
+          .delete()
+          .in('id', group.ids);
 
-      await Promise.all(promises);
+        if (error) {
+          // Mark all in this origin as failed
+          for (const contact of group.contacts) {
+            result.failed.push({
+              id: contact.id,
+              name: contact.name,
+              reason: error.message,
+            });
+          }
+          result.failedCount += group.ids.length;
+        } else {
+          result.successCount += group.ids.length;
+        }
+      }
 
-      toast({
-        title: `${count} contacto${count > 1 ? 's' : ''} eliminado${count > 1 ? 's' : ''} permanentemente`,
-      });
+      // Log audit event
+      await logBulkDeleteContacts(
+        user?.id || 'unknown',
+        selectedIds,
+        result.successCount,
+        result.failedCount
+      );
 
-      return true;
+      result.success = result.failedCount === 0;
+
+      // Show toast based on result
+      if (result.success) {
+        toast({
+          title: `${result.successCount} contacto${result.successCount > 1 ? 's' : ''} eliminado${result.successCount > 1 ? 's' : ''} permanentemente`,
+        });
+      } else if (result.successCount > 0) {
+        toast({
+          title: `Eliminados: ${result.successCount} / Fallidos: ${result.failedCount}`,
+          description: "Algunos contactos no se pudieron eliminar",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudieron eliminar los contactos",
+          variant: "destructive",
+        });
+      }
+
+      return result;
     } catch (error) {
       // 2. ROLLBACK: Restaurar estado previo
       restoreSnapshot(snapshot);
@@ -207,7 +313,16 @@ export const useContactActions = () => {
         description: "No se pudieron eliminar los contactos",
         variant: "destructive",
       });
-      return false;
+      return {
+        success: false,
+        successCount: 0,
+        failedCount: selectedIds.length,
+        failed: selectedIds.map(id => ({
+          id,
+          name: contacts.find(c => c.id === id)?.name || id,
+          reason: (error as Error).message,
+        })),
+      };
     }
   };
 

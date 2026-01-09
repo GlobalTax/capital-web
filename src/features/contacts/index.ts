@@ -6,6 +6,7 @@ export { ContactsErrorBoundary } from './components/ContactsErrorBoundary';
 
 // Hooks
 export { useContactActions } from './hooks/useContactActions';
+export type { BulkActionResult } from './hooks/useContactActions';
 export { useContactSelection } from './hooks/useContactSelection';
 
 // Types
