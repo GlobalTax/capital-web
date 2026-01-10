@@ -7,6 +7,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Specialized system prompt for M&A deal identification
+const SYSTEM_PROMPT = `Eres un analista senior de M&A especializado en el mercado español e ibérico.
+Tu trabajo es identificar y resumir OPERACIONES REALES de compra-venta de empresas.
+
+PRIORIDAD ALTA (relevance_score 7-10) - PUBLICAR:
+- Adquisiciones completadas o anunciadas de empresas
+- Ventas de empresas, divisiones o unidades de negocio
+- Fusiones entre compañías
+- OPAs (ofertas públicas de adquisición)
+- Compras por fondos de Private Equity (superiores a 10M€)
+- Desinversiones de grupos empresariales
+- Build-ups y operaciones de consolidación sectorial
+- MBOs/MBIs (compras por directivos)
+
+PRIORIDAD MEDIA (relevance_score 4-6) - REVISAR:
+- Rondas de financiación de startups superiores a 20M€
+- Rumores de operaciones con fuentes fiables
+- Procesos de venta en marcha sin cerrar
+- Operaciones cross-border con empresas españolas
+
+PRIORIDAD BAJA (relevance_score 0-3) - DESCARTAR:
+- Artículos de opinión sin operaciones concretas
+- Tendencias generales del mercado sin deals específicos
+- Noticias de venture capital/startups menores de 10M€
+- Nombramientos de directivos sin operación asociada
+- Resultados financieros sin operación de M&A
+- Contenido educativo o explicativo sobre M&A
+- Rumores sin fuentes concretas
+- Noticias antiguas recicladas
+
+Responde SIEMPRE en JSON válido. Extrae información específica de la operación cuando esté disponible.`;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,6 +64,7 @@ serve(async (req) => {
       .from('news_articles')
       .select('*')
       .eq('is_processed', false)
+      .eq('is_deleted', false)
       .limit(10);
 
     if (fetchError) {
@@ -50,30 +83,36 @@ serve(async (req) => {
     console.log(`Processing ${unprocessedNews.length} news articles with AI...`);
 
     let processedCount = 0;
+    let discardedCount = 0;
 
     for (const article of unprocessedNews) {
       try {
         console.log(`Processing article: ${article.title}`);
 
-        const prompt = `Analiza la siguiente noticia del sector M&A español y genera:
-1. Un título SEO-friendly (máximo 70 caracteres)
-2. Un extracto/resumen (máximo 160 caracteres) 
-3. Un resumen más extenso (150-200 palabras)
-4. Categoría: elegir entre "M&A", "Private Equity", "Venture Capital", "Due Diligence", "Valoración", "Reestructuración", "Fiscal"
-5. Tags relevantes (máximo 5, separados por coma)
+        const userPrompt = `Analiza esta noticia y extrae información sobre la OPERACIÓN de M&A:
 
-Noticia original:
 Título: ${article.title}
-Contenido: ${article.content?.substring(0, 3000)}
+Fuente: ${article.source_name || 'No especificada'}
+Contenido: ${article.content?.substring(0, 4000)}
 
-Responde SOLO en formato JSON con esta estructura exacta:
+Evalúa si es una operación REAL de compra-venta y responde en JSON:
 {
-  "seo_title": "...",
-  "excerpt": "...",
-  "summary": "...",
-  "category": "...",
-  "tags": ["tag1", "tag2", ...]
-}`;
+  "is_ma_deal": true/false,
+  "relevance_score": 0-10,
+  "deal_type": "adquisición" | "venta" | "fusión" | "opa" | "desinversión" | "mbo" | "private_equity" | "venture_capital" | "otro" | null,
+  "buyer": "nombre exacto de la empresa compradora o fondo, o null si no aplica",
+  "seller": "nombre exacto de la empresa vendedora, o null si no aplica",
+  "target_company": "empresa/activo/división objeto de la operación",
+  "deal_value": "valor de la operación en formato '100M€' o 'no especificado'",
+  "seo_title": "título SEO máx 70 chars: [Buyer] adquiere/vende [Target] - incluir valor si existe",
+  "excerpt": "resumen 160 chars: qué empresa compra/vende qué, por cuánto y sector",
+  "summary": "resumen 150-200 palabras de la operación: partes involucradas, términos, contexto estratégico",
+  "category": "M&A" | "Private Equity" | "Venture Capital" | "OPA" | "Reestructuración",
+  "tags": ["máximo 5 tags: sector, tipo operación, nombres empresas principales"],
+  "rejection_reason": "si relevance_score < 5, explicar brevemente por qué no es una operación relevante"
+}
+
+IMPORTANTE: Solo asigna relevance_score >= 7 si hay una operación CONCRETA y REAL de compra-venta con partes identificables.`;
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -84,14 +123,11 @@ Responde SOLO en formato JSON con esta estructura exacta:
           body: JSON.stringify({
             model: 'gpt-4o-mini',
             messages: [
-              { 
-                role: 'system', 
-                content: 'Eres un experto en M&A y comunicación corporativa. Generas contenido SEO optimizado para noticias del sector de fusiones y adquisiciones en España. Responde siempre en JSON válido.' 
-              },
-              { role: 'user', content: prompt }
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: userPrompt }
             ],
-            temperature: 0.7,
-            max_tokens: 1000,
+            temperature: 0.3, // Lower temperature for more consistent categorization
+            max_tokens: 1200,
           }),
         });
 
@@ -120,10 +156,45 @@ Responde SOLO en formato JSON con esta estructura exacta:
           }
         } catch (parseError) {
           console.error(`Error parsing AI response for article ${article.id}:`, parseError);
+          console.error(`Raw AI response: ${aiContent.substring(0, 500)}`);
           continue;
         }
 
-        // Update article with AI-processed content
+        const relevanceScore = parsed.relevance_score ?? 0;
+        const isRelevant = parsed.is_ma_deal && relevanceScore >= 5;
+
+        // If not a relevant M&A deal, mark as processed but soft-delete
+        if (!isRelevant) {
+          console.log(`⏭️ Descartando (score: ${relevanceScore}): "${article.title.substring(0, 50)}..."`);
+          console.log(`   Razón: ${parsed.rejection_reason || 'No es operación de M&A'}`);
+
+          const { error: discardError } = await supabase
+            .from('news_articles')
+            .update({
+              is_processed: true,
+              is_deleted: true,
+              processed_at: new Date().toISOString(),
+              relevance_score: relevanceScore,
+              rejection_reason: parsed.rejection_reason || 'No cumple criterios de relevancia',
+              ai_metadata: {
+                is_ma_deal: parsed.is_ma_deal,
+                original_analysis: parsed
+              }
+            })
+            .eq('id', article.id);
+
+          if (!discardError) {
+            discardedCount++;
+          }
+          continue;
+        }
+
+        // Update article with AI-processed content for relevant deals
+        console.log(`✅ Operación relevante (score: ${relevanceScore}): ${parsed.deal_type || 'M&A'}`);
+        if (parsed.buyer) console.log(`   Comprador: ${parsed.buyer}`);
+        if (parsed.target_company) console.log(`   Target: ${parsed.target_company}`);
+        if (parsed.deal_value) console.log(`   Valor: ${parsed.deal_value}`);
+
         const { error: updateError } = await supabase
           .from('news_articles')
           .update({
@@ -132,6 +203,16 @@ Responde SOLO en formato JSON con esta estructura exacta:
             content: parsed.summary || article.content,
             category: parsed.category || 'M&A',
             tags: parsed.tags || [],
+            deal_type: parsed.deal_type,
+            buyer: parsed.buyer,
+            seller: parsed.seller,
+            target_company: parsed.target_company,
+            deal_value: parsed.deal_value,
+            relevance_score: relevanceScore,
+            ai_metadata: {
+              is_ma_deal: true,
+              original_analysis: parsed
+            },
             is_processed: true,
             processed_at: new Date().toISOString()
           })
@@ -149,13 +230,16 @@ Responde SOLO en formato JSON con esta estructura exacta:
       }
     }
 
-    console.log(`Finished processing. Total processed: ${processedCount}`);
+    console.log(`\n📊 Finished processing:`);
+    console.log(`   ✅ Relevant deals: ${processedCount}`);
+    console.log(`   ⏭️ Discarded: ${discardedCount}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Processed ${processedCount} articles with AI`,
-        processed: processedCount
+        message: `Processed ${processedCount} relevant deals, discarded ${discardedCount}`,
+        processed: processedCount,
+        discarded: discardedCount
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
