@@ -7,43 +7,65 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Spanish M&A news sources with optimized search queries
+// Spanish M&A news sources with DEAL-FOCUSED search queries
 const NEWS_SOURCES = [
   {
     id: 0,
     name: 'Expansión',
-    searchQuery: 'fusiones adquisiciones compra empresa site:expansion.com',
-    altQuery: 'M&A private equity capital riesgo site:expansion.com',
-    keywords: ['fusión', 'adquisición', 'M&A', 'compra', 'venta', 'private equity', 'capital riesgo', 'OPA', 'operación']
+    // FOCUSED: Real operations with action verbs
+    searchQuery: '"ha adquirido" OR "compra de" OR "vende" OR "fusión con" site:expansion.com',
+    altQuery: '"millones de euros" adquisición empresa site:expansion.com',
+    keywords: ['adquiere', 'compra', 'vende', 'fusión', 'OPA', 'millones', 'operación', 'cierra', 'acuerdo']
   },
   {
     id: 1,
     name: 'El Economista',
-    searchQuery: 'fusiones adquisiciones private equity site:eleconomista.es',
-    altQuery: 'M&A compra venta empresa site:eleconomista.es',
-    keywords: ['fusión', 'adquisición', 'M&A', 'compra', 'venta', 'private equity', 'venture capital', 'operación']
+    // FOCUSED: Deal announcements
+    searchQuery: '"ha comprado" OR "adquiere" OR "venta de" OR "se fusiona" site:eleconomista.es',
+    altQuery: 'private equity compra empresa española millones site:eleconomista.es',
+    keywords: ['adquiere', 'compra', 'vende', 'fusión', 'OPA', 'millones', 'cierra', 'operación']
   },
   {
     id: 2,
     name: 'Capital & Corporate',
-    searchQuery: 'M&A fusiones adquisiciones site:capitalandcorporate.com',
-    altQuery: 'private equity venture capital operaciones site:capitalandcorporate.com',
-    keywords: ['M&A', 'fusión', 'adquisición', 'private equity', 'venture capital', 'operación', 'deal']
+    // Specialized M&A source - keep broad but relevant
+    searchQuery: 'adquisición OR venta OR fusión site:capitalandcorporate.com',
+    altQuery: 'private equity deal operación site:capitalandcorporate.com',
+    keywords: ['adquisición', 'venta', 'fusión', 'deal', 'operación', 'cierre', 'millones', 'compra']
   },
   {
     id: 3,
     name: 'Cinco Días',
-    searchQuery: 'fusiones adquisiciones empresas site:cincodias.elpais.com',
-    altQuery: 'compra venta empresa M&A site:cincodias.elpais.com',
-    keywords: ['fusión', 'adquisición', 'M&A', 'compra', 'venta', 'OPA', 'private equity', 'operación']
+    // FOCUSED: Concrete operations
+    searchQuery: '"compra" OR "adquiere" OR "vende" empresa millones site:cincodias.elpais.com',
+    altQuery: '"operación de" compra venta empresa site:cincodias.elpais.com',
+    keywords: ['compra', 'adquiere', 'vende', 'fusión', 'OPA', 'millones', 'operación', 'cierra']
   },
   {
     id: 4,
     name: 'El Confidencial',
-    searchQuery: 'M&A fusiones adquisiciones site:elconfidencial.com',
-    altQuery: 'private equity fondo inversión compra site:elconfidencial.com',
-    keywords: ['fusión', 'adquisición', 'M&A', 'compra', 'venta', 'private equity', 'fondo', 'operación']
+    // FOCUSED: Private equity and strategic deals
+    searchQuery: 'fondo compra empresa OR "ha adquirido" OR venta site:elconfidencial.com',
+    altQuery: 'private equity inversión empresa española millones site:elconfidencial.com',
+    keywords: ['compra', 'adquiere', 'vende', 'fondo', 'private equity', 'millones', 'operación']
   }
+];
+
+// Keywords that indicate a REAL deal (not just market commentary)
+const DEAL_INDICATORS = [
+  'ha adquirido', 'ha comprado', 'ha vendido', 'adquiere', 'compra', 'vende',
+  'cierra la compra', 'cierra la venta', 'se fusiona', 'opa sobre', 'opa por',
+  'millones de euros', 'millones €', 'M€', 'desinversión', 'build-up',
+  'entrada en el capital', 'toma de control', 'compra del 100%', 'venta del',
+  'acuerdo de compra', 'acuerdo de venta', 'operación valorada', 'transacción'
+];
+
+// Keywords that indicate NON-deal content (to deprioritize)
+const NON_DEAL_INDICATORS = [
+  'podría comprar', 'estudia comprar', 'analiza la venta', 'rumores de',
+  'el mercado de m&a', 'tendencias en', 'perspectivas para', 'opinión:',
+  'análisis:', 'cómo vender', 'guía para', 'qué es un', 'entrevista con',
+  'nombramiento', 'resultados del trimestre', 'resultados anuales'
 ];
 
 // Generate SHA-256 hash for title deduplication
@@ -55,11 +77,38 @@ async function generateTitleHash(title: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
 }
 
+// Score article relevance based on deal indicators
+function scoreDealRelevance(content: string, title: string): { score: number; hasDealIndicator: boolean } {
+  const text = (content + ' ' + title).toLowerCase();
+  
+  // Check for non-deal indicators first
+  const hasNonDeal = NON_DEAL_INDICATORS.some(indicator => text.includes(indicator.toLowerCase()));
+  
+  // Check for deal indicators
+  const dealIndicatorCount = DEAL_INDICATORS.filter(indicator => 
+    text.includes(indicator.toLowerCase())
+  ).length;
+  
+  // Calculate score
+  let score = dealIndicatorCount * 2;
+  if (hasNonDeal) score -= 3;
+  
+  // Bonus for specific patterns
+  if (/\d+\s*(?:millones|M€|M\s*€)/i.test(text)) score += 2; // Has deal value
+  if (/(?:ha|han)\s+(?:adquirido|comprado|vendido)/i.test(text)) score += 3; // Past tense = completed deal
+  if (/(?:cierra|completa|finaliza)\s+(?:la\s+)?(?:compra|venta|operación)/i.test(text)) score += 3;
+  
+  return {
+    score: Math.max(0, Math.min(10, score)),
+    hasDealIndicator: dealIndicatorCount > 0
+  };
+}
+
 // Fetch articles from Firecrawl with retry
 async function fetchFromFirecrawl(
   apiKey: string, 
   query: string, 
-  timeRange: string = 'qdr:w' // Default to last week
+  timeRange: string = 'qdr:w'
 ): Promise<any[]> {
   console.log(`🔍 Firecrawl query: "${query}" (time: ${timeRange})`);
   
@@ -74,7 +123,7 @@ async function fetchFromFirecrawl(
       limit: 10,
       lang: 'es',
       country: 'ES',
-      tbs: timeRange, // qdr:d = day, qdr:w = week
+      tbs: timeRange,
       scrapeOptions: {
         formats: ['markdown']
       }
@@ -96,10 +145,10 @@ async function fetchFromFirecrawl(
 // Categorize article based on content
 function categorizeArticle(content: string, title: string): string {
   const text = (content + ' ' + title).toLowerCase();
-  if (text.includes('private equity') || text.includes('capital riesgo')) return 'Private Equity';
-  if (text.includes('venture capital') || text.includes('startup') || text.includes('ronda')) return 'Venture Capital';
   if (text.includes('opa') || text.includes('oferta pública')) return 'OPA';
-  if (text.includes('reestructuración') || text.includes('concurso')) return 'Reestructuración';
+  if (text.includes('private equity') || text.includes('capital riesgo') || text.includes('fondo de inversión')) return 'Private Equity';
+  if (text.includes('venture capital') || text.includes('startup') || text.includes('ronda de financiación')) return 'Venture Capital';
+  if (text.includes('reestructuración') || text.includes('concurso') || text.includes('ERE')) return 'Reestructuración';
   return 'M&A';
 }
 
@@ -158,7 +207,7 @@ serve(async (req) => {
     // Parse request body
     let requestedSource: number | undefined;
     let fetchAll = false;
-    let timeRange = 'qdr:w'; // Default: last week (more results)
+    let timeRange = 'qdr:w';
     
     try {
       const body = await req.json();
@@ -178,7 +227,6 @@ serve(async (req) => {
     } else if (requestedSource !== undefined && requestedSource >= 0 && requestedSource < NEWS_SOURCES.length) {
       sourcesToFetch = [NEWS_SOURCES[requestedSource]];
     } else {
-      // Rotate based on hour - cycle through sources
       const currentHour = new Date().getUTCHours();
       const sourceIndex = Math.floor(currentHour / 6) % NEWS_SOURCES.length;
       sourcesToFetch = [NEWS_SOURCES[sourceIndex]];
@@ -201,37 +249,52 @@ serve(async (req) => {
           results = await fetchFromFirecrawl(firecrawlApiKey, source.altQuery, timeRange);
         }
 
-        // Filter by keywords
+        // Filter and score by deal relevance
         let relevantCount = 0;
+        let skippedLowScore = 0;
+        
         for (const result of results) {
-          const content = (result.markdown || result.description || '').toLowerCase();
-          const title = (result.title || '').toLowerCase();
+          const content = (result.markdown || result.description || '');
+          const title = (result.title || '');
 
+          // Check basic keyword match
           const isMARelated = source.keywords.some(keyword =>
-            content.includes(keyword.toLowerCase()) ||
-            title.includes(keyword.toLowerCase())
+            content.toLowerCase().includes(keyword.toLowerCase()) ||
+            title.toLowerCase().includes(keyword.toLowerCase())
           );
 
-          if (isMARelated && result.title && result.url) {
-            relevantCount++;
-            allNews.push({
-              source_name: source.name,
-              source_url: result.url,
-              title: result.title,
-              content: result.markdown || result.description || '',
-              fetched_at: new Date().toISOString()
-            });
+          if (!isMARelated || !result.title || !result.url) continue;
+
+          // Score deal relevance
+          const { score, hasDealIndicator } = scoreDealRelevance(content, title);
+          
+          // Pre-filter: only include if has deal indicator or decent score
+          if (!hasDealIndicator && score < 3) {
+            skippedLowScore++;
+            console.log(`⏭️ Pre-filtered (score ${score}): "${title.substring(0, 50)}..."`);
+            continue;
           }
+
+          relevantCount++;
+          allNews.push({
+            source_name: source.name,
+            source_url: result.url,
+            title: result.title,
+            content: result.markdown || result.description || '',
+            fetched_at: new Date().toISOString(),
+            pre_score: score // Store pre-score for logging
+          });
         }
 
         sourceResults.push({
           source: source.name,
           raw_results: results.length,
           relevant: relevantCount,
+          pre_filtered: skippedLowScore,
           status: 'success'
         });
 
-        console.log(`✅ ${source.name}: ${results.length} raw → ${relevantCount} relevant`);
+        console.log(`✅ ${source.name}: ${results.length} raw → ${relevantCount} relevant (${skippedLowScore} pre-filtered)`);
 
       } catch (error) {
         console.error(`❌ Error fetching ${source.name}:`, error.message);
@@ -309,7 +372,8 @@ serve(async (req) => {
           is_published: false,
           is_featured: false,
           fetched_at: article.fetched_at,
-          is_processed: false
+          is_processed: false,
+          ai_metadata: { pre_score: article.pre_score } // Store pre-score
         }));
 
         const { error: insertError } = await supabase
@@ -325,8 +389,8 @@ serve(async (req) => {
           // Create notification for new pending articles
           await supabase.from('admin_notifications_news').insert({
             type: 'new_pending_news',
-            title: `${insertedCount} noticias nuevas pendientes`,
-            message: `Se importaron ${insertedCount} noticias de ${sourcesToFetch.map(s => s.name).join(', ')}`,
+            title: `${insertedCount} noticias pendientes de procesar`,
+            message: `Se importaron ${insertedCount} noticias de ${sourcesToFetch.map(s => s.name).join(', ')}. Pendientes de análisis AI.`,
             metadata: {
               sources: sourceResults,
               count: insertedCount,
@@ -338,12 +402,12 @@ serve(async (req) => {
         }
       }
     } else {
-      // No articles found - create warning notification if this is a scheduled run
+      // No articles found
       if (!requestedSource && !fetchAll) {
         await supabase.from('admin_notifications_news').insert({
           type: 'no_news_found',
           title: 'Sin noticias nuevas',
-          message: `No se encontraron artículos relevantes en ${sourcesToFetch[0]?.name || 'ninguna fuente'}`,
+          message: `No se encontraron artículos relevantes de operaciones M&A en ${sourcesToFetch[0]?.name || 'ninguna fuente'}`,
           metadata: { sources: sourceResults, time_range: timeRange }
         });
       }
@@ -360,7 +424,7 @@ serve(async (req) => {
           by_hash: duplicatesByHash
         },
         time_range: timeRange,
-        message: `Found ${allNews.length} articles, inserted ${insertedCount} new`
+        message: `Found ${allNews.length} deal-focused articles, inserted ${insertedCount} new`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
