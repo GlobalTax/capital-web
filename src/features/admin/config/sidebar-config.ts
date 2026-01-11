@@ -299,6 +299,31 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "🔍 SEARCH FUNDS",
+    description: "Gestión y matching de Search Funds",
+    items: [
+      { 
+        title: "Directorio SF", 
+        url: "/admin/sf-directory", 
+        icon: Building2,
+        badge: "NEW",
+        description: "Directorio de Search Funds"
+      },
+      { 
+        title: "Backers", 
+        url: "/admin/sf-backers", 
+        icon: Users,
+        description: "Gestión de backers e inversores"
+      },
+      { 
+        title: "Matching Inbox", 
+        url: "/admin/sf-matches", 
+        icon: Target,
+        description: "Matches pendientes de revisar"
+      },
+    ]
+  },
+  {
     title: "📚 RECURSOS",
     description: "Gestión de recursos y herramientas",
     items: [
