@@ -70,9 +70,10 @@ async function restMutate(table: string, method: 'POST' | 'PATCH' | 'DELETE', pa
 }
 
 export async function fetchSFFunds(): Promise<FundForIntelligence[]> {
+  // sf_funds does NOT have is_deleted column
   const rows = await restQuery<FundRow>(
     'sf_funds',
-    'select=id,name,website,last_scraped_at&is_deleted=eq.false&order=name'
+    'select=id,name,website,last_scraped_at&order=name'
   );
   
   return rows.map((f) => ({
