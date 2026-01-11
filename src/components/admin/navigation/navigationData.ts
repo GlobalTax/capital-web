@@ -157,6 +157,34 @@ export const navigationGroups: NavigationGroup[] = [
         keywords: ["hub", "dashboard", "métricas", "marketing"]
       }
     ]
+  },
+  {
+    title: "🔍 Search Funds Intelligence",
+    description: "Gestión y matching de Search Funds",
+    items: [
+      {
+        title: "Directorio SF",
+        icon: Building2,
+        id: "sf-directory",
+        description: "Directorio de Search Funds",
+        badge: "NEW" as const,
+        keywords: ["search", "funds", "directorio", "inversores"]
+      },
+      {
+        title: "Backers",
+        icon: Users,
+        id: "sf-backers",
+        description: "Gestión de backers e inversores",
+        keywords: ["backers", "inversores", "sponsors"]
+      },
+      {
+        title: "Matching Inbox",
+        icon: Target,
+        id: "sf-matches",
+        description: "Matches pendientes de revisar",
+        keywords: ["matches", "matching", "oportunidades"]
+      }
+    ]
   }
 ];
 
