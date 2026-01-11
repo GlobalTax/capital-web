@@ -169,11 +169,11 @@ async function findOrCreateFund(
 ): Promise<string | null> {
   if (!org?.name) return null;
 
-  // Buscar fund existente por nombre o LinkedIn
+  // Buscar fund existente por nombre o website
   const { data: existing } = await supabase
     .from('sf_funds')
     .select('id')
-    .or(`name.ilike.%${org.name}%,linkedin_url.eq.${org.linkedin_url || ''}`)
+    .or(`name.ilike.%${org.name}%,website.eq.${org.website_url || ''}`)
     .limit(1)
     .single();
 
@@ -187,12 +187,11 @@ async function findOrCreateFund(
     .from('sf_funds')
     .insert({
       name: org.name,
-      website_url: org.website_url,
-      linkedin_url: org.linkedin_url,
-      country: org.country || 'Spain',
+      website: org.website_url,
+      country_base: org.country || 'Spain',
       sector_focus: org.industry ? [org.industry] : [],
       status: 'searching',
-      source: 'apollo_import',
+      source_url: org.linkedin_url || 'apollo_import',
     })
     .select('id')
     .single();
@@ -262,10 +261,9 @@ async function importPerson(
       linkedin_url: enrichedPerson.linkedin_url,
       phone: enrichedPerson.phone_numbers?.[0]?.sanitized_number,
       role: mapRoleFromTitle(enrichedPerson.title || ''),
-      title: enrichedPerson.title,
       location: extractLocation(enrichedPerson),
       fund_id: fundId,
-      notes: `Importado desde Apollo el ${new Date().toLocaleDateString('es-ES')}`,
+      notes: `Importado desde Apollo el ${new Date().toLocaleDateString('es-ES')}. Cargo: ${enrichedPerson.title || 'N/A'}`,
     };
 
     if (existingId) {
