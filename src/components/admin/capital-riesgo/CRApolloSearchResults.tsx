@@ -237,10 +237,10 @@ export const CRApolloSearchResults: React.FC<CRApolloSearchResultsProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {people.map((person) => (
-                <TableRow 
-                  key={person.id}
-                  className={selectedIds.has(person.id) ? 'bg-primary/5' : ''}
+          {people.map((person, index) => (
+            <TableRow 
+              key={`${person.id}-${index}`}
+              className={selectedIds.has(person.id) ? 'bg-primary/5' : ''}
                 >
                   <TableCell>
                     <Checkbox
