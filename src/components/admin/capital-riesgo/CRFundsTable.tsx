@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { CRFund, CRFundStatus, CRFundType, CRFundStatusLabels, CRFundTypeLabels } from '@/types/capitalRiesgo';
+import { CRFund, CRFundStatus, CRFundType, CR_FUND_STATUS_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
 import { useDeleteCRFund } from '@/hooks/useCRFunds';
 
 interface CRFundsTableProps {
@@ -22,6 +22,7 @@ const statusColors: Record<CRFundStatus, string> = {
   raising: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   deployed: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   closed: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
+  inactive: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400',
 };
 
 const typeColors: Record<CRFundType, string> = {
@@ -30,6 +31,7 @@ const typeColors: Record<CRFundType, string> = {
   growth_equity: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
   family_office: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   corporate: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400',
+  fund_of_funds: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
 };
 
 const formatCurrency = (value: number | null) => {
@@ -117,8 +119,8 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading }) 
                   </div>
                 </TableCell>
                 <TableCell className="py-2">
-                  <Badge className={`text-[10px] h-5 ${typeColors[fund.fund_type] || 'bg-gray-100'}`}>
-                    {CRFundTypeLabels[fund.fund_type] || fund.fund_type}
+                  <Badge className={`text-[10px] h-5 ${typeColors[fund.fund_type as CRFundType] || 'bg-gray-100'}`}>
+                    {CR_FUND_TYPE_LABELS[fund.fund_type as keyof typeof CR_FUND_TYPE_LABELS] || fund.fund_type}
                   </Badge>
                 </TableCell>
                 <TableCell className="py-2">
@@ -151,8 +153,8 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading }) 
                   </span>
                 </TableCell>
                 <TableCell className="py-2">
-                  <Badge className={`text-[10px] h-5 ${statusColors[fund.status] || 'bg-gray-100'}`}>
-                    {CRFundStatusLabels[fund.status] || fund.status}
+                  <Badge className={`text-[10px] h-5 ${statusColors[fund.status as CRFundStatus] || 'bg-gray-100'}`}>
+                    {CR_FUND_STATUS_LABELS[fund.status as keyof typeof CR_FUND_STATUS_LABELS] || fund.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="py-2">

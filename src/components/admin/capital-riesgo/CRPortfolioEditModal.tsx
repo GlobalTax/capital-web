@@ -30,7 +30,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CRPortfolio, CRPortfolioStatusLabels, CRPortfolioInvestmentTypeLabels, CRPortfolioOwnershipTypeLabels, CRPortfolioExitTypeLabels } from '@/types/capitalRiesgo';
+import { 
+  CRPortfolio, 
+  CR_PORTFOLIO_STATUS_LABELS, 
+  CR_INVESTMENT_TYPE_LABELS, 
+  CR_OWNERSHIP_TYPE_LABELS, 
+  CR_EXIT_TYPE_LABELS,
+  CRInvestmentType,
+  CROwnershipType,
+  CRPortfolioStatus,
+  CRExitType
+} from '@/types/capitalRiesgo';
 import { useCreateCRPortfolio, useUpdateCRPortfolio } from '@/hooks/useCRPortfolio';
 import { useCRFunds } from '@/hooks/useCRFunds';
 import { Loader2 } from 'lucide-react';
@@ -41,11 +51,11 @@ const portfolioSchema = z.object({
   country: z.string().optional(),
   sector: z.string().optional(),
   investment_year: z.number().nullable().optional(),
-  investment_type: z.enum(['lead', 'co_invest', 'follow_on']).optional(),
-  ownership_type: z.enum(['majority', 'minority', 'growth']),
-  status: z.enum(['active', 'exited', 'write_off']),
+  investment_type: z.enum(['lead', 'co_invest', 'follow_on'] as const).optional(),
+  ownership_type: z.enum(['majority', 'minority', 'growth', 'control'] as const),
+  status: z.enum(['active', 'exited', 'write_off', 'partial_exit'] as const),
   exit_year: z.number().nullable().optional(),
-  exit_type: z.enum(['trade_sale', 'ipo', 'secondary', 'recap', 'write_off']).nullable().optional(),
+  exit_type: z.enum(['trade_sale', 'ipo', 'secondary', 'recap', 'write_off', 'merger', 'spac'] as const).nullable().optional(),
   description: z.string().optional(),
   source_url: z.string().optional(),
   notes: z.string().optional(),
@@ -80,11 +90,11 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
       country: portfolio?.country ?? '',
       sector: portfolio?.sector ?? '',
       investment_year: portfolio?.investment_year ?? null,
-      investment_type: portfolio?.investment_type ?? 'lead',
-      ownership_type: portfolio?.ownership_type ?? 'majority',
-      status: portfolio?.status ?? 'active',
+      investment_type: (portfolio?.investment_type as CRInvestmentType) ?? 'lead',
+      ownership_type: (portfolio?.ownership_type as CROwnershipType) ?? 'majority',
+      status: (portfolio?.status as CRPortfolioStatus) ?? 'active',
       exit_year: portfolio?.exit_year ?? null,
-      exit_type: portfolio?.exit_type ?? null,
+      exit_type: (portfolio?.exit_type as CRExitType) ?? null,
       description: portfolio?.description ?? '',
       source_url: portfolio?.source_url ?? '',
       notes: portfolio?.notes ?? '',
@@ -102,11 +112,11 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
         country: portfolio?.country ?? '',
         sector: portfolio?.sector ?? '',
         investment_year: portfolio?.investment_year ?? null,
-        investment_type: portfolio?.investment_type ?? 'lead',
-        ownership_type: portfolio?.ownership_type ?? 'majority',
-        status: portfolio?.status ?? 'active',
+        investment_type: (portfolio?.investment_type as CRInvestmentType) ?? 'lead',
+        ownership_type: (portfolio?.ownership_type as CROwnershipType) ?? 'majority',
+        status: (portfolio?.status as CRPortfolioStatus) ?? 'active',
         exit_year: portfolio?.exit_year ?? null,
-        exit_type: portfolio?.exit_type ?? null,
+        exit_type: (portfolio?.exit_type as CRExitType) ?? null,
         description: portfolio?.description ?? '',
         source_url: portfolio?.source_url ?? '',
         notes: portfolio?.notes ?? '',
@@ -125,8 +135,8 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
       investment_type: data.investment_type || null,
       ownership_type: data.ownership_type,
       status: data.status,
-      exit_year: data.status === 'exited' ? data.exit_year : null,
-      exit_type: data.status === 'exited' ? data.exit_type : null,
+      exit_year: data.status === 'exited' || data.status === 'partial_exit' ? data.exit_year : null,
+      exit_type: data.status === 'exited' || data.status === 'partial_exit' ? data.exit_type : null,
       description: data.description || null,
       source_url: data.source_url || null,
       notes: data.notes || null,
@@ -134,7 +144,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
     };
 
     if (isEditing && portfolio) {
-      await updatePortfolio.mutateAsync({ id: portfolio.id, ...payload });
+      await updatePortfolio.mutateAsync({ id: portfolio.id, data: payload });
     } else {
       await createPortfolio.mutateAsync(payload);
     }
@@ -244,7 +254,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(CRPortfolioInvestmentTypeLabels).map(([value, label]) => (
+                        {(Object.entries(CR_INVESTMENT_TYPE_LABELS) as [CRInvestmentType, string][]).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
                             {label}
                           </SelectItem>
@@ -269,7 +279,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(CRPortfolioOwnershipTypeLabels).map(([value, label]) => (
+                        {(Object.entries(CR_OWNERSHIP_TYPE_LABELS) as [CROwnershipType, string][]).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
                             {label}
                           </SelectItem>
@@ -294,7 +304,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(CRPortfolioStatusLabels).map(([value, label]) => (
+                        {(Object.entries(CR_PORTFOLIO_STATUS_LABELS) as [CRPortfolioStatus, string][]).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
                             {label}
                           </SelectItem>
@@ -331,7 +341,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
                 )}
               />
 
-              {watchStatus === 'exited' && (
+              {(watchStatus === 'exited' || watchStatus === 'partial_exit') && (
                 <>
                   <FormField
                     control={form.control}
@@ -366,7 +376,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.entries(CRPortfolioExitTypeLabels).map(([value, label]) => (
+                            {(Object.entries(CR_EXIT_TYPE_LABELS) as [CRExitType, string][]).map(([value, label]) => (
                               <SelectItem key={value} value={value}>
                                 {label}
                               </SelectItem>

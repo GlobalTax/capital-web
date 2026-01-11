@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, Mail, Linkedin, CheckCircle2, MapPin } from 'luci
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { CRPerson, CRPersonRoleLabels } from '@/types/capitalRiesgo';
+import { CRPerson, CR_PERSON_ROLE_LABELS } from '@/types/capitalRiesgo';
 
 interface CRFundPeoplePanelProps {
   people: CRPerson[];
@@ -105,7 +105,7 @@ export function CRFundPeoplePanel({ people, onAdd, onEdit, onDelete }: CRFundPeo
                 {/* Rol */}
                 <div>
                   <Badge className={`${roleColor} text-[10px] font-normal border-0`}>
-                    {CRPersonRoleLabels[person.role] || person.role}
+                    {CR_PERSON_ROLE_LABELS[person.role as keyof typeof CR_PERSON_ROLE_LABELS] || person.role}
                   </Badge>
                 </div>
 
