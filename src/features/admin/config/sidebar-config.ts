@@ -299,6 +299,19 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "💼 CAPITAL RIESGO",
+    description: "CRM de fondos PE/VC",
+    items: [
+      { 
+        title: "Directorio CR", 
+        url: "/admin/cr-directory", 
+        icon: Briefcase,
+        badge: "NEW",
+        description: "Fondos y personas PE/VC"
+      },
+    ]
+  },
+  {
     title: "🔍 SEARCH FUNDS",
     description: "Gestión y matching de Search Funds",
     items: [
