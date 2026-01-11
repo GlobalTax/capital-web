@@ -2633,6 +2633,13 @@ export type Database = {
           adjustment_amount: number | null
           ai_company_summary: string | null
           ai_company_summary_at: string | null
+          apollo_candidates: Json | null
+          apollo_error: string | null
+          apollo_last_enriched_at: string | null
+          apollo_org_data: Json | null
+          apollo_org_id: string | null
+          apollo_people_data: Json | null
+          apollo_status: string | null
           assigned_at: string | null
           assigned_to: string | null
           brevo_deleted_at: string | null
@@ -2663,6 +2670,7 @@ export type Database = {
           email_clicked: boolean | null
           email_delivered: boolean | null
           email_delivered_at: string | null
+          email_domain: string | null
           email_message_id: string | null
           email_opened: boolean | null
           email_opened_at: string | null
@@ -2728,6 +2736,13 @@ export type Database = {
           adjustment_amount?: number | null
           ai_company_summary?: string | null
           ai_company_summary_at?: string | null
+          apollo_candidates?: Json | null
+          apollo_error?: string | null
+          apollo_last_enriched_at?: string | null
+          apollo_org_data?: Json | null
+          apollo_org_id?: string | null
+          apollo_people_data?: Json | null
+          apollo_status?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2758,6 +2773,7 @@ export type Database = {
           email_clicked?: boolean | null
           email_delivered?: boolean | null
           email_delivered_at?: string | null
+          email_domain?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null
@@ -2823,6 +2839,13 @@ export type Database = {
           adjustment_amount?: number | null
           ai_company_summary?: string | null
           ai_company_summary_at?: string | null
+          apollo_candidates?: Json | null
+          apollo_error?: string | null
+          apollo_last_enriched_at?: string | null
+          apollo_org_data?: Json | null
+          apollo_org_id?: string | null
+          apollo_people_data?: Json | null
+          apollo_status?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
           brevo_deleted_at?: string | null
@@ -2853,6 +2876,7 @@ export type Database = {
           email_clicked?: boolean | null
           email_delivered?: boolean | null
           email_delivered_at?: string | null
+          email_domain?: string | null
           email_message_id?: string | null
           email_opened?: boolean | null
           email_opened_at?: string | null

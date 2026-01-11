@@ -95,6 +95,14 @@ export interface UnifiedContact {
   ai_company_summary?: string;
   ai_company_summary_at?: string;
 
+  // 🔥 Apollo enrichment fields
+  apollo_status?: 'none' | 'running' | 'ok' | 'needs_review' | 'error';
+  apollo_error?: string;
+  apollo_org_id?: string;
+  apollo_last_enriched_at?: string;
+  apollo_org_data?: any;
+  apollo_candidates?: any[];
+
   // Legacy compatibility
   source?: string;
 }
@@ -167,10 +175,10 @@ export const useUnifiedContacts = () => {
 
       if (contactError) throw contactError;
 
-      // Fetch company_valuations (exclude soft deleted)
+      // Fetch company_valuations (exclude soft deleted) - include Apollo fields
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*, lead_status_crm, assigned_to, acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_status_crm, assigned_to, acquisition_channel:acquisition_channel_id(id, name, category), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -323,6 +331,13 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: lead.acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // 🔥 Apollo enrichment fields
+          apollo_status: (lead as any).apollo_status || 'none',
+          apollo_error: (lead as any).apollo_error,
+          apollo_org_id: (lead as any).apollo_org_id,
+          apollo_last_enriched_at: (lead as any).apollo_last_enriched_at,
+          apollo_org_data: (lead as any).apollo_org_data,
+          apollo_candidates: (lead as any).apollo_candidates,
         })),
         
         // Collaborator applications

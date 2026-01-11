@@ -146,3 +146,9 @@ verify_jwt = false
 
 [functions.auto-publish-news]
 verify_jwt = false
+
+[functions.enrich-lead-apollo]
+verify_jwt = false
+
+[functions.confirm-apollo-match]
+verify_jwt = false
