@@ -537,13 +537,17 @@ serve(async (req) => {
 
     // ============= ACTION: SEARCH FROM LIST (WITH AUTO-PAGINATION) =============
     if (action === 'search_from_list') {
+      console.log('🚀 [CR Apollo] ACTION: search_from_list STARTING');
+      console.log('🚀 [CR Apollo] Params received:', JSON.stringify(params));
+      
       const { list_id, max_pages = 20 } = params; // max 20 pages = 2000 contacts
       
       if (!list_id) {
+        console.error('❌ [CR Apollo] list_id is missing from params');
         throw new Error('list_id is required');
       }
 
-      console.log('[CR Apollo] Fetching ALL contacts from list:', list_id, 'max_pages:', max_pages);
+      console.log('🔍 [CR Apollo] Fetching ALL contacts from list:', list_id, 'max_pages:', max_pages);
       
       let allPeople: any[] = [];
       let currentPage = 1;

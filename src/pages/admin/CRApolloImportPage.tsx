@@ -64,8 +64,11 @@ const CRApolloImportPage: React.FC = () => {
   };
 
   const handleSearchFromList = async (listId: string) => {
+    console.log('[UI] Starting list import for:', listId);
+    
     try {
       const importId = await createImport({ q_keywords: `list:${listId}` });
+      console.log('[UI] Created import job:', importId);
       
       if (!importId) {
         toast.error('No se pudo crear la sesión de importación');
@@ -75,13 +78,25 @@ const CRApolloImportPage: React.FC = () => {
       setCurrentImportId(importId);
       setCurrentCriteria(null);
 
+      console.log('[UI] Calling searchFromList with list_id:', listId);
       const result = await searchFromList({ list_id: listId });
+      console.log('[UI] searchFromList returned:', result?.people?.length || 0, 'people');
+      
+      if (!result?.people || result.people.length === 0) {
+        toast.error('La lista está vacía o hubo un error al cargarla. Verifica el ID de la lista.');
+        setSearchResults([]);
+        return;
+      }
+      
       setSearchResults(result.people);
       setPagination(result.pagination);
       setListName(result.list_name);
+      toast.success(`${result.people.length} contactos cargados correctamente`);
     } catch (error) {
-      console.error('List search error:', error);
-      toast.error('Error cargando lista de Apollo');
+      console.error('[UI] List search error:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error(`Error cargando lista: ${errorMsg}`);
+      setSearchResults([]);
     }
   };
 
