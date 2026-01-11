@@ -110,3 +110,6 @@ export const LazySFFundDetailPage = lazy(() => import('@/pages/admin/SFFundDetai
 export const LazyCRDirectoryPage = lazy(() => import('@/pages/admin/CRDirectoryPage'));
 export const LazyCRFundDetailPage = lazy(() => import('@/pages/admin/CRFundDetailPage'));
 export const LazyCRApolloImportPage = lazy(() => import('@/pages/admin/CRApolloImportPage'));
+
+// === FUND INTELLIGENCE (FIRECRAWL) ===
+export const LazyFundIntelligencePage = lazy(() => import('@/pages/admin/FundIntelligencePage'));

@@ -68,7 +68,8 @@ import {
   LazySFFundDetailPage,
   LazyCRDirectoryPage,
   LazyCRFundDetailPage,
-  LazyCRApolloImportPage
+  LazyCRApolloImportPage,
+  LazyFundIntelligencePage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -184,6 +185,9 @@ const AdminRouter = () => {
           <Route path="/cr-directory" element={<LazyCRDirectoryPage />} />
           <Route path="/cr-directory/new" element={<LazyCRFundDetailPage />} />
           <Route path="/cr-directory/:id" element={<LazyCRFundDetailPage />} />
+          
+          {/* Fund Intelligence (Firecrawl) */}
+          <Route path="/fund-intelligence" element={<LazyFundIntelligencePage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />
