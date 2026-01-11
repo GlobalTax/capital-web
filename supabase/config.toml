@@ -185,3 +185,6 @@ verify_jwt = false
 
 [functions.apollo-search-import]
 verify_jwt = false
+
+[functions.send-sf-bulk-email]
+verify_jwt = false

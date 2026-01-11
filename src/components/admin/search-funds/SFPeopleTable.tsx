@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Linkedin, ExternalLink, Mail, FileText } from 'lucide-react';
+import { Linkedin, ExternalLink, Mail, FileText, Pencil } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SFPersonWithFund, SFPersonRole } from '@/types/searchFunds';
+import { SFPersonWithFund, SFPersonRole, SFPerson } from '@/types/searchFunds';
+import { SFPersonEditModal } from './SFPersonEditModal';
+import { SFBulkEmailDialog } from './SFBulkEmailDialog';
 
 interface SFPeopleTableProps {
   people: SFPersonWithFund[];
@@ -37,8 +39,24 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
   onToggleSelection,
   onSelectAll,
 }) => {
+  const [editingPerson, setEditingPerson] = useState<SFPerson | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+
   const allSelected = people.length > 0 && selectedIds.size === people.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < people.length;
+
+  const selectedPeople = people.filter((p) => selectedIds.has(p.id));
+
+  const handleRowClick = (person: SFPersonWithFund) => {
+    setEditingPerson(person);
+    setIsEditModalOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setEditingPerson(null);
+    setIsEditModalOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -52,6 +70,14 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
 
   return (
     <>
+      {/* Add New Button */}
+      <div className="mb-4 flex justify-end">
+        <Button onClick={handleAddNew} size="sm">
+          <Pencil className="h-4 w-4 mr-2" />
+          Nueva Persona
+        </Button>
+      </div>
+
       <div className="border border-border/50 rounded-lg overflow-hidden bg-background">
         <Table>
           <TableHeader>
@@ -93,10 +119,11 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
               people.map((person) => (
                 <TableRow 
                   key={person.id} 
-                  className="h-11 hover:bg-muted/50 border-b border-border/30"
+                  className="h-11 hover:bg-muted/50 border-b border-border/30 cursor-pointer"
                   data-selected={selectedIds.has(person.id)}
+                  onClick={() => handleRowClick(person)}
                 >
-                  <TableCell className="py-2">
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                       checked={selectedIds.has(person.id)}
                       onCheckedChange={() => onToggleSelection(person.id)}
@@ -111,6 +138,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-muted-foreground hover:text-blue-600 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Linkedin className="h-3.5 w-3.5" />
                         </a>
@@ -122,7 +150,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
                       {roleLabels[person.role] || person.role}
                     </span>
                   </TableCell>
-                  <TableCell className="py-2">
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     {person.fund ? (
                       <Link 
                         to={`/admin/sf-directory/${person.fund.id}`}
@@ -151,7 +179,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
                       {getLocationDisplay(person)}
                     </span>
                   </TableCell>
-                  <TableCell className="py-2">
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     {person.linkedin_url && (
                       <a 
                         href={person.linkedin_url} 
@@ -178,7 +206,12 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
               {selectedIds.size} seleccionado{selectedIds.size > 1 ? 's' : ''}
             </span>
             <Separator orientation="vertical" className="h-5 bg-slate-700" />
-            <Button size="sm" variant="ghost" className="text-white hover:bg-slate-800">
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-white hover:bg-slate-800"
+              onClick={() => setIsEmailDialogOpen(true)}
+            >
               <Mail className="h-4 w-4 mr-2" />
               Enviar Email
             </Button>
@@ -189,6 +222,20 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
           </div>
         </div>
       )}
+
+      {/* Edit Modal */}
+      <SFPersonEditModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        person={editingPerson}
+      />
+
+      {/* Bulk Email Dialog */}
+      <SFBulkEmailDialog
+        open={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        recipients={selectedPeople}
+      />
     </>
   );
 };
