@@ -2,10 +2,6 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { 
-  ApolloStatus, 
-  ApolloCandidate, 
-  ApolloOrgData, 
-  ApolloPerson,
   EnrichLeadResponse,
   ConfirmMatchResponse 
 } from '@/types/apollo';
@@ -29,63 +25,43 @@ export const useApolloEnrichment = (): UseApolloEnrichmentReturn => {
     setIsEnriching(leadId);
     
     try {
-      // Get current session for auth token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
+      // Call the edge function using supabase.functions.invoke
+      const { data, error } = await supabase.functions.invoke('enrich-lead-apollo', {
+        body: { lead_id: leadId }
+      });
+
+      if (error) {
         toast({
-          title: "Error de autenticación",
-          description: "Por favor, inicia sesión de nuevo",
+          title: "Error al enriquecer",
+          description: error.message || "No se pudo enriquecer el lead",
           variant: "destructive",
         });
         return null;
       }
 
-      // Call the edge function
-      const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/enrich-lead-apollo`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ lead_id: leadId }),
-        }
-      );
-
-      const data: EnrichLeadResponse = await response.json();
-
-      if (!response.ok) {
-        toast({
-          title: "Error al enriquecer",
-          description: data.message || "No se pudo enriquecer el lead",
-          variant: "destructive",
-        });
-        return data;
-      }
+      const responseData = data as EnrichLeadResponse;
 
       // Handle different statuses
-      if (data.status === 'ok') {
+      if (responseData.status === 'ok') {
         toast({
           title: "¡Enriquecimiento exitoso!",
-          description: `Datos de ${data.org_data?.name || 'empresa'} obtenidos correctamente`,
+          description: `Datos de ${responseData.org_data?.name || 'empresa'} obtenidos correctamente`,
         });
-      } else if (data.status === 'needs_review') {
+      } else if (responseData.status === 'needs_review') {
         toast({
           title: "Selección requerida",
-          description: `Se encontraron ${data.candidates?.length || 'varias'} empresas. Por favor, selecciona la correcta.`,
+          description: `Se encontraron ${responseData.candidates?.length || 'varias'} empresas. Por favor, selecciona la correcta.`,
           variant: "default",
         });
-      } else if (data.status === 'error') {
+      } else if (responseData.status === 'error') {
         toast({
           title: "Error de enriquecimiento",
-          description: data.message || "No se encontró información de la empresa",
+          description: responseData.message || "No se encontró información de la empresa",
           variant: "destructive",
         });
       }
 
-      return data;
+      return responseData;
 
     } catch (error) {
       console.error('Apollo enrichment error:', error);
@@ -107,46 +83,28 @@ export const useApolloEnrichment = (): UseApolloEnrichmentReturn => {
     setIsConfirming(leadId);
     
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
+      // Call the edge function using supabase.functions.invoke
+      const { data, error } = await supabase.functions.invoke('confirm-apollo-match', {
+        body: { lead_id: leadId, apollo_org_id: apolloOrgId }
+      });
+
+      if (error) {
         toast({
-          title: "Error de autenticación",
-          description: "Por favor, inicia sesión de nuevo",
+          title: "Error al confirmar",
+          description: error.message || "No se pudo confirmar la selección",
           variant: "destructive",
         });
         return null;
       }
 
-      const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/confirm-apollo-match`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ lead_id: leadId, apollo_org_id: apolloOrgId }),
-        }
-      );
-
-      const data: ConfirmMatchResponse = await response.json();
-
-      if (!response.ok) {
-        toast({
-          title: "Error al confirmar",
-          description: data.message || "No se pudo confirmar la selección",
-          variant: "destructive",
-        });
-        return data;
-      }
+      const responseData = data as ConfirmMatchResponse;
 
       toast({
         title: "¡Empresa confirmada!",
-        description: `Datos de ${data.org_data?.name || 'empresa'} guardados correctamente`,
+        description: `Datos de ${responseData.org_data?.name || 'empresa'} guardados correctamente`,
       });
 
-      return data;
+      return responseData;
 
     } catch (error) {
       console.error('Apollo confirm match error:', error);
