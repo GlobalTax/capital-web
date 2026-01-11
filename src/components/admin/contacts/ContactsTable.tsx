@@ -8,6 +8,10 @@ import { Trash2, CheckCircle2, Mail, Eye, Search, Download, Filter, X } from 'lu
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ApolloEnrichButton } from './ApolloEnrichButton';
+import { ApolloMatchModal } from './ApolloMatchModal';
+import { useApolloEnrichment } from '@/hooks/useApolloEnrichment';
+import type { ApolloStatus, ApolloCandidate } from '@/types/apollo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +46,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [originFilters, setOriginFilters] = useState<ContactOrigin[]>([]);
+  const [apolloModalContact, setApolloModalContact] = useState<UnifiedContact | null>(null);
+  const { enrichLead, confirmMatch, isEnriching, isConfirming } = useApolloEnrichment();
 
   const getOriginBadge = (origin: ContactOrigin, sourceProject?: string) => {
     const badges = {
@@ -336,6 +342,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
             <TableHead className="text-right w-32">Facturación</TableHead>
             <TableHead className="text-right w-36 whitespace-nowrap">Valoración</TableHead>
             <TableHead className="text-right w-28">EBITDA</TableHead>
+            <TableHead className="w-24">Apollo</TableHead>
             <TableHead className="w-28">Fecha</TableHead>
             <TableHead className="text-right w-20">Acciones</TableHead>
           </TableRow>
@@ -409,6 +416,20 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
               <TableCell className="text-right text-sm">
                 {contact.ebitda ? formatCurrency(contact.ebitda) : '-'}
               </TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                {contact.origin === 'valuation' ? (
+                  <ApolloEnrichButton
+                    status={(contact.apollo_status as ApolloStatus) || 'none'}
+                    error={contact.apollo_error}
+                    lastEnrichedAt={contact.apollo_last_enriched_at}
+                    isLoading={isEnriching === contact.id}
+                    onEnrich={() => enrichLead(contact.id)}
+                    onSelectCompany={() => setApolloModalContact(contact)}
+                  />
+                ) : (
+                  <span className="text-xs text-muted-foreground">-</span>
+                )}
+              </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })}
               </TableCell>
@@ -455,6 +476,22 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
         </TableBody>
       </Table>
       </div>
+
+      {/* Apollo Match Modal */}
+      {apolloModalContact && (
+        <ApolloMatchModal
+          isOpen={!!apolloModalContact}
+          onClose={() => setApolloModalContact(null)}
+          candidates={(apolloModalContact.apollo_candidates as ApolloCandidate[]) || []}
+          leadName={apolloModalContact.name}
+          companyName={apolloModalContact.company || ''}
+          isConfirming={isConfirming === apolloModalContact.id}
+          onConfirm={async (apolloOrgId) => {
+            await confirmMatch(apolloModalContact.id, apolloOrgId);
+            setApolloModalContact(null);
+          }}
+        />
+      )}
     </div>
   );
 };
