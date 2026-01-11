@@ -303,6 +303,13 @@ export const sidebarSections: SidebarSection[] = [
     description: "Gestión y matching de Search Funds",
     items: [
       { 
+        title: "Apollo Import", 
+        url: "/admin/sf-apollo-import", 
+        icon: Users,
+        badge: "NEW",
+        description: "Importar personas desde Apollo"
+      },
+      { 
         title: "Radar SF", 
         url: "/admin/sf-radar", 
         icon: Target,
