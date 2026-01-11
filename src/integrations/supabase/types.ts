@@ -11060,6 +11060,50 @@ export type Database = {
         }
         Relationships: []
       }
+      sf_fund_audit_log: {
+        Row: {
+          action: string
+          changed_fields: string[] | null
+          created_at: string
+          fund_id: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_fields?: string[] | null
+          created_at?: string
+          fund_id: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_fields?: string[] | null
+          created_at?: string
+          fund_id?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sf_fund_audit_log_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "sf_funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sf_fund_backers: {
         Row: {
           backer_id: string

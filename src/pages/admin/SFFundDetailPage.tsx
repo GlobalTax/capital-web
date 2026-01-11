@@ -1,12 +1,13 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, Loader2, ExternalLink, Users, Briefcase, Target } from 'lucide-react';
+import { ArrowLeft, Building2, Loader2, ExternalLink, Users, Briefcase, Target, History } from 'lucide-react';
 import { useSFFund, useCreateSFFund, useUpdateSFFund } from '@/hooks/useSFFunds';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SFFundForm } from '@/components/admin/search-funds/SFFundForm';
+import { SFFundHistory } from '@/components/admin/search-funds/SFFundHistory';
 import { SFFund, SFFundFormData } from '@/types/searchFunds';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
@@ -113,6 +114,10 @@ export default function SFFundDetailPage() {
               <TabsTrigger value="matches" className="gap-2">
                 <Target className="h-4 w-4" />
                 Matches ({fund?.matches?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-2">
+                <History className="h-4 w-4" />
+                Historial
               </TabsTrigger>
             </>
           )}
@@ -229,6 +234,10 @@ export default function SFFundDetailPage() {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="history">
+              <SFFundHistory fundId={id!} />
             </TabsContent>
           </>
         )}
