@@ -99,6 +99,7 @@ export const LazyNotificationsPage = lazy(() => import('@/pages/admin/Notificati
 export const LazyBrevoSyncDashboard = lazy(() => import('@/pages/admin/BrevoSyncDashboard'));
 
 // === SEARCH FUNDS INTELLIGENCE ===
+export const LazySFRadarPage = lazy(() => import('@/pages/admin/SFRadarPage'));
 export const LazySFDirectoryPage = lazy(() => import('@/pages/admin/SFDirectoryPage'));
 export const LazySFBackersPage = lazy(() => import('@/pages/admin/SFBackersPage'));
 export const LazySFMatchingInbox = lazy(() => import('@/pages/admin/SFMatchingInbox'));

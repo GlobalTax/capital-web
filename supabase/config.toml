@@ -164,3 +164,21 @@ verify_jwt = false
 
 [functions.sf-generate-outreach]
 verify_jwt = false
+
+[functions.sf-generate-teaser]
+verify_jwt = false
+
+[functions.sf-generate-followup]
+verify_jwt = false
+
+[functions.sf-monitor-changes]
+verify_jwt = false
+
+[functions.sf-enrich-profile]
+verify_jwt = false
+
+[functions.sf-dedupe-check]
+verify_jwt = false
+
+[functions.sf-generate-queries]
+verify_jwt = false
