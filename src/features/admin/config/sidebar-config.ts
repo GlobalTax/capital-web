@@ -316,6 +316,13 @@ export const sidebarSections: SidebarSection[] = [
         badge: "NEW",
         description: "Fondos y personas PE/VC"
       },
+      { 
+        title: "Inteligencia CR", 
+        url: "/admin/fund-intelligence?type=cr", 
+        icon: Eye,
+        badge: "AI",
+        description: "Scraping y noticias de fondos PE/VC"
+      },
     ]
   },
   {
@@ -353,6 +360,13 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/sf-matches", 
         icon: Target,
         description: "Matches pendientes de revisar"
+      },
+      { 
+        title: "Inteligencia SF", 
+        url: "/admin/fund-intelligence?type=sf", 
+        icon: Eye,
+        badge: "AI",
+        description: "Scraping y noticias de Search Funds"
       },
     ]
   },
