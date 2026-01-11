@@ -126,7 +126,7 @@ const LinearContactsManager = () => {
   };
 
   const handleApolloEnrich = async (contact: UnifiedContact) => {
-    const result = await enrichLead(contact.id);
+    const result = await enrichLead(contact.id, contact.origin);
     if (result?.status === 'needs_review') {
       // Refresh to get candidates, then open modal
       await refetch();
@@ -146,7 +146,7 @@ const LinearContactsManager = () => {
 
   const handleApolloConfirmMatch = async (apolloOrgId: string) => {
     if (!apolloModalContact) return;
-    await confirmMatch(apolloModalContact.id, apolloOrgId);
+    await confirmMatch(apolloModalContact.id, apolloOrgId, apolloModalContact.origin);
     setApolloModalContact(null);
     refetch();
   };

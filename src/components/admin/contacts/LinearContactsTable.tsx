@@ -253,18 +253,14 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                 
                 {/* Apollo Enrichment */}
                 <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
-                  {contact.origin === 'valuation' ? (
-                    <ApolloEnrichButton
-                      status={contact.apollo_status}
-                      error={contact.apollo_error}
-                      lastEnrichedAt={contact.apollo_last_enriched_at}
-                      isLoading={isEnriching === contact.id}
-                      onEnrich={() => onApolloEnrich?.(contact)}
-                      onSelectCompany={() => onApolloSelectCandidate?.(contact)}
-                    />
-                  ) : (
-                    <span className="text-xs text-muted-foreground/50">—</span>
-                  )}
+                  <ApolloEnrichButton
+                    status={contact.apollo_status}
+                    error={contact.apollo_error}
+                    lastEnrichedAt={contact.apollo_last_enriched_at}
+                    isLoading={isEnriching === contact.id}
+                    onEnrich={() => onApolloEnrich?.(contact)}
+                    onSelectCompany={() => onApolloSelectCandidate?.(contact)}
+                  />
                 </TableCell>
                 
                 {/* Date */}

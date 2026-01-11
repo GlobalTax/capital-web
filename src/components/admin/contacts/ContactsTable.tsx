@@ -417,18 +417,14 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
                 {contact.ebitda ? formatCurrency(contact.ebitda) : '-'}
               </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
-                {contact.origin === 'valuation' ? (
-                  <ApolloEnrichButton
-                    status={(contact.apollo_status as ApolloStatus) || 'none'}
-                    error={contact.apollo_error}
-                    lastEnrichedAt={contact.apollo_last_enriched_at}
-                    isLoading={isEnriching === contact.id}
-                    onEnrich={() => enrichLead(contact.id)}
-                    onSelectCompany={() => setApolloModalContact(contact)}
-                  />
-                ) : (
-                  <span className="text-xs text-muted-foreground">-</span>
-                )}
+                <ApolloEnrichButton
+                  status={(contact.apollo_status as ApolloStatus) || 'none'}
+                  error={contact.apollo_error}
+                  lastEnrichedAt={contact.apollo_last_enriched_at}
+                  isLoading={isEnriching === contact.id}
+                  onEnrich={() => enrichLead(contact.id, contact.origin)}
+                  onSelectCompany={() => setApolloModalContact(contact)}
+                />
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })}
@@ -487,7 +483,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({
           companyName={apolloModalContact.company || ''}
           isConfirming={isConfirming === apolloModalContact.id}
           onConfirm={async (apolloOrgId) => {
-            await confirmMatch(apolloModalContact.id, apolloOrgId);
+            await confirmMatch(apolloModalContact.id, apolloOrgId, apolloModalContact.origin);
             setApolloModalContact(null);
           }}
         />

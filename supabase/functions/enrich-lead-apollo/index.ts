@@ -23,6 +23,17 @@ const DECISION_MAKER_TITLES = [
   'Partner', 'Socio', 'Gerente',
 ];
 
+// Table mapping by origin
+const TABLE_MAP: Record<string, { table: string; emailField: string; companyField: string }> = {
+  'valuation': { table: 'company_valuations', emailField: 'email', companyField: 'company_name' },
+  'contact': { table: 'contact_leads', emailField: 'email', companyField: 'company' },
+  'collaborator': { table: 'collaborator_applications', emailField: 'email', companyField: 'company' },
+  'acquisition': { table: 'acquisition_leads', emailField: 'email', companyField: 'company' },
+  'company_acquisition': { table: 'company_acquisition_inquiries', emailField: 'email', companyField: 'company' },
+  'general': { table: 'general_contact_leads', emailField: 'email', companyField: 'company' },
+  'advisor': { table: 'advisor_valuations', emailField: 'email', companyField: 'company_name' },
+};
+
 interface ApolloOrgData {
   id: string;
   name: string;
@@ -324,7 +335,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { lead_id } = await req.json();
+    const { lead_id, origin = 'valuation' } = await req.json();
     if (!lead_id) {
       return new Response(
         JSON.stringify({ success: false, status: 'error', message: "lead_id is required" }),
@@ -332,11 +343,20 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Starting Apollo enrichment for lead: ${lead_id}`);
+    // Get table configuration for this origin
+    const tableConfig = TABLE_MAP[origin];
+    if (!tableConfig) {
+      return new Response(
+        JSON.stringify({ success: false, status: 'error', message: `Invalid origin: ${origin}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Starting Apollo enrichment for lead: ${lead_id}, origin: ${origin}, table: ${tableConfig.table}`);
 
     // Fetch the lead
     const { data: lead, error: leadError } = await supabase
-      .from("company_valuations")
+      .from(tableConfig.table)
       .select("*")
       .eq("id", lead_id)
       .single();
@@ -351,16 +371,20 @@ serve(async (req) => {
 
     // Mark as running
     await supabase
-      .from("company_valuations")
+      .from(tableConfig.table)
       .update({
         apollo_status: 'running',
         apollo_error: null,
       })
       .eq("id", lead_id);
 
+    // Extract email and company name using field mapping
+    const email = lead[tableConfig.emailField];
+    const companyName = lead[tableConfig.companyField];
+    
     // Extract email domain
-    const emailDomain = extractEmailDomain(lead.email);
-    console.log(`Lead email: ${lead.email}, extracted domain: ${emailDomain}`);
+    const emailDomain = extractEmailDomain(email);
+    console.log(`Lead email: ${email}, company: ${companyName}, extracted domain: ${emailDomain}`);
 
     let orgData: ApolloOrgData | null = null;
     let candidates: ApolloCandidate[] | null = null;
@@ -379,51 +403,56 @@ serve(async (req) => {
       } else {
         console.log(`Domain enrichment failed: ${enrichResult.error}, falling back to name search`);
         // Fall back to name search
-        const searchResult = await searchByName(lead.company_name, apolloApiKey);
-        if (searchResult.success && searchResult.candidates) {
-          candidates = searchResult.candidates;
-          // Check for clear match
-          const clearMatch = candidates.find(c => nameSimilarity(c.name, lead.company_name) >= 0.85);
-          if (clearMatch) {
-            // Enrich the clear match
-            if (clearMatch.primary_domain) {
-              const matchEnrich = await enrichByDomain(clearMatch.primary_domain, apolloApiKey);
-              if (matchEnrich.success && matchEnrich.org) {
-                orgData = matchEnrich.org;
+        if (companyName) {
+          const searchResult = await searchByName(companyName, apolloApiKey);
+          if (searchResult.success && searchResult.candidates) {
+            candidates = searchResult.candidates;
+            // Check for clear match
+            const clearMatch = candidates.find(c => nameSimilarity(c.name, companyName) >= 0.85);
+            if (clearMatch) {
+              // Enrich the clear match
+              if (clearMatch.primary_domain) {
+                const matchEnrich = await enrichByDomain(clearMatch.primary_domain, apolloApiKey);
+                if (matchEnrich.success && matchEnrich.org) {
+                  orgData = matchEnrich.org;
+                  finalStatus = 'ok';
+                  candidates = null;
+                }
+              } else {
+                // Use candidate data directly if no domain
+                orgData = {
+                  id: clearMatch.id,
+                  name: clearMatch.name,
+                  primary_domain: clearMatch.primary_domain,
+                  linkedin_url: clearMatch.linkedin_url,
+                  logo_url: clearMatch.logo_url,
+                  industry: clearMatch.industry,
+                  estimated_num_employees: clearMatch.estimated_num_employees,
+                  city: clearMatch.city,
+                  country: clearMatch.country,
+                  short_description: clearMatch.short_description,
+                };
                 finalStatus = 'ok';
                 candidates = null;
               }
             } else {
-              // Use candidate data directly if no domain
-              orgData = {
-                id: clearMatch.id,
-                name: clearMatch.name,
-                primary_domain: clearMatch.primary_domain,
-                linkedin_url: clearMatch.linkedin_url,
-                logo_url: clearMatch.logo_url,
-                industry: clearMatch.industry,
-                estimated_num_employees: clearMatch.estimated_num_employees,
-                city: clearMatch.city,
-                country: clearMatch.country,
-                short_description: clearMatch.short_description,
-              };
-              finalStatus = 'ok';
-              candidates = null;
+              // Multiple candidates, needs review
+              finalStatus = 'needs_review';
             }
           } else {
-            // Multiple candidates, needs review
-            finalStatus = 'needs_review';
+            errorMessage = searchResult.error || 'No matching organizations found';
+            finalStatus = 'error';
           }
         } else {
-          errorMessage = searchResult.error || 'No matching organizations found';
+          errorMessage = 'No company name available for search';
           finalStatus = 'error';
         }
       }
     } 
     // Strategy 2: Search by company name if no corporate email
-    else {
-      console.log(`No corporate domain, searching by company name: ${lead.company_name}`);
-      const searchResult = await searchByName(lead.company_name, apolloApiKey);
+    else if (companyName) {
+      console.log(`No corporate domain, searching by company name: ${companyName}`);
+      const searchResult = await searchByName(companyName, apolloApiKey);
       
       if (searchResult.success && searchResult.candidates) {
         candidates = searchResult.candidates;
@@ -431,7 +460,7 @@ serve(async (req) => {
         // Check for clear match (high similarity or single result)
         const clearMatch = candidates.length === 1 
           ? candidates[0] 
-          : candidates.find(c => nameSimilarity(c.name, lead.company_name) >= 0.85);
+          : candidates.find(c => nameSimilarity(c.name, companyName) >= 0.85);
         
         if (clearMatch) {
           console.log(`Clear match found: ${clearMatch.name}`);
@@ -469,6 +498,9 @@ serve(async (req) => {
         errorMessage = searchResult.error || 'No matching organizations found';
         finalStatus = 'error';
       }
+    } else {
+      errorMessage = 'No email domain or company name available for enrichment';
+      finalStatus = 'error';
     }
 
     // If successful, try to get decision makers
@@ -504,7 +536,7 @@ serve(async (req) => {
     }
 
     await supabase
-      .from("company_valuations")
+      .from(tableConfig.table)
       .update(updateData)
       .eq("id", lead_id);
 
