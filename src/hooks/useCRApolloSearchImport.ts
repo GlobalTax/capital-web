@@ -218,15 +218,13 @@ export const useCRSearchFromList = () => {
   return useMutation({
     mutationFn: async (params: { 
       list_id: string; 
-      page?: number;
-      per_page?: number;
+      max_pages?: number; // Max pages to fetch (default 20 = 2000 contacts)
     }): Promise<{ people: CRApolloPersonResult[]; pagination: any; list_name: string }> => {
       const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
         body: { 
           action: 'search_from_list', 
           list_id: params.list_id,
-          page: params.page || 1,
-          per_page: params.per_page || 100,
+          max_pages: params.max_pages || 20,
         },
       });
 
@@ -236,7 +234,10 @@ export const useCRSearchFromList = () => {
       return { people: data.people, pagination: data.pagination, list_name: data.list_name };
     },
     onSuccess: (data) => {
-      toast.success(`Cargados ${data.people.length} contactos de "${data.list_name}"`);
+      const pagesInfo = data.pagination?.pages_fetched > 1 
+        ? ` (${data.pagination.pages_fetched} páginas)` 
+        : '';
+      toast.success(`Cargados ${data.people.length} contactos de "${data.list_name}"${pagesInfo}`);
     },
     onError: (error: Error) => {
       toast.error(`Error cargando lista: ${error.message}`);

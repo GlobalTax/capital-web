@@ -528,94 +528,122 @@ serve(async (req) => {
       });
     }
 
-    // ============= ACTION: SEARCH FROM LIST =============
+    // ============= ACTION: SEARCH FROM LIST (WITH AUTO-PAGINATION) =============
     if (action === 'search_from_list') {
-      const { list_id, page = 1, per_page = 100 } = params;
+      const { list_id, max_pages = 20 } = params; // max 20 pages = 2000 contacts
       
       if (!list_id) {
         throw new Error('list_id is required');
       }
 
-      console.log('[CR Apollo] Fetching contacts from list:', list_id, 'page:', page);
+      console.log('[CR Apollo] Fetching ALL contacts from list:', list_id, 'max_pages:', max_pages);
       
-      const requestBody = {
-        label_ids: [list_id],
-        page,
-        per_page: Math.min(per_page, 100),
-      };
+      let allPeople: any[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+      let detectedListName = 'Lista Apollo PE/VC';
+      let totalEntries = 0;
       
-      console.log('[CR Apollo] Request body:', JSON.stringify(requestBody));
-      
-      const response = await fetch('https://api.apollo.io/v1/contacts/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'X-Api-Key': APOLLO_API_KEY!,
-        },
-        body: JSON.stringify(requestBody),
-      });
+      // Pagination loop - fetch all pages
+      do {
+        console.log(`[CR Apollo] Fetching page ${currentPage} of ${totalPages}...`);
+        
+        const requestBody = {
+          label_ids: [list_id],
+          page: currentPage,
+          per_page: 100, // Always use max per page
+        };
+        
+        const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'X-Api-Key': APOLLO_API_KEY!,
+          },
+          body: JSON.stringify(requestBody),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[CR Apollo] List fetch error:', response.status, errorText);
-        throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
-      }
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[CR Apollo] List fetch error:', response.status, errorText);
+          throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+        }
 
-      const data = await response.json();
+        const data = await response.json();
+        
+        // Calculate total pages on first iteration
+        if (currentPage === 1) {
+          totalEntries = data.pagination?.total_entries || 0;
+          totalPages = Math.min(Math.ceil(totalEntries / 100), max_pages);
+          
+          // Detect list name from first contact
+          detectedListName = data.contacts?.[0]?.contact_list_names?.find(
+            (name: string) => name.toLowerCase().includes('private equity') || 
+                             name.toLowerCase().includes('venture') ||
+                             name.toLowerCase().includes('capital')
+          ) || data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo PE/VC';
+          
+          console.log(`[CR Apollo] Total entries: ${totalEntries}, Pages needed: ${totalPages}, List: ${detectedListName}`);
+        }
+        
+        // Map and accumulate contacts
+        const contacts = data.contacts || [];
+        const mappedContacts = contacts.map((contact: any) => ({
+          id: contact.id,
+          first_name: contact.first_name,
+          last_name: contact.last_name,
+          name: contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
+          title: contact.title,
+          email: contact.email,
+          email_status: contact.email_status,
+          linkedin_url: contact.linkedin_url,
+          city: contact.city,
+          state: contact.state,
+          country: contact.country,
+          organization: contact.organization ? {
+            id: contact.organization.id,
+            name: contact.organization.name,
+            website_url: contact.organization.website_url,
+            linkedin_url: contact.organization.linkedin_url,
+            primary_domain: contact.organization.primary_domain,
+            industry: contact.organization.industry,
+            estimated_num_employees: contact.organization.estimated_num_employees,
+            city: contact.organization.city,
+            country: contact.organization.country,
+          } : undefined,
+          phone_numbers: contact.phone_numbers,
+          seniority: contact.seniority,
+          contact_list_names: contact.contact_list_names,
+        }));
+        
+        allPeople.push(...mappedContacts);
+        console.log(`[CR Apollo] Page ${currentPage}: Got ${mappedContacts.length} contacts, total so far: ${allPeople.length}`);
+        
+        currentPage++;
+        
+        // Small delay between requests to avoid rate limiting
+        if (currentPage <= totalPages) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+      } while (currentPage <= totalPages);
       
-      console.log('[CR Apollo] Response - Total entries:', data.pagination?.total_entries);
-      console.log('[CR Apollo] Response - Contacts returned:', data.contacts?.length || 0);
-      
-      const detectedListName = data.contacts?.[0]?.contact_list_names?.find(
-        (name: string) => name.toLowerCase().includes('private equity') || 
-                         name.toLowerCase().includes('venture') ||
-                         name.toLowerCase().includes('capital')
-      ) || data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo PE/VC';
-      
-      console.log('[CR Apollo] Detected list name:', detectedListName);
-      
-      const people = (data.contacts || []).map((contact: any) => ({
-        id: contact.id,
-        first_name: contact.first_name,
-        last_name: contact.last_name,
-        name: contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
-        title: contact.title,
-        email: contact.email,
-        email_status: contact.email_status,
-        linkedin_url: contact.linkedin_url,
-        city: contact.city,
-        state: contact.state,
-        country: contact.country,
-        organization: contact.organization ? {
-          id: contact.organization.id,
-          name: contact.organization.name,
-          website_url: contact.organization.website_url,
-          linkedin_url: contact.organization.linkedin_url,
-          primary_domain: contact.organization.primary_domain,
-          industry: contact.organization.industry,
-          estimated_num_employees: contact.organization.estimated_num_employees,
-          city: contact.organization.city,
-          country: contact.organization.country,
-        } : undefined,
-        phone_numbers: contact.phone_numbers,
-        seniority: contact.seniority,
-        contact_list_names: contact.contact_list_names,
-      }));
-
-      const validPeople = people.filter((p: any) => 
+      // Filter invalid entries
+      const validPeople = allPeople.filter((p: any) => 
         p.name && p.name !== '(No Name)' && p.name.trim() !== ''
       );
       
-      console.log('[CR Apollo] Valid people after filter:', validPeople.length, 'of', people.length);
+      console.log(`[CR Apollo] Final: ${validPeople.length} valid people from ${allPeople.length} total (${totalPages} pages)`);
 
       return new Response(JSON.stringify({
         success: true,
         people: validPeople,
         pagination: {
-          ...data.pagination,
+          total_entries: totalEntries,
+          pages_fetched: totalPages,
           filtered_count: validPeople.length,
-          original_count: people.length,
+          original_count: allPeople.length,
         },
         list_name: detectedListName,
       }), {

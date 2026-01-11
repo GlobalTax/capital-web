@@ -178,11 +178,16 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
               className="gap-2 whitespace-nowrap"
             >
               {isSearchingFromList ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando todos...
+                </>
               ) : (
-                <List className="h-4 w-4" />
+                <>
+                  <List className="h-4 w-4" />
+                  Cargar Lista
+                </>
               )}
-              Cargar Lista
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
