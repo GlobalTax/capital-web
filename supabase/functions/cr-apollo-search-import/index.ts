@@ -1,0 +1,706 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const APOLLO_API_KEY = Deno.env.get('APOLLO_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+// ============= TYPES =============
+
+interface SearchCriteria {
+  person_titles?: string[];
+  person_locations?: string[];
+  person_seniorities?: string[];
+  q_keywords?: string;
+  organization_locations?: string[];
+  organization_num_employees_ranges?: string[];
+  organization_industries?: string[];
+  page?: number;
+  per_page?: number;
+}
+
+interface ApolloPersonResult {
+  id: string;
+  first_name: string;
+  last_name: string;
+  name: string;
+  title: string;
+  email?: string;
+  email_status?: string;
+  linkedin_url?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  organization?: {
+    id: string;
+    name: string;
+    website_url?: string;
+    linkedin_url?: string;
+    primary_domain?: string;
+    industry?: string;
+    estimated_num_employees?: number;
+    city?: string;
+    country?: string;
+  };
+  phone_numbers?: Array<{ raw_number: string; sanitized_number: string; type: string }>;
+  departments?: string[];
+  subdepartments?: string[];
+  seniority?: string;
+}
+
+// ============= HELPER FUNCTIONS =============
+
+// Map roles specific to Capital Riesgo (PE/VC)
+function mapRoleFromTitle(title: string): string {
+  const titleLower = title.toLowerCase();
+  
+  // Managing Partner / GP
+  if (titleLower.includes('managing partner') || 
+      titleLower.includes('general partner') ||
+      titleLower.includes(' gp ') ||
+      titleLower === 'gp') {
+    return 'managing_partner';
+  }
+  
+  // Partner
+  if (titleLower.includes('partner') || 
+      titleLower.includes('socio')) {
+    return 'partner';
+  }
+  
+  // Principal / Investment Director
+  if (titleLower.includes('principal') || 
+      titleLower.includes('investment director') ||
+      titleLower.includes('director de inversión') ||
+      titleLower.includes('director inversiones')) {
+    return 'principal';
+  }
+  
+  // Director / VP
+  if (titleLower.includes('director') || 
+      titleLower.includes('vp ') ||
+      titleLower.includes('vice president')) {
+    return 'director';
+  }
+  
+  // Operating Partner
+  if (titleLower.includes('operating partner') || 
+      titleLower.includes('portfolio operations')) {
+    return 'operating_partner';
+  }
+  
+  // Associate
+  if (titleLower.includes('associate') || 
+      titleLower.includes('investment associate') ||
+      titleLower.includes('asociado')) {
+    return 'associate';
+  }
+  
+  // Analyst
+  if (titleLower.includes('analyst') || 
+      titleLower.includes('analista')) {
+    return 'analyst';
+  }
+  
+  // Advisor / Board Member
+  if (titleLower.includes('advisor') || 
+      titleLower.includes('asesor') ||
+      titleLower.includes('board member') ||
+      titleLower.includes('consejero')) {
+    return 'advisor';
+  }
+  
+  // Default: partner as safe fallback
+  return 'partner';
+}
+
+// Detect fund type from organization info
+function detectFundType(org: ApolloPersonResult['organization']): string {
+  if (!org) return 'private_equity';
+  
+  const name = (org.name || '').toLowerCase();
+  const industry = (org.industry || '').toLowerCase();
+  
+  if (name.includes('venture') || industry.includes('venture capital')) {
+    return 'venture_capital';
+  }
+  if (name.includes('growth') || industry.includes('growth equity')) {
+    return 'growth_equity';
+  }
+  if (name.includes('family office') || name.includes('family office')) {
+    return 'family_office';
+  }
+  if (name.includes('buyout') || name.includes('lbo')) {
+    return 'buyout';
+  }
+  if (name.includes('infrastructure') || name.includes('infra')) {
+    return 'infrastructure';
+  }
+  if (name.includes('real estate') || name.includes('inmobiliario')) {
+    return 'real_estate';
+  }
+  if (name.includes('debt') || name.includes('credit') || name.includes('deuda')) {
+    return 'debt';
+  }
+  
+  return 'private_equity';
+}
+
+function extractLocation(person: ApolloPersonResult): string | null {
+  const parts = [];
+  if (person.city) parts.push(person.city);
+  if (person.country) parts.push(person.country);
+  return parts.length > 0 ? parts.join(', ') : null;
+}
+
+async function searchPeopleInApollo(criteria: SearchCriteria): Promise<{ people: ApolloPersonResult[]; pagination: any }> {
+  console.log('[CR Apollo] Searching with criteria:', JSON.stringify(criteria));
+  
+  const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'X-Api-Key': APOLLO_API_KEY!,
+    },
+    body: JSON.stringify({
+      person_titles: criteria.person_titles || [],
+      person_locations: criteria.person_locations || [],
+      person_seniorities: criteria.person_seniorities || [],
+      q_keywords: criteria.q_keywords || '',
+      organization_locations: criteria.organization_locations || [],
+      organization_num_employees_ranges: criteria.organization_num_employees_ranges || [],
+      organization_industries: criteria.organization_industries || [],
+      page: criteria.page || 1,
+      per_page: Math.min(criteria.per_page || 25, 100),
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[CR Apollo] Search error:', response.status, errorText);
+    throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log('[CR Apollo] Found', data.people?.length || 0, 'people, pagination:', data.pagination);
+  
+  return {
+    people: data.people || [],
+    pagination: data.pagination || {},
+  };
+}
+
+async function enrichPersonEmail(person: ApolloPersonResult): Promise<ApolloPersonResult | null> {
+  if (person.email && person.email_status === 'verified') {
+    return person;
+  }
+  
+  console.log('[CR Apollo] Enriching person:', person.name);
+  
+  try {
+    const response = await fetch('https://api.apollo.io/v1/people/match', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'X-Api-Key': APOLLO_API_KEY!,
+      },
+      body: JSON.stringify({
+        first_name: person.first_name,
+        last_name: person.last_name,
+        organization_name: person.organization?.name,
+        linkedin_url: person.linkedin_url,
+        reveal_personal_emails: false,
+        reveal_phone_number: true,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('[CR Apollo] Enrichment failed for', person.name, response.status);
+      return person;
+    }
+
+    const data = await response.json();
+    if (data.person) {
+      return {
+        ...person,
+        email: data.person.email || person.email,
+        email_status: data.person.email_status || person.email_status,
+        phone_numbers: data.person.phone_numbers || person.phone_numbers,
+      };
+    }
+    
+    return person;
+  } catch (error) {
+    console.error('[CR Apollo] Enrichment error for', person.name, error);
+    return person;
+  }
+}
+
+async function findOrCreateFund(
+  supabase: ReturnType<typeof createClient>,
+  org: ApolloPersonResult['organization']
+): Promise<string | null> {
+  if (!org?.name) return null;
+
+  // Search existing fund by name or website
+  const { data: existing } = await supabase
+    .from('cr_funds')
+    .select('id')
+    .or(`name.ilike.%${org.name}%,website.eq.${org.website_url || ''}`)
+    .limit(1)
+    .single();
+
+  if (existing) {
+    console.log('[CR Import] Found existing fund:', org.name, existing.id);
+    return existing.id;
+  }
+
+  // Create new fund with detected type
+  const fundType = detectFundType(org);
+  const { data: newFund, error } = await supabase
+    .from('cr_funds')
+    .insert({
+      name: org.name,
+      website: org.website_url,
+      country_base: org.country || 'Spain',
+      sector_focus: org.industry ? [org.industry] : [],
+      status: 'active',
+      fund_type: fundType,
+      source_url: org.linkedin_url || 'apollo_import',
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('[CR Import] Error creating fund:', error);
+    return null;
+  }
+
+  console.log('[CR Import] Created new fund:', org.name, newFund.id, 'type:', fundType);
+  return newFund.id;
+}
+
+async function findExistingPerson(
+  supabase: ReturnType<typeof createClient>,
+  person: ApolloPersonResult
+): Promise<string | null> {
+  // Search by LinkedIn URL (most reliable)
+  if (person.linkedin_url) {
+    const { data } = await supabase
+      .from('cr_people')
+      .select('id')
+      .eq('linkedin_url', person.linkedin_url)
+      .limit(1)
+      .single();
+    
+    if (data) return data.id;
+  }
+
+  // Search by email
+  if (person.email) {
+    const { data } = await supabase
+      .from('cr_people')
+      .select('id')
+      .eq('email', person.email)
+      .limit(1)
+      .single();
+    
+    if (data) return data.id;
+  }
+
+  return null;
+}
+
+async function importPerson(
+  supabase: ReturnType<typeof createClient>,
+  person: ApolloPersonResult,
+  enrich: boolean = false
+): Promise<{ success: boolean; action: 'created' | 'updated' | 'skipped'; personId?: string; error?: string }> {
+  try {
+    let enrichedPerson = person;
+    if (enrich) {
+      const enriched = await enrichPersonEmail(person);
+      if (enriched) enrichedPerson = enriched;
+    }
+
+    const existingId = await findExistingPerson(supabase, enrichedPerson);
+    const fundId = await findOrCreateFund(supabase, enrichedPerson.organization);
+
+    const personData = {
+      full_name: enrichedPerson.name,
+      email: enrichedPerson.email,
+      linkedin_url: enrichedPerson.linkedin_url,
+      phone: enrichedPerson.phone_numbers?.[0]?.sanitized_number,
+      role: mapRoleFromTitle(enrichedPerson.title || ''),
+      location: extractLocation(enrichedPerson),
+      fund_id: fundId,
+      notes: `Importado desde Apollo el ${new Date().toLocaleDateString('es-ES')}. Cargo: ${enrichedPerson.title || 'N/A'}`,
+    };
+
+    if (existingId) {
+      const { error } = await supabase
+        .from('cr_people')
+        .update(personData)
+        .eq('id', existingId);
+
+      if (error) {
+        console.error('[CR Import] Update error:', error);
+        return { success: false, action: 'skipped', error: error.message };
+      }
+
+      console.log('[CR Import] Updated person:', enrichedPerson.name);
+      return { success: true, action: 'updated', personId: existingId };
+    } else {
+      const { data: newPerson, error } = await supabase
+        .from('cr_people')
+        .insert(personData)
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('[CR Import] Insert error:', error);
+        return { success: false, action: 'skipped', error: error.message };
+      }
+
+      console.log('[CR Import] Created person:', enrichedPerson.name);
+      return { success: true, action: 'created', personId: newPerson.id };
+    }
+  } catch (error) {
+    console.error('[CR Import] Error importing person:', error);
+    return { success: false, action: 'skipped', error: String(error) };
+  }
+}
+
+// ============= MAIN HANDLER =============
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    if (!APOLLO_API_KEY) {
+      throw new Error('APOLLO_API_KEY not configured');
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const body = await req.json();
+    const { action, ...params } = body;
+
+    console.log('[cr-apollo-search-import] Action:', action, 'Params:', JSON.stringify(params));
+
+    // ============= ACTION: SEARCH =============
+    if (action === 'search') {
+      const { criteria, import_id } = params;
+      
+      const result = await searchPeopleInApollo(criteria);
+      
+      if (import_id) {
+        await supabase
+          .from('cr_apollo_imports')
+          .update({
+            status: 'previewing',
+            total_results: result.pagination?.total_entries || result.people.length,
+            preview_data: result.people,
+          })
+          .eq('id', import_id);
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        people: result.people,
+        pagination: result.pagination,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: CREATE IMPORT JOB =============
+    if (action === 'create_import') {
+      const { criteria, user_id } = params;
+      
+      const { data: importJob, error } = await supabase
+        .from('cr_apollo_imports')
+        .insert({
+          search_criteria: criteria,
+          status: 'pending',
+          created_by: user_id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to create import job: ${error.message}`);
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        import_id: importJob.id,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: IMPORT SELECTED =============
+    if (action === 'import_selected') {
+      const { import_id, people, enrich = false } = params;
+      
+      await supabase
+        .from('cr_apollo_imports')
+        .update({ status: 'importing', started_at: new Date().toISOString() })
+        .eq('id', import_id);
+
+      const results = {
+        imported: 0,
+        updated: 0,
+        skipped: 0,
+        errors: 0,
+        details: [] as any[],
+      };
+
+      for (const person of people) {
+        const result = await importPerson(supabase, person, enrich);
+        
+        if (result.success) {
+          if (result.action === 'created') results.imported++;
+          else if (result.action === 'updated') results.updated++;
+          else results.skipped++;
+        } else {
+          results.errors++;
+        }
+        
+        results.details.push({
+          name: person.name,
+          ...result,
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      await supabase
+        .from('cr_apollo_imports')
+        .update({
+          status: 'completed',
+          imported_count: results.imported,
+          updated_count: results.updated,
+          skipped_count: results.skipped,
+          error_count: results.errors,
+          import_results: results.details,
+          credits_used: enrich ? people.length : 0,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', import_id);
+
+      return new Response(JSON.stringify({
+        success: true,
+        results,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: GET HISTORY =============
+    if (action === 'get_history') {
+      const { limit = 20 } = params;
+      
+      const { data, error } = await supabase
+        .from('cr_apollo_imports')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw new Error(`Failed to fetch history: ${error.message}`);
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        imports: data,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: SEARCH FROM LIST =============
+    if (action === 'search_from_list') {
+      const { list_id, page = 1, per_page = 100 } = params;
+      
+      if (!list_id) {
+        throw new Error('list_id is required');
+      }
+
+      console.log('[CR Apollo] Fetching contacts from list:', list_id, 'page:', page);
+      
+      const requestBody = {
+        label_ids: [list_id],
+        page,
+        per_page: Math.min(per_page, 100),
+      };
+      
+      console.log('[CR Apollo] Request body:', JSON.stringify(requestBody));
+      
+      const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'X-Api-Key': APOLLO_API_KEY!,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CR Apollo] List fetch error:', response.status, errorText);
+        throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      
+      console.log('[CR Apollo] Response - Total entries:', data.pagination?.total_entries);
+      console.log('[CR Apollo] Response - Contacts returned:', data.contacts?.length || 0);
+      
+      const detectedListName = data.contacts?.[0]?.contact_list_names?.find(
+        (name: string) => name.toLowerCase().includes('private equity') || 
+                         name.toLowerCase().includes('venture') ||
+                         name.toLowerCase().includes('capital')
+      ) || data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo PE/VC';
+      
+      console.log('[CR Apollo] Detected list name:', detectedListName);
+      
+      const people = (data.contacts || []).map((contact: any) => ({
+        id: contact.id,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        name: contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
+        title: contact.title,
+        email: contact.email,
+        email_status: contact.email_status,
+        linkedin_url: contact.linkedin_url,
+        city: contact.city,
+        state: contact.state,
+        country: contact.country,
+        organization: contact.organization ? {
+          id: contact.organization.id,
+          name: contact.organization.name,
+          website_url: contact.organization.website_url,
+          linkedin_url: contact.organization.linkedin_url,
+          primary_domain: contact.organization.primary_domain,
+          industry: contact.organization.industry,
+          estimated_num_employees: contact.organization.estimated_num_employees,
+          city: contact.organization.city,
+          country: contact.organization.country,
+        } : undefined,
+        phone_numbers: contact.phone_numbers,
+        seniority: contact.seniority,
+        contact_list_names: contact.contact_list_names,
+      }));
+
+      const validPeople = people.filter((p: any) => 
+        p.name && p.name !== '(No Name)' && p.name.trim() !== ''
+      );
+      
+      console.log('[CR Apollo] Valid people after filter:', validPeople.length, 'of', people.length);
+
+      return new Response(JSON.stringify({
+        success: true,
+        people: validPeople,
+        pagination: {
+          ...data.pagination,
+          filtered_count: validPeople.length,
+          original_count: people.length,
+        },
+        list_name: detectedListName,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: PRESETS =============
+    if (action === 'get_presets') {
+      const presets = [
+        {
+          id: 'pe_partners_europe',
+          name: 'PE Partners Europa',
+          description: 'Partners y Managing Partners en Private Equity europeo',
+          criteria: {
+            person_titles: ['Partner', 'Managing Partner', 'General Partner', 'Principal'],
+            person_locations: ['Spain', 'Portugal', 'France', 'Germany', 'Italy', 'United Kingdom'],
+            organization_industries: ['private equity', 'investment banking'],
+            person_seniorities: ['partner', 'c_suite', 'owner'],
+          },
+        },
+        {
+          id: 'vc_partners_spain',
+          name: 'VC Partners España',
+          description: 'Partners de Venture Capital en España',
+          criteria: {
+            person_titles: ['Partner', 'Managing Partner', 'Investment Director', 'Principal'],
+            person_locations: ['Spain'],
+            organization_industries: ['venture capital', 'startup investment'],
+            person_seniorities: ['partner', 'c_suite', 'director'],
+          },
+        },
+        {
+          id: 'growth_equity_dach',
+          name: 'Growth Equity DACH',
+          description: 'Profesionales de Growth Equity en Alemania, Austria y Suiza',
+          criteria: {
+            person_titles: ['Partner', 'Director', 'Principal', 'Investment Manager'],
+            person_locations: ['Germany', 'Austria', 'Switzerland'],
+            q_keywords: 'growth equity OR growth capital',
+            person_seniorities: ['partner', 'director', 'c_suite'],
+          },
+        },
+        {
+          id: 'family_offices_europe',
+          name: 'Family Offices Europa',
+          description: 'Profesionales de inversión en Family Offices europeos',
+          criteria: {
+            person_titles: ['CIO', 'Investment Director', 'Managing Director', 'Partner'],
+            person_locations: ['Spain', 'Portugal', 'France', 'Germany', 'Switzerland'],
+            q_keywords: 'family office OR single family office OR multi family office',
+            person_seniorities: ['c_suite', 'partner', 'director'],
+          },
+        },
+        {
+          id: 'operating_partners',
+          name: 'Operating Partners',
+          description: 'Operating Partners y Portfolio Operations en PE',
+          criteria: {
+            person_titles: ['Operating Partner', 'Portfolio Operations', 'Value Creation Director'],
+            person_locations: ['Spain', 'Portugal', 'France', 'Germany', 'United Kingdom'],
+            organization_industries: ['private equity'],
+            person_seniorities: ['partner', 'director'],
+          },
+        },
+      ];
+
+      return new Response(JSON.stringify({
+        success: true,
+        presets,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    throw new Error(`Unknown action: ${action}`);
+
+  } catch (error) {
+    console.error('[cr-apollo-search-import] Error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
