@@ -14,7 +14,9 @@ import {
   Eye,
   Megaphone,
   Calculator,
-  FileSignature
+  FileSignature,
+  Briefcase,
+  Search
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -142,6 +144,33 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         url: "/admin/contacts", 
         icon: Users,
         description: "Base de contactos"
+      },
+    ]
+  },
+  {
+    title: "💼 CAPITAL RIESGO",
+    description: "CRM de fondos PE/VC",
+    workflow: 'manage',
+    items: [
+      { 
+        title: "Directorio CR",
+        url: "/admin/cr-directory", 
+        icon: Briefcase,
+        badge: "NEW",
+        description: "Fondos y personas"
+      },
+    ]
+  },
+  {
+    title: "🔍 SEARCH FUNDS",
+    description: "Directorio de compradores",
+    workflow: 'manage',
+    items: [
+      { 
+        title: "Directorio SF",
+        url: "/admin/sf-directory", 
+        icon: Search,
+        description: "Fondos y personas"
       },
     ]
   },
