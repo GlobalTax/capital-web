@@ -15,6 +15,17 @@ const DECISION_MAKER_TITLES = [
   'Partner', 'Socio', 'Gerente',
 ];
 
+// Table mapping by origin
+const TABLE_MAP: Record<string, string> = {
+  'valuation': 'company_valuations',
+  'contact': 'contact_leads',
+  'collaborator': 'collaborator_applications',
+  'acquisition': 'acquisition_leads',
+  'company_acquisition': 'company_acquisition_inquiries',
+  'general': 'general_contact_leads',
+  'advisor': 'advisor_valuations',
+};
+
 interface ApolloOrgData {
   id: string;
   name: string;
@@ -222,7 +233,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { lead_id, apollo_org_id } = await req.json();
+    const { lead_id, apollo_org_id, origin = 'valuation' } = await req.json();
     if (!lead_id || !apollo_org_id) {
       return new Response(
         JSON.stringify({ success: false, status: 'error', message: "lead_id and apollo_org_id are required" }),
@@ -230,11 +241,20 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Confirming Apollo match for lead: ${lead_id}, org: ${apollo_org_id}`);
+    // Get table for this origin
+    const tableName = TABLE_MAP[origin];
+    if (!tableName) {
+      return new Response(
+        JSON.stringify({ success: false, status: 'error', message: `Invalid origin: ${origin}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Confirming Apollo match for lead: ${lead_id}, org: ${apollo_org_id}, origin: ${origin}, table: ${tableName}`);
 
     // Fetch the lead with candidates
     const { data: lead, error: leadError } = await supabase
-      .from("company_valuations")
+      .from(tableName)
       .select("*")
       .eq("id", lead_id)
       .single();
@@ -262,7 +282,7 @@ serve(async (req) => {
 
     // Mark as running
     await supabase
-      .from("company_valuations")
+      .from(tableName)
       .update({ apollo_status: 'running', apollo_error: null })
       .eq("id", lead_id);
 
@@ -318,7 +338,7 @@ serve(async (req) => {
 
     // Update the lead
     await supabase
-      .from("company_valuations")
+      .from(tableName)
       .update({
         apollo_status: 'ok',
         apollo_error: null,

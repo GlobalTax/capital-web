@@ -5,6 +5,7 @@ import type {
   EnrichLeadResponse,
   ConfirmMatchResponse 
 } from '@/types/apollo';
+import type { ContactOrigin } from '@/hooks/useUnifiedContacts';
 
 interface UseApolloEnrichmentReturn {
   // States
@@ -12,8 +13,8 @@ interface UseApolloEnrichmentReturn {
   isConfirming: string | null;
   
   // Actions
-  enrichLead: (leadId: string) => Promise<EnrichLeadResponse | null>;
-  confirmMatch: (leadId: string, apolloOrgId: string) => Promise<ConfirmMatchResponse | null>;
+  enrichLead: (leadId: string, origin: ContactOrigin) => Promise<EnrichLeadResponse | null>;
+  confirmMatch: (leadId: string, apolloOrgId: string, origin: ContactOrigin) => Promise<ConfirmMatchResponse | null>;
 }
 
 export const useApolloEnrichment = (): UseApolloEnrichmentReturn => {
@@ -21,13 +22,13 @@ export const useApolloEnrichment = (): UseApolloEnrichmentReturn => {
   const [isConfirming, setIsConfirming] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const enrichLead = useCallback(async (leadId: string): Promise<EnrichLeadResponse | null> => {
+  const enrichLead = useCallback(async (leadId: string, origin: ContactOrigin): Promise<EnrichLeadResponse | null> => {
     setIsEnriching(leadId);
     
     try {
-      // Call the edge function using supabase.functions.invoke
+      // Call the edge function using supabase.functions.invoke with origin
       const { data, error } = await supabase.functions.invoke('enrich-lead-apollo', {
-        body: { lead_id: leadId }
+        body: { lead_id: leadId, origin }
       });
 
       if (error) {
@@ -78,14 +79,15 @@ export const useApolloEnrichment = (): UseApolloEnrichmentReturn => {
 
   const confirmMatch = useCallback(async (
     leadId: string, 
-    apolloOrgId: string
+    apolloOrgId: string,
+    origin: ContactOrigin
   ): Promise<ConfirmMatchResponse | null> => {
     setIsConfirming(leadId);
     
     try {
-      // Call the edge function using supabase.functions.invoke
+      // Call the edge function using supabase.functions.invoke with origin
       const { data, error } = await supabase.functions.invoke('confirm-apollo-match', {
-        body: { lead_id: leadId, apollo_org_id: apolloOrgId }
+        body: { lead_id: leadId, apollo_org_id: apolloOrgId, origin }
       });
 
       if (error) {
