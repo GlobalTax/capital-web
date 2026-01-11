@@ -59,7 +59,10 @@ import {
   LazyBookingsPage,
   LazyNotificationsPage,
   LazyAcquisitionChannelsSettings,
-  LazyBrevoSyncDashboard
+  LazyBrevoSyncDashboard,
+  LazySFDirectoryPage,
+  LazySFBackersPage,
+  LazySFMatchingInbox
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -173,6 +176,11 @@ const AdminRouter = () => {
           <Route path="/mandatos-compra" element={<LazyBuySideMandatesPage />} />
           <Route path="/notifications" element={<LazyNotificationsPage />} />
           <Route path="/brevo-sync" element={<LazyBrevoSyncDashboard />} />
+          
+          {/* Search Funds Intelligence */}
+          <Route path="/sf-directory" element={<LazySFDirectoryPage />} />
+          <Route path="/sf-backers" element={<LazySFBackersPage />} />
+          <Route path="/sf-matches" element={<LazySFMatchingInbox />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />
