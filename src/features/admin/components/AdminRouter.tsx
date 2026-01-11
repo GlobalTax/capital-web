@@ -65,7 +65,9 @@ import {
   LazySFBackersPage,
   LazySFMatchingInbox,
   LazySFApolloImportPage,
-  LazySFFundDetailPage
+  LazySFFundDetailPage,
+  LazyCRDirectoryPage,
+  LazyCRFundDetailPage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -175,6 +177,11 @@ const AdminRouter = () => {
           <Route path="/sf-directory/:id" element={<LazySFFundDetailPage />} />
           <Route path="/sf-backers" element={<LazySFBackersPage />} />
           <Route path="/sf-matches" element={<LazySFMatchingInbox />} />
+          
+          {/* Capital Riesgo Intelligence */}
+          <Route path="/cr-directory" element={<LazyCRDirectoryPage />} />
+          <Route path="/cr-directory/new" element={<LazyCRFundDetailPage />} />
+          <Route path="/cr-directory/:id" element={<LazyCRFundDetailPage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />
