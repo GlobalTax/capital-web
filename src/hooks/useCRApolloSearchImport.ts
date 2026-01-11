@@ -214,6 +214,94 @@ export const useImportCRApolloSelected = () => {
   });
 };
 
+// ============= BATCH IMPORT HOOK (FOR LARGE IMPORTS) =============
+
+interface BatchImportProgress {
+  currentBatch: number;
+  totalBatches: number;
+  accumulated: CRImportResults;
+  isComplete: boolean;
+}
+
+export const useImportCRApolloInBatches = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      import_id: string;
+      people: CRApolloPersonResult[];
+      enrich?: boolean;
+      onProgress?: (progress: BatchImportProgress) => void;
+    }): Promise<CRImportResults> => {
+      const { import_id, people, enrich = false, onProgress } = params;
+      const BATCH_SIZE = 50;
+      const totalBatches = Math.ceil(people.length / BATCH_SIZE);
+      
+      let accumulated: CRImportResults = {
+        imported: 0,
+        updated: 0,
+        skipped: 0,
+        errors: 0,
+        details: [],
+      };
+
+      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        console.log(`[CR Batch Import] Processing batch ${batchIndex + 1}/${totalBatches}`);
+        
+        const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
+          body: { 
+            action: 'import_batch',
+            import_id,
+            people,
+            enrich,
+            batch_index: batchIndex,
+            batch_size: BATCH_SIZE,
+          },
+        });
+
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        // Update accumulated results
+        accumulated = {
+          imported: data.accumulated.imported,
+          updated: data.accumulated.updated,
+          skipped: data.accumulated.skipped,
+          errors: data.accumulated.errors,
+          details: [...accumulated.details, ...data.batch_results.details],
+        };
+
+        // Report progress
+        onProgress?.({
+          currentBatch: batchIndex + 1,
+          totalBatches,
+          accumulated,
+          isComplete: data.is_last_batch,
+        });
+
+        // Small delay between batches to not overwhelm the server
+        if (!data.is_last_batch) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+
+      return accumulated;
+    },
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ['cr-apollo-import-history'] });
+      queryClient.invalidateQueries({ queryKey: ['cr_people'] });
+      queryClient.invalidateQueries({ queryKey: ['cr_funds'] });
+      
+      toast.success(
+        `Importación completada: ${results.imported} nuevos, ${results.updated} actualizados`
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(`Error en importación: ${error.message}`);
+    },
+  });
+};
+
 export const useCRSearchFromList = () => {
   return useMutation({
     mutationFn: async (params: { 
@@ -277,6 +365,7 @@ export const useCRApolloSearchImport = () => {
   const search = useCRApolloSearch();
   const createImport = useCreateCRApolloImport();
   const importSelected = useImportCRApolloSelected();
+  const importInBatches = useImportCRApolloInBatches();
   const searchFromList = useCRSearchFromList();
   const deleteImport = useDeleteCRApolloImport();
 
@@ -296,8 +385,12 @@ export const useCRApolloSearchImport = () => {
     isCreatingImport: createImport.isPending,
     
     importSelected: importSelected.mutateAsync,
-    isImporting: importSelected.isPending,
-    importResults: importSelected.data,
+    isImporting: importSelected.isPending || importInBatches.isPending,
+    importResults: importSelected.data || importInBatches.data,
+
+    // Batch import for large imports
+    importInBatches: importInBatches.mutateAsync,
+    isImportingInBatches: importInBatches.isPending,
 
     searchFromList: searchFromList.mutateAsync,
     isSearchingFromList: searchFromList.isPending,

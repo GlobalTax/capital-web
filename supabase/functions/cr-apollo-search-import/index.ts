@@ -455,9 +455,126 @@ serve(async (req) => {
       });
     }
 
-    // ============= ACTION: IMPORT SELECTED =============
+    // ============= ACTION: IMPORT BATCH (BATCH PROCESSING - NO TIMEOUT) =============
+    if (action === 'import_batch') {
+      const { import_id, people, enrich = false, batch_index = 0, batch_size = 50 } = params;
+      
+      console.log(`[CR Apollo] IMPORT_BATCH: batch ${batch_index}, size ${batch_size}, total people: ${people.length}`);
+      
+      // Calculate which people belong to this batch
+      const startIdx = batch_index * batch_size;
+      const endIdx = Math.min(startIdx + batch_size, people.length);
+      const batchPeople = people.slice(startIdx, endIdx);
+      const totalBatches = Math.ceil(people.length / batch_size);
+      
+      console.log(`[CR Apollo] Processing batch ${batch_index + 1}/${totalBatches}: people ${startIdx}-${endIdx} (${batchPeople.length} items)`);
+
+      // Mark as importing on first batch
+      if (batch_index === 0) {
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ status: 'importing', started_at: new Date().toISOString() })
+          .eq('id', import_id);
+      }
+
+      const results = {
+        imported: 0,
+        updated: 0,
+        skipped: 0,
+        errors: 0,
+        details: [] as any[],
+      };
+
+      for (const person of batchPeople) {
+        const result = await importPerson(supabase, person, enrich);
+        
+        if (result.success) {
+          if (result.action === 'created') results.imported++;
+          else if (result.action === 'updated') results.updated++;
+          else results.skipped++;
+        } else {
+          results.errors++;
+        }
+        
+        results.details.push({
+          name: person.name,
+          ...result,
+        });
+
+        // Small delay between imports
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      // Check if this is the last batch
+      const isLastBatch = endIdx >= people.length;
+      
+      // Get current counts from database to accumulate
+      const { data: currentImport } = await supabase
+        .from('cr_apollo_imports')
+        .select('imported_count, updated_count, skipped_count, error_count')
+        .eq('id', import_id)
+        .single();
+      
+      const newImportedCount = (currentImport?.imported_count || 0) + results.imported;
+      const newUpdatedCount = (currentImport?.updated_count || 0) + results.updated;
+      const newSkippedCount = (currentImport?.skipped_count || 0) + results.skipped;
+      const newErrorCount = (currentImport?.error_count || 0) + results.errors;
+      
+      // Update import job with accumulated counts
+      const updateData: any = {
+        imported_count: newImportedCount,
+        updated_count: newUpdatedCount,
+        skipped_count: newSkippedCount,
+        error_count: newErrorCount,
+      };
+      
+      if (isLastBatch) {
+        updateData.status = 'completed';
+        updateData.completed_at = new Date().toISOString();
+        updateData.credits_used = enrich ? people.length : 0;
+      }
+      
+      await supabase
+        .from('cr_apollo_imports')
+        .update(updateData)
+        .eq('id', import_id);
+
+      console.log(`[CR Apollo] Batch ${batch_index + 1}/${totalBatches} complete: imported=${results.imported}, updated=${results.updated}`);
+
+      return new Response(JSON.stringify({
+        success: true,
+        batch_index,
+        total_batches: totalBatches,
+        is_last_batch: isLastBatch,
+        batch_results: results,
+        accumulated: {
+          imported: newImportedCount,
+          updated: newUpdatedCount,
+          skipped: newSkippedCount,
+          errors: newErrorCount,
+        },
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: IMPORT SELECTED (LEGACY - for small imports) =============
     if (action === 'import_selected') {
       const { import_id, people, enrich = false } = params;
+      
+      // For small imports (<= 50), process directly. For larger, redirect to batch
+      if (people.length > 50) {
+        console.log(`[CR Apollo] Large import (${people.length}), use import_batch instead`);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Use import_batch for large imports (>50 people)',
+          total_people: people.length,
+          recommended_batches: Math.ceil(people.length / 50),
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       
       await supabase
         .from('cr_apollo_imports')
