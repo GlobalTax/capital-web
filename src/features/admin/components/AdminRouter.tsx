@@ -60,6 +60,7 @@ import {
   LazyNotificationsPage,
   LazyAcquisitionChannelsSettings,
   LazyBrevoSyncDashboard,
+  LazySFRadarPage,
   LazySFDirectoryPage,
   LazySFBackersPage,
   LazySFMatchingInbox
@@ -178,6 +179,7 @@ const AdminRouter = () => {
           <Route path="/brevo-sync" element={<LazyBrevoSyncDashboard />} />
           
           {/* Search Funds Intelligence */}
+          <Route path="/sf-radar" element={<LazySFRadarPage />} />
           <Route path="/sf-directory" element={<LazySFDirectoryPage />} />
           <Route path="/sf-backers" element={<LazySFBackersPage />} />
           <Route path="/sf-matches" element={<LazySFMatchingInbox />} />

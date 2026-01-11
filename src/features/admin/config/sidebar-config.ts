@@ -303,10 +303,16 @@ export const sidebarSections: SidebarSection[] = [
     description: "Gestión y matching de Search Funds",
     items: [
       { 
+        title: "Radar SF", 
+        url: "/admin/sf-radar", 
+        icon: Target,
+        badge: "AI",
+        description: "Búsqueda automática de searchers"
+      },
+      { 
         title: "Directorio SF", 
         url: "/admin/sf-directory", 
         icon: Building2,
-        badge: "NEW",
         description: "Directorio de Search Funds"
       },
       { 
