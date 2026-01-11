@@ -4,12 +4,14 @@ import { useUnifiedContacts, UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useBrevoSyncStatusBulk } from '@/hooks/useBrevoSyncStatus';
 import { useContactActions, useContactSelection } from '@/features/contacts';
+import { useApolloEnrichment } from '@/hooks/useApolloEnrichment';
 import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
 import { BulkChannelSelect } from './BulkChannelSelect';
 import BulkArchiveDialog from './BulkArchiveDialog';
 import BulkDeleteDialog from './BulkDeleteDialog';
+import { ApolloMatchModal } from './ApolloMatchModal';
 import { Button } from '@/components/ui/button';
 import { Send, RefreshCw, CheckCircle2, Archive, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,8 +37,10 @@ const LinearContactsManager = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [apolloModalContact, setApolloModalContact] = useState<UnifiedContact | null>(null);
 
   const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
+  const { enrichLead, confirmMatch, isEnriching, isConfirming } = useApolloEnrichment();
   
   // useContactActions ya no necesita onRefetch - usa optimistic updates
   const { softDelete, bulkSoftDelete, bulkHardDelete } = useContactActions();
@@ -119,6 +123,32 @@ const LinearContactsManager = () => {
     setIsRefreshing(true);
     await refetch();
     setIsRefreshing(false);
+  };
+
+  const handleApolloEnrich = async (contact: UnifiedContact) => {
+    const result = await enrichLead(contact.id);
+    if (result?.status === 'needs_review') {
+      // Refresh to get candidates, then open modal
+      await refetch();
+      const updatedContact = contacts.find(c => c.id === contact.id);
+      if (updatedContact) {
+        setApolloModalContact(updatedContact);
+      }
+    } else {
+      // Refresh to show updated status
+      refetch();
+    }
+  };
+
+  const handleApolloSelectCandidate = (contact: UnifiedContact) => {
+    setApolloModalContact(contact);
+  };
+
+  const handleApolloConfirmMatch = async (apolloOrgId: string) => {
+    if (!apolloModalContact) return;
+    await confirmMatch(apolloModalContact.id, apolloOrgId);
+    setApolloModalContact(null);
+    refetch();
   };
 
   if (isLoading) {
@@ -239,6 +269,9 @@ const LinearContactsManager = () => {
         onViewDetails={handleViewDetails}
         onSoftDelete={handleSoftDelete}
         isLoading={isLoading}
+        onApolloEnrich={handleApolloEnrich}
+        onApolloSelectCandidate={handleApolloSelectCandidate}
+        isEnriching={isEnriching}
       />
 
       {/* Detail Sheet */}
@@ -269,6 +302,17 @@ const LinearContactsManager = () => {
         selectedCount={selectedIds.length}
         onConfirm={handleBulkDelete}
         isLoading={isDeleting}
+      />
+
+      {/* Apollo Match Modal */}
+      <ApolloMatchModal
+        isOpen={!!apolloModalContact}
+        onClose={() => setApolloModalContact(null)}
+        candidates={apolloModalContact?.apollo_candidates || []}
+        leadName={apolloModalContact?.name || ''}
+        companyName={apolloModalContact?.company || ''}
+        onConfirm={handleApolloConfirmMatch}
+        isConfirming={!!isConfirming}
       />
     </div>
   );
