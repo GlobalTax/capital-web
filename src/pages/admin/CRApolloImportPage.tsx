@@ -30,6 +30,7 @@ const CRApolloImportPage: React.FC = () => {
     createImport,
     isCreatingImport,
     importSelected,
+    importInBatches,
     isImporting,
     importResults,
     searchFromList,
@@ -113,10 +114,35 @@ const CRApolloImportPage: React.FC = () => {
       return;
     }
     
+    // Use legacy import for small batches
     await importSelected({
       import_id: currentImportId,
       people,
       enrich,
+    });
+  };
+
+  const handleBatchImport = async (
+    people: CRApolloPersonResult[], 
+    enrich: boolean, 
+    onProgress: (progress: any) => void
+  ) => {
+    if (!currentImportId) {
+      toast.error('No hay sesión de importación activa. Por favor, vuelve a cargar la lista.');
+      throw new Error('No active import session');
+    }
+    
+    if (people.length === 0) {
+      toast.error('Selecciona al menos una persona para importar');
+      throw new Error('No people selected');
+    }
+    
+    // Use batch import for large imports
+    return await importInBatches({
+      import_id: currentImportId,
+      people,
+      enrich,
+      onProgress,
     });
   };
 
@@ -246,6 +272,7 @@ const CRApolloImportPage: React.FC = () => {
             people={searchResults}
             pagination={pagination}
             onImport={handleImport}
+            onBatchImport={handleBatchImport}
             isImporting={isImporting}
             importResults={importResults}
             onLoadMore={handleLoadMore}

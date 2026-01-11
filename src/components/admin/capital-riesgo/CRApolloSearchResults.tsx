@@ -31,10 +31,18 @@ import {
 } from 'lucide-react';
 import { CRApolloPersonResult, CRImportResults } from '@/hooks/useCRApolloSearchImport';
 
+interface BatchProgress {
+  currentBatch: number;
+  totalBatches: number;
+  accumulated: CRImportResults;
+  isComplete: boolean;
+}
+
 interface CRApolloSearchResultsProps {
   people: CRApolloPersonResult[];
   pagination?: { total_entries?: number; page?: number; per_page?: number };
   onImport: (people: CRApolloPersonResult[], enrich: boolean) => void;
+  onBatchImport?: (people: CRApolloPersonResult[], enrich: boolean, onProgress: (progress: BatchProgress) => void) => Promise<CRImportResults>;
   isImporting: boolean;
   importResults?: CRImportResults;
   onLoadMore?: () => void;
@@ -46,6 +54,7 @@ export const CRApolloSearchResults: React.FC<CRApolloSearchResultsProps> = ({
   people,
   pagination,
   onImport,
+  onBatchImport,
   isImporting,
   importResults,
   onLoadMore,
@@ -54,6 +63,7 @@ export const CRApolloSearchResults: React.FC<CRApolloSearchResultsProps> = ({
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [enrichOnImport, setEnrichOnImport] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<BatchProgress | null>(null);
 
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
@@ -73,9 +83,24 @@ export const CRApolloSearchResults: React.FC<CRApolloSearchResultsProps> = ({
     }
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     const selectedPeople = people.filter(p => selectedIds.has(p.id));
-    onImport(selectedPeople, enrichOnImport);
+    const BATCH_THRESHOLD = 50;
+    
+    // Use batch import for large selections
+    if (selectedPeople.length > BATCH_THRESHOLD && onBatchImport) {
+      setBatchProgress({ currentBatch: 0, totalBatches: Math.ceil(selectedPeople.length / 50), accumulated: { imported: 0, updated: 0, skipped: 0, errors: 0, details: [] }, isComplete: false });
+      try {
+        await onBatchImport(selectedPeople, enrichOnImport, (progress) => {
+          setBatchProgress(progress);
+        });
+      } finally {
+        // Clear progress after completion
+        setTimeout(() => setBatchProgress(null), 2000);
+      }
+    } else {
+      onImport(selectedPeople, enrichOnImport);
+    }
   };
 
   const getEmailStatusBadge = (status?: string) => {
@@ -213,8 +238,21 @@ export const CRApolloSearchResults: React.FC<CRApolloSearchResultsProps> = ({
           </div>
         </div>
 
-        {isImporting && (
-          <Progress value={30} className="mt-2" />
+        {(isImporting || batchProgress) && (
+          <div className="mt-2 space-y-1">
+            <Progress 
+              value={batchProgress ? (batchProgress.currentBatch / batchProgress.totalBatches) * 100 : 30} 
+              className="h-2"
+            />
+            {batchProgress && (
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Batch {batchProgress.currentBatch}/{batchProgress.totalBatches}</span>
+                <span>
+                  {batchProgress.accumulated.imported} nuevos, {batchProgress.accumulated.updated} actualizados
+                </span>
+              </div>
+            )}
+          </div>
         )}
       </CardHeader>
 
