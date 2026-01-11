@@ -47,7 +47,7 @@ export default function CRFundDetailPage() {
   const deletePerson = useDeleteCRPerson();
 
   // Portfolio data
-  const { data: portfolio = [] } = useCRPortfolio(isNew ? undefined : { fund_id: id });
+  const { data: portfolio = [], refetch: refetchPortfolio } = useCRPortfolio(isNew ? undefined : { fund_id: id });
   const deletePortfolio = useDeleteCRPortfolio();
 
   // Deals data
@@ -274,9 +274,13 @@ export default function CRFundDetailPage() {
                   <CardContent className="p-4">
                     <CRFundPortfolioPanel
                       portfolio={portfolio.slice(0, 5)}
+                      fundId={fund?.id || ''}
+                      fundName={fund?.name || ''}
+                      hasWebsite={!!fund?.website}
                       onAdd={() => setEditingPortfolio('new')}
                       onEdit={(item) => setEditingPortfolio(item)}
                       onDelete={(item) => setDeleteConfirm({ type: 'portfolio', id: item.id, name: item.company_name })}
+                      onRefresh={() => refetchPortfolio()}
                     />
                     {portfolio.length > 5 && (
                       <Button 
@@ -311,9 +315,13 @@ export default function CRFundDetailPage() {
                   <CardContent className="p-4">
                     <CRFundPortfolioPanel
                       portfolio={portfolio}
+                      fundId={fund?.id || ''}
+                      fundName={fund?.name || ''}
+                      hasWebsite={!!fund?.website}
                       onAdd={() => setEditingPortfolio('new')}
                       onEdit={(item) => setEditingPortfolio(item)}
                       onDelete={(item) => setDeleteConfirm({ type: 'portfolio', id: item.id, name: item.company_name })}
+                      onRefresh={() => refetchPortfolio()}
                     />
                   </CardContent>
                 </Card>

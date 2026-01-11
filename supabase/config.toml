@@ -191,3 +191,6 @@ verify_jwt = false
 
 [functions.cr-apollo-search-import]
 verify_jwt = false
+
+[functions.cr-extract-portfolio]
+verify_jwt = false
