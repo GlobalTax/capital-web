@@ -2221,6 +2221,7 @@ export type Database = {
           last_email_click_at: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
+          notes: string | null
           phone: string
           profession: string
           status: string
@@ -2273,6 +2274,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
+          notes?: string | null
           phone: string
           profession: string
           status?: string
@@ -2325,6 +2327,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
+          notes?: string | null
           phone?: string
           profession?: string
           status?: string
@@ -3139,6 +3142,7 @@ export type Database = {
           last_email_click_at: string | null
           lead_entry_date: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
+          notes: string | null
           phone: string | null
           referral: string | null
           sectors_of_interest: string | null
@@ -3209,6 +3213,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          notes?: string | null
           phone?: string | null
           referral?: string | null
           sectors_of_interest?: string | null
@@ -3279,6 +3284,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_entry_date?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          notes?: string | null
           phone?: string | null
           referral?: string | null
           sectors_of_interest?: string | null
@@ -5261,6 +5267,7 @@ export type Database = {
           ip_address: unknown
           is_deleted: boolean | null
           message: string
+          notes: string | null
           page_origin: string
           phone: string | null
           referrer: string | null
@@ -5309,6 +5316,7 @@ export type Database = {
           ip_address?: unknown
           is_deleted?: boolean | null
           message: string
+          notes?: string | null
           page_origin: string
           phone?: string | null
           referrer?: string | null
@@ -5357,6 +5365,7 @@ export type Database = {
           ip_address?: unknown
           is_deleted?: boolean | null
           message?: string
+          notes?: string | null
           page_origin?: string
           phone?: string | null
           referrer?: string | null
