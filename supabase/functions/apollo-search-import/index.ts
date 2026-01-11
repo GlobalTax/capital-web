@@ -58,16 +58,38 @@ interface ApolloPersonResult {
 function mapRoleFromTitle(title: string): string {
   const titleLower = title.toLowerCase();
   
-  if (titleLower.includes('searcher') || titleLower.includes('ceo') || titleLower.includes('founder')) {
+  // Searcher: CEO, Founder, Managing Director activos
+  if (titleLower.includes('searcher') || 
+      titleLower.includes('ceo') || 
+      titleLower.includes('founder') ||
+      titleLower.includes('acquisition')) {
     return 'searcher';
   }
-  if (titleLower.includes('partner') || titleLower.includes('investor') || titleLower.includes('director')) {
-    return 'backer';
+  
+  // Principal: Directores de inversión, analistas senior
+  if (titleLower.includes('principal') || 
+      titleLower.includes('investment director') ||
+      titleLower.includes('managing director')) {
+    return 'principal';
   }
-  if (titleLower.includes('advisor') || titleLower.includes('mentor') || titleLower.includes('consultant')) {
+  
+  // Partner: Socios, inversores principales
+  if (titleLower.includes('partner') || 
+      titleLower.includes('investor') || 
+      titleLower.includes('director')) {
+    return 'partner';
+  }
+  
+  // Advisor: Asesores, mentores, consultores
+  if (titleLower.includes('advisor') || 
+      titleLower.includes('mentor') || 
+      titleLower.includes('consultant') ||
+      titleLower.includes('board member')) {
     return 'advisor';
   }
-  return 'other';
+  
+  // Default: partner como fallback seguro
+  return 'partner';
 }
 
 function extractLocation(person: ApolloPersonResult): string | null {
