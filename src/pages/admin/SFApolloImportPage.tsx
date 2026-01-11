@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -29,15 +29,19 @@ const SFApolloImportPage: React.FC = () => {
     importSelected,
     isImporting,
     importResults,
+    searchFromList,
+    isSearchingFromList,
   } = useApolloSearchImport();
 
   const [searchResults, setSearchResults] = useState<ApolloPersonResult[]>([]);
   const [pagination, setPagination] = useState<any>(null);
   const [currentImportId, setCurrentImportId] = useState<string | null>(null);
   const [currentCriteria, setCurrentCriteria] = useState<ApolloSearchCriteria | null>(null);
+  const [listName, setListName] = useState<string | null>(null);
 
   const handleSearch = async (criteria: ApolloSearchCriteria) => {
     try {
+      setListName(null);
       // Crear job de import
       const importId = await createImport(criteria);
       setCurrentImportId(importId);
@@ -49,6 +53,23 @@ const SFApolloImportPage: React.FC = () => {
       setPagination(result.pagination);
     } catch (error) {
       console.error('Search error:', error);
+    }
+  };
+
+  const handleSearchFromList = async (listId: string) => {
+    try {
+      // Crear job de import para la lista
+      const importId = await createImport({ q_keywords: `list:${listId}` });
+      setCurrentImportId(importId);
+      setCurrentCriteria(null);
+
+      // Cargar contactos de la lista
+      const result = await searchFromList({ list_id: listId });
+      setSearchResults(result.people);
+      setPagination(result.pagination);
+      setListName(result.list_name);
+    } catch (error) {
+      console.error('List search error:', error);
     }
   };
 
@@ -89,7 +110,7 @@ const SFApolloImportPage: React.FC = () => {
             Apollo Search Import
           </h1>
           <p className="text-muted-foreground mt-1">
-            Busca searchers, backers y asesores en Apollo e importa directamente a sf_people
+            Importa contactos desde tus listas de Apollo o busca en la base de datos global
           </p>
         </div>
         <Badge variant="outline" className="gap-1">
@@ -145,8 +166,8 @@ const SFApolloImportPage: React.FC = () => {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>Importante:</strong> La búsqueda en Apollo es gratuita. 
-          Activar "Enriquecer emails" consume créditos de Apollo para obtener emails verificados y teléfonos.
+          <strong>Importante:</strong> Importar desde listas guardadas no consume créditos. 
+          La búsqueda global es gratuita. Activar "Enriquecer emails" consume créditos de Apollo.
         </AlertDescription>
       </Alert>
 
@@ -154,20 +175,37 @@ const SFApolloImportPage: React.FC = () => {
       <ApolloSearchForm
         presets={presets}
         onSearch={handleSearch}
+        onSearchFromList={handleSearchFromList}
         isSearching={isSearching || isCreatingImport}
+        isSearchingFromList={isSearchingFromList || isCreatingImport}
       />
 
       {/* Search Results */}
       {(searchResults.length > 0 || importResults) && (
-        <ApolloSearchResults
-          people={searchResults}
-          pagination={pagination}
-          onImport={handleImport}
-          isImporting={isImporting}
-          importResults={importResults}
-          onLoadMore={handleLoadMore}
-          isLoadingMore={isSearching}
-        />
+        <>
+          {listName && (
+            <Alert className="bg-primary/5 border-primary/20">
+              <AlertDescription className="flex items-center gap-2">
+                <Badge variant="default" className="gap-1">
+                  <Database className="h-3 w-3" />
+                  Lista: {listName}
+                </Badge>
+                <span className="text-muted-foreground">
+                  {searchResults.length} contactos cargados
+                </span>
+              </AlertDescription>
+            </Alert>
+          )}
+          <ApolloSearchResults
+            people={searchResults}
+            pagination={pagination}
+            onImport={handleImport}
+            isImporting={isImporting}
+            importResults={importResults}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isSearching}
+          />
+        </>
       )}
 
       {/* Import History */}
