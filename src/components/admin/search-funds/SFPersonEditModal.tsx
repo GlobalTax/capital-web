@@ -42,7 +42,7 @@ const personSchema = z.object({
   phone: z.string().optional(),
   notes: z.string().optional(),
   is_primary_contact: z.boolean().default(false),
-  fund_id: z.string().optional(),
+  fund_id: z.string().min(1, 'Fund requerido'), // Fund es obligatorio por constraint NOT NULL en DB
 });
 
 type PersonFormData = z.infer<typeof personSchema>;
@@ -113,7 +113,7 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
       phone: data.phone || null,
       notes: data.notes || null,
       is_primary_contact: data.is_primary_contact,
-      fund_id: data.fund_id || null,
+      fund_id: data.fund_id, // Siempre requerido
     };
 
     if (isEditing && person) {
@@ -238,18 +238,17 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
                 name="fund_id"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
-                    <FormLabel>Fund asociado</FormLabel>
+                    <FormLabel>Fund asociado *</FormLabel>
                     <Select 
-                      onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)} 
-                      value={field.value || '__none__'}
+                      onValueChange={field.onChange} 
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Sin fund asociado" />
+                          <SelectValue placeholder="Selecciona un fund" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="__none__">Sin fund asociado</SelectItem>
                         {funds.map((fund) => (
                           <SelectItem key={fund.id} value={fund.id}>
                             {fund.name}
