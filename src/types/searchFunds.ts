@@ -59,6 +59,11 @@ export interface SFPerson {
   updated_at: string;
 }
 
+// Extended person with fund relation
+export interface SFPersonWithFund extends SFPerson {
+  fund?: SFFund;
+}
+
 export interface SFBacker {
   id: string;
   name: string;
@@ -174,6 +179,13 @@ export interface SFMatchFilters {
   status?: SFMatchStatus | 'all';
   min_score?: number;
   crm_entity_type?: SFCrmEntityType;
+}
+
+export interface SFPeopleFilters {
+  search?: string;
+  role?: SFPersonRole | 'all';
+  country?: string;
+  fund_id?: string;
 }
 
 // Form types
