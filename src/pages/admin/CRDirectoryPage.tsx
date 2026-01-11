@@ -2,8 +2,8 @@
 // Directorio de Capital Riesgo (PE/VC) - Estilo Apollo
 
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Search, Users, Building2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, Search, Users, Building2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,6 +15,7 @@ import { CRFundsTable } from '@/components/admin/capital-riesgo/CRFundsTable';
 import { CRPersonRole, CRFundType, CR_PERSON_ROLE_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
 
 export const CRDirectoryPage: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('funds');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<CRPersonRole | 'all'>('all');
@@ -81,6 +82,13 @@ export const CRDirectoryPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/admin/cr-apollo-import')}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Importar desde Apollo
+          </Button>
           <Button asChild>
             <Link to="/admin/cr-directory/new">
               <Plus className="mr-2 h-4 w-4" />

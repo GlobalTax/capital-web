@@ -303,6 +303,13 @@ export const sidebarSections: SidebarSection[] = [
     description: "CRM de fondos PE/VC",
     items: [
       { 
+        title: "Apollo Import", 
+        url: "/admin/cr-apollo-import", 
+        icon: Users,
+        badge: "NEW",
+        description: "Importar personas desde Apollo"
+      },
+      { 
         title: "Directorio CR", 
         url: "/admin/cr-directory", 
         icon: Briefcase,
