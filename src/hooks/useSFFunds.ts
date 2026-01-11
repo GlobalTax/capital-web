@@ -143,26 +143,3 @@ export const useDeleteSFFund = () => {
     },
   });
 };
-
-export const useDeleteSFFund = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('sf_funds')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [SF_FUNDS_KEY] });
-      toast.success('Search Fund eliminado');
-    },
-    onError: (error) => {
-      toast.error('Error al eliminar');
-      console.error(error);
-    },
-  });
-};
