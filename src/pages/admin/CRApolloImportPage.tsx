@@ -34,6 +34,8 @@ const CRApolloImportPage: React.FC = () => {
     importResults,
     searchFromList,
     isSearchingFromList,
+    deleteImport,
+    isDeleting,
   } = useCRApolloSearchImport();
 
   const [searchResults, setSearchResults] = useState<CRApolloPersonResult[]>([]);
@@ -258,6 +260,8 @@ const CRApolloImportPage: React.FC = () => {
         imports={history}
         isLoading={historyLoading}
         onRefresh={refetchHistory}
+        onDelete={deleteImport}
+        isDeleting={isDeleting}
       />
     </div>
   );

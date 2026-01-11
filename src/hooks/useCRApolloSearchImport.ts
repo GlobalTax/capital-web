@@ -245,6 +245,30 @@ export const useCRSearchFromList = () => {
   });
 };
 
+// ============= DELETE IMPORT HOOK =============
+
+export const useDeleteCRApolloImport = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (importId: string): Promise<void> => {
+      const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
+        body: { action: 'delete_import', import_id: importId },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Error eliminando importación');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cr-apollo-import-history'] });
+      toast.success('Importación eliminada');
+    },
+    onError: (error: Error) => {
+      toast.error(`Error eliminando: ${error.message}`);
+    },
+  });
+};
+
 // ============= COMBINED HOOK =============
 
 export const useCRApolloSearchImport = () => {
@@ -254,6 +278,7 @@ export const useCRApolloSearchImport = () => {
   const createImport = useCreateCRApolloImport();
   const importSelected = useImportCRApolloSelected();
   const searchFromList = useCRSearchFromList();
+  const deleteImport = useDeleteCRApolloImport();
 
   return {
     presets: presets.data || [],
@@ -277,5 +302,8 @@ export const useCRApolloSearchImport = () => {
     searchFromList: searchFromList.mutateAsync,
     isSearchingFromList: searchFromList.isPending,
     listResults: searchFromList.data,
+
+    deleteImport: deleteImport.mutateAsync,
+    isDeleting: deleteImport.isPending,
   };
 };
