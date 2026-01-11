@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FundIntelligenceStats } from '@/components/admin/fund-intelligence/FundIntelligenceStats';
 import { FundsList } from '@/components/admin/fund-intelligence/FundsList';
@@ -7,7 +8,16 @@ import { useFundIntelligence } from '@/hooks/useFundIntelligence';
 import { Brain } from 'lucide-react';
 
 const FundIntelligencePage = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams] = useSearchParams();
+  const typeParam = searchParams.get('type');
+  
+  const getInitialTab = () => {
+    if (typeParam === 'cr') return 'cr-funds';
+    if (typeParam === 'sf') return 'sf-funds';
+    return 'overview';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   const {
     sfFunds,
     crFunds,
