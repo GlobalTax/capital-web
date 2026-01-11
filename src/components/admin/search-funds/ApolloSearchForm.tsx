@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Separator } from '@/components/ui/separator';
 import { 
   Search, 
   ChevronDown, 
@@ -13,15 +14,33 @@ import {
   Briefcase, 
   Users,
   Loader2,
-  Sparkles
+  Sparkles,
+  List,
+  Link2
 } from 'lucide-react';
 import { ApolloSearchCriteria, ApolloSearchPreset } from '@/hooks/useApolloSearchImport';
 
 interface ApolloSearchFormProps {
   presets: ApolloSearchPreset[];
   onSearch: (criteria: ApolloSearchCriteria) => void;
+  onSearchFromList: (listId: string) => void;
   isSearching: boolean;
+  isSearchingFromList: boolean;
 }
+
+// Helper to extract list ID from URL or raw ID
+const extractListId = (input: string): string => {
+  const trimmed = input.trim();
+  
+  // Check if it's a URL
+  const urlMatch = trimmed.match(/lists\/([a-f0-9]+)/i);
+  if (urlMatch) return urlMatch[1];
+  
+  // Check if it's a raw hex ID (24 chars)
+  if (/^[a-f0-9]{24}$/i.test(trimmed)) return trimmed;
+  
+  return trimmed;
+};
 
 // Helper component for multi-select tags
 const TagInput: React.FC<{
@@ -75,7 +94,9 @@ const TagInput: React.FC<{
 export const ApolloSearchForm: React.FC<ApolloSearchFormProps> = ({
   presets,
   onSearch,
+  onSearchFromList,
   isSearching,
+  isSearchingFromList,
 }) => {
   const [criteria, setCriteria] = useState<ApolloSearchCriteria>({
     person_titles: [],
@@ -87,6 +108,7 @@ export const ApolloSearchForm: React.FC<ApolloSearchFormProps> = ({
     page: 1,
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [listInput, setListInput] = useState('');
 
   const applyPreset = (preset: ApolloSearchPreset) => {
     setCriteria(prev => ({
@@ -97,6 +119,13 @@ export const ApolloSearchForm: React.FC<ApolloSearchFormProps> = ({
 
   const handleSearch = () => {
     onSearch(criteria);
+  };
+
+  const handleSearchFromList = () => {
+    const listId = extractListId(listInput);
+    if (listId) {
+      onSearchFromList(listId);
+    }
   };
 
   const clearForm = () => {
@@ -117,18 +146,63 @@ export const ApolloSearchForm: React.FC<ApolloSearchFormProps> = ({
     (criteria.q_keywords?.length || 0) > 0 ||
     (criteria.organization_industries?.length || 0) > 0;
 
+  const isValidListInput = listInput.trim().length > 0;
+
   return (
     <Card>
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Search className="h-5 w-5" />
-          Buscar Personas en Apollo
+          Importar desde Apollo
         </CardTitle>
         <CardDescription>
-          Define criterios para buscar searchers, backers y asesores de Search Funds
+          Importa contactos desde tus listas guardadas o busca en la base de datos global
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Import from List Section */}
+        <div className="space-y-4 p-4 bg-muted/50 rounded-lg border-2 border-dashed">
+          <Label className="flex items-center gap-2 text-sm font-medium">
+            <List className="h-4 w-4 text-primary" />
+            Importar desde Lista de Apollo
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Pega el ID o URL de una lista guardada en tu cuenta de Apollo
+          </p>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={listInput}
+                onChange={(e) => setListInput(e.target.value)}
+                placeholder="Ej: 6963a8a0d67d450011d306e1 o app.apollo.io/#/lists/..."
+                className="pl-9"
+              />
+            </div>
+            <Button
+              onClick={handleSearchFromList}
+              disabled={isSearchingFromList || !isValidListInput}
+              className="gap-2 whitespace-nowrap"
+            >
+              {isSearchingFromList ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <List className="h-4 w-4" />
+              )}
+              Cargar Lista
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            💡 Encuentra el ID en la URL de tu lista: app.apollo.io/#/lists/<strong>6963a8a0d67d450011d306e1</strong>
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Separator className="flex-1" />
+          <span className="text-xs text-muted-foreground">O BUSCAR EN BASE DE DATOS GLOBAL</span>
+          <Separator className="flex-1" />
+        </div>
+
         {/* Presets */}
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground uppercase tracking-wide">

@@ -459,6 +459,77 @@ serve(async (req) => {
       });
     }
 
+    // ============= ACTION: SEARCH FROM LIST =============
+    if (action === 'search_from_list') {
+      const { list_id, page = 1, per_page = 100 } = params;
+      
+      if (!list_id) {
+        throw new Error('list_id is required');
+      }
+
+      console.log('[Apollo] Fetching contacts from list:', list_id, 'page:', page);
+      
+      const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'X-Api-Key': APOLLO_API_KEY!,
+        },
+        body: JSON.stringify({
+          contact_list_ids: [list_id],
+          page,
+          per_page: Math.min(per_page, 100),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Apollo] List fetch error:', response.status, errorText);
+        throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('[Apollo] List contacts found:', data.contacts?.length || 0, 'pagination:', data.pagination);
+      
+      // Map contacts to ApolloPersonResult format
+      const people = (data.contacts || []).map((contact: any) => ({
+        id: contact.id,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        name: contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
+        title: contact.title,
+        email: contact.email,
+        email_status: contact.email_status,
+        linkedin_url: contact.linkedin_url,
+        city: contact.city,
+        state: contact.state,
+        country: contact.country,
+        organization: contact.organization ? {
+          id: contact.organization.id,
+          name: contact.organization.name,
+          website_url: contact.organization.website_url,
+          linkedin_url: contact.organization.linkedin_url,
+          primary_domain: contact.organization.primary_domain,
+          industry: contact.organization.industry,
+          estimated_num_employees: contact.organization.estimated_num_employees,
+          city: contact.organization.city,
+          country: contact.organization.country,
+        } : undefined,
+        phone_numbers: contact.phone_numbers,
+        seniority: contact.seniority,
+      }));
+
+      return new Response(JSON.stringify({
+        success: true,
+        people,
+        pagination: data.pagination || {},
+        list_name: data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo',
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // ============= ACTION: PRESETS =============
     if (action === 'get_presets') {
       const presets = [

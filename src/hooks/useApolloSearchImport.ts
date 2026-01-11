@@ -214,6 +214,36 @@ export const useImportApolloSelected = () => {
   });
 };
 
+export const useSearchFromList = () => {
+  return useMutation({
+    mutationFn: async (params: { 
+      list_id: string; 
+      page?: number;
+      per_page?: number;
+    }): Promise<{ people: ApolloPersonResult[]; pagination: any; list_name: string }> => {
+      const { data, error } = await supabase.functions.invoke('apollo-search-import', {
+        body: { 
+          action: 'search_from_list', 
+          list_id: params.list_id,
+          page: params.page || 1,
+          per_page: params.per_page || 100,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+
+      return { people: data.people, pagination: data.pagination, list_name: data.list_name };
+    },
+    onSuccess: (data) => {
+      toast.success(`Cargados ${data.people.length} contactos de "${data.list_name}"`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Error cargando lista: ${error.message}`);
+    },
+  });
+};
+
 // ============= COMBINED HOOK =============
 
 export const useApolloSearchImport = () => {
@@ -222,6 +252,7 @@ export const useApolloSearchImport = () => {
   const search = useApolloSearch();
   const createImport = useCreateApolloImport();
   const importSelected = useImportApolloSelected();
+  const searchFromList = useSearchFromList();
 
   return {
     presets: presets.data || [],
@@ -241,5 +272,9 @@ export const useApolloSearchImport = () => {
     importSelected: importSelected.mutateAsync,
     isImporting: importSelected.isPending,
     importResults: importSelected.data,
+
+    searchFromList: searchFromList.mutateAsync,
+    isSearchingFromList: searchFromList.isPending,
+    listResults: searchFromList.data,
   };
 };
