@@ -120,6 +120,8 @@ function mapRoleFromTitle(title: string): string {
 }
 
 // Detect fund type from organization info
+// ONLY returns values allowed by cr_funds_fund_type_check constraint:
+// 'private_equity', 'venture_capital', 'growth_equity', 'family_office', 'corporate', 'fund_of_funds'
 function detectFundType(org: ApolloPersonResult['organization']): string {
   if (!org) return 'private_equity';
   
@@ -132,22 +134,17 @@ function detectFundType(org: ApolloPersonResult['organization']): string {
   if (name.includes('growth') || industry.includes('growth equity')) {
     return 'growth_equity';
   }
-  if (name.includes('family office') || name.includes('family office')) {
+  if (name.includes('family office')) {
     return 'family_office';
   }
-  if (name.includes('buyout') || name.includes('lbo')) {
-    return 'buyout';
+  if (name.includes('fund of funds') || name.includes('fof')) {
+    return 'fund_of_funds';
   }
-  if (name.includes('infrastructure') || name.includes('infra')) {
-    return 'infrastructure';
-  }
-  if (name.includes('real estate') || name.includes('inmobiliario')) {
-    return 'real_estate';
-  }
-  if (name.includes('debt') || name.includes('credit') || name.includes('deuda')) {
-    return 'debt';
+  if (name.includes('corporate venture') || name.includes('cvc')) {
+    return 'corporate';
   }
   
+  // All other types (buyout, infrastructure, real estate, debt, etc.) default to private_equity
   return 'private_equity';
 }
 
@@ -332,6 +329,16 @@ async function importPerson(
 
     const existingId = await findExistingPerson(supabase, enrichedPerson);
     const fundId = await findOrCreateFund(supabase, enrichedPerson.organization);
+
+    // CRITICAL: Skip if no fund_id available (fund creation failed)
+    if (!fundId) {
+      console.error('[CR Import] Skipping person - no fund_id:', enrichedPerson.name, enrichedPerson.organization?.name);
+      return { 
+        success: false, 
+        action: 'skipped', 
+        error: `No se pudo crear/encontrar el fondo: ${enrichedPerson.organization?.name || 'Sin organización'}` 
+      };
+    }
 
     const personData = {
       full_name: enrichedPerson.name,
