@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, MoreHorizontal, Mail, Phone, Building2, Calendar, TrendingUp } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
+import { ApolloEnrichButton } from './ApolloEnrichButton';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -24,6 +25,9 @@ interface LinearContactsTableProps {
   onViewDetails: (contact: UnifiedContact) => void;
   onSoftDelete?: (contactId: string) => void;
   isLoading?: boolean;
+  onApolloEnrich?: (contact: UnifiedContact) => void;
+  onApolloSelectCandidate?: (contact: UnifiedContact) => void;
+  isEnriching?: string | null;
 }
 
 // Origin badge with Linear styling
@@ -91,6 +95,9 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   onViewDetails,
   onSoftDelete,
   isLoading = false,
+  onApolloEnrich,
+  onApolloSelectCandidate,
+  isEnriching,
 }) => {
   const allSelected = contacts.length > 0 && selectedContacts.length === contacts.length;
   const someSelected = selectedContacts.length > 0 && selectedContacts.length < contacts.length;
@@ -128,6 +135,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Empresa</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">Valoración</TableHead>
+            <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Apollo</TableHead>
             <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Fecha</TableHead>
             <TableHead className="h-10 w-10"></TableHead>
           </TableRow>
@@ -238,6 +246,22 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                         </span>
                       )}
                     </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
+                </TableCell>
+                
+                {/* Apollo Enrichment */}
+                <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                  {contact.origin === 'valuation' ? (
+                    <ApolloEnrichButton
+                      status={contact.apollo_status}
+                      error={contact.apollo_error}
+                      lastEnrichedAt={contact.apollo_last_enriched_at}
+                      isLoading={isEnriching === contact.id}
+                      onEnrich={() => onApolloEnrich?.(contact)}
+                      onSelectCompany={() => onApolloSelectCandidate?.(contact)}
+                    />
                   ) : (
                     <span className="text-xs text-muted-foreground/50">—</span>
                   )}
