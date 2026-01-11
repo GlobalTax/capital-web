@@ -42,6 +42,10 @@ const CACHE_TTL = 60 * 1000; // 1 minuto (antes era 5 minutos)
 let globalRealtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 let globalRealtimeUserId: string | null = null;
 
+// === Shared promise para evitar race conditions en checks concurrentes ===
+let pendingCheckPromise: Promise<{ isAdmin: boolean; role: AdminRole }> | null = null;
+let pendingCheckUserId: string | null = null;
+
 export function useAdminAuth(): AdminAuthState & AdminAuthActions {
   const [state, setState] = useState<AdminAuthState>({
     user: null,
@@ -54,67 +58,82 @@ export function useAdminAuth(): AdminAuthState & AdminAuthActions {
 
   const { toast } = useToast();
   const mountedRef = useRef(true);
-  const checkingRef = useRef(false);
 
   /**
    * Verifica el estado de admin desde DB
    * - Usa cache para evitar consultas innecesarias
    * - Fail fast: 3s timeout máximo
-   * - No reintentos (simplicidad)
+   * - Shared promise para evitar race conditions
    */
   const checkAdminStatus = useCallback(async (userId: string): Promise<{ isAdmin: boolean; role: AdminRole }> => {
-    // Prevenir checks concurrentes
-    if (checkingRef.current) {
-      const cached = adminCache.get(userId);
-      if (cached) {
-        return { isAdmin: cached.isAdmin, role: cached.role };
-      }
-      return { isAdmin: false, role: 'none' };
+    // Revisar cache primero (incluso antes de checks concurrentes)
+    const cached = adminCache.get(userId);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+      return { isAdmin: cached.isAdmin, role: cached.role };
     }
 
-    checkingRef.current = true;
-
-    try {
-      // Revisar cache primero
-      const cached = adminCache.get(userId);
-      if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-        return { isAdmin: cached.isAdmin, role: cached.role };
+    // Si hay un check en progreso para este usuario, esperar a que termine
+    if (pendingCheckPromise && pendingCheckUserId === userId) {
+      try {
+        return await pendingCheckPromise;
+      } catch {
+        // Si falla el check pendiente, intentar de nuevo
       }
+    }
 
-      // Consultar DB con timeout simple
-      const checkPromise = supabase.rpc('get_user_role', { check_user_id: userId });
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Admin check timeout')), 3000);
-      });
+    // Crear nueva promise compartida para este check
+    pendingCheckUserId = userId;
+    pendingCheckPromise = (async () => {
+      try {
+        // Consultar DB con timeout simple
+        const checkPromise = supabase.rpc('get_user_role', { check_user_id: userId });
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Admin check timeout')), 3000);
+        });
 
-      const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
+        const { data, error } = await Promise.race([checkPromise, timeoutPromise]);
 
-      if (error) {
-        logger.error('Admin check failed', error, {
+        if (error) {
+          logger.error('Admin check failed', error, {
+            context: 'auth',
+            component: 'useAdminAuth',
+            userId
+          });
+          // Si falla pero hay cache expirado, usarlo como fallback
+          if (cached) {
+            return { isAdmin: cached.isAdmin, role: cached.role };
+          }
+          return { isAdmin: false, role: 'none' };
+        }
+
+        const role = (data || 'none') as AdminRole;
+        const isAdmin = role !== 'none';
+
+        // Actualizar cache
+        adminCache.set(userId, { isAdmin, role, timestamp: Date.now() });
+
+        return { isAdmin, role };
+      } catch (error) {
+        logger.error('Exception in admin check', error as Error, {
           context: 'auth',
           component: 'useAdminAuth',
           userId
         });
+        // Si falla pero hay cache expirado, usarlo como fallback
+        if (cached) {
+          return { isAdmin: cached.isAdmin, role: cached.role };
+        }
         return { isAdmin: false, role: 'none' };
+      } finally {
+        // Limpiar promise compartida
+        if (pendingCheckUserId === userId) {
+          pendingCheckPromise = null;
+          pendingCheckUserId = null;
+        }
       }
+    })();
 
-      const role = (data || 'none') as AdminRole;
-      const isAdmin = role !== 'none';
-
-      // Actualizar cache
-      adminCache.set(userId, { isAdmin, role, timestamp: Date.now() });
-
-      return { isAdmin, role };
-    } catch (error) {
-      logger.error('Exception in admin check', error as Error, {
-        context: 'auth',
-        component: 'useAdminAuth',
-        userId
-      });
-      return { isAdmin: false, role: 'none' };
-    } finally {
-      checkingRef.current = false;
-    }
+    return pendingCheckPromise;
   }, []);
 
   /**

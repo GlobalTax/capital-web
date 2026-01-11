@@ -74,25 +74,12 @@ const LazyFase0TemplatesPage = React.lazy(() => import('@/pages/admin/Fase0Templ
 const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news/NewsArticlesManager').then(m => ({ default: m.NewsArticlesManager })));
 
 const AdminRouter = () => {
-  const { isAdmin, isLoading } = useAdminAuth();
+  const { isLoading } = useAdminAuth();
 
+  // Solo mostrar skeleton durante carga inicial
+  // La verificación de isAdmin se hace en AdminProtectedRoute (evita verificación redundante)
   if (isLoading) {
     return <PageLoadingSkeleton />;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Acceso Restringido
-          </h2>
-          <p className="text-gray-600">
-            Necesitas permisos de administrador para acceder a esta sección.
-          </p>
-        </div>
-      </div>
-    );
   }
 
   return (
