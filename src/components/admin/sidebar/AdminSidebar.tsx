@@ -150,7 +150,13 @@ export const AdminSidebar: React.FC = () => {
       'tracking-dashboard': 'trackingDashboard',
       'tracking-config': 'trackingConfig',
       'valuation-analytics': 'valuationAnalytics',
-      'valoraciones-pro': 'valoracionesPro'
+      'valoraciones-pro': 'valoracionesPro',
+      'cr-directory': 'dashboard', // Capital Riesgo - visible para admins
+      'sf-directory': 'dashboard', // Search Funds - visible para admins
+      'sf-apollo-import': 'dashboard',
+      'sf-radar': 'dashboard',
+      'sf-backers': 'dashboard',
+      'sf-matches': 'dashboard'
     };
 
     const permissionKey = routePermissionMap[route];
