@@ -9,11 +9,13 @@ import {
   AlertCircle,
   Sparkles,
   TrendingUp,
+  CheckCircle,
 } from 'lucide-react';
 import { useApolloSearchImport, ApolloSearchCriteria, ApolloPersonResult } from '@/hooks/useApolloSearchImport';
 import { ApolloSearchForm } from '@/components/admin/search-funds/ApolloSearchForm';
 import { ApolloSearchResults } from '@/components/admin/search-funds/ApolloSearchResults';
 import { ApolloImportHistory } from '@/components/admin/search-funds/ApolloImportHistory';
+import { toast } from '@/hooks/use-toast';
 
 const SFApolloImportPage: React.FC = () => {
   const {
@@ -44,6 +46,18 @@ const SFApolloImportPage: React.FC = () => {
       setListName(null);
       // Crear job de import
       const importId = await createImport(criteria);
+      
+      console.log('[handleSearch] Created import job:', importId);
+      
+      if (!importId) {
+        toast({
+          title: 'Error',
+          description: 'No se pudo crear la sesión de importación',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       setCurrentImportId(importId);
       setCurrentCriteria(criteria);
 
@@ -60,6 +74,18 @@ const SFApolloImportPage: React.FC = () => {
     try {
       // Crear job de import para la lista
       const importId = await createImport({ q_keywords: `list:${listId}` });
+      
+      console.log('[handleSearchFromList] Created import job:', importId);
+      
+      if (!importId) {
+        toast({
+          title: 'Error',
+          description: 'No se pudo crear la sesión de importación',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       setCurrentImportId(importId);
       setCurrentCriteria(null);
 
@@ -68,13 +94,40 @@ const SFApolloImportPage: React.FC = () => {
       setSearchResults(result.people);
       setPagination(result.pagination);
       setListName(result.list_name);
+      
+      console.log('[handleSearchFromList] Loaded', result.people.length, 'contacts. Import ID:', importId);
     } catch (error) {
       console.error('List search error:', error);
+      toast({
+        title: 'Error',
+        description: 'Error cargando lista de Apollo',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleImport = async (people: ApolloPersonResult[], enrich: boolean) => {
-    if (!currentImportId) return;
+    console.log('[handleImport] currentImportId:', currentImportId);
+    console.log('[handleImport] people to import:', people.length);
+    
+    if (!currentImportId) {
+      toast({
+        title: 'Error',
+        description: 'No hay sesión de importación activa. Por favor, vuelve a cargar la lista.',
+        variant: 'destructive',
+      });
+      console.error('[handleImport] No currentImportId - cannot import');
+      return;
+    }
+    
+    if (people.length === 0) {
+      toast({
+        title: 'Atención',
+        description: 'Selecciona al menos una persona para importar',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     await importSelected({
       import_id: currentImportId,
@@ -183,19 +236,30 @@ const SFApolloImportPage: React.FC = () => {
       {/* Search Results */}
       {(searchResults.length > 0 || importResults) && (
         <>
-          {listName && (
-            <Alert className="bg-primary/5 border-primary/20">
-              <AlertDescription className="flex items-center gap-2">
-                <Badge variant="default" className="gap-1">
-                  <Database className="h-3 w-3" />
-                  Lista: {listName}
-                </Badge>
-                <span className="text-muted-foreground">
-                  {searchResults.length} contactos cargados
-                </span>
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Session status indicator */}
+          <div className="flex items-center gap-2">
+            {currentImportId ? (
+              <Badge variant="outline" className="gap-1 text-green-600 border-green-200 bg-green-50">
+                <CheckCircle className="h-3 w-3" />
+                Sesión activa
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="gap-1 text-amber-600 border-amber-200 bg-amber-50">
+                <AlertCircle className="h-3 w-3" />
+                Sin sesión de importación
+              </Badge>
+            )}
+            {listName && (
+              <Badge variant="default" className="gap-1">
+                <Database className="h-3 w-3" />
+                Lista: {listName}
+              </Badge>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {searchResults.length} contactos cargados
+            </span>
+          </div>
+          
           <ApolloSearchResults
             people={searchResults}
             pagination={pagination}
@@ -204,6 +268,7 @@ const SFApolloImportPage: React.FC = () => {
             importResults={importResults}
             onLoadMore={handleLoadMore}
             isLoadingMore={isSearching}
+            hasActiveSession={!!currentImportId}
           />
         </>
       )}

@@ -39,6 +39,7 @@ interface ApolloSearchResultsProps {
   importResults?: ImportResults;
   onLoadMore?: () => void;
   isLoadingMore?: boolean;
+  hasActiveSession?: boolean;
 }
 
 export const ApolloSearchResults: React.FC<ApolloSearchResultsProps> = ({
@@ -49,6 +50,7 @@ export const ApolloSearchResults: React.FC<ApolloSearchResultsProps> = ({
   importResults,
   onLoadMore,
   isLoadingMore,
+  hasActiveSession = true,
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [enrichOnImport, setEnrichOnImport] = useState(false);
@@ -72,7 +74,9 @@ export const ApolloSearchResults: React.FC<ApolloSearchResultsProps> = ({
   };
 
   const handleImport = () => {
+    console.log('[ApolloSearchResults] handleImport clicked, selectedIds:', selectedIds.size);
     const selectedPeople = people.filter(p => selectedIds.has(p.id));
+    console.log('[ApolloSearchResults] Calling onImport with', selectedPeople.length, 'people');
     onImport(selectedPeople, enrichOnImport);
   };
 
@@ -184,15 +188,31 @@ export const ApolloSearchResults: React.FC<ApolloSearchResultsProps> = ({
             {/* Import button */}
             <Button
               onClick={handleImport}
-              disabled={selectedIds.size === 0 || isImporting}
+              disabled={selectedIds.size === 0 || isImporting || !hasActiveSession}
               className="gap-2"
+              variant={selectedIds.size === 0 || !hasActiveSession ? 'outline' : 'default'}
             >
               {isImporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Importando...
+                </>
+              ) : !hasActiveSession ? (
+                <>
+                  <AlertCircle className="h-4 w-4" />
+                  Sin sesión
+                </>
+              ) : selectedIds.size === 0 ? (
+                <>
+                  <Download className="h-4 w-4" />
+                  Selecciona personas
+                </>
               ) : (
-                <Download className="h-4 w-4" />
+                <>
+                  <Download className="h-4 w-4" />
+                  Importar {selectedIds.size} personas
+                </>
               )}
-              Importar {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
           </div>
         </div>
