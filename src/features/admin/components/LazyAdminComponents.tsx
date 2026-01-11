@@ -109,3 +109,4 @@ export const LazySFFundDetailPage = lazy(() => import('@/pages/admin/SFFundDetai
 // === CAPITAL RIESGO INTELLIGENCE ===
 export const LazyCRDirectoryPage = lazy(() => import('@/pages/admin/CRDirectoryPage'));
 export const LazyCRFundDetailPage = lazy(() => import('@/pages/admin/CRFundDetailPage'));
+export const LazyCRApolloImportPage = lazy(() => import('@/pages/admin/CRApolloImportPage'));
