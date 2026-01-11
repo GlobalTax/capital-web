@@ -152,3 +152,15 @@ verify_jwt = false
 
 [functions.confirm-apollo-match]
 verify_jwt = false
+
+[functions.sf-extract-profile]
+verify_jwt = false
+
+[functions.sf-ai-matching]
+verify_jwt = false
+
+[functions.sf-relevance-filter]
+verify_jwt = false
+
+[functions.sf-generate-outreach]
+verify_jwt = false
