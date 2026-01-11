@@ -6,12 +6,17 @@ import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Calendar } from 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CRPortfolio, CR_PORTFOLIO_STATUS_LABELS, CR_INVESTMENT_TYPE_LABELS, CR_OWNERSHIP_TYPE_LABELS } from '@/types/capitalRiesgo';
+import { CRPortfolioScraperButton } from './CRPortfolioScraperButton';
 
 interface CRFundPortfolioPanelProps {
   portfolio: CRPortfolio[];
+  fundId: string;
+  fundName: string;
+  hasWebsite: boolean;
   onAdd: () => void;
   onEdit: (company: CRPortfolio) => void;
   onDelete: (company: CRPortfolio) => void;
+  onRefresh?: () => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -20,7 +25,16 @@ const statusColors: Record<string, string> = {
   write_off: 'bg-red-500/10 text-red-700 border-red-200',
 };
 
-export function CRFundPortfolioPanel({ portfolio, onAdd, onEdit, onDelete }: CRFundPortfolioPanelProps) {
+export function CRFundPortfolioPanel({ 
+  portfolio, 
+  fundId,
+  fundName,
+  hasWebsite,
+  onAdd, 
+  onEdit, 
+  onDelete,
+  onRefresh 
+}: CRFundPortfolioPanelProps) {
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -31,10 +45,18 @@ export function CRFundPortfolioPanel({ portfolio, onAdd, onEdit, onDelete }: CRF
             {portfolio.length}
           </Badge>
         </div>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onAdd}>
-          <Plus className="h-3 w-3 mr-1" />
-          Añadir
-        </Button>
+        <div className="flex items-center gap-2">
+          <CRPortfolioScraperButton 
+            fundId={fundId}
+            fundName={fundName}
+            hasWebsite={hasWebsite}
+            onSuccess={onRefresh}
+          />
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onAdd}>
+            <Plus className="h-3 w-3 mr-1" />
+            Añadir
+          </Button>
+        </div>
       </div>
 
       {/* Table header */}

@@ -69,6 +69,7 @@ import {
   LazyCRDirectoryPage,
   LazyCRFundDetailPage,
   LazyCRApolloImportPage,
+  LazyCRPortfolioScraperPage,
   LazyFundIntelligencePage
 } from './LazyAdminComponents';
 
@@ -185,6 +186,7 @@ const AdminRouter = () => {
           <Route path="/cr-directory" element={<LazyCRDirectoryPage />} />
           <Route path="/cr-directory/new" element={<LazyCRFundDetailPage />} />
           <Route path="/cr-directory/:id" element={<LazyCRFundDetailPage />} />
+          <Route path="/cr-portfolio-scraper" element={<LazyCRPortfolioScraperPage />} />
           
           {/* Fund Intelligence (Firecrawl) */}
           <Route path="/fund-intelligence" element={<LazyFundIntelligencePage />} />
