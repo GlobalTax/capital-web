@@ -104,3 +104,4 @@ export const LazySFDirectoryPage = lazy(() => import('@/pages/admin/SFDirectoryP
 export const LazySFBackersPage = lazy(() => import('@/pages/admin/SFBackersPage'));
 export const LazySFMatchingInbox = lazy(() => import('@/pages/admin/SFMatchingInbox'));
 export const LazySFApolloImportPage = lazy(() => import('@/pages/admin/SFApolloImportPage'));
+export const LazySFFundDetailPage = lazy(() => import('@/pages/admin/SFFundDetailPage'));
