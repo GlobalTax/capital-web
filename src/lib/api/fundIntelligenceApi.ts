@@ -1,3 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export interface FundNews {
   id: string;
   fund_id: string;
@@ -24,59 +26,18 @@ export interface FundForIntelligence {
   scrape_data: Record<string, unknown> | null;
 }
 
-type FundRow = {
-  id: string;
-  name: string;
-  website: string | null;
-  last_scraped_at: string | null;
-};
-
-const SUPABASE_URL = 'https://fwhqtzkkvnjkazhaficj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I';
-
-async function restQuery<T>(table: string, params: string): Promise<T[]> {
-  const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
-  const response = await fetch(url, {
-    headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Query failed: ${response.statusText}`);
-  }
-  
-  return response.json();
-}
-
-async function restMutate(table: string, method: 'POST' | 'PATCH' | 'DELETE', params: string, body?: object) {
-  const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Mutation failed: ${response.statusText}`);
-  }
-}
-
 export async function fetchSFFunds(): Promise<FundForIntelligence[]> {
-  // sf_funds does NOT have is_deleted column
-  const rows = await restQuery<FundRow>(
-    'sf_funds',
-    'select=id,name,website,last_scraped_at&order=name'
-  );
+  const { data, error } = await supabase
+    .from('sf_funds')
+    .select('id, name, website, last_scraped_at')
+    .order('name');
   
-  return rows.map((f) => ({
+  if (error) {
+    console.error('Error fetching SF funds:', error);
+    throw error;
+  }
+  
+  return (data || []).map((f) => ({
     id: f.id,
     name: f.name,
     website: f.website,
@@ -86,12 +47,18 @@ export async function fetchSFFunds(): Promise<FundForIntelligence[]> {
 }
 
 export async function fetchCRFunds(): Promise<FundForIntelligence[]> {
-  const rows = await restQuery<FundRow>(
-    'cr_funds',
-    'select=id,name,website,last_scraped_at&is_deleted=eq.false&order=name'
-  );
+  const { data, error } = await supabase
+    .from('cr_funds')
+    .select('id, name, website, last_scraped_at')
+    .eq('is_deleted', false)
+    .order('name');
   
-  return rows.map((f) => ({
+  if (error) {
+    console.error('Error fetching CR funds:', error);
+    throw error;
+  }
+  
+  return (data || []).map((f) => ({
     id: f.id,
     name: f.name,
     website: f.website,
@@ -101,52 +68,70 @@ export async function fetchCRFunds(): Promise<FundForIntelligence[]> {
 }
 
 export async function fetchFundNews(): Promise<FundNews[]> {
-  return restQuery<FundNews>(
-    'fund_news',
-    'select=*&order=created_at.desc&limit=100'
-  );
+  const { data, error } = await supabase
+    .from('fund_news')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  
+  if (error) {
+    console.error('Error fetching fund news:', error);
+    throw error;
+  }
+  
+  return (data || []) as FundNews[];
 }
 
 export async function scrapeFundWebsite(fundId: string, fundType: 'sf' | 'cr') {
-  const url = `${SUPABASE_URL}/functions/v1/fund-scrape-website`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ fund_id: fundId, fund_type: fundType }),
+  const { data, error } = await supabase.functions.invoke('fund-scrape-website', {
+    body: { fund_id: fundId, fund_type: fundType },
   });
 
-  const data = await response.json();
-  if (!response.ok || !data.success) {
-    throw new Error(data.error || 'Scrape failed');
+  if (error) {
+    throw new Error(error.message || 'Scrape failed');
   }
+  
+  if (!data?.success) {
+    throw new Error(data?.error || 'Scrape failed');
+  }
+  
   return data;
 }
 
 export async function searchFundNews(fundId: string, fundType: 'sf' | 'cr') {
-  const url = `${SUPABASE_URL}/functions/v1/fund-search-news`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ fund_id: fundId, fund_type: fundType }),
+  const { data, error } = await supabase.functions.invoke('fund-search-news', {
+    body: { fund_id: fundId, fund_type: fundType },
   });
 
-  const data = await response.json();
-  if (!response.ok || !data.success) {
-    throw new Error(data.error || 'Search failed');
+  if (error) {
+    throw new Error(error.message || 'Search failed');
   }
+  
+  if (!data?.success) {
+    throw new Error(data?.error || 'Search failed');
+  }
+  
   return data;
 }
 
 export async function markNewsAsProcessed(newsId: string) {
-  await restMutate('fund_news', 'PATCH', `id=eq.${newsId}`, { is_processed: true });
+  const { error } = await supabase
+    .from('fund_news')
+    .update({ is_processed: true })
+    .eq('id', newsId);
+  
+  if (error) {
+    throw error;
+  }
 }
 
 export async function deleteFundNews(newsId: string) {
-  await restMutate('fund_news', 'DELETE', `id=eq.${newsId}`);
+  const { error } = await supabase
+    .from('fund_news')
+    .delete()
+    .eq('id', newsId);
+  
+  if (error) {
+    throw error;
+  }
 }
