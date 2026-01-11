@@ -51,6 +51,7 @@ interface SFPersonEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   person?: SFPerson | null;
+  defaultFundId?: string;
 }
 
 const roleOptions: { value: SFPersonRole; label: string }[] = [
@@ -64,6 +65,7 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
   open,
   onOpenChange,
   person,
+  defaultFundId,
 }) => {
   const isEditing = !!person;
   const createPerson = useCreateSFPerson();
@@ -81,7 +83,7 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
       phone: person?.phone ?? '',
       notes: person?.notes ?? '',
       is_primary_contact: person?.is_primary_contact ?? false,
-      fund_id: person?.fund_id ?? '',
+      fund_id: person?.fund_id ?? defaultFundId ?? '',
     },
   });
 
@@ -96,10 +98,10 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
         phone: person?.phone ?? '',
         notes: person?.notes ?? '',
         is_primary_contact: person?.is_primary_contact ?? false,
-        fund_id: person?.fund_id ?? '',
+        fund_id: person?.fund_id ?? defaultFundId ?? '',
       });
     }
-  }, [open, person, form]);
+  }, [open, person, defaultFundId, form]);
 
   const onSubmit = async (data: PersonFormData) => {
     const payload = {

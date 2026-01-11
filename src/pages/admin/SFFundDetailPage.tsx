@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, Loader2, ExternalLink, Users, Briefcase, Target, History } from 'lucide-react';
+import { ArrowLeft, Building2, Loader2, ExternalLink, Users, Briefcase, Target, History, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useSFFund, useCreateSFFund, useUpdateSFFund } from '@/hooks/useSFFunds';
+import { useSFPeople, useDeleteSFPerson } from '@/hooks/useSFPeople';
+import { useSFAcquisitions, useDeleteSFAcquisition } from '@/hooks/useSFAcquisitions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SFFundForm } from '@/components/admin/search-funds/SFFundForm';
 import { SFFundHistory } from '@/components/admin/search-funds/SFFundHistory';
-import { SFFund, SFFundFormData } from '@/types/searchFunds';
+import { SFPersonEditModal } from '@/components/admin/search-funds/SFPersonEditModal';
+import { SFAcquisitionEditModal } from '@/components/admin/search-funds/SFAcquisitionEditModal';
+import { SFFund, SFFundFormData, SFPerson, SFAcquisition } from '@/types/searchFunds';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
   searching: { label: 'Buscando', variant: 'default' },
@@ -23,9 +37,23 @@ export default function SFFundDetailPage() {
   const navigate = useNavigate();
   const isNew = id === 'new';
   
+  // Fund data
   const { data: fund, isLoading, error } = useSFFund(isNew ? undefined : id);
   const createMutation = useCreateSFFund();
   const updateMutation = useUpdateSFFund();
+
+  // People data
+  const { data: people = [] } = useSFPeople(isNew ? undefined : id);
+  const deletePerson = useDeleteSFPerson();
+
+  // Acquisitions data
+  const { data: acquisitions = [] } = useSFAcquisitions(isNew ? undefined : id);
+  const deleteAcquisition = useDeleteSFAcquisition();
+
+  // Modal states
+  const [editingPerson, setEditingPerson] = useState<SFPerson | null | 'new'>(null);
+  const [editingAcquisition, setEditingAcquisition] = useState<SFAcquisition | null | 'new'>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'person' | 'acquisition'; id: string; name: string } | null>(null);
 
   const handleSubmit = async (data: SFFundFormData) => {
     if (isNew) {
@@ -34,6 +62,17 @@ export default function SFFundDetailPage() {
     } else if (id) {
       await updateMutation.mutateAsync({ id, ...data } as Partial<SFFund> & { id: string });
     }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    
+    if (deleteConfirm.type === 'person') {
+      await deletePerson.mutateAsync(deleteConfirm.id);
+    } else {
+      await deleteAcquisition.mutateAsync(deleteConfirm.id);
+    }
+    setDeleteConfirm(null);
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -105,11 +144,11 @@ export default function SFFundDetailPage() {
             <>
               <TabsTrigger value="people" className="gap-2">
                 <Users className="h-4 w-4" />
-                Personas ({fund?.people?.length || 0})
+                Personas ({people.length})
               </TabsTrigger>
               <TabsTrigger value="acquisitions" className="gap-2">
                 <Briefcase className="h-4 w-4" />
-                Adquisiciones ({fund?.acquisitions?.length || 0})
+                Adquisiciones ({acquisitions.length})
               </TabsTrigger>
               <TabsTrigger value="matches" className="gap-2">
                 <Target className="h-4 w-4" />
@@ -135,33 +174,68 @@ export default function SFFundDetailPage() {
           <>
             <TabsContent value="people">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Personas Asociadas
                   </CardTitle>
+                  <Button size="sm" onClick={() => setEditingPerson('new')}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Añadir Persona
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  {fund?.people && fund.people.length > 0 ? (
+                  {people.length > 0 ? (
                     <div className="divide-y">
-                      {fund.people.map((person) => (
-                        <div key={person.id} className="py-3 flex items-center justify-between">
-                          <div>
+                      {people.map((person) => (
+                        <div 
+                          key={person.id} 
+                          className="py-3 flex items-center justify-between group hover:bg-muted/50 -mx-4 px-4 rounded-lg transition-colors"
+                        >
+                          <div 
+                            className="flex-1 cursor-pointer"
+                            onClick={() => setEditingPerson(person)}
+                          >
                             <p className="font-medium">{person.full_name}</p>
                             <p className="text-sm text-muted-foreground">
                               {person.role} {person.email && `• ${person.email}`}
                             </p>
                           </div>
-                          {person.linkedin_url && (
-                            <a 
-                              href={person.linkedin_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline text-sm"
+                          <div className="flex items-center gap-2">
+                            {person.linkedin_url && (
+                              <a 
+                                href={person.linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline text-sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                LinkedIn
+                              </a>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingPerson(person);
+                              }}
                             >
-                              LinkedIn
-                            </a>
-                          )}
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteConfirm({ type: 'person', id: person.id, name: person.full_name });
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -174,26 +248,67 @@ export default function SFFundDetailPage() {
 
             <TabsContent value="acquisitions">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
                     Adquisiciones
                   </CardTitle>
+                  <Button size="sm" onClick={() => setEditingAcquisition('new')}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Añadir Adquisición
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  {fund?.acquisitions && fund.acquisitions.length > 0 ? (
+                  {acquisitions.length > 0 ? (
                     <div className="divide-y">
-                      {fund.acquisitions.map((acq) => (
-                        <div key={acq.id} className="py-3">
+                      {acquisitions.map((acq) => (
+                        <div 
+                          key={acq.id} 
+                          className="py-3 group hover:bg-muted/50 -mx-4 px-4 rounded-lg transition-colors"
+                        >
                           <div className="flex items-center justify-between">
-                            <p className="font-medium">{acq.company_name}</p>
-                            {acq.deal_year && (
-                              <Badge variant="outline">{acq.deal_year}</Badge>
-                            )}
+                            <div 
+                              className="flex-1 cursor-pointer"
+                              onClick={() => setEditingAcquisition(acq)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{acq.company_name}</p>
+                                {acq.deal_year && (
+                                  <Badge variant="outline">{acq.deal_year}</Badge>
+                                )}
+                                {acq.status === 'exited' && (
+                                  <Badge variant="secondary">Exit {acq.exit_year || ''}</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {[acq.sector, acq.country].filter(Boolean).join(' • ')}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingAcquisition(acq);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirm({ type: 'acquisition', id: acq.id, name: acq.company_name });
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {[acq.sector, acq.country].filter(Boolean).join(' • ')}
-                          </p>
                         </div>
                       ))}
                     </div>
@@ -242,6 +357,43 @@ export default function SFFundDetailPage() {
           </>
         )}
       </Tabs>
+
+      {/* Person Edit Modal */}
+      <SFPersonEditModal
+        open={editingPerson !== null}
+        onOpenChange={(open) => !open && setEditingPerson(null)}
+        person={editingPerson === 'new' ? null : editingPerson}
+        defaultFundId={id}
+      />
+
+      {/* Acquisition Edit Modal */}
+      <SFAcquisitionEditModal
+        open={editingAcquisition !== null}
+        onOpenChange={(open) => !open && setEditingAcquisition(null)}
+        acquisition={editingAcquisition === 'new' ? null : editingAcquisition}
+        defaultFundId={id}
+      />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar {deleteConfirm?.type === 'person' ? 'persona' : 'adquisición'}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente "{deleteConfirm?.name}". Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
