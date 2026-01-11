@@ -629,12 +629,22 @@ serve(async (req) => {
         
       } while (currentPage <= totalPages);
       
+      // Deduplicate by ID (Apollo may return same contact in multiple pages)
+      const uniqueMap = new Map<string, any>();
+      allPeople.forEach((person: any) => {
+        if (person.id && !uniqueMap.has(person.id)) {
+          uniqueMap.set(person.id, person);
+        }
+      });
+      const dedupedPeople = Array.from(uniqueMap.values());
+      
       // Filter invalid entries
-      const validPeople = allPeople.filter((p: any) => 
+      const validPeople = dedupedPeople.filter((p: any) => 
         p.name && p.name !== '(No Name)' && p.name.trim() !== ''
       );
       
-      console.log(`[CR Apollo] Final: ${validPeople.length} valid people from ${allPeople.length} total (${totalPages} pages)`);
+      console.log(`[CR Apollo] Deduped: ${dedupedPeople.length} unique from ${allPeople.length} total`);
+      console.log(`[CR Apollo] Final: ${validPeople.length} valid people (${totalPages} pages)`);
 
       return new Response(JSON.stringify({
         success: true,
