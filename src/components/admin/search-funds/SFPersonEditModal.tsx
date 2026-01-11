@@ -237,14 +237,17 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
                 render={({ field }) => (
                   <FormItem className="col-span-2">
                     <FormLabel>Fund asociado</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <Select 
+                      onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)} 
+                      value={field.value || '__none__'}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sin fund asociado" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Sin fund asociado</SelectItem>
+                        <SelectItem value="__none__">Sin fund asociado</SelectItem>
                         {funds.map((fund) => (
                           <SelectItem key={fund.id} value={fund.id}>
                             {fund.name}
