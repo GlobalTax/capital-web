@@ -21,7 +21,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { CRFund, CRFundStatusLabels, CRFundTypeLabels, CRInvestmentStageLabels, CRDealTypeLabels } from '@/types/capitalRiesgo';
+import { CRFund, CR_FUND_STATUS_LABELS, CR_FUND_TYPE_LABELS, CR_INVESTMENT_STAGE_LABELS, CR_DEAL_TYPE_LABELS } from '@/types/capitalRiesgo';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -79,10 +79,10 @@ export function CRFundDetailSidebar({ fund }: CRFundDetailSidebarProps) {
         {/* Badges de estado y tipo */}
         <div className="flex flex-wrap gap-2">
           <Badge className={`${statusColor} border`}>
-            {CRFundStatusLabels[fund.status] || fund.status}
+            {CR_FUND_STATUS_LABELS[fund.status as keyof typeof CR_FUND_STATUS_LABELS] || fund.status}
           </Badge>
           <Badge variant="outline">
-            {CRFundTypeLabels[fund.fund_type] || fund.fund_type}
+            {CR_FUND_TYPE_LABELS[fund.fund_type as keyof typeof CR_FUND_TYPE_LABELS] || fund.fund_type}
           </Badge>
         </div>
 
@@ -164,7 +164,7 @@ export function CRFundDetailSidebar({ fund }: CRFundDetailSidebarProps) {
               <div className="flex flex-wrap gap-1">
                 {fund.investment_stage.map((stage, i) => (
                   <Badge key={i} variant="secondary" className="text-xs font-normal">
-                    {CRInvestmentStageLabels[stage] || stage}
+                    {CR_INVESTMENT_STAGE_LABELS[stage as keyof typeof CR_INVESTMENT_STAGE_LABELS] || stage}
                   </Badge>
                 ))}
               </div>
@@ -245,7 +245,7 @@ export function CRFundDetailSidebar({ fund }: CRFundDetailSidebarProps) {
                 <div className="flex flex-wrap gap-1 mt-1">
                   {fund.deal_types.map((type, i) => (
                     <Badge key={i} variant="outline" className="text-xs font-normal">
-                      {CRDealTypeLabels[type] || type}
+                      {CR_DEAL_TYPE_LABELS[type as keyof typeof CR_DEAL_TYPE_LABELS] || type}
                     </Badge>
                   ))}
                 </div>

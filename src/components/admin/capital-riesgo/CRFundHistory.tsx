@@ -8,7 +8,8 @@ import { History, Plus, Pencil, Trash2, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCRFundAuditLog, CRFundAuditLog } from '@/hooks/useCRFundAuditLog';
+import { useCRFundAuditLog } from '@/hooks/useCRFundAuditLog';
+import type { CRFundAuditLog } from '@/types/capitalRiesgo';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface CRFundHistoryProps {

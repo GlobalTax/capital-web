@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CRFund, CRFundStatusLabels, CRFundTypeLabels } from '@/types/capitalRiesgo';
+import { CRFund, CR_FUND_STATUS_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
 
 interface CRFundDetailHeaderProps {
   fund: CRFund | null;
@@ -58,11 +58,11 @@ export function CRFundDetailHeader({ fund, isNew, onEdit, onDelete }: CRFundDeta
           </h1>
           {!isNew && fund && (
             <>
-              <Badge className={`${typeColors[fund.fund_type] || 'bg-muted'} border text-xs`}>
-                {CRFundTypeLabels[fund.fund_type] || fund.fund_type}
+              <Badge className={`${typeColors[fund.fund_type || ''] || 'bg-muted'} border text-xs`}>
+                {CR_FUND_TYPE_LABELS[fund.fund_type as keyof typeof CR_FUND_TYPE_LABELS] || fund.fund_type}
               </Badge>
-              <Badge className={`${statusColors[fund.status] || 'bg-muted'} border text-xs`}>
-                {CRFundStatusLabels[fund.status] || fund.status}
+              <Badge className={`${statusColors[fund.status || ''] || 'bg-muted'} border text-xs`}>
+                {CR_FUND_STATUS_LABELS[fund.status as keyof typeof CR_FUND_STATUS_LABELS] || fund.status}
               </Badge>
             </>
           )}

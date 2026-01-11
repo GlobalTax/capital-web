@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CRPersonWithFund, CRPersonRole, CRPerson, CRPersonRoleLabels } from '@/types/capitalRiesgo';
+import { CRPersonWithFund, CRPersonRole, CRPerson, CR_PERSON_ROLE_LABELS } from '@/types/capitalRiesgo';
 import { CRPersonEditModal } from './CRPersonEditModal';
 
 interface CRPeopleTableProps {
@@ -23,12 +23,14 @@ interface CRPeopleTableProps {
 
 const roleColors: Record<CRPersonRole, string> = {
   partner: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+  managing_partner: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
   principal: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   director: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400',
   associate: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   analyst: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   operating_partner: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
   advisor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400',
+  other: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
 };
 
 const getLocationDisplay = (person: CRPersonWithFund) => {
@@ -148,8 +150,8 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
                     </div>
                   </TableCell>
                   <TableCell className="py-2">
-                    <Badge className={`text-[10px] h-5 ${roleColors[person.role] || 'bg-gray-100'}`}>
-                      {CRPersonRoleLabels[person.role] || person.role}
+                    <Badge className={`text-[10px] h-5 ${roleColors[person.role as CRPersonRole] || 'bg-gray-100'}`}>
+                      {CR_PERSON_ROLE_LABELS[person.role as keyof typeof CR_PERSON_ROLE_LABELS] || person.role}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>

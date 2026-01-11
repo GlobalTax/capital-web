@@ -5,7 +5,7 @@ import React from 'react';
 import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CRPortfolio, CRPortfolioStatusLabels, CRPortfolioInvestmentTypeLabels, CRPortfolioOwnershipTypeLabels } from '@/types/capitalRiesgo';
+import { CRPortfolio, CR_PORTFOLIO_STATUS_LABELS, CR_INVESTMENT_TYPE_LABELS, CR_OWNERSHIP_TYPE_LABELS } from '@/types/capitalRiesgo';
 
 interface CRFundPortfolioPanelProps {
   portfolio: CRPortfolio[];
@@ -113,14 +113,14 @@ export function CRFundPortfolioPanel({ portfolio, onAdd, onEdit, onDelete }: CRF
                 {/* Tipo */}
                 <div>
                   <span className="text-xs text-muted-foreground">
-                    {CRPortfolioOwnershipTypeLabels[company.ownership_type] || company.ownership_type}
+                    {CR_OWNERSHIP_TYPE_LABELS[company.ownership_type as keyof typeof CR_OWNERSHIP_TYPE_LABELS] || company.ownership_type}
                   </span>
                 </div>
 
                 {/* Estado */}
                 <div>
                   <Badge className={`${statusConfig} text-[10px] font-normal border`}>
-                    {CRPortfolioStatusLabels[company.status] || company.status}
+                    {CR_PORTFOLIO_STATUS_LABELS[company.status as keyof typeof CR_PORTFOLIO_STATUS_LABELS] || company.status}
                     {company.status === 'exited' && company.exit_year && (
                       <span className="ml-1">{company.exit_year}</span>
                     )}

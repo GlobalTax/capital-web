@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CRPerson, CRPersonRole, CRPersonRoleLabels } from '@/types/capitalRiesgo';
+import { CRPerson, CRPersonRole, CR_PERSON_ROLE_LABELS } from '@/types/capitalRiesgo';
 import { useCreateCRPerson, useUpdateCRPerson } from '@/hooks/useCRPeople';
 import { useCRFunds } from '@/hooks/useCRFunds';
 import { Loader2 } from 'lucide-react';
@@ -41,7 +41,7 @@ const personSchema = z.object({
   full_name: z.string().min(1, 'Nombre requerido'),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   linkedin_url: z.string().url('URL inválida').optional().or(z.literal('')),
-  role: z.enum(['partner', 'principal', 'director', 'associate', 'analyst', 'operating_partner', 'advisor'] as const),
+  role: z.enum(['partner', 'managing_partner', 'principal', 'director', 'associate', 'analyst', 'operating_partner', 'advisor', 'other'] as const),
   title: z.string().optional(),
   location: z.string().optional(),
   phone: z.string().optional(),
@@ -62,13 +62,15 @@ interface CRPersonEditModalProps {
 }
 
 const roleOptions: { value: CRPersonRole; label: string }[] = [
-  { value: 'partner', label: CRPersonRoleLabels.partner },
-  { value: 'principal', label: CRPersonRoleLabels.principal },
-  { value: 'director', label: CRPersonRoleLabels.director },
-  { value: 'associate', label: CRPersonRoleLabels.associate },
-  { value: 'analyst', label: CRPersonRoleLabels.analyst },
-  { value: 'operating_partner', label: CRPersonRoleLabels.operating_partner },
-  { value: 'advisor', label: CRPersonRoleLabels.advisor },
+  { value: 'managing_partner', label: CR_PERSON_ROLE_LABELS.managing_partner },
+  { value: 'partner', label: CR_PERSON_ROLE_LABELS.partner },
+  { value: 'principal', label: CR_PERSON_ROLE_LABELS.principal },
+  { value: 'director', label: CR_PERSON_ROLE_LABELS.director },
+  { value: 'associate', label: CR_PERSON_ROLE_LABELS.associate },
+  { value: 'analyst', label: CR_PERSON_ROLE_LABELS.analyst },
+  { value: 'operating_partner', label: CR_PERSON_ROLE_LABELS.operating_partner },
+  { value: 'advisor', label: CR_PERSON_ROLE_LABELS.advisor },
+  { value: 'other', label: CR_PERSON_ROLE_LABELS.other },
 ];
 
 export const CRPersonEditModal: React.FC<CRPersonEditModalProps> = ({
@@ -88,7 +90,7 @@ export const CRPersonEditModal: React.FC<CRPersonEditModalProps> = ({
       full_name: person?.full_name ?? '',
       email: person?.email ?? '',
       linkedin_url: person?.linkedin_url ?? '',
-      role: person?.role ?? 'associate',
+      role: (person?.role as CRPersonRole) ?? 'associate',
       title: person?.title ?? '',
       location: person?.location ?? '',
       phone: person?.phone ?? '',
@@ -106,7 +108,7 @@ export const CRPersonEditModal: React.FC<CRPersonEditModalProps> = ({
         full_name: person?.full_name ?? '',
         email: person?.email ?? '',
         linkedin_url: person?.linkedin_url ?? '',
-        role: person?.role ?? 'associate',
+        role: (person?.role as CRPersonRole) ?? 'associate',
         title: person?.title ?? '',
         location: person?.location ?? '',
         phone: person?.phone ?? '',
@@ -136,7 +138,7 @@ export const CRPersonEditModal: React.FC<CRPersonEditModalProps> = ({
     };
 
     if (isEditing && person) {
-      await updatePerson.mutateAsync({ id: person.id, ...payload });
+      await updatePerson.mutateAsync({ id: person.id, data: payload });
     } else {
       await createPerson.mutateAsync(payload);
     }
