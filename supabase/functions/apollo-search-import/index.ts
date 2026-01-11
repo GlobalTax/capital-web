@@ -469,6 +469,15 @@ serve(async (req) => {
 
       console.log('[Apollo] Fetching contacts from list:', list_id, 'page:', page);
       
+      // Apollo usa "label_ids" para filtrar por listas, no "contact_list_ids"
+      const requestBody = {
+        label_ids: [list_id],
+        page,
+        per_page: Math.min(per_page, 100),
+      };
+      
+      console.log('[Apollo] Request body:', JSON.stringify(requestBody));
+      
       const response = await fetch('https://api.apollo.io/v1/contacts/search', {
         method: 'POST',
         headers: {
@@ -476,11 +485,7 @@ serve(async (req) => {
           'Cache-Control': 'no-cache',
           'X-Api-Key': APOLLO_API_KEY!,
         },
-        body: JSON.stringify({
-          contact_list_ids: [list_id],
-          page,
-          per_page: Math.min(per_page, 100),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -490,7 +495,19 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      console.log('[Apollo] List contacts found:', data.contacts?.length || 0, 'pagination:', data.pagination);
+      
+      // Log detallado para debug
+      console.log('[Apollo] Response - Total entries:', data.pagination?.total_entries);
+      console.log('[Apollo] Response - Contacts returned:', data.contacts?.length || 0);
+      console.log('[Apollo] Response - First contact list_names:', data.contacts?.[0]?.contact_list_names);
+      console.log('[Apollo] Response - First contact name:', data.contacts?.[0]?.name);
+      
+      // Detectar nombre de la lista desde los contactos
+      const detectedListName = data.contacts?.[0]?.contact_list_names?.find(
+        (name: string) => name.toLowerCase().includes('search fund')
+      ) || data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo';
+      
+      console.log('[Apollo] Detected list name:', detectedListName);
       
       // Map contacts to ApolloPersonResult format
       const people = (data.contacts || []).map((contact: any) => ({
@@ -518,13 +535,25 @@ serve(async (req) => {
         } : undefined,
         phone_numbers: contact.phone_numbers,
         seniority: contact.seniority,
+        contact_list_names: contact.contact_list_names,
       }));
+
+      // Filtrar contactos sin nombre válido (opcional, para limpiar datos)
+      const validPeople = people.filter((p: any) => 
+        p.name && p.name !== '(No Name)' && p.name.trim() !== ''
+      );
+      
+      console.log('[Apollo] Valid people after filter:', validPeople.length, 'of', people.length);
 
       return new Response(JSON.stringify({
         success: true,
-        people,
-        pagination: data.pagination || {},
-        list_name: data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo',
+        people: validPeople,
+        pagination: {
+          ...data.pagination,
+          filtered_count: validPeople.length,
+          original_count: people.length,
+        },
+        list_name: detectedListName,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
