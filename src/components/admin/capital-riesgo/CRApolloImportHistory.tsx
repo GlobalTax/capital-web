@@ -11,7 +11,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { History, RefreshCw, Loader2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { History, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CRApolloImportJob } from '@/hooks/useCRApolloSearchImport';
@@ -20,12 +31,18 @@ interface CRApolloImportHistoryProps {
   imports: CRApolloImportJob[];
   isLoading: boolean;
   onRefresh: () => void;
+  onDelete?: (importId: string) => Promise<void>;
+  isDeleting?: boolean;
 }
+
+const DELETABLE_STATUSES = ['pending', 'importing', 'failed', 'cancelled', 'searching', 'previewing'];
 
 export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
   imports,
   isLoading,
   onRefresh,
+  onDelete,
+  isDeleting = false,
 }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -63,6 +80,8 @@ export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
     
     return parts.length > 0 ? parts.join(' | ') : '-';
   };
+
+  const canDelete = (status: string) => DELETABLE_STATUSES.includes(status);
 
   if (imports.length === 0 && !isLoading) {
     return (
@@ -107,6 +126,7 @@ export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
                 <TableHead className="text-right">Resultados</TableHead>
                 <TableHead className="text-right">Importados</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,6 +149,44 @@ export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
                   </TableCell>
                   <TableCell>
                     {getStatusBadge(imp.status)}
+                  </TableCell>
+                  <TableCell>
+                    {canDelete(imp.status) && onDelete && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar importación?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción eliminará el registro de importación incompleta. 
+                              No afecta a los contactos que ya fueron importados correctamente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => onDelete(imp.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

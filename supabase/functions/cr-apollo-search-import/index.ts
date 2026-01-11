@@ -535,6 +535,55 @@ serve(async (req) => {
       });
     }
 
+    // ============= ACTION: DELETE IMPORT =============
+    if (action === 'delete_import') {
+      console.log('🗑️ [CR Apollo] DELETE IMPORT requested');
+      const { import_id } = params;
+      
+      if (!import_id) {
+        throw new Error('import_id is required');
+      }
+
+      // Get import to check status
+      const { data: existingImport, error: fetchError } = await supabase
+        .from('cr_apollo_imports')
+        .select('id, status')
+        .eq('id', import_id)
+        .single();
+
+      if (fetchError) {
+        console.error('❌ [CR Apollo] Error fetching import:', fetchError);
+        throw new Error(`Import not found: ${fetchError.message}`);
+      }
+
+      // Only allow deleting incomplete or failed imports
+      const deletableStatuses = ['pending', 'importing', 'failed', 'cancelled', 'searching', 'previewing'];
+      if (!deletableStatuses.includes(existingImport.status)) {
+        throw new Error('Solo se pueden eliminar importaciones incompletas o fallidas');
+      }
+
+      console.log('🗑️ [CR Apollo] Deleting import:', import_id, 'with status:', existingImport.status);
+
+      const { error: deleteError } = await supabase
+        .from('cr_apollo_imports')
+        .delete()
+        .eq('id', import_id);
+
+      if (deleteError) {
+        console.error('❌ [CR Apollo] Delete error:', deleteError);
+        throw new Error(`Failed to delete: ${deleteError.message}`);
+      }
+
+      console.log('✅ [CR Apollo] Import deleted successfully');
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Importación eliminada',
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // ============= ACTION: SEARCH FROM LIST (WITH AUTO-PAGINATION) =============
     if (action === 'search_from_list') {
       console.log('🚀 [CR Apollo] ACTION: search_from_list STARTING');
