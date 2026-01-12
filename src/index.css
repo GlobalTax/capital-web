@@ -1,32 +1,8 @@
-/* General Sans - Self-hosted typography */
-@font-face {
-  font-family: 'General Sans';
-  src: url('/fonts/GeneralSans-Extralight.otf') format('opentype');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'General Sans';
-  src: url('/fonts/GeneralSans-Light.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
+/* General Sans - Self-hosted typography (Single weight: Regular 400) */
 @font-face {
   font-family: 'General Sans';
   src: url('/fonts/GeneralSans-Regular.otf') format('opentype');
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'General Sans';
-  src: url('/fonts/GeneralSans-Medium.otf') format('opentype');
-  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
@@ -195,11 +171,18 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    letter-spacing: normal;
+    color: #000000;
     overflow-x: hidden;
   }
 
+  /* Headers - same weight as body (400) */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-normal;
+    @apply font-sans;
+    font-weight: 400;
   }
 
   html {
@@ -233,21 +216,21 @@
 @layer utilities {
   /* Hero Title - General Sans 400 */
   .hero-title {
-    @apply font-display font-normal;
+    @apply font-sans font-normal;
     font-size: clamp(2.5rem, 5vw + 1rem, 5.5rem);
     line-height: 1.1;
   }
 
   /* Service Hero Title - General Sans 400 */
   .service-hero-title {
-    @apply font-display font-normal;
+    @apply font-sans font-normal;
     font-size: clamp(3rem, 6vw + 1rem, 6rem);
     line-height: 1.1;
   }
 
-  /* Stat Number - General Sans 600 */
+  /* Stat Number - General Sans 400 */
   .stat-number {
-    @apply font-display font-semibold;
+    @apply font-sans font-normal;
     font-size: clamp(3rem, 4vw + 1rem, 4.5rem);
     line-height: 1;
   }
@@ -269,9 +252,9 @@
     @apply font-sans font-normal text-xs tracking-wide uppercase;
   }
 
-  /* Section Overline - Roboto Mono 500 */
+  /* Section Overline - General Sans 400 */
   .section-overline {
-    @apply font-mono font-medium text-xs tracking-widest uppercase;
+    @apply font-sans font-normal text-xs tracking-widest uppercase;
   }
 
   /* Service Body - Roboto Mono 400 */
@@ -378,7 +361,7 @@
   .admin-button-primary {
     @apply bg-primary text-primary-foreground 
            hover:bg-[hsl(var(--primary-hover))]
-           rounded-[5px] px-6 py-3 text-sm font-semibold 
+           rounded-[5px] px-6 py-3 text-sm font-normal 
            transition-all duration-200 ease-out
            shadow-[0_1px_3px_0_hsl(215_27%_23%_/_0.1)]
            hover:shadow-[0_4px_6px_-1px_hsl(215_27%_23%_/_0.1)]
@@ -390,7 +373,7 @@
   .admin-button-secondary {
     @apply bg-secondary text-secondary-foreground 
            hover:bg-secondary/80
-           border border-border rounded-[5px] px-6 py-3 text-sm font-medium 
+           border border-border rounded-[5px] px-6 py-3 text-sm font-normal 
            transition-all duration-200 ease-out
            shadow-[0_1px_2px_0_hsl(215_27%_23%_/_0.05)]
            hover:shadow-[0_2px_4px_0_hsl(215_27%_23%_/_0.1)]
