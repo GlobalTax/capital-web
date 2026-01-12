@@ -31,7 +31,7 @@ import {
 export default function SFFundDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
   
   // Fund data
   const { data: fund, isLoading, error } = useSFFund(isNew ? undefined : id);

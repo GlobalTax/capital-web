@@ -34,7 +34,7 @@ import {
 export default function CRFundDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
   
   // Fund data
   const { data: fund, isLoading, error } = useCRFund(isNew ? undefined : id);
