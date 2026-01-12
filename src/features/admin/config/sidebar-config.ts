@@ -317,6 +317,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Fondos y personas PE/VC"
       },
       { 
+        title: "Portfolio CR", 
+        url: "/admin/cr-portfolio-list", 
+        icon: Building2,
+        badge: "NEW",
+        description: "Empresas en cartera de fondos PE/VC"
+      },
+      { 
         title: "Inteligencia CR", 
         url: "/admin/fund-intelligence?type=cr", 
         icon: Eye,
@@ -348,6 +355,13 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/sf-directory", 
         icon: Building2,
         description: "Directorio de Search Funds"
+      },
+      { 
+        title: "Portfolio SF", 
+        url: "/admin/sf-portfolio-list", 
+        icon: Building2,
+        badge: "NEW",
+        description: "Empresas adquiridas por Search Funds"
       },
       { 
         title: "Backers", 

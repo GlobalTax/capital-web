@@ -67,11 +67,13 @@ import {
   LazySFApolloImportPage,
   LazySFFundDetailPage,
   LazySFAcquisitionDetailPage,
+  LazySFPortfolioListPage,
   LazyCRDirectoryPage,
   LazyCRFundDetailPage,
   LazyCRApolloImportPage,
   LazyCRPortfolioScraperPage,
   LazyCRPortfolioDetailPage,
+  LazyCRPortfolioListPage,
   LazyFundIntelligencePage
 } from './LazyAdminComponents';
 
@@ -190,7 +192,11 @@ const AdminRouter = () => {
           <Route path="/cr-directory/new" element={<LazyCRFundDetailPage />} />
           <Route path="/cr-directory/:id" element={<LazyCRFundDetailPage />} />
           <Route path="/cr-portfolio/:id" element={<LazyCRPortfolioDetailPage />} />
+          <Route path="/cr-portfolio-list" element={<LazyCRPortfolioListPage />} />
           <Route path="/cr-portfolio-scraper" element={<LazyCRPortfolioScraperPage />} />
+          
+          {/* Search Funds Portfolio */}
+          <Route path="/sf-portfolio-list" element={<LazySFPortfolioListPage />} />
           
           {/* Fund Intelligence (Firecrawl) */}
           <Route path="/fund-intelligence" element={<LazyFundIntelligencePage />} />
