@@ -3906,6 +3906,7 @@ export type Database = {
           id: string
           investment_stage: string[] | null
           is_deleted: boolean | null
+          last_news_scan_at: string | null
           last_scraped_at: string | null
           name: string
           notes_internal: string | null
@@ -3941,6 +3942,7 @@ export type Database = {
           id?: string
           investment_stage?: string[] | null
           is_deleted?: boolean | null
+          last_news_scan_at?: string | null
           last_scraped_at?: string | null
           name: string
           notes_internal?: string | null
@@ -3976,6 +3978,7 @@ export type Database = {
           id?: string
           investment_stage?: string[] | null
           is_deleted?: boolean | null
+          last_news_scan_at?: string | null
           last_scraped_at?: string | null
           name?: string
           notes_internal?: string | null
@@ -11800,6 +11803,7 @@ export type Database = {
           geography_focus: string[] | null
           id: string
           investment_style: string | null
+          last_news_scan_at: string | null
           last_scraped_at: string | null
           name: string
           notes_internal: string | null
@@ -11832,6 +11836,7 @@ export type Database = {
           geography_focus?: string[] | null
           id?: string
           investment_style?: string | null
+          last_news_scan_at?: string | null
           last_scraped_at?: string | null
           name: string
           notes_internal?: string | null
@@ -11864,6 +11869,7 @@ export type Database = {
           geography_focus?: string[] | null
           id?: string
           investment_style?: string | null
+          last_news_scan_at?: string | null
           last_scraped_at?: string | null
           name?: string
           notes_internal?: string | null
