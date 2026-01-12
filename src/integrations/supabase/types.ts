@@ -3934,9 +3934,11 @@ export type Database = {
           investment_stage: string[] | null
           is_deleted: boolean | null
           last_news_scan_at: string | null
+          last_portfolio_scraped_at: string | null
           last_scraped_at: string | null
           name: string
           notes_internal: string | null
+          portfolio_url: string | null
           revenue_max: number | null
           revenue_min: number | null
           scrape_data: Json | null
@@ -3970,9 +3972,11 @@ export type Database = {
           investment_stage?: string[] | null
           is_deleted?: boolean | null
           last_news_scan_at?: string | null
+          last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
           name: string
           notes_internal?: string | null
+          portfolio_url?: string | null
           revenue_max?: number | null
           revenue_min?: number | null
           scrape_data?: Json | null
@@ -4006,9 +4010,11 @@ export type Database = {
           investment_stage?: string[] | null
           is_deleted?: boolean | null
           last_news_scan_at?: string | null
+          last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
           name?: string
           notes_internal?: string | null
+          portfolio_url?: string | null
           revenue_max?: number | null
           revenue_min?: number | null
           scrape_data?: Json | null

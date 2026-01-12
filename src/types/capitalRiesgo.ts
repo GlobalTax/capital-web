@@ -108,6 +108,8 @@ export interface CRFund {
   name: string;
   fund_type: CRFundType | null;
   website: string | null;
+  portfolio_url: string | null;
+  last_portfolio_scraped_at: string | null;
   country_base: string | null;
   cities: string[] | null;
   status: CRFundStatus | null;
