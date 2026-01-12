@@ -3,13 +3,14 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, Building2, Upload } from 'lucide-react';
+import { Plus, Search, Users, Building2, Upload, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCRPeopleWithFunds } from '@/hooks/useCRPeople';
 import { useCRFunds } from '@/hooks/useCRFunds';
+import { useFavoriteFunds, useFavoritePeople } from '@/hooks/useCRFavorites';
 import { CRPeopleTable } from '@/components/admin/capital-riesgo/CRPeopleTable';
 import { CRFundsTable } from '@/components/admin/capital-riesgo/CRFundsTable';
 import { CRPersonRole, CRFundType, CR_PERSON_ROLE_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
@@ -35,6 +36,10 @@ export const CRDirectoryPage: React.FC = () => {
     fund_type: fundTypeFilter !== 'all' ? fundTypeFilter : undefined,
     country: countryFilter !== 'all' ? countryFilter : undefined,
   });
+
+  // Favorites queries
+  const { data: favoriteFunds, isLoading: loadingFavFunds } = useFavoriteFunds();
+  const { data: favoritePeople, isLoading: loadingFavPeople } = useFavoritePeople();
 
   // Extract unique countries from funds
   const countries = useMemo(() => {
@@ -116,6 +121,20 @@ export const CRDirectoryPage: React.FC = () => {
               <Users className="h-4 w-4 mr-2" />
               Personas ({people?.length || 0})
             </TabsTrigger>
+            <TabsTrigger 
+              value="favorite-funds"
+              className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
+              <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" />
+              Fondos Fav ({favoriteFunds?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger 
+              value="favorite-people"
+              className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
+              <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" />
+              Personas Fav ({favoritePeople?.length || 0})
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -182,6 +201,7 @@ export const CRDirectoryPage: React.FC = () => {
           <CRFundsTable 
             funds={funds || []}
             isLoading={loadingFunds}
+            showFavorites
           />
         </TabsContent>
 
@@ -192,6 +212,26 @@ export const CRDirectoryPage: React.FC = () => {
             selectedIds={selectedIds}
             onToggleSelection={handleToggleSelection}
             onSelectAll={handleSelectAll}
+            showFavorites
+          />
+        </TabsContent>
+
+        <TabsContent value="favorite-funds" className="mt-0">
+          <CRFundsTable 
+            funds={favoriteFunds || []}
+            isLoading={loadingFavFunds}
+            showFavorites
+          />
+        </TabsContent>
+
+        <TabsContent value="favorite-people" className="mt-0">
+          <CRPeopleTable 
+            people={favoritePeople || []}
+            isLoading={loadingFavPeople}
+            selectedIds={selectedIds}
+            onToggleSelection={handleToggleSelection}
+            onSelectAll={handleSelectAll}
+            showFavorites
           />
         </TabsContent>
       </Tabs>
