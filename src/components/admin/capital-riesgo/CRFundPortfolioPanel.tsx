@@ -2,11 +2,14 @@
 // Panel de empresas participadas de un fund de Capital Riesgo
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Calendar, Globe, Sparkles, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Globe, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CRPortfolio, CRFund, CR_PORTFOLIO_STATUS_LABELS, CR_OWNERSHIP_TYPE_LABELS } from '@/types/capitalRiesgo';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CRPortfolio, CR_PORTFOLIO_STATUS_LABELS } from '@/types/capitalRiesgo';
 import { useCRPortfolioScraper } from '@/hooks/useCRPortfolioScraper';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -44,6 +47,7 @@ export function CRFundPortfolioPanel({
   onDelete,
   onRefresh 
 }: CRFundPortfolioPanelProps) {
+  const navigate = useNavigate();
   const [portfolioUrl, setPortfolioUrl] = useState(initialPortfolioUrl || fundWebsite || '');
   const { scrapePortfolio, isScraping } = useCRPortfolioScraper();
 
@@ -98,6 +102,10 @@ export function CRFundPortfolioPanel({
     } catch (error) {
       console.error('Error extracting portfolio:', error);
     }
+  };
+
+  const handleRowClick = (company: CRPortfolio) => {
+    navigate(`/admin/cr-portfolio/${company.id}`);
   };
 
   return (
@@ -160,134 +168,167 @@ export function CRFundPortfolioPanel({
         )}
       </div>
 
-      {/* Table header */}
-      <div className="grid grid-cols-[1fr_80px_60px_100px_1fr_80px_60px] gap-2 px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground border-b">
-        <div>EMPRESA</div>
-        <div>FONDO</div>
-        <div>AÑO</div>
-        <div>SECTOR</div>
-        <div>DESCRIPCIÓN</div>
-        <div>ESTADO</div>
-        <div className="text-right">ACCIONES</div>
-      </div>
-
-      {/* Portfolio list */}
+      {/* Portfolio Table */}
       {portfolio.length > 0 ? (
-        <div className="divide-y">
-          {portfolio.map((company) => {
-            const statusConfig = statusColors[company.status] || {};
-            
-            return (
-              <div
-                key={company.id}
-                className="grid grid-cols-[1fr_80px_60px_100px_1fr_80px_60px] gap-2 items-center px-3 py-2 hover:bg-muted/50 group transition-colors"
-              >
-                {/* Empresa */}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-medium truncate">{company.company_name}</span>
-                        {company.website && (
-                          <a
-                            href={company.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:text-primary/80"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                      </div>
-                      {company.country && (
-                        <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                          <MapPin className="h-2.5 w-2.5" />
-                          <span>{company.country}</span>
+        <div className="border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="min-w-[200px]">EMPRESA</TableHead>
+                  <TableHead className="w-[100px]">FONDO</TableHead>
+                  <TableHead className="w-[70px]">AÑO</TableHead>
+                  <TableHead className="min-w-[120px]">SECTOR</TableHead>
+                  <TableHead className="min-w-[280px]">DESCRIPCIÓN</TableHead>
+                  <TableHead className="w-[90px]">ESTADO</TableHead>
+                  <TableHead className="w-[80px] text-right">ACCIONES</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {portfolio.map((company) => {
+                  const statusConfig = statusColors[company.status] || {};
+                  
+                  return (
+                    <TableRow
+                      key={company.id}
+                      className="cursor-pointer group"
+                      onClick={() => handleRowClick(company)}
+                    >
+                      {/* Empresa */}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium truncate">{company.company_name}</span>
+                              {company.website && (
+                                <a
+                                  href={company.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:text-primary/80"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+                            {company.country && (
+                              <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                                <MapPin className="h-2.5 w-2.5" />
+                                <span>{company.country}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                      </TableCell>
 
-                {/* Fondo */}
-                <div>
-                  {company.fund_name ? (
-                    <Badge variant="outline" className="text-[10px] font-normal">
-                      {company.fund_name}
-                    </Badge>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">-</span>
-                  )}
-                </div>
+                      {/* Fondo */}
+                      <TableCell>
+                        {company.fund_name ? (
+                          <Badge variant="outline" className="text-[10px] font-normal whitespace-nowrap">
+                            {company.fund_name}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
 
-                {/* Año */}
-                <div>
-                  {company.investment_year ? (
-                    <span className="text-xs">{company.investment_year}</span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">-</span>
-                  )}
-                </div>
+                      {/* Año */}
+                      <TableCell>
+                        {company.investment_year ? (
+                          <span className="text-xs">{company.investment_year}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
 
-                {/* Sector */}
-                <div>
-                  {company.sector ? (
-                    <span className="text-xs text-muted-foreground truncate block">
-                      {company.sector}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">-</span>
-                  )}
-                </div>
+                      {/* Sector */}
+                      <TableCell>
+                        {company.sector ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-xs text-muted-foreground truncate block max-w-[150px]">
+                                  {company.sector}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{company.sector}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
 
-                {/* Descripción */}
-                <div className="min-w-0">
-                  {company.description ? (
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {company.description}
-                    </p>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">-</span>
-                  )}
-                </div>
+                      {/* Descripción */}
+                      <TableCell>
+                        {company.description ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <p className="text-xs text-muted-foreground line-clamp-2 max-w-[280px]">
+                                  {company.description}
+                                </p>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" className="max-w-md">
+                                <p className="text-sm">{company.description}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
 
-                {/* Estado */}
-                <div>
-                  <Badge className={`${statusConfig} text-[10px] font-normal border`}>
-                    {CR_PORTFOLIO_STATUS_LABELS[company.status as keyof typeof CR_PORTFOLIO_STATUS_LABELS] || company.status}
-                    {company.status === 'exited' && company.exit_year && (
-                      <span className="ml-1">{company.exit_year}</span>
-                    )}
-                  </Badge>
-                </div>
+                      {/* Estado */}
+                      <TableCell>
+                        <Badge className={`${statusConfig} text-[10px] font-normal border whitespace-nowrap`}>
+                          {CR_PORTFOLIO_STATUS_LABELS[company.status as keyof typeof CR_PORTFOLIO_STATUS_LABELS] || company.status}
+                          {company.status === 'exited' && company.exit_year && (
+                            <span className="ml-1">{company.exit_year}</span>
+                          )}
+                        </Badge>
+                      </TableCell>
 
-                {/* Acciones */}
-                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => onEdit(company)}
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-destructive hover:text-destructive"
-                    onClick={() => onDelete(company)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+                      {/* Acciones */}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(company);
+                            }}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(company);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       ) : (
-        <div className="py-8 text-center">
+        <div className="py-8 text-center border rounded-lg">
           <p className="text-sm text-muted-foreground">No hay empresas participadas</p>
           <p className="text-xs text-muted-foreground mt-1">
             Introduce una URL de portfolio arriba para extraer automáticamente
