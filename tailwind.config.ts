@@ -20,7 +20,7 @@ export default {
 		extend: {
 		fontFamily: {
 			'display': ['General Sans', 'system-ui', 'sans-serif'],
-			'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+			'sans': ['General Sans', 'system-ui', 'sans-serif'],
 			'mono': ['Roboto Mono', 'ui-monospace', 'monospace'],
 			'serif': ['Playfair Display', 'Georgia', 'serif'],
 		},
