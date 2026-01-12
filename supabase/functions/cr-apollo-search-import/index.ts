@@ -246,17 +246,38 @@ async function findOrCreateFund(
 ): Promise<string | null> {
   if (!org?.name) return null;
 
-  // Search existing fund by name or website
+  // Normalize fund name for consistent matching
+  const normalizedName = org.name.trim();
+  
+  // Search existing fund by exact name match (case-insensitive)
+  // Using maybeSingle() instead of single() to avoid errors when no results
   const { data: existing } = await supabase
     .from('cr_funds')
     .select('id')
-    .or(`name.ilike.%${org.name}%,website.eq.${org.website_url || ''}`)
+    .ilike('name', normalizedName)
+    .eq('is_deleted', false)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (existing) {
-    console.log('[CR Import] Found existing fund:', org.name, existing.id);
+    console.log('[CR Import] Found existing fund:', normalizedName, existing.id);
     return existing.id;
+  }
+
+  // Also check by website if available
+  if (org.website_url) {
+    const { data: byWebsite } = await supabase
+      .from('cr_funds')
+      .select('id')
+      .eq('website', org.website_url)
+      .eq('is_deleted', false)
+      .limit(1)
+      .maybeSingle();
+    
+    if (byWebsite) {
+      console.log('[CR Import] Found existing fund by website:', normalizedName, byWebsite.id);
+      return byWebsite.id;
+    }
   }
 
   // Create new fund with detected type
@@ -264,7 +285,7 @@ async function findOrCreateFund(
   const { data: newFund, error } = await supabase
     .from('cr_funds')
     .insert({
-      name: org.name,
+      name: normalizedName,
       website: org.website_url,
       country_base: org.country || 'Spain',
       sector_focus: org.industry ? [org.industry] : [],
@@ -276,11 +297,28 @@ async function findOrCreateFund(
     .single();
 
   if (error) {
+    // If error due to unique constraint, try to find the fund that was just created
+    // (handles race condition where another request created it first)
+    console.warn('[CR Import] Insert failed, checking for existing fund:', error.message);
+    
+    const { data: fallback } = await supabase
+      .from('cr_funds')
+      .select('id')
+      .ilike('name', normalizedName)
+      .eq('is_deleted', false)
+      .limit(1)
+      .maybeSingle();
+    
+    if (fallback) {
+      console.log('[CR Import] Found fund after race condition:', normalizedName, fallback.id);
+      return fallback.id;
+    }
+    
     console.error('[CR Import] Error creating fund:', error);
     return null;
   }
 
-  console.log('[CR Import] Created new fund:', org.name, newFund.id, 'type:', fundType);
+  console.log('[CR Import] Created new fund:', normalizedName, newFund.id, 'type:', fundType);
   return newFund.id;
 }
 
